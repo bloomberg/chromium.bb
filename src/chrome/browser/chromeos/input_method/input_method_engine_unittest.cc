@@ -12,14 +12,13 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_service_manager_context.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
@@ -190,8 +189,7 @@ class InputMethodEngineTest : public testing::Test {
   GURL options_page_;
   GURL input_view_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  content::TestServiceManagerContext service_manager_context_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ui::MockIMEInputContextHandler>
       mock_ime_input_context_handler_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
@@ -318,10 +316,13 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
                       &error);
   engine_->SetComposition(context, "test", 0, 0, 0, segments, nullptr);
   engine_->CommitText(context, "input\xE5\x85\xA5\xE5\x8A\x9B", &error);
-  histograms.ExpectTotalCount("InputMethod.CommitLength", 3);
+  // This one shouldn't be counted because there was no composition.
+  engine_->CommitText(context, "abc", &error);
+  histograms.ExpectTotalCount("InputMethod.CommitLength", 4);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 5, 1);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 2, 1);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 7, 1);
+  histograms.ExpectBucketCount("InputMethod.CommitLength", 3, 1);
 }
 
 TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {

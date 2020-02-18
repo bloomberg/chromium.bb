@@ -23,6 +23,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -41,6 +43,8 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/features.h"
@@ -97,6 +101,8 @@
 namespace {
 
 using password_manager::metrics_util::PasswordType;
+using safe_browsing::LoginReputationClientResponse;
+using safe_browsing::RequestOutcome;
 
 const char kCreateFilesystemUrlJavascript[] =
     "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
@@ -433,6 +439,13 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
   SecurityStateTabHelperTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        true);
+  }
+
+  ~SecurityStateTabHelperTest() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        base::nullopt);
   }
 
   void SetUpOnMainThread() override {
@@ -604,6 +617,22 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpsPage) {
       false /* expect cert status error */);
 }
 
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, DevToolsPage) {
+  GURL devtools_url("devtools://devtools/bundled/");
+  ui_test_utils::NavigateToURL(browser(), devtools_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
+  EXPECT_TRUE(visible_security_state->is_devtools);
+}
+
 // Tests that interstitial.ssl.visited_site_after_warning is being logged to
 // correctly.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMALogsVisitsAfterWarning) {
@@ -622,16 +651,24 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMALogsVisitsAfterWarning) {
   histograms.ExpectBucketCount(kHistogramName, true, 1);
 }
 
-// Tests that interstitial.ssl.visited_site_after_warning is not being logged
-// to on errors that do not trigger a full site interstitial.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMADoesNotLogOnMinorError) {
+// Tests that interstitial.ssl.visited_site_after_warning is being logged
+// on ERR_CERT_UNABLE_TO_CHECK_REVOCATION (which previously did not show an
+// interstitial.)
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       UMALogsVisitsAfterRevocationCheckFailureWarning) {
   const char kHistogramName[] = "interstitial.ssl.visited_site_after_warning";
   base::HistogramTester histograms;
   SetUpMockCertVerifierForHttpsServer(
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, net::OK);
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+      net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
+  // Histogram shouldn't log before clicking through interstitial.
   histograms.ExpectTotalCount(kHistogramName, 0);
+  ProceedThroughInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  // Histogram should log after clicking through.
+  histograms.ExpectUniqueSample(kHistogramName, true, 1);
 }
 
 // Test security state after clickthrough for a SHA-1 certificate that is
@@ -1033,24 +1070,31 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
   // Update security state of the current page to match
-  // SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE.
+  // SB_THREAT_TYPE_GAIA_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
-  service->ShowModalWarning(contents, "unused-token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  safe_browsing::ReusedPasswordAccountType account_type;
+  account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
+  service->ShowModalWarning(
+      contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   observer.WaitForDidChangeVisibleSecurityState();
 
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       helper->GetVisibleSecurityState();
 
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            visible_security_state->malicious_content_status);
+  EXPECT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      visible_security_state->malicious_content_status);
 
   // Simulates a Gaia password change, then malicious content status will
   // change to MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING.
-  service->OnGaiaPasswordChanged();
+  service->OnGaiaPasswordChanged(/*username=*/"", false);
   base::RunLoop().RunUntilIdle();
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
@@ -1082,8 +1126,11 @@ IN_PROC_BROWSER_TEST_F(
   safe_browsing::ChromePasswordProtectionService* service =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
-  service->ShowModalWarning(contents, "unused-token",
-                            PasswordType::ENTERPRISE_PASSWORD);
+  service->ShowModalWarning(
+      contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      service->GetPasswordProtectionReusedPasswordAccountType(
+          PasswordType::ENTERPRISE_PASSWORD, /*username=*/""));
   observer.WaitForDidChangeVisibleSecurityState();
 
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
@@ -1258,7 +1305,7 @@ class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstallLoadingInterceptor,
                        embedded_test_server()->GetURL("/title1.html").host()));
@@ -2054,7 +2101,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, CTComplianceHistogram) {
       1);
 }
 
-// Tests that the Form submission histogram is logged correctly.
+// Tests that the security level form submission histogram is logged correctly.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, FormSecurityLevelHistogram) {
   const char kHistogramName[] = "Security.SecurityLevel.FormSubmission";
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
@@ -2082,6 +2129,53 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, FormSecurityLevelHistogram) {
   // Check that the histogram count logs the security level of the page
   // containing the form, not of the form target page.
   histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
+}
+
+// Tests that the Safety Tip form submission histogram is logged correctly.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SafetyTipFormHistogram) {
+  const char kHistogramName[] = "Security.SafetyTips.FormSubmission";
+  net::EmbeddedTestServer server;
+  server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(server.Start());
+
+  // Create a server for the form to target.
+  net::EmbeddedTestServer form_server;
+  form_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(form_server.Start());
+
+  for (bool flag_page : {false, true}) {
+    base::HistogramTester histograms;
+    if (flag_page) {
+      // Set up a bad reputation Safety Tip on the page containing the form.
+      SetSafetyTipBadRepPatterns({server.GetURL("/").host() + "/"});
+    }
+
+    // Use a different host for targeting the form so that a Safety Tip doesn't
+    // trigger on the form submission navigation.
+    net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
+        form_server.GetURL("example.test", "/google.html"));
+    std::string replacement_path = GetFilePathWithHostAndPortReplacement(
+        "/ssl/page_with_form_targeting_http_url.html", host_port_pair);
+    ui_test_utils::NavigateToURL(browser(), server.GetURL(replacement_path));
+    content::TestNavigationObserver navigation_observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    ASSERT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "document.getElementById('submit').click();"));
+    navigation_observer.Wait();
+    ASSERT_EQ(security_state::SafetyTipStatus::kNone,
+              SecurityStateTabHelper::FromWebContents(
+                  browser()->tab_strip_model()->GetActiveWebContents())
+                  ->GetVisibleSecurityState()
+                  ->safety_tip_status);
+    // Check that the histogram count logs the safety tip status of the page
+    // containing the form, not of the form target page.
+    histograms.ExpectUniqueSample(
+        kHistogramName,
+        flag_page ? security_state::SafetyTipStatus::kBadReputation
+                  : security_state::SafetyTipStatus::kNone,
+        1);
+  }
 }
 
 }  // namespace

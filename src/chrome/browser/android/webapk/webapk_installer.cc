@@ -34,6 +34,7 @@
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
+#include "chrome/browser/android/webapps/webapk_ukm_recorder.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -254,6 +255,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     webapk::Image* best_primary_icon_image = web_app_manifest->add_icons();
     SetImageData(best_primary_icon_image, primary_icon);
     best_primary_icon_image->add_usages(webapk::Image::PRIMARY_ICON);
+    if (is_primary_icon_maskable) {
+      best_primary_icon_image->add_purposes(webapk::Image::MASKABLE);
+    } else {
+      best_primary_icon_image->add_purposes(webapk::Image::ANY);
+    }
 
     if (!badge_icon.drawsNothing()) {
       webapk::Image* best_badge_icon_image = web_app_manifest->add_icons();
@@ -267,7 +273,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     if (entry.first == shortcut_info.best_primary_icon_url.spec()) {
       SetImageData(image, primary_icon);
       image->add_usages(webapk::Image::PRIMARY_ICON);
-      image->set_is_primay_icon_maskable(is_primary_icon_maskable);
+      if (is_primary_icon_maskable) {
+        image->add_purposes(webapk::Image::MASKABLE);
+      } else {
+        image->add_purposes(webapk::Image::ANY);
+      }
     }
     if (entry.first == shortcut_info.best_badge_icon_url.spec()) {
       if (shortcut_info.best_badge_icon_url !=
@@ -328,9 +338,9 @@ std::unique_ptr<std::string> ReadFileInBackground(const base::FilePath& file) {
 
 // Returns task runner for running background tasks.
 scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
-  return base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  return base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                 base::TaskPriority::BEST_EFFORT,
+                                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 }  // anonymous namespace
@@ -437,7 +447,6 @@ void WebApkInstaller::StoreUpdateRequestToFile(
 }
 
 void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
-                                            int version,
                                             const std::string& token) {
   webapk_package_ = package_name;
 
@@ -454,11 +463,11 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
     base::android::ScopedJavaLocalRef<jobject> java_primary_icon =
         gfx::ConvertToJavaBitmap(&install_primary_icon_);
     Java_WebApkInstaller_installWebApkAsync(
-        env, java_ref_, java_webapk_package, version, java_title, java_token,
-        install_shortcut_info_->source, java_primary_icon);
+        env, java_ref_, java_webapk_package, webapk_version_, java_title,
+        java_token, install_shortcut_info_->source, java_primary_icon);
   } else {
     Java_WebApkInstaller_updateAsync(env, java_ref_, java_webapk_package,
-                                     version, java_title, java_token);
+                                     webapk_version_, java_title, java_token);
   }
 }
 
@@ -470,6 +479,8 @@ void WebApkInstaller::OnResult(WebApkInstallResult result) {
     if (result == WebApkInstallResult::SUCCESS) {
       webapk::TrackInstallDuration(install_duration_timer_->Elapsed());
       webapk::TrackInstallEvent(webapk::INSTALL_COMPLETED);
+      WebApkUkmRecorder::RecordInstall(install_shortcut_info_->manifest_url,
+                                       webapk_version_);
     } else {
       DVLOG(1) << "The WebAPK installation failed.";
       webapk::TrackInstallEvent(webapk::INSTALL_FAILED);
@@ -483,9 +494,9 @@ WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       server_url_(GetServerUrl()),
       webapk_server_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
+      webapk_version_(0),
       relax_updates_(false),
-      task_type_(UNDEFINED),
-      weak_ptr_factory_(this) {
+      task_type_(UNDEFINED) {
   CreateJavaRef();
 }
 
@@ -589,6 +600,7 @@ void WebApkInstaller::OnURLLoaderComplete(
     return;
   }
 
+  base::StringToInt(response->version(), &webapk_version_);
   const std::string& token = response->token();
   if (task_type_ == UPDATE && token.empty()) {
     // https://crbug.com/680131. The server sends an empty URL if the server
@@ -604,9 +616,7 @@ void WebApkInstaller::OnURLLoaderComplete(
     return;
   }
 
-  int version = 1;
-  base::StringToInt(response->version(), &version);
-  InstallOrUpdateWebApk(response->package_name(), version, token);
+  InstallOrUpdateWebApk(response->package_name(), token);
 }
 
 network::SharedURLLoaderFactory* GetURLLoaderFactory(
@@ -695,7 +705,7 @@ void WebApkInstaller::SendRequest(
   request->url = server_url_;
   request->method = "POST";
   request->load_flags = net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   loader_ = network::SimpleURLLoader::Create(std::move(request),
                                              NO_TRAFFIC_ANNOTATION_YET);
   loader_->AttachStringForUpload(*serialized_proto, kProtoMimeType);

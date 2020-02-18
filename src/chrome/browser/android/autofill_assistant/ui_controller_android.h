@@ -12,10 +12,10 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/android/autofill_assistant/assistant_collect_user_data_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
-#include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/controller_observer.h"
@@ -27,6 +27,7 @@
 #include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
+struct ClientSettings;
 
 // Starts and owns the UI elements required to display AA.
 //
@@ -85,10 +86,9 @@ class UiControllerAndroid : public ControllerObserver {
   void OnBubbleMessageChanged(const std::string& message) override;
   void CloseCustomTab() override;
   void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
-  void OnPaymentRequestOptionsChanged(
-      const PaymentRequestOptions* options) override;
-  void OnPaymentRequestInformationChanged(
-      const PaymentInformation* state) override;
+  void OnCollectUserDataOptionsChanged(
+      const CollectUserDataOptions* collect_user_data_options) override;
+  void OnUserDataChanged(const UserData* state) override;
   void OnDetailsChanged(const Details* details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
@@ -102,6 +102,7 @@ class UiControllerAndroid : public ControllerObserver {
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
   void OnFormChanged(const FormProto* form) override;
+  void OnClientSettingsChanged(const ClientSettings& settings) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -111,16 +112,13 @@ class UiControllerAndroid : public ControllerObserver {
   // Called by AssistantHeaderDelegate:
   void OnFeedbackButtonClicked();
 
-  // Called by AssistantPaymentRequestDelegate:
+  // Called by AssistantCollectUserDataDelegate:
   void OnShippingAddressChanged(
       std::unique_ptr<autofill::AutofillProfile> address);
-  void OnBillingAddressChanged(
-      std::unique_ptr<autofill::AutofillProfile> address);
-  void OnContactInfoChanged(std::string name,
-                            std::string phone,
-                            std::string email);
+  void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile);
   void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
+  void OnLoginChoiceChanged(std::string identifier);
   void OnTermsAndConditionsLinkClicked(int link);
 
   // Called by AssistantFormDelegate:
@@ -165,7 +163,7 @@ class UiControllerAndroid : public ControllerObserver {
   UiDelegate* ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
-  AssistantPaymentRequestDelegate payment_request_delegate_;
+  AssistantCollectUserDataDelegate collect_user_data_delegate_;
   AssistantFormDelegate form_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
@@ -176,7 +174,7 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetInfoBoxModel();
-  base::android::ScopedJavaLocalRef<jobject> GetPaymentRequestModel();
+  base::android::ScopedJavaLocalRef<jobject> GetCollectUserDataModel();
   base::android::ScopedJavaLocalRef<jobject> GetFormModel();
 
   void SetOverlayState(OverlayState state);
@@ -191,7 +189,8 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.
-  void ShowSnackbar(const std::string& message,
+  void ShowSnackbar(base::TimeDelta delay,
+                    const std::string& message,
                     base::OnceCallback<void()> action);
 
   void OnCancel(int action_index, std::unique_ptr<TriggerContext> context);
@@ -214,7 +213,7 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
-  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
+  base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

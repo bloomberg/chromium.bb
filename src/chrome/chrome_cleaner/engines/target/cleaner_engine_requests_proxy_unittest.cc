@@ -21,7 +21,7 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/chrome_cleaner/engines/common/registry_util.h"
 #include "chrome/chrome_cleaner/engines/target/sandboxed_test_helpers.h"
@@ -146,7 +146,7 @@ class CleanerEngineRequestsProxyTestBase : public ::testing::Test {
   scoped_refptr<TestParentProcess> parent_process_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // CleanerEngineRequestsProxyTest is parameterized with:

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
 namespace blink {
 namespace {
@@ -30,6 +31,15 @@ CSSPrimitiveValue* CreateAddition(UnitValue a, UnitValue b) {
       CSSMathOperator::kAdd));
 }
 
+CSSPrimitiveValue* CreateNonNegativeSubtraction(UnitValue a, UnitValue b) {
+  return CSSMathFunctionValue::Create(
+      CSSMathExpressionBinaryOperation::Create(
+          CSSMathExpressionNumericLiteral::Create(Create(a)),
+          CSSMathExpressionNumericLiteral::Create(Create(b)),
+          CSSMathOperator::kSubtract),
+      kValueRangeNonNegative);
+}
+
 TEST(CSSPrimitiveValueTest, IsTime) {
   EXPECT_FALSE(Create({5.0, UnitType::kNumber})->IsTime());
   EXPECT_FALSE(Create({5.0, UnitType::kDegrees})->IsTime());
@@ -50,11 +60,46 @@ TEST(CSSPrimitiveValueTest, IsTimeCalc) {
   }
 }
 
+TEST(CSSPrimitiveValueTest, ClampTimeToNonNegative) {
+  UnitValue a = {4926, UnitType::kMilliseconds};
+  UnitValue b = {5, UnitType::kSeconds};
+  EXPECT_EQ(0.0, CreateNonNegativeSubtraction(a, b)->ComputeSeconds());
+}
+
+TEST(CSSPrimitiveValueTest, ClampAngleToNonNegative) {
+  UnitValue a = {89, UnitType::kDegrees};
+  UnitValue b = {0.25, UnitType::kTurns};
+  EXPECT_EQ(0.0, CreateNonNegativeSubtraction(a, b)->ComputeDegrees());
+}
+
 TEST(CSSPrimitiveValueTest, IsResolution) {
   EXPECT_FALSE(Create({5.0, UnitType::kNumber})->IsResolution());
   EXPECT_FALSE(Create({5.0, UnitType::kDegrees})->IsResolution());
   EXPECT_TRUE(Create({5.0, UnitType::kDotsPerPixel})->IsResolution());
   EXPECT_TRUE(Create({5.0, UnitType::kDotsPerCentimeter})->IsResolution());
+}
+
+// https://crbug.com/999875
+TEST(CSSPrimitiveValueTest, Zooming) {
+  // Tests that the conversion CSSPrimitiveValue -> Length -> CSSPrimitiveValue
+  // yields the same value under zooming.
+
+  UnitValue a = {100, UnitType::kPixels};
+  UnitValue b = {10, UnitType::kPercentage};
+  CSSPrimitiveValue* original = CreateAddition(a, b);
+
+  CSSToLengthConversionData conversion_data;
+  conversion_data.SetZoom(0.5);
+
+  Length length = original->ConvertToLength(conversion_data);
+  EXPECT_TRUE(length.IsCalculated());
+  EXPECT_EQ(50.0, length.GetPixelsAndPercent().pixels);
+  EXPECT_EQ(10.0, length.GetPixelsAndPercent().percent);
+
+  CSSPrimitiveValue* converted =
+      CSSPrimitiveValue::CreateFromLength(length, conversion_data.Zoom());
+  EXPECT_TRUE(converted->IsMathFunctionValue());
+  EXPECT_EQ("calc(10% + 100px)", converted->CustomCSSText());
 }
 
 }  // namespace

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 using content::WebContents;
 
@@ -112,13 +115,25 @@ TabStripSelectionChange& TabStripSelectionChange::operator=(
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripModelObserver
 //
-TabStripModelObserver::TabStripModelObserver() {
+TabStripModelObserver::TabStripModelObserver() {}
+
+TabStripModelObserver::~TabStripModelObserver() {
+  std::set<TabStripModel*> models(observed_models_.begin(),
+                                  observed_models_.end());
+  for (auto* model : models) {
+    model->RemoveObserver(this);
+  }
 }
 
 void TabStripModelObserver::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
+
+void TabStripModelObserver::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {}
 
 void TabStripModelObserver::TabChangedAt(WebContents* contents,
                                          int index,
@@ -143,3 +158,48 @@ void TabStripModelObserver::WillCloseAllTabs(TabStripModel* tab_strip_model) {}
 void TabStripModelObserver::CloseAllTabsStopped(TabStripModel* tab_strip_model,
                                                 CloseAllStoppedReason reason) {}
 void TabStripModelObserver::SetTabNeedsAttentionAt(int index, bool attention) {}
+void TabStripModelObserver::OnTabStripModelDestroyed(TabStripModel* model) {}
+
+// static
+void TabStripModelObserver::StopObservingAll(TabStripModelObserver* observer) {
+  while (!observer->observed_models_.empty()) {
+    (*observer->observed_models_.begin())->RemoveObserver(observer);
+  }
+}
+
+// static
+bool TabStripModelObserver::IsObservingAny(TabStripModelObserver* observer) {
+  return !observer->observed_models_.empty();
+}
+
+// static
+int TabStripModelObserver::CountObservedModels(
+    TabStripModelObserver* observer) {
+  return observer->observed_models_.size();
+}
+
+void TabStripModelObserver::StartedObserving(
+    TabStripModelObserver::ModelPasskey,
+    TabStripModel* model) {
+  // TODO(https://crbug.com/991308): Add this DCHECK here. This DCHECK enforces
+  // that a given TabStripModelObserver only observes a given TabStripModel
+  // once.
+  // DCHECK_EQ(observed_models_.count(model), 0U);
+  observed_models_.insert(model);
+}
+
+void TabStripModelObserver::StoppedObserving(
+    TabStripModelObserver::ModelPasskey,
+    TabStripModel* model) {
+  // TODO(https://crbug.com/991308): Add this DCHECK here. This DCHECK enforces
+  // that a given TabStripModelObserver is only removed from a given
+  // TabStripModel once.
+  // DCHECK_EQ(observed_models_.count(model), 1U);
+  observed_models_.erase(model);
+}
+
+void TabStripModelObserver::ModelDestroyed(TabStripModelObserver::ModelPasskey,
+                                           TabStripModel* model) {
+  model->RemoveObserver(this);
+  OnTabStripModelDestroyed(model);
+}

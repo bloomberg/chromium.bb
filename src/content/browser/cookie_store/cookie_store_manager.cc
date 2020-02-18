@@ -46,7 +46,6 @@ void HandleStoreRegistrationUserDataStatus(
 CookieStoreManager::CookieStoreManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : service_worker_context_(std::move(service_worker_context)),
-      cookie_change_listener_binding_(this),
       registration_user_data_key_(kSubscriptionsUserKey) {
   service_worker_context_->AddObserver(this);
 }
@@ -56,12 +55,13 @@ CookieStoreManager::~CookieStoreManager() {
   service_worker_context_->RemoveObserver(this);
 }
 
-void CookieStoreManager::CreateService(blink::mojom::CookieStoreRequest request,
-                                       const url::Origin& origin) {
+void CookieStoreManager::CreateService(
+    mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bindings_.AddBinding(std::make_unique<CookieStoreHost>(this, origin),
-                       std::move(request));
+  receivers_.Add(std::make_unique<CookieStoreHost>(this, origin),
+                 std::move(receiver));
 }
 
 void CookieStoreManager::LoadAllSubscriptions(
@@ -77,20 +77,17 @@ void CookieStoreManager::LoadAllSubscriptions(
 }
 
 void CookieStoreManager::ListenToCookieChanges(
-    ::network::mojom::CookieManagerPtr cookie_manager,
+    mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager,
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!cookie_manager_) << __func__ << " already called";
-  cookie_manager_ = std::move(cookie_manager);
+  cookie_manager_.Bind(std::move(cookie_manager));
 
-  DCHECK(!cookie_change_listener_binding_.is_bound());
-  ::network::mojom::CookieChangeListenerPtr cookie_change_listener;
-  cookie_change_listener_binding_.Bind(
-      mojo::MakeRequest(&cookie_change_listener));
-
+  DCHECK(!cookie_change_listener_receiver_.is_bound());
   // TODO(pwnall): Switch to an API with subscription confirmation.
-  cookie_manager_->AddGlobalChangeListener(std::move(cookie_change_listener));
+  cookie_manager_->AddGlobalChangeListener(
+      cookie_change_listener_receiver_.BindNewPipeAndPassRemote());
   std::move(callback).Run(true);
 }
 

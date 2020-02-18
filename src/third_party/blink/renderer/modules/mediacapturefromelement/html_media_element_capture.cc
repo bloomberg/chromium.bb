@@ -10,9 +10,9 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
@@ -22,7 +22,8 @@
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_audio_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_video_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
@@ -37,6 +38,7 @@ namespace {
 // |is_readonly| should be true if the format of the data cannot be changed by
 // MediaTrackConstraints.
 bool AddVideoTrackToMediaStream(
+    LocalFrame* frame,
     std::unique_ptr<media::VideoCapturerSource> video_source,
     bool is_remote,
     WebMediaStream* web_media_stream) {
@@ -50,7 +52,7 @@ bool AddVideoTrackToMediaStream(
       video_source->GetPreferredFormats();
   MediaStreamVideoSource* const media_stream_source =
       new MediaStreamVideoCapturerSource(
-          WebPlatformMediaStreamSource::SourceStoppedCallback(),
+          frame, WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(video_source));
   const WebString track_id(WTF::CreateCanonicalUUIDString());
   WebMediaStreamSource web_media_stream_source;
@@ -72,12 +74,14 @@ bool AddVideoTrackToMediaStream(
 // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
 // by the second parameter.
 void CreateHTMLVideoElementCapturer(
+    LocalFrame* frame,
     WebMediaStream* web_media_stream,
     WebMediaPlayer* web_media_player,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
   AddVideoTrackToMediaStream(
+      frame,
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player, Platform::Current()->GetIOTaskRunner(),
           std::move(task_runner)),
@@ -88,6 +92,7 @@ void CreateHTMLVideoElementCapturer(
 // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
 // by the second parameter.
 void CreateHTMLAudioElementCapturer(
+    LocalFrame*,
     WebMediaStream* web_media_stream,
     WebMediaPlayer* web_media_player,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -195,13 +200,15 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
 
   if (media_element_->HasVideo()) {
     CreateHTMLVideoElementCapturer(
-        &web_stream, media_element_->GetWebMediaPlayer(),
+        To<Document>(context)->GetFrame(), &web_stream,
+        media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));
   }
   if (media_element_->HasAudio()) {
     CreateHTMLAudioElementCapturer(
-        &web_stream, media_element_->GetWebMediaPlayer(),
+        To<Document>(context)->GetFrame(), &web_stream,
+        media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));
   }
@@ -220,6 +227,15 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
   UpdateSources(context);
 }
 
+void DidStopMediaStreamSource(const WebMediaStreamSource& source) {
+  if (source.IsNull())
+    return;
+  blink::WebPlatformMediaStreamSource* const platform_source =
+      source.GetPlatformSource();
+  DCHECK(platform_source);
+  platform_source->StopSource();
+}
+
 void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
   for (auto track : media_stream_->getTracks())
     sources_.insert(track->Component()->Source());
@@ -227,7 +243,7 @@ void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
   if (!media_element_->currentSrc().IsEmpty() &&
       !media_element_->IsMediaDataCorsSameOrigin()) {
     for (auto source : sources_)
-      MediaStreamCenter::Instance().DidStopMediaStreamSource(source);
+      DidStopMediaStreamSource(source.Get());
   }
 }
 
@@ -251,6 +267,12 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     // https://github.com/w3c/mediacapture-fromelement/issues/20.
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Stream capture not supported with EME");
+    return nullptr;
+  }
+
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "The context has been destroyed");
     return nullptr;
   }
 
@@ -280,13 +302,17 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     return MediaStream::Create(context, descriptor);
   }
 
+  LocalFrame* frame = ToLocalFrameIfNotDetached(script_state->GetContext());
+  DCHECK(frame);
   if (element.HasVideo()) {
-    CreateHTMLVideoElementCapturer(&web_stream, element.GetWebMediaPlayer(),
+    CreateHTMLVideoElementCapturer(frame, &web_stream,
+                                   element.GetWebMediaPlayer(),
                                    element.GetExecutionContext()->GetTaskRunner(
                                        TaskType::kInternalMediaRealTime));
   }
   if (element.HasAudio()) {
-    CreateHTMLAudioElementCapturer(&web_stream, element.GetWebMediaPlayer(),
+    CreateHTMLAudioElementCapturer(frame, &web_stream,
+                                   element.GetWebMediaPlayer(),
                                    element.GetExecutionContext()->GetTaskRunner(
                                        TaskType::kInternalMediaRealTime));
   }

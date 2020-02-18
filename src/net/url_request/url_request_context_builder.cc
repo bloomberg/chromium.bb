@@ -29,7 +29,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
@@ -365,14 +365,7 @@ void URLRequestContextBuilder::set_proxy_delegate(
 
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
     std::unique_ptr<HttpAuthHandlerFactory> factory) {
-  DCHECK(!shared_http_auth_handler_factory_);
   http_auth_handler_factory_ = std::move(factory);
-}
-
-void URLRequestContextBuilder::set_shared_http_auth_handler_factory(
-    HttpAuthHandlerFactory* shared_http_auth_handler_factory) {
-  DCHECK(!http_auth_handler_factory_);
-  shared_http_auth_handler_factory_ = shared_http_auth_handler_factory;
 }
 
 void URLRequestContextBuilder::SetHttpServerProperties(
@@ -457,11 +450,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (http_auth_handler_factory_) {
-    DCHECK(!shared_http_auth_handler_factory_);
     storage->set_http_auth_handler_factory(
         std::move(http_auth_handler_factory_));
-  } else if (shared_http_auth_handler_factory_) {
-    context->set_http_auth_handler_factory(shared_http_auth_handler_factory_);
   } else {
     storage->set_http_auth_handler_factory(
         HttpAuthHandlerRegistryFactory::CreateDefault());
@@ -476,14 +466,15 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   storage->set_transport_security_state(
-      std::make_unique<TransportSecurityState>());
+      std::make_unique<TransportSecurityState>(hsts_policy_bypass_list_));
   if (!transport_security_persister_path_.empty()) {
     // Use a low priority because saving this should not block anything
     // user-visible. Block shutdown to ensure it does get persisted to disk,
     // since it contains security-relevant information.
     scoped_refptr<base::SequencedTaskRunner> task_runner(
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
     context->set_transport_security_persister(
@@ -496,7 +487,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_http_server_properties(std::move(http_server_properties_));
   } else {
     storage->set_http_server_properties(
-        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+        std::make_unique<HttpServerProperties>());
   }
 
   if (cert_verifier_) {
@@ -654,8 +645,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
         url::kFileScheme,
-        std::make_unique<FileProtocolHandler>(base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+        std::make_unique<FileProtocolHandler>(base::CreateTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::USER_BLOCKING,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   }
 #endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)

@@ -17,9 +17,11 @@
 #include "include/core/SkScalar.h"
 #include "include/core/SkStream.h"
 #include "include/core/SkTypes.h"
+#include "include/effects/SkMorphologyImageFilter.h"
+#include "include/effects/SkPerlinNoiseShader.h"
 #include "include/private/SkTo.h"
 #include "src/core/SkGlyphRun.h"
-#include "src/core/SkImageFilterPriv.h"
+#include "src/core/SkImageFilter_Base.h"
 #include "src/core/SkMakeUnique.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSpecialImage.h"
@@ -245,7 +247,7 @@ DEF_TEST(SkPDF_Primitives, reporter) {
 
 namespace {
 
-class DummyImageFilter : public SkImageFilter {
+class DummyImageFilter : public SkImageFilter_Base {
 public:
     static sk_sp<DummyImageFilter> Make(bool visited = false) {
         return sk_sp<DummyImageFilter>(new DummyImageFilter(visited));
@@ -254,11 +256,10 @@ public:
     bool visited() const { return fVisited; }
 
 protected:
-    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
-                                        SkIPoint* offset) const override {
+    sk_sp<SkSpecialImage> onFilterImage(const Context& ctx, SkIPoint* offset) const override {
         fVisited = true;
         offset->fX = offset->fY = 0;
-        return sk_ref_sp<SkSpecialImage>(source);
+        return sk_ref_sp<SkSpecialImage>(ctx.sourceImage());
     }
 
 private:
@@ -267,7 +268,7 @@ private:
 
     mutable bool fVisited;
 
-    typedef SkImageFilter INHERITED;
+    typedef SkImageFilter_Base INHERITED;
 };
 
 sk_sp<SkFlattenable> DummyImageFilter::CreateProc(SkReadBuffer& buffer) {
@@ -436,4 +437,26 @@ DEF_TEST(SkPDF_Clusterator, reporter) {
     }
 }
 
+DEF_TEST(fuzz875632f0, reporter) {
+    SkNullWStream stream;
+    auto doc = SkPDF::MakeDocument(&stream);
+    REPORTER_ASSERT(reporter, doc);
+    SkCanvas* canvas = doc->beginPage(128, 160);
+
+    SkAutoCanvasRestore autoCanvasRestore(canvas, false);
+
+    SkPaint layerPaint({0, 0, 0, 0});
+    layerPaint.setImageFilter(SkDilateImageFilter::Make(536870912, 0, nullptr, nullptr));
+    layerPaint.setBlendMode(SkBlendMode::kClear);
+
+    canvas->saveLayer(nullptr, &layerPaint);
+    canvas->saveLayer(nullptr, nullptr);
+
+    SkPaint paint;
+    paint.setBlendMode(SkBlendMode::kDarken);
+    paint.setShader(SkPerlinNoiseShader::MakeFractalNoise(0, 0, 2, 0, nullptr));
+    paint.setColor4f(SkColor4f{0, 0, 0 ,0});
+
+    canvas->drawPath(SkPath(), paint);
+}
 #endif

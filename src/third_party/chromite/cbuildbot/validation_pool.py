@@ -11,12 +11,14 @@ ready for the commit queue to try.
 
 from __future__ import print_function
 
-import cPickle
+import pickle
 import functools
 import httplib
 import os
 import time
 from xml.dom import minidom
+
+import six
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import patch_series
@@ -56,9 +58,6 @@ SUBMITTED_WAIT_TIMEOUT = 3 * 60 # Time in seconds.
 
 # Default timeout (second) for computing dependency map.
 COMPUTE_DEPENDENCY_MAP_TIMEOUT = 5 * 60
-
-# The url prefix of the CL status page.
-CL_STATUS_URL_PREFIX = 'https://chromeos-cl-viewer-ui.googleplex.com/cl_status'
 
 
 class FailedToSubmitAllChangesException(failures_lib.StepFailure):
@@ -206,22 +205,22 @@ class ValidationPool(object):
     # dumps.  Thus we need to assert the given args since we may be getting
     # a value we no longer like (nor work with).
     if overlays not in constants.VALID_OVERLAYS:
-      raise ValueError("Unknown/unsupported overlay: %r" % (overlays,))
+      raise ValueError('Unknown/unsupported overlay: %r' % (overlays,))
 
     self._helper_pool = self.GetGerritHelpersForOverlays(overlays)
 
     if not isinstance(build_number, int):
-      raise ValueError("Invalid build_number: %r" % (build_number,))
+      raise ValueError('Invalid build_number: %r' % (build_number,))
 
-    if not isinstance(builder_name, basestring):
-      raise ValueError("Invalid builder_name: %r" % (builder_name,))
+    if not isinstance(builder_name, six.string_types):
+      raise ValueError('Invalid builder_name: %r' % (builder_name,))
 
     if (buildbucket_id is not None and
-        not isinstance(buildbucket_id, basestring)):
+        not isinstance(buildbucket_id, six.string_types)):
       if isinstance(buildbucket_id, int):
         buildbucket_id = str(buildbucket_id)
       else:
-        raise ValueError("Invalid buildbucket_id: %r" % (buildbucket_id,))
+        raise ValueError('Invalid buildbucket_id: %r' % (buildbucket_id,))
 
     for changes_name, changes_value in (
         ('candidates', candidates),
@@ -481,7 +480,7 @@ class ValidationPool(object):
 
       # Iterated through all queries with no changes.
       logging.info('Waiting for %s (%d minutes left)...',
-                   cls._WaitForQuery(query), time_left / 60)
+                   cls._WaitForQuery(query), time_left // 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
     return pool
@@ -934,7 +933,7 @@ class ValidationPool(object):
         for fetching cidb handle for access to metadata.
     """
     with open(filename, 'rb') as p_file:
-      pool = cPickle.load(p_file)
+      pool = pickle.load(p_file)
       # pylint: disable=protected-access
       pool._run = builder_run
       return pool
@@ -942,7 +941,7 @@ class ValidationPool(object):
   def Save(self, filename):
     """Serializes the validation pool."""
     with open(filename, 'wb') as p_file:
-      cPickle.dump(self, p_file, protocol=cPickle.HIGHEST_PROTOCOL)
+      pickle.dump(self, p_file, protocol=pickle.HIGHEST_PROTOCOL)
 
   # Note: All submit code, all gerrit code, and basically everything other
   # than patch resolution/applying needs to use .change_id from patch objects.
@@ -1090,9 +1089,9 @@ class ValidationPool(object):
     errors.update(local_submission_errors)
     errors.update(remote_errors)
     for patch, error in errors.items():
-      logging.error("Could not submit %s, error: %s", patch, error)
+      logging.error('Could not submit %s, error: %s', patch, error)
       logging.PrintBuildbotLink(
-          "Could not submit %s, error: %s" % (patch, error), patch.url)
+          'Could not submit %s, error: %s' % (patch, error), patch.url)
       self._HandleCouldNotSubmit(patch, error)
 
     return submitted_locals | submitted_remotes, errors
@@ -1724,11 +1723,11 @@ class ValidationPool(object):
       msg %= d
     except (TypeError, ValueError) as e:
       logging.error(
-          "Generation of message %s for change %s failed: dict was %r, "
-          "exception %s", msg, change, d, e)
+          'Generation of message %s for change %s failed: dict was %r, '
+          'exception %s', msg, change, d, e)
       raise e.__class__(
-          "Generation of message %s for change %s failed: dict was %r, "
-          "exception %s" % (msg, change, d, e))
+          'Generation of message %s for change %s failed: dict was %r, '
+          'exception %s' % (msg, change, d, e))
     cl_messages.PaladinMessage(
         msg, change, self._helper_pool.ForChange(change)).Send(self.dryrun)
 
@@ -1792,10 +1791,11 @@ class ValidationPool(object):
     """
     retry = not sanity or lab_fail or change not in suspects.keys()
     if self._ShouldSendFailureNotification(change, retry):
-      cl_status_url = self._GetCLStatusURL(change)
-      msg = cl_messages.CreateValidationFailureMessage(
-          self.pre_cq_trybot, change, suspects, messages,
-          sanity, infra_fail, lab_fail, no_stat, retry, cl_status_url)
+      msg = cl_messages.CreateValidationFailureMessage(self.pre_cq_trybot,
+                                                       change, suspects,
+                                                       messages, sanity,
+                                                       infra_fail, lab_fail,
+                                                       no_stat, retry)
       self.SendNotification(change, '%(details)s', details=msg)
     if retry:
       self.MarkForgiven(change)
@@ -1897,20 +1897,6 @@ class ValidationPool(object):
                lab_fail, no_stat] for change in candidates]
     parallel.RunTasksInProcessPool(self._ChangeFailedValidation, inputs)
 
-  def _GetCLStatusURL(self, change):
-    """Construct and return the CL Status URL.
-
-    Args:
-      change: GerritPatch instance to query CL status.
-
-    Returns:
-      The URL string of the CL Status page.
-    """
-    host = (constants.INTERNAL_GERRIT_HOST if change.internal
-            else constants.EXTERNAL_GERRIT_HOST)
-    return '%s/%s/%s/%s' % (CL_STATUS_URL_PREFIX, host, change.gerrit_number,
-                            change.patch_number)
-
   def HandleApplySuccess(self, change, build_log=None):
     """Handler for when Paladin successfully applies (picks up) a change.
 
@@ -1922,13 +1908,9 @@ class ValidationPool(object):
       action_history: List of CLAction instances.
       build_log: The URL to the build log.
     """
-    cl_status_url = self._GetCLStatusURL(change)
     msg = ('%(queue)s has picked up your change.\n'
-           'You can follow along at %(build_log)s.\n'
-           'You can find the CL status and build information at '
-           '%(cl_status_url)s.')
-    self.SendNotification(change, msg, build_log=build_log,
-                          cl_status_url=cl_status_url)
+           'You can follow along at %(build_log)s.\n')
+    self.SendNotification(change, msg, build_log=build_log)
 
   # Note: This function doesn't need to be a ValidationPool instance method.
   def UpdateCLPreCQStatus(self, change, status):

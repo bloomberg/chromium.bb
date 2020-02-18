@@ -13,9 +13,12 @@ namespace quic {
 QuicSendControlStream::QuicSendControlStream(
     QuicStreamId id,
     QuicSession* session,
+    uint64_t qpack_maximum_dynamic_table_capacity,
     uint64_t max_inbound_header_list_size)
     : QuicStream(id, session, /*is_static = */ true, WRITE_UNIDIRECTIONAL),
       settings_sent_(false),
+      qpack_maximum_dynamic_table_capacity_(
+          qpack_maximum_dynamic_table_capacity),
       max_inbound_header_list_size_(max_inbound_header_list_size) {}
 
 void QuicSendControlStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
@@ -26,7 +29,7 @@ void QuicSendControlStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
       ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-void QuicSendControlStream::SendSettingsFrame() {
+void QuicSendControlStream::MaybeSendSettingsFrame() {
   if (settings_sent_) {
     return;
   }
@@ -40,7 +43,11 @@ void QuicSendControlStream::SendSettingsFrame() {
                     nullptr);
 
   SettingsFrame settings;
-  settings.values[kSettingsMaxHeaderListSize] = max_inbound_header_list_size_;
+  settings.values[SETTINGS_MAX_HEADER_LIST_SIZE] =
+      max_inbound_header_list_size_;
+  settings.values[SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+      qpack_maximum_dynamic_table_capacity_;
+
   std::unique_ptr<char[]> buffer;
   QuicByteCount frame_length =
       encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -53,15 +60,25 @@ void QuicSendControlStream::SendSettingsFrame() {
 
 void QuicSendControlStream::WritePriority(const PriorityFrame& priority) {
   QuicConnection::ScopedPacketFlusher flusher(session()->connection());
-  if (!settings_sent_) {
-    SendSettingsFrame();
-  }
+  MaybeSendSettingsFrame();
   std::unique_ptr<char[]> buffer;
   QuicByteCount frame_length =
       encoder_.SerializePriorityFrame(priority, &buffer);
   QUIC_DVLOG(1) << "Control Stream " << id() << " is writing " << priority;
   WriteOrBufferData(QuicStringPiece(buffer.get(), frame_length), false,
                     nullptr);
+}
+
+void QuicSendControlStream::SendMaxPushIdFrame(PushId max_push_id) {
+  QuicConnection::ScopedPacketFlusher flusher(session()->connection());
+
+  MaybeSendSettingsFrame();
+  MaxPushIdFrame frame;
+  frame.push_id = max_push_id;
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount frame_length = encoder_.SerializeMaxPushIdFrame(frame, &buffer);
+  WriteOrBufferData(QuicStringPiece(buffer.get(), frame_length),
+                    /*fin = */ false, nullptr);
 }
 
 }  // namespace quic

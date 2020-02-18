@@ -16,9 +16,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
-import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsSessionToken;
-import android.support.customtabs.TrustedWebUtils;
+
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.TrustedWebUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
@@ -26,6 +27,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -313,9 +315,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         }
 
         // Use a custom tab with a unique theme for payment handlers.
-        if (intent.getIntExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                    CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT)
-                == CustomTabIntentDataProvider.CustomTabsUiType.PAYMENT_REQUEST) {
+        if (intent.getIntExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT)
+                == CustomTabsUiType.PAYMENT_REQUEST) {
             newIntent.setClassName(context, PaymentHandlerActivity.class.getName());
         }
 

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/payments/core/error_logger.h"
 #include "net/http/http_response_headers.h"
@@ -84,7 +84,7 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
 
  private:
   GURL test_url_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   PaymentManifestDownloader downloader_;
@@ -381,7 +381,7 @@ class WebAppManifestDownloaderTest : public testing::Test {
 
  private:
   GURL test_url_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   PaymentManifestDownloader downloader_;

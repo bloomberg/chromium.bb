@@ -13,8 +13,7 @@
 namespace extensions {
 
 // Opens new terminal process. Returns the new terminal id.
-class TerminalPrivateOpenTerminalProcessFunction
-    : public UIThreadExtensionFunction {
+class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.openTerminalProcess",
                              TERMINALPRIVATE_OPENTERMINALPROCESS)
@@ -34,6 +33,8 @@ class TerminalPrivateOpenTerminalProcessFunction
   using OpenProcessCallback =
       base::Callback<void(bool success, const std::string& terminal_id)>;
 
+  std::string UserIdHash();
+  void OpenProcess(const std::vector<std::string> arguments);
   void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
                                 const OpenProcessCallback& callback,
                                 const std::vector<std::string>& arguments,
@@ -43,7 +44,7 @@ class TerminalPrivateOpenTerminalProcessFunction
 
 // Send input to the terminal process specified by the terminal ID, which is set
 // as an argument.
-class TerminalPrivateSendInputFunction : public UIThreadExtensionFunction {
+class TerminalPrivateSendInputFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.sendInput",
                              TERMINALPRIVATE_SENDINPUT)
@@ -60,8 +61,7 @@ class TerminalPrivateSendInputFunction : public UIThreadExtensionFunction {
 };
 
 // Closes terminal process.
-class TerminalPrivateCloseTerminalProcessFunction
-    : public UIThreadExtensionFunction {
+class TerminalPrivateCloseTerminalProcessFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.closeTerminalProcess",
                              TERMINALPRIVATE_CLOSETERMINALPROCESS)
@@ -77,8 +77,7 @@ class TerminalPrivateCloseTerminalProcessFunction
 };
 
 // Called by extension when terminal size changes.
-class TerminalPrivateOnTerminalResizeFunction
-    : public UIThreadExtensionFunction {
+class TerminalPrivateOnTerminalResizeFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.onTerminalResize",
                              TERMINALPRIVATE_ONTERMINALRESIZE)
@@ -95,7 +94,7 @@ class TerminalPrivateOnTerminalResizeFunction
   void RespondOnUIThread(bool success);
 };
 
-class TerminalPrivateAckOutputFunction : public UIThreadExtensionFunction {
+class TerminalPrivateAckOutputFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.ackOutput",
                              TERMINALPRIVATE_ACKOUTPUT)

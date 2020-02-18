@@ -33,7 +33,10 @@
 
 #include "base/macros.h"
 #include "cc/paint/paint_canvas.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -173,6 +176,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     return r;
   }
   float WindowToViewportScalar(const float s) const override { return s; }
+  float WindowToViewportScalar(LocalFrame*, const float s) const override {
+    return s;
+  }
   WebScreenInfo GetScreenInfo() const override { return WebScreenInfo(); }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
 
@@ -232,6 +238,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
                                              bool visible) override {}
 
+  void RequestBeginMainFrameNotExpected(LocalFrame& frame,
+                                        bool request) override {}
+  int GetLayerTreeId(LocalFrame& frame) override { return 0; }
+
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
@@ -280,23 +290,25 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidFinishLoad() override {}
   void DispatchDidChangeThemeColor() override {}
 
-  void BeginNavigation(const ResourceRequest&,
-                       network::mojom::RequestContextFrameType,
-                       Document* origin_document,
-                       DocumentLoader*,
-                       WebNavigationType,
-                       NavigationPolicy,
-                       bool,
-                       WebFrameLoadType,
-                       bool,
-                       WebTriggeringEventInfo,
-                       HTMLFormElement*,
-                       ContentSecurityPolicyDisposition,
-                       mojom::blink::BlobURLTokenPtr,
-                       base::TimeTicks,
-                       const String&,
-                       WebContentSecurityPolicyList,
-                       mojom::blink::NavigationInitiatorPtr) override;
+  void BeginNavigation(
+      const ResourceRequest&,
+      network::mojom::RequestContextFrameType,
+      Document* origin_document,
+      DocumentLoader*,
+      WebNavigationType,
+      NavigationPolicy,
+      bool,
+      WebFrameLoadType,
+      bool,
+      WebTriggeringEventInfo,
+      HTMLFormElement*,
+      ContentSecurityPolicyDisposition,
+      mojo::PendingRemote<mojom::blink::BlobURLToken>,
+      base::TimeTicks,
+      const String&,
+      WebContentSecurityPolicyList,
+      network::mojom::IPAddressSpace,
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 
@@ -328,7 +340,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void TransitionToCommittedForNewPage() override {}
 
-  bool NavigateBackForward(int offset) const override { return false; }
+  bool NavigateBackForward(int offset, bool from_script) const override {
+    return false;
+  }
   void DidDisplayInsecureContent() override {}
   void DidContainInsecureFormAction() override {}
   void DidRunInsecureContent(const SecurityOrigin*, const KURL&) override {}
@@ -352,8 +366,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) override;
+      WebMediaPlayerClient*) override;
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) override;
 
@@ -364,9 +377,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void RunScriptsAtDocumentReady(bool) override {}
   void RunScriptsAtDocumentIdle() override {}
 
-  void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) override {}
-  void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) override {
-  }
+  void DidCreateScriptContext(v8::Local<v8::Context>,
+                              int32_t world_id) override {}
+  void WillReleaseScriptContext(v8::Local<v8::Context>,
+                                int32_t world_id) override {}
   bool AllowScriptExtensions() override { return false; }
 
   void VisibilityChanged(blink::mojom::FrameVisibility) override {}
@@ -378,6 +392,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() override;
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle) override;
+
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override {
+    return GetEmptyBrowserInterfaceBroker();
+  }
 
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override {
     return nullptr;
@@ -416,12 +434,15 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   Frame* FindFrame(const AtomicString& name) const override;
 
+  void EvictFromBackForwardCache() override {}
+
  protected:
   // Not owned
   WebTextCheckClient* text_check_client_;
 
   service_manager::InterfaceProvider interface_provider_;
-  mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
+  mojo::Remote<mojom::blink::DocumentInterfaceBroker>
+      document_interface_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyLocalFrameClient);
 };
@@ -449,13 +470,12 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,
                 bool initiator_frame_is_ad,
-                mojom::blink::BlobURLTokenPtr) override {}
+                mojo::PendingRemote<mojom::blink::BlobURLToken>) override {}
   unsigned BackForwardLength() override { return 0; }
   void CheckCompleted() override {}
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
-                          LocalFrame* source_frame,
-                          bool has_user_gesture) const override {}
+                          LocalFrame* source_frame) const override {}
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& transformed_frame_rect) override {}
   void UpdateRemoteViewportIntersection(

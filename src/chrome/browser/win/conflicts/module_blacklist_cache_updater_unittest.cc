@@ -23,7 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
@@ -100,8 +100,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
   ModuleBlacklistCacheUpdaterTest()
       : dll1_(kDllPath1),
         dll2_(kDllPath2),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+        task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         user_data_dir_override_(chrome::DIR_USER_DATA),
         module_list_filter_(CreateModuleListFilter()),
         module_blacklist_cache_path_(
@@ -128,12 +127,12 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
         false);
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
     // The expired timer callback posts a task to update the cache. Wait for it
     // to finish.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   base::FilePath& module_blacklist_cache_path() {
@@ -184,7 +183,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
     on_cache_updated_callback_invoked_ = true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
   base::ScopedPathOverride user_data_dir_override_;
 

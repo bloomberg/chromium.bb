@@ -11,7 +11,7 @@
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +30,7 @@ class FakeFileSystemTest : public ::testing::Test {
         std::make_unique<FakeFileSystem>(fake_drive_service_.get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<FakeDriveService> fake_drive_service_;
   std::unique_ptr<FakeFileSystem> fake_file_system_;
 };

@@ -1,5 +1,5 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2019 The Chromium Authors.All rights reserved.
+# Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
@@ -30,6 +30,7 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_public_java",
     "//chrome/android/public/profiles:java",
@@ -42,6 +43,8 @@ android_library("java") {
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_collections_java",
+    "//third_party/android_deps:com_android_support_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_gridlayout_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
@@ -70,6 +73,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantPeekHeightCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantSnackbar.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTagsForTesting.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTextUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryImpl.java",
@@ -114,20 +118,23 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDrawable.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayEventFilter.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantChoiceList.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestBinder.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestContactDetailsSection.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestCoordinator.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestNativeDelegate.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestPaymentMethodSection.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestSection.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestShippingAddressSection.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestTermsSection.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantVerticalExpander.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantVerticalExpanderAccordion.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantChoiceList.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataBinder.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantContactDetailsSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataCoordinator.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataDelegate.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantLoginChoice.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantLoginSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataNativeDelegate.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantPaymentMethodSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataModel.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantShippingAddressSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantTermsSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantVerticalExpander.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantVerticalExpanderAccordion.java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 generate_jni("jni_headers") {
@@ -146,8 +153,8 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBoxModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestNativeDelegate.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataModel.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataNativeDelegate.java",
   ]
 }
 
@@ -169,9 +176,11 @@ android_library("autofill_assistant_java_test_support") {
   deps = [
     ":java",
     ":test_support_jni_headers",
+    "//base:jni_java",
     "//components/autofill_assistant/browser:proto_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 android_library("test_java") {
@@ -185,8 +194,8 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantHeaderUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantOverlayUiTest.java",
-    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestTestHelper.java",
-    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantCollectUserDataTestHelper.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantCollectUserDataUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinatorTest.java",
@@ -208,6 +217,7 @@ android_library("test_java") {
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
+    "//third_party/android_deps:com_android_support_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",

@@ -33,7 +33,7 @@ _CONFIG = [
             'base::AdoptRef',
             'base::AutoReset',
             'base::Contains',
-            'base::CreateSequencedTaskRunnerWithTraits',
+            'base::CreateSequencedTaskRunner',
             'base::DefaultTickClock',
             'base::ElapsedTimer',
             'base::File',
@@ -182,6 +182,7 @@ _CONFIG = [
             'base::TaskPriority',
             'base::TaskShutdownBehavior',
             'base::WithBaseSyncPrimitives',
+            'base::ThreadPool',
 
             # Byte order
             'base::ByteSwap',
@@ -205,7 +206,7 @@ _CONFIG = [
             # PartitionAlloc
             'base::PartitionFree',
 
-            # For MessageLoop::TaskObserver.
+            # For TaskObserver.
             'base::PendingTask',
 
             # Time
@@ -218,6 +219,8 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
+            'cc::PaintShader',
+            'cc::PaintWorkletInput',
             'cc::NodeId',
 
             # Chromium geometry types.
@@ -251,12 +254,13 @@ _CONFIG = [
             # cc::Layer helper data structs.
             'cc::ElementId',
             'cc::LayerPositionConstraint',
-            'cc::LayerStickyPositionConstraint',
             'cc::OverscrollBehavior',
             'cc::Scrollbar',
             'cc::ScrollbarLayerInterface',
             'cc::ScrollbarOrientation',
             'cc::ScrollbarPart',
+            'cc::StickyPositionConstraint',
+            'cc::StickyPositionNodeData',
             'cc::ViewportLayers',
 
             # cc::Layer helper enums.
@@ -297,6 +301,9 @@ _CONFIG = [
             'gfx::ScrollOffset',
             'ui::input_types::ScrollGranularity',
 
+            # base/util/type_safety/strong_alias.h
+            'util::StrongAlias',
+
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',
@@ -320,6 +327,7 @@ _CONFIG = [
             'layout_invalidation_reason::.+',
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
+            'native_file_system_error::.+',
             'network_utils::.+',
             'origin_trials::.+',
             'paint_filter_builder::.+',
@@ -364,6 +372,10 @@ _CONFIG = [
             # Some test helpers live in the blink::test namespace.
             'test::.+',
 
+            # Some test helpers that live in the blink::frame_test_helpers
+            # namespace.
+            'frame_test_helpers::.+',
+
             # Blink uses Mojo, so it needs mojo::Binding, mojo::InterfacePtr, et
             # cetera, as well as generated Mojo bindings.
             # Note that the Mojo callback helpers are explicitly forbidden:
@@ -373,9 +385,6 @@ _CONFIG = [
             'mojo_base::BigBuffer.*',
             '(?:.+::)?mojom::.+',
             "service_manager::BinderRegistry",
-            # TODO(dcheng): Remove this once Connector isn't needed in Blink
-            # anymore.
-            'service_manager::Connector',
             'service_manager::InterfaceProvider',
             'service_manager::ServiceFilter',
 
@@ -517,6 +526,7 @@ _CONFIG = [
         'paths': ['third_party/blink/renderer/core/page'],
         'allowed': [
             'touch_adjustment::.+',
+            'viz::FrameSinkId',
         ],
     },
     {
@@ -554,6 +564,12 @@ _CONFIG = [
         'paths': ['third_party/blink/renderer/core/inspector/inspector_performance_agent.cc'],
         'allowed': [
             'base::subtle::TimeTicksNowIgnoringOverride',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/workers/worker_thread.cc'],
+        'allowed': [
+            'base::ScopedAllowBaseSyncPrimitives',
         ],
     },
     {
@@ -662,19 +678,37 @@ _CONFIG = [
             'base::AutoLock',
             'base::Hash',
             'base::Lock',
+            'base::StringPrintf',
             'base::TaskRunner',
             # TODO(crbug.com/704136): Switch to using frame-based task runners.
             'base::ThreadTaskRunnerHandle',
+            'base::subtle::Atomic32',
+            'base::subtle::Acquire_Load',
+            'base::subtle::NoBarrier_.+',
+            'base::subtle::Release_Store',
             'cc::SkiaPaintCanvas',
             'cc::UpdateSubmissionStateCB',
             'cc::VideoFrameProvider',
             'cc::VideoLayer',
             'gpu::gles2::GLES2Interface',
             'libyuv::.+',
+            'media_constraints::.+',
+            "rtc::RefCountedObject",
+            'rtc::TaskQueue',
+            'rtc::scoped_refptr',
             'viz::.+',
+            'webrtc::Aec3ConfigFromJsonString',
+            'webrtc::AudioProcessingBuilder',
+            'webrtc::AudioProcessing',
+            'webrtc::AudioProcessorInterface',
             'webrtc::AudioTrackInterface',
-            'webrtc::VideoTrackInterface',
+            'webrtc::Config',
+            'webrtc::EchoCanceller3Config',
+            'webrtc::EchoCanceller3Factory',
+            'webrtc::ExperimentalAgc',
             'webrtc::MediaStreamTrackInterface',
+            'webrtc::TypingDetection',
+            'webrtc::VideoTrackInterface',
         ]
     },
     {
@@ -706,6 +740,9 @@ _CONFIG = [
             'media::.+',
             'rtc::scoped_refptr',
             'webrtc::AudioSourceInterface',
+            'webrtc::AudioTransport',
+            'webrtc::kAdmMaxDeviceNameSize',
+            'webrtc::kAdmMaxGuidSize',
         ]
     },
     {

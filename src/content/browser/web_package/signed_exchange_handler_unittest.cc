@@ -17,10 +17,11 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_test_utils.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
@@ -183,7 +184,7 @@ class SignedExchangeHandlerTest
 
   void SetUp() override {
     original_client_ = SetBrowserClientForTesting(&browser_client_);
-    SignedExchangeHandler::SetVerificationTimeForTesting(
+    signed_exchange_utils::SetVerificationTimeForTesting(
         base::Time::UnixEpoch() +
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
     feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
@@ -210,7 +211,7 @@ class SignedExchangeHandlerTest
     }
     SignedExchangeHandler::SetNetworkContextForTesting(nullptr);
     network::NetworkContext::SetCertVerifierForTesting(nullptr);
-    SignedExchangeHandler::SetVerificationTimeForTesting(
+    signed_exchange_utils::SetVerificationTimeForTesting(
         base::Optional<base::Time>());
     SetBrowserClientForTesting(original_client_);
   }
@@ -341,7 +342,7 @@ class SignedExchangeHandlerTest
     while (!read_header()) {
       while (source_->awaiting_completion())
         source_->CompleteNextRead();
-      browser_thread_bundle_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
   }
 
@@ -400,7 +401,7 @@ class SignedExchangeHandlerTest
   }
 
   base::test::ScopedFeatureList feature_list_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestBrowserClient browser_client_;
   ContentBrowserClient* original_client_;
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;
@@ -564,8 +565,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
   ReadStream(source_, nullptr);
 }
 
-TEST_P(SignedExchangeHandlerTest,
-       CertIssuedAfterMay2019AndValidMoreThan90DaysShouldBeRejected) {
+TEST_P(SignedExchangeHandlerTest, CertValidMoreThan90DaysShouldBeRejected) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents(
@@ -586,60 +586,10 @@ TEST_P(SignedExchangeHandlerTest,
 }
 
 TEST_P(SignedExchangeHandlerTest,
-       CertIssuedAfterMay2019AndValidFor90DaysShouldBeAccepted) {
-  SignedExchangeHandler::SetVerificationTimeForTesting(
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
-  mock_cert_fetcher_factory_->ExpectFetch(
-      GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents(
-          "test.example.org-valid-for-90-days.public.pem.cbor"));
-  SetupMockCertVerifier("prime256v1-sha256-valid-for-90-days.public.pem",
-                        CreateCertVerifyResult());
-  SetSourceStreamContents("test.example.org_cert_valid_for_90_days.sxg");
-
-  CreateSignedExchangeHandler(CreateTestURLRequestContext());
-  WaitForHeader();
-
-  ASSERT_TRUE(read_header());
-  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
-  EXPECT_EQ(net::OK, error());
-  std::string payload;
-  int rv = ReadPayloadStream(&payload);
-  std::string expected_payload = GetTestFileContents("test.html");
-
-  EXPECT_EQ(expected_payload, payload);
-  EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
-}
-
-TEST_P(SignedExchangeHandlerTest,
-       CertValidMoreThan90DaysShouldBeRejectedAfterAugust2019) {
-  SignedExchangeHandler::SetVerificationTimeForTesting(
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
-  mock_cert_fetcher_factory_->ExpectFetch(
-      GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("test.example.org.public.pem.cbor"));
-  SetupMockCertVerifier("prime256v1-sha256.public.pem",
-                        CreateCertVerifyResult());
-  SetSourceStreamContents("test.example.org_test.sxg");
-
-  CreateSignedExchangeHandler(CreateTestURLRequestContext());
-  WaitForHeader();
-
-  ASSERT_TRUE(read_header());
-  EXPECT_EQ(SignedExchangeLoadResult::kCertValidityPeriodTooLong, result());
-  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
-  EXPECT_EQ(kTestSxgInnerURL, inner_url());
-  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
-  ReadStream(source_, nullptr);
-}
-
-TEST_P(SignedExchangeHandlerTest,
        CertValidMoreThan90DaysShouldBeAllowedByIgnoreErrorsSPKIListFlag) {
   SetIgnoreCertificateErrorsSPKIList(kPEMECDSAP256SPKIHash);
 
-  SignedExchangeHandler::SetVerificationTimeForTesting(
+  signed_exchange_utils::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
       base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
   mock_cert_fetcher_factory_->ExpectFetch(

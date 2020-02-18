@@ -268,6 +268,10 @@ target(link_target_type, "gles2_sources") {
 
   if (use_dawn) {
     sources += [
+      "dawn_platform.cc",
+      "dawn_platform.h",
+      "dawn_service_memory_transfer_service.cc",
+      "dawn_service_memory_transfer_service.h",
       "webgpu_decoder_impl.cc",
       "webgpu_decoder_impl.h",
     ]
@@ -305,6 +309,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config",
     "//gpu/ipc/common:surface_handle_type",
+    "//gpu/ipc/common:vulkan_ycbcr_info",
     "//gpu/vulkan:buildflags",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",
@@ -320,10 +325,6 @@ target(link_target_type, "gles2_sources") {
     "//ui/gl:buildflags",
     "//ui/gl/init",
   ]
-
-  if (use_dawn) {
-    deps += [ "//third_party/dawn:libdawn_native" ]
-  }
 
   if (enable_vulkan) {
     deps += [
@@ -341,6 +342,13 @@ target(link_target_type, "gles2_sources") {
         "external_vk_image_gl_representation.h",
         "external_vk_image_skia_representation.cc",
         "external_vk_image_skia_representation.h",
+      ]
+    }
+
+    if (is_linux && use_dawn) {
+      sources += [
+        "external_vk_image_dawn_representation.cc",
+        "external_vk_image_dawn_representation.h",
       ]
     }
   }
@@ -376,6 +384,7 @@ target(link_target_type, "gles2_sources") {
       "ahardwarebuffer_utils.h",
       "shared_image_backing_factory_ahardwarebuffer.cc",
       "shared_image_backing_factory_ahardwarebuffer.h",
+      "stream_texture_shared_image_interface.h",
     ]
 
     # TODO(cblume): http://crbug.com/911313
@@ -394,8 +403,36 @@ target(link_target_type, "gles2_sources") {
 
   if (is_win) {
     sources += [
-      "swap_chain_factory_dxgi.cc",
-      "swap_chain_factory_dxgi.h",
+      "shared_image_backing_factory_d3d.cc",
+      "shared_image_backing_factory_d3d.h",
+    ]
+  }
+}
+
+if (is_android) {
+  component("shared_image_video") {
+    sources = [
+      "shared_image_video.cc",
+      "shared_image_video.h",
+    ]
+    configs += [ "//gpu:gpu_gles2_implementation" ]
+    deps = [
+      "//base",
+      "//components/viz/common:resource_format_utils",
+      "//components/viz/common:vulkan_context_provider",
+      "//gpu/command_buffer/service:gles2_sources",
+      "//gpu/command_buffer/service:service_sources",
+      "//gpu/ipc/common:android_texture_owner",
+      "//gpu/ipc/common:common",
+      "//ui/gl",
+    ]
+    if (enable_vulkan) {
+      deps += [ "//gpu/vulkan:vulkan" ]
+    }
+
+    visibility = [
+      "//gpu/*",
+      "//media/gpu:gpu",
     ]
   }
 }

@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -30,10 +31,12 @@
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
+#include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -65,6 +68,22 @@ const char kSmallestDimensionHistogramId[] =
 
 const char kPeakWindowdPercentHistogramId[] =
     "PageLoad.Clients.Ads.Cpu.FullPage.PeakWindowedPercent";
+
+const char kHeavyAdInterventionTypeHistogramId[] =
+    "PageLoad.Clients.Ads.HeavyAds.InterventionType2";
+
+const char kHttpOkResponseHeader[] =
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/html; charset=utf-8\r\n"
+    "\r\n";
+
+void LoadLargeResource(net::test_server::ControllableHttpResponse* response,
+                       int bytes) {
+  response->WaitForRequest();
+  response->Send(kHttpOkResponseHeader);
+  response->Send(std::string(bytes, ' '));
+  response->Done();
+}
 
 }  // namespace
 
@@ -614,19 +633,28 @@ class AdsPageLoadMetricsTestWaiter
   int expected_minimum_ad_resources_ = 0;
 };
 
+// This test harness does not start the test server and allows
+// ControllableHttpResponses to be declared.
 class AdsPageLoadMetricsObserverResourceBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
  public:
   AdsPageLoadMetricsObserverResourceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(subresource_filter::kAdTagging);
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{subresource_filter::kAdTagging, {}},
+         {features::kHeavyAdIntervention, {}},
+         {features::kHeavyAdBlocklist, {{"host-threshold", "1"}}}},
+        {});
   }
 
   ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+    content::SetupCrossSiteRedirector(embedded_test_server());
     SetRulesetWithRules(
         {subresource_filter::testing::CreateSuffixRule("ad_script.js"),
-         subresource_filter::testing::CreateSuffixRule("ad_script_2.js")});
+         subresource_filter::testing::CreateSuffixRule("ad_script_2.js"),
+         subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -649,15 +677,12 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        ReceivedAdResources) {
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ad_tagging");
-  content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
   // Two subresources should have been reported as ads.
   waiter->AddMinimumAdResourceExpectation(2);
   waiter->Wait();
@@ -666,9 +691,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 // Main resources for adframes are counted as ad resources.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        ReceivedMainResourceAds) {
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ad_tagging");
-  content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
@@ -676,8 +698,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("createAdFrame('frame_factory.html', '');"),
       base::NullCallback());
@@ -690,9 +712,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 // Subframe navigations report ad resources correctly.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        ReceivedSubframeNavigationAds) {
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ad_tagging");
-  content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
@@ -700,16 +719,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("createAdFrame('frame_factory.html', 'test');"),
       base::NullCallback());
   waiter->AddMinimumAdResourceExpectation(6);
   waiter->Wait();
-  NavigateIframeToURL(
-      web_contents(), "test",
-      embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
+  NavigateIframeToURL(web_contents(), "test",
+                      embedded_test_server()->GetURL(
+                          "foo.com", "/ad_tagging/frame_factory.html"));
   // The new subframe and its three subresources should be reported
   // as ads.
   waiter->AddMinimumAdResourceExpectation(10);
@@ -721,10 +740,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        ReceivedAdResourceMetrics) {
   base::HistogramTester histogram_tester;
 
-  const char kHttpResponseHeader[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html; charset=utf-8\r\n"
-      "\r\n";
   auto main_html_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
           embedded_test_server(), "/mock_page.html",
@@ -750,14 +765,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 
   main_html_response->WaitForRequest();
-  main_html_response->Send(kHttpResponseHeader);
+  main_html_response->Send(kHttpOkResponseHeader);
   main_html_response->Send(
       "<html><body></body><script src=\"ad_script.js\"></script></html>");
   main_html_response->Send(std::string(1024, ' '));
   main_html_response->Done();
 
   ad_script_response->WaitForRequest();
-  ad_script_response->Send(kHttpResponseHeader);
+  ad_script_response->Send(kHttpOkResponseHeader);
   ad_script_response->Send(
       "var iframe = document.createElement(\"iframe\");"
       "iframe.src =\"iframe.html\";"
@@ -766,14 +781,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ad_script_response->Done();
 
   iframe_response->WaitForRequest();
-  iframe_response->Send(kHttpResponseHeader);
+  iframe_response->Send(kHttpOkResponseHeader);
   iframe_response->Send("<html><script src=\"vanilla_script.js\"></script>");
   iframe_response->Send(std::string(2000, ' '));
   iframe_response->Send("</html>");
   iframe_response->Done();
 
   vanilla_script_response->WaitForRequest();
-  vanilla_script_response->Send(kHttpResponseHeader);
+  vanilla_script_response->Send(kHttpOkResponseHeader);
   vanilla_script_response->Send(std::string(1024, ' '));
   waiter->AddMinimumNetworkBytesExpectation(5000);
   waiter->Wait();
@@ -801,26 +816,17 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        IncompleteResourcesRecordedToFrameMetrics) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  SetRulesetWithRules(
-      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ads_observer");
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
-  const char kHttpResponseHeader[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html; charset=utf-8\r\n"
-      "\r\n";
   auto incomplete_resource_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/incomplete_resource.js",
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
           true /*relative_url_is_prefix*/);
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
 
   browser()->OpenURL(content::OpenURLParams(
-      embedded_test_server()->GetURL("/ad_with_incomplete_resource.html"),
+      embedded_test_server()->GetURL(
+          "/ads_observer/ad_with_incomplete_resource.html"),
       content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PAGE_TRANSITION_TYPED, false));
 
@@ -830,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Ad resource will not finish loading but should be reported to metrics.
   incomplete_resource_response->WaitForRequest();
-  incomplete_resource_response->Send(kHttpResponseHeader);
+  incomplete_resource_response->Send(kHttpOkResponseHeader);
   incomplete_resource_response->Send(std::string(2048, ' '));
 
   // Wait for the resource update to be received for the incomplete response.
@@ -865,21 +871,194 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytesName, 0);
 }
 
+// Verifies that the frame is navigated to the intervention page when a
+// heavy ad intervention triggers.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionEnabled_ErrorPageLoaded) {
+  base::HistogramTester histogram_tester;
+  auto incomplete_resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Create a navigation observer that will watch for the intervention to
+  // navigate the frame.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver same_tab_observer(web_contents, 2);
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  GURL url = embedded_test_server()->GetURL(
+      "/ads_observer/ad_with_incomplete_resource.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(incomplete_resource_response.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes);
+
+  // Wait for the resource update to be received for the large resource.
+  waiter->AddMinimumNetworkBytesExpectation(
+      heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->Wait();
+
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
+
+  // Wait for the intervention page navigation to finish on the frame.
+  same_tab_observer.Wait();
+
+  // Check that the ad frame was navigated to the intervention page.
+  EXPECT_FALSE(same_tab_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
+            same_tab_observer.last_net_error_code());
+}
+
+// Check that when the heavy ad feature is disabled we don't navigate
+// the frame.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionDisabled_ErrorPageNotLoaded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+  base::HistogramTester histogram_tester;
+  auto incomplete_resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  GURL url = embedded_test_server()->GetURL(
+      "/ads_observer/ad_with_incomplete_resource.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(incomplete_resource_response.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes);
+
+  // Wait for the resource update to be received for the large resource.
+  waiter->AddMinimumNetworkBytesExpectation(
+      heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->Wait();
+
+  // We can't check whether the navigation didn't occur because the error page
+  // load is not synchronous. Instead check that we didn't log intervention UMA
+  // that is always recorded when the intervention occurs.
+  histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
+}
+
+// Check that we don't activate a HeavyAdIntervention field trial if we don't
+// have a heavy ad.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionNoHeavyAd_FieldTrialNotActive) {
+  base::HistogramTester histogram_tester;
+
+  auto incomplete_resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  GURL url = embedded_test_server()->GetURL(
+      "/ads_observer/ad_with_incomplete_resource.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Load a resource not large enough to trigger the intervention.
+  LoadLargeResource(incomplete_resource_response.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes / 2);
+
+  // Wait for the resource update to be received for the large resource.
+  waiter->AddMinimumNetworkBytesExpectation(
+      heavy_ad_thresholds::kMaxNetworkBytes / 2);
+  waiter->Wait();
+
+  histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
+
+  // Verify that the trial is not activated if no heavy ads are seen.
+  EXPECT_FALSE(base::FieldTrialList::IsTrialActive(
+      base::FeatureList::GetFieldTrial(features::kHeavyAdIntervention)
+          ->trial_name()));
+}
+
+// Verifies that when the blacklist is at threshold, the heavy ad intervention
+// does not trigger.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionBlacklistFull_InterventionBlocked) {
+  base::HistogramTester histogram_tester;
+  auto large_resource_1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          false /*relative_url_is_prefix*/);
+  auto large_resource_2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          false /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Create a navigation observer that will watch for the intervention to
+  // navigate the frame.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver first_frame_observer(web_contents, 3);
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents,
+      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(large_resource_1.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->AddMinimumNetworkBytesExpectation(
+      heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->Wait();
+
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
+
+  // Wait for the intervention page navigation to finish on the frame.
+  first_frame_observer.Wait();
+
+  // Check that the ad frame was navigated to the intervention page.
+  EXPECT_FALSE(first_frame_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
+            first_frame_observer.last_net_error_code());
+
+  EXPECT_TRUE(ExecJs(
+      web_contents,
+      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(large_resource_2.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->AddMinimumNetworkBytesExpectation(
+      2 * heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->Wait();
+
+  // Check that the intervention did not trigger on this frame.
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
+}
+
 // Verify that UKM metrics are recorded correctly.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        RecordedUKMMetrics) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ad_tagging");
-  content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
+  GURL url = embedded_test_server()->GetURL("foo.com",
+                                            "/ad_tagging/frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), url);
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"),
@@ -1081,4 +1260,38 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
   EXPECT_LE(min_percent, samples.front().min);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       DisallowedAdFrames_NotMeasured) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::mojom::ActivationLevel::kEnabled,
+      subresource_filter::ActivationScope::ALL_SITES));
+
+  // cross_site_iframe_factory loads URLs like:
+  // http://b.com:40919/cross_site_iframe_factory.html?b()
+  SetRulesetToDisallowURLsWithPathSuffix("b()");
+  const GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b,c,d)"));
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // One favicon resource and 2 resources for frames a,c,d
+  waiter->AddPageExpectation(
+      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kLoadEvent);
+  waiter->Wait();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Check that adframes are not included in UKM's or UMA metrics.
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(0u, entries.size());
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0);
 }

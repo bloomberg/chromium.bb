@@ -25,19 +25,27 @@
 # usually to register additional checkers.
 load-plugins=chromite.cli.cros.lint
 
+# Configure quote preferences.
+string-quote = single-avoid-escape
+triple-quote = double
+docstring-quote = double
+
 
 [MESSAGES CONTROL]
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple times.
-# R9301: logging is deprecated. Use "from chromite.lib import cros_logging as
-# logging" to import chromite/lib/cros_logging
+# cros-logging-import: logging is deprecated. Use "from chromite.lib import
+#   cros_logging as logging" to import chromite/lib/cros_logging.
+# round-builtin: We omit this as all our usage of round() is OK with either
+#   Python 2 or 3 behavior (and probably leans towards 3 anyways).
 enable=
     cros-logging-import,
     apply-builtin,
     backtick,
     bad-python3-import,
+    basestring-builtin,
     buffer-builtin,
     cmp-builtin,
     cmp-method,
@@ -69,9 +77,11 @@ enable=
     long-builtin,
     map-builtin-not-iterating,
     metaclass-assignment,
+    next-method-called,
     next-method-defined,
     nonzero-method,
     oct-method,
+    old-division,
     old-raise-syntax,
     parameter-unpacking,
     print-statement,
@@ -85,6 +95,7 @@ enable=
     standarderror-builtin,
     sys-max-int,
     unichr-builtin,
+    unicode-builtin,
     unpacking-in-except,
     using-cmp-argument,
     xrange-builtin,
@@ -102,7 +113,6 @@ enable=
 # --disable=W".
 # We leave many of the style warnings to judgement/peer review.
 # TODO: We need to re-enable broad-except, but requires cleaning up our code.
-# TODO: Re-enable wrong-import-order/wrong-import-position.
 # TODO: Re-enable redefined-variable-type.
 disable=
     broad-except,
@@ -128,8 +138,6 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
-    wrong-import-order,
-    wrong-import-position,
 
 
 [REPORTS]
@@ -345,16 +353,30 @@ max-parents=10
 [IMPORTS]
 
 # Deprecated modules which should not be used, separated by a comma.
+# __builtin__: Use the 'six.moves.builtins' module instead
+#   (or 'builtins' in Python 3).
 # Bastion: Dropped in Python 3.
+# ConfigParser: Use the 'six.moves.configparser' module instead
+#   (or 'configparser' in Python 3).
+# cPickle: Use the 'pickle' module instead.
+# exceptions: Dropped in Python 3.
+# md5: Use the 'hashlib' module instead.
 # mox: Use the 'mock' module instead.
 # optparse: Use the 'argparse' module instead.
+# Queue: Use the 'six.moves.queue' module instead (or 'queue' in Python 3).
 # regsub: Use the 're' module instead.
 # rexec: Dropped in Python 3.
 # TERMIOS: Use the 'termios' module instead.
 deprecated-modules=
+    __builtin__,
     Bastion,
+    ConfigParser,
+    cPickle,
+    exceptions,
+    md5,
     mox,
     optparse,
+    Queue,
     regsub,
     rexec,
     TERMIOS,

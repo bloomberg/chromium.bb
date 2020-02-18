@@ -22,8 +22,9 @@ bool CheckEquality(const T& expected, const T& actual) {
 
 }  // namespace
 
-MockSharedWorker::MockSharedWorker(blink::mojom::SharedWorkerRequest request)
-    : binding_(this, std::move(request)) {}
+MockSharedWorker::MockSharedWorker(
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MockSharedWorker::~MockSharedWorker() = default;
 
@@ -61,15 +62,9 @@ void MockSharedWorker::Terminate() {
   terminate_received_ = true;
 }
 
-void MockSharedWorker::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  NOTREACHED();
-}
-
 MockSharedWorkerFactory::MockSharedWorkerFactory(
-    blink::mojom::SharedWorkerFactoryRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MockSharedWorkerFactory::~MockSharedWorkerFactory() = default;
 
@@ -78,8 +73,8 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     const std::string& expected_name,
     blink::mojom::ContentSecurityPolicyType
         expected_content_security_policy_type,
-    blink::mojom::SharedWorkerHostPtr* host,
-    blink::mojom::SharedWorkerRequest* request) {
+    mojo::Remote<blink::mojom::SharedWorkerHost>* host,
+    mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver) {
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);
   if (!create_params)
     return false;
@@ -92,18 +87,21 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     return false;
   if (!create_params->interface_provider)
     return false;
-  *host = std::move(create_params->host);
-  *request = std::move(create_params->request);
+  host->Bind(std::move(create_params->host));
+  *receiver = std::move(create_params->receiver);
   return true;
 }
 
 void MockSharedWorkerFactory::CreateSharedWorker(
     blink::mojom::SharedWorkerInfoPtr info,
+    const std::string& user_agent,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     blink::mojom::RendererPreferencesPtr renderer_preferences,
-    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        preference_watcher_receiver,
+    mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+        content_settings,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     const base::Optional<base::UnguessableToken>& appcache_host_id,
@@ -111,16 +109,18 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-    blink::mojom::SharedWorkerHostPtr host,
-    blink::mojom::SharedWorkerRequest request,
-    service_manager::mojom::InterfaceProviderPtr interface_provider) {
+    mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
+    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker) {
   DCHECK(!create_params_);
   create_params_ = std::make_unique<CreateParams>();
   create_params_->info = std::move(info);
   create_params_->pause_on_start = pause_on_start;
   create_params_->content_settings = std::move(content_settings);
   create_params_->host = std::move(host);
-  create_params_->request = std::move(request);
+  create_params_->receiver = std::move(receiver);
   create_params_->interface_provider = std::move(interface_provider);
 }
 
@@ -128,17 +128,17 @@ MockSharedWorkerFactory::CreateParams::CreateParams() = default;
 
 MockSharedWorkerFactory::CreateParams::~CreateParams() = default;
 
-MockSharedWorkerClient::MockSharedWorkerClient() : binding_(this) {}
+MockSharedWorkerClient::MockSharedWorkerClient() = default;
 
 MockSharedWorkerClient::~MockSharedWorkerClient() = default;
 
 void MockSharedWorkerClient::Bind(
-    blink::mojom::SharedWorkerClientRequest request) {
-  binding_.Bind(std::move(request));
+    mojo::PendingReceiver<blink::mojom::SharedWorkerClient> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void MockSharedWorkerClient::Close() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 bool MockSharedWorkerClient::CheckReceivedOnCreated() {

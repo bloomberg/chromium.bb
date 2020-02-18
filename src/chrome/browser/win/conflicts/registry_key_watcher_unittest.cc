@@ -5,7 +5,7 @@
 #include "chrome/browser/win/conflicts/registry_key_watcher.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ class RegistryKeyWatcherTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryKeyWatcherTest);

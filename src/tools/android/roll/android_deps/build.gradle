@@ -14,11 +14,49 @@ repositories {
 dependencies {
     // Note about the configuration names: they are defined in buildSrc/ChromiumPlugin
 
+    def androidXArchComponentsVersion = '2.0.0'
+    compile "androidx.lifecycle:lifecycle-runtime:${androidXArchComponentsVersion}"
+    compile "androidx.lifecycle:lifecycle-common:${androidXArchComponentsVersion}"
+    compile "androidx.lifecycle:lifecycle-common-java8:${androidXArchComponentsVersion}"
+    compile "androidx.lifecycle:lifecycle-viewmodel:${androidXArchComponentsVersion}"
+
+    // Support v4 libraries
+    def androidXSupportLibVersion = '1.0.0'
+    compile "androidx.core:core:${androidXSupportLibVersion}"
+    compile "androidx.legacy:legacy-support-core-ui:${androidXSupportLibVersion}"
+    compile "androidx.legacy:legacy-support-core-utils:${androidXSupportLibVersion}"
+    compile "androidx.legacy:legacy-support-v4:${androidXSupportLibVersion}"
+    compile "androidx.legacy:legacy-support-v13:${androidXSupportLibVersion}"
+
+    compile "androidx.annotation:annotation:${androidXSupportLibVersion}"
+    compile "androidx.appcompat:appcompat:${androidXSupportLibVersion}"
+    compile "androidx.asynclayoutinflater:asynclayoutinflater:${androidXSupportLibVersion}"
+    compile "androidx.cardview:cardview:${androidXSupportLibVersion}"
+    compile "androidx.collection:collection:${androidXSupportLibVersion}"
+    compile "androidx.coordinatorlayout:coordinatorlayout:${androidXSupportLibVersion}"
+    compile "androidx.customview:customview:${androidXSupportLibVersion}"
+    compile "androidx.drawerlayout:drawerlayout:${androidXSupportLibVersion}"
+    compile "androidx.gridlayout:gridlayout:${androidXSupportLibVersion}"
+    compile "androidx.interpolator:interpolator:${androidXSupportLibVersion}"
+    compile "androidx.leanback:leanback-preference:${androidXSupportLibVersion}"
+    compile "androidx.localbroadcastmanager:localbroadcastmanager:${androidXSupportLibVersion}"
+    compile "androidx.mediarouter:mediarouter:${androidXSupportLibVersion}"
+    compile "androidx.preference:preference:${androidXSupportLibVersion}"
+    compile "androidx.recyclerview:recyclerview:${androidXSupportLibVersion}"
+    compile "androidx.swiperefreshlayout:swiperefreshlayout:${androidXSupportLibVersion}"
+    compile "androidx.viewpager:viewpager:${androidXSupportLibVersion}"
+
+    compile "androidx.multidex:multidex:2.0.0"
+
+    // Replacement for com.android.support:design
+    compile "com.google.android.material:material:1.0.0-rc02"
+
     // Architecture components
     def archComponentsVersion = '1.1.1'
     compile "android.arch.lifecycle:runtime:${archComponentsVersion}"
     compile "android.arch.lifecycle:common:${archComponentsVersion}"
     compile "android.arch.lifecycle:common-java8:${archComponentsVersion}"
+    compile "android.arch.lifecycle:viewmodel:${archComponentsVersion}"
 
     // Play services libraries
     // See https://developers.google.com/android/guides/releases for updates
@@ -40,8 +78,9 @@ dependencies {
     compile "com.google.android.gms:play-services-vision:${gmsVersion}"
     compile "com.google.android.gms:play-services-fido:${gmsVersion}"
 
+    // TODO (bjoyce): Remove after androidx migration crbug.com/896775
     // Support v4 libraries
-    def supportLibVersion = '27.0.0'
+    def supportLibVersion = '28.0.0'
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:support-compat:${supportLibVersion}"
     compile "com.android.support:support-core-ui:${supportLibVersion}"
@@ -61,6 +100,16 @@ dependencies {
 
     compile "com.android.support:support-annotations:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
+
+    compile "com.android.support:asynclayoutinflater:${supportLibVersion}"
+    compile "com.android.support:collections:${supportLibVersion}"
+    compile "com.android.support:coordinatorlayout:${supportLibVersion}"
+    compile "com.android.support:customview:${supportLibVersion}"
+    compile "com.android.support:drawerlayout:${supportLibVersion}"
+    compile "com.android.support:interpolator:${supportLibVersion}"
+    compile "com.android.support:localbroadcastmanager:${supportLibVersion}"
+    compile "com.android.support:swiperefreshlayout:${supportLibVersion}"
+    compile "com.android.support:viewpager:${supportLibVersion}"
 
     compile "com.android.support:multidex:1.0.0"
 

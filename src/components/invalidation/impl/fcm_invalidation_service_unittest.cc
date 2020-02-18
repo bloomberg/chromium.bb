@@ -13,13 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
+#include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -95,15 +96,15 @@ class MockInstanceID : public InstanceID {
   void GetToken(const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
-                bool is_lazy,
+                std::set<Flags> flags,
                 GetTokenCallback callback) override {
-    GetToken_(authorized_entity, scope, options, is_lazy, callback);
+    GetToken_(authorized_entity, scope, options, std::move(flags), callback);
   }
   MOCK_METHOD5(GetToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::map<std::string, std::string>& options,
-                    bool is_lazy,
+                    std::set<Flags> flags,
                     GetTokenCallback& callback));
   MOCK_METHOD4(ValidateToken,
                void(const std::string& authorized_entity,
@@ -174,10 +175,14 @@ class FCMInvalidationServiceTestDelegate {
         .WillRepeatedly(testing::Return(mock_instance_id_.get()));
 
     invalidation_service_ = std::make_unique<FCMInvalidationService>(
-        identity_provider_.get(), gcm_driver_.get(),
-        mock_instance_id_driver_.get(), &pref_service_,
-        base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
-        &url_loader_factory_);
+        identity_provider_.get(),
+        base::BindRepeating(&syncer::FCMNetworkHandler::Create,
+                            gcm_driver_.get(), mock_instance_id_driver_.get()),
+        base::BindRepeating(
+            &syncer::PerUserTopicRegistrationManager::Create,
+            identity_provider_.get(), &pref_service_, &url_loader_factory_,
+            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr)),
+        mock_instance_id_driver_.get(), &pref_service_);
   }
 
   void InitializeInvalidationService() {
@@ -202,7 +207,7 @@ class FCMInvalidationServiceTestDelegate {
         ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;

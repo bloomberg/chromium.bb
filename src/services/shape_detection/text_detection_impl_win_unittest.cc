@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -48,7 +48,7 @@ class TextDetectionImplWinTest : public testing::Test {
  private:
   std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_initializer_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(TextDetectionImplWinTest);
 };

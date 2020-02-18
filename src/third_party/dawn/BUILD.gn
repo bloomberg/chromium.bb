@@ -21,6 +21,25 @@ import("scripts/dawn_overrides_with_defaults.gni")
 import("//testing/test.gni")
 
 ###############################################################################
+# dawn_platform
+###############################################################################
+
+source_set("dawn_platform") {
+  configs += [ "${dawn_root}/src/common:dawn_internal" ]
+
+  sources = [
+    "${dawn_root}/src/include/dawn_platform/DawnPlatform.h",
+    "src/dawn_platform/tracing/EventTracer.cpp",
+    "src/dawn_platform/tracing/EventTracer.h",
+    "src/dawn_platform/tracing/TraceEvent.h",
+  ]
+
+  deps = [
+    "${dawn_root}/src/common",
+  ]
+}
+
+###############################################################################
 # libdawn_native
 ###############################################################################
 
@@ -50,6 +69,9 @@ if (dawn_enable_opengl) {
     args = [
       "--gl-xml",
       rebase_path("third_party/khronos/gl.xml", root_build_dir),
+      "--supported-extensions",
+      rebase_path("src/dawn_native/opengl/supported_extensions.json",
+                  root_build_dir),
     ]
     outputs = [
       "dawn_native/opengl/OpenGLFunctionsBase_autogen.cpp",
@@ -98,18 +120,24 @@ source_set("libdawn_native_sources") {
   # Dependencies that are needed to compile libdawn_native entry points in
   # FooBackend.cpp need to be public deps so they are propagated to the
   # libdawn_native target
-  public_deps = []
+  public_deps = [
+    ":dawn_platform",
+  ]
 
   sources = get_target_outputs(":libdawn_native_utils_gen")
   sources += [
     "src/dawn_native/Adapter.cpp",
     "src/dawn_native/Adapter.h",
+    "src/dawn_native/AttachmentState.cpp",
+    "src/dawn_native/AttachmentState.h",
     "src/dawn_native/BackendConnection.cpp",
     "src/dawn_native/BackendConnection.h",
     "src/dawn_native/BindGroup.cpp",
     "src/dawn_native/BindGroup.h",
     "src/dawn_native/BindGroupLayout.cpp",
     "src/dawn_native/BindGroupLayout.h",
+    "src/dawn_native/BuddyAllocator.cpp",
+    "src/dawn_native/BuddyAllocator.h",
     "src/dawn_native/Buffer.cpp",
     "src/dawn_native/Buffer.h",
     "src/dawn_native/CommandAllocator.cpp",
@@ -120,6 +148,8 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/CommandBufferStateTracker.h",
     "src/dawn_native/CommandEncoder.cpp",
     "src/dawn_native/CommandEncoder.h",
+    "src/dawn_native/CommandValidation.cpp",
+    "src/dawn_native/CommandValidation.h",
     "src/dawn_native/Commands.cpp",
     "src/dawn_native/Commands.h",
     "src/dawn_native/ComputePassEncoder.cpp",
@@ -136,6 +166,8 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Error.h",
     "src/dawn_native/ErrorData.cpp",
     "src/dawn_native/ErrorData.h",
+    "src/dawn_native/Extensions.cpp",
+    "src/dawn_native/Extensions.h",
     "src/dawn_native/Fence.cpp",
     "src/dawn_native/Fence.h",
     "src/dawn_native/FenceSignalTracker.cpp",
@@ -148,6 +180,8 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/ObjectBase.cpp",
     "src/dawn_native/ObjectBase.h",
     "src/dawn_native/PassResourceUsage.h",
+    "src/dawn_native/PassResourceUsageTracker.cpp",
+    "src/dawn_native/PassResourceUsageTracker.h",
     "src/dawn_native/PerStage.cpp",
     "src/dawn_native/PerStage.h",
     "src/dawn_native/Pipeline.cpp",
@@ -160,12 +194,19 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Queue.h",
     "src/dawn_native/RefCounted.cpp",
     "src/dawn_native/RefCounted.h",
+    "src/dawn_native/RenderBundle.cpp",
+    "src/dawn_native/RenderBundle.h",
+    "src/dawn_native/RenderBundleEncoder.cpp",
+    "src/dawn_native/RenderBundleEncoder.h",
     "src/dawn_native/RenderEncoderBase.cpp",
     "src/dawn_native/RenderEncoderBase.h",
     "src/dawn_native/RenderPassEncoder.cpp",
     "src/dawn_native/RenderPassEncoder.h",
     "src/dawn_native/RenderPipeline.cpp",
     "src/dawn_native/RenderPipeline.h",
+    "src/dawn_native/ResourceHeap.h",
+    "src/dawn_native/ResourceMemoryAllocation.cpp",
+    "src/dawn_native/ResourceMemoryAllocation.h",
     "src/dawn_native/RingBuffer.cpp",
     "src/dawn_native/RingBuffer.h",
     "src/dawn_native/Sampler.cpp",
@@ -179,6 +220,7 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Texture.cpp",
     "src/dawn_native/Texture.h",
     "src/dawn_native/ToBackend.h",
+    "src/dawn_native/Toggles.cpp",
     "src/dawn_native/Toggles.h",
     "src/dawn_native/dawn_platform.h",
   ]
@@ -200,6 +242,8 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/d3d12/CommandAllocatorManager.h",
       "src/dawn_native/d3d12/CommandBufferD3D12.cpp",
       "src/dawn_native/d3d12/CommandBufferD3D12.h",
+      "src/dawn_native/d3d12/CommittedResourceAllocatorD3D12.cpp",
+      "src/dawn_native/d3d12/CommittedResourceAllocatorD3D12.h",
       "src/dawn_native/d3d12/ComputePipelineD3D12.cpp",
       "src/dawn_native/d3d12/ComputePipelineD3D12.h",
       "src/dawn_native/d3d12/D3D12Info.cpp",
@@ -221,6 +265,8 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/d3d12/RenderPipelineD3D12.h",
       "src/dawn_native/d3d12/ResourceAllocator.cpp",
       "src/dawn_native/d3d12/ResourceAllocator.h",
+      "src/dawn_native/d3d12/ResourceHeapD3D12.cpp",
+      "src/dawn_native/d3d12/ResourceHeapD3D12.h",
       "src/dawn_native/d3d12/SamplerD3D12.cpp",
       "src/dawn_native/d3d12/SamplerD3D12.h",
       "src/dawn_native/d3d12/ShaderModuleD3D12.cpp",
@@ -353,6 +399,7 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/vulkan/ComputePipelineVk.h",
       "src/dawn_native/vulkan/DeviceVk.cpp",
       "src/dawn_native/vulkan/DeviceVk.h",
+      "src/dawn_native/vulkan/ExternalHandle.h",
       "src/dawn_native/vulkan/FencedDeleter.cpp",
       "src/dawn_native/vulkan/FencedDeleter.h",
       "src/dawn_native/vulkan/Forward.h",
@@ -386,7 +433,21 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/vulkan/VulkanFunctions.h",
       "src/dawn_native/vulkan/VulkanInfo.cpp",
       "src/dawn_native/vulkan/VulkanInfo.h",
+      "src/dawn_native/vulkan/external_memory/MemoryService.h",
+      "src/dawn_native/vulkan/external_semaphore/SemaphoreService.h",
     ]
+
+    if (is_linux) {
+      sources += [
+        "src/dawn_native/vulkan/external_memory/MemoryServiceOpaqueFD.cpp",
+        "src/dawn_native/vulkan/external_semaphore/SemaphoreServiceOpaqueFD.cpp",
+      ]
+    } else {
+      sources += [
+        "src/dawn_native/vulkan/external_memory/MemoryServiceNull.cpp",
+        "src/dawn_native/vulkan/external_semaphore/SemaphoreServiceNull.cpp",
+      ]
+    }
   }
 }
 
@@ -502,8 +563,8 @@ static_library("dawn_utils") {
   configs += [ "${dawn_root}/src/common:dawn_internal" ]
 
   sources = [
-    "src/utils/BackendBinding.cpp",
-    "src/utils/BackendBinding.h",
+    "src/utils/ComboRenderBundleEncoderDescriptor.cpp",
+    "src/utils/ComboRenderBundleEncoderDescriptor.h",
     "src/utils/ComboRenderPipelineDescriptor.cpp",
     "src/utils/ComboRenderPipelineDescriptor.h",
     "src/utils/DawnHelpers.cpp",
@@ -512,7 +573,16 @@ static_library("dawn_utils") {
     "src/utils/SystemUtils.h",
     "src/utils/TerribleCommandBuffer.cpp",
     "src/utils/TerribleCommandBuffer.h",
+    "src/utils/Timer.h",
   ]
+
+  if (is_win) {
+    sources += [ "src/utils/WindowsTimer.cpp" ]
+  } else if (is_mac) {
+    sources += [ "src/utils/OSXTimer.cpp" ]
+  } else {
+    sources += [ "src/utils/PosixTimer.cpp" ]
+  }
 
   public_deps = [
     "${dawn_root}/src/dawn:dawn_headers",
@@ -523,6 +593,24 @@ static_library("dawn_utils") {
     ":libdawn_wire",
     "${dawn_root}/src/common",
     "${dawn_shaderc_dir}:libshaderc",
+  ]
+}
+
+static_library("dawn_bindings") {
+  configs += [ "${dawn_root}/src/common:dawn_internal" ]
+
+  sources = [
+    "src/utils/BackendBinding.cpp",
+    "src/utils/BackendBinding.h",
+  ]
+
+  public_deps = [
+    "${dawn_root}/src/dawn:dawn_headers",
+  ]
+
+  deps = [
+    ":libdawn_native",
+    "${dawn_root}/src/common",
     "third_party:glfw",
   ]
   libs = []
@@ -596,9 +684,11 @@ test("dawn_unittests") {
   ]
   sources += [
     "src/tests/unittests/BitSetIteratorTests.cpp",
+    "src/tests/unittests/BuddyAllocatorTests.cpp",
     "src/tests/unittests/CommandAllocatorTests.cpp",
     "src/tests/unittests/EnumClassBitmasksTests.cpp",
     "src/tests/unittests/ErrorTests.cpp",
+    "src/tests/unittests/ExtensionTests.cpp",
     "src/tests/unittests/MathTests.cpp",
     "src/tests/unittests/ObjectBaseTests.cpp",
     "src/tests/unittests/PerStageTests.cpp",
@@ -619,6 +709,7 @@ test("dawn_unittests") {
     "src/tests/unittests/validation/DynamicStateCommandValidationTests.cpp",
     "src/tests/unittests/validation/FenceValidationTests.cpp",
     "src/tests/unittests/validation/QueueSubmitValidationTests.cpp",
+    "src/tests/unittests/validation/RenderBundleValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassDescriptorValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassValidationTests.cpp",
     "src/tests/unittests/validation/RenderPipelineValidationTests.cpp",
@@ -656,8 +747,9 @@ test("dawn_unittests") {
   }
 }
 
-test("dawn_end2end_tests") {
+source_set("dawn_end2end_tests_sources") {
   configs += [ "${dawn_root}/src/common:dawn_internal" ]
+  testonly = true
 
   deps = [
     ":dawn_utils",
@@ -665,12 +757,10 @@ test("dawn_end2end_tests") {
     ":libdawn_wire",
     "${dawn_root}/src/common",
     "${dawn_root}/src/dawn:libdawn",
-    "third_party:glfw",
     "third_party:gmock_and_gtest",
   ]
 
   sources = [
-    "src/tests/DawnTest.cpp",
     "src/tests/DawnTest.h",
     "src/tests/end2end/BasicTests.cpp",
     "src/tests/end2end/BindGroupTests.cpp",
@@ -696,7 +786,9 @@ test("dawn_end2end_tests") {
     "src/tests/end2end/MultisampledRenderingTests.cpp",
     "src/tests/end2end/NonzeroTextureCreationTests.cpp",
     "src/tests/end2end/ObjectCachingTests.cpp",
+    "src/tests/end2end/OpArrayLengthTests.cpp",
     "src/tests/end2end/PrimitiveTopologyTests.cpp",
+    "src/tests/end2end/RenderBundleTests.cpp",
     "src/tests/end2end/RenderPassLoadOpTests.cpp",
     "src/tests/end2end/RenderPassTests.cpp",
     "src/tests/end2end/SamplerTests.cpp",
@@ -718,12 +810,123 @@ test("dawn_end2end_tests") {
     libs += [ "IOSurface.framework" ]
   }
 
+  if (dawn_enable_d3d12) {
+    sources += [ "src/tests/end2end/D3D12ResourceWrappingTests.cpp" ]
+    libs += [
+      "d3d11.lib",
+      "dxgi.lib",
+    ]
+  }
+
+  if (dawn_enable_opengl) {
+    deps += [ "third_party:glfw" ]
+  }
+}
+
+source_set("dawn_white_box_tests_sources") {
+  configs += [ "${dawn_root}/src/common:dawn_internal" ]
+  testonly = true
+
+  deps = [
+    ":dawn_utils",
+    ":libdawn_native",
+    ":libdawn_native_sources",
+    ":libdawn_wire",
+    "${dawn_root}/src/common",
+    "${dawn_root}/src/dawn:libdawn",
+    "third_party:gmock_and_gtest",
+  ]
+
+  sources = [
+    "src/tests/DawnTest.h",
+  ]
+
+  if (dawn_enable_vulkan) {
+    deps += [ "third_party:vulkan_headers" ]
+
+    if (is_linux) {
+      sources += [ "src/tests/white_box/VulkanImageWrappingTests.cpp" ]
+    }
+  }
+
+  if (dawn_enable_opengl) {
+    deps += [ "third_party:glfw" ]
+  }
+
+  libs = []
+}
+
+test("dawn_end2end_tests") {
+  configs += [ "${dawn_root}/src/common:dawn_internal" ]
+
+  deps = [
+    ":dawn_end2end_tests_sources",
+    ":dawn_utils",
+    ":dawn_white_box_tests_sources",
+    ":libdawn_native",
+    ":libdawn_wire",
+    "${dawn_root}/src/common",
+    "${dawn_root}/src/dawn:libdawn",
+    "third_party:gmock_and_gtest",
+  ]
+
+  sources = [
+    "src/tests/DawnTest.cpp",
+    "src/tests/DawnTest.h",
+  ]
+
+  libs = []
+
   # When building inside Chromium, use their gtest main function because it is
   # needed to run in swarming correctly.
   if (build_with_chromium) {
     sources += [ "//gpu/dawn_end2end_tests_main.cc" ]
   } else {
     sources += [ "src/tests/End2EndTestsMain.cpp" ]
+  }
+
+  if (dawn_enable_opengl) {
+    deps += [ "third_party:glfw" ]
+  }
+}
+
+test("dawn_perf_tests") {
+  configs += [ "${dawn_root}/src/common:dawn_internal" ]
+
+  deps = [
+    ":dawn_utils",
+    ":libdawn_native",
+    ":libdawn_wire",
+    "${dawn_root}/src/common",
+    "${dawn_root}/src/dawn:libdawn",
+    "third_party:gmock_and_gtest",
+  ]
+
+  sources = [
+    "src/tests/DawnTest.cpp",
+    "src/tests/DawnTest.h",
+    "src/tests/ParamGenerator.h",
+    "src/tests/perf_tests/BufferUploadPerf.cpp",
+    "src/tests/perf_tests/DawnPerfTest.cpp",
+    "src/tests/perf_tests/DawnPerfTest.h",
+  ]
+
+  libs = []
+
+  # When building inside Chromium, use their gtest main function because it is
+  # needed to run in swarming correctly.
+  if (build_with_chromium) {
+    sources += [ "//gpu/dawn_perf_tests_main.cc" ]
+  } else {
+    sources += [ "src/tests/PerfTestsMain.cpp" ]
+  }
+
+  if (dawn_enable_metal) {
+    libs += [ "IOSurface.framework" ]
+  }
+
+  if (dawn_enable_opengl) {
+    deps += [ "third_party:glfw" ]
   }
 }
 
@@ -742,6 +945,16 @@ group("dawn_end2end_tests_temp_group") {
   ]
 }
 
+group("dawn_perf_tests_temp_group") {
+  testonly = true
+  deps = [
+    ":dawn_perf_tests",
+  ]
+  data_deps = [
+    ":dawn_perf_tests",
+  ]
+}
+
 ###############################################################################
 # Dawn samples, only in standalone builds
 ###############################################################################
@@ -756,6 +969,7 @@ if (dawn_standalone) {
 
     # Export all of these as public deps so that `gn check` allows includes
     public_deps = [
+      ":dawn_bindings",
       ":dawn_utils",
       ":libdawn_native",
       ":libdawn_wire",

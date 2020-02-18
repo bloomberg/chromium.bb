@@ -12,10 +12,8 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
@@ -27,13 +25,15 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
-#include "components/arc/arc_prefs.h"
+#include "chromeos/services/assistant/service.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/dns/mock_host_resolver.h"
@@ -41,8 +41,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_filter.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -63,7 +61,7 @@ chromeos::OobeUI* GetOobeUI() {
 }
 
 class FakeAssistantSettings
-    : public chromeos::assistant::mojom::AssistantSettingsManager {
+    : public chromeos::assistant::AssistantSettingsManager {
  public:
   // Flags to configure GetSettings response.
   static constexpr int CONSENT_UI_FLAGS_NONE = 0;
@@ -89,24 +87,11 @@ class FakeAssistantSettings
   };
 
   FakeAssistantSettings() {
-    service_manager::Connector* connector =
-        content::BrowserContext::GetConnectorFor(
-            ProfileManager::GetActiveUserProfile());
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(
-            chromeos::assistant::mojom::kServiceName),
-        chromeos::assistant::mojom::AssistantSettingsManager::Name_,
-        base::BindRepeating(&FakeAssistantSettings::Bind,
-                            base::Unretained(this)));
+    chromeos::assistant::Service::OverrideSettingsManagerForTesting(this);
   }
+
   ~FakeAssistantSettings() override {
-    service_manager::Connector* connector =
-        content::BrowserContext::GetConnectorFor(
-            ProfileManager::GetActiveUserProfile());
-    connector->ClearBinderOverrideForTesting(
-        service_manager::ServiceFilter::ByName(
-            chromeos::assistant::mojom::kServiceName),
-        chromeos::assistant::mojom::AssistantSettingsManager::Name_);
+    chromeos::assistant::Service::OverrideSettingsManagerForTesting(nullptr);
   }
 
   void set_consent_ui_flags(int flags) { consent_ui_flags_ = flags; }
@@ -159,10 +144,10 @@ class FakeAssistantSettings
 
   void Flush() { bindings_.FlushForTesting(); }
 
-  void Bind(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(
-        this, chromeos::assistant::mojom::AssistantSettingsManagerRequest(
-                  std::move(handle)));
+  // chromeos::assistant::AssistantSettingsManager:
+  void BindRequest(chromeos::assistant::mojom::AssistantSettingsManagerRequest
+                       request) override {
+    bindings_.AddBinding(this, std::move(request));
   }
 
   // chromeos::assistant::mojom::AssistantSettingsManager:
@@ -335,13 +320,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   AssistantOptInFlowTest() = default;
   ~AssistantOptInFlowTest() override = default;
 
-  virtual void InitializeFeatureList() {
-    feature_list_.InitAndEnableFeature(switches::kAssistantFeature);
-  }
-
   void SetUp() override {
-    InitializeFeatureList();
-
     base::FilePath test_data_dir;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     https_server_.ServeFilesFromDirectory(test_data_dir);
@@ -357,7 +336,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     // This prevents assistant setup flow dialog popping up immediately on user
     // start - the test will show a different dialog once the setup is done.
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
@@ -464,8 +443,6 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   // request..
   bool fail_next_value_prop_url_request_ = false;
 
-  base::test::ScopedFeatureList feature_list_;
-
  private:
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     auto response = std::make_unique<BasicHttpResponse>();
@@ -498,31 +475,6 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
 };
 
-class AssistantOptInFlowTestWithDisabledAssistant
-    : public AssistantOptInFlowTest {
- public:
-  AssistantOptInFlowTestWithDisabledAssistant() = default;
-  ~AssistantOptInFlowTestWithDisabledAssistant() override = default;
-
-  void InitializeFeatureList() override {
-    feature_list_.InitAndDisableFeature(switches::kAssistantFeature);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithDisabledAssistant,
-                       ExitImmediately) {
-  assistant_optin_flow_screen_->Show();
-  WaitForScreenExit();
-
-  ExpectCollectedOptIns({});
-  PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kUnknown,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-}
-
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
       ash::mojom::VoiceInteractionState::STOPPED);
@@ -553,11 +505,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
 
   ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
@@ -594,11 +545,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
 
   ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
@@ -635,11 +585,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
@@ -676,11 +625,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
 
   ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
@@ -701,11 +649,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kUnknown,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kUnknown,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
@@ -743,11 +690,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
 
   ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
@@ -788,11 +734,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
   ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL,
                          FakeAssistantSettings::OptIn::EMAIL});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
@@ -822,11 +767,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
@@ -855,11 +799,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
@@ -945,11 +888,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
@@ -998,11 +940,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
@@ -1055,11 +996,10 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
@@ -1075,9 +1015,9 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
@@ -1094,9 +1034,9 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantDisabledByPolicy));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
 }  // namespace chromeos

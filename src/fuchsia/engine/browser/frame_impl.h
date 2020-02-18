@@ -92,6 +92,11 @@ class FrameImpl : public fuchsia::web::Frame,
                                  ExecuteJavaScriptCallback callback,
                                  bool need_result);
 
+  // Sends the next entry in |pending_popups_| to |popup_listener_|.
+  void MaybeSendPopup();
+
+  void OnPopupListenerDisconnected(zx_status_t status);
+
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
   void GetNavigationController(
@@ -118,6 +123,9 @@ class FrameImpl : public fuchsia::web::Frame,
       override;
   void SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) override;
   void SetEnableInput(bool enable_input) override;
+  void SetPopupFrameCreationListener(
+      fidl::InterfaceHandle<fuchsia::web::PopupFrameCreationListener> listener)
+      override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;
@@ -139,6 +147,18 @@ class FrameImpl : public fuchsia::web::Frame,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
+  void WebContentsCreated(content::WebContents* source_contents,
+                          int opener_render_process_id,
+                          int opener_render_frame_id,
+                          const std::string& frame_name,
+                          const GURL& target_url,
+                          content::WebContents* new_contents) override;
+  void AddNewContents(content::WebContents* source,
+                      std::unique_ptr<content::WebContents> new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override;
 
   // content::WebContentsObserver implementation.
   void ReadyToCommitNavigation(
@@ -157,6 +177,11 @@ class FrameImpl : public fuchsia::web::Frame,
   std::map<uint64_t, OriginScopedScript> before_load_scripts_;
   std::vector<uint64_t> before_load_scripts_order_;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
+
+  // Used for receiving and dispatching popup created by this Frame.
+  fuchsia::web::PopupFrameCreationListenerPtr popup_listener_;
+  std::list<std::unique_ptr<content::WebContents>> pending_popups_;
+  bool popup_ack_outstanding_ = false;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
 

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -15,13 +16,15 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -90,11 +93,52 @@ class IndexedDBTest : public testing::Test {
             CreateAndReturnTempDir(&temp_dir_),
             /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
-            base::DefaultClock::GetInstance())) {
+            base::DefaultClock::GetInstance(),
+            base::SequencedTaskRunnerHandle::Get())) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
   ~IndexedDBTest() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+  }
+
+  void RunPostedTasks() {
+    base::RunLoop loop;
+    context_->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
+
+  void TearDown() override {
+    if (context_ && !context_->IsInMemoryContext()) {
+      IndexedDBFactoryImpl* factory = context_->GetIDBFactory();
+
+      // Loop through all open origins, and force close them, and request the
+      // deletion of the leveldb state. Once the states are no longer around,
+      // delete all of the databases on disk.
+      auto open_factory_origins = factory->GetOpenOrigins();
+      base::RunLoop loop;
+      auto callback = base::BarrierClosure(
+          open_factory_origins.size(), base::BindLambdaForTesting([&]() {
+            // All leveldb databases are closed, and they can be deleted.
+            for (auto origin : context_->GetAllOrigins()) {
+              context_->DeleteForOrigin(origin);
+            }
+            loop.Quit();
+          }));
+      for (auto origin : open_factory_origins) {
+        IndexedDBOriginState* per_origin_factory =
+            factory->GetOriginFactory(origin);
+        per_origin_factory->backing_store()
+            ->db()
+            ->leveldb_state()
+            ->RequestDestruction(callback,
+                                 base::SequencedTaskRunnerHandle::Get());
+        context_->ForceClose(origin,
+                             IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+      }
+      loop.Run();
+    }
+    if (temp_dir_.IsValid())
+      ASSERT_TRUE(temp_dir_.Delete());
   }
 
  protected:
@@ -103,7 +147,7 @@ class IndexedDBTest : public testing::Test {
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<IndexedDBContextImpl> context_;
@@ -158,7 +202,10 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
  public:
   ForceCloseDBCallbacks(scoped_refptr<IndexedDBContextImpl> idb_context,
                         const Origin& origin)
-      : IndexedDBCallbacks(nullptr, origin, nullptr, idb_context->TaskRunner()),
+      : IndexedDBCallbacks(nullptr,
+                           origin,
+                           mojo::NullAssociatedRemote(),
+                           idb_context->TaskRunner()),
         idb_context_(idb_context),
         origin_(origin) {}
 
@@ -185,56 +232,56 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
 TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
-  base::RunLoop loop;
-  context()->TaskRunner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
-        const int child_process_id = 0;
-        const int64_t host_transaction_id = 0;
-        const int64_t version = 0;
+  auto open_db_callbacks =
+      base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+  auto closed_db_callbacks =
+      base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+  auto open_callbacks =
+      base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
+  auto closed_callbacks =
+      base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
+  base::FilePath test_path = context()->GetFilePathForTesting(kTestOrigin);
 
-        IndexedDBFactory* factory = context()->GetIDBFactory();
+  const int child_process_id = 0;
+  const int64_t host_transaction_id = 0;
+  const int64_t version = 0;
 
-        base::FilePath test_path =
-            context()->GetFilePathForTesting(kTestOrigin);
+  IndexedDBFactory* factory = context()->GetIDBFactory();
 
-        auto open_db_callbacks =
-            base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
-        auto closed_db_callbacks =
-            base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
-        auto open_callbacks =
-            base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
-        auto closed_callbacks =
-            base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
+  auto create_transaction_callback1 =
+      base::BindOnce(&CreateAndBindTransactionPlaceholder);
+  factory->Open(base::ASCIIToUTF16("opendb"),
+                std::make_unique<IndexedDBPendingConnection>(
+                    open_callbacks, open_db_callbacks, child_process_id,
+                    host_transaction_id, version,
+                    std::move(create_transaction_callback1)),
+                kTestOrigin, context()->data_path());
+  EXPECT_TRUE(base::DirectoryExists(test_path));
 
-        auto create_transaction_callback1 =
-            base::BindOnce(&CreateAndBindTransactionPlaceholder);
-        factory->Open(base::ASCIIToUTF16("opendb"),
-                      std::make_unique<IndexedDBPendingConnection>(
-                          open_callbacks, open_db_callbacks, child_process_id,
-                          host_transaction_id, version,
-                          std::move(create_transaction_callback1)),
-                      kTestOrigin, context()->data_path());
-        EXPECT_TRUE(base::DirectoryExists(test_path));
+  auto create_transaction_callback2 =
+      base::BindOnce(&CreateAndBindTransactionPlaceholder);
+  factory->Open(base::ASCIIToUTF16("closeddb"),
+                std::make_unique<IndexedDBPendingConnection>(
+                    closed_callbacks, closed_db_callbacks, child_process_id,
+                    host_transaction_id, version,
+                    std::move(create_transaction_callback2)),
+                kTestOrigin, context()->data_path());
+  RunPostedTasks();
+  ASSERT_TRUE(closed_callbacks->connection());
+  closed_callbacks->connection()->AbortTransactionsAndClose(
+      IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
+  RunPostedTasks();
 
-        auto create_transaction_callback2 =
-            base::BindOnce(&CreateAndBindTransactionPlaceholder);
-        factory->Open(base::ASCIIToUTF16("closeddb"),
-                      std::make_unique<IndexedDBPendingConnection>(
-                          closed_callbacks, closed_db_callbacks,
-                          child_process_id, host_transaction_id, version,
-                          std::move(create_transaction_callback2)),
-                      kTestOrigin, context()->data_path());
+  context()->ForceClose(kTestOrigin,
+                        IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+  EXPECT_TRUE(open_db_callbacks->forced_close_called());
+  EXPECT_FALSE(closed_db_callbacks->forced_close_called());
 
-        closed_callbacks->connection()->Close();
+  RunPostedTasks();
 
-        context()->DeleteForOrigin(kTestOrigin);
+  context()->DeleteForOrigin(kTestOrigin);
 
-        EXPECT_TRUE(open_db_callbacks->forced_close_called());
-        EXPECT_FALSE(closed_db_callbacks->forced_close_called());
-        EXPECT_FALSE(base::DirectoryExists(test_path));
-        loop.Quit();
-      }));
-  loop.Run();
+  EXPECT_FALSE(base::DirectoryExists(test_path));
 }
 
 TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
@@ -258,46 +305,39 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
 }
 
 TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
-  base::RunLoop loop;
-  context()->TaskRunner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
-        const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
+  const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
-        auto* factory =
-            static_cast<IndexedDBFactoryImpl*>(context()->GetIDBFactory());
+  auto* factory =
+      static_cast<IndexedDBFactoryImpl*>(context()->GetIDBFactory());
 
-        const int child_process_id = 0;
-        const int64_t transaction_id = 1;
+  const int child_process_id = 0;
+  const int64_t transaction_id = 1;
 
-        auto callbacks = base::MakeRefCounted<MockIndexedDBCallbacks>();
-        auto db_callbacks =
-            base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
-        auto create_transaction_callback1 =
-            base::BindOnce(&CreateAndBindTransactionPlaceholder);
-        auto connection = std::make_unique<IndexedDBPendingConnection>(
-            callbacks, db_callbacks, child_process_id, transaction_id,
-            IndexedDBDatabaseMetadata::DEFAULT_VERSION,
-            std::move(create_transaction_callback1));
-        factory->Open(base::ASCIIToUTF16("db"), std::move(connection),
-                      Origin(kTestOrigin), context()->data_path());
+  auto callbacks = base::MakeRefCounted<MockIndexedDBCallbacks>();
+  auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+  auto create_transaction_callback1 =
+      base::BindOnce(&CreateAndBindTransactionPlaceholder);
+  auto connection = std::make_unique<IndexedDBPendingConnection>(
+      callbacks, db_callbacks, child_process_id, transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      std::move(create_transaction_callback1));
+  factory->Open(base::ASCIIToUTF16("db"), std::move(connection),
+                Origin(kTestOrigin), context()->data_path());
+  RunPostedTasks();
 
-        EXPECT_TRUE(callbacks->connection());
+  ASSERT_TRUE(callbacks->connection());
 
-        // ConnectionOpened() is usually called by the dispatcher.
-        context()->ConnectionOpened(kTestOrigin, callbacks->connection());
+  // ConnectionOpened() is usually called by the dispatcher.
+  context()->ConnectionOpened(kTestOrigin, callbacks->connection());
 
-        EXPECT_TRUE(factory->IsBackingStoreOpen(kTestOrigin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(kTestOrigin));
 
-        // Simulate the write failure.
-        leveldb::Status status = leveldb::Status::IOError("Simulated failure");
-        factory->HandleBackingStoreFailure(kTestOrigin);
+  // Simulate the write failure.
+  leveldb::Status status = leveldb::Status::IOError("Simulated failure");
+  factory->HandleBackingStoreFailure(kTestOrigin);
 
-        EXPECT_TRUE(db_callbacks->forced_close_called());
-        EXPECT_FALSE(factory->IsBackingStoreOpen(kTestOrigin));
-
-        loop.Quit();
-      }));
-  loop.Run();
+  EXPECT_TRUE(db_callbacks->forced_close_called());
+  EXPECT_FALSE(factory->IsBackingStoreOpen(kTestOrigin));
 }
 
 }  // namespace content

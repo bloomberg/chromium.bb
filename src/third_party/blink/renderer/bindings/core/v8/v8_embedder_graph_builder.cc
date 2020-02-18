@@ -186,7 +186,7 @@ class GC_PLUGIN_IGNORE(
 
   // Unused Visitor overrides.
   void VisitWeak(void* object,
-                 void** object_slot,
+                 void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
   void VisitBackingStoreWeakly(void*,
@@ -195,8 +195,7 @@ class GC_PLUGIN_IGNORE(
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
-  void RegisterBackingStoreCallback(void**, MovingObjectCallback, void*) final {
-  }
+  void RegisterBackingStoreCallback(void*, MovingObjectCallback) final {}
   void RegisterWeakCallback(void*, WeakCallback) final {}
 
  private:

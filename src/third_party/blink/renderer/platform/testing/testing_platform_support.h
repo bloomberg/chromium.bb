@@ -60,14 +60,15 @@ class TestingPlatformSupport : public Platform {
 
   // Platform:
   WebString DefaultLocale() override;
-  WebBlobRegistry* GetBlobRegistry() override;
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
   std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
     return std::make_unique<CodeCacheLoaderMock>();
   }
-  WebData GetDataResource(const char* name) override;
+  WebData GetDataResource(int resource_id,
+                          ui::ScaleFactor scale_factor) override;
+  WebData UncompressDataResource(int resource_id) override;
   InterfaceProvider* GetInterfaceProvider() override;
   bool IsThreadedAnimationEnabled() override;
 
@@ -143,6 +144,9 @@ class ScopedTestingPlatformSupport final {
 
   const T* operator->() const { return testing_platform_support_.get(); }
   T* operator->() { return testing_platform_support_.get(); }
+
+  const T& operator*() const { return *testing_platform_support_; }
+  T& operator*() { return *testing_platform_support_; }
 
   T* GetTestingPlatformSupport() { return testing_platform_support_.get(); }
 

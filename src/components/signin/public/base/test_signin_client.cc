@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +21,8 @@ TestSigninClient::TestSigninClient(
       are_signin_cookies_allowed_(true),
       network_calls_delayed_(false),
       is_signout_allowed_(true),
-      is_ready_for_dice_migration_(false) {}
+      is_ready_for_dice_migration_(false),
+      is_dice_migration_completed_(false) {}
 
 TestSigninClient::~TestSigninClient() {}
 
@@ -119,4 +121,12 @@ void TestSigninClient::PreGaiaLogout(base::OnceClosure callback) {
 
 void TestSigninClient::SetReadyForDiceMigration(bool ready) {
   is_ready_for_dice_migration_ = ready;
+}
+
+void TestSigninClient::SetDiceMigrationCompleted() {
+  is_dice_migration_completed_ = true;
+}
+
+bool TestSigninClient::IsNonEnterpriseUser(const std::string& email) {
+  return gaia::ExtractDomainName(email) == "gmail.com";
 }

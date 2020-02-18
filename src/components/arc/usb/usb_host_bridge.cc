@@ -194,6 +194,9 @@ void ArcUsbHostBridge::GetDeviceInfo(const std::string& guid,
 
   device::mojom::UsbDeviceInfoPtr info = iter->second->Clone();
   // b/69295049 the other side doesn't like optional strings.
+  info->manufacturer_name = info->manufacturer_name.value_or(base::string16());
+  info->product_name = info->product_name.value_or(base::string16());
+  info->serial_number = info->serial_number.value_or(base::string16());
   for (const device::mojom::UsbConfigurationInfoPtr& cfg :
        info->configurations) {
     cfg->configuration_name =
@@ -214,19 +217,18 @@ void ArcUsbHostBridge::OnConnectionReady() {
   if (delegate_)
     delegate_->AttachDevicesToArcVm();
 
-  // Request UsbDeviceManagerPtr from DeviceService.
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_));
-  usb_manager_.set_connection_error_handler(
+  // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, usb_manager_.BindNewPipeAndPassReceiver());
+  usb_manager_.set_disconnect_handler(
       base::BindOnce(&ArcUsbHostBridge::Disconnect, base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_binding_);
-  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  DCHECK(!client_receiver_.is_bound());
   usb_manager_->EnumerateDevicesAndSetClient(
-      std::move(client), base::BindOnce(&ArcUsbHostBridge::InitDeviceList,
-                                        weak_factory_.GetWeakPtr()));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&ArcUsbHostBridge::InitDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ArcUsbHostBridge::OnConnectionClosed() {
@@ -327,7 +329,7 @@ void ArcUsbHostBridge::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
 
   usb_manager_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   devices_.clear();
 }
 

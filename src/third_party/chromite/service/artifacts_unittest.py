@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import json
-import mock
 import os
 import shutil
+
+import mock
 
 from chromite.lib import autotest_util
 from chromite.lib import build_target_util
@@ -36,9 +37,9 @@ class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
     self.archive_dir = os.path.join(self.tempdir, 'archive_base_dir')
 
     sysroot_path = os.path.join(self.tempdir, 'sysroot')
-    sysroot_dne = os.path.join(self.tempdir, 'sysroot_DNE')
-    self.sysroot = sysroot_lib.Sysroot(sysroot_path)
-    self.sysroot_dne = sysroot_lib.Sysroot(sysroot_dne)
+    self.chroot = chroot_lib.Chroot(self.tempdir)
+    self.sysroot = sysroot_lib.Sysroot('sysroot')
+    self.sysroot_dne = sysroot_lib.Sysroot('sysroot_DNE')
 
     # Make sure we have the valid paths.
     osutils.SafeMakedirs(self.output_dir)
@@ -47,21 +48,23 @@ class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
   def testInvalidOutputDirectory(self):
     """Test invalid output directory."""
     with self.assertRaises(AssertionError):
-      artifacts.BundleAutotestFiles(self.sysroot, None)
+      artifacts.BundleAutotestFiles(self.chroot, self.sysroot, None)
 
   def testInvalidSysroot(self):
     """Test sysroot that does not exist."""
     with self.assertRaises(AssertionError):
-      artifacts.BundleAutotestFiles(self.sysroot_dne, self.output_dir)
+      artifacts.BundleAutotestFiles(self.chroot, self.sysroot_dne,
+                                    self.output_dir)
 
   def testArchiveDirectoryDoesNotExist(self):
     """Test archive directory that does not exist causes error."""
     with self.assertRaises(artifacts.ArchiveBaseDirNotFound):
-      artifacts.BundleAutotestFiles(self.sysroot, self.output_dir)
+      artifacts.BundleAutotestFiles(self.chroot, self.sysroot, self.output_dir)
 
   def testSuccess(self):
     """Test a successful call handling."""
-    ab_path = os.path.join(self.sysroot.path, constants.AUTOTEST_BUILD_PATH)
+    ab_path = os.path.join(self.tempdir, self.sysroot.path,
+                           constants.AUTOTEST_BUILD_PATH)
     osutils.SafeMakedirs(ab_path)
 
     # Makes all of the individual calls to build out each of the tarballs work
@@ -69,7 +72,8 @@ class BundleAutotestFilesTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(autotest_util.AutotestTarballBuilder, '_BuildTarball',
                      side_effect=lambda _, path, **kwargs: osutils.Touch(path))
 
-    result = artifacts.BundleAutotestFiles(self.sysroot, self.output_dir)
+    result = artifacts.BundleAutotestFiles(self.chroot, self.sysroot,
+                                           self.output_dir)
 
     for archive in result.values():
       self.assertStartsWith(archive, self.output_dir)
@@ -205,6 +209,142 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertExists(f)
 
 
+class BundleEBuildLogsTarballTest(cros_test_lib.TempDirTestCase):
+  """BundleEBuildLogsTarball tests."""
+
+  def testBundleEBuildLogsTarball(self):
+    """Verifies that the correct EBuild tar files are bundled."""
+    board = 'samus'
+    # Create chroot object and sysroot object
+    chroot_path = os.path.join(self.tempdir, 'chroot')
+    chroot = chroot_lib.Chroot(path=chroot_path)
+    sysroot_path = os.path.join('build', board)
+    sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+    # Create parent dir for logs
+    log_parent_dir = os.path.join(chroot.path, 'build')
+
+    # Names of log files typically found in a build directory.
+    log_files = (
+        '',
+        'x11-libs:libdrm-2.4.81-r24:20170816-175008.log',
+        'x11-libs:libpciaccess-0.12.902-r2:20170816-174849.log',
+        'x11-libs:libva-1.7.1-r2:20170816-175019.log',
+        'x11-libs:libva-intel-driver-1.7.1-r4:20170816-175029.log',
+        'x11-libs:libxkbcommon-0.4.3-r2:20170816-174908.log',
+        'x11-libs:pango-1.32.5-r1:20170816-174954.log',
+        'x11-libs:pixman-0.32.4:20170816-174832.log',
+        'x11-misc:xkeyboard-config-2.15-r3:20170816-174908.log',
+        'x11-proto:kbproto-1.0.5:20170816-174849.log',
+        'x11-proto:xproto-7.0.31:20170816-174849.log',
+    )
+    tarred_files = [os.path.join('logs', x) for x in log_files]
+    log_files_root = os.path.join(log_parent_dir,
+                                  '%s/tmp/portage/logs' % board)
+    # Generate a representative set of log files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(log_files_root, log_files)
+
+    archive_dir = self.tempdir
+    tarball = artifacts.BundleEBuildLogsTarball(chroot, sysroot, archive_dir)
+    self.assertEqual('ebuild_logs.tar.xz', tarball)
+
+    # Verify the tarball contents.
+    tarball_fullpath = os.path.join(self.tempdir, tarball)
+    cros_test_lib.VerifyTarball(tarball_fullpath, tarred_files)
+
+
+class BundleChromeOSConfigTest(cros_test_lib.TempDirTestCase):
+  """BundleChromeOSConfig tests."""
+
+  def setUp(self):
+    self.board = 'samus'
+
+    # Create chroot object and sysroot object
+    chroot_path = os.path.join(self.tempdir, 'chroot')
+    self.chroot = chroot_lib.Chroot(path=chroot_path)
+    sysroot_path = os.path.join('build', self.board)
+    self.sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+    self.archive_dir = self.tempdir
+
+  def testBundleChromeOSConfig(self):
+    """Verifies that the correct ChromeOS config file is bundled."""
+    # Create parent dir for ChromeOS Config output.
+    config_parent_dir = os.path.join(self.chroot.path, 'build')
+
+    # Names of ChromeOS Config files typically found in a build directory.
+    config_files = ('config.json',
+                    cros_test_lib.Directory('yaml', [
+                        'config.c', 'config.yaml', 'ec_config.c', 'ec_config.h',
+                        'model.yaml', 'private-model.yaml'
+                    ]))
+    config_files_root = os.path.join(
+        config_parent_dir, '%s/usr/share/chromeos-config' % self.board)
+    # Generate a representative set of config files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(config_files_root, config_files)
+
+    # Write a payload to the config.yaml file.
+    test_config_payload = {
+        'chromeos': {
+            'configs': [{
+                'identity': {
+                    'platform-name': 'Samus'
+                }
+            }]
+        }
+    }
+    with open(os.path.join(config_files_root, 'yaml', 'config.yaml'), 'w') as f:
+      json.dump(test_config_payload, f)
+
+    config_filename = artifacts.BundleChromeOSConfig(self.chroot, self.sysroot,
+                                                     self.archive_dir)
+    self.assertEqual('config.yaml', config_filename)
+
+    with open(os.path.join(self.archive_dir, config_filename), 'r') as f:
+      self.assertEqual(test_config_payload, json.load(f))
+
+  def testNoChromeOSConfigFound(self):
+    """Verifies that None is returned when no ChromeOS config file is found."""
+    self.assertIsNone(
+        artifacts.BundleChromeOSConfig(self.chroot, self.sysroot,
+                                       self.archive_dir))
+
+
+class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
+  """BundleVmFiles tests."""
+
+  def testBundleVmFiles(self):
+    """Verifies that the correct files are bundled"""
+    # Create the chroot instance.
+    chroot_path = os.path.join(self.tempdir, 'chroot')
+    chroot = chroot_lib.Chroot(path=chroot_path)
+
+    # Create the test_results_dir
+    test_results_dir = 'test/results'
+
+    # Create a set of files where some should get bundled up as VM files.
+    # Add a suffix (123) to one of the files matching the VM pattern prefix.
+    vm_files = ('file1.txt',
+                'file2.txt',
+                'chromiumos_qemu_disk.bin' + '123',
+                'chromiumos_qemu_mem.bin'
+               )
+
+    target_test_dir = os.path.join(chroot_path, test_results_dir)
+    cros_test_lib.CreateOnDiskHierarchy(target_test_dir, vm_files)
+
+    # Create the output directory.
+    output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(output_dir)
+
+    archives = artifacts.BundleVmFiles(
+        chroot, test_results_dir, output_dir)
+    expected_archive_files = [
+        output_dir + '/chromiumos_qemu_disk.bin' + '123.tar',
+        output_dir + '/chromiumos_qemu_mem.bin.tar']
+    self.assertItemsEqual(archives, expected_archive_files)
+
+
 class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
   """BuildFirmwareArchive tests."""
 
@@ -248,8 +388,8 @@ class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
     cros_test_lib.VerifyTarball(tarball, fw_archived_files)
 
 
-class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
-  """BundleOrderfileGenerationArtifacts tests."""
+class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
+  """BundleAFDOGenerationArtifacts tests."""
 
   def setUp(self):
     # Create the build target.
@@ -265,45 +405,55 @@ class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
 
-    # Create a dummy Chrome version
-    self.chrome_version = '%s-1.0.0-r1' % constants.CHROME_PN
+  def testRunSuccess(self):
+    """Generic function for testing success cases for different types."""
 
-  def testSuccess(self):
-    """Test success case."""
     # Separate tempdir for the method itself.
-    call_tempdir = os.path.join(self.chroot_tmp, 'orderfile_call_tempdir')
+    call_tempdir = os.path.join(self.chroot_tmp, 'call_tempdir')
     osutils.SafeMakedirs(call_tempdir)
     self.PatchObject(osutils.TempDir, '__enter__', return_value=call_tempdir)
 
-    # Set up files in the tempdir since the command isn't being called to
-    # generate anything for it to handle.
-    files = [self.chrome_version+'.orderfile.tar.xz',
-             self.chrome_version+'.nm.tar.xz']
-    expected_files = [os.path.join(self.output_dir, f) for f in files]
-
-    for f in files:
-      osutils.Touch(os.path.join(call_tempdir, f))
-
-    mock_generate = self.PatchObject(
+    mock_orderfile_generate = self.PatchObject(
         toolchain_util, 'GenerateChromeOrderfile',
         autospec=True)
 
-    created = artifacts.BundleOrderfileGenerationArtifacts(
-        self.chroot, self.build_target, self.chrome_version, self.output_dir)
+    mock_afdo_generate = self.PatchObject(
+        toolchain_util, 'GenerateBenchmarkAFDOProfile',
+        autospec=True)
 
-    # Test the class is called with right arguments
-    mock_generate.assert_called_with(
-        self.build_target.name,
-        call_tempdir,
-        self.chrome_version,
-        self.chroot.path,
-        self.chroot.GetEnterArgs()
-    )
+    #Test both orderfile and AFDO.
+    for is_orderfile in [False, True]:
+      # Set up files in the tempdir since the command isn't being called to
+      # generate anything for it to handle.
+      files = ['artifact1', 'artifact2']
+      expected_files = [os.path.join(self.output_dir, f) for f in files]
+      for f in files:
+        osutils.Touch(os.path.join(call_tempdir, f))
 
-    # Make sure we get all the expected files
-    self.assertItemsEqual(expected_files, created)
-    for f in created:
-      self.assertExists(f)
+      created = artifacts.BundleAFDOGenerationArtifacts(
+          is_orderfile, self.chroot, self.build_target, self.output_dir)
+
+      # Test right class is called with right arguments
+      if is_orderfile:
+        mock_orderfile_generate.assert_called_once_with(
+            board=self.build_target.name,
+            output_dir=call_tempdir,
+            chroot_path=self.chroot.path,
+            chroot_args=self.chroot.GetEnterArgs()
+        )
+      else:
+        mock_afdo_generate.assert_called_once_with(
+            board=self.build_target.name,
+            output_dir=call_tempdir,
+            chroot_path=self.chroot.path,
+            chroot_args=self.chroot.GetEnterArgs(),
+        )
+
+      # Make sure we get all the expected files
+      self.assertItemsEqual(expected_files, created)
+      for f in created:
+        self.assertExists(f)
+        os.remove(f)
 
 
 class FetchPinnedGuestImagesTest(cros_test_lib.TempDirTestCase):
@@ -410,3 +560,38 @@ class GeneratePayloadsTest(cros_test_lib.MockTempDirTestCase):
              mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
                        partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
     compress_file_mock.assert_has_calls(calls)
+
+
+class GenerateCpeExportTest(cros_test_lib.RunCommandTempDirTestCase):
+  """GenerateCpeExport tests."""
+
+  def setUp(self):
+    self.sysroot = sysroot_lib.Sysroot('/build/board')
+    self.chroot = chroot_lib.Chroot(self.tempdir)
+
+    self.chroot_tempdir = osutils.TempDir(base_dir=self.tempdir)
+    self.PatchObject(self.chroot, 'tempdir', return_value=self.chroot_tempdir)
+
+    self.output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_dir)
+
+    result_file = artifacts.CPE_RESULT_FILE_TEMPLATE % 'board'
+    self.result_file = os.path.join(self.output_dir, result_file)
+
+    warnings_file = artifacts.CPE_WARNINGS_FILE_TEMPLATE % 'board'
+    self.warnings_file = os.path.join(self.output_dir, warnings_file)
+
+  def testSuccess(self):
+    """Test success handling."""
+    # Set up warning output and the file the command would be making.
+    report = 'Report.'
+    warnings = 'Warnings.'
+    self.rc.SetDefaultCmdResult(returncode=0, output=report, error=warnings)
+
+    result = artifacts.GenerateCpeReport(self.chroot, self.sysroot,
+                                         self.output_dir)
+
+    self.assertEqual(self.result_file, result.report)
+    self.assertEqual(self.warnings_file, result.warnings)
+    self.assertFileContents(self.result_file, report)
+    self.assertFileContents(self.warnings_file, warnings)

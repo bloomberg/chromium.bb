@@ -46,8 +46,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_observer.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/version_info/version_info.h"
@@ -62,14 +61,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/web_contents_tester.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
@@ -82,25 +79,13 @@ using testing::ElementsAre;
 namespace password_manager {
 namespace {
 
-void SetNewParsingForSaving(base::test::ScopedFeatureList* scoped_feature_list,
-                            bool enabled) {
-  std::vector<Feature> features = {features::kNewPasswordFormParsing,
-                                   features::kNewPasswordFormParsingForSaving,
-                                   features::kOnlyNewParser};
-
-  std::vector<Feature> enabled_features;
-  std::vector<Feature> disabled_features;
-  (enabled ? enabled_features : disabled_features) = std::move(features);
-  scoped_feature_list->InitWithFeatures(enabled_features, disabled_features);
-}
-
 class PasswordManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
   PasswordManagerBrowserTest() {
     // Turn off waiting for server predictions before filing. It makes filling
     // behaviour more deterministic. Filling with server predictions is tested
-    // in NewPasswordFormManager unit tests.
-    password_manager::NewPasswordFormManager::
+    // in PasswordFormManager unit tests.
+    password_manager::PasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
   }
 
@@ -286,11 +271,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        NoPromptAfterCredentialsAPIPasswordStore) {
-  for (bool use_new_parsing_for_saving : {false, true}) {
-    SCOPED_TRACE(testing::Message() << "use_new_parsing_for_saving = "
-                                    << use_new_parsing_for_saving);
-    base::test::ScopedFeatureList scoped_feature_list;
-    SetNewParsingForSaving(&scoped_feature_list, use_new_parsing_for_saving);
     NavigateToFile("/password/password_form.html");
     // Simulate the Credential Manager API function store() is called and
     // PasswordManager instance is notified about that.
@@ -310,7 +290,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
     std::unique_ptr<BubbleObserver> prompt_observer(
         new BubbleObserver(WebContents()));
     EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
-  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -1562,12 +1541,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTest,
     NoPromptForSeperateLoginFormWhenSwitchingFromHttpsToHttp) {
-  for (bool use_new_parsing_for_saving : {false, true}) {
-    SCOPED_TRACE(testing::Message() << "use_new_parsing_for_saving = "
-                                    << use_new_parsing_for_saving);
-    base::test::ScopedFeatureList scoped_feature_list;
-    SetNewParsingForSaving(&scoped_feature_list, use_new_parsing_for_saving);
-
     std::string path = "/password/password_form.html";
     GURL https_url(https_test_server().GetURL(path));
     ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
@@ -1633,7 +1606,6 @@ IN_PROC_BROWSER_TEST_F(
                 browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
                 .get());
     password_store->Clear();
-  }
 }
 
 // Tests that after HTTP -> HTTPS migration the credential is autofilled.
@@ -1718,9 +1690,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // is relevant. By the time the reply is executed it is guaranteed that the
   // migration is completed.
   base::RunLoop run_loop;
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                   base::BindOnce([]() {}),
-                                   run_loop.QuitClosure());
+  base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
+                         base::BindOnce([]() {}), run_loop.QuitClosure());
   run_loop.Run();
 
   // Migration updates should touch the password store.
@@ -1817,14 +1788,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DuplicateFormsGetFilled) {
   WaitForJsElementValue("document.body.children[0].children[0]", "temp");
   WaitForJsElementValue("document.body.children[0].children[1]", "random");
 
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kNewPasswordFormParsing)) {
-    // It's a trick. There should be no second request to the password store
-    // since the existing PasswordFormManager will manage the new form. On other
-    // hand NewPasswordFormManager uses renderer ids for matching forms so a new
-    // NewPasswordFormManager is created for each DOM form object.
-    password_store->Clear();
-  }
   // Add one more form.
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "addForm();"));
   // Wait until the username is filled, to make sure autofill kicked in.
@@ -2099,15 +2062,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptOnBack) {
-  for (bool new_parser_enabled : {false, true}) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (new_parser_enabled) {
-      scoped_feature_list.InitAndEnableFeature(
-          features::kNewPasswordFormParsing);
-    } else {
-      scoped_feature_list.InitAndDisableFeature(
-          features::kNewPasswordFormParsing);
-    }
     // Go to a successful landing page through submitting first, so that it is
     // reachable through going back, and the remembered page transition is form
     // submit. There is no need to submit non-empty strings.
@@ -2136,7 +2090,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptOnBack) {
     ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_back));
     observer.Wait();
     EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
-  }
 }
 
 // Regression test for http://crbug.com/452306
@@ -3655,12 +3608,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       ::features::kHTTPAuthCommittedInterstitials);
-
-  for (bool new_parser_enabled : {false, true}) {
-    SCOPED_TRACE(testing::Message("new_parser_enabled=") << new_parser_enabled);
-    base::test::ScopedFeatureList scoped_feature_list;
-    SetNewParsingForSaving(&scoped_feature_list, new_parser_enabled);
-
     // The embedded_test_server() is already started at this point and adding
     // the request handler to it would not be thread safe. Therefore, use a new
     // server.
@@ -3703,7 +3650,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
     WaitForPasswordStore();
     BubbleObserver bubble_observer(WebContents());
     EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
-  }
 }
 
 // Test that if HTTP auth login (i.e., credentials not put through web forms)
@@ -3838,9 +3784,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // bubble is shown instead of silent update.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        NoSilentOverwriteOnPSLMatch) {
-  // The test matches the behavior of the new password form manager.
-  base::test::ScopedFeatureList scoped_feature_list;
-  SetNewParsingForSaving(&scoped_feature_list, true);
   // Store a password at origin A.
   const GURL url_A = embedded_test_server()->GetURL("abc.foo.com", "/");
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -4044,23 +3987,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, FormDynamicallyChanged) {
 
   WaitForElementValue("username_field", "temp");
   WaitForElementValue("password_field", "pw");
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       CheckOnPasteCalledForPasteEvent) {
-  ::ui::Clipboard::SetClipboardForCurrentThread(
-      std::make_unique<::ui::TestClipboard>());
-  const std::string password = "password";
-  static_cast<::ui::TestClipboard*>(::ui::Clipboard::GetForCurrentThread())
-      ->WriteText(password.data(), password.length());
-  NavigateToFile("/password/password_form.html");
-  CustomPasswordManagerClient* client =
-      static_cast<CustomPasswordManagerClient*>(
-          ChromePasswordManagerClient::FromWebContents(WebContents()));
-  content::SimulateKeyPress(WebContents(), ::ui::DomKey::PASTE,
-                            ::ui::DomCode::PASTE, ::ui::VKEY_PASTE, true, true,
-                            false, true);
-  EXPECT_EQ(client->pasted_value(), base::ASCIIToUTF16("password"));
 }
 
 }  // namespace

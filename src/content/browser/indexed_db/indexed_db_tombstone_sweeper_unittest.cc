@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"
@@ -13,11 +14,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/mock_level_db.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
@@ -140,11 +141,11 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
     leveldb::Status s;
     std::tie(level_db_state, s, std::ignore) =
         indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-            base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
-            indexed_db::GetDefaultLevelDBComparator());
+            base::FilePath(), indexed_db::GetDefaultLevelDBComparator(),
+            /* create_if_missing=*/true);
     ASSERT_TRUE(s.ok());
-    in_memory_db_ = std::make_unique<TransactionalLevelDBDatabase>(
-        std::move(level_db_state), indexed_db::LevelDBFactory::Get(), nullptr,
+    in_memory_db_ = indexed_db::LevelDBFactory::Get()->CreateLevelDBDatabase(
+        std::move(level_db_state), nullptr, nullptr,
         TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         kRoundIterations, kMaxIterations, in_memory_db_->db());
@@ -237,7 +238,7 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(IndexedDBTombstoneSweeperTest, EmptyDB) {

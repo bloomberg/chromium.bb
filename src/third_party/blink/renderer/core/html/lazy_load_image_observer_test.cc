@@ -207,6 +207,9 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
       scoped_automatic_lazy_image_loading_for_test_;
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test_ = true;
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test_ =
+          false;
 };
 
 TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
@@ -1256,7 +1259,7 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   partial_image.Append(full_image.data(), 2048U);
 
   Document* child_frame_document =
-      ToHTMLIFrameElement(GetDocument().getElementById("child_frame"))
+      To<HTMLIFrameElement>(GetDocument().getElementById("child_frame"))
           ->contentDocument();
 
   eager_resource.Complete(full_image);

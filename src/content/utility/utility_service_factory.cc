@@ -27,17 +27,14 @@
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
-#include "services/video_capture/service_impl.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
-#include "media/mojo/interfaces/constants.mojom.h"   // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"   // nogncheck
 #include "media/mojo/services/cdm_service.h"         // nogncheck
 #include "media/mojo/services/mojo_cdm_helper.h"     // nogncheck
 #include "media/mojo/services/mojo_media_client.h"   // nogncheck
@@ -156,8 +153,7 @@ void UtilityServiceFactory::RunService(
              !base::FeatureList::IsEnabled(
                  features::kTracingServiceInProcess)) {
     service = std::make_unique<tracing::TracingService>(std::move(request));
-  } else if (service_name == mojom::kNetworkServiceName &&
-             base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  } else if (service_name == mojom::kNetworkServiceName) {
     // Unlike other services supported by the utility process, the network
     // service runs on the IO thread and never self-terminates.
     GetContentClient()->utility()->RegisterNetworkBinders(
@@ -168,9 +164,6 @@ void UtilityServiceFactory::RunService(
                        std::move(network_registry_),
                        base::SequencedTaskRunnerHandle::Get()));
     return;
-  } else if (service_name == video_capture::mojom::kServiceName) {
-    service = std::make_unique<video_capture::ServiceImpl>(
-        std::move(request), base::ThreadTaskRunnerHandle::Get());
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   else if (service_name == media::mojom::kCdmServiceName) {

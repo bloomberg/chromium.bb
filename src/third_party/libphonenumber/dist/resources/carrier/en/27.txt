@@ -14,8 +14,9 @@
 #
 # The carrier prefixes were added according to the Wikipedia page
 # http://en.wikipedia.org/wiki/Telephone_numbers_in_South_Africa
-# and the open-source bug
-# https://github.com/googlei18n/libphonenumber/issues/489
+# and the open-source bugs
+# https://github.com/google/libphonenumber/issues/489
+# https://github.com/google/libphonenumber/issues/1242
 
 27603|MTN
 27604|MTN
@@ -24,28 +25,30 @@
 27607|Vodacom
 27608|Vodacom
 27609|Vodacom
-27610|Cell C
-27611|Cell C
-27612|Cell C
-27613|Cell C
+2761|Cell C
 27614|Telkom Mobile
-27615|Cell C
-27616|Cell C
-27617|Cell C
-27618|Cell C
-27619|Cell C
-27620|Cell C
-27621|Cell C
-27622|Cell C
-27623|Cell C
-27624|Cell C
+2762|Cell C
+2763|MTN
+27636|Vodacom
+27637|Vodacom
+27640|MTN
+27641|Cell C
+27642|Cell C
+27643|Cell C
+27644|Cell C
+27645|Cell C
+27646|Vodacom
+27647|Vodacom
+27648|Vodacom
+27649|Vodacom
+27660|Vodacom
+27661|Vodacom
+27662|Vodacom
+27663|Vodacom
+27664|Vodacom
+27665|Vodacom
+2771|Vodacom
 27710|MTN
-27711|Vodacom
-27712|Vodacom
-27713|Vodacom
-27714|Vodacom
-27715|Vodacom
-27716|Vodacom
 27717|MTN
 27718|MTN
 27719|MTN

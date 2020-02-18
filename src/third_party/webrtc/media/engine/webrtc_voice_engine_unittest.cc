@@ -18,11 +18,11 @@
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/media_transport_config.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtp_parameters.h"
 #include "api/scoped_refptr.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "call/call.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "media/base/fake_media_engine.h"
 #include "media/base/fake_network_interface.h"
 #include "media/base/fake_rtp.h"
@@ -572,7 +572,6 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
     stats.fraction_lost = 34.56f;
     stats.codec_name = "codec_name_send";
     stats.codec_payload_type = 42;
-    stats.ext_seqnum = 789;
     stats.jitter_ms = 12;
     stats.rtt_ms = 345;
     stats.audio_level = 678;
@@ -607,7 +606,6 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
     EXPECT_EQ(info.fraction_lost, stats.fraction_lost);
     EXPECT_EQ(info.codec_name, stats.codec_name);
     EXPECT_EQ(info.codec_payload_type, stats.codec_payload_type);
-    EXPECT_EQ(info.ext_seqnum, stats.ext_seqnum);
     EXPECT_EQ(info.jitter_ms, stats.jitter_ms);
     EXPECT_EQ(info.rtt_ms, stats.rtt_ms);
     EXPECT_EQ(info.audio_level, stats.audio_level);
@@ -649,7 +647,6 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
     stats.packets_lost = 101;
     stats.codec_name = "codec_name_recv";
     stats.codec_payload_type = 42;
-    stats.ext_seqnum = 678;
     stats.jitter_ms = 901;
     stats.jitter_buffer_ms = 234;
     stats.jitter_buffer_preferred_ms = 567;
@@ -670,6 +667,7 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
     stats.decoding_calls_to_neteq = 345;
     stats.decoding_normal = 67890;
     stats.decoding_plc = 1234;
+    stats.decoding_codec_plc = 1236;
     stats.decoding_cng = 5678;
     stats.decoding_plc_cng = 9012;
     stats.decoding_muted_output = 3456;
@@ -691,8 +689,6 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
               stats.packets_lost);
     EXPECT_EQ(info.codec_name, stats.codec_name);
     EXPECT_EQ(info.codec_payload_type, stats.codec_payload_type);
-    EXPECT_EQ(rtc::checked_cast<unsigned int>(info.ext_seqnum),
-              stats.ext_seqnum);
     EXPECT_EQ(rtc::checked_cast<unsigned int>(info.jitter_ms), stats.jitter_ms);
     EXPECT_EQ(rtc::checked_cast<unsigned int>(info.jitter_buffer_ms),
               stats.jitter_buffer_ms);
@@ -719,6 +715,7 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
     EXPECT_EQ(info.decoding_calls_to_neteq, stats.decoding_calls_to_neteq);
     EXPECT_EQ(info.decoding_normal, stats.decoding_normal);
     EXPECT_EQ(info.decoding_plc, stats.decoding_plc);
+    EXPECT_EQ(info.decoding_codec_plc, stats.decoding_codec_plc);
     EXPECT_EQ(info.decoding_cng, stats.decoding_cng);
     EXPECT_EQ(info.decoding_plc_cng, stats.decoding_plc_cng);
     EXPECT_EQ(info.decoding_muted_output, stats.decoding_muted_output);
@@ -2241,6 +2238,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStatsWithMultipleSendStreams) {
 
   // Check stats for the added streams.
   {
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     cricket::VoiceMediaInfo info;
     EXPECT_EQ(true, channel_->GetStats(&info));
 
@@ -2260,6 +2258,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStatsWithMultipleSendStreams) {
   {
     cricket::VoiceMediaInfo info;
     EXPECT_TRUE(channel_->RemoveRecvStream(kSsrcY));
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     EXPECT_EQ(true, channel_->GetStats(&info));
     EXPECT_EQ(static_cast<size_t>(arraysize(kSsrcs4)), info.senders.size());
     EXPECT_EQ(0u, info.receivers.size());
@@ -2271,6 +2270,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStatsWithMultipleSendStreams) {
     cricket::VoiceMediaInfo info;
     DeliverPacket(kPcmuFrame, sizeof(kPcmuFrame));
     SetAudioReceiveStreamStats();
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     EXPECT_EQ(true, channel_->GetStats(&info));
     EXPECT_EQ(static_cast<size_t>(arraysize(kSsrcs4)), info.senders.size());
     EXPECT_EQ(1u, info.receivers.size());
@@ -2429,6 +2429,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStats) {
 
   // Check stats for the added streams.
   {
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     cricket::VoiceMediaInfo info;
     EXPECT_EQ(true, channel_->GetStats(&info));
 
@@ -2444,6 +2445,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStats) {
   {
     cricket::VoiceMediaInfo info;
     SetSend(true);
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     EXPECT_EQ(true, channel_->GetStats(&info));
     VerifyVoiceSenderInfo(info.senders[0], true);
     VerifyVoiceSendRecvCodecs(info);
@@ -2453,6 +2455,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStats) {
   {
     cricket::VoiceMediaInfo info;
     EXPECT_TRUE(channel_->RemoveRecvStream(kSsrcY));
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     EXPECT_EQ(true, channel_->GetStats(&info));
     EXPECT_EQ(1u, info.senders.size());
     EXPECT_EQ(0u, info.receivers.size());
@@ -2464,6 +2467,7 @@ TEST_F(WebRtcVoiceEngineTestFake, GetStats) {
     cricket::VoiceMediaInfo info;
     DeliverPacket(kPcmuFrame, sizeof(kPcmuFrame));
     SetAudioReceiveStreamStats();
+    EXPECT_CALL(adm_, GetPlayoutUnderrunCount()).WillOnce(Return(0));
     EXPECT_EQ(true, channel_->GetStats(&info));
     EXPECT_EQ(1u, info.senders.size());
     EXPECT_EQ(1u, info.receivers.size());
@@ -2808,7 +2812,7 @@ TEST_F(WebRtcVoiceEngineTestFake, SetAudioOptions) {
   EXPECT_TRUE(SetupSendStream());
   EXPECT_TRUE(AddRecvStream(kSsrcY));
   EXPECT_CALL(adm_, BuiltInAECIsAvailable())
-      .Times(9)
+      .Times(8)
       .WillRepeatedly(Return(false));
   EXPECT_CALL(adm_, BuiltInAGCIsAvailable())
       .Times(4)
@@ -2855,23 +2859,14 @@ TEST_F(WebRtcVoiceEngineTestFake, SetAudioOptions) {
   SetSendParameters(send_parameters_);
   EXPECT_TRUE(IsEchoCancellationEnabled());
 
-  // Turn on delay agnostic aec and make sure nothing change w.r.t. echo
-  // control.
-  send_parameters_.options.delay_agnostic_aec = true;
-  SetSendParameters(send_parameters_);
-  EXPECT_TRUE(IsEchoCancellationEnabled());
-
   // Turn off echo cancellation and delay agnostic aec.
-  send_parameters_.options.delay_agnostic_aec = false;
-  send_parameters_.options.extended_filter_aec = false;
   send_parameters_.options.echo_cancellation = false;
   SetSendParameters(send_parameters_);
   EXPECT_FALSE(IsEchoCancellationEnabled());
 
-  // Turning delay agnostic aec back on should also turn on echo cancellation.
-  send_parameters_.options.delay_agnostic_aec = true;
+  // Restore AEC to be on to work with the following tests.
+  send_parameters_.options.echo_cancellation = true;
   SetSendParameters(send_parameters_);
-  EXPECT_TRUE(IsEchoCancellationEnabled());
 
   // Turn off AGC
   send_parameters_.options.auto_gain_control = false;
@@ -3458,7 +3453,7 @@ TEST(WebRtcVoiceEngineTest, StartupShutdown) {
       webrtc::MockAudioEncoderFactory::CreateUnusedFactory(),
       webrtc::MockAudioDecoderFactory::CreateUnusedFactory(), nullptr, apm);
   engine.Init();
-  webrtc::RtcEventLogNullImpl event_log;
+  webrtc::RtcEventLogNull event_log;
   webrtc::Call::Config call_config(&event_log);
   call_config.task_queue_factory = task_queue_factory.get();
   auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
@@ -3486,7 +3481,7 @@ TEST(WebRtcVoiceEngineTest, StartupShutdownWithExternalADM) {
         webrtc::MockAudioEncoderFactory::CreateUnusedFactory(),
         webrtc::MockAudioDecoderFactory::CreateUnusedFactory(), nullptr, apm);
     engine.Init();
-    webrtc::RtcEventLogNullImpl event_log;
+    webrtc::RtcEventLogNull event_log;
     webrtc::Call::Config call_config(&event_log);
     call_config.task_queue_factory = task_queue_factory.get();
     auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
@@ -3560,7 +3555,7 @@ TEST(WebRtcVoiceEngineTest, Has32Channels) {
       webrtc::MockAudioEncoderFactory::CreateUnusedFactory(),
       webrtc::MockAudioDecoderFactory::CreateUnusedFactory(), nullptr, apm);
   engine.Init();
-  webrtc::RtcEventLogNullImpl event_log;
+  webrtc::RtcEventLogNull event_log;
   webrtc::Call::Config call_config(&event_log);
   call_config.task_queue_factory = task_queue_factory.get();
   auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
@@ -3603,7 +3598,7 @@ TEST(WebRtcVoiceEngineTest, SetRecvCodecs) {
       webrtc::MockAudioEncoderFactory::CreateUnusedFactory(),
       webrtc::CreateBuiltinAudioDecoderFactory(), nullptr, apm);
   engine.Init();
-  webrtc::RtcEventLogNullImpl event_log;
+  webrtc::RtcEventLogNull event_log;
   webrtc::Call::Config call_config(&event_log);
   call_config.task_queue_factory = task_queue_factory.get();
   auto call = absl::WrapUnique(webrtc::Call::Create(call_config));

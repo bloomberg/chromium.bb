@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxge/fx_font.h"
 #include "public/cpp/fpdf_scopers.h"
@@ -386,6 +387,45 @@ TEST_F(FPDFTextEmbedderTest, TextSearchConsecutive) {
     EXPECT_FALSE(FPDFText_FindPrev(search.get()));
     EXPECT_EQ(0, FPDFText_GetSchResultIndex(search.get()));
     EXPECT_EQ(4, FPDFText_GetSchCount(search.get()));
+  }
+
+  FPDFText_ClosePage(textpage);
+  UnloadPage(page);
+}
+
+// Fails on Windows. https://crbug.com/pdfium/1370
+#if defined(OS_WIN)
+#define MAYBE_TextSearchLatinExtended DISABLED_TextSearchLatinExtended
+#else
+#define MAYBE_TextSearchLatinExtended TextSearchLatinExtended
+#endif
+TEST_F(FPDFTextEmbedderTest, MAYBE_TextSearchLatinExtended) {
+  ASSERT_TRUE(OpenDocument("latin_extended.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE textpage = FPDFText_LoadPage(page);
+  ASSERT_TRUE(textpage);
+
+  // Upper/lowercase 'a' with breve.
+  constexpr FPDF_WCHAR kNeedleUpper[] = {0x0102, 0x0000};
+  constexpr FPDF_WCHAR kNeedleLower[] = {0x0103, 0x0000};
+
+  for (const auto* needle : {kNeedleUpper, kNeedleLower}) {
+    ScopedFPDFTextFind search(FPDFText_FindStart(textpage, needle, 0, 0));
+    EXPECT_TRUE(search);
+    EXPECT_EQ(0, FPDFText_GetSchResultIndex(search.get()));
+    EXPECT_EQ(0, FPDFText_GetSchCount(search.get()));
+
+    // Should find 2 results at position 21/22, both with length 1.
+    EXPECT_TRUE(FPDFText_FindNext(search.get()));
+    EXPECT_EQ(2, FPDFText_GetSchResultIndex(search.get()));
+    EXPECT_EQ(1, FPDFText_GetSchCount(search.get()));
+    EXPECT_TRUE(FPDFText_FindNext(search.get()));
+    EXPECT_EQ(3, FPDFText_GetSchResultIndex(search.get()));
+    EXPECT_EQ(1, FPDFText_GetSchCount(search.get()));
+    // And no more than 2 results.
+    EXPECT_FALSE(FPDFText_FindNext(search.get()));
   }
 
   FPDFText_ClosePage(textpage);
@@ -1170,6 +1210,44 @@ TEST_F(FPDFTextEmbedderTest, Bug_1139) {
   ASSERT_EQ(kHelloGoodbyeTextSize, num_chars);
   EXPECT_TRUE(
       check_unsigned_shorts(kHelloGoodbyeText, buffer, kHelloGoodbyeTextSize));
+  FPDFText_ClosePage(text_page);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, GetCharAngle) {
+  ASSERT_TRUE(OpenDocument("rotated_text.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+  ASSERT_TRUE(text_page);
+
+  static constexpr int kSubstringsSize[] = {FX_ArraySize("Hello,"),
+                                            FX_ArraySize(" world!\r\n"),
+                                            FX_ArraySize("Goodbye,")};
+
+  // -1 for CountChars not including the \0, but +1 for the extra control
+  // character.
+  EXPECT_EQ(kHelloGoodbyeTextSize, FPDFText_CountChars(text_page));
+
+  EXPECT_EQ(-1, FPDFText_GetCharAngle(nullptr, 0));
+  EXPECT_EQ(-1, FPDFText_GetCharAngle(text_page, -1));
+  EXPECT_EQ(-1, FPDFText_GetCharAngle(text_page, kHelloGoodbyeTextSize + 1));
+
+  // Test GetCharAngle for every quadrant
+  EXPECT_NEAR(FX_PI / 4.0, FPDFText_GetCharAngle(text_page, 0), 0.001);
+  EXPECT_NEAR(3 * FX_PI / 4.0,
+              FPDFText_GetCharAngle(text_page, kSubstringsSize[0]), 0.001);
+  EXPECT_NEAR(
+      5 * FX_PI / 4.0,
+      FPDFText_GetCharAngle(text_page, kSubstringsSize[0] + kSubstringsSize[1]),
+      0.001);
+  EXPECT_NEAR(
+      7 * FX_PI / 4.0,
+      FPDFText_GetCharAngle(text_page, kSubstringsSize[0] + kSubstringsSize[1] +
+                                           kSubstringsSize[2]),
+      0.001);
+
   FPDFText_ClosePage(text_page);
   UnloadPage(page);
 }

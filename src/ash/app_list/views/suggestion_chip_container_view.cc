@@ -28,17 +28,25 @@ namespace {
 // The spacing between chips.
 constexpr int kChipSpacing = 8;
 
-// Sort suggestion chip results by |display_index| value in ascending order.
-bool IndexOrdering(const SearchResult* result1, const SearchResult* result2) {
-  return result1->display_index() < result2->display_index();
+bool IsPolicySuggestionChip(const SearchResult& result) {
+  return result.display_location() ==
+             ash::SearchResultDisplayLocation::kSuggestionChipContainer &&
+         result.display_index() != ash::SearchResultDisplayIndex::kUndefined;
 }
 
-bool IsPolicySuggestionChip(const SearchResult* result) {
-  return result->display_location() ==
-             ash::SearchResultDisplayLocation::kSuggestionChipContainer &&
-         result->display_index() !=
-             ash::SearchResultDisplayIndex::kPlacementUndefined;
-}
+struct CompareByDisplayIndexAndThenPositionPriority {
+  bool operator()(const SearchResult* result1,
+                  const SearchResult* result2) const {
+    // Sort increasing by display index, then decreasing by position priority.
+    ash::SearchResultDisplayIndex index1 = result1->display_index();
+    ash::SearchResultDisplayIndex index2 = result2->display_index();
+    float priority1 = result1->position_priority();
+    float priority2 = result2->position_priority();
+    if (index1 != index2)
+      return index1 < index2;
+    return priority1 > priority2;
+  }
+};
 
 }  // namespace
 
@@ -83,16 +91,32 @@ SearchResultSuggestionChipView* SuggestionChipContainerView::GetResultViewAt(
 int SuggestionChipContainerView::DoUpdate() {
   // Filter out priority suggestion chips with a non-default value
   // for |display_index|.
-  auto filter_indexed_policy_chips = [](const SearchResult& r) -> bool {
-    return IsPolicySuggestionChip(&r);
+  auto filter_requested_index_chips = [](const SearchResult& r) -> bool {
+    return IsPolicySuggestionChip(r);
   };
-  std::vector<SearchResult*> indexed_policy_results =
+  std::vector<SearchResult*> requested_index_results =
       SearchModel::FilterSearchResultsByFunction(
-          results(), base::BindRepeating(filter_indexed_policy_chips),
+          results(), base::BindRepeating(filter_requested_index_chips),
           AppListConfig::instance().num_start_page_tiles());
 
-  std::sort(indexed_policy_results.begin(), indexed_policy_results.end(),
-            &IndexOrdering);
+  std::sort(requested_index_results.begin(), requested_index_results.end(),
+            CompareByDisplayIndexAndThenPositionPriority());
+
+  // Handle placement issues that may arise when multiple app results have
+  // the same requested index. Reassign the |display_index| of results
+  // with lower priorities or with conflicting indexes so that the results are
+  // added to the final display_results list in the correct order.
+  int previous_index = -1;
+  for (auto* result : requested_index_results) {
+    int current_index = result->display_index();
+    if (current_index <= previous_index) {
+      current_index = previous_index + 1;
+    }
+    ash::SearchResultDisplayIndex final_index =
+        static_cast<ash::SearchResultDisplayIndex>(current_index);
+    result->set_display_index(final_index);
+    previous_index = current_index;
+  }
 
   // Need to filter out kArcAppShortcut since it will be confusing to users
   // if shortcuts are displayed as suggestion chips. Also filter out any
@@ -101,20 +125,23 @@ int SuggestionChipContainerView::DoUpdate() {
     return r.display_type() == ash::SearchResultDisplayType::kRecommendation &&
            r.result_type() != ash::SearchResultType::kPlayStoreReinstallApp &&
            r.result_type() != ash::SearchResultType::kArcAppShortcut &&
-           !IsPolicySuggestionChip(&r);
+           !IsPolicySuggestionChip(r);
   };
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByFunction(
           results(), base::BindRepeating(filter_reinstall_and_shortcut),
           AppListConfig::instance().num_start_page_tiles() -
-              indexed_policy_results.size());
+              requested_index_results.size());
 
   // Update display results list by placing policy result chips at their
-  // specified |display_index|.
-  for (auto* result : indexed_policy_results) {
-    std::vector<SearchResult*>::iterator desired_index =
-        display_results.begin() + result->display_index();
-    display_results.emplace(desired_index, result);
+  // specified |display_index|. Do not add with a |display_index| that is out
+  // of bounds.
+  for (auto* result : requested_index_results) {
+    if (result->display_index() <=
+        AppListConfig::instance().num_start_page_tiles() - 1) {
+      display_results.emplace(display_results.begin() + result->display_index(),
+                              result);
+    }
   }
 
   // Update search results here, but wait until layout to add them as child

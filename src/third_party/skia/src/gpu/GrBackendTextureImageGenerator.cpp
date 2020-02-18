@@ -52,19 +52,9 @@ GrBackendTextureImageGenerator::Make(sk_sp<GrTexture> texture, GrSurfaceOrigin o
 
     GrBackendTexture backendTexture = texture->getBackendTexture();
 
-    // TODO: delete this block
-    {
-        GrBackendFormat backendFormat = backendTexture.getBackendFormat();
-        if (!backendFormat.isValid()) {
-            return nullptr;
-        }
-
-        backendTexture.fConfig = context->priv().caps()->getConfigFromBackendFormat(
-                                                            backendFormat,
-                                                            SkColorTypeToGrColorType(colorType));
-        if (backendTexture.fConfig == kUnknown_GrPixelConfig) {
-            return nullptr;
-        }
+    if (!context->priv().caps()->areColorTypeAndFormatCompatible(
+            SkColorTypeToGrColorType(colorType), backendTexture.getBackendFormat())) {
+        return nullptr;
     }
 
     SkImageInfo info = SkImageInfo::Make(texture->width(), texture->height(), colorType, alphaType,
@@ -156,20 +146,23 @@ sk_sp<GrTextureProxy> GrBackendTextureImageGenerator::onGenerateTexture(
         return nullptr;
     }
 
-    SkASSERT(GrCaps::AreConfigsCompatible(fBackendTexture.config(), config));
-
     GrSurfaceDesc desc;
     desc.fWidth = fBackendTexture.width();
     desc.fHeight = fBackendTexture.height();
     desc.fConfig = config;
     GrMipMapped mipMapped = fBackendTexture.hasMipMaps() ? GrMipMapped::kYes : GrMipMapped::kNo;
 
+    // Ganesh assumes that, when wrapping a mipmapped backend texture from a client, that its
+    // mipmaps are fully fleshed out.
+    GrMipMapsStatus mipMapsStatus = fBackendTexture.hasMipMaps()
+            ? GrMipMapsStatus::kValid : GrMipMapsStatus::kNotAllocated;
+
     // Must make copies of member variables to capture in the lambda since this image generator may
     // be deleted before we actually execute the lambda.
     sk_sp<GrTextureProxy> proxy = proxyProvider->createLazyProxy(
             [refHelper = fRefHelper, releaseProcHelper, semaphore = fSemaphore,
-             backendTexture = fBackendTexture, grColorType](GrResourceProvider* resourceProvider)
-                    -> GrSurfaceProxy::LazyInstantiationResult {
+             backendTexture = fBackendTexture, grColorType](
+                    GrResourceProvider* resourceProvider) -> GrSurfaceProxy::LazyCallbackResult {
                 if (semaphore) {
                     resourceProvider->priv().gpu()->waitSemaphore(semaphore);
                 }
@@ -204,11 +197,11 @@ sk_sp<GrTextureProxy> GrBackendTextureImageGenerator::onGenerateTexture(
                 }
                 // We use keys to avoid re-wrapping the GrBackendTexture in a GrTexture. This is
                 // unrelated to the whatever SkImage key may be assigned to the proxy.
-                return {std::move(tex), GrSurfaceProxy::LazyInstantiationKeyMode::kUnsynced};
+                return {std::move(tex), true, GrSurfaceProxy::LazyInstantiationKeyMode::kUnsynced};
             },
-            backendFormat, desc, GrRenderable::kNo, 1, fSurfaceOrigin, mipMapped,
+            backendFormat, desc, GrRenderable::kNo, 1, fSurfaceOrigin, mipMapped, mipMapsStatus,
             GrInternalSurfaceFlags::kReadOnly, SkBackingFit::kExact, SkBudgeted::kNo,
-            GrProtected::kNo);
+            GrProtected::kNo, GrSurfaceProxy::UseAllocator::kYes);
     if (!proxy) {
         return nullptr;
     }

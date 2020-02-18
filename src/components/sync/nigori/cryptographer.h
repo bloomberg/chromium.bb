@@ -10,10 +10,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/nigori/nigori_key_bag.h"
 #include "components/sync/protocol/encryption.pb.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 
 namespace sync_pb {
 class NigoriKeyBag;
@@ -36,6 +38,18 @@ struct KeyParams {
   std::string password;
 };
 
+struct CryptographerDataWithPendingKeys {
+  CryptographerDataWithPendingKeys();
+  CryptographerDataWithPendingKeys(CryptographerDataWithPendingKeys&& other);
+  ~CryptographerDataWithPendingKeys();
+
+  sync_pb::CryptographerData cryptographer_data;
+  base::Optional<sync_pb::EncryptedData> pending_keys;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CryptographerDataWithPendingKeys);
+};
+
 // This class manages the Nigori objects used to encrypt and decrypt sensitive
 // sync data (eg. passwords). Each Nigori object knows how to handle data
 // protected with a particular passphrase.
@@ -52,9 +66,18 @@ struct KeyParams {
 // delayed until after it can be decrypted.
 class Cryptographer {
  public:
+  // Deserialization.
+  static Cryptographer CreateFromCryptographerDataWithPendingKeys(
+      const CryptographerDataWithPendingKeys& serialized_state);
+
   Cryptographer();
   Cryptographer(const Cryptographer& other);
   ~Cryptographer();
+
+  void CopyFrom(const Cryptographer& other);
+
+  // Serialization.
+  CryptographerDataWithPendingKeys ToCryptographerDataWithPendingKeys() const;
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).
@@ -189,6 +212,11 @@ class Cryptographer {
   bool ImportNigoriKey(const std::string& serialized_nigori_key);
 
  private:
+  // Initializes cryptographer with completely provided state.
+  Cryptographer(NigoriKeyBag key_bag,
+                const std::string& default_nigori_name,
+                std::unique_ptr<sync_pb::EncryptedData> pending_keys);
+
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag|.
   // Does not update the default nigori.

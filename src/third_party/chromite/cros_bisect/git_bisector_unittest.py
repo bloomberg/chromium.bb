@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import copy
-import mock
 import os
+
+import mock
 
 from chromite.cros_bisect import common
 from chromite.cros_bisect import builder as builder_module

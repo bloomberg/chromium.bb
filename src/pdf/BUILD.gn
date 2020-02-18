@@ -50,6 +50,8 @@ if (enable_pdf) {
       "accessibility.cc",
       "accessibility.h",
       "chunk_stream.h",
+      "document_layout.cc",
+      "document_layout.h",
       "document_loader.h",
       "document_loader_impl.cc",
       "document_loader_impl.h",
@@ -59,6 +61,8 @@ if (enable_pdf) {
       "draw_utils/shadow.h",
       "out_of_process_instance.cc",
       "out_of_process_instance.h",
+      "page_orientation.cc",
+      "page_orientation.h",
       "paint_aggregator.cc",
       "paint_aggregator.h",
       "paint_manager.cc",
@@ -105,6 +109,8 @@ if (enable_pdf) {
         "pdfium/pdfium_mem_buffer_file_write.h",
         "pdfium/pdfium_page.cc",
         "pdfium/pdfium_page.h",
+        "pdfium/pdfium_permissions.cc",
+        "pdfium/pdfium_permissions.h",
         "pdfium/pdfium_print.cc",
         "pdfium/pdfium_print.h",
         "pdfium/pdfium_range.cc",
@@ -112,6 +118,13 @@ if (enable_pdf) {
         "pdfium/pdfium_unsupported_features.cc",
         "pdfium/pdfium_unsupported_features.h",
       ]
+
+      if (is_linux) {
+        sources += [
+          "pdfium/pdfium_font_linux.cc",
+          "pdfium/pdfium_font_linux.h",
+        ]
+      }
     }
   }
 
@@ -138,11 +151,14 @@ if (enable_pdf) {
       "test/test_client.h",
       "test/test_document_loader.cc",
       "test/test_document_loader.h",
+      "test/test_utils.cc",
+      "test/test_utils.h",
     ]
 
     deps = [
       ":pdf",
       "//base",
+      "//testing/gtest",
     ]
   }
 
@@ -151,9 +167,11 @@ if (enable_pdf) {
     configs += [ ":pdf_common_config" ]
     sources = [
       "chunk_stream_unittest.cc",
+      "document_layout_unittest.cc",
       "document_loader_impl_unittest.cc",
       "draw_utils/coordinates_unittest.cc",
       "out_of_process_instance_unittest.cc",
+      "page_orientation_unittest.cc",
       "pdf_transform_unittest.cc",
       "range_set_unittest.cc",
     ]
@@ -185,6 +203,9 @@ if (enable_pdf) {
         "pdfium/accessibility_unittest.cc",
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
+        "pdfium/pdfium_engine_unittest.cc",
+        "pdfium/pdfium_page_unittest.cc",
+        "pdfium/pdfium_permissions_unittest.cc",
         "pdfium/pdfium_print_unittest.cc",
         "pdfium/pdfium_test_base.cc",
         "pdfium/pdfium_test_base.h",

@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -44,9 +44,7 @@ AndroidSmsAppManagerImpl::PwaDelegate::~PwaDelegate() = default;
 
 content::WebContents* AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(
     const AppLaunchParams& params) {
-  // Note: OpenApplications() is not namespaced and is defined in
-  // application_launch.h.
-  return OpenApplication(params);
+  return apps::LaunchService::Get(params.profile)->OpenApplication(params);
 }
 
 bool AndroidSmsAppManagerImpl::PwaDelegate::TransferItemAttributes(
@@ -68,8 +66,7 @@ AndroidSmsAppManagerImpl::AndroidSmsAppManagerImpl(
       app_list_syncable_service_(app_list_syncable_service),
       pref_service_(pref_service),
       installed_url_at_last_notify_(GetCurrentAppUrl()),
-      pwa_delegate_(std::make_unique<PwaDelegate>()),
-      weak_ptr_factory_(this) {
+      pwa_delegate_(std::make_unique<PwaDelegate>()) {
   // Post a task to complete initialization. This portion of the flow must be
   // posted asynchronously because it accesses the networking stack, which is
   // not completely loaded until after this class is instantiated.

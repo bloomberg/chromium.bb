@@ -72,7 +72,7 @@ class TestQuicServer : public QuicServer {
             new QuicEpollConnectionHelper(epoll_server(),
                                           QuicAllocator::BUFFER_POOL)),
         std::unique_ptr<QuicCryptoServerStream::Helper>(
-            new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
+            new QuicSimpleCryptoServerStreamHelper()),
         std::unique_ptr<QuicEpollAlarmFactory>(
             new QuicEpollAlarmFactory(epoll_server())),
         &quic_simple_server_backend_);
@@ -86,11 +86,13 @@ class TestQuicServer : public QuicServer {
 class QuicServerEpollInTest : public QuicTest {
  public:
   QuicServerEpollInTest()
-      : port_(QuicPickUnusedPortOrDie()),
+      : port_(QuicPickServerPortForTestsOrDie()),
         server_address_(TestLoopback(), port_) {}
 
   void StartListening() {
     server_.CreateUDPSocketAndListen(server_address_);
+    server_address_ = QuicSocketAddress(server_address_.host(), server_.port());
+
     ASSERT_TRUE(QuicServerPeer::SetSmallSocket(&server_));
 
     if (!server_.overflow_supported()) {
@@ -163,8 +165,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
                 new QuicEpollConnectionHelper(&eps_,
                                               QuicAllocator::BUFFER_POOL)),
             std::unique_ptr<QuicCryptoServerStream::Helper>(
-                new QuicSimpleCryptoServerStreamHelper(
-                    QuicRandom::GetInstance())),
+                new QuicSimpleCryptoServerStreamHelper()),
             std::unique_ptr<QuicEpollAlarmFactory>(
                 new QuicEpollAlarmFactory(&eps_)),
             &quic_simple_server_backend_) {

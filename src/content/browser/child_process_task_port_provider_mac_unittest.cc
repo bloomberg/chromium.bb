@@ -11,7 +11,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/child_process.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +24,8 @@ using testing::WithArgs;
 
 class MockChildProcess : public mojom::ChildProcess {
  public:
+  MOCK_METHOD1(Initialize,
+               void(mojo::PendingRemote<mojom::ChildProcessHostBootstrap>));
   MOCK_METHOD0(ProcessShutdown, void());
   MOCK_METHOD1(GetTaskPort, void(GetTaskPortCallback));
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -38,6 +40,7 @@ class MockChildProcess : public mojom::ChildProcess {
                     mojo::PendingReceiver<service_manager::mojom::Service>));
   MOCK_METHOD1(BindServiceInterface,
                void(mojo::GenericPendingReceiver receiver));
+  MOCK_METHOD1(BindReceiver, void(mojo::GenericPendingReceiver receiver));
 };
 
 class ChildProcessTaskPortProviderTest : public testing::Test,
@@ -118,7 +121,7 @@ class ChildProcessTaskPortProviderTest : public testing::Test,
     }
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ChildProcessTaskPortProvider provider_;
   base::WaitableEvent event_;
   std::vector<base::ProcessHandle> received_processes_;
@@ -183,7 +186,7 @@ TEST_F(ChildProcessTaskPortProviderTest, DISABLED_DeadTaskPort) {
   ASSERT_TRUE(base::mac::CreateMachPort(&receive_right, &send_right));
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner({});
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   MockChildProcess child_process;
   EXPECT_CALL(child_process, GetTaskPort(_))

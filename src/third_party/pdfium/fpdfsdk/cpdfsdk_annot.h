@@ -12,7 +12,6 @@
 #include "core/fpdfdoc/cpdf_defaultappearance.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
-#include "fpdfsdk/cfx_systemhandler.h"
 
 class CFX_Matrix;
 class CFX_RenderDevice;
@@ -20,12 +19,8 @@ class CPDF_Page;
 class CPDF_RenderOptions;
 class CPDFSDK_BAAnnot;
 class CPDFSDK_PageView;
-class CPDFXFA_Page;
+class CPDFXFA_Widget;
 class IPDF_Page;
-
-#ifdef PDF_ENABLE_XFA
-class CXFA_FFWidget;
-#endif  // PDF_ENABLE_XFA
 
 class CPDFSDK_Annot : public Observable {
  public:
@@ -33,11 +28,7 @@ class CPDFSDK_Annot : public Observable {
   virtual ~CPDFSDK_Annot();
 
   virtual CPDFSDK_BAAnnot* AsBAAnnot();
-
-#ifdef PDF_ENABLE_XFA
-  virtual bool IsXFAField() const;
-  virtual CXFA_FFWidget* GetXFAWidget() const;
-#endif  // PDF_ENABLE_XFA
+  virtual CPDFXFA_Widget* AsXFAWidget();
 
   virtual int GetLayoutOrder() const;
   virtual CPDF_Annot* GetPDFAnnot() const;
@@ -46,11 +37,10 @@ class CPDFSDK_Annot : public Observable {
   virtual CFX_FloatRect GetRect() const;
   virtual void SetRect(const CFX_FloatRect& rect);
 
-  IPDF_Page* GetPage();  // Returns XFA Page if possible, else PDF page.
-  CPDF_Page* GetPDFPage();
-#ifdef PDF_ENABLE_XFA
-  CPDFXFA_Page* GetPDFXFAPage();
-#endif  // PDF_ENABLE_XFA
+  // Three cases: PDF page only, XFA page only, or XFA page backed by PDF page.
+  IPDF_Page* GetPage();     // Returns XFA Page if possible, else PDF page.
+  CPDF_Page* GetPDFPage();  // Returns PDF page or nullptr.
+  IPDF_Page* GetXFAPage();  // Returns XFA page or nullptr.
 
   CPDFSDK_PageView* GetPageView() const { return m_pPageView.Get(); }
 
@@ -60,6 +50,10 @@ class CPDFSDK_Annot : public Observable {
 
 inline CPDFSDK_BAAnnot* ToBAAnnot(CPDFSDK_Annot* pAnnot) {
   return pAnnot ? pAnnot->AsBAAnnot() : nullptr;
+}
+
+inline CPDFXFA_Widget* ToXFAWidget(CPDFSDK_Annot* pAnnot) {
+  return pAnnot ? pAnnot->AsXFAWidget() : nullptr;
 }
 
 #endif  // FPDFSDK_CPDFSDK_ANNOT_H_

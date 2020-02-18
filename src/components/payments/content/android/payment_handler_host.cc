@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "components/payments/content/android/byte_buffer_helper.h"
 #include "components/payments/content/android/jni_headers/PaymentHandlerHost_jni.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 
 namespace payments {
@@ -16,37 +17,36 @@ namespace android {
 // static
 jlong JNI_PaymentHandlerHost_Init(
     JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& web_contents,
     const base::android::JavaParamRef<jobject>& delegate) {
-  return reinterpret_cast<intptr_t>(new PaymentHandlerHost(delegate));
+  return reinterpret_cast<intptr_t>(
+      new PaymentHandlerHost(web_contents, delegate));
 }
 
 PaymentHandlerHost::PaymentHandlerHost(
+    const base::android::JavaParamRef<jobject>& web_contents,
     const base::android::JavaParamRef<jobject>& delegate)
-    : delegate_(delegate), payment_handler_host_(this) {}
+    : delegate_(delegate),
+      payment_handler_host_(
+          content::WebContents::FromJavaWebContents(web_contents),
+          /*delegate=*/this) {}
 
 PaymentHandlerHost::~PaymentHandlerHost() {}
 
-jboolean PaymentHandlerHost::IsChangingPaymentMethod(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_caller) const {
+jboolean PaymentHandlerHost::IsChangingPaymentMethod(JNIEnv* env) const {
   return payment_handler_host_.is_changing_payment_method();
 }
 
-jlong PaymentHandlerHost::GetNativePaymentHandlerHost(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+jlong PaymentHandlerHost::GetNativePaymentHandlerHost(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(&payment_handler_host_);
 }
 
-void PaymentHandlerHost::Destroy(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+void PaymentHandlerHost::Destroy(JNIEnv* env) {
   delete this;
 }
 
 void PaymentHandlerHost::UpdateWith(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller,
     const base::android::JavaParamRef<jobject>& response_buffer) {
   mojom::PaymentMethodChangeResponsePtr response;
   bool success = mojom::PaymentMethodChangeResponse::Deserialize(
@@ -56,9 +56,7 @@ void PaymentHandlerHost::UpdateWith(
   payment_handler_host_.UpdateWith(std::move(response));
 }
 
-void PaymentHandlerHost::NoUpdatedPaymentDetails(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+void PaymentHandlerHost::NoUpdatedPaymentDetails(JNIEnv* env) {
   payment_handler_host_.NoUpdatedPaymentDetails();
 }
 

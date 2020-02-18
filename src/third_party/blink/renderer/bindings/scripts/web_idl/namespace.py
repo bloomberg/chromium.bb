@@ -3,34 +3,32 @@
 # found in the LICENSE file.
 
 import exceptions
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithExposure
-from .common import WithExtendedAttributes
-from .common import WithIdentifier
-from .identifier_ir_map import IdentifierIRMap
+
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithIdentifier
+from .ir_map import IRMap
 
 
-class Namespace(WithIdentifier, WithExtendedAttributes, WithExposure,
-                WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+class Namespace(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
+                WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-namespaces"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithExposure,
-             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      is_partial,
                      extended_attributes=None,
-                     exposures=None,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
-            kind = (IdentifierIRMap.IR.Kind.PARTIAL_NAMESPACE
-                    if is_partial else IdentifierIRMap.IR.Kind.NAMESPACE)
-            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+            kind = (IRMap.IR.Kind.PARTIAL_NAMESPACE
+                    if is_partial else IRMap.IR.Kind.NAMESPACE)
+            IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)

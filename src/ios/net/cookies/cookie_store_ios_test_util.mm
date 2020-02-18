@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -37,11 +38,9 @@ TestPersistentCookieStore::~TestPersistentCookieStore() = default;
 
 void TestPersistentCookieStore::RunLoadedCallback() {
   std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
-  net::CookieOptions options;
-  options.set_include_httponly();
-
-  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-      kTestCookieURL, "a=b", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie(
+      net::CanonicalCookie::Create(kTestCookieURL, "a=b", base::Time::Now(),
+                                   base::nullopt /* server_time */));
   cookies.push_back(std::move(cookie));
 
   std::unique_ptr<net::CanonicalCookie> bad_canonical_cookie(
@@ -135,8 +134,11 @@ void SetCookie(const std::string& cookie_line,
                net::CookieStore* store) {
   net::CookieOptions options;
   options.set_include_httponly();
-  store->SetCookieWithOptionsAsync(url, cookie_line, options,
-                                   base::DoNothing());
+  auto canonical_cookie = net::CanonicalCookie::Create(
+      url, cookie_line, base::Time::Now(), base::nullopt /* server_time */);
+  ASSERT_TRUE(canonical_cookie);
+  store->SetCanonicalCookieAsync(std::move(canonical_cookie), url.scheme(),
+                                 options, base::DoNothing());
   net::CookieStoreIOS::NotifySystemCookiesChanged();
   // Wait until the flush is posted.
   base::RunLoop().RunUntilIdle();

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
@@ -183,7 +183,7 @@ class TestEnvironment {
   }
 
  private:
-  base::test::ScopedTaskEnvironment tasks_;
+  base::test::TaskEnvironment tasks_;
   media::MockAudioManager audio_manager_;
   StreamFactory stream_factory_;
   mojo::Remote<mojom::StreamFactory> remote_stream_factory_;

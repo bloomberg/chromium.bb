@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,6 +36,8 @@
 #include "content/public/browser/notification_service.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/printed_document.h"
+#include "printing/printing_utils.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -177,6 +182,12 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
   switch (job.state) {
     case ::printing::CupsJob::PROCESSING:
       pages_updated = UpdateCurrentPage(job, print_job);
+      if (ErrorCodeFromReasons(printer_status) != ErrorCode::NO_ERROR) {
+        print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+        print_job->set_state(State::STATE_ERROR);
+      } else {
+        print_job->set_state(State::STATE_STARTED);
+      }
       break;
     case ::printing::CupsJob::COMPLETED:
       DCHECK_GE(job.current_pages, print_job->total_page_number());
@@ -259,15 +270,14 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
  public:
   explicit CupsPrintJobManagerImpl(Profile* profile)
       : CupsPrintJobManager(profile),
-        query_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            base::TaskTraits(base::TaskPriority::BEST_EFFORT,
-                             base::MayBlock(),
-                             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+        query_runner_(base::CreateSequencedTaskRunner(base::TaskTraits{
+            base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+            base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         cups_wrapper_(new CupsWrapper(),
                       base::OnTaskRunnerDeleter(query_runner_)),
         weak_ptr_factory_(this) {
-    timer_.SetTaskRunner(base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI}));
+    timer_.SetTaskRunner(
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
@@ -301,15 +311,21 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
 
     content::Details<::printing::JobEventDetails> job_details(details);
+    content::Source<::printing::PrintJob> job(source);
 
     // DOC_DONE occurs after the print job has been successfully sent to the
     // spooler which is when we begin tracking the print queue.
     if (job_details->type() == ::printing::JobEventDetails::DOC_DONE) {
       const ::printing::PrintedDocument* document = job_details->document();
       DCHECK(document);
+      base::string16 title = printing::SimplifyDocumentTitle(document->name());
+      if (title.empty()) {
+        title = printing::SimplifyDocumentTitle(
+            l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
+      }
       CreatePrintJob(base::UTF16ToUTF8(document->settings().device_name()),
-                     base::UTF16ToUTF8(document->settings().title()),
-                     job_details->job_id(), document->page_count());
+                     base::UTF16ToUTF8(title), job_details->job_id(),
+                     document->page_count(), job->source(), job->source_id());
     }
   }
 
@@ -319,12 +335,25 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   bool CreatePrintJob(const std::string& printer_name,
                       const std::string& title,
                       int job_id,
-                      int total_page_number) {
+                      int total_page_number,
+                      ::printing::PrintJob::Source source,
+                      const std::string& source_id) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    auto printer =
-        CupsPrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinter(
-            printer_name);
+    Profile* profile = ProfileManager::GetPrimaryUserProfile();
+    if (!profile) {
+      LOG(WARNING) << "Cannot find printer without a valid profile.";
+      return false;
+    }
+
+    auto* manager = CupsPrintersManagerFactory::GetForBrowserContext(profile);
+    if (!manager) {
+      LOG(WARNING)
+          << "CupsPrintersManager could not be found for the current profile.";
+      return false;
+    }
+
+    base::Optional<Printer> printer = manager->GetPrinter(printer_name);
     if (!printer) {
       LOG(WARNING)
           << "Printer was removed while job was in progress.  It cannot "
@@ -339,8 +368,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                20);
 
     // Create a new print job.
-    auto cpj = std::make_unique<CupsPrintJob>(*printer, job_id, title,
-                                              total_page_number);
+    auto cpj = std::make_unique<CupsPrintJob>(
+        *printer, job_id, title, total_page_number, source, source_id);
     std::string key = cpj->GetUniqueId();
     jobs_[key] = std::move(cpj);
 
@@ -352,7 +381,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     NotifyJobUpdated(job->GetWeakPtr());
 
     // Run a query now.
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
                                   weak_ptr_factory_.GetWeakPtr()));
@@ -530,6 +559,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         break;
       case State::STATE_DOCUMENT_DONE:
         NotifyJobDone(job);
+        break;
+      case State::STATE_ERROR:
+        NotifyJobUpdated(job);
         break;
     }
   }

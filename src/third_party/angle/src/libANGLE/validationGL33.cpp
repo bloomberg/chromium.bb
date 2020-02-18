@@ -12,7 +12,7 @@ namespace gl
 {
 
 bool ValidateBindFragDataLocationIndexed(Context *context,
-                                         GLuint program,
+                                         ShaderProgramID program,
                                          GLuint colorNumber,
                                          GLuint index,
                                          const GLchar *name)
@@ -40,27 +40,33 @@ bool ValidateColorP4uiv(Context *context, GLenum type, const GLuint *color)
     return true;
 }
 
-bool ValidateGetFragDataIndex(Context *context, GLuint program, const GLchar *name)
+bool ValidateGetFragDataIndex(Context *context, ShaderProgramID program, const GLchar *name)
 {
     return true;
 }
 
-bool ValidateGetQueryObjecti64v(Context *context, GLuint id, GLenum pname, GLint64 *params)
+bool ValidateGetQueryObjecti64v(Context *context, QueryID id, GLenum pname, GLint64 *params)
 {
     return true;
 }
 
-bool ValidateGetQueryObjectui64v(Context *context, GLuint id, GLenum pname, GLuint64 *params)
+bool ValidateGetQueryObjectui64v(Context *context, QueryID id, GLenum pname, GLuint64 *params)
 {
     return true;
 }
 
-bool ValidateGetSamplerParameterIiv(Context *context, GLuint sampler, GLenum pname, GLint *params)
+bool ValidateGetSamplerParameterIiv(Context *context,
+                                    SamplerID sampler,
+                                    GLenum pname,
+                                    GLint *params)
 {
     return true;
 }
 
-bool ValidateGetSamplerParameterIuiv(Context *context, GLuint sampler, GLenum pname, GLuint *params)
+bool ValidateGetSamplerParameterIuiv(Context *context,
+                                     SamplerID sampler,
+                                     GLenum pname,
+                                     GLuint *params)
 {
     return true;
 }
@@ -115,18 +121,21 @@ bool ValidateNormalP3uiv(Context *context, GLenum type, const GLuint *coords)
     return true;
 }
 
-bool ValidateQueryCounter(Context *context, GLuint id, QueryType targetPacked)
+bool ValidateQueryCounter(Context *context, QueryID id, QueryType targetPacked)
 {
     return true;
 }
 
-bool ValidateSamplerParameterIiv(Context *context, GLuint sampler, GLenum pname, const GLint *param)
+bool ValidateSamplerParameterIiv(Context *context,
+                                 SamplerID sampler,
+                                 GLenum pname,
+                                 const GLint *param)
 {
     return true;
 }
 
 bool ValidateSamplerParameterIuiv(Context *context,
-                                  GLuint sampler,
+                                  SamplerID sampler,
                                   GLenum pname,
                                   const GLuint *param)
 {

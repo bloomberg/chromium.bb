@@ -374,6 +374,10 @@ test("gl_tests") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   if (use_dawn) {
     deps += [ "//third_party/dawn/src/dawn:libdawn" ]
   }
@@ -392,7 +396,9 @@ test("gl_tests") {
       "//ui/platform_window",
       "//ui/platform_window:platform_impls",
     ]
-    sources += [ "command_buffer/service/swap_chain_factory_dxgi_unittest.cc" ]
+    sources += [
+      "command_buffer/service/shared_image_backing_factory_d3d_unittest.cc",
+    ]
   }
 
   if (use_dawn) {
@@ -539,7 +545,7 @@ test("gpu_unittests") {
     "ipc/client/command_buffer_proxy_impl_unittest.cc",
     "ipc/common/gpu_memory_buffer_impl_shared_memory_unittest.cc",
     "ipc/common/gpu_memory_buffer_impl_test_template.h",
-    "ipc/common/struct_traits_unittest.cc",
+    "ipc/common/mojom_traits_unittest.cc",
     "ipc/host/shader_disk_cache_unittest.cc",
     "ipc/service/gpu_channel_manager_unittest.cc",
     "ipc/service/gpu_channel_test_common.cc",

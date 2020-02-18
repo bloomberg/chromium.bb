@@ -24,15 +24,13 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/services/printing/public/mojom/constants.mojom.h"
+#include "chrome/browser/printing/printing_service.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "printing/emf_win.h"
 #include "printing/pdf_render_settings.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -197,7 +195,7 @@ class PdfConverterImpl : public PdfConverter {
 
   mojom::PdfToEmfConverterFactoryPtr pdf_to_emf_converter_factory_;
 
-  base::WeakPtrFactory<PdfConverterImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PdfConverterImpl> weak_ptr_factory_{this};
 
   static bool simulate_failure_initializing_conversion_;
 
@@ -242,9 +240,7 @@ bool PostScriptMetaFile::SafePlayback(HDC hdc) const {
 PdfConverterImpl::PdfConverterImpl(scoped_refptr<base::RefCountedMemory> data,
                                    const PdfRenderSettings& settings,
                                    StartCallback start_callback)
-    : settings_(settings),
-      start_callback_(std::move(start_callback)),
-      weak_ptr_factory_(this) {
+    : settings_(settings), start_callback_(std::move(start_callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(start_callback_);
 
@@ -272,9 +268,8 @@ void PdfConverterImpl::Initialize(scoped_refptr<base::RefCountedMemory> data) {
 
   memcpy(memory.mapping.memory(), data->front(), data->size());
 
-  content::GetSystemConnector()->BindInterface(
-      printing::mojom::kChromePrintingServiceName,
-      &pdf_to_emf_converter_factory_);
+  GetPrintingService()->BindPdfToEmfConverterFactory(
+      mojo::MakeRequest(&pdf_to_emf_converter_factory_));
   pdf_to_emf_converter_factory_.set_connection_error_handler(base::BindOnce(
       &PdfConverterImpl::OnFailed, weak_ptr_factory_.GetWeakPtr(),
       std::string("Connection to PdfToEmfConverterFactory error.")));

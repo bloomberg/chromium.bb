@@ -13,6 +13,7 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
+#include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -77,14 +78,23 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<invalidation::FCMInvalidationService> service =
       std::make_unique<invalidation::FCMInvalidationService>(
           identity_provider.get(),
-          IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
-              ->driver(),
+          base::BindRepeating(
+              &syncer::FCMNetworkHandler::Create,
+              IOSChromeGCMProfileServiceFactory::GetForBrowserState(
+                  browser_state)
+                  ->driver(),
+              IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
+                  browser_state)
+                  ->driver()),
+          base::BindRepeating(&syncer::PerUserTopicRegistrationManager::Create,
+                              identity_provider.get(),
+                              browser_state->GetPrefs(),
+                              browser_state->GetURLLoaderFactory(),
+                              base::BindRepeating(&InProcessJsonParser::Parse)),
           IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
               browser_state)
               ->driver(),
-          browser_state->GetPrefs(),
-          base::BindRepeating(&InProcessJsonParser::Parse),
-          browser_state->GetURLLoaderFactory());
+          browser_state->GetPrefs());
   service->Init();
 
   return std::make_unique<ProfileInvalidationProvider>(

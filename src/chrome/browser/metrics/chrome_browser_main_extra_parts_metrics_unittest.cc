@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
@@ -38,7 +38,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
  private:
   // Provides a message loop and allows the use of the task scheduler
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext service_manager_context_;
 
   // Dummy screen required by a ChromeBrowserMainExtraPartsMetrics test target.

@@ -59,7 +59,6 @@ enum class FactoryUser {
 // Migration plan for extension developers is described at
 // https://chromium.org/Home/chromium-security/extension-content-script-fetches
 const char* kHardcodedPartOfCorbAllowlist[] = {
-    "0149C10F1124F1ED6ACAD85C45E87A76A9DDC667",
     "039F93DD1DF836F1D4E2084C1BEFDB46A854A9D1",
     "03E5D80A49C309F7B55ED6BD2B0EDEB38021ED4E",
     "072D729E856B1F2C9894AEEC3A5DF65E519D6BEE",
@@ -87,7 +86,6 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "28A9EDFD65BC27B5048E516AA7165339F5ACBB30",
     "2A661509BCE9F8384B00CFC96807597D71DFE94C",
     "2AA94E2D3F4DA33F0D3BCF5DD48F69B8BDB26F52",
-    "2C116B242B7425D359E188AB053B3F88DB78F78D",
     "2E2D8A405430172AB15ADCC09740F3EEE990D605",
     "30E95BD31B11118CE488EB4FC5FF7135E0C59425",
     "31E6100DC7B4EAB4ABF6CA2A4E191D3945D3C731",
@@ -136,7 +134,6 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "68F43E671577CF03AE901A5780DC07879331A3A9",
     "6A113D4E2F96997D9BA4B391B90ED51058B37EFF",
     "6AE81EF3B13B15080A2DDB23A205A24C65CCC10B",
-    "6BA5F75FFF75B69507BC4B09B7094926EF93DBD2",
     "6D3A671DABC1F87910A1AA67EE85C02095D35624",
     "6E49449D56D031B87835CC767734AF5A064E1A13",
     "6FD56FE5B3831B17ED5301EE2EF949CEE5BFA871",
@@ -170,11 +167,9 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "93934B0B87347437699EB62A8921F59F40C36D7A",
     "93BBF911E8871F6FCC8170448FD2DF5B9EF233E5",
     "95E78675D2DB61DC688586CD7A24202A260907A4",
-    "965A185A30475F208A7365E134F48C64CF08C997",
     "973E35633030AD27DABEC99609424A61386C7309",
     "9784343657207FE88A629E8EAA7A4A19C7C8CBE0",
     "97E04C5632954E778306CAC40B3F95C470B463B6",
-    "98EF7B1601119AEE1FCC28EE5CE247DED5676539",
     "999BD8D1929F9ABB817E9368480D93BAB2A0983D",
     "99E06C364BBB2D1F82A9D20BC1645BF21E478259",
     "9C6A186F8D3C5FD0CC8DCF49682FA726BD8A7705",
@@ -187,7 +182,6 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "A733063124AC9E1E6E1E331FFBAAE32D81AC2581",
     "A8FB3967ADE404B77AC3FB5815A399C0660C3C63",
     "A9A4B26C2387BA2A5861C790B0FF39F230427AC8",
-    "A9F78610B717B3992F92F490E82FC63FFF46C5FA",
     "AA3DE48E23B2465B21F5D33E993FD959F611DD10",
     "ADD14F4517B9A87D4E841369417E5BDB5FDFF263",
     "AE063CF9FF5D718AD6F1CF242FABAC39B57ADEBA",
@@ -206,7 +200,6 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "CC32A0FD1D88B403308EACBE4DE3CA5AC54B93EB",
     "CD8AF9C47DDE6327F8D9A3EFA81F34C6B6C26EBB",
     "CF40F6289951CBFA3B83B792EFA774E2EA06E4C0",
-    "D0537B1BADCE856227CE76E31B3772F6B68F653C",
     "D347F78F32567E90BC32D9C16B085254EA269590",
     "D572BE31227F6D0BE95B9430BE2D5F21D7D9CF9A",
     "D7C3879A8898618E3A23B0E6BFB6A38D01606246",
@@ -226,7 +219,6 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "EC4A841BD03C8E5202043165188A9E060BF703A3",
     "EE4BE5F23D2E59E4713958465941EFB4A18166B7",
     "EE711E704D4A365C4644EE4637076C81DF454EA6",
-    "EF97543DC0DE66EF00D804A55DCF73E0BACB8773",
     "F1ACA279F460440E47078D91FE372212DD9B8709",
     "F273C23C616F5C56E8EDBAE24B21F5D408936A0D",
     "F566B33D62CE21415AF5B3F3FD8762B7454B8874",
@@ -234,7 +226,6 @@ const char* kHardcodedPartOfCorbAllowlist[] = {
     "F608282162AD48CE45D5BC2F6F467B56E88EBFA4",
     "F73F9EF0207603992CA3C00A7A0CB223D5571B3F",
     "F9287A33E15038F2591F23E6E9C486717C7202DD",
-    "FCB9E071ACBA414EDA9AD90973B55062AE665827",
     "FCC2DC6574A3CA28ED77195926C67F612292C5C3",
     "FEE3DC8C722657A4A5B0F72CA48CF950DC956148",
     "FF0DA4BD87A88469B10709B99E79D4B0E11C0CA6",
@@ -257,43 +248,20 @@ std::vector<std::string> CreateExtensionAllowlist() {
     return allowlist;
   }
 
-  // Make sure kHardcodedPartOfAllowlist will fit, but also leave some room
-  // for field trial params.
-  allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist) + 10);
-
   // Append extensions from the hardcoded allowlist.
+  allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist));
   for (const char* hash : kHardcodedPartOfCorbAllowlist) {
     DCHECK(IsValidHashedExtensionId(hash));  // It also validates the length.
     allowlist.push_back(std::string(hash, kHashedExtensionIdLength));
   }
-
-  // Append extensions from the field trial param.
-  std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
-      extensions_features::kBypassCorbOnlyForExtensionsAllowlist,
-      extensions_features::kBypassCorbAllowlistParamName);
-  field_trial_arg = base::ToUpperASCII(field_trial_arg);
-  std::vector<std::string> field_trial_allowlist = base::SplitString(
-      field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  base::EraseIf(field_trial_allowlist, [](const std::string& hash) {
-    // Filter out invalid data from |field_trial_allowlist|.
-    if (IsValidHashedExtensionId(hash))
-      return false;  // Don't remove.
-
-    LOG(ERROR) << "Invalid extension hash: " << hash;
-    return true;  // Remove.
-  });
-  std::move(field_trial_allowlist.begin(), field_trial_allowlist.end(),
-            std::back_inserter(allowlist));
 
   return allowlist;
 }
 
 // Returns a set of HashedExtensionId of extensions that depend on relaxed CORB
 // behavior in their content scripts.
-const base::flat_set<std::string>& GetExtensionsAllowlist() {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kBypassCorbOnlyForExtensionsAllowlist));
-  static const base::NoDestructor<base::flat_set<std::string>> s_allowlist([] {
+base::flat_set<std::string>& GetExtensionsAllowlist() {
+  static base::NoDestructor<base::flat_set<std::string>> s_allowlist([] {
     base::flat_set<std::string> result(CreateExtensionAllowlist());
     result.shrink_to_fit();
     return result;
@@ -310,10 +278,6 @@ bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
   // Content scripts in the current version of extensions might depend on
   // relaxed CORB.
   if (extension.manifest_version() <= 2) {
-    if (!base::FeatureList::IsEnabled(
-            extensions_features::kBypassCorbOnlyForExtensionsAllowlist))
-      return true;
-
     const std::string& hash = extension.hashed_id().value();
     DCHECK(IsValidHashedExtensionId(hash));
     return base::Contains(GetExtensionsAllowlist(), hash);
@@ -346,7 +310,8 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
 network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     const Extension& extension) {
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -551,7 +516,8 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
 network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     const url::Origin& initiator_origin) {
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
@@ -590,6 +556,18 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     return network::mojom::URLLoaderFactoryPtrInfo();
   return CreateURLLoaderFactory(process, network_context, header_client,
                                 *extension);
+}
+
+// static
+void URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(
+    const Extension& extension) {
+  GetExtensionsAllowlist().insert(extension.hashed_id().value());
+}
+
+// static
+void URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
+    const Extension& extension) {
+  GetExtensionsAllowlist().erase(extension.hashed_id().value());
 }
 
 }  // namespace extensions

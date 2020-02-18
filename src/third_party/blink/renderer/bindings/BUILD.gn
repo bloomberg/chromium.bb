@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/python.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/core/core_idl_files.gni")
@@ -48,21 +49,16 @@ generate_global_constructors("global_constructors_idls") {
 }
 
 template("collect_idl_files") {
-  action(target_name) {
+  action_with_pydeps(target_name) {
     script = "${bindings_scripts_dir}/collect_idl_files.py"
-    sources = invoker.sources
+
+    inputs = invoker.inputs
     outputs = [
       invoker.output,
     ]
-    deps = [
-      "${bindings_scripts_dir}:web_idl_pylib",
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
 
     # List input file names in a temporary file.
-    response_file_contents = rebase_path(sources, root_build_dir)
+    response_file_contents = rebase_path(inputs, root_build_dir)
     args = [
       "--idl-list-file",
       "{{response_file_name}}",
@@ -71,46 +67,51 @@ template("collect_idl_files") {
       "--output",
       rebase_path(invoker.output, root_build_dir),
     ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 }
 
 collect_idl_files("web_idl_in_core") {
-  # all IDL files in 'core' component
-  sources = core_static_interface_idl_files +
-            core_generated_interface_idl_files + core_all_dependency_idl_files
+  # All IDL files in 'core' component.
+  inputs = core_static_interface_idl_files +
+           core_generated_interface_idl_files + core_all_dependency_idl_files
+
+  # The hack of "constructor attributes" for the old bindings generator is not
+  # necessary for the new one.
+  inputs -= core_global_constructors_generated_idl_files
+
+  # Supplemental IDL definitions to support the migration from the old bindings
+  # generator to the new one.
+  inputs += [ "${bindings_scripts_dir}/web_idl/migration_adapter.idl" ]
+
   component = "core"
   output = "${bindings_output_dir}/web_idl_in_core.pickle"
   deps = [
-    "core:core_global_constructors_idls",
     "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
     "//third_party/blink/renderer/core:generated_testing_idls_settings",
   ]
 }
 
 collect_idl_files("web_idl_in_modules") {
-  # all IDL files in 'modules' component
-  sources = modules_definition_idl_files + modules_static_interface_idl_files +
-            modules_static_dependency_idl_files
+  # All IDL files in 'modules' component.
+  inputs = modules_definition_idl_files + modules_static_interface_idl_files +
+           modules_static_dependency_idl_files
   component = "modules"
   output = "${bindings_output_dir}/web_idl_in_modules.pickle"
 }
 
-blink_python_runner("web_idl_database") {
+action_with_pydeps("web_idl_database") {
   script = "${bindings_scripts_dir}/build_web_idl_database.py"
 
   input_data_files = get_target_outputs(":web_idl_in_core") +
                      get_target_outputs(":web_idl_in_modules")
   inputs = input_data_files
-
   output_data_file = "${bindings_output_dir}/web_idl_database.pickle"
   outputs = [
     output_data_file,
-  ]
-
-  deps = [
-    ":web_idl_in_core",
-    ":web_idl_in_modules",
-    "${bindings_scripts_dir}:web_idl_pylib",
   ]
 
   args = [
@@ -118,4 +119,9 @@ blink_python_runner("web_idl_database") {
            rebase_path(output_data_file, root_build_dir),
            "--",
          ] + rebase_path(input_data_files, root_build_dir)
+
+  deps = [
+    ":web_idl_in_core",
+    ":web_idl_in_modules",
+  ]
 }

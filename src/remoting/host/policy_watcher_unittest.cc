@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/mock_log.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
@@ -61,8 +61,8 @@ class MockPolicyCallback {
 class PolicyWatcherTest : public testing::Test {
  public:
   PolicyWatcherTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     // We expect no callbacks unless explicitly specified by individual tests.
@@ -250,7 +250,7 @@ class PolicyWatcherTest : public testing::Test {
   static const char* kHostDomain;
   static const char* kClientDomain;
   static const char* kPortRange;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockPolicyCallback mock_policy_callback_;
 
   // |policy_loader_| is owned by |policy_watcher_|. PolicyWatcherTest retains

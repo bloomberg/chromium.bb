@@ -67,6 +67,14 @@ struct MarkingItem {
 
 using CustomCallbackItem = MarkingItem;
 using NotFullyConstructedItem = void*;
+using WeakTableItem = MarkingItem;
+
+struct BackingStoreCallbackItem {
+  void* backing;
+  MovingObjectCallback callback;
+};
+
+using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
 
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
@@ -79,6 +87,10 @@ using WeakCallbackWorklist =
 // regressions.
 using MovableReferenceWorklist =
     Worklist<MovableReference*, 512 /* local entries */>;
+using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
+using BackingStoreCallbackWorklist =
+    Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
+using V8ReferencesWorklist = Worklist<V8Reference, 16 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -169,11 +181,6 @@ class PLATFORM_EXPORT ThreadHeap {
   explicit ThreadHeap(ThreadState*);
   ~ThreadHeap();
 
-  // Returns true for main thread's heap.
-  // TODO(keishi): Per-thread-heap will return false.
-  bool IsMainThreadHeap() { return this == ThreadHeap::MainThreadHeap(); }
-  static ThreadHeap* MainThreadHeap() { return main_thread_heap_; }
-
   template <typename T>
   static inline bool IsHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
@@ -221,31 +228,27 @@ class PLATFORM_EXPORT ThreadHeap {
     return movable_reference_worklist_.get();
   }
 
+  WeakTableWorklist* GetWeakTableWorklist() const {
+    return weak_table_worklist_.get();
+  }
+
+  BackingStoreCallbackWorklist* GetBackingStoreCallbackWorklist() const {
+    return backing_store_callback_worklist_.get();
+  }
+
+  V8ReferencesWorklist* GetV8ReferencesWorklist() const {
+    return v8_references_worklist_.get();
+  }
+
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
                          EphemeronCallback);
 
   // Heap compaction registration methods:
 
-  // Checks whether we need to register |slot| as containing a reference to
-  // a movable heap object.
-  //
-  // When compaction moves the object pointed to by |*slot| to |newAddress|,
-  // |*slot| must be updated to hold |newAddress| instead.
-  bool ShouldRegisterMovingObjectReference(MovableReference*);
-
-  // Register a callback to be invoked upon moving the object starting at
-  // |reference|; see |MovingObjectCallback| documentation for details.
-  //
-  // This callback mechanism is needed to account for backing store objects
-  // containing intra-object pointers, all of which must be relocated/rebased
-  // with respect to the moved-to location.
-  //
-  // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
-  // relies on this feature.
-  void RegisterMovingObjectCallback(MovableReference*,
-                                    MovingObjectCallback,
-                                    void* callback_data);
+  // Checks whether we need to register |addr| as a backing store or a slot
+  // containing reference to it.
+  bool ShouldRegisterMovingAddress(Address addr);
 
   RegionTree* GetRegionTree() { return region_tree_.get(); }
 
@@ -266,7 +269,7 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   static Address Allocate(size_t);
 
-  void WeakProcessing(Visitor*);
+  void WeakProcessing(MarkingVisitor*);
 
   // Moves not fully constructed objects to previously not fully constructed
   // objects. Such objects can be iterated using the Trace() method and do
@@ -386,7 +389,7 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 
 #if defined(ADDRESS_SANITIZER)
-  void PoisonAllHeaps();
+  void PoisonUnmarkedObjects();
 #endif
 
 #if DCHECK_IS_ON()
@@ -407,7 +410,9 @@ class PLATFORM_EXPORT ThreadHeap {
   void DestroyMarkingWorklists(BlinkGC::StackState);
   void DestroyCompactionWorklists();
 
-  void InvokeEphemeronCallbacks(Visitor*);
+  void InvokeEphemeronCallbacks(MarkingVisitor*);
+
+  void FlushV8References(MarkingVisitor*);
 
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
@@ -442,6 +447,18 @@ class PLATFORM_EXPORT ThreadHeap {
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   std::unique_ptr<MovableReferenceWorklist> movable_reference_worklist_;
+
+  // Worklist of ephemeron callbacks. Used to pass new callbacks from
+  // MarkingVisitor to ThreadHeap.
+  std::unique_ptr<WeakTableWorklist> weak_table_worklist_;
+
+  // This worklist is used to passing backing store callback to HeapCompact.
+  std::unique_ptr<BackingStoreCallbackWorklist>
+      backing_store_callback_worklist_;
+
+  // Worklist for storing the V8 references until ThreadHeap can flush them
+  // to V8.
+  std::unique_ptr<V8ReferencesWorklist> v8_references_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.
@@ -596,17 +613,16 @@ Address ThreadHeap::Allocate(size_t size) {
 
 template <typename T>
 void Visitor::HandleWeakCell(Visitor* self, void* object) {
-  T** cell = reinterpret_cast<T**>(object);
-  T* contents = *cell;
-  if (contents) {
-    if (contents == reinterpret_cast<T*>(-1)) {
-      // '-1' means deleted value. This can happen when weak fields are deleted
-      // while incremental marking is running. Deleted values need to be
-      // preserved to avoid reviving objects in containers.
+  WeakMember<T>* weak_member = reinterpret_cast<WeakMember<T>*>(object);
+  if (weak_member->Get()) {
+    if (weak_member->IsHashTableDeletedValue()) {
+      // This can happen when weak fields are deleted while incremental marking
+      // is running. Deleted values need to be preserved to avoid reviving
+      // objects in containers.
       return;
     }
-    if (!ThreadHeap::IsHeapObjectAlive(contents))
-      *cell = nullptr;
+    if (!ThreadHeap::IsHeapObjectAlive(weak_member->Get()))
+      weak_member->Clear();
   }
 }
 

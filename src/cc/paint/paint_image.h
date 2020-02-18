@@ -13,7 +13,6 @@
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_worklet_input.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
@@ -23,6 +22,7 @@ namespace cc {
 
 class PaintImageGenerator;
 class PaintOpBuffer;
+class PaintWorkletInput;
 using PaintRecord = PaintOpBuffer;
 
 // A representation of an image for the compositor.  This is the most abstract
@@ -117,6 +117,7 @@ class CC_PAINT_EXPORT PaintImage {
     // CheckerImageTracker for all heuristics used.
     kAsync
   };
+  enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kInvalid };
 
   // Returns the more conservative mode out of the two given ones.
   static DecodingMode GetConservative(DecodingMode one, DecodingMode two);
@@ -221,28 +222,25 @@ class CC_PAINT_EXPORT PaintImage {
   bool IsTextureBacked() const {
     return paint_worklet_input_ ? false : GetSkImage()->isTextureBacked();
   }
-  int width() const {
-    return paint_worklet_input_
-               ? static_cast<int>(paint_worklet_input_->GetSize().width())
-               : GetSkImage()->width();
-  }
-  int height() const {
-    return paint_worklet_input_
-               ? static_cast<int>(paint_worklet_input_->GetSize().height())
-               : GetSkImage()->height();
-  }
+  int width() const;
+  int height() const;
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }
 
   // Returns whether this image will be decoded and rendered from YUV data
-  // and fills out plane size and plane index information respectively in
-  // |yuva_size_info| and |plane_indices|, if provided.
+  // and fills out plane size info, plane index info, and the matrix for
+  // conversion from YUV to RGB in, respectively, |yuva_size_info|,
+  // |plane_indices|, and |yuv_color_space| if any are provided.
   bool IsYuv(SkYUVASizeInfo* yuva_size_info = nullptr,
-             SkYUVAIndex* plane_indices = nullptr) const;
+             SkYUVAIndex* plane_indices = nullptr,
+             SkYUVColorSpace* yuv_color_space = nullptr) const;
 
   // Returns the color type of this image.
   SkColorType GetColorType() const;
+
+  // Returns the image type (e.g. PNG, WEBP) of this image.
+  ImageType GetImageType() const;
 
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;

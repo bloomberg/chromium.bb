@@ -15,7 +15,7 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "components/arc/common/app.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -67,8 +67,7 @@ void ApkWebAppService::RegisterProfilePrefs(
 ApkWebAppService::ApkWebAppService(Profile* profile)
     : profile_(profile),
       arc_app_list_prefs_(ArcAppListPrefs::Get(profile)),
-      observer_(this),
-      weak_ptr_factory_(this) {
+      observer_(this) {
   // Can be null in tests.
   if (arc_app_list_prefs_)
     arc_app_list_prefs_->AddObserver(this);
@@ -324,7 +323,7 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
                                           const web_app::AppId& web_app_id,
                                           web_app::InstallResultCode code) {
   // Do nothing: any error cancels installation.
-  if (code != web_app::InstallResultCode::kSuccess)
+  if (code != web_app::InstallResultCode::kSuccessNewInstall)
     return;
 
   // Set a pref to map |web_app_id| to |package_name| for future uninstallation.

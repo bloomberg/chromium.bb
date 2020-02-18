@@ -29,6 +29,7 @@ from chromite.lib import retry_util
 
 # TODO(fdeng): Cleanup the try-catch once crbug.com/482063 is fixed.
 try:
+  # pylint: disable=wrong-import-order
   import httplib
   import httplib2
   from apiclient.discovery import build as apiclient_build

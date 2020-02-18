@@ -8,12 +8,16 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_color_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_unparsed_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -54,12 +58,28 @@ class CrossThreadStyleValueTest : public testing::Test {
     waitable_event->Signal();
   }
 
+  void CheckUnparsedValue(base::WaitableEvent* waitable_event,
+                          std::unique_ptr<CrossThreadUnparsedValue> value) {
+    DCHECK(!IsMainThread());
+
+    EXPECT_EQ(value->value_, "Unparsed");
+    waitable_event->Signal();
+  }
+
   void CheckUnitValue(base::WaitableEvent* waitable_event,
                       std::unique_ptr<CrossThreadUnitValue> value) {
     DCHECK(!IsMainThread());
 
     EXPECT_EQ(value->value_, 1);
     EXPECT_EQ(value->unit_, CSSPrimitiveValue::UnitType::kDegrees);
+    waitable_event->Signal();
+  }
+
+  void CheckColorValue(base::WaitableEvent* waitable_event,
+                       std::unique_ptr<CrossThreadColorValue> value) {
+    DCHECK(!IsMainThread());
+
+    EXPECT_EQ(value->value_, Color(0, 255, 0));
     waitable_event->Signal();
   }
 
@@ -98,6 +118,38 @@ TEST_F(CrossThreadStyleValueTest, CrossThreadUnsupportedValueToCSSStyleValue) {
   EXPECT_EQ(style_value->GetType(),
             CSSStyleValue::StyleValueType::kUnknownType);
   EXPECT_EQ(style_value->CSSText(), "Unsupported");
+}
+
+TEST_F(CrossThreadStyleValueTest, PassUnparsedValueCrossThread) {
+  std::unique_ptr<CrossThreadUnparsedValue> value =
+      std::make_unique<CrossThreadUnparsedValue>("Unparsed");
+  DCHECK(value);
+
+  // Use a Thread to emulate worklet thread.
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+  base::WaitableEvent waitable_event;
+  PostCrossThreadTask(
+      *thread_->GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(&CrossThreadStyleValueTest::CheckUnparsedValue,
+                          CrossThreadUnretained(this),
+                          CrossThreadUnretained(&waitable_event),
+                          WTF::Passed(std::move(value))));
+  waitable_event.Wait();
+
+  ShutDownThread();
+}
+
+TEST_F(CrossThreadStyleValueTest, CrossThreadUnparsedValueToCSSStyleValue) {
+  std::unique_ptr<CrossThreadUnparsedValue> value =
+      std::make_unique<CrossThreadUnparsedValue>("Unparsed");
+  DCHECK(value);
+
+  CSSStyleValue* style_value = value->ToCSSStyleValue();
+  EXPECT_EQ(style_value->GetType(),
+            CSSStyleValue::StyleValueType::kUnparsedType);
+  EXPECT_EQ(static_cast<CSSUnparsedValue*>(style_value)->ToStringForTesting(),
+            "Unparsed");
 }
 
 TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
@@ -162,6 +214,38 @@ TEST_F(CrossThreadStyleValueTest, CrossThreadUnitValueToCSSStyleValue) {
   EXPECT_EQ(style_value->GetType(), CSSStyleValue::StyleValueType::kUnitType);
   EXPECT_EQ(static_cast<CSSUnitValue*>(style_value)->value(), 1);
   EXPECT_EQ(static_cast<CSSUnitValue*>(style_value)->unit(), "deg");
+}
+
+TEST_F(CrossThreadStyleValueTest, PassColorValueCrossThread) {
+  std::unique_ptr<CrossThreadColorValue> value =
+      std::make_unique<CrossThreadColorValue>(Color(0, 255, 0));
+  DCHECK(value);
+
+  // Use a Thread to emulate worklet thread.
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+  base::WaitableEvent waitable_event;
+  PostCrossThreadTask(
+      *thread_->GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(&CrossThreadStyleValueTest::CheckColorValue,
+                          CrossThreadUnretained(this),
+                          CrossThreadUnretained(&waitable_event),
+                          WTF::Passed(std::move(value))));
+  waitable_event.Wait();
+
+  ShutDownThread();
+}
+
+TEST_F(CrossThreadStyleValueTest, CrossThreadColorValueToCSSStyleValue) {
+  std::unique_ptr<CrossThreadColorValue> value =
+      std::make_unique<CrossThreadColorValue>(Color(0, 255, 0));
+  DCHECK(value);
+
+  CSSStyleValue* style_value = value->ToCSSStyleValue();
+  EXPECT_EQ(style_value->GetType(),
+            CSSStyleValue::StyleValueType::kUnsupportedColorType);
+  EXPECT_EQ(static_cast<CSSUnsupportedColorValue*>(style_value)->Value(),
+            Color(0, 255, 0));
 }
 
 TEST_F(CrossThreadStyleValueTest, ComparingNullValues) {
@@ -237,6 +321,20 @@ TEST_F(CrossThreadStyleValueTest, ComparingCrossThreadUnitValue) {
   std::unique_ptr<CrossThreadStyleValue> unit_value_4(
       new CrossThreadUnitValue(2, CSSPrimitiveValue::UnitType::kDegrees));
   EXPECT_FALSE(DataEquivalent(unit_value_1, unit_value_4));
+}
+
+TEST_F(CrossThreadStyleValueTest, ComparingCrossThreadColorValue) {
+  // CrossThreadColorValues are compared on their color channel values; all
+  // channels must match.
+  std::unique_ptr<CrossThreadStyleValue> color_value_1(
+      new CrossThreadColorValue(Color(0, 0, 0)));
+  std::unique_ptr<CrossThreadStyleValue> color_value_2(
+      new CrossThreadColorValue(Color(0, 0, 0)));
+  std::unique_ptr<CrossThreadStyleValue> color_value_3(
+      new CrossThreadColorValue(Color(0, 255, 0)));
+
+  EXPECT_TRUE(DataEquivalent(color_value_1, color_value_2));
+  EXPECT_FALSE(DataEquivalent(color_value_1, color_value_3));
 }
 
 TEST_F(CrossThreadStyleValueTest, ComparingCrossThreadUnsupportedValue) {

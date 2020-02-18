@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -36,7 +37,7 @@ class MainThreadSchedulerImpl;
 
 // FrameTaskQueueController creates and manages and FrameSchedulerImpl's task
 // queues. It is in charge of maintaining mappings between QueueTraits and
-// MainThreadTaskQueues for non-loading queues, for accessing task queues and
+// MainThreadTaskQueues for queues, for accessing task queues and
 // their related voters, and for creating new task queues.
 class PLATFORM_EXPORT FrameTaskQueueController {
   USING_FAST_MALLOC(FrameTaskQueueController);
@@ -66,25 +67,16 @@ class PLATFORM_EXPORT FrameTaskQueueController {
                            Delegate*);
   ~FrameTaskQueueController();
 
-  // Return the loading task queue and create it if it doesn't exist.
-  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
-
-  // Return the loading control task queue and create it if it doesn't exist.
-  scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
-
-  // Return the best effort task queue and create it if it doesn't exist.
-  scoped_refptr<MainThreadTaskQueue> BestEffortTaskQueue();
-
-  // Return the continue script loading task queue and create it if it doesn't
-  // exist.
-  scoped_refptr<MainThreadTaskQueue> VeryHighPriorityTaskQueue();
-
-  // Return the non-loading task queue associated with the given queue traits,
-  // and created it if it doesn't exist.
-  scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
+  // Return the task queue associated with the given queue traits,
+  // and create if it doesn't exist.
+  scoped_refptr<MainThreadTaskQueue> GetTaskQueue(
       MainThreadTaskQueue::QueueTraits);
 
   scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
+
+  scoped_refptr<MainThreadTaskQueue> NewWebSchedulingTaskQueue(
+      MainThreadTaskQueue::QueueTraits,
+      WebSchedulingPriority);
 
   // Get the list of all task queue and voter pairs.
   const Vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters() const;
@@ -108,9 +100,7 @@ class PLATFORM_EXPORT FrameTaskQueueController {
  private:
   friend class FrameTaskQueueControllerTest;
 
-  void CreateLoadingTaskQueue();
-  void CreateLoadingControlTaskQueue();
-  void CreateNonLoadingTaskQueue(MainThreadTaskQueue::QueueTraits);
+  void CreateTaskQueue(MainThreadTaskQueue::QueueTraits);
 
   void TaskQueueCreated(const scoped_refptr<MainThreadTaskQueue>&);
 
@@ -124,23 +114,12 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   FrameSchedulerImpl* const frame_scheduler_impl_;
   Delegate* const delegate_;
 
-  // Keep track of loading queues separately. We keep these separate because
-  // loading and loading control task queues share the same queue traits, and
-  // those queue traits can be the same as non-loading queues. This prevents us
-  // from being able to the find right task queue by queue traits alone.
-  scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
-
-  scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
-
-  scoped_refptr<MainThreadTaskQueue> very_high_priority_task_queue_;
-
-  using NonLoadingTaskQueueMap =
+  using TaskQueueMap =
       WTF::HashMap<MainThreadTaskQueue::QueueTraitsKeyType,
                    scoped_refptr<MainThreadTaskQueue>>;
 
-  // Map of all non-loading TaskQueues, indexed by QueueTraits.
-  NonLoadingTaskQueueMap non_loading_task_queues_;
+  // Map of all TaskQueues, indexed by QueueTraits.
+  TaskQueueMap task_queues_;
 
   // Set of all resource loading task queues.
   WTF::HashSet<scoped_refptr<MainThreadTaskQueue>>

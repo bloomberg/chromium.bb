@@ -141,6 +141,28 @@ const QpackEntry* QpackHeaderTable::InsertEntry(QuicStringPiece name,
   return new_entry;
 }
 
+uint64_t QpackHeaderTable::MaxInsertSizeWithoutEvictingGivenEntry(
+    uint64_t index) const {
+  DCHECK_LE(dropped_entry_count_, index);
+
+  if (index > inserted_entry_count()) {
+    // All entries are allowed to be evicted.
+    return dynamic_table_capacity_;
+  }
+
+  // Initialize to current available capacity.
+  uint64_t max_insert_size = dynamic_table_capacity_ - dynamic_table_size_;
+
+  for (const auto& entry : dynamic_entries_) {
+    if (entry.InsertionIndex() >= index) {
+      break;
+    }
+    max_insert_size += entry.Size();
+  }
+
+  return max_insert_size;
+}
+
 bool QpackHeaderTable::SetDynamicTableCapacity(uint64_t capacity) {
   if (capacity > maximum_dynamic_table_capacity_) {
     return false;
@@ -162,7 +184,6 @@ void QpackHeaderTable::SetMaximumDynamicTableCapacity(
   DCHECK_EQ(0u, maximum_dynamic_table_capacity_);
   DCHECK_EQ(0u, max_entries_);
 
-  dynamic_table_capacity_ = maximum_dynamic_table_capacity;
   maximum_dynamic_table_capacity_ = maximum_dynamic_table_capacity;
   max_entries_ = maximum_dynamic_table_capacity / 32;
 }
@@ -171,6 +192,31 @@ void QpackHeaderTable::RegisterObserver(Observer* observer,
                                         uint64_t required_insert_count) {
   DCHECK_GT(required_insert_count, 0u);
   observers_.push({observer, required_insert_count});
+}
+
+uint64_t QpackHeaderTable::draining_index(float draining_fraction) const {
+  DCHECK_LE(0.0, draining_fraction);
+  DCHECK_LE(draining_fraction, 1.0);
+
+  const uint64_t required_space = draining_fraction * dynamic_table_capacity_;
+  uint64_t space_above_draining_index =
+      dynamic_table_capacity_ - dynamic_table_size_;
+
+  if (dynamic_entries_.empty() ||
+      space_above_draining_index >= required_space) {
+    return dropped_entry_count_;
+  }
+
+  auto it = dynamic_entries_.begin();
+  while (space_above_draining_index < required_space) {
+    space_above_draining_index += it->Size();
+    ++it;
+    if (it == dynamic_entries_.end()) {
+      return inserted_entry_count();
+    }
+  }
+
+  return it->InsertionIndex();
 }
 
 bool QpackHeaderTable::ObserverWithThreshold::operator>(

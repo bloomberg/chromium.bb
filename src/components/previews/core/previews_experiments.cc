@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "net/base/url_util.h"
@@ -47,7 +46,6 @@ const char kSessionMaxECTTrigger[] = "session_max_ect_trigger";
 // Inflation parameters for estimating NoScript data savings.
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
-
 
 // Inflation parameters for estimating ResourceLoadingHints data savings.
 const char kResourceLoadingHintsInflationPercent[] =
@@ -161,12 +159,6 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
                                              30 * 1000));
 }
 
-int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      features::kLitePageServerPreviews, "max_blacklist_byte_size",
-      250 * 1024 /* 250KB */);
-}
-
 size_t LitePageRedirectPreviewMaxNavigationRestarts() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "max_navigation_restart", 5);
@@ -222,15 +214,68 @@ bool IsInLitePageRedirectControl() {
       features::kLitePageServerPreviews, "control_group", false);
 }
 
+bool LitePageRedirectPreviewShouldPreconnect() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "preconnect_on_slow_connections",
+      false);
+}
+
 bool LitePageRedirectPreviewShouldPresolve() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "preresolve_on_slow_connections",
       true);
 }
 
-base::TimeDelta LitePageRedirectPreviewPresolveInterval() {
+bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+             features::kLitePageServerPreviews,
+             "ignore_optimization_guide_filtering", false) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+}
+
+bool LitePageRedirectOnlyTriggerOnSuccessfulProbe() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "only_trigger_after_probe_success",
+      true);
+}
+
+GURL LitePageRedirectProbeURL() {
+  GURL url(GetFieldTrialParamValueByFeature(features::kLitePageServerPreviews,
+                                            "full_probe_url"));
+  if (url.is_valid())
+    return url;
+  return GURL("https://litepages.googlezip.net/e2e_probe");
+}
+
+base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval() {
   return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-      features::kLitePageServerPreviews, "preresolve_interval_in_seconds", 60));
+      features::kLitePageServerPreviews,
+      "preresolveconnect_interval_in_seconds", 60));
+}
+
+net::EffectiveConnectionType
+LitePageRedirectPreviewPreresolvePreconnectECTThreshold() {
+  return GetParamValueAsECTByFeature(features::kLitePageServerPreviews,
+                                     "preresolveconnect_ect_threshold",
+                                     net::EFFECTIVE_CONNECTION_TYPE_2G);
+}
+
+base::TimeDelta LitePageRedirectPreviewProbeInterval() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "probe_interval_in_seconds", 30));
+}
+
+bool LitePageRedirectShouldProbeOrigin() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "should_probe_origin", false);
+}
+
+base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout() {
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(features::kLitePageServerPreviews,
+                                             "origin_probe_timeout_ms",
+                                             30 * 1000));
 }
 
 net::EffectiveConnectionType GetECTThresholdForPreview(

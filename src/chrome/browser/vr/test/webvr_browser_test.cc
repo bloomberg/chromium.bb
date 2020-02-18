@@ -20,15 +20,9 @@ bool WebVrBrowserTestBase::XrDeviceFound(content::WebContents* web_contents) {
 
 void WebVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
-#if defined(OS_WIN)
   XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
-  ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _))
-      .WillByDefault(Invoke(
-          [](content::WebContents*, base::OnceCallback<void(bool)> callback) {
-            std::move(callback).Run(true);
-            return nullptr;
-          }));
-#endif
+  EXPECT_CALL(consent_manager_, ShowDialogAndGetConsent(_, _, _)).Times(0);
+
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestPresent instead of having to do the hacky workaround the
   // instrumentation tests use of actually sending a click event to the canvas.
@@ -43,9 +37,7 @@ void WebVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
 }
 
 void WebVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
-#if defined(OS_WIN)
   XRSessionRequestConsentManager::SetInstanceForTesting(nullptr);
-#endif
   RunJavaScriptOrFail("vrDisplay.exitPresent()", web_contents);
 }
 

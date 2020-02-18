@@ -9,45 +9,54 @@
     options: {
       protocol: "ctap2",
       transport: "usb",
-      hasResidentKey: false,
-      hasUserVerification: false,
+      hasResidentKey: true,
+      hasUserVerification: true,
     },
   })).result.authenticatorId;
 
   // No credentials registered yet.
   testRunner.log(await dp.WebAuthn.getCredentials({authenticatorId}));
 
-  // Register two credentials.
-  testRunner.log((await session.evaluateAsync("registerCredential()")).status);
+  // Register a non-resident credential.
   testRunner.log((await session.evaluateAsync("registerCredential()")).status);
 
+  // Register a resident credential.
+  testRunner.log((await session.evaluateAsync(`registerCredential({
+    authenticatorSelection: {
+      requireResidentKey: true,
+    },
+  })`)).status);
+
+  let logCredential = credential => {
+    testRunner.log("isResidentCredential: " + credential.isResidentCredential);
+    testRunner.log("signCount: " + credential.signCount);
+    testRunner.log("rpId: " + credential.rpId);
+    testRunner.log("userHandle: " + credential.userHandle);
+  };
   // Get the registered credentials.
   let credentials = (await dp.WebAuthn.getCredentials({authenticatorId})).result.credentials;
-  let expectedRpIdHash = await session.evaluateAsync("generateRpIdHash()");
-  for (let credential of credentials) {
-    if (credential.rpIdHash === expectedRpIdHash)
-      testRunner.log("RP ID hash matches expected value");
-    else
-      testRunner.log(`RP ID hash does not match. Actual: ${credential.rpIdHash}, expected: ${expectedRpIdHash}`);
-    testRunner.log(credential.signCount);
-  }
+  let residentCredential = credentials.find(cred => cred.isResidentCredential);
+  let nonResidentCredential = credentials.find(cred => !cred.isResidentCredential);
+  testRunner.log("Resident Credential:");
+  logCredential(residentCredential);
+  testRunner.log("Non-Resident Credential:");
+  logCredential(nonResidentCredential);
 
-  // Authenticating with the first credential should succeed.
-  let credential = credentials[0];
+  // Authenticating with the non resident credential should succeed.
   testRunner.log(await session.evaluateAsync(`getCredential({
     type: "public-key",
-    id: base64ToArrayBuffer("${credential.credentialId}"),
+    id: base64ToArrayBuffer("${nonResidentCredential.credentialId}"),
     transports: ["usb", "ble", "nfc"],
   })`));
 
-  // Sign count should be increased by one for |credential|.
+  // Sign count should be increased by one for |nonResidentCredential|.
   credentials = (await dp.WebAuthn.getCredentials({authenticatorId})).result.credentials;
   testRunner.log(credentials.find(
-      cred => cred.id === credential.id).signCount);
+      cred => cred.credentialId === nonResidentCredential.credentialId).signCount);
 
   // We should be able to parse the private key.
   let keyData =
-      Uint8Array.from(atob(credential.privateKey), c => c.charCodeAt(0)).buffer;
+      Uint8Array.from(atob(nonResidentCredential.privateKey), c => c.charCodeAt(0)).buffer;
   let key = await window.crypto.subtle.importKey(
       "pkcs8", keyData, { name: "ECDSA", namedCurve: "P-256" },
       true /* extractable */, ["sign"]);

@@ -74,7 +74,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/enterprise_reporting.mojom.h"
+#include "components/arc/mojom/enterprise_reporting.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -228,7 +228,7 @@ bool ReadTemperatureSensorInfo(const base::FilePath& sensor_dir,
     int32_t temperature = 0;
     if (base::ReadFileToString(temperature_path, &temperature_string) &&
         sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
-      has_data = false;
+      has_data = true;
       // CPU temp in millidegree Celsius to Celsius
       temperature /= 1000;
 
@@ -464,11 +464,9 @@ void AddCrostiniAppListForProfile(Profile* const profile,
                                   em::CrostiniStatus* const crostini_status) {
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-  const std::vector<std::string> registered_app_ids =
-      registry_service->GetRegisteredAppIds();
-  for (auto registered_app_id : registered_app_ids) {
-    crostini::CrostiniRegistryService::Registration registration =
-        *registry_service->GetRegistration(registered_app_id);
+  for (const auto& pair : registry_service->GetRegisteredApps()) {
+    const std::string& registered_app_id = pair.first;
+    const auto& registration = pair.second;
     em::CrostiniApp* const app = crostini_status->add_installed_apps();
     if (!AddCrostiniAppInfo(registration, app)) {
       LOG(ERROR) << "Could not retrieve all required information for "
@@ -508,8 +506,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     }
 
     // Call out to the blocking pool to sample disk volume info.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(volume_info_fetcher, mount_points),
         base::Bind(&DeviceStatusCollectorState::OnVolumeInfoReceived, this));
   }
@@ -518,8 +517,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   void SampleCPUTempInfo(
       const DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
     // Call out to the blocking pool to sample CPU temp.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         cpu_temp_fetcher,
         base::Bind(&DeviceStatusCollectorState::OnCPUTempInfoReceived, this));
   }
@@ -546,8 +546,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
           emmc_lifetime_fetcher) {
     // Call out to the blocking pool to read disklifetimeestimation.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(emmc_lifetime_fetcher),
         base::BindOnce(&DeviceStatusCollectorState::OnEMMCLifetimeReceived,
                        this));
@@ -769,8 +770,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
-      is_enterprise_reporting_(is_enterprise_reporting),
-      weak_factory_(this) {
+      is_enterprise_reporting_(is_enterprise_reporting) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
   max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
@@ -852,14 +852,16 @@ DeviceStatusCollector::DeviceStatusCollector(
   UpdateReportingSettings();
 
   // Get the OS, firmware, and TPM version info.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&chromeos::version_loader::GetVersion,
                  chromeos::version_loader::VERSION_FULL),
       base::Bind(&DeviceStatusCollector::OnOSVersion,
                  weak_factory_.GetWeakPtr()));
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&chromeos::version_loader::GetFirmware),
       base::Bind(&DeviceStatusCollector::OnOSFirmware,
                  weak_factory_.GetWeakPtr()));
@@ -1140,8 +1142,9 @@ void DeviceStatusCollector::SampleResourceUsage() {
     return;
 
   // Call out to the blocking pool to sample CPU stats.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       cpu_statistics_fetcher_,
       base::Bind(&DeviceStatusCollector::ReceiveCPUStatistics,
                  weak_factory_.GetWeakPtr(), base::Time::Now()));
@@ -1211,8 +1214,9 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const base::Time& timestamp,
                                 weak_factory_.GetWeakPtr(), std::move(sample),
                                 SamplingProbeResultCallback()));
   } else {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
         base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
                        weak_factory_.GetWeakPtr(), std::move(sample),
@@ -1228,9 +1232,6 @@ void DeviceStatusCollector::SampleProbeData(
   if (!result.has_value())
     return;
   if (result.value().error() != runtime_probe::RUNTIME_PROBE_ERROR_NOT_SET)
-    return;
-
-  if (result.value().battery_size() == 0)
     return;
 
   for (const auto& battery : result.value().battery()) {
@@ -1284,8 +1285,9 @@ void DeviceStatusCollector::SampleDischargeRate(
     }
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
       base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
                      weak_factory_.GetWeakPtr(), std::move(sample),
@@ -1478,10 +1480,6 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
       {
           shill::kTypeWifi,
           em::NetworkInterface::TYPE_WIFI,
-      },
-      {
-          shill::kTypeWimax,
-          em::NetworkInterface::TYPE_WIMAX,
       },
       {
           shill::kTypeBluetooth,

@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/features.gni")
+import("//components/safe_browsing/buildflags.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -49,16 +50,7 @@ declare_args() {
   # Android stores them separately on the Java side.
   enable_session_service = !is_android && !is_chromecast
 
-  # Enables embedding of the simple_browser service, a lightweight browser
-  # application which consumes the Content Service. Useful primarily for
-  # developer testing.
-  enable_simple_browser_service_in_process =
-      use_aura && (is_debug || dcheck_always_on) && !is_chromecast
-  enable_simple_browser_service_out_of_process =
-      is_chromeos && (is_debug || dcheck_always_on)
-
-  # TODO(crbug.com/980869): Change this to is_chromeos || is_android.
-  enable_supervised_users = !is_chromecast
+  enable_supervised_users = is_chromeos || is_android
 
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos
@@ -85,7 +77,9 @@ chrome_grit_defines = [
   "enable_print_preview=$enable_print_preview",
   "enable_printing=$enable_basic_printing",
   "enable_service_discovery=$enable_service_discovery",
+  "enable_supervised_users=$enable_supervised_users",
   "enable_vr=$enable_vr",
+  "enable_webui_tab_strip=$enable_webui_tab_strip",
   "safe_browsing_mode=$safe_browsing_mode",
   "optimize_webui=$optimize_webui",
 ]

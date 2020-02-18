@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "url/origin.h"
@@ -44,9 +45,8 @@ class CONTENT_EXPORT GeneratedCodeCache {
  public:
   using ReadDataCallback =
       base::RepeatingCallback<void(const base::Time&,
-                                   const std::vector<uint8_t>&)>;
+                                   mojo_base::BigBuffer data)>;
   using GetBackendCallback = base::OnceCallback<void(disk_cache::Backend*)>;
-  static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
   // Cache type. Used for collecting statistics for JS and Wasm in separate
   // buckets.
@@ -138,24 +138,25 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // Write entry to cache
   void WriteDataImpl(const std::string& key,
                      scoped_refptr<net::IOBufferWithSize> buffer);
-  void CompleteForWriteData(
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const std::string& key,
-      scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
-          entry_struct,
-      int rv);
+  void CompleteForWriteData(scoped_refptr<net::IOBufferWithSize> buffer,
+                            const std::string& key,
+                            disk_cache::EntryResult result);
   void WriteDataCompleted(const std::string& key, int rv);
 
   // Fetch entry from cache
   void FetchEntryImpl(const std::string& key, ReadDataCallback);
-  void OpenCompleteForReadData(
-      ReadDataCallback callback,
-      const std::string& key,
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-      int rv);
-  void ReadDataComplete(const std::string& key,
+  void OpenCompleteForReadData(ReadDataCallback callback,
+                               const std::string& key,
+                               disk_cache::EntryResult result);
+  void ReadResponseTimeComplete(const std::string& key,
+                                ReadDataCallback callback,
+                                scoped_refptr<net::IOBufferWithSize> buffer,
+                                disk_cache::Entry* entry,
+                                int rv);
+  void ReadCodeComplete(const std::string& key,
                         ReadDataCallback callback,
                         scoped_refptr<net::IOBufferWithSize> buffer,
+                        int64_t raw_response_time,
                         int rv);
 
   // Delete entry from cache
@@ -172,10 +173,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void DoPendingGetBackend(GetBackendCallback callback);
 
   void OpenCompleteForSetLastUsedForTest(
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
       base::Time time,
       base::RepeatingCallback<void(void)> callback,
-      int rv);
+      disk_cache::EntryResult result);
 
   void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status);
 

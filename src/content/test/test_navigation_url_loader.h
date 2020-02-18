@@ -31,13 +31,13 @@ class TestNavigationURLLoader
       public base::SupportsWeakPtr<TestNavigationURLLoader> {
  public:
   TestNavigationURLLoader(std::unique_ptr<NavigationRequestInfo> request_info,
-                          NavigationURLLoaderDelegate* delegate);
+                          NavigationURLLoaderDelegate* delegate,
+                          bool is_served_from_back_forward_cache);
 
   // NavigationURLLoader implementation.
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       PreviewsState new_previews_state) override;
-  void ProceedWithResponse() override;
 
   NavigationRequestInfo* request_info() const { return request_info_.get(); }
 
@@ -55,15 +55,14 @@ class TestNavigationURLLoader
 
   int redirect_count() { return redirect_count_; }
 
-  bool response_proceeded() { return response_proceeded_; }
-
  private:
   ~TestNavigationURLLoader() override;
 
   std::unique_ptr<NavigationRequestInfo> request_info_;
   NavigationURLLoaderDelegate* delegate_;
   int redirect_count_;
-  bool response_proceeded_;
+
+  bool is_served_from_back_forward_cache_;
 };
 
 }  // namespace content

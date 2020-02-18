@@ -17,12 +17,16 @@
 
 from __future__ import print_function
 import errno
+import filecmp
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+
+
+BUILDFLAGS_TARGET = '//gn:gen_buildflags'
 
 
 def _check_command_output(cmd, cwd):
@@ -86,14 +90,17 @@ def create_build_description(gn_args, root=repo_root()):
         shutil.rmtree(out)
 
 
-def build_targets(out, targets):
+def build_targets(out, targets, quiet=False):
     """Runs ninja to build a list of GN targets in the given out directory.
 
     Compiling these targets is required so that we can include any generated
     source files in the amalgamated result.
     """
     targets = [t.replace('//', '') for t in targets]
-    subprocess.check_call([_tool_path('ninja')] + targets, cwd=out)
+    with open(os.devnull, 'rw') as devnull:
+        stdout = devnull if quiet else None
+        subprocess.check_call([_tool_path('ninja')] + targets, cwd=out,
+                              stdout=stdout)
 
 
 def compute_source_dependencies(out):
@@ -142,3 +149,38 @@ def label_to_target_name_with_path(label):
   name = re.sub(r'^//:?', '', label)
   name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
   return name
+
+
+def gen_buildflags(gn_args, target_file):
+    """Generates the perfetto_build_flags.h for the given config.
+
+    target_file: the path, relative to the repo root, where the generated
+        buildflag header will be copied into.
+    """
+    tmp_out = prepare_out_directory(gn_args, 'tmp.gen_buildflags')
+    build_targets(tmp_out, [BUILDFLAGS_TARGET], quiet=True)
+    src = os.path.join(tmp_out, 'gen', 'build_config', 'perfetto_build_flags.h')
+    shutil.copy(src, os.path.join(repo_root(), target_file))
+    shutil.rmtree(tmp_out)
+
+
+def check_or_commit_generated_files(tmp_files, check):
+    """Checks that gen files are unchanged or renames them to the final location
+
+    Takes in input a list of 'xxx.swp' files that have been written.
+    If check == False, it renames xxx.swp -> xxx.
+    If check == True, it just checks that the contents of 'xxx.swp' == 'xxx'.
+    Returns 0 if no diff was detected, 1 otherwise (to be used as exit code).
+    """
+    res = 0
+    for tmp_file in tmp_files:
+        assert(tmp_file.endswith('.swp'))
+        target_file = os.path.relpath(tmp_file[:-4])
+        if check:
+            if not filecmp.cmp(tmp_file, target_file):
+                sys.stderr.write('%s needs to be regenerated\n' % target_file)
+                res = 1
+            os.unlink(tmp_file)
+        else:
+            os.rename(tmp_file, target_file)
+    return res

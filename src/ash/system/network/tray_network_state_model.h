@@ -8,16 +8,14 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
 
@@ -27,20 +25,11 @@ namespace ash {
 class ASH_EXPORT TrayNetworkStateModel
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // The active networks changed or a device enabled state changed.
-    virtual void ActiveNetworkStateChanged();
-
-    // The list of networks changed. The frequency of this event is limited.
-    virtual void NetworkListChanged();
-  };
-
-  explicit TrayNetworkStateModel(service_manager::Connector* connector);
+  TrayNetworkStateModel();
   ~TrayNetworkStateModel() override;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(TrayNetworkStateObserver* observer);
+  void RemoveObserver(TrayNetworkStateObserver* observer);
 
   // Returns DeviceStateProperties for |type| if it exists or null.
   const chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
@@ -50,13 +39,13 @@ class ASH_EXPORT TrayNetworkStateModel
   chromeos::network_config::mojom::DeviceStateType GetDeviceState(
       chromeos::network_config::mojom::NetworkType type);
 
-  // Convenience method to call cros_network_config_ptr_ method.
+  // Convenience method to call the |remote_cros_network_config_| method.
   void SetNetworkTypeEnabledState(
       chromeos::network_config::mojom::NetworkType type,
       bool enabled);
 
   chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
-    return cros_network_config_ptr_.get();
+    return remote_cros_network_config_.get();
   }
 
   const chromeos::network_config::mojom::NetworkStateProperties*
@@ -75,21 +64,19 @@ class ASH_EXPORT TrayNetworkStateModel
       const {
     return active_vpn_.get();
   }
+  bool has_vpn() const { return has_vpn_; }
 
  private:
-  // For BindCrosNetworkConfig() calls from tests to override the connector:
-  friend class WifiToggleNotificationControllerTest;
-
   // CrosNetworkConfigObserver
   void OnActiveNetworksChanged(
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>)
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks) override;
+  void OnNetworkStateChanged(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
       override;
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
-
-  // Binds the network_config interface to |connector| and sets up the observer.
-  // Also requests the initial state to set the cached properties.
-  void BindCrosNetworkConfig(service_manager::Connector* connector);
+  void OnVpnProvidersChanged() override;
 
   void GetDeviceStateList();
   void OnGetDeviceStateList(
@@ -101,16 +88,21 @@ class ASH_EXPORT TrayNetworkStateModel
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
 
+  void GetVirtualNetworks();
+  void OnGetVirtualNetworks(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks);
+
   void NotifyNetworkListChanged();
   void SendActiveNetworkStateChanged();
   void SendNetworkListChanged();
 
-  chromeos::network_config::mojom::CrosNetworkConfigPtr
-      cros_network_config_ptr_;
-  mojo::Binding<chromeos::network_config::mojom::CrosNetworkConfigObserver>
-      cros_network_config_observer_binding_{this};
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+      remote_cros_network_config_;
+  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_receiver_{this};
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<TrayNetworkStateObserver> observer_list_;
 
   // Frequency at which to push NetworkListChanged updates. This avoids
   // unnecessarily frequent UI updates (which can be expensive). We set this
@@ -128,6 +120,7 @@ class ASH_EXPORT TrayNetworkStateModel
       active_non_cellular_;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_cellular_;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_vpn_;
+  bool has_vpn_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateModel);
 };

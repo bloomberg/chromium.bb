@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/install_static/install_details.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -22,11 +23,11 @@ namespace {
 // the macro to allow checking for successful code compilation on non-official
 // builds.
 bool IsGoogleChromeBuild() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
 #else
   return false;
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
@@ -44,9 +45,7 @@ void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
 
 }  // namespace
 
-GoogleUpdateMetricsProviderWin::GoogleUpdateMetricsProviderWin()
-    : weak_ptr_factory_(this) {
-}
+GoogleUpdateMetricsProviderWin::GoogleUpdateMetricsProviderWin() {}
 
 GoogleUpdateMetricsProviderWin::~GoogleUpdateMetricsProviderWin() {
 }
@@ -60,8 +59,9 @@ void GoogleUpdateMetricsProviderWin::AsyncInit(
 
   // Schedules a task on a blocking pool thread to gather Google Update
   // statistics (requires Registry reads).
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking),
       base::Bind(&GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData,
                  weak_ptr_factory_.GetWeakPtr(), done_callback));

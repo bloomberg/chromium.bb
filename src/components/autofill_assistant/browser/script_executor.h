@@ -118,8 +118,9 @@ class ScriptExecutor : public ActionDelegate,
       const Selector& selector,
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
-  void GetPaymentInformation(
-      std::unique_ptr<PaymentRequestOptions> options) override;
+  void CollectUserData(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+      std::unique_ptr<UserData> user_data) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void CancelPrompt() override;
@@ -187,7 +188,9 @@ class ScriptExecutor : public ActionDelegate,
   void Restart() override;
   ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
+  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
+  std::string GetAccountEmailAddress() override;
   void SetDetails(std::unique_ptr<Details> details) override;
   void ClearInfoBox() override;
   void SetInfoBox(const InfoBox& info_box) override;
@@ -301,7 +304,7 @@ class ScriptExecutor : public ActionDelegate,
 
     RetryTimer retry_timer_;
 
-    base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_;
+    base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(WaitForDomOperation);
   };
@@ -328,9 +331,9 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
       const Result* interrupt_result);
-  void OnGetPaymentInformation(
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      std::unique_ptr<PaymentInformation> result);
+  void OnGetUserData(
+      base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
+      std::unique_ptr<UserData> result);
   void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
                                    int index);
   void OnTermsAndConditionsLinkClicked(base::OnceCallback<void(int)> callback,
@@ -365,10 +368,6 @@ class ScriptExecutor : public ActionDelegate,
   Selector last_focused_element_selector_;
   TopPadding last_focused_element_top_padding_;
   std::unique_ptr<ElementAreaProto> touchable_element_area_;
-
-  // Callback set by Prompt(). This is called when the prompt is terminated
-  // without selecting any chips. nullptr unless showing a prompt.
-  base::OnceCallback<void()> on_terminate_prompt_;
 
   // Steps towards the requirements for calling |on_expected_navigation_done_|
   // to be fulfilled.

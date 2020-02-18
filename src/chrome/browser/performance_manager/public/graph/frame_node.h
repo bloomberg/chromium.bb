@@ -7,7 +7,9 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/public/frame_priority/frame_priority.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 class GURL;
@@ -21,6 +23,7 @@ namespace performance_manager {
 class FrameNodeObserver;
 class PageNode;
 class ProcessNode;
+class WorkerNode;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -50,7 +53,10 @@ class ProcessNode;
 class FrameNode : public Node {
  public:
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
+  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
   using Observer = FrameNodeObserver;
+  using PriorityAndReason = frame_priority::PriorityAndReason;
+
   class ObserverDefaultImpl;
 
   FrameNode();
@@ -99,6 +105,10 @@ class FrameNode : public Node {
   // FrameNodeObserver::OnFrameLifecycleStateChanged.
   virtual LifecycleState GetLifecycleState() const = 0;
 
+  // Returns the freeze policy set via origin trial. kDefault when no freeze
+  // policy is set via origin trial.
+  virtual InterventionPolicy GetOriginTrialFreezePolicy() const = 0;
+
   // Returns true if this frame had a non-empty before-unload handler at the
   // time of its last transition to the frozen lifecycle state. This is only
   // meaningful while the object is frozen.
@@ -119,11 +129,17 @@ class FrameNode : public Node {
   // Returns true if this frame is ad frame. This can change from false to true
   // over the lifetime of the frame, but once it is true it will always remain
   // true.
-  // TODO(chrisha): Add a corresponding observer event for this.
   virtual bool IsAdFrame() const = 0;
 
-  // Returns true if all intervention policies have been set for this frame.
-  virtual bool AreAllInterventionPoliciesSet() const = 0;
+  // Returns the child workers of this frame. These are either dedicated workers
+  // or shared workers created by this frame, or a service worker that handles
+  // this frame's network requests.
+  virtual const base::flat_set<const WorkerNode*> GetChildWorkerNodes()
+      const = 0;
+
+  // Returns the current priority of the frame, and the reason for the frame
+  // having that particular priority.
+  virtual const PriorityAndReason& GetPriorityAndReason() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);
@@ -133,6 +149,8 @@ class FrameNode : public Node {
 // implement the entire interface.
 class FrameNodeObserver {
  public:
+  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
+
   FrameNodeObserver();
   virtual ~FrameNodeObserver();
 
@@ -146,17 +164,28 @@ class FrameNodeObserver {
 
   // Notifications of property changes.
 
-  // Invoked when the |is_current| property changes.
+  // Invoked when the IsCurrent property changes.
   virtual void OnIsCurrentChanged(const FrameNode* frame_node) = 0;
 
-  // Invoked when the |network_almost_idle| property changes.
+  // Invoked when the NetworkAlmostIdle property changes.
   virtual void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) = 0;
 
-  // Invoked when the |lifecycle_state| property changes.
+  // Invoked when the LifecycleState property changes.
   virtual void OnFrameLifecycleStateChanged(const FrameNode* frame_node) = 0;
 
-  // Invoked when the |url| property changes.
+  // Invoked when the OriginTrialFreezePolicy changes.
+  virtual void OnOriginTrialFreezePolicyChanged(
+      const FrameNode* frame_node,
+      InterventionPolicy previous_value) = 0;
+
+  // Invoked when the URL property changes.
   virtual void OnURLChanged(const FrameNode* frame_node) = 0;
+
+  // Invoked when the IsAdFrame property changes.
+  virtual void OnIsAdFrameChanged(const FrameNode* frame_node) = 0;
+
+  // Invoked when the frame priority and reason changes.
+  virtual void OnPriorityAndReasonChanged(const FrameNode* frame_node) = 0;
 
   // Events with no property changes.
 
@@ -182,9 +211,14 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnIsCurrentChanged(const FrameNode* frame_node) override {}
   void OnNetworkAlmostIdleChanged(const FrameNode* frame_node) override {}
   void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override {}
+  void OnOriginTrialFreezePolicyChanged(
+      const FrameNode* frame_node,
+      InterventionPolicy previous_value) override {}
   void OnURLChanged(const FrameNode* frame_node) override {}
+  void OnIsAdFrameChanged(const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}
+  void OnPriorityAndReasonChanged(const FrameNode* frame_node) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

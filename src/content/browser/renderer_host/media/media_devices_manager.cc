@@ -281,11 +281,11 @@ MediaDevicesManager::SubscriptionRequest::SubscriptionRequest(
     int render_process_id,
     int render_frame_id,
     const BoolDeviceTypes& subscribe_types,
-    blink::mojom::MediaDevicesListenerPtr listener)
+    mojo::Remote<blink::mojom::MediaDevicesListener> listener)
     : render_process_id(render_process_id),
       render_frame_id(render_frame_id),
       subscribe_types(subscribe_types),
-      listener(std::move(listener)) {}
+      listener_(std::move(listener)) {}
 
 MediaDevicesManager::SubscriptionRequest::SubscriptionRequest(
     SubscriptionRequest&&) = default;
@@ -436,8 +436,7 @@ void MediaDevicesManager::EnumerateDevices(
          !request_audio_input_capabilities);
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id,
                      render_frame_id),
       base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
@@ -451,13 +450,13 @@ uint32_t MediaDevicesManager::SubscribeDeviceChangeNotifications(
     int render_process_id,
     int render_frame_id,
     const BoolDeviceTypes& subscribe_types,
-    blink::mojom::MediaDevicesListenerPtr listener) {
+    mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StartMonitoring();
   uint32_t subscription_id = ++last_subscription_id_;
-  blink::mojom::MediaDevicesListenerPtr media_devices_listener =
-      std::move(listener);
-  media_devices_listener.set_connection_error_handler(
+  mojo::Remote<blink::mojom::MediaDevicesListener> media_devices_listener;
+  media_devices_listener.Bind(std::move(listener));
+  media_devices_listener.set_disconnect_handler(
       base::BindOnce(&MediaDevicesManager::UnsubscribeDeviceChangeNotifications,
                      weak_factory_.GetWeakPtr(), subscription_id));
   subscriptions_.emplace(
@@ -531,10 +530,9 @@ void MediaDevicesManager::StartMonitoring() {
   }
 
 #if defined(OS_MACOSX)
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
-                     base::Unretained(this)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
+                                base::Unretained(this)));
 #endif
 }
 
@@ -770,7 +768,7 @@ void MediaDevicesManager::GetAudioInputCapabilities(
     size_t capabilities_index =
         enumeration_states_[state_id].audio_capabilities.size() - 1;
     if (use_fake_devices_) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&MediaDevicesManager::GotAudioInputCapabilities,
                          weak_factory_.GetWeakPtr(), state_id,
@@ -1082,6 +1080,9 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
   // identify if an audio device was default, it checks whether the old
   // snapshot contained an audio device with the same group ID and device ID
   // matching either "default" or "communications".
+  // NOTE: ChromeOS is able to seamlessly redirect streams to the new default
+  // device, hence the event should not be triggered.
+#if !defined(OS_CHROMEOS)
   for (const auto& removed_audio_device : removed_audio_devices) {
     for (const auto& old_device_info : current_snapshot_[type]) {
       if (removed_audio_device.group_id == old_device_info.group_id &&
@@ -1093,6 +1094,7 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
       }
     }
   }
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void MediaDevicesManager::NotifyDeviceChangeSubscribers(
@@ -1105,8 +1107,7 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
     const SubscriptionRequest& request = subscription.second;
     if (request.subscribe_types[type]) {
       base::PostTaskAndReplyWithResult(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
-              .get(),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(),
           FROM_HERE,
           base::BindOnce(salt_and_origin_callback_, request.render_process_id,
                          request.render_frame_id),
@@ -1146,7 +1147,7 @@ void MediaDevicesManager::NotifyDeviceChange(
     return;
 
   const SubscriptionRequest& request = it->second;
-  request.listener->OnDevicesChanged(
+  request.listener_->OnDevicesChanged(
       type, TranslateMediaDeviceInfoArray(has_permission, salt_and_origin,
                                           device_infos));
 }

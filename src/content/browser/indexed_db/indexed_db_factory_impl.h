@@ -11,6 +11,7 @@
 #include <set>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -18,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string16.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -25,7 +27,9 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
+#include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/origin.h"
 
@@ -128,7 +132,12 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
              IndexedDBDataLossInfo,
              /*was_cold_open=*/bool>
   GetOrOpenOriginFactory(const url::Origin& origin,
-                         const base::FilePath& data_directory);
+                         const base::FilePath& data_directory,
+                         bool create_if_missing);
+
+  void OnDatabaseError(const url::Origin& origin,
+                       leveldb::Status s,
+                       const char* message);
 
  protected:
   // Used by unittests to allow subclassing of IndexedDBBackingStore.
@@ -176,16 +185,18 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                                      base::FilePath data_directory,
                                      base::FilePath database_path,
                                      base::FilePath blob_path,
-                                     bool is_first_attempt);
+                                     LevelDBScopesOptions scopes_options,
+                                     LevelDBScopesFactory* scopes_factory,
+                                     bool is_first_attempt,
+                                     bool create_if_missing);
 
   void RemoveOriginState(const url::Origin& origin);
 
-  void OnDatabaseError(const url::Origin& origin,
-                       leveldb::Status s,
-                       const char* message);
-
   // Called when the database has been deleted on disk.
   void OnDatabaseDeleted(const url::Origin& origin);
+
+  void MaybeRunTasksForOrigin(const url::Origin& origin);
+  void RunTasksForOrigin(base::WeakPtr<IndexedDBOriginState> origin_state);
 
   // Testing helpers, so unit tests don't need to grovel through internal
   // state.

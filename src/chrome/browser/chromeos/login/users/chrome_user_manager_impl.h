@@ -214,9 +214,6 @@ class ChromeUserManagerImpl
   // associated with that username.
   void UpdatePublicAccountDisplayName(const std::string& user_id);
 
-  // Notifies the UI about a change to the user list.
-  void NotifyUserListChanged();
-
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
 
@@ -281,7 +278,7 @@ class ChromeUserManagerImpl
   std::vector<std::unique_ptr<policy::CloudExternalDataPolicyHandler>>
       cloud_external_data_policy_handlers_;
 
-  base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_;
+  base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUserManagerImpl);
 };

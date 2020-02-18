@@ -57,16 +57,17 @@ public:
     // from the content rect by the non-virtual makeSubset().
     virtual sk_sp<SkSpecialImage> onMakeSubset(const SkIRect& subset) const = 0;
 
-    virtual sk_sp<SkSpecialSurface> onMakeSurface(const SkImageFilter::OutputProperties& outProps,
-                                                  const SkISize& size, SkAlphaType at,
-                                                  const SkSurfaceProps* = nullptr) const = 0;
+    virtual sk_sp<SkSpecialSurface> onMakeSurface(
+            SkColorType colorType, const SkColorSpace* colorSpace, const SkISize& size,
+            SkAlphaType at, const SkSurfaceProps* = nullptr) const = 0;
 
     // This subset (when not null) is relative to the backing store's coordinate frame, it has
     // already been mapped from the content rect by the non-virtual asImage().
     virtual sk_sp<SkImage> onAsImage(const SkIRect* subset) const = 0;
 
-    virtual sk_sp<SkSurface> onMakeTightSurface(const SkImageFilter::OutputProperties& outProps,
-                                                const SkISize& size, SkAlphaType at) const = 0;
+    virtual sk_sp<SkSurface> onMakeTightSurface(
+            SkColorType colorType, const SkColorSpace* colorSpace,
+            const SkISize& size, SkAlphaType at) const = 0;
 
 private:
     typedef SkSpecialImage INHERITED;
@@ -85,13 +86,13 @@ SkSpecialImage::SkSpecialImage(const SkIRect& subset,
     , fUniqueID(kNeedNewImageUniqueID_SpecialImage == uniqueID ? SkNextID::ImageID() : uniqueID) {
 }
 
-sk_sp<SkSpecialImage> SkSpecialImage::makeTextureImage(GrRecordingContext* context) {
+sk_sp<SkSpecialImage> SkSpecialImage::makeTextureImage(GrRecordingContext* context) const {
 #if SK_SUPPORT_GPU
     if (!context) {
         return nullptr;
     }
     if (GrRecordingContext* curContext = as_SIB(this)->onGetContext()) {
-        return curContext->priv().matches(context) ? sk_sp<SkSpecialImage>(SkRef(this)) : nullptr;
+        return curContext->priv().matches(context) ? sk_ref_sp(this) : nullptr;
     }
 
     auto proxyProvider = context->priv().proxyProvider();
@@ -157,15 +158,16 @@ sk_sp<GrTextureProxy> SkSpecialImage::asTextureProxyRef(GrRecordingContext* cont
 }
 #endif
 
-sk_sp<SkSpecialSurface> SkSpecialImage::makeSurface(const SkImageFilter::OutputProperties& outProps,
-                                                    const SkISize& size, SkAlphaType at,
-                                                    const SkSurfaceProps* props) const {
-    return as_SIB(this)->onMakeSurface(outProps, size, at, props);
+sk_sp<SkSpecialSurface> SkSpecialImage::makeSurface(
+        SkColorType colorType, const SkColorSpace* colorSpace, const SkISize& size,
+        SkAlphaType at, const SkSurfaceProps* props) const {
+    return as_SIB(this)->onMakeSurface(colorType, colorSpace, size, at, props);
 }
 
-sk_sp<SkSurface> SkSpecialImage::makeTightSurface(const SkImageFilter::OutputProperties& outProps,
-                                                  const SkISize& size, SkAlphaType at) const {
-    return as_SIB(this)->onMakeTightSurface(outProps, size, at);
+sk_sp<SkSurface> SkSpecialImage::makeTightSurface(
+        SkColorType colorType, const SkColorSpace* colorSpace, const SkISize& size,
+        SkAlphaType at) const {
+    return as_SIB(this)->onMakeTightSurface(colorType, colorSpace, size, at);
 }
 
 sk_sp<SkSpecialImage> SkSpecialImage::makeSubset(const SkIRect& subset) const {
@@ -263,11 +265,11 @@ public:
     }
 #endif
 
-    sk_sp<SkSpecialSurface> onMakeSurface(const SkImageFilter::OutputProperties& outProps,
+    sk_sp<SkSpecialSurface> onMakeSurface(SkColorType colorType, const SkColorSpace* colorSpace,
                                           const SkISize& size, SkAlphaType at,
                                           const SkSurfaceProps* props) const override {
-        SkColorSpace* colorSpace = outProps.colorSpace();
-        SkColorType colorType = kN32_SkColorType;   // TODO: find ways to allow f16
+        // Ignore the requested color type, the raster backend currently only supports N32
+        colorType = kN32_SkColorType;   // TODO: find ways to allow f16
         SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType, at,
                                              sk_ref_sp(colorSpace));
         return SkSpecialSurface::MakeRaster(info, props);
@@ -292,10 +294,10 @@ public:
         return SkImage::MakeFromBitmap(fBitmap);
     }
 
-    sk_sp<SkSurface> onMakeTightSurface(const SkImageFilter::OutputProperties& outProps,
+sk_sp<SkSurface> onMakeTightSurface(SkColorType colorType, const SkColorSpace* colorSpace,
                                         const SkISize& size, SkAlphaType at) const override {
-        SkColorSpace* colorSpace = outProps.colorSpace();
-        SkColorType colorType = kN32_SkColorType;   // TODO: find ways to allow f16
+        // Ignore the requested color type, the raster backend currently only supports N32
+        colorType = kN32_SkColorType;   // TODO: find ways to allow f16
         SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType, at,
                                              sk_ref_sp(colorSpace));
         return SkSurface::MakeRaster(info);
@@ -432,8 +434,8 @@ public:
         if (!rec) {
             return false;
         }
-        sk_sp<GrSurfaceContext> sContext = fContext->priv().makeWrappedSurfaceContext(
-                fTextureProxy, SkColorTypeToGrColorType(info.colorType()), this->alphaType(),
+        auto sContext = fContext->priv().makeWrappedSurfaceContext(
+                fTextureProxy, GrPixelConfigToColorType(fTextureProxy->config()), this->alphaType(),
                 fColorSpace);
         if (!sContext) {
             return false;
@@ -453,7 +455,7 @@ public:
         return fColorSpace.get();
     }
 
-    sk_sp<SkSpecialSurface> onMakeSurface(const SkImageFilter::OutputProperties& outProps,
+    sk_sp<SkSpecialSurface> onMakeSurface(SkColorType colorType, const SkColorSpace* colorSpace,
                                           const SkISize& size, SkAlphaType at,
                                           const SkSurfaceProps* props) const override {
         if (!fContext) {
@@ -461,8 +463,8 @@ public:
         }
 
         return SkSpecialSurface::MakeRenderTarget(fContext, size.width(), size.height(),
-                                                  SkColorTypeToGrColorType(outProps.colorType()),
-                                                  sk_ref_sp(outProps.colorSpace()), props);
+                                                  SkColorTypeToGrColorType(colorType),
+                                                  sk_ref_sp(colorSpace), props);
     }
 
     sk_sp<SkSpecialImage> onMakeSubset(const SkIRect& subset) const override {
@@ -484,7 +486,7 @@ public:
                 0 == subset->fLeft && 0 == subset->fTop &&
                 fTextureProxy->width() == subset->width() &&
                 fTextureProxy->height() == subset->height()) {
-                fTextureProxy->priv().exactify();
+                fTextureProxy->priv().exactify(false);
                 // The existing GrTexture is already tight so reuse it in the SkImage
                 return wrap_proxy_in_image(fContext, fTextureProxy, fAlphaType, fColorSpace);
             }
@@ -502,15 +504,17 @@ public:
             return wrap_proxy_in_image(fContext, std::move(subsetProxy), fAlphaType, fColorSpace);
         }
 
-        fTextureProxy->priv().exactify();
+        fTextureProxy->priv().exactify(true);
 
         return wrap_proxy_in_image(fContext, fTextureProxy, fAlphaType, fColorSpace);
     }
 
-    sk_sp<SkSurface> onMakeTightSurface(const SkImageFilter::OutputProperties& outProps,
+    sk_sp<SkSurface> onMakeTightSurface(SkColorType colorType, const SkColorSpace* colorSpace,
                                         const SkISize& size, SkAlphaType at) const override {
-        SkColorSpace* colorSpace = outProps.colorSpace();
-        SkColorType colorType = colorSpace && colorSpace->gammaIsLinear()
+        // TODO (michaelludwig): Why does this ignore colorType but onMakeSurface doesn't ignore it?
+        //    Once makeTightSurface() goes away, should this type overriding behavior be moved into
+        //    onMakeSurface() or is this unnecessary?
+        colorType = colorSpace && colorSpace->gammaIsLinear()
             ? kRGBA_F16_SkColorType : kRGBA_8888_SkColorType;
         SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType, at,
                                              sk_ref_sp(colorSpace));

@@ -16,7 +16,7 @@
 
 #include "src/trace_processor/stats_table.h"
 
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -25,25 +25,27 @@ StatsTable::StatsTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {}
 
 void StatsTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
-  Table::Register<StatsTable>(db, storage, "stats");
+  SqliteTable::Register<StatsTable>(db, storage, "stats");
 }
 
 util::Status StatsTable::Init(int, const char* const*, Schema* schema) {
   *schema = Schema(
       {
-          Table::Column(Column::kName, "name", ColumnType::kString),
+          SqliteTable::Column(Column::kName, "name", SqlValue::Type::kString),
           // Calling a column "index" causes sqlite to silently fail, hence idx.
-          Table::Column(Column::kIndex, "idx", ColumnType::kUint),
-          Table::Column(Column::kSeverity, "severity", ColumnType::kString),
-          Table::Column(Column::kSource, "source", ColumnType::kString),
-          Table::Column(Column::kValue, "value", ColumnType::kLong),
+          SqliteTable::Column(Column::kIndex, "idx", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kSeverity, "severity",
+                              SqlValue::Type::kString),
+          SqliteTable::Column(Column::kSource, "source",
+                              SqlValue::Type::kString),
+          SqliteTable::Column(Column::kValue, "value", SqlValue::Type::kLong),
       },
       {Column::kName});
   return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> StatsTable::CreateCursor() {
-  return std::unique_ptr<Table::Cursor>(new Cursor(this));
+std::unique_ptr<SqliteTable::Cursor> StatsTable::CreateCursor() {
+  return std::unique_ptr<SqliteTable::Cursor>(new Cursor(this));
 }
 
 int StatsTable::BestIndex(const QueryConstraints&, BestIndexInfo*) {
@@ -51,7 +53,7 @@ int StatsTable::BestIndex(const QueryConstraints&, BestIndexInfo*) {
 }
 
 StatsTable::Cursor::Cursor(StatsTable* table)
-    : Table::Cursor(table), table_(table), storage_(table->storage_) {}
+    : SqliteTable::Cursor(table), table_(table), storage_(table->storage_) {}
 
 int StatsTable::Cursor::Filter(const QueryConstraints&, sqlite3_value**) {
   *this = Cursor(table_);

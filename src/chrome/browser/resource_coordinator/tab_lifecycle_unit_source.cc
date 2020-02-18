@@ -88,10 +88,10 @@ class TabLifecycleStateObserver
   // performance_manager::PageNode::ObserverDefaultImpl::
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
-                       page_node->GetContentProxy(),
+                       page_node->GetContentsProxy(),
                        page_node->GetLifecycleState()));
   }
 
@@ -123,17 +123,11 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
 TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
 
 void TabLifecycleUnitSource::Start() {
-  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
-    // The performance manager dies on its own sequence, so posting unretained
-    // is fine.
-    perf_man->CallOnGraph(
-        FROM_HERE, base::BindOnce(
-                       [](std::unique_ptr<TabLifecycleStateObserver>
-                              tab_lifecycle_observer,
-                          performance_manager::GraphImpl* graph) {
-                         graph->PassToGraph(std::move(tab_lifecycle_observer));
-                       },
-                       std::make_unique<TabLifecycleStateObserver>()));
+  // TODO(sebmarchand): Remove the "IsAvailable" check, or merge the TM into the
+  // PM. The TM and PM must always exist together.
+  if (performance_manager::PerformanceManager::IsAvailable()) {
+    performance_manager::PerformanceManager::PassToGraph(
+        FROM_HERE, std::make_unique<TabLifecycleStateObserver>());
   }
 }
 

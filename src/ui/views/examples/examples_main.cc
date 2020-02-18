@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
   gl::init::InitializeGLOneOff();
 
-  // The use of base::test::ScopedTaskEnvironment below relies on the timeout
+  // The use of base::test::TaskEnvironment below relies on the timeout
   // values from TestTimeouts. This ensures they're properly initialized.
   TestTimeouts::Initialize();
 
@@ -93,8 +93,8 @@ int main(int argc, char** argv) {
       &host_frame_sink_manager, &frame_sink_manager);
   context_factory->set_use_test_surface(false);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   base::i18n::InitializeICU();
 

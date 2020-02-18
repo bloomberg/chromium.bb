@@ -6,19 +6,20 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_AGENT_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/unguessable_token.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
-
-namespace v8 {
-class Isolate;
-}
+#include "v8/include/v8.h"
 
 namespace blink {
 
 namespace scheduler {
 class EventLoop;
 }
+
+class ExecutionContext;
 
 // Corresponding spec concept is:
 // https://html.spec.whatwg.org/C#integration-with-the-javascript-agent-formalism
@@ -28,16 +29,22 @@ class EventLoop;
 // Worklets have their own agent.
 // While an WindowAgentFactory is shared across a group of reachable frames,
 // Agent is shared across a group of reachable and same-site frames.
-class Agent : public GarbageCollectedFinalized<Agent> {
+class CORE_EXPORT Agent : public GarbageCollectedFinalized<Agent> {
  public:
-  static Agent* CreateForWorkerOrWorklet(v8::Isolate* isolate) {
-    return MakeGarbageCollected<Agent>(isolate);
+  static Agent* CreateForWorkerOrWorklet(
+      v8::Isolate* isolate,
+      const base::UnguessableToken& cluster_id,
+      std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr) {
+    return MakeGarbageCollected<Agent>(isolate, cluster_id,
+                                       std::move(microtask_queue));
   }
 
   // Do not create the instance directly.
   // Use Agent::CreateForWorkerOrWorklet() or
   // WindowAgentFactory::GetAgentForOrigin().
-  explicit Agent(v8::Isolate* isolate);
+  Agent(v8::Isolate* isolate,
+        const base::UnguessableToken& cluster_id,
+        std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr);
   virtual ~Agent();
 
   const scoped_refptr<scheduler::EventLoop>& event_loop() const {
@@ -46,8 +53,14 @@ class Agent : public GarbageCollectedFinalized<Agent> {
 
   virtual void Trace(blink::Visitor*);
 
+  void AttachExecutionContext(ExecutionContext*);
+  void DetachExecutionContext(ExecutionContext*);
+
+  const base::UnguessableToken& cluster_id() const { return cluster_id_; }
+
  private:
   scoped_refptr<scheduler::EventLoop> event_loop_;
+  const base::UnguessableToken cluster_id_;
 };
 
 }  // namespace blink

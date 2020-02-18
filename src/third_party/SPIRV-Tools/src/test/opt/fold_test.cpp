@@ -11,6 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "source/opt/fold.h"
+
 #include <limits>
 #include <memory>
 #include <string>
@@ -22,7 +24,6 @@
 #include "gtest/gtest.h"
 #include "source/opt/build_module.h"
 #include "source/opt/def_use_manager.h"
-#include "source/opt/fold.h"
 #include "source/opt/ir_context.h"
 #include "source/opt/module.h"
 #include "spirv-tools/libspirv.hpp"
@@ -209,6 +210,7 @@ OpName %main "main"
 %float_2049 = OpConstant %float 2049
 %float_n2049 = OpConstant %float -2049
 %float_0p5 = OpConstant %float 0.5
+%float_0p2 = OpConstant %float 0.2
 %float_pi = OpConstant %float 1.5555
 %float_1e16 = OpConstant %float 1e16
 %float_n1e16 = OpConstant %float -1e16
@@ -220,6 +222,7 @@ OpName %main "main"
 %v2float_3_2 = OpConstantComposite %v2float %float_3 %float_2
 %v2float_4_4 = OpConstantComposite %v2float %float_4 %float_4
 %v2float_2_0p5 = OpConstantComposite %v2float %float_2 %float_0p5
+%v2float_0p2_0p5 = OpConstantComposite %v2float %float_0p2 %float_0p5
 %v2float_null = OpConstantNull %v2float
 %double_n1 = OpConstant %double -1
 %105 = OpConstant %double 0 ; Need a def with an numerical id to define id maps.
@@ -641,6 +644,58 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntVectorInstructionFoldingTest,
 ));
 // clang-format on
 
+using FloatVectorInstructionFoldingTest =
+    ::testing::TestWithParam<InstructionFoldingCase<std::vector<float>>>;
+
+TEST_P(FloatVectorInstructionFoldingTest, Case) {
+  const auto& tc = GetParam();
+
+  // Build module.
+  std::unique_ptr<IRContext> context =
+      BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, tc.test_body,
+                  SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  ASSERT_NE(nullptr, context);
+
+  // Fold the instruction to test.
+  analysis::DefUseManager* def_use_mgr = context->get_def_use_mgr();
+  Instruction* inst = def_use_mgr->GetDef(tc.id_to_fold);
+  SpvOp original_opcode = inst->opcode();
+  bool succeeded = context->get_instruction_folder().FoldInstruction(inst);
+
+  // Make sure the instruction folded as expected.
+  EXPECT_EQ(succeeded, inst == nullptr || inst->opcode() != original_opcode);
+  if (succeeded && inst != nullptr) {
+    EXPECT_EQ(inst->opcode(), SpvOpCopyObject);
+    inst = def_use_mgr->GetDef(inst->GetSingleWordInOperand(0));
+    std::vector<SpvOp> opcodes = {SpvOpConstantComposite};
+    EXPECT_THAT(opcodes, Contains(inst->opcode()));
+    analysis::ConstantManager* const_mrg = context->get_constant_mgr();
+    const analysis::Constant* result = const_mrg->GetConstantFromInst(inst);
+    EXPECT_NE(result, nullptr);
+    if (result != nullptr) {
+      const std::vector<const analysis::Constant*>& componenets =
+          result->AsVectorConstant()->GetComponents();
+      EXPECT_EQ(componenets.size(), tc.expected_result.size());
+      for (size_t i = 0; i < componenets.size(); i++) {
+        EXPECT_EQ(tc.expected_result[i], componenets[i]->GetFloat());
+      }
+    }
+  }
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(TestCase, FloatVectorInstructionFoldingTest,
+::testing::Values(
+   // Test case 0: FMix {2.0, 2.0}, {2.0, 3.0} {0.2,0.5}
+   InstructionFoldingCase<std::vector<float>>(
+       Header() + "%main = OpFunction %void None %void_func\n" +
+           "%main_lab = OpLabel\n" +
+           "%2 = OpExtInst %v2float %1 FMix %v2float_2_3 %v2float_0_0 %v2float_0p2_0p5\n" +
+           "OpReturn\n" +
+           "OpFunctionEnd",
+       2, {1.6f,1.5f})
+));
+// clang-format on
 using BooleanInstructionFoldingTest =
     ::testing::TestWithParam<InstructionFoldingCase<bool>>;
 
@@ -1464,24 +1519,14 @@ INSTANTIATE_TEST_SUITE_P(FloatConstantFoldingTest, FloatInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, std::numeric_limits<float>::quiet_NaN()),
-    // Test case 20: QuantizeToF16 inf
+    // Test case 20: FMix 1.0 4.0 0.2
     InstructionFoldingCase<float>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
-            "%2 = OpFDiv %float %float_1 %float_0\n" +
-            "%3 = OpQuantizeToF16 %float %3\n" +
+            "%2 = OpExtInst %float %1 FMix %float_1 %float_4 %float_0p2\n" +
             "OpReturn\n" +
             "OpFunctionEnd",
-        2, std::numeric_limits<float>::infinity()),
-    // Test case 21: QuantizeToF16 -inf
-    InstructionFoldingCase<float>(
-        Header() + "%main = OpFunction %void None %void_func\n" +
-            "%main_lab = OpLabel\n" +
-            "%2 = OpFDiv %float %float_n1 %float_0\n" +
-            "%3 = OpQuantizeToF16 %float %3\n" +
-            "OpReturn\n" +
-            "OpFunctionEnd",
-        2, -std::numeric_limits<float>::infinity())
+        2, 1.6f)
 ));
 // clang-format on
 
@@ -2980,7 +3025,17 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractFoldingTest, GeneralInstructionFoldingT
             "%4 = OpCompositeExtract %int %3 0\n" +
             "OpReturn\n" +
             "OpFunctionEnd",
-        4, INT_7_ID)
+        4, INT_7_ID),
+    // Test case 13: https://github.com/KhronosGroup/SPIRV-Tools/issues/2608
+    // Out of bounds access.  Do not fold.
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpConstantComposite %v4float %float_1 %float_1 %float_1 %float_1\n" +
+            "%3 = OpCompositeExtract %float %2 4\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        3, 0)
 ));
 
 INSTANTIATE_TEST_SUITE_P(CompositeConstructFoldingTest, GeneralInstructionFoldingTest,

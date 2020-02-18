@@ -71,7 +71,7 @@ To just build a single package:
                         default=True, dest='binary', action='store_false')
     parser.add_argument('--init-only', action='store_true',
                         help="Initialize build environment but don't build "
-                        "anything.")
+                        'anything.')
     deps = parser.add_mutually_exclusive_group()
     deps.add_argument('--no-deps', help="Don't update dependencies.",
                       default=True, dest='deps', action='store_false')
@@ -90,7 +90,7 @@ To just build a single package:
                           dest='host_packages_update', default=True,
                           action='store_false',
                           help="Don't update host packages during chroot "
-                          "update.")
+                          'update.')
     advanced.add_argument('--no-chroot-update', default=True,
                           dest='chroot_update', action='store_false',
                           help="Don't update chroot at all.")

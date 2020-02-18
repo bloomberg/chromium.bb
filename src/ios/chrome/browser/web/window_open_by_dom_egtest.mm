@@ -22,6 +22,7 @@
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,8 +31,9 @@
 
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::WebViewMatcher;
+
 using web::test::HttpServer;
-using web::WebViewInWebState;
 
 namespace {
 // URL of the file-based page supporting these tests.
@@ -85,7 +87,7 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetSessionStorage {
   [ChromeEarlGrey executeJavaScript:@"sessionStorage.setItem('key', 'value');"];
   const char ID[] = "webScenarioWindowOpenSameURLWithBlankTarget";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
@@ -101,7 +103,7 @@ id<GREYMatcher> PopupBlocker() {
 // Tests tapping a link with target="_blank".
 - (void)testLinkWithBlankTarget {
   const char ID[] = "webScenarioWindowOpenRegularLink";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
@@ -111,25 +113,17 @@ id<GREYMatcher> PopupBlocker() {
 // Tests opening a window with URL that ends with /..;
 - (void)testWindowOpenWithSpecialURL {
   const char ID[] = "webScenarioWindowOpenWithSpecialURL";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
   if (@available(iOS 13, *)) {
     // Starting from iOS 13 WebKit does not rewrite URL that ends with /..;
     [ChromeEarlGrey waitForMainTabCount:2];
-  } else if (@available(iOS 12, *)) {
+  } else {
     // Prior to iOS 13 WebKit rewries URL that ends with /..; to invalid URL
     // so Chrome opens about:blank for that invalid URL.
     [ChromeEarlGrey waitForMainTabCount:2];
-    [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
-        assertWithMatcher:grey_notNil()];
-  } else {
-    // Prior to iOS 12 WebKit rewries URL that ends with /..; to invalid URL,
-    // but Chrome does not have a chance to open about:blank, so child window
-    // is not created.
-    [ChromeEarlGrey waitForWebStateNotContainingText:ID];
-    [ChromeEarlGrey waitForMainTabCount:1];
     [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
         assertWithMatcher:grey_notNil()];
   }
@@ -149,7 +143,7 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetMultipleTimes {
   const char ID[] = "webScenarioWindowOpenRegularLinkMultipleTimes";
   web::WebState* test_page_web_state = GetCurrentWebState();
-  id<GREYMatcher> test_page_matcher = WebViewInWebState(test_page_web_state);
+  id<GREYMatcher> test_page_matcher = WebViewMatcher();
   id<GREYAction> link_tap = web::WebViewTapElement(
       test_page_web_state, [ElementSelector selectorWithElementID:ID]);
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
@@ -214,7 +208,7 @@ id<GREYMatcher> PopupBlocker() {
 // second delay.
 - (void)testLinkWithBlankTargetWithDelayedClose {
   const char ID[] = "webScenarioWindowOpenWithDelayedClose";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];

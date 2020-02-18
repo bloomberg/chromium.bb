@@ -30,6 +30,8 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/crash/android/jni_headers/PackagePaths_jni.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -50,6 +52,43 @@
 namespace crashpad {
 namespace {
 
+class MemoryRangeWhitelist {
+ public:
+  MemoryRangeWhitelist() {
+    whitelist_.entries = 0;
+    whitelist_.size = 0;
+  }
+
+  void AddEntry(VMAddress base, VMSize length) {
+    SanitizationMemoryRangeWhitelist::Range new_entry;
+    new_entry.base = base;
+    new_entry.length = length;
+
+    base::AutoLock lock(lock_);
+    std::vector<SanitizationMemoryRangeWhitelist::Range> new_array(array_);
+    new_array.push_back(new_entry);
+    whitelist_.entries = FromPointerCast<VMAddress>(new_array.data());
+    whitelist_.size += 1;
+    array_ = std::move(new_array);
+  }
+
+  SanitizationMemoryRangeWhitelist* GetSanitizationAddress() {
+    return &whitelist_;
+  }
+
+  static MemoryRangeWhitelist* Singleton() {
+    static base::NoDestructor<MemoryRangeWhitelist> singleton;
+    return singleton.get();
+  }
+
+ private:
+  base::Lock lock_;
+  SanitizationMemoryRangeWhitelist whitelist_;
+  std::vector<SanitizationMemoryRangeWhitelist::Range> array_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryRangeWhitelist);
+};
+
 bool SetSanitizationInfo(crash_reporter::CrashReporterClient* client,
                          SanitizationInformation* info) {
   const char* const* whitelist = nullptr;
@@ -59,6 +98,8 @@ bool SetSanitizationInfo(crash_reporter::CrashReporterClient* client,
                                      &sanitize_stacks);
   info->annotations_whitelist_address = FromPointerCast<VMAddress>(whitelist);
   info->target_module_address = FromPointerCast<VMAddress>(target_module);
+  info->memory_range_whitelist_address = FromPointerCast<VMAddress>(
+      MemoryRangeWhitelist::Singleton()->GetSanitizationAddress());
   info->sanitize_stacks = sanitize_stacks;
   return whitelist != nullptr || target_module != nullptr || sanitize_stacks;
 }
@@ -367,7 +408,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
 
   SetBuildInfoAnnotations(process_annotations);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Empty means stable.
   const bool allow_empty_channel = true;
 #else
@@ -397,7 +438,7 @@ bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
   if (!base::PathService::Get(base::DIR_MODULE, exe_dir)) {
     return false;
   }
-  *handler_path = exe_dir->Append("libcrashpad_handler.so");
+  *handler_path = exe_dir->Append("libchrome_crashpad_handler.so");
   return true;
 }
 
@@ -633,6 +674,12 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
 
   crashpad::ExceptionHandlerClient handler_client(connection.get(), false);
   return handler_client.RequestCrashDump(info) == 0;
+}
+
+void WhitelistMemoryRange(void* begin, size_t length) {
+  crashpad::MemoryRangeWhitelist::Singleton()->AddEntry(
+      crashpad::FromPointerCast<crashpad::VMAddress>(begin),
+      static_cast<crashpad::VMSize>(length));
 }
 
 namespace internal {

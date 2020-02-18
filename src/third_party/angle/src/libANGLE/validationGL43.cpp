@@ -123,33 +123,33 @@ bool ValidateGetObjectPtrLabel(Context *context,
 }
 
 bool ValidateGetProgramResourceLocationIndex(Context *context,
-                                             GLuint program,
+                                             ShaderProgramID program,
                                              GLenum programInterface,
                                              const GLchar *name)
 {
     return true;
 }
 
-bool ValidateInvalidateBufferData(Context *context, GLuint buffer)
+bool ValidateInvalidateBufferData(Context *context, BufferID buffer)
 {
     return true;
 }
 
 bool ValidateInvalidateBufferSubData(Context *context,
-                                     GLuint buffer,
+                                     BufferID buffer,
                                      GLintptr offset,
                                      GLsizeiptr length)
 {
     return true;
 }
 
-bool ValidateInvalidateTexImage(Context *context, GLuint texture, GLint level)
+bool ValidateInvalidateTexImage(Context *context, TextureID texture, GLint level)
 {
     return true;
 }
 
 bool ValidateInvalidateTexSubImage(Context *context,
-                                   GLuint texture,
+                                   TextureID texture,
                                    GLint level,
                                    GLint xoffset,
                                    GLint yoffset,
@@ -209,7 +209,7 @@ bool ValidatePushDebugGroup(Context *context,
 }
 
 bool ValidateShaderStorageBlockBinding(Context *context,
-                                       GLuint program,
+                                       ShaderProgramID program,
                                        GLuint storageBlockIndex,
                                        GLuint storageBlockBinding)
 {
@@ -219,7 +219,7 @@ bool ValidateShaderStorageBlockBinding(Context *context,
 bool ValidateTexBufferRange(Context *context,
                             GLenum target,
                             GLenum internalformat,
-                            GLuint buffer,
+                            BufferID buffer,
                             GLintptr offset,
                             GLsizeiptr size)
 {
@@ -239,7 +239,7 @@ bool ValidateTexStorage3DMultisample(Context *context,
 }
 
 bool ValidateTextureView(Context *context,
-                         GLuint texture,
+                         TextureID texture,
                          GLenum target,
                          GLuint origtexture,
                          GLenum internalformat,

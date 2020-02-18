@@ -65,20 +65,20 @@
   </message>
 
   <!-- Lookalike URL warning -->
-  <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL looks like a more popular URL.">
+  <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL.">
     Continue to <ph name="DOMAIN">$1<ex>example.com</ex></ph>?
   </message>
-  <message name="IDS_LOOKALIKE_URL_HEADING" desc="Large heading. Context: the error page that's shown when the requested URL looks like a more popular URL.">
+  <message name="IDS_LOOKALIKE_URL_HEADING" desc="Large heading. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL.">
     Continue to &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN">$1<ex>example.com</ex></ph>&lt;/a&gt;?
   </message>
-  <message name="IDS_LOOKALIKE_URL_IGNORE" desc="Button text. Context: the error page that's shown when the requested URL looks like a more popular URL. This button dismisses the interstitial and navigates to the originally-requested URL.">
+  <message name="IDS_LOOKALIKE_URL_IGNORE" desc="Button text. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This button dismisses the interstitial and navigates to the originally-requested URL.">
     Ignore
   </message>
-  <message name="IDS_LOOKALIKE_URL_CONTINUE" desc="Button text. Context: the error page that's shown when the requested URL looks like a more popular URL. This button dismisses the interstitial and navigates to the suggested (safe) URL.">
+  <message name="IDS_LOOKALIKE_URL_CONTINUE" desc="Button text. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This button dismisses the interstitial and navigates to the suggested (safe) URL.">
     Continue
   </message>
-  <message name="IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: the error page that's shown when the requested URL looks like a more popular URL.">
-    The link you opened goes to a site you don't usually visit. It might be trying to confuse you.
+  <message name="IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL.">
+    The site you just tried to visit looks fake. Attackers sometimes mimic sites by making small, hard-to-see changes to the URL.
   </message>
 
   <!-- Clock errors -->
@@ -228,7 +228,7 @@
     Privacy policy
   </message>
   <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE" desc="SafeBrowsing Scout label next to checkbox">
-    Help improve Safe Browsing by sending some <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>system information and page content<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
+    Help improve Chrome security by sending <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>URLs of some pages you visit, limited system information, and some page content<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
   </message>
 
   <!-- Harmful download interstitial -->
@@ -385,6 +385,9 @@
   </if>
 
   <!-- Billing interstitial -->
+  <message name="IDS_BILLING_TITLE" desc="The tab title for the Safe Browsing Billing interstitial.">
+    Page may charge money
+  </message>
   <message name="IDS_BILLING_HEADING" desc="The large heading at the top of the billing interstitial.">
     The page ahead may try to charge you money
   </message>
@@ -446,5 +449,22 @@
   </message>
   <message name="IDS_ORIGIN_POLICY_CLOSE" desc="The text of the Origin Policy Error Interstitial that will hide the 'advanced' section again.">
     Hide advanced
+  </message>
+
+  <!-- Safety Tip summary strings for Android (Desktop is in page_info_strings.grdp) -->
+  <message name="IDS_SAFETY_TIP_ANDROID_NAME" desc="Name of safety tips in general, displayed in bold as part of the title of the safety tip infobar.">
+    Safety tip:
+  </message>
+  <message name="IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_TITLE" desc="Title of Safety Tip infobar.">
+    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious site
+  </message>
+  <message name="IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_DESCRIPTION" desc="Body of an infobar warning when the user visits a page that triggered a Safety Tip.">
+    This site could be fake or fraudulent. Chrome recommends leaving now.
+  </message>
+  <message name="IDS_SAFETY_TIP_ANDROID_IGNORE_BUTTON" desc="Text of button to leave a suspicious page. Shown on the safety tip infobar.">
+    IGNORE
+  </message>
+  <message name="IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON" desc="Text of button to ignore the warning on a suspicious page. Shown on the safety tip infobar.">
+    LEAVE SITE
   </message>
 </grit-part>

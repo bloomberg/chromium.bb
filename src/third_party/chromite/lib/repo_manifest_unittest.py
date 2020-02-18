@@ -111,7 +111,7 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     unpickled = pickle.loads(pickled)
     self.AssertXMLAlmostEqual(ManifestToString(unpickled), MANIFEST_XML)
     with self.assertRaises(repo_manifest.UnsupportedFeature):
-      unpickled.Includes().next()
+      next(unpickled.Includes())
 
   def testPickleUnsupportedFeatures(self):
     """Test Manifest picklability when unsupported features are allowed."""
@@ -121,7 +121,7 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     pickled = pickle.dumps(manifest)
     unpickled = pickle.loads(pickled)
     self.AssertXMLAlmostEqual(ManifestToString(unpickled), manifest_xml)
-    self.assertIsNotNone(unpickled.Includes().next())
+    self.assertIsNotNone(next(unpickled.Includes()))
 
   def testFromFile(self):
     """Test Manifest.FromFile."""

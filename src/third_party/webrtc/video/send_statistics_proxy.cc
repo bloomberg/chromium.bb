@@ -11,11 +11,15 @@
 #include "video/send_statistics_proxy.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "api/video/video_codec_constants.h"
+#include "api/video/video_codec_type.h"
+#include "api/video_codecs/video_codec.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -140,6 +144,10 @@ SendStatisticsProxy::SendStatisticsProxy(
       quality_limitation_reason_tracker_(clock_),
       media_byte_rate_tracker_(kBucketSizeMs, kBucketCount),
       encoded_frame_rate_tracker_(kBucketSizeMs, kBucketCount),
+      last_num_spatial_layers_(0),
+      last_num_simulcast_streams_(0),
+      last_spatial_layer_use_{},
+      bw_limited_layers_(false),
       uma_container_(
           new UmaSamplesContainer(GetUmaPrefix(content_type_), stats_, clock)) {
 }
@@ -1066,10 +1074,21 @@ void SendStatisticsProxy::OnAdaptationChanged(
       break;
   }
 
-  bool is_cpu_limited = cpu_counts.num_resolution_reductions > 0 ||
-                        cpu_counts.num_framerate_reductions > 0;
-  bool is_bandwidth_limited = quality_counts.num_resolution_reductions > 0 ||
-                              quality_counts.num_framerate_reductions > 0;
+  cpu_downscales_ = cpu_counts.num_resolution_reductions.value_or(-1);
+  quality_downscales_ = quality_counts.num_resolution_reductions.value_or(-1);
+
+  cpu_counts_ = cpu_counts;
+  quality_counts_ = quality_counts;
+
+  UpdateAdaptationStats();
+}
+
+void SendStatisticsProxy::UpdateAdaptationStats() {
+  bool is_cpu_limited = cpu_counts_.num_resolution_reductions > 0 ||
+                        cpu_counts_.num_framerate_reductions > 0;
+  bool is_bandwidth_limited = quality_counts_.num_resolution_reductions > 0 ||
+                              quality_counts_.num_framerate_reductions > 0 ||
+                              bw_limited_layers_;
   if (is_bandwidth_limited) {
     // We may be both CPU limited and bandwidth limited at the same time but
     // there is no way to express this in standardized stats. Heuristically,
@@ -1085,23 +1104,69 @@ void SendStatisticsProxy::OnAdaptationChanged(
         QualityLimitationReason::kNone);
   }
 
-  UpdateAdaptationStats(cpu_counts, quality_counts);
-}
-
-void SendStatisticsProxy::UpdateAdaptationStats(
-    const AdaptationSteps& cpu_counts,
-    const AdaptationSteps& quality_counts) {
-  cpu_downscales_ = cpu_counts.num_resolution_reductions.value_or(-1);
-  quality_downscales_ = quality_counts.num_resolution_reductions.value_or(-1);
-
-  stats_.cpu_limited_resolution = cpu_counts.num_resolution_reductions > 0;
-  stats_.cpu_limited_framerate = cpu_counts.num_framerate_reductions > 0;
-  stats_.bw_limited_resolution = quality_counts.num_resolution_reductions > 0;
-  stats_.bw_limited_framerate = quality_counts.num_framerate_reductions > 0;
+  stats_.cpu_limited_resolution = cpu_counts_.num_resolution_reductions > 0;
+  stats_.cpu_limited_framerate = cpu_counts_.num_framerate_reductions > 0;
+  stats_.bw_limited_resolution = quality_counts_.num_resolution_reductions > 0;
+  stats_.bw_limited_framerate = quality_counts_.num_framerate_reductions > 0;
+  // If bitrate allocator has disabled some layers frame-rate or resolution are
+  // limited depending on the encoder configuration.
+  if (bw_limited_layers_) {
+    switch (content_type_) {
+      case VideoEncoderConfig::ContentType::kRealtimeVideo: {
+        stats_.bw_limited_resolution = true;
+        break;
+      }
+      case VideoEncoderConfig::ContentType::kScreen: {
+        stats_.bw_limited_framerate = true;
+        break;
+      }
+    }
+  }
   stats_.quality_limitation_reason =
       quality_limitation_reason_tracker_.current_reason();
+
   // |stats_.quality_limitation_durations_ms| depends on the current time
   // when it is polled; it is updated in SendStatisticsProxy::GetStats().
+}
+
+void SendStatisticsProxy::OnBitrateAllocationUpdated(
+    const VideoCodec& codec,
+    const VideoBitrateAllocation& allocation) {
+  int num_spatial_layers = 0;
+  for (int i = 0; i < kMaxSpatialLayers; i++) {
+    if (codec.spatialLayers[i].active) {
+      num_spatial_layers++;
+    }
+  }
+  int num_simulcast_streams = 0;
+  for (int i = 0; i < kMaxSimulcastStreams; i++) {
+    if (codec.simulcastStream[i].active) {
+      num_simulcast_streams++;
+    }
+  }
+
+  std::array<bool, kMaxSpatialLayers> spatial_layers;
+  for (int i = 0; i < kMaxSpatialLayers; i++) {
+    spatial_layers[i] = (allocation.GetSpatialLayerSum(i) > 0);
+  }
+
+  rtc::CritScope lock(&crit_);
+
+  bw_limited_layers_ = allocation.is_bw_limited();
+  UpdateAdaptationStats();
+
+  if (spatial_layers != last_spatial_layer_use_) {
+    // If the number of spatial layers has changed, the resolution change is
+    // not due to quality limitations, it is because the configuration
+    // changed.
+    if (last_num_spatial_layers_ == num_spatial_layers &&
+        last_num_simulcast_streams_ == num_simulcast_streams) {
+      ++stats_.quality_limitation_resolution_changes;
+    }
+    last_spatial_layer_use_ = spatial_layers;
+  }
+  last_num_spatial_layers_ = num_spatial_layers;
+  last_num_simulcast_streams_ = num_simulcast_streams;
 }
 
 // TODO(asapersson): Include fps changes.
@@ -1158,10 +1223,8 @@ void SendStatisticsProxy::StatisticsUpdated(const RtcpStatistics& statistics,
     return;
 
   stats->rtcp_stats = statistics;
-  uma_container_->report_block_stats_.Store(statistics, 0, ssrc);
+  uma_container_->report_block_stats_.Store(ssrc, statistics);
 }
-
-void SendStatisticsProxy::CNameChanged(const char* cname, uint32_t ssrc) {}
 
 void SendStatisticsProxy::OnReportBlockDataUpdated(
     ReportBlockData report_block_data) {

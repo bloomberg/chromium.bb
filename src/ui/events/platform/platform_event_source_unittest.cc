@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -145,7 +145,9 @@ class PlatformEventTest : public testing::Test {
 
  protected:
   // testing::Test:
-  void SetUp() override { source_.reset(new TestPlatformEventSource()); }
+  void SetUp() override {
+    source_ = std::make_unique<TestPlatformEventSource>();
+  }
 
  private:
   std::unique_ptr<TestPlatformEventSource> source_;
@@ -498,7 +500,7 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
   ~PlatformEventTestWithMessageLoop() override {}
 
   void Run() {
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&PlatformEventTestWithMessageLoop::RunTestImpl,
                        base::Unretained(this)));
@@ -509,8 +511,8 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
   virtual void RunTestImpl() = 0;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformEventTestWithMessageLoop);
 };

@@ -133,7 +133,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     size_t frame_len,
                     const QuicHeaderList& header_list));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(QuicStreamId stream_id, spdy::SpdyPriority priority));
+               void(QuicStreamId stream_id,
+                    const spdy::SpdyStreamPrecedence& precedence));
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
                     QuicRstStreamErrorCode error,
@@ -144,15 +145,17 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
       const std::string& request_url,
       const std::list<QuicBackendResponse::ServerPushInfo>& resources,
       QuicStreamId original_stream_id,
+      const spdy::SpdyStreamPrecedence& original_precedence,
       const spdy::SpdyHeaderBlock& original_request_headers) override {
     original_request_headers_ = original_request_headers.Clone();
     PromisePushResourcesMock(request_url, resources, original_stream_id,
-                             original_request_headers);
+                             original_precedence, original_request_headers);
   }
-  MOCK_METHOD4(PromisePushResourcesMock,
+  MOCK_METHOD5(PromisePushResourcesMock,
                void(const std::string&,
                     const std::list<QuicBackendResponse::ServerPushInfo>&,
                     QuicStreamId,
+                    const spdy::SpdyStreamPrecedence&,
                     const spdy::SpdyHeaderBlock&));
 
   using QuicSession::ActivateStream;
@@ -201,6 +204,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
+    session_.Initialize();
     stream_ = new StrictMock<TestStream>(
         GetNthClientInitiatedBidirectionalStreamId(
             connection_->transport_version(), 0),
@@ -413,7 +417,7 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   // Create a new promised stream with even id().
   auto promised_stream = new StrictMock<TestStream>(
       GetNthServerInitiatedUnidirectionalStreamId(
-          connection_->transport_version(), 0),
+          connection_->transport_version(), 3),
       &session_, WRITE_UNIDIRECTIONAL, &memory_cache_backend_);
   session_.ActivateStream(QuicWrapUnique(promised_stream));
 
@@ -514,7 +518,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithPushResources) {
                             host + request_path, _,
                             GetNthClientInitiatedBidirectionalStreamId(
                                 connection_->transport_version(), 0),
-                            _));
+                            _, _));
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
   if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, header_length, _, NO_FIN));
@@ -549,7 +553,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   // Create a stream with even stream id and test against this stream.
   const QuicStreamId kServerInitiatedStreamId =
       GetNthServerInitiatedUnidirectionalStreamId(
-          connection_->transport_version(), 0);
+          connection_->transport_version(), 3);
   // Create a server initiated stream and pass it to session_.
   auto server_initiated_stream =
       new StrictMock<TestStream>(kServerInitiatedStreamId, &session_,

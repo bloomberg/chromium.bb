@@ -23,7 +23,6 @@
 #import "device/bluetooth/test/mock_bluetooth_cbservice_mac.h"
 #import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 using base::mac::ObjCCast;
 using base::scoped_nsobject;
@@ -115,7 +114,7 @@ void BluetoothTestMac::InitWithDefaultAdapter() {
 
 void BluetoothTestMac::InitWithoutDefaultAdapter() {
   adapter_mac_ = BluetoothAdapterMac::CreateAdapterForTest(
-                     "", "", scoped_task_environment_.GetMainThreadTaskRunner())
+                     "", "", task_environment_.GetMainThreadTaskRunner())
                      .get();
   adapter_ = adapter_mac_;
 
@@ -129,7 +128,7 @@ void BluetoothTestMac::InitWithoutDefaultAdapter() {
 void BluetoothTestMac::InitWithFakeAdapter() {
   adapter_mac_ = BluetoothAdapterMac::CreateAdapterForTest(
                      kTestAdapterName, kTestAdapterAddress,
-                     scoped_task_environment_.GetMainThreadTaskRunner())
+                     task_environment_.GetMainThreadTaskRunner())
                      .get();
   adapter_ = adapter_mac_;
 

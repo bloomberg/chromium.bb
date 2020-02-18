@@ -39,6 +39,11 @@ extern NSString* const kSettingsDoneButtonId;
 // closed.
 - (void)closeSettings;
 
+// Informs the delegate that settings navigation controller has been dismissed
+// (e.g. it was swiped down). This means that closeSettings wasn't called and we
+// need to perform some clean up tasks.
+- (void)settingsWasDismissed;
+
 // Asks the delegate for a dispatcher that can be passed into child view
 // controllers when they are created.
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings;
@@ -48,10 +53,6 @@ extern NSString* const kSettingsDoneButtonId;
 // Controller to modify user settings.
 @interface SettingsNavigationController
     : UINavigationController<ApplicationSettingsCommands>
-
-// Whether sync changes should be committed when the settings are being
-// dismissed. Defaults to YES.
-@property(nonatomic, assign) BOOL shouldCommitSyncChangesOnDismissal;
 
 // Creates a new SettingsTableViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
@@ -77,13 +78,6 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
                        delegate:
                            (id<SettingsNavigationControllerDelegate>)delegate;
 
-// Creates a new SyncSettingsCollectionViewController and the chrome around
-// it. |browserState| is used to personalize some settings aspects and should
-// not be nil. |delegate| may be nil.
-+ (SettingsNavigationController*)
-     newSyncController:(ios::ChromeBrowserState*)browserState
-              delegate:(id<SettingsNavigationControllerDelegate>)delegate;
-
 // Creates a new SyncEncryptionPassphraseCollectionViewController and the chrome
 // around it. |browserState| is used to personalize some settings aspects and
 // should not be nil. |delegate| may be nil.
@@ -101,12 +95,14 @@ newSavePasswordsController:(ios::ChromeBrowserState*)browserState
 
 // Creates and displays a new UIViewController for user to report an issue.
 // |browserState| is used to personalize some settings aspects and should not
-// be nil. |dataSource| is used to populate the UIViewController. |delegate|
-// may be nil.
+// be nil. |dataSource| is used to populate the UIViewController. |dispatcher|,
+// which can be nil, is an object that can perform operations for the view
+// controller. |delegate| may be nil.
 + (SettingsNavigationController*)
-newUserFeedbackController:(ios::ChromeBrowserState*)browserState
-                 delegate:(id<SettingsNavigationControllerDelegate>)delegate
-       feedbackDataSource:(id<UserFeedbackDataSource>)dataSource;
+    newUserFeedbackController:(ios::ChromeBrowserState*)browserState
+                     delegate:(id<SettingsNavigationControllerDelegate>)delegate
+           feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
+                   dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Creates and displays a new ImportDataTableViewController. |browserState|
 // should not be nil.
@@ -157,9 +153,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 // Returns the current main browser state.
 - (ios::ChromeBrowserState*)mainBrowserState;
 
-// Notifies this |SettingsNavigationController| that it will be dismissed such
+// Notifies this |SettingsNavigationController| of a dismissal such
 // that it has a possibility to do necessary clean up.
-- (void)settingsWillBeDismissed;
+- (void)cleanUpSettings;
 
 // Closes this |SettingsNavigationController| by asking its delegate.
 - (void)closeSettings;

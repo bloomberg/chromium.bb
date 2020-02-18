@@ -16,10 +16,6 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
 #endif  // defined(OS_WIN)
 
-// Enable support for PIN-based user-verification.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthPINSupport;
-
 // Enable support for resident keys.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthResidentKeys;
@@ -27,10 +23,14 @@ extern const base::Feature kWebAuthResidentKeys;
 // Enable biometric enrollment in the security keys settings UI.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthBiometricEnrollment;
-//
+
 // Enable credential management in the security keys settings UI.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthCredentialManagement;
+
+// Enable using a phone as a generic security key.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthPhoneSupport;
 
 }  // namespace device
 

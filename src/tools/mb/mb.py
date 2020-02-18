@@ -418,7 +418,8 @@ class MetaBuildWrapper(object):
           self.Run(remap_cmd)
 
           zip_path = self.args.zip_path
-          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as fp:
+          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED,
+                               allowZip64=True) as fp:
               for root, _, files in os.walk(zip_dir):
                   for filename in files:
                       path = self.PathJoin(root, filename)
@@ -442,9 +443,9 @@ class MetaBuildWrapper(object):
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
       ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:cc09450f1c27c0034ec08b1f6d63bbc298294763'),
+       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
       ('infra/tools/luci/vpython/${platform}',
-       'git_revision:cc09450f1c27c0034ec08b1f6d63bbc298294763'),
+       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
     ]
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
@@ -542,7 +543,7 @@ class MetaBuildWrapper(object):
     if self.platform == 'darwin':
       os_dim = ('os', 'Mac-10.13')
     elif self.platform.startswith('linux'):
-      os_dim = ('os', 'Ubuntu-14.04')
+      os_dim = ('os', 'Ubuntu-16.04')
     elif self.platform == 'win32':
       os_dim = ('os', 'Windows-10')
     else:
@@ -869,9 +870,9 @@ class MetaBuildWrapper(object):
       return ret
 
     if getattr(self.args, 'swarming_targets_file', None):
-      self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
+      ret = self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
 
-    return 0
+    return ret
 
   def RunGNGenAllIsolates(self, vals):
     """
@@ -987,8 +988,11 @@ class MetaBuildWrapper(object):
       runtime_deps = self.ReadFile(path_to_use).splitlines()
 
       canonical_target = target.replace(':','_').replace('/','_')
-      self.WriteIsolateFiles(build_dir, command, canonical_target, runtime_deps,
-                             extra_files)
+      ret = self.WriteIsolateFiles(build_dir, command, canonical_target,
+                                   runtime_deps, vals, extra_files)
+      if ret:
+        return ret
+    return 0
 
   def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
     """Returns a map of targets to possible .runtime_deps paths.
@@ -1075,8 +1079,10 @@ class MetaBuildWrapper(object):
 
     runtime_deps = out.splitlines()
 
-    self.WriteIsolateFiles(build_dir, command, target, runtime_deps,
-                           extra_files)
+    ret = self.WriteIsolateFiles(build_dir, command, target, runtime_deps, vals,
+                                 extra_files)
+    if ret:
+      return ret
 
     ret, _, _ = self.Run([
         self.executable,
@@ -1090,14 +1096,57 @@ class MetaBuildWrapper(object):
 
     return ret
 
-  def WriteIsolateFiles(self, build_dir, command, target, runtime_deps,
+  def WriteIsolateFiles(self, build_dir, command, target, runtime_deps, vals,
                         extra_files):
     isolate_path = self.ToAbsPath(build_dir, target + '.isolate')
+    files = sorted(set(runtime_deps + extra_files))
+
+    # Complain if any file is a directory that's inside the build directory,
+    # since that makes incremental builds incorrect. See
+    # https://crbug.com/912946
+    is_android = 'target_os="android"' in vals['gn_args']
+    is_cros = ('target_os="chromeos"' in vals['gn_args'] or
+               vals.get('cros_passthrough', False))
+    is_mac = self.platform == 'darwin'
+    is_msan = 'is_msan=true' in vals['gn_args']
+
+    err = ''
+    for f in files:
+      # Skip a few configs that need extra cleanup for now.
+      # TODO(https://crbug.com/912946): Fix everything on all platforms and
+      # enable check everywhere.
+      if is_android or is_cros or is_mac:
+        break
+
+      # Skip a few existing violations that need to be cleaned up. Each of
+      # these will lead to incorrect incremental builds if their directory
+      # contents change. Do not add to this list.
+      # TODO(https://crbug.com/912946): Remove this if statement.
+      if ((is_msan and f == 'instrumented_libraries_prebuilt/') or
+          f == 'mr_extension/' or # https://crbug.com/997947
+          f == 'locales/' or
+          f.startswith('nacl_test_data/') or
+          f.startswith('ppapi_nacl_tests_libs/')):
+        continue
+
+      # This runs before the build, so we can't use isdir(f). But
+      # isolate.py luckily requires data directories to end with '/', so we
+      # can check for that.
+      if not f.startswith('../../') and f.endswith('/'):
+        # Don't use self.PathJoin() -- all involved paths consistently use
+        # forward slashes, so don't add one single backslash on Windows.
+        err += '\n' + build_dir + '/' +  f
+
+    if err:
+      self.Print('error: gn `data` items may not list generated directories; '
+                 'list files in directory instead for:' + err)
+      return 1
+
     self.WriteFile(isolate_path,
       pprint.pformat({
         'variables': {
           'command': command,
-          'files': sorted(set(runtime_deps + extra_files)),
+          'files': files,
         }
       }) + '\n')
 

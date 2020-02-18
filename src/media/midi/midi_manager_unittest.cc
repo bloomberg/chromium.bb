@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/system/system_monitor.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/midi/midi_service.h"
 #include "media/midi/task_service.h"
@@ -221,7 +221,7 @@ class MidiManagerTest : public ::testing::Test {
   base::WeakPtr<FakeMidiManagerFactory> factory() { return factory_; }
 
  private:
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   base::WeakPtr<FakeMidiManagerFactory> factory_;
   std::unique_ptr<MidiService> service_;
 
@@ -354,7 +354,7 @@ class PlatformMidiManagerTest : public ::testing::Test {
   // SystemMonitor is needed on Windows.
   base::SystemMonitor system_monitor;
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 
   std::unique_ptr<FakeMidiManagerClient> client_;
   std::unique_ptr<MidiService> service_;

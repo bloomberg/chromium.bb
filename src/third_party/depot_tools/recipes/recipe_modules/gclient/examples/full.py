@@ -37,6 +37,7 @@ TEST_CONFIGS = [
   'luci_py',
   'master_deps',
   'nacl',
+  'devtools',
   'openscreen',
   'pdfium',
   'recipes_py',

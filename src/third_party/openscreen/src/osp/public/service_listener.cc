@@ -20,7 +20,7 @@ ServiceListenerError& ServiceListenerError::operator=(
 ServiceListener::Metrics::Metrics() = default;
 ServiceListener::Metrics::~Metrics() = default;
 
-ServiceListener::ServiceListener() = default;
+ServiceListener::ServiceListener() : state_(State::kStopped) {}
 ServiceListener::~ServiceListener() = default;
 
 }  // namespace openscreen

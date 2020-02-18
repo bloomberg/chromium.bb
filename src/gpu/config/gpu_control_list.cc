@@ -243,10 +243,6 @@ bool GpuControlList::DriverInfo::Contains(const GPUInfo& gpu_info) const {
       !driver_version.Contains(active_gpu.driver_version)) {
     return false;
   }
-  if (driver_date.IsSpecified() && !active_gpu.driver_date.empty() &&
-      !driver_date.Contains(active_gpu.driver_date, '-')) {
-    return false;
-  }
   return true;
 }
 
@@ -340,7 +336,7 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
     if (os_version.IsSpecified() && !os_version.Contains(target_os_version))
       return false;
   }
-  if (vendor_id != 0 || gpu_series_list_size > 0) {
+  if (vendor_id != 0 || gpu_series_list_size > 0 || intel_gpu_generation.IsSpecified()) {
     std::vector<GPUInfo::GPUDevice> candidates;
     switch (multi_gpu_category) {
       case kMultiGpuCategoryPrimary:
@@ -378,6 +374,17 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
             found = true;
             break;
           }
+        }
+      }
+    } else if (intel_gpu_generation.IsSpecified()) {
+      for (size_t ii = 0; ii < candidates.size(); ++ii) {
+        std::string candidate_generation = GetIntelGpuGeneration(
+            candidates[ii].vendor_id, candidates[ii].device_id);
+        if (candidate_generation.empty())
+          continue;
+        if (intel_gpu_generation.Contains(candidate_generation)) {
+          found = true;
+          break;
         }
       }
     } else {

@@ -41,6 +41,10 @@ const CGFloat kVerticalPadding = 8;
   [super configureHeaderFooterView:headerFooter withStyler:styler];
 
   headerFooter.linkURL = self.linkURL;
+  if (self.linkURL.is_valid())
+    headerFooter.accessibilityTraits |= UIAccessibilityTraitLink;
+  else
+    headerFooter.accessibilityTraits &= ~UIAccessibilityTraitLink;
   [headerFooter setText:self.text];
 }
 
@@ -72,7 +76,7 @@ const CGFloat kVerticalPadding = 8;
     _textView.adjustsFontForContentSizeCategory = YES;
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
     _textView.linkTextAttributes =
-        @{NSForegroundColorAttributeName : [UIColor colorNamed:kTintColor]};
+        @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
 
     [self.contentView addSubview:_textView];
 
@@ -139,6 +143,12 @@ const CGFloat kVerticalPadding = 8;
   [self.delegate view:self didTapLinkURL:convertedURL];
   // Returns NO as the app is handling the opening of the URL.
   return NO;
+}
+
+#pragma mark - NSObject(Accessibility)
+
+- (NSString*)accessibilityLabel {
+  return [self.textView.attributedText string];
 }
 
 @end

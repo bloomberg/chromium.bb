@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
+#include "cc/layers/layer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -37,8 +38,7 @@ class VideoWakeLockPictureInPictureSession
   void Update(uint32_t player_id,
               const base::Optional<viz::SurfaceId>&,
               const blink::WebSize&,
-              bool show_play_pause_button,
-              bool show_mute_button) final {}
+              bool show_play_pause_button) final {}
 
  private:
   mojo::Receiver<mojom::blink::PictureInPictureSession> receiver_;
@@ -62,7 +62,6 @@ class VideoWakeLockPictureInPictureService
       uint32_t,
       const base::Optional<viz::SurfaceId>&,
       const blink::WebSize&,
-      bool,
       bool,
       mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
       StartSessionCallback callback) final {
@@ -162,6 +161,10 @@ class VideoWakeLockTest : public PageTestBase {
   }
 
   void SimulateContextDestroyed() { GetDocument().NotifyContextDestroyed(); }
+
+  void SimulateNetworkState(HTMLMediaElement::NetworkState network_state) {
+    video_->SetNetworkState(network_state);
+  }
 
  private:
   Persistent<HTMLVideoElement> video_;
@@ -345,6 +348,18 @@ TEST_F(VideoWakeLockTest, DestroyingContextCancelsLock) {
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 
   SimulateContextDestroyed();
+  EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
+}
+
+TEST_F(VideoWakeLockTest, LoadingCancelsLock) {
+  SimulatePlaying();
+  EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
+
+  // The network state has to be non-empty for the resetting to actually kick.
+  SimulateNetworkState(HTMLMediaElement::kNetworkIdle);
+
+  Video()->SetSrc("");
+  test::RunPendingTasks();
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 

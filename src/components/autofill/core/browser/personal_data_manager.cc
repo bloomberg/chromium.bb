@@ -554,9 +554,7 @@ void PersonalDataManager::OnAccountsCookieDeletedByUserAction() {
 AutofillSyncSigninState PersonalDataManager::GetSyncSigninState() const {
   // Check if the user is signed out.
   if (!sync_service_ || !identity_manager_ ||
-      syncer::DetermineAccountToUse(identity_manager_,
-                                    /*allow_secondary_accounts=*/true)
-          .account_info.IsEmpty()) {
+      syncer::DetermineAccountToUse(identity_manager_).account_info.IsEmpty()) {
     return AutofillSyncSigninState::kSignedOut;
   }
 
@@ -1147,8 +1145,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::vector<AutofillProfile*> matched_profiles;
   std::vector<Suggestion> suggestions =
       suggestion_selection::GetPrefixMatchedSuggestions(
-          type, field_contents_canon, comparator, sorted_profiles,
-          &matched_profiles);
+          type, field_contents, field_contents_canon, comparator,
+          field_is_autofilled, sorted_profiles, &matched_profiles);
 
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;
@@ -1304,11 +1302,8 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
       base::FeatureList::IsEnabled(
           features::kAutofillEnableAccountWalletStorage)) {
     // For SyncTransport, only show server cards if the user has opted in to
-    // seeing them in the dropdown, or if the feature to always show server
-    // cards is enabled.
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillAlwaysShowServerCardsInSyncTransport) &&
-        !prefs::IsUserOptedInWalletSyncTransport(
+    // seeing them in the dropdown.
+    if (!prefs::IsUserOptedInWalletSyncTransport(
             pref_service_,
             sync_service_->GetAuthenticatedAccountInfo().account_id)) {
       return false;
@@ -1948,13 +1943,6 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
   // cards). This should only happen if that feature is enabled.
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillEnableAccountWalletStorage));
-
-  // If the feature to always show the server cards in sync transport mode is
-  // enabled, don't show the option.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillAlwaysShowServerCardsInSyncTransport)) {
-    return false;
-  }
 
   bool is_opted_in = prefs::IsUserOptedInWalletSyncTransport(
       pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);

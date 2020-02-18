@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
@@ -75,8 +76,11 @@ void CSSFontSelector::DispatchInvalidationCallbacks() {
 
   HeapVector<Member<FontSelectorClient>> clients;
   CopyToVector(clients_, clients);
-  for (auto& client : clients)
-    client->FontsNeedUpdate(this);
+  for (auto& client : clients) {
+    if (client) {
+      client->FontsNeedUpdate(this);
+    }
+  }
 }
 
 void CSSFontSelector::FontFaceInvalidated() {

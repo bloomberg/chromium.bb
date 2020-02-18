@@ -10,7 +10,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -31,8 +31,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
   void SetUp() override {
     test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
     manager_.reset(new NetworkPropertiesManager(
-        base::DefaultClock::GetInstance(), &test_prefs,
-        base::ThreadTaskRunnerHandle::Get()));
+        base::DefaultClock::GetInstance(), &test_prefs));
     manager_->OnChangeInNetworkID("test");
 
     test_context_ = DataReductionProxyTestContext::Builder().Build();
@@ -102,7 +101,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
   }
 
   TestingPrefServiceSimple test_prefs;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyConfigurator> config_;
   std::unique_ptr<NetworkPropertiesManager> manager_;

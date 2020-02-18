@@ -788,7 +788,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
       CanvasResourceProvider::Create(
           size,
           CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
+          SharedGpuContext::ContextProviderWrapper(), 0,
+          GetDrawingBuffer()->FilterQuality(), ColorParams(),
           CanvasResourceProvider::kDefaultPresentationMode,
           nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
   if (!resource_provider || !resource_provider->IsValid())
@@ -1064,8 +1065,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing) {
-  bool using_swap_chain = RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
-                          CreationAttributes().desynchronized;
   bool premultiplied_alpha = CreationAttributes().premultiplied_alpha;
   bool want_alpha_channel = CreationAttributes().alpha;
   bool want_depth_buffer = CreationAttributes().depth;
@@ -1096,6 +1095,11 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
   DrawingBuffer::ChromiumImageUsage chromium_image_usage =
       Host()->IsOffscreenCanvas() ? DrawingBuffer::kDisallowChromiumImage
                                   : DrawingBuffer::kAllowChromiumImage;
+
+  bool using_swap_chain =
+      RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
+      context_provider->GetCapabilities().shared_image_swap_chain &&
+      CreationAttributes().desynchronized;
 
   return DrawingBuffer::Create(
       std::move(context_provider), using_gpu_compositing, using_swap_chain,
@@ -1400,7 +1404,7 @@ void WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
-  if (GetDrawingBuffer())
+  if (GetDrawingBuffer() && GetDrawingBuffer()->UsingSwapChain())
     GetDrawingBuffer()->PresentSwapChain();
   marked_canvas_dirty_ = false;
 }
@@ -1525,6 +1529,10 @@ void WebGLRenderingContextBase::MarkLayerComposited() {
     GetDrawingBuffer()->ResetBuffersToAutoClear();
 }
 
+bool WebGLRenderingContextBase::UsingSwapChain() const {
+  return GetDrawingBuffer() && GetDrawingBuffer()->UsingSwapChain();
+}
+
 bool WebGLRenderingContextBase::IsOriginTopLeft() const {
   if (isContextLost())
     return false;
@@ -1615,6 +1623,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
         shared_context_wrapper->ContextProvider()->ContextGL();
     GLuint texture_id =
         resource_provider->GetBackingTextureHandleForOverwrite();
+    GLenum texture_target = resource_provider->GetBackingTextureTarget();
     if (!texture_id)
       return false;
 
@@ -1622,9 +1631,9 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     // CopyToPlatformTexture is done correctly. See crbug.com/794706.
     gl->Flush();
 
-    bool flip_y = is_origin_top_left_ && !canvas()->LowLatencyEnabled();
+    bool flip_y = IsOriginTopLeft() != resource_provider->IsOriginTopLeft();
     return drawing_buffer_->CopyToPlatformTexture(
-        gl, GL_TEXTURE_2D, texture_id, 0 /*texture LOD */, true, flip_y,
+        gl, texture_target, texture_id, 0 /*texture LOD */, true, flip_y,
         IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
         source_buffer);
   }
@@ -5033,9 +5042,9 @@ void WebGLRenderingContextBase::TexImageHelperImageData(
   if (isContextLost())
     return;
   DCHECK(pixels);
-  if (pixels->data()->BufferBase()->IsNeutered()) {
+  if (pixels->data()->BufferBase()->IsDetached()) {
     SynthesizeGLError(GL_INVALID_VALUE, func_name,
-                      "The source data has been neutered.");
+                      "The source data has been detached.");
     return;
   }
   if (!ValidateTexImageBinding(func_name, function_id, target))
@@ -7948,8 +7957,9 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   // TODO(fserb): why is this software?
   std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
       size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-      nullptr,              // context_provider_wrapper
-      0,                    // msaa_sample_count,
+      nullptr,  // context_provider_wrapper
+      0,        // msaa_sample_count,
+      kLow_SkFilterQuality,
       CanvasColorParams(),  // TODO: should this use the canvas's colorspace?
       CanvasResourceProvider::kDefaultPresentationMode,
       nullptr));  // canvas_resource_dispatcher

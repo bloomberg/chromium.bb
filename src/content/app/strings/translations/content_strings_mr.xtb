@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">मूल्य <ph name="MINIMUM_DATE_OR_TIME" /> किंवा नंतरचे असणे आवश्यक आहे.</translation>
 <translation id="2759744352195237655">पॉप अप बटण</translation>
 <translation id="2761667185364618470">कृपया तुम्ही पुढे चालू ठेवू इच्छित असल्यास हा बॉक्स पहा.</translation>
+<translation id="2844350028562914727">तपशील</translation>
 <translation id="2896972712917208084">रेडिओ गट</translation>
 <translation id="2908441821576996758">कृपया ईमेल पत्त्यांची स्वल्पविरामाद्वारे विभक्त सूची एंटर करा.</translation>
 <translation id="2940813599313844715">ऑब्जेक्ट</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">मूल्य <ph name="MAXIMUM" /> पेक्षा कमी किंवा समान असावे.</translation>
 <translation id="3486220673238053218">परिभाषा</translation>
 <translation id="3557673793733683882">शीर्षक <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">आठवडा पिकर</translation>
 <translation id="3685101356851116974">लेबल न केलेली इमेज</translation>
 <translation id="3706100364254443312">स्विच करा</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">स्क्रोल बार</translation>
 <translation id="4103419683916926126">मिलिसेकंद</translation>
 <translation id="4151657705144244502">ग्राफिक</translation>
+<translation id="4160057747563657758">टेलिफोन</translation>
 <translation id="4193965531860883258">प्रस्तावना</translation>
 <translation id="4201051445878709314">मागील महिना दर्शवा</translation>
 <translation id="421884353938374759">रंग निवडक</translation>
 <translation id="4248100235867064564">मेनू बार</translation>
-<translation id="4254339807215791271">आशय माहिती</translation>
 <translation id="4360991593054037559">कृपया एक वैध मूल्य एंटर करा. दोन जवळील वैध मूल्ये <ph name="VALID_VALUE_LOW" /> आणि <ph name="VALID_VALUE_HIGHER" /> आहेत.</translation>
 <translation id="4384583879834880242">प्रश्नोत्तरे</translation>
 <translation id="4413860115965805769">मेनू बटण</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">बंद</translation>
 <translation id="588258955323874662">क्षेत्रे</translation>
 <translation id="5888666972993069672">आता <ph name="DEVICE_FRIENDLY_NAME" /> वर कास्ट करत आहे</translation>
+<translation id="591047860372322273">सर्च बॉक्स</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5966707198760109579">आठवडा</translation>
 <translation id="5987525920412732405">स्पिन बटण</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">अंतिम शब्द</translation>
 <translation id="6209276755895393898">असे असल्याचे दिसत आहे: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="6398862346408813489">महिना निवड पॅनेल दाखवा</translation>
 <translation id="6404546809543547843">ऑडिओ वेळ स्क्रबर</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">कृपया विनंती केलेले स्वरूपन जुळवा.</translation>
 <translation id="7118469954320184356">कोणतेही वर्णन उपलब्ध नाही.</translation>
 <translation id="7139483182332611405">प्रस्तावना</translation>
+<translation id="7214187073215825913">आशयाची माहिती</translation>
 <translation id="7263440858009898357">कृपया सूचीमधील आयटम निवडा.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
 <translation id="7320576522385648310">बफर होत आहे</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">वर्णन मिळवत आहे...</translation>
 <translation id="8117451130807776954">या आठवड्यात</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8208673686607688524">स्थानिक तारीख आणि वेळ पिकर</translation>
 <translation id="8261464734335370856">चुकीचे शब्दलेखन</translation>
 <translation id="8284326494547611709">मथळे</translation>
 <translation id="835897206747267392">चुकीचे मूल्य.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">अनुक्रमणिका</translation>
 <translation id="8613126697340063924">दूरस्थ प्लेबॅक नियंत्रित करा</translation>
 <translation id="862370744433916922">उपशीर्षक</translation>
+<translation id="8711688047404765493">आउटपुट</translation>
 <translation id="8750798805984357768">कृपया या पर्यायांपैकी एक निवडा.</translation>
 <translation id="8808573423886751634">प्रकरण</translation>
 <translation id="8845239796550121995">आता तुमच्या टिव्हीवर कास्ट करत आहे</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">महिना</translation>
 <translation id="901493112792887934">वर्तमान वेळ सेकंदांमध्ये</translation>
+<translation id="901834265349196618">ईमेल</translation>
 <translation id="9048119486235211610">नेव्हिगेशन</translation>
 <translation id="9062295712474918030">दस्तऐवज</translation>
 <translation id="9062307380734144336">प्ले करणे थांबवणे टॉगल करण्यासाठी निवडा</translation>

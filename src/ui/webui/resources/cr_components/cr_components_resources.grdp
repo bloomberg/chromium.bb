@@ -187,12 +187,12 @@
                file="cr_components/chromeos/network/network_password_input.js"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_HTML"
-               file="cr_components/chromeos/network/network_property_list.html"
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_MOJO_HTML"
+               file="cr_components/chromeos/network/network_property_list_mojo.html"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_JS"
-               file="cr_components/chromeos/network/network_property_list.js"
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_MOJO_JS"
+               file="cr_components/chromeos/network/network_property_list_mojo.js"
                type="chrome_html"
                compress="gzip" />
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROXY_HTML"
@@ -314,6 +314,14 @@
                compress="gzip" />
     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_FINAL_PAGE_JS"
                file="cr_components/chromeos/cellular_setup/final_page.js"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_WEBVIEW_POST_UTIL_HTML"
+               file="cr_components/chromeos/cellular_setup/webview_post_util.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_WEBVIEW_POST_UTIL_JS"
+               file="cr_components/chromeos/cellular_setup/webview_post_util.js"
                type="chrome_html"
                compress="gzip" />
 

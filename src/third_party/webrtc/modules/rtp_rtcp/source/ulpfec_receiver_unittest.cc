@@ -15,7 +15,6 @@
 #include <list>
 #include <memory>
 
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "modules/rtp_rtcp/mocks/mock_recovered_packet_receiver.h"
 #include "modules/rtp_rtcp/mocks/mock_rtp_rtcp.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
@@ -23,6 +22,7 @@
 #include "modules/rtp_rtcp/source/forward_error_correction.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
+#include "test/rtp_header_parser.h"
 
 namespace webrtc {
 
@@ -30,7 +30,6 @@ namespace {
 using ::testing::_;
 using ::testing::Args;
 using ::testing::ElementsAreArray;
-using ::testing::Return;
 
 using test::fec::AugmentedPacket;
 using Packet = ForwardErrorCorrection::Packet;
@@ -177,7 +176,7 @@ void UlpfecReceiverTest::SurvivesMaliciousPacket(const uint8_t* data,
                                                  size_t length,
                                                  uint8_t ulpfec_payload_type) {
   RTPHeader header;
-  std::unique_ptr<RtpHeaderParser> parser(RtpHeaderParser::Create());
+  std::unique_ptr<RtpHeaderParser> parser(RtpHeaderParser::CreateForTest());
   ASSERT_TRUE(parser->Parse(data, length, &header));
 
   NullRecoveredPacketReceiver null_callback;

@@ -10,6 +10,7 @@
 
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
@@ -122,6 +123,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;
 
+  // Returns true if the dialog should show a close button in the title bar.
+  // Default implementation returns true.
+  virtual bool ShouldShowCloseButton() const;
+
   // A callback to allow the delegate to inhibit context menu or show
   // customized menu.
   // Returns true iff you do NOT want the standard context menu to be
@@ -148,6 +153,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
 
   // Returns true if |accelerator| is processed, otherwise false.
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
+
+  virtual void OnWebContentsFinishedLoad() {}
+  virtual void OnMainFrameResourceLoadComplete(
+      const content::mojom::ResourceLoadInfo& resource_load_info) {}
 
   virtual ~WebDialogDelegate() {}
 };

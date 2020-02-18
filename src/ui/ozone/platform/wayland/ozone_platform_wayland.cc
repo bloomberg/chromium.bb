@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
@@ -64,7 +65,7 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
     /*requires_mojo=*/true,
 
-    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_DEFAULT};
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT};
 
 class OzonePlatformWayland : public OzonePlatform {
  public:
@@ -131,9 +132,10 @@ class OzonePlatformWayland : public OzonePlatform {
     // it is set at this point if none exists
     if (!LinuxInputMethodContextFactory::instance() &&
         !input_method_context_factory_) {
-      auto* factory = new WaylandInputMethodContextFactory(connection_.get());
-      input_method_context_factory_.reset(factory);
-      LinuxInputMethodContextFactory::SetInstance(factory);
+      input_method_context_factory_ =
+          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
+      LinuxInputMethodContextFactory::SetInstance(
+          input_method_context_factory_.get());
     }
 
     return std::make_unique<InputMethodAuraLinux>(delegate);

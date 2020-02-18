@@ -150,6 +150,9 @@ extern const char kGoogleAccountChooserURL[];
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 
+// URL for Password Checkup.
+extern const char kPasswordCheckupURL[];
+
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
@@ -281,6 +284,9 @@ extern const char kLearnMoreEnterpriseURL[];
 
 // The URL for the Learn More page about Linux for Chromebooks.
 extern const char kLinuxAppsLearnMoreURL[];
+
+// The URL for additional help that is given when Linux export/import fails.
+extern const char kLinuxExportImportHelpURL[];
 
 // Credits for Linux for Chromebooks.
 extern const char kLinuxCreditsPath[];

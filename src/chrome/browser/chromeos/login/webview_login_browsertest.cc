@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -64,6 +65,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -84,16 +86,16 @@ constexpr char kTestCookieHost[] = "host1.com";
 void InjectCookieDoneCallback(
     base::OnceClosure done_closure,
     net::CanonicalCookie::CookieInclusionStatus status) {
-  ASSERT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
+  ASSERT_TRUE(status.IsInclude());
   std::move(done_closure).Run();
 }
 
 // Injects a cookie into |storage_partition|, so we can test for cookie presence
 // later to infer if the StoragePartition has been cleared.
 void InjectCookie(content::StoragePartition* storage_partition) {
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
+      cookie_manager.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
@@ -116,9 +118,9 @@ void GetAllCookiesCallback(std::string* cookies_out,
 // Returns all cookies present in |storage_partition| as a HTTP header cookie
 // line. Will be an empty string if there are no cookies.
 std::string GetAllCookies(content::StoragePartition* storage_partition) {
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
+      cookie_manager.BindNewPipeAndPassReceiver());
 
   std::string cookies;
   base::RunLoop run_loop;
@@ -257,10 +259,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   ASSERT_TRUE(LoginDisplayHost::default_host());
   EXPECT_TRUE(LoginDisplayHost::default_host()->GetWebUILoginView());
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
   SigninFrameJS().TapOn("nextButton");
@@ -269,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   ui_test_utils::WaitForBrowserToOpen();
   EXPECT_FALSE(LoginDisplayHost::default_host()->GetWebUILoginView());
 
-  session_start_waiter.Wait();
+  test::WaitForPrimaryUserSessionStart();
 
   // Wait for the LoginDisplayHost to delete itself, which is a posted task.
   base::RunLoop().RunUntilIdle();
@@ -277,7 +275,13 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   EXPECT_FALSE(LoginDisplayHost::default_host());
 }
 
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
+// TODO(crbug.com/998330): The test is flaky (timeout) on Chromium OS MSAN.
+#if defined(MEMORY_SANITIZER) && defined(OS_CHROMEOS)
+#define MAYBE_BackButton DISABLED_BackButton
+#else
+#define MAYBE_BackButton BackButton
+#endif
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, MAYBE_BackButton) {
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Start with identifer page.
@@ -298,16 +302,12 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   // Finish sign-up.
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
   SigninFrameJS().TapOn("nextButton");
 
-  session_start_waiter.Wait();
+  test::WaitForPrimaryUserSessionStart();
 }
 
 // Create new account option should be available only if the settings allow it.
@@ -433,7 +433,7 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     {
       bool system_slot_constructed_successfully = false;
       base::RunLoop loop;
-      base::PostTaskWithTraitsAndReply(
+      base::PostTaskAndReply(
           FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&WebviewClientCertsLoginTest::SetUpTestSystemSlotOnIO,
                          base::Unretained(this),
@@ -585,7 +585,7 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
       return;
 
     base::RunLoop loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&WebviewClientCertsLoginTest::TearDownTestSystemSlotOnIO,
                        base::Unretained(this)),

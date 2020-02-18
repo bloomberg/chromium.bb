@@ -220,6 +220,9 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
 
   if (!has_more) {
     if (label_filter_.empty()) {
+      if (!legacy_json_trace_events_.empty()) {
+        *AddJSONTraceEvent() += legacy_json_trace_events_;
+      }
       // We are done adding events so now we close the traceEvents array and
       // append the rest of the fields. The rest of the fields aren't very large
       // so we don't need to check if we need to run the callback.
@@ -227,19 +230,12 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
     }
 
     if ((label_filter_.empty() || label_filter_ == "systemTraceEvents") &&
-        (!legacy_system_ftrace_output_.empty() ||
-         !legacy_system_trace_events_.empty())) {
-      DCHECK(legacy_system_ftrace_output_.empty() ||
-             legacy_system_trace_events_.empty());
+        !legacy_system_ftrace_output_.empty()) {
       out_ += ",\"systemTraceEvents\":";
-      if (!legacy_system_ftrace_output_.empty()) {
-        std::string escaped;
-        base::EscapeJSONString(legacy_system_ftrace_output_,
-                               true /* put_in_quotes */, &escaped);
-        out_ += escaped;
-      } else {
-        out_ += legacy_system_trace_events_ + "}";
-      }
+      std::string escaped;
+      base::EscapeJSONString(legacy_system_ftrace_output_,
+                             true /* put_in_quotes */, &escaped);
+      out_ += escaped;
     }
 
     if (label_filter_.empty()) {
@@ -273,16 +269,10 @@ void JSONTraceExporter::AddChromeLegacyJSONTrace(
       if (!ShouldOutputTraceEvents()) {
         return;
       }
-      *AddJSONTraceEvent() += json_trace.data();
+      legacy_json_trace_events_ += json_trace.data();
       return;
+    // SYSTEM_TRACE is not supported anymore.
     case perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE:
-      if (legacy_system_trace_events_.empty()) {
-        legacy_system_trace_events_ = "{";
-      } else {
-        legacy_system_trace_events_ += ",";
-      }
-      legacy_system_trace_events_ += json_trace.data();
-      return;
     default:
       NOTREACHED();
   }
@@ -361,6 +351,8 @@ void JSONTraceExporter::SetTraceStatsMetadata(
                          buf_stats.readaheads_succeeded());
     buf_dict->SetInteger("readaheads_failed", buf_stats.readaheads_failed());
     buf_dict->SetInteger("abi_violations", buf_stats.abi_violations());
+    buf_dict->SetInteger("trace_writer_packet_loss",
+                         buf_stats.trace_writer_packet_loss());
     buf_list->GetList().push_back(std::move(buf_value));
   }
   dict->SetList("buffer_stats", std::move(buf_list));
@@ -582,6 +574,11 @@ void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadDuration(
 void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadTimestamp(
     int64_t thread_timestamp) {
   out_->AppendF(",\"tts\":%" PRId64, thread_timestamp);
+}
+
+void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadInstructionCount(
+    int64_t thread_instruction_count) {
+  out_->AppendF(",\"ticount\":%" PRId64, thread_instruction_count);
 }
 
 void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadInstructionDelta(

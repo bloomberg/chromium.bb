@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/pepper_camera_device_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 
 namespace content {
 
@@ -24,7 +24,6 @@ PepperPlatformCameraDevice::PepperPlatformCameraDevice(
     PepperCameraDeviceHost* handler)
     : render_frame_id_(render_frame_id),
       device_id_(device_id),
-      session_id_(0),
       handler_(handler),
       pending_open_device_(false),
       pending_open_device_id_(-1) {
@@ -42,7 +41,7 @@ PepperPlatformCameraDevice::PepperPlatformCameraDevice(
 
 void PepperPlatformCameraDevice::GetSupportedVideoCaptureFormats() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VideoCaptureImplManager* manager =
+  blink::WebVideoCaptureImplManager* manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   manager->GetDeviceSupportedFormats(
       session_id_,
@@ -94,7 +93,7 @@ void PepperPlatformCameraDevice::OnDeviceOpened(int request_id,
     label_ = label;
     session_id_ =
         device_manager->GetSessionID(PP_DEVICETYPE_DEV_VIDEOCAPTURE, label);
-    VideoCaptureImplManager* manager =
+    blink::WebVideoCaptureImplManager* manager =
         RenderThreadImpl::current()->video_capture_impl_manager();
     release_device_cb_ = manager->UseDevice(session_id_);
   }

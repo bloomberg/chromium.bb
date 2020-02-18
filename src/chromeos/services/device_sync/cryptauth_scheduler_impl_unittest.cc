@@ -12,8 +12,8 @@
 #include "base/base64.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
@@ -347,7 +347,7 @@ class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
             prefs::kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeCryptAuthSchedulerEnrollmentDelegate fake_enrollment_delegate_;
   FakeCryptAuthSchedulerDeviceSyncDelegate fake_device_sync_delegate_;
   TestingPrefServiceSimple pref_service_;
@@ -502,9 +502,12 @@ TEST_F(DeviceSyncCryptAuthSchedulerImplTest, FailedRequests) {
                                   false /* device_registry_changed */,
                                   base::nullopt /* client_directive */));
 
+    // Verify the next scheduled Enrollment/DeviceSync. At this point, note that
+    // the number of failed attempts == |attempt| == retry count of the next
+    // request.
     expected_request.set_retry_count(attempt);
     base::TimeDelta expected_delay =
-        attempt <= cryptauthv2::GetClientDirectiveForTest().retry_attempts()
+        attempt < cryptauthv2::GetClientDirectiveForTest().retry_attempts()
             ? kImmediateRetryDelay
             : base::TimeDelta::FromMilliseconds(
                   cryptauthv2::GetClientDirectiveForTest()

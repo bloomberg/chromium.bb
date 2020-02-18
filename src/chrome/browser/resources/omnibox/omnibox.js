@@ -71,7 +71,7 @@ class BrowserProxy {
     this.handler_.setClientPage(
         this.callbackRouter_.$.bindNewPipeAndPassRemote());
 
-    /** @private {Request} */
+    /** @private {?Request} */
     this.lastRequest;
   }
 
@@ -81,8 +81,13 @@ class BrowserProxy {
    * @param {boolean} isPageController
    */
   handleNewAutocompleteResponse(response, isPageController) {
+    // Note: Using inputText is a sufficient fix for the way this is used today,
+    // but in principle it would be better to associate requests with responses
+    // using a unique session identifier, for example by rolling an integer each
+    // time a request is made. Doing so would require extra bookkeeping on the
+    // host side, so for now we keep it simple.
     const isForLastPageRequest = isPageController && this.lastRequest &&
-        this.lastRequest.inputText === response.host;
+        this.lastRequest.inputText === response.inputText;
 
     // When unfocusing the browser omnibox, the autocomplete controller
     // sends a response with no combined results. This response is ignored
@@ -95,6 +100,9 @@ class BrowserProxy {
       omniboxOutput.addAutocompleteResponse(response);
     }
 
+    // TODO(orinj|manukh): If |response.done| but not |isForLastPageRequest|
+    // then callback is being dropped. We should guarantee that callback is
+    // always called because some callers await promises.
     if (isForLastPageRequest && response.done) {
       this.lastRequest.callback(response);
       this.lastRequest = null;
@@ -234,18 +242,29 @@ class ExportDelegate {
       };
       batchExports.push(exportData);
     }
+    const variationInfo =
+        await cr.sendWithPromise('requestVariationInfo', true);
+    const pathInfo = await cr.sendWithPromise('requestPathInfo');
+    const loadTimeDataKeys = ['cl', 'command_line', 'executable_path',
+        'language', 'official', 'os_type', 'profile_path', 'useragent',
+        'version', 'version_bitsize', 'version_modifier'];
+    const versionDetails = Object.fromEntries(
+        loadTimeDataKeys.map(key => [key, window.loadTimeData.getValue(key)]));
+
     const now = new Date();
     const fileName = `omnibox_batch_${ExportDelegate.getTimeStamp(now)}.json`;
     // If this data format changes, please roll schemaVersion.
     const batchData = {
       schemaKind: 'Omnibox Batch Export',
-      schemaVersion: 2,
+      schemaVersion: 3,
       dateCreated: now.toISOString(),
       author: '',
       description: '',
       authorTool: 'chrome://omnibox',
       batchName,
-      versionDetails: window.loadTimeData.data_,
+      versionDetails,
+      variationInfo,
+      pathInfo,
       appVersion: navigator.appVersion,
       batchExports
     };
@@ -322,7 +341,7 @@ class ExportDelegate {
     a.click();
   }
 
-  /** 
+  /**
     * @param {Date=} date
     * @return {string} A sortable timestamp string for use in filenames.
     */

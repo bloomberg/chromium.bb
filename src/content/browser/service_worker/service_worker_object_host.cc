@@ -8,11 +8,13 @@
 #include "base/bind_helpers.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 
@@ -199,16 +201,16 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
       provider_host_(provider_host),
       provider_origin_(url::Origin::Create(provider_host->url())),
       version_(std::move(version)) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_ && provider_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
   version_->AddObserver(this);
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &ServiceWorkerObjectHost::OnConnectionError, base::Unretained(this)));
 }
 
 ServiceWorkerObjectHost::~ServiceWorkerObjectHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   version_->RemoveObserver(this);
 }
 
@@ -217,18 +219,16 @@ void ServiceWorkerObjectHost::OnVersionStateChanged(
   DCHECK(version);
   blink::mojom::ServiceWorkerState state =
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version->status());
-  remote_objects_.ForAllPtrs(
-      [state](blink::mojom::ServiceWorkerObject* remote_object) {
-        remote_object->StateChanged(state);
-      });
+  for (auto& remote_object : remote_objects_)
+    remote_object->StateChanged(state);
 }
 
 blink::mojom::ServiceWorkerObjectInfoPtr
 ServiceWorkerObjectHost::CreateCompleteObjectInfoToSend() {
   auto info = CreateIncompleteObjectInfo();
-  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object;
-  info->request = mojo::MakeRequest(&remote_object);
-  remote_objects_.AddPtr(std::move(remote_object));
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerObject> remote_object;
+  info->receiver = remote_object.BindNewEndpointAndPassReceiver();
+  remote_objects_.Add(std::move(remote_object));
   return info;
 }
 
@@ -239,21 +239,22 @@ ServiceWorkerObjectHost::CreateIncompleteObjectInfo() {
   info->state =
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
   info->version_id = version_->version_id();
-  bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
+  receivers_.Add(this, info->host_remote.InitWithNewEndpointAndPassReceiver());
   return info;
 }
 
 void ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState(
-    blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object_ptr_info,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerObject>
+        pending_object,
     blink::mojom::ServiceWorkerState sent_state) {
-  DCHECK(remote_object_ptr_info.is_valid());
-  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object;
-  remote_object.Bind(std::move(remote_object_ptr_info));
+  DCHECK(pending_object.is_valid());
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerObject> remote_object;
+  remote_object.Bind(std::move(pending_object));
   auto state =
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
   if (sent_state != state)
     remote_object->StateChanged(state);
-  remote_objects_.AddPtr(std::move(remote_object));
+  remote_objects_.Add(std::move(remote_object));
 }
 
 base::WeakPtr<ServiceWorkerObjectHost> ServiceWorkerObjectHost::AsWeakPtr() {
@@ -317,8 +318,8 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
 }
 
 void ServiceWorkerObjectHost::OnConnectionError() {
-  // If there are still bindings, |this| is still being used.
-  if (!bindings_.empty())
+  // If there are still receivers, |this| is still being used.
+  if (!receivers_.empty())
     return;
   // Will destroy |this|.
   provider_host_->RemoveServiceWorkerObjectHost(version_->version_id());

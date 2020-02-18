@@ -325,6 +325,10 @@ void SetInboundRTPStreamStatsFromVideoReceiverInfo(
   // optional, support the "unspecified" value.
   if (video_receiver_info.content_type == VideoContentType::SCREENSHARE)
     inbound_video->content_type = RTCContentType::kScreenshare;
+  if (!video_receiver_info.decoder_implementation_name.empty()) {
+    inbound_video->decoder_implementation =
+        video_receiver_info.decoder_implementation_name;
+  }
 }
 
 // Provides the media independent counters (both audio and video).
@@ -394,10 +398,16 @@ void SetOutboundRTPStreamStatsFromVideoSenderInfo(
   outbound_video->quality_limitation_reason =
       QualityLimitationReasonToRTCQualityLimitationReason(
           video_sender_info.quality_limitation_reason);
+  outbound_video->quality_limitation_resolution_changes =
+      video_sender_info.quality_limitation_resolution_changes;
   // TODO(https://crbug.com/webrtc/10529): When info's |content_info| is
   // optional, support the "unspecified" value.
   if (video_sender_info.content_type == VideoContentType::SCREENSHARE)
     outbound_video->content_type = RTCContentType::kScreenshare;
+  if (!video_sender_info.encoder_implementation_name.empty()) {
+    outbound_video->encoder_implementation =
+        video_sender_info.encoder_implementation_name;
+  }
 }
 
 std::unique_ptr<RTCRemoteInboundRtpStreamStats>
@@ -683,10 +693,7 @@ ProduceMediaStreamTrackStatsFromVideoReceiverInfo(
   // received from. Since we don't support that, this is correct and is the same
   // value as "RTCInboundRTPStreamStats.framesDecoded". https://crbug.com/659137
   video_track_stats->frames_decoded = video_receiver_info.frames_decoded;
-  RTC_DCHECK_GE(video_receiver_info.frames_received,
-                video_receiver_info.frames_rendered);
-  video_track_stats->frames_dropped =
-      video_receiver_info.frames_received - video_receiver_info.frames_rendered;
+  video_track_stats->frames_dropped = video_receiver_info.frames_dropped;
   video_track_stats->freeze_count = video_receiver_info.freeze_count;
   video_track_stats->pause_count = video_receiver_info.pause_count;
   video_track_stats->total_freezes_duration =
@@ -1224,7 +1231,7 @@ void RTCStatsCollector::ProduceDataChannelStats_s(
        pc_->sctp_data_channels()) {
     std::unique_ptr<RTCDataChannelStats> data_channel_stats(
         new RTCDataChannelStats(
-            "RTCDataChannel_" + rtc::ToString(data_channel->id()),
+            "RTCDataChannel_" + rtc::ToString(data_channel->internal_id()),
             timestamp_us));
     data_channel_stats->label = data_channel->label();
     data_channel_stats->protocol = data_channel->protocol();
@@ -1253,7 +1260,7 @@ void RTCStatsCollector::ProduceIceCandidateAndPairStats_n(
       std::string transport_id = RTCTransportStatsIDFromTransportChannel(
           transport_name, channel_stats.component);
       for (const cricket::ConnectionInfo& info :
-           channel_stats.connection_infos) {
+           channel_stats.ice_transport_stats.connection_infos) {
         std::unique_ptr<RTCIceCandidatePairStats> candidate_pair_stats(
             new RTCIceCandidatePairStats(
                 RTCIceCandidatePairStatsIDFromConnectionInfo(info),
@@ -1684,8 +1691,10 @@ void RTCStatsCollector::ProduceTransportStats_n(
       transport_stats->bytes_received = 0;
       transport_stats->dtls_state =
           DtlsTransportStateToRTCDtlsTransportState(channel_stats.dtls_state);
+      transport_stats->selected_candidate_pair_changes =
+          channel_stats.ice_transport_stats.selected_candidate_pair_changes;
       for (const cricket::ConnectionInfo& info :
-           channel_stats.connection_infos) {
+           channel_stats.ice_transport_stats.connection_infos) {
         *transport_stats->bytes_sent += info.sent_total_bytes;
         *transport_stats->bytes_received += info.recv_total_bytes;
         if (info.best_connection) {

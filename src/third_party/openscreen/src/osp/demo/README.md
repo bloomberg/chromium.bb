@@ -34,7 +34,7 @@ output while the demo is running is to make these named pipes like so:
 
 Then `cat` them in separate terminals while the demo is running.
 
-## Controller commands
+## Listener commands
 
  - `avail <url>`: Begin listening for receivers that support the presentation of
    `url`.
@@ -49,7 +49,7 @@ Then `cat` them in separate terminals while the demo is running.
    This allows using the `msg` command again.
  - `term`: Terminate the previously started presentation.
 
-## Receiver commands
+## Publisher commands
 
  - `avail`: Toggle whether the receiver is publishing itself as an available
    screen.  The receiver starts in the publishing state.

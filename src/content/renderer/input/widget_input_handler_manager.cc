@@ -315,6 +315,23 @@ void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
                                     std::move(observe_gesture_event_closure));
 }
 
+void WidgetInputHandlerManager::LogInputTimingUMA() {
+  if (!have_emitted_uma_) {
+    InitialInputTiming lifecycle_state = InitialInputTiming::kBeforeLifecycle;
+    if (!(renderer_deferral_state_ &
+          (unsigned)RenderingDeferralBits::kDeferMainFrameUpdates)) {
+      if (renderer_deferral_state_ &
+          (unsigned)RenderingDeferralBits::kDeferCommits) {
+        lifecycle_state = InitialInputTiming::kBeforeCommit;
+      } else {
+        lifecycle_state = InitialInputTiming::kAfterCommit;
+      }
+    }
+    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming2", lifecycle_state);
+    have_emitted_uma_ = true;
+  }
+}
+
 void WidgetInputHandlerManager::DispatchEvent(
     std::unique_ptr<content::InputEvent> event,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
@@ -329,12 +346,28 @@ void WidgetInputHandlerManager::DispatchEvent(
     return;
   }
 
-  if (!(have_emitted_uma_ ||
-        event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
-        event->web_event->GetType() == WebInputEvent::Type::kPointerMove)) {
-    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming",
-                              current_lifecycle_state_);
-    have_emitted_uma_ = true;
+  bool event_is_move =
+      event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
+      event->web_event->GetType() == WebInputEvent::Type::kPointerMove;
+  if (!event_is_move)
+    LogInputTimingUMA();
+
+  // Drop input if we are deferring a rendring pipeline phase, unless it's a
+  // move event.
+  // We don't want users interacting with stuff they can't see, so we drop it.
+  // We allow moves because we need to keep the current pointer location up
+  // to date. Tests can allow pre-commit input through the
+  // "allow-pre-commit-input" command line flag.
+  // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
+  // it seems, because they sometimes crash on seeing a scroll update/end
+  // without a begin. Scrolling, pinch-zoom etc. don't seem dangerous.
+  if (renderer_deferral_state_ && !allow_pre_commit_input_ && !event_is_move) {
+    if (callback) {
+      std::move(callback).Run(
+          InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
+          INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
+    }
+    return;
   }
 
   // If TimeTicks is not consistent across processes we cannot use the event's
@@ -453,14 +486,29 @@ void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
 #endif
 }
 
-void WidgetInputHandlerManager::MarkBeginMainFrame() {
-  if (current_lifecycle_state_ == InitialInputTiming::kBeforeLifecycle)
-    current_lifecycle_state_ = InitialInputTiming::kBeforeCommit;
+void WidgetInputHandlerManager::DidNavigate() {
+  renderer_deferral_state_ = 0;
+  have_emitted_uma_ = false;
 }
 
-void WidgetInputHandlerManager::MarkCompositorCommit() {
-  if (current_lifecycle_state_ == InitialInputTiming::kBeforeCommit)
-    current_lifecycle_state_ = InitialInputTiming::kAfterCommit;
+void WidgetInputHandlerManager::OnDeferMainFrameUpdatesChanged(bool status) {
+  if (status) {
+    renderer_deferral_state_ |=
+        static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
+  } else {
+    renderer_deferral_state_ &=
+        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferMainFrameUpdates);
+  }
+}
+
+void WidgetInputHandlerManager::OnDeferCommitsChanged(bool status) {
+  if (status) {
+    renderer_deferral_state_ |=
+        static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+  } else {
+    renderer_deferral_state_ &=
+        ~static_cast<uint16_t>(RenderingDeferralBits::kDeferCommits);
+  }
 }
 
 void WidgetInputHandlerManager::InitOnInputHandlingThread(
@@ -468,6 +516,11 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
     bool smooth_scroll_enabled,
     bool sync_compositing) {
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
+
+  // It is possible that the input_handle has already been destroyed before this
+  // Init() call was invoked. If so, early out.
+  if (!input_handler)
+    return;
 
   // If there's no compositor thread (i.e. we're in a LayoutTest), force input
   // to go through the main thread.
@@ -487,27 +540,27 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
 }
 
 void WidgetInputHandlerManager::BindAssociatedChannel(
-    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> request) {
-  if (!request.is_valid())
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver) {
+  if (!receiver.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.
   WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
       this, main_thread_task_runner_,
       compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
-  handler->SetAssociatedBinding(std::move(request));
+  handler->SetAssociatedReceiver(std::move(receiver));
 }
 
 void WidgetInputHandlerManager::BindChannel(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> request) {
-  if (!request.is_valid())
+    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver) {
+  if (!receiver.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.
   WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
       this, main_thread_task_runner_,
       compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
-  handler->SetBinding(std::move(request));
+  handler->SetReceiver(std::move(receiver));
 }
 
 void WidgetInputHandlerManager::HandleInputEvent(

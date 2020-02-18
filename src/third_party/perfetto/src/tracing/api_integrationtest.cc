@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <fcntl.h>
+
 #include <chrono>
 #include <condition_variable>
 #include <functional>
@@ -21,18 +23,18 @@
 #include <mutex>
 #include <vector>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
-#include "perfetto/trace/test_event.pbzero.h"
-#include "perfetto/trace/trace.pb.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
 #include "perfetto/tracing.h"
+#include "protos/perfetto/trace/test_event.pbzero.h"
+#include "protos/perfetto/trace/trace.pb.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
+#include "test/gtest_and_gmock.h"
 
 // Deliberately not pulling any non-public perfetto header to spot accidental
 // header public -> non-public dependency while building this file.
 
-// TODO(primiano): move these generated classes to /public/.
+// This is the only header allowed here, see comments in api_test_support.h.
+#include "src/tracing/test/api_test_support.h"
+
 #include "perfetto/tracing/core/data_source_descriptor.h"
 #include "perfetto/tracing/core/trace_config.h"
 
@@ -87,6 +89,8 @@ struct TestDataSourceHandle {
   MockDataSource* instance;
   perfetto::DataSourceConfig config;
   bool handle_stop_asynchronously = false;
+  std::function<void()> on_start_callback;
+  std::function<void()> on_stop_callback;
   std::function<void()> async_stop_closure;
 };
 
@@ -99,6 +103,28 @@ class MockDataSource : public perfetto::DataSource<MockDataSource> {
 };
 
 class MockDataSource2 : public perfetto::DataSource<MockDataSource2> {
+ public:
+  void OnSetup(const SetupArgs&) override {}
+  void OnStart(const StartArgs&) override {}
+  void OnStop(const StopArgs&) override {}
+};
+
+struct TestIncrementalState {
+  TestIncrementalState() { constructed = true; }
+  // Note: a virtual destructor is not required for incremental state.
+  ~TestIncrementalState() { destroyed = true; }
+
+  int count = 100;
+  static bool constructed;
+  static bool destroyed;
+};
+
+bool TestIncrementalState::constructed;
+bool TestIncrementalState::destroyed;
+
+class TestIncrementalDataSource
+    : public perfetto::DataSource<TestIncrementalDataSource,
+                                  TestIncrementalState> {
  public:
   void OnSetup(const SetupArgs&) override {}
   void OnStart(const StartArgs&) override {}
@@ -131,13 +157,15 @@ class PerfettoApiTest : public ::testing::Test {
       was_initialized = true;
       RegisterDataSource<MockDataSource>("my_data_source");
     }
+    // Make sure our data source always has a valid handle.
+    data_sources_["my_data_source"];
   }
 
   void TearDown() override { instance = nullptr; }
 
   template <typename DataSourceType>
   TestDataSourceHandle* RegisterDataSource(std::string name) {
-    EXPECT_EQ(data_sources_.count(name), 0);
+    EXPECT_EQ(data_sources_.count(name), 0u);
     TestDataSourceHandle* handle = &data_sources_[name];
     perfetto::DataSourceDescriptor dsd;
     dsd.set_name(name);
@@ -145,13 +173,14 @@ class PerfettoApiTest : public ::testing::Test {
     return handle;
   }
 
-  TestTracingSessionHandle* NewTrace(const perfetto::TraceConfig& cfg) {
+  TestTracingSessionHandle* NewTrace(const perfetto::TraceConfig& cfg,
+                                     int fd = -1) {
     sessions_.emplace_back();
     TestTracingSessionHandle* handle = &sessions_.back();
     handle->session =
         perfetto::Tracing::NewTrace(perfetto::BackendType::kInProcessBackend);
     handle->session->SetOnStopCallback([handle] { handle->on_stop.Notify(); });
-    handle->session->Setup(cfg);
+    handle->session->Setup(cfg, fd);
     return handle;
   }
 
@@ -178,6 +207,8 @@ void MockDataSource::OnSetup(const SetupArgs& args) {
 
 void MockDataSource::OnStart(const StartArgs&) {
   EXPECT_NE(handle_, nullptr);
+  if (handle_->on_start_callback)
+    handle_->on_start_callback();
   handle_->on_start.Notify();
 }
 
@@ -185,12 +216,120 @@ void MockDataSource::OnStop(const StopArgs& args) {
   EXPECT_NE(handle_, nullptr);
   if (handle_->handle_stop_asynchronously)
     handle_->async_stop_closure = args.HandleStopAsynchronously();
+  if (handle_->on_stop_callback)
+    handle_->on_stop_callback();
   handle_->on_stop.Notify();
 }
 
 // -------------
 // Test fixtures
 // -------------
+
+TEST_F(PerfettoApiTest, TrackEvent) {
+  perfetto::TrackEvent::Initialize(/* TODO(skyostil): Register categories */);
+
+  // Setup the trace config.
+  perfetto::TraceConfig cfg;
+  cfg.set_duration_ms(500);
+  cfg.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("track_event");
+  ds_cfg->set_legacy_config("test");
+
+  // Create a new trace session.
+  auto* tracing_session = NewTrace(cfg);
+  tracing_session->get()->StartBlocking();
+
+  // Emit one complete track event.
+  perfetto::TrackEvent::Begin("test", "TestEvent");
+  perfetto::TrackEvent::End("test");
+  perfetto::TrackEvent::Flush();
+
+  tracing_session->on_stop.Wait();
+  std::vector<char> raw_trace = tracing_session->get()->ReadTraceBlocking();
+  ASSERT_GE(raw_trace.size(), 0u);
+
+  // Read back the trace, maintaining interning tables as we go.
+  perfetto::protos::Trace trace;
+  std::map<uint64_t, std::string> categories;
+  std::map<uint64_t, std::string> event_names;
+  ASSERT_TRUE(trace.ParseFromArray(raw_trace.data(), int(raw_trace.size())));
+
+  bool incremental_state_was_cleared = false;
+  bool begin_found = false;
+  bool end_found = false;
+  bool process_descriptor_found = false;
+  bool thread_descriptor_found = false;
+  auto now = perfetto::TrackEvent::GetTimeNs();
+  uint32_t sequence_id = 0;
+  int32_t cur_pid = perfetto::test::GetCurrentProcessId();
+  for (const auto& packet : trace.packet()) {
+    if (packet.has_process_descriptor()) {
+      EXPECT_FALSE(process_descriptor_found);
+      const auto& pd = packet.process_descriptor();
+      EXPECT_EQ(cur_pid, pd.pid());
+      process_descriptor_found = true;
+    }
+    if (packet.has_thread_descriptor()) {
+      EXPECT_FALSE(thread_descriptor_found);
+      const auto& td = packet.thread_descriptor();
+      EXPECT_EQ(cur_pid, td.pid());
+      EXPECT_NE(0, td.tid());
+      thread_descriptor_found = true;
+    }
+    if (packet.incremental_state_cleared()) {
+      incremental_state_was_cleared = true;
+      categories.clear();
+      event_names.clear();
+    }
+
+    if (!packet.has_track_event())
+      continue;
+    const auto& track_event = packet.track_event();
+
+    // Make sure we only see track events on one sequence.
+    if (packet.trusted_packet_sequence_id()) {
+      if (!sequence_id)
+        sequence_id = packet.trusted_packet_sequence_id();
+      EXPECT_EQ(sequence_id, packet.trusted_packet_sequence_id());
+    }
+
+    // Update incremental state.
+    if (packet.has_interned_data()) {
+      const auto& interned_data = packet.interned_data();
+      for (const auto& it : interned_data.event_categories())
+        categories[it.iid()] = it.name();
+      for (const auto& it : interned_data.event_names())
+        event_names[it.iid()] = it.name();
+    }
+
+    EXPECT_GT(packet.timestamp(), 0u);
+    EXPECT_LE(packet.timestamp(), now);
+    EXPECT_EQ(track_event.category_iids().size(), 1);
+    EXPECT_GE(track_event.category_iids().Get(0), 1u);
+
+    if (track_event.type() == perfetto::protos::TrackEvent::TYPE_SLICE_BEGIN) {
+      EXPECT_FALSE(begin_found);
+      EXPECT_TRUE(track_event.has_legacy_event());
+      EXPECT_EQ("test", categories[track_event.category_iids().Get(0)]);
+      EXPECT_EQ("TestEvent",
+                event_names[track_event.legacy_event().name_iid()]);
+      begin_found = true;
+    } else if (track_event.type() ==
+               perfetto::protos::TrackEvent::TYPE_SLICE_END) {
+      EXPECT_FALSE(end_found);
+      EXPECT_FALSE(track_event.has_legacy_event());
+      EXPECT_EQ("test", categories[track_event.category_iids().Get(0)]);
+      end_found = true;
+    }
+  }
+  EXPECT_TRUE(incremental_state_was_cleared);
+  EXPECT_TRUE(process_descriptor_found);
+  EXPECT_TRUE(thread_descriptor_found);
+  EXPECT_TRUE(begin_found);
+  EXPECT_TRUE(end_found);
+}
+
 TEST_F(PerfettoApiTest, OneDataSourceOneEvent) {
   auto* data_source = &data_sources_["my_data_source"];
 
@@ -363,7 +502,189 @@ TEST_F(PerfettoApiTest, WriteEventsAfterDeferredStop) {
   }
   EXPECT_EQ(test_packet_found, 1);
 }
+
+TEST_F(PerfettoApiTest, RepeatedStartAndStop) {
+  perfetto::TraceConfig cfg;
+  cfg.set_duration_ms(500);
+  cfg.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("my_data_source");
+
+  for (int i = 0; i < 5; i++) {
+    auto* tracing_session = NewTrace(cfg);
+    tracing_session->get()->Start();
+    std::atomic<bool> stop_called{false};
+    tracing_session->get()->SetOnStopCallback(
+        [&stop_called] { stop_called = true; });
+    tracing_session->get()->StopBlocking();
+    EXPECT_TRUE(stop_called);
+  }
+}
+
+TEST_F(PerfettoApiTest, SetupWithFile) {
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+  char temp_file[] = "/data/local/tmp/perfetto-XXXXXXXX";
+#else
+  char temp_file[] = "/tmp/perfetto-XXXXXXXX";
+#endif
+  int fd = mkstemp(temp_file);
+  ASSERT_TRUE(fd >= 0);
+
+  perfetto::TraceConfig cfg;
+  cfg.set_duration_ms(500);
+  cfg.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("my_data_source");
+  // Write a trace into |fd|.
+  auto* tracing_session = NewTrace(cfg, fd);
+  tracing_session->get()->StartBlocking();
+  tracing_session->get()->StopBlocking();
+  // Check that |fd| didn't get closed.
+  EXPECT_EQ(0, fcntl(fd, F_GETFD, 0));
+  // Check that the trace got written.
+  EXPECT_GT(lseek(fd, 0, SEEK_END), 0);
+  EXPECT_EQ(0, close(fd));
+  // Clean up.
+  EXPECT_EQ(0, unlink(temp_file));
+}
+
+TEST_F(PerfettoApiTest, MultipleRegistrations) {
+  // Attempt to register the same data source again.
+  perfetto::DataSourceDescriptor dsd;
+  dsd.set_name("my_data_source");
+  EXPECT_TRUE(MockDataSource::Register(dsd));
+
+  // Setup the trace config.
+  perfetto::TraceConfig cfg;
+  cfg.set_duration_ms(500);
+  cfg.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("my_data_source");
+
+  // Create a new trace session.
+  auto* tracing_session = NewTrace(cfg);
+  tracing_session->get()->StartBlocking();
+
+  // Emit one trace event.
+  std::atomic<int> trace_lambda_calls{0};
+  MockDataSource::Trace([&trace_lambda_calls](MockDataSource::TraceContext) {
+    trace_lambda_calls++;
+  });
+
+  // Make sure the data source got called only once.
+  tracing_session->get()->StopBlocking();
+  EXPECT_EQ(trace_lambda_calls, 1);
+}
+
+TEST_F(PerfettoApiTest, CustomIncrementalState) {
+  perfetto::DataSourceDescriptor dsd;
+  dsd.set_name("incr_data_source");
+  TestIncrementalDataSource::Register(dsd);
+
+  // Setup the trace config.
+  perfetto::TraceConfig cfg;
+  cfg.set_duration_ms(500);
+  cfg.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("incr_data_source");
+
+  // Create a new trace session.
+  auto* tracing_session = NewTrace(cfg);
+  tracing_session->get()->StartBlocking();
+
+  // First emit a no-op trace event that initializes the incremental state as a
+  // side effect.
+  TestIncrementalDataSource::Trace(
+      [](TestIncrementalDataSource::TraceContext) {});
+  EXPECT_TRUE(TestIncrementalState::constructed);
+
+  // Check that the incremental state is carried across trace events.
+  TestIncrementalDataSource::Trace(
+      [](TestIncrementalDataSource::TraceContext ctx) {
+        auto* state = ctx.GetIncrementalState();
+        EXPECT_TRUE(state);
+        EXPECT_EQ(100, state->count);
+        state->count++;
+      });
+
+  TestIncrementalDataSource::Trace(
+      [](TestIncrementalDataSource::TraceContext ctx) {
+        auto* state = ctx.GetIncrementalState();
+        EXPECT_EQ(101, state->count);
+      });
+
+  // Make sure the incremental state gets cleaned up between sessions.
+  tracing_session->get()->StopBlocking();
+  tracing_session = NewTrace(cfg);
+  tracing_session->get()->StartBlocking();
+  TestIncrementalDataSource::Trace(
+      [](TestIncrementalDataSource::TraceContext ctx) {
+        auto* state = ctx.GetIncrementalState();
+        EXPECT_TRUE(TestIncrementalState::destroyed);
+        EXPECT_TRUE(state);
+        EXPECT_EQ(100, state->count);
+      });
+  tracing_session->get()->StopBlocking();
+}
+
+// Regression test for b/139110180. Checks that GetDataSourceLocked() can be
+// called from OnStart() and OnStop() callbacks without deadlocking.
+TEST_F(PerfettoApiTest, GetDataSourceLockedFromCallbacks) {
+  auto* data_source = &data_sources_["my_data_source"];
+
+  // Setup the trace config.
+  perfetto::TraceConfig cfg;
+  cfg.set_duration_ms(1);
+  cfg.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("my_data_source");
+
+  // Create a new trace session.
+  auto* tracing_session = NewTrace(cfg);
+
+  data_source->on_start_callback = [] {
+    MockDataSource::Trace([](MockDataSource::TraceContext ctx) {
+      ctx.NewTracePacket()->set_for_testing()->set_str("on-start");
+      auto ds = ctx.GetDataSourceLocked();
+      ASSERT_TRUE(!!ds);
+      ctx.NewTracePacket()->set_for_testing()->set_str("on-start-locked");
+    });
+  };
+
+  data_source->on_stop_callback = [] {
+    MockDataSource::Trace([](MockDataSource::TraceContext ctx) {
+      ctx.NewTracePacket()->set_for_testing()->set_str("on-stop");
+      auto ds = ctx.GetDataSourceLocked();
+      ASSERT_TRUE(!!ds);
+      ctx.NewTracePacket()->set_for_testing()->set_str("on-stop-locked");
+      ctx.Flush();
+    });
+  };
+
+  tracing_session->get()->Start();
+  data_source->on_stop.Wait();
+  tracing_session->on_stop.Wait();
+
+  std::vector<char> raw_trace = tracing_session->get()->ReadTraceBlocking();
+  ASSERT_GE(raw_trace.size(), 0u);
+
+  perfetto::protos::Trace trace;
+  ASSERT_TRUE(trace.ParseFromArray(raw_trace.data(), int(raw_trace.size())));
+  int packets_found = 0;
+  for (const auto& packet : trace.packet()) {
+    if (!packet.has_for_testing())
+      continue;
+    packets_found |= packet.for_testing().str() == "on-start" ? 1 : 0;
+    packets_found |= packet.for_testing().str() == "on-start-locked" ? 2 : 0;
+    packets_found |= packet.for_testing().str() == "on-stop" ? 4 : 0;
+    packets_found |= packet.for_testing().str() == "on-stop-locked" ? 8 : 0;
+  }
+  EXPECT_EQ(packets_found, 1 | 2 | 4 | 8);
+}
+
 }  // namespace
 
 PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(MockDataSource);
 PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(MockDataSource2);
+PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(TestIncrementalDataSource,
+                                           TestIncrementalState);

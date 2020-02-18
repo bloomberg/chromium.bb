@@ -20,8 +20,8 @@
 #include "dawn_native/Pipeline.h"
 #include "dawn_native/PipelineLayout.h"
 
-#include <spirv-cross/spirv_cross.hpp>
 #include <spirv-tools/libspirv.hpp>
+#include <spirv_cross.hpp>
 
 #include <sstream>
 
@@ -102,20 +102,21 @@ namespace dawn_native {
 
         switch (compiler.get_execution_model()) {
             case spv::ExecutionModelVertex:
-                mExecutionModel = ShaderStage::Vertex;
+                mExecutionModel = SingleShaderStage::Vertex;
                 break;
             case spv::ExecutionModelFragment:
-                mExecutionModel = ShaderStage::Fragment;
+                mExecutionModel = SingleShaderStage::Fragment;
                 break;
             case spv::ExecutionModelGLCompute:
-                mExecutionModel = ShaderStage::Compute;
+                mExecutionModel = SingleShaderStage::Compute;
                 break;
             default:
                 UNREACHABLE();
         }
 
         if (resources.push_constant_buffers.size() > 0) {
-            GetDevice()->HandleError("Push constants aren't supported.");
+            GetDevice()->HandleError(dawn::ErrorType::Validation,
+                                     "Push constants aren't supported.");
         }
 
         // Fill in bindingInfo with the SPIRV bindings
@@ -132,7 +133,8 @@ namespace dawn_native {
                 uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 
                 if (binding >= kMaxBindingsPerGroup || set >= kMaxBindGroups) {
-                    GetDevice()->HandleError("Binding over limits in the SPIRV");
+                    GetDevice()->HandleError(dawn::ErrorType::Validation,
+                                             "Binding over limits in the SPIRV");
                     continue;
                 }
 
@@ -153,13 +155,14 @@ namespace dawn_native {
                                 dawn::BindingType::StorageBuffer);
 
         // Extract the vertex attributes
-        if (mExecutionModel == ShaderStage::Vertex) {
+        if (mExecutionModel == SingleShaderStage::Vertex) {
             for (const auto& attrib : resources.stage_inputs) {
                 ASSERT(compiler.get_decoration_bitset(attrib.id).get(spv::DecorationLocation));
                 uint32_t location = compiler.get_decoration(attrib.id, spv::DecorationLocation);
 
                 if (location >= kMaxVertexAttributes) {
-                    device->HandleError("Attribute location over limits in the SPIRV");
+                    device->HandleError(dawn::ErrorType::Validation,
+                                        "Attribute location over limits in the SPIRV");
                     return;
                 }
 
@@ -170,18 +173,20 @@ namespace dawn_native {
             // all the location 0, causing a compile error.
             for (const auto& attrib : resources.stage_outputs) {
                 if (!compiler.get_decoration_bitset(attrib.id).get(spv::DecorationLocation)) {
-                    device->HandleError("Need location qualifier on vertex output");
+                    device->HandleError(dawn::ErrorType::Validation,
+                                        "Need location qualifier on vertex output");
                     return;
                 }
             }
         }
 
-        if (mExecutionModel == ShaderStage::Fragment) {
+        if (mExecutionModel == SingleShaderStage::Fragment) {
             // Without a location qualifier on vertex inputs, spirv_cross::CompilerMSL gives them
             // all the location 0, causing a compile error.
             for (const auto& attrib : resources.stage_inputs) {
                 if (!compiler.get_decoration_bitset(attrib.id).get(spv::DecorationLocation)) {
-                    device->HandleError("Need location qualifier on fragment input");
+                    device->HandleError(dawn::ErrorType::Validation,
+                                        "Need location qualifier on fragment input");
                     return;
                 }
             }
@@ -198,7 +203,7 @@ namespace dawn_native {
         return mUsedVertexAttributes;
     }
 
-    ShaderStage ShaderModuleBase::GetExecutionModel() const {
+    SingleShaderStage ShaderModuleBase::GetExecutionModel() const {
         ASSERT(!IsError());
         return mExecutionModel;
     }

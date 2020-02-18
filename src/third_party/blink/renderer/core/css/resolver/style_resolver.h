@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class CSSRuleList;
 class CSSValue;
 class CompositorKeyframeValue;
 class Document;
@@ -113,10 +112,10 @@ class CORE_EXPORT StyleResolver final
         kUAAndUserCSSRules | kAuthorCSSRules | kCrossOriginCSSRules,
     kAllCSSRules = kAllButEmptyCSSRules | kEmptyCSSRules,
   };
-  CSSRuleList* CssRulesForElement(
+  RuleIndexList* CssRulesForElement(
       Element*,
       unsigned rules_to_include = kAllButEmptyCSSRules);
-  CSSRuleList* PseudoCSSRulesForElement(
+  RuleIndexList* PseudoCSSRulesForElement(
       Element*,
       PseudoId,
       unsigned rules_to_include = kAllButEmptyCSSRules);
@@ -216,6 +215,8 @@ class CORE_EXPORT StyleResolver final
     bool flags_[kPropertyPriorityCount * 2] = {0};
   };
 
+  enum class ForcedColorFilter { kEnabled, kDisabled };
+
   enum ShouldUpdateNeedsApplyPass {
     kCheckNeedsApplyPass = false,
     kUpdateNeedsApplyPass = true,
@@ -240,13 +241,15 @@ class CORE_EXPORT StyleResolver final
                                          const CacheSuccess&,
                                          bool& apply_inherited_only,
                                          NeedsApplyPass&);
-  void ApplyMatchedProperties(StyleResolverState&,
-                              const MatchResult&,
-                              const Element* animating_element);
+  void ApplyMatchedProperties(StyleResolverState&, const MatchResult&);
+  template <CSSPropertyPriority priority>
+  void ApplyForcedColors(StyleResolverState& state,
+                         const MatchResult& match_result,
+                         bool apply_inherited_only,
+                         NeedsApplyPass& needs_apply_pass);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
-                                        const MatchResult&,
-                                        const Element* animating_element);
+                                        const MatchResult&);
   void CascadeMatchResult(StyleResolverState&,
                           StyleCascade&,
                           const MatchResult&);
@@ -260,27 +263,30 @@ class CORE_EXPORT StyleResolver final
                              const ActiveInterpolationsMap&,
                              StyleCascade::Origin);
 
-  void CalculateAnimationUpdate(StyleResolverState&,
-                                const Element* animating_element);
+  void CalculateAnimationUpdate(StyleResolverState&);
 
-  bool ApplyAnimatedStandardProperties(StyleResolverState&, const Element*);
+  bool ApplyAnimatedStandardProperties(StyleResolverState&);
 
   void ApplyCallbackSelectors(StyleResolverState&);
 
   template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
-  void ApplyMatchedProperties(StyleResolverState&,
-                              const MatchedPropertiesRange&,
-                              bool important,
-                              bool inherited_only,
-                              NeedsApplyPass&);
+  void ApplyMatchedProperties(
+      StyleResolverState&,
+      const MatchedPropertiesRange&,
+      bool important,
+      bool inherited_only,
+      NeedsApplyPass&,
+      ForcedColorFilter forced_colors = ForcedColorFilter::kDisabled);
   template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
-  void ApplyProperties(StyleResolverState&,
-                       const CSSPropertyValueSet* properties,
-                       bool is_important,
-                       bool inherited_only,
-                       NeedsApplyPass&,
-                       ValidPropertyFilter,
-                       unsigned apply_mask);
+  void ApplyProperties(
+      StyleResolverState&,
+      const CSSPropertyValueSet* properties,
+      bool is_important,
+      bool inherited_only,
+      NeedsApplyPass&,
+      ValidPropertyFilter,
+      unsigned apply_mask,
+      ForcedColorFilter forced_colors = ForcedColorFilter::kDisabled);
   template <CSSPropertyPriority priority>
   void ApplyAnimatedStandardProperties(StyleResolverState&,
                                        const ActiveInterpolationsMap&);
@@ -291,6 +297,8 @@ class CORE_EXPORT StyleResolver final
                         ValidPropertyFilter,
                         unsigned apply_mask);
 
+  void ApplyCascadedColorValue(StyleResolverState&);
+
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,
                                      StyleResolverState&);
@@ -298,6 +306,8 @@ class CORE_EXPORT StyleResolver final
   bool HasAuthorBorder(const StyleResolverState&);
   Document& GetDocument() const { return *document_; }
   bool WasViewportResized() const { return was_viewport_resized_; }
+
+  bool IsForcedColorsModeEnabled() const;
 
   MatchedPropertiesCache matched_properties_cache_;
   Member<Document> document_;

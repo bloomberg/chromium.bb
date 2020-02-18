@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Vaizdo skyra</translation>
 <translation id="1943097386230153518">Naujos paslaugos diegimas</translation>
 <translation id="1947424002851288782">Vokiška klaviatūra</translation>
+<translation id="1972984168337863910">Išskleisti failų atsiliepimų skydelius</translation>
 <translation id="197560921582345123">Galima redaguoti</translation>
 <translation id="1984603991036629094">Armėniška fonetinė klaviatūra</translation>
 <translation id="2001796770603320721">Tvarkyti Diske</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Jei norite pasiekti šį failą, turite prisijungti.</translation>
 <translation id="4212740939091998969">Aplankas pavadinimu „<ph name="FOLDER_NAME" />“ jau yra. Pasirinkite kitą pavadinimą.</translation>
 <translation id="4215448920900139318">Kuriama atsarginė kopija: <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Atidaryti nustatymus</translation>
 <translation id="426015154560005552">Arabiška klaviatūra</translation>
 <translation id="4261901459838235729">„Google“ pristatymas</translation>
 <translation id="4290535918735525311">1 aplankas bendrinamas su „Linux“</translation>
-<translation id="42981349822642051">Išskleisti</translation>
 <translation id="4298972503445160211">Daniška klaviatūra</translation>
 <translation id="4299729908419173967">Brazilų k.</translation>
 <translation id="4309915981827077375">Bendroji informacija</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Automatinis pataisymas</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4886021172213954916">Tamiliška klaviatūra (rašomosios mašinėlės išdėstymas)</translation>
-<translation id="4892969127351273348">Nepavyko atidaryti naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="4905417359854579806">Paruošta kurti atsargines kopijas: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Pataisyta</translation>
 <translation id="4935975195727477204">Gėlė</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Šveicarijos prancūzų</translation>
 <translation id="5234764350956374838">Atsisakyti</translation>
 <translation id="5241298539944515331">Vietnamiečių klaviatūra (VIQR)</translation>
-<translation id="52446585071384036">Jei norite atidaryti failus naudodami „<ph name="APP_NAME" />“, pirmiausia nukopijuokite juos į „Linux“ failų aplanką.</translation>
 <translation id="5253070652067921974">Sukūrė</translation>
 <translation id="5257456363153333584">Laumžirgis</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Pasiekite failus iš visur, net neprisijungę.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Korėjiečių</translation>
 <translation id="5819442873484330149">Hangul 3 rinkinys („Final“)</translation>
 <translation id="5833610766403489739">Šis failas kažkur perkeltas. Patikrinkite atsisiuntimo vietos nustatymą ir bandykite dar kartą.</translation>
-<translation id="5838051104334203064">„Play“ parduotuvės programos negali pasiekti šio įrenginio</translation>
 <translation id="5838451609423551646">Pašalinti visi įrašai pasirinkimo srityje.</translation>
 <translation id="5838825566232597749">JAV „Workman“ tarptautinė</translation>
 <translation id="5850516540536751549">Šio tipo failas nepalaikomas. Apsilankykite <ph name="BEGIN_LINK" />„Chrome“ internetinėje parduotuvėje<ph name="END_LINK" /> ir raskite programą, kuria galima atidaryti šio tipo failą.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Jei norite išsaugoti šiuos failus ir naudoti juos be interneto ryšio, vėl prisijunkite prie interneto, spustelėkite failus dešiniuoju pelės klavišu ir pasirinkite parinktį „<ph name="OFFLINE_CHECKBOX_NAME" />“.</translation>
 <translation id="8249296373107784235">Nutraukti</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
+<translation id="8269755669432358899">Sutraukti failų atsiliepimų skydelius</translation>
 <translation id="8279388322240498158">Soranių kurdų angliška klaviatūra</translation>
 <translation id="8280151743281770066">Fonetinė armėnų</translation>
 <translation id="8294431847097064396">Šaltinis</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Pasirinkite norimą atidaryti failą</translation>
 <translation id="8579285237314169903">Sinchronizuojama elementų: <ph name="NUMBER_OF_FILES" />…</translation>
 <translation id="8600173386174225982">Failų sąrašas pakeistas į miniatiūrų rodinį.</translation>
+<translation id="8601932370724196034">„Crostini“ vaizdo failas</translation>
 <translation id="8669949407341943408">Perkeliama...</translation>
 <translation id="8671210955687109937">Galima komentuoti</translation>
 <translation id="8686213429977032554">Šis Disko failas dar nebendrinamas</translation>

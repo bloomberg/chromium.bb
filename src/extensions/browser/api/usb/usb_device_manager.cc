@@ -17,6 +17,7 @@
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -33,6 +34,7 @@ namespace {
 // regarding this device.
 bool WillDispatchDeviceEvent(const device::mojom::UsbDeviceInfo& device_info,
                              content::BrowserContext* browser_context,
+                             Feature::Context target_context,
                              const Extension* extension,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {
@@ -81,7 +83,7 @@ void UsbDeviceManager::Observer::OnDeviceRemoved(
 void UsbDeviceManager::Observer::OnDeviceManagerConnectionError() {}
 
 UsbDeviceManager::UsbDeviceManager(content::BrowserContext* browser_context)
-    : browser_context_(browser_context), client_binding_(this) {
+    : browser_context_(browser_context) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     event_router->RegisterObserver(this, usb::OnDeviceAdded::kEventName);
@@ -153,10 +155,10 @@ void UsbDeviceManager::GetDevices(
 
 void UsbDeviceManager::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request) {
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) {
   EnsureConnectionWithDeviceManager();
-  device_manager_->GetDevice(guid, std::move(device_request),
-                             /*device_client=*/nullptr);
+  device_manager_->GetDevice(guid, std::move(device_receiver),
+                             /*device_client=*/mojo::NullRemote());
 }
 
 const device::mojom::UsbDeviceInfo* UsbDeviceManager::GetDeviceInfo(
@@ -190,19 +192,20 @@ void UsbDeviceManager::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
     return;
 
-  // Request UsbDeviceManagerPtr from DeviceService.
+  // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      device_manager_.BindNewPipeAndPassReceiver());
 
   SetUpDeviceManagerConnection();
 }
 
 void UsbDeviceManager::SetDeviceManagerForTesting(
-    device::mojom::UsbDeviceManagerPtr fake_device_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager) {
   DCHECK(!device_manager_);
   DCHECK(fake_device_manager);
-  device_manager_ = std::move(fake_device_manager);
+  device_manager_.Bind(std::move(fake_device_manager));
   SetUpDeviceManagerConnection();
 }
 
@@ -264,17 +267,16 @@ void UsbDeviceManager::OnDeviceRemoved(
 
 void UsbDeviceManager::SetUpDeviceManagerConnection() {
   DCHECK(device_manager_);
-  device_manager_.set_connection_error_handler(
+  device_manager_.set_disconnect_handler(
       base::BindOnce(&UsbDeviceManager::OnDeviceManagerConnectionError,
                      base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_binding_);
-  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  DCHECK(!client_receiver_.is_bound());
   device_manager_->EnumerateDevicesAndSetClient(
-      std::move(client), base::BindOnce(&UsbDeviceManager::InitDeviceList,
-                                        weak_factory_.GetWeakPtr()));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&UsbDeviceManager::InitDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UsbDeviceManager::InitDeviceList(
@@ -299,7 +301,7 @@ void UsbDeviceManager::InitDeviceList(
 
 void UsbDeviceManager::OnDeviceManagerConnectionError() {
   device_manager_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   devices_.clear();
   is_initialized_ = false;
 

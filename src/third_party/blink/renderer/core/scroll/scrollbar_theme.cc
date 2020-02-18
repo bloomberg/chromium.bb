@@ -190,7 +190,8 @@ ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
 void ScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
     const DisplayItemClient& display_item_client,
-    const IntRect& corner_rect) {
+    const IntRect& corner_rect,
+    WebColorScheme color_scheme) {
   if (corner_rect.IsEmpty())
     return;
 
@@ -205,7 +206,8 @@ void ScrollbarTheme::PaintScrollCorner(
 #else
   Platform::Current()->ThemeEngine()->Paint(
       context.Canvas(), WebThemeEngine::kPartScrollbarCorner,
-      WebThemeEngine::kStateNormal, WebRect(corner_rect), nullptr);
+      WebThemeEngine::kStateNormal, WebRect(corner_rect), nullptr,
+      color_scheme);
 #endif
 }
 

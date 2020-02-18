@@ -124,8 +124,10 @@ base::StringPiece CastContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-bool CastContentClient::IsDataResourceGzipped(int resource_id) {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
+    int resource_id) {
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) {

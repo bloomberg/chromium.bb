@@ -640,13 +640,14 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
     if (use_start_dot) {
       SkRect start_dot;
       if (is_vertical_line) {
-        start_dot.set(p1.X() - width / 2, p1.Y(), p1.X() + width - width / 2,
-                      p1.Y() + width + start_dot_growth);
+        start_dot.setLTRB(p1.X() - width / 2, p1.Y(),
+                          p1.X() + width - width / 2,
+                          p1.Y() + width + start_dot_growth);
         p1.SetY(p1.Y() + (2 * width + start_line_offset));
       } else {
-        start_dot.set(p1.X(), p1.Y() - width / 2,
-                      p1.X() + width + start_dot_growth,
-                      p1.Y() + width - width / 2);
+        start_dot.setLTRB(p1.X(), p1.Y() - width / 2,
+                          p1.X() + width + start_dot_growth,
+                          p1.Y() + width - width / 2);
         p1.SetX(p1.X() + (2 * width + start_line_offset));
       }
       context.DrawRect(start_dot, fill_flags);
@@ -654,13 +655,13 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
     if (use_end_dot) {
       SkRect end_dot;
       if (is_vertical_line) {
-        end_dot.set(p2.X() - width / 2, p2.Y() - width - end_dot_growth,
-                    p2.X() + width - width / 2, p2.Y());
+        end_dot.setLTRB(p2.X() - width / 2, p2.Y() - width - end_dot_growth,
+                        p2.X() + width - width / 2, p2.Y());
         // Be sure to stop drawing before we get to the last dot
         p2.SetY(p2.Y() - (width + end_dot_growth + 1));
       } else {
-        end_dot.set(p2.X() - width - end_dot_growth, p2.Y() - width / 2, p2.X(),
-                    p2.Y() + width - width / 2);
+        end_dot.setLTRB(p2.X() - width - end_dot_growth, p2.Y() - width / 2,
+                        p2.X(), p2.Y() + width - width / 2);
         // Be sure to stop drawing before we get to the last dot
         p2.SetX(p2.X() - (width + end_dot_growth + 1));
       }
@@ -669,7 +670,9 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
   }
 }
 
-void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
+void GraphicsContext::DrawLine(const IntPoint& point1,
+                               const IntPoint& point2,
+                               const DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
@@ -688,8 +691,7 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   // probably worth the speed up of no square root, which also won't be exact.
   FloatSize disp = p2 - p1;
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
-  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length),
-                            DarkModeFilter::ElementRole::kBackground);
+  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length), role);
 
   if (pen_style == kDottedStroke) {
     if (StrokeData::StrokeIsDashed(width, pen_style)) {
@@ -742,13 +744,14 @@ void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
       flags = ImmutableState()->FillFlags();
       // Text lines are drawn using the stroke color.
       flags.setColor(StrokeColor().Rgb());
-      DrawRect(r, flags);
+      DrawRect(r, flags, DarkModeFilter::ElementRole::kText);
       return;
     }
     case kDottedStroke:
     case kDashedStroke: {
       int y = floorf(pt.Y() + std::max<float>(StrokeThickness() / 2.0f, 0.5f));
-      DrawLine(IntPoint(pt.X(), y), IntPoint(pt.X() + width, y));
+      DrawLine(IntPoint(pt.X(), y), IntPoint(pt.X() + width, y),
+               DarkModeFilter::ElementRole::kText);
       return;
     }
     case kWavyStroke:
@@ -1046,14 +1049,14 @@ void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
       DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
 }
 
-void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
+void GraphicsContext::DrawRect(const SkRect& rect,
+                               const PaintFlags& flags,
+                               const DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRect(
-      rect,
-      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
+  canvas_->drawRect(rect, DarkModeFlags(this, flags, role));
 }
 
 void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
@@ -1090,9 +1093,16 @@ void GraphicsContext::FillRect(const FloatRect& rect) {
   DrawRect(rect, ImmutableState()->FillFlags());
 }
 
+void GraphicsContext::FillRect(const IntRect& rect,
+                               const Color& color,
+                               DarkModeFilter::ElementRole role) {
+  FillRect(FloatRect(rect), color, SkBlendMode::kSrcOver, role);
+}
+
 void GraphicsContext::FillRect(const FloatRect& rect,
                                const Color& color,
-                               SkBlendMode xfer_mode) {
+                               SkBlendMode xfer_mode,
+                               DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
 
@@ -1100,7 +1110,7 @@ void GraphicsContext::FillRect(const FloatRect& rect,
   flags.setColor(color.Rgb());
   flags.setBlendMode(xfer_mode);
 
-  DrawRect(rect, flags);
+  DrawRect(rect, flags, role);
 }
 
 void GraphicsContext::FillRoundedRect(const FloatRoundedRect& rrect,

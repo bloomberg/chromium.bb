@@ -11,17 +11,15 @@
 
 namespace features {
 
-VIZ_COMMON_EXPORT extern const base::Feature kEnableSurfaceSynchronization;
 VIZ_COMMON_EXPORT extern const base::Feature kEnableVizHitTestSurfaceLayer;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaForGLReadback;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaRenderer;
 VIZ_COMMON_EXPORT extern const base::Feature kRecordSkPicture;
 VIZ_COMMON_EXPORT extern const base::Feature kVizDisplayCompositor;
+VIZ_COMMON_EXPORT extern const base::Feature kDisableDeJelly;
 
-VIZ_COMMON_EXPORT bool IsSurfaceSynchronizationEnabled();
 VIZ_COMMON_EXPORT bool IsVizDisplayCompositorEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingDebugEnabled();
-VIZ_COMMON_EXPORT bool IsVizHitTestingDrawQuadEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingSurfaceLayerEnabled();
 VIZ_COMMON_EXPORT bool IsUsingSkiaForGLReadback();
 VIZ_COMMON_EXPORT bool IsUsingSkiaRenderer();

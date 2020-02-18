@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"  // kNullProcessHandle.
@@ -26,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -241,7 +241,7 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
   // A margin file can contain multiple values but the first one
   // represents the critical memory threshold.
   std::vector<int> margin_parts =
-      base::chromeos::MemoryPressureMonitor::GetMarginFileParts();
+      util::chromeos::SystemMemoryPressureEvaluator::GetMarginFileParts();
   if (!margin_parts.empty()) {
     return margin_parts[0] * 1024;
   }
@@ -275,8 +275,7 @@ TabManagerDelegate::TabManagerDelegate(
     TabManagerDelegate::MemoryStat* mem_stat)
     : tab_manager_(tab_manager),
       focused_process_(new FocusedProcess()),
-      mem_stat_(mem_stat),
-      weak_ptr_factory_(this) {
+      mem_stat_(mem_stat) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -451,7 +450,7 @@ void TabManagerDelegate::Observe(int type,
       // on top. So the longer the cleanup phase takes, the more tabs will
       // get discarded in parallel.
 
-      auto* monitor = base::chromeos::MemoryPressureMonitor::Get();
+      auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
       if (monitor) {
         monitor->ScheduleEarlyCheck();
       }
@@ -498,7 +497,8 @@ void TabManagerDelegate::AdjustOomPriorities() {
     return;
 
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  if (arc_process_service) {
+  // TODO(b/135633925): Design and implement OOM handling for ARCVM.
+  if (arc_process_service && !arc::IsArcVmEnabled()) {
     arc_process_service->RequestAppProcessList(
         base::BindOnce(&TabManagerDelegate::AdjustOomPrioritiesImpl,
                        weak_ptr_factory_.GetWeakPtr()));

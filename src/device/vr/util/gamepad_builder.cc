@@ -11,6 +11,8 @@
 namespace device {
 
 namespace {
+constexpr double kThumbstickDeadzone = 0.16;
+
 GamepadHand MojoToGamepadHandedness(device::mojom::XRHandedness handedness) {
   switch (handedness) {
     case device::mojom::XRHandedness::LEFT:
@@ -43,9 +45,8 @@ GamepadBuilder::~GamepadBuilder() = default;
 bool GamepadBuilder::IsValid() const {
   switch (GetMapping()) {
     case GamepadMapping::kXrStandard:
-      // In order to satisfy the XRStandard mapping at least two buttons and one
-      // set of axes need to have been added.
-      return gamepad_.axes_length >= 2 && gamepad_.buttons_length >= 2;
+      // Just a single primary button is sufficient for the xr-standard mapping.
+      return gamepad_.buttons_length > 0;
     case GamepadMapping::kStandard:
     case GamepadMapping::kNone:
       // Neither standard requires any buttons to be set, and all other data
@@ -56,16 +57,11 @@ bool GamepadBuilder::IsValid() const {
   NOTREACHED();
 }
 
-base::Optional<Gamepad> GamepadBuilder::GetGamepad() const {
+base::Optional<Gamepad> GamepadBuilder::GetGamepad() {
   if (IsValid())
     return gamepad_;
 
   return base::nullopt;
-}
-
-void GamepadBuilder::SetAxisDeadzone(double deadzone) {
-  DCHECK_GE(deadzone, 0);
-  axis_deadzone_ = deadzone;
 }
 
 void GamepadBuilder::AddButton(const GamepadButton& button) {
@@ -75,19 +71,29 @@ void GamepadBuilder::AddButton(const GamepadButton& button) {
 
 void GamepadBuilder::AddButton(const ButtonData& data) {
   AddButton(GamepadButton(data.pressed, data.touched, data.value));
-  if (data.has_both_axes)
+  if (data.type != ButtonData::Type::kButton)
     AddAxes(data);
 }
 
-void GamepadBuilder::AddAxis(double value) {
+void GamepadBuilder::AddAxis(double value, double deadzone) {
   DCHECK_LT(gamepad_.axes_length, Gamepad::kAxesLengthCap);
-  gamepad_.axes[gamepad_.axes_length++] = ApplyAxisDeadzoneToValue(value);
+  gamepad_.axes[gamepad_.axes_length++] =
+      std::fabs(value) < deadzone ? 0.0 : value;
 }
 
 void GamepadBuilder::AddAxes(const ButtonData& data) {
-  DCHECK(data.has_both_axes);
-  AddAxis(data.x_axis);
-  AddAxis(data.y_axis);
+  DCHECK_NE(data.type, ButtonData::Type::kButton);
+
+  if (data.type == ButtonData::Type::kTouchpad && !data.touched) {
+    // Untouched touchpads must have axes set to 0.
+    AddPlaceholderAxes();
+    return;
+  }
+
+  const double deadzone =
+      data.type == ButtonData::Type::kThumbstick ? kThumbstickDeadzone : 0.0;
+  AddAxis(data.x_axis, deadzone);
+  AddAxis(data.y_axis, deadzone);
 }
 
 void GamepadBuilder::AddPlaceholderButton() {
@@ -106,8 +112,9 @@ void GamepadBuilder::RemovePlaceholderButton() {
   gamepad_.buttons_length--;
 }
 
-double GamepadBuilder::ApplyAxisDeadzoneToValue(double value) const {
-  return std::fabs(value) < axis_deadzone_ ? 0 : value;
+void GamepadBuilder::AddPlaceholderAxes() {
+  AddAxis(0.0);
+  AddAxis(0.0);
 }
 
 }  // namespace device

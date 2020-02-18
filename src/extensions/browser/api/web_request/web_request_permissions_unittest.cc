@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -193,6 +193,7 @@ TEST_F(ExtensionWebRequestPermissionsTest, TestHideRequestForURL) {
 
 TEST_F(ExtensionWebRequestPermissionsTest,
        CanExtensionAccessURLWithWithheldPermissions) {
+  ExtensionsAPIClient api_client;
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("ext").AddPermission("<all_urls>").Build();
   URLPatternSet all_urls(
@@ -209,8 +210,7 @@ TEST_F(ExtensionWebRequestPermissionsTest,
   auto get_access = [extension, this](
                         const GURL& url,
                         const base::Optional<url::Origin>& initiator,
-                        const base::Optional<content::ResourceType>&
-                            resource_type) {
+                        const content::ResourceType resource_type) {
     constexpr int kTabId = 42;
     constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL;
@@ -228,9 +228,8 @@ TEST_F(ExtensionWebRequestPermissionsTest,
   GURL urls[] = {example_com, chromium_org};
   base::Optional<url::Origin> initiators[] = {base::nullopt, example_com_origin,
                                               chromium_org_origin};
-  base::Optional<content::ResourceType> resource_types[] = {
-      base::nullopt, content::ResourceType::kSubResource,
-      content::ResourceType::kMainFrame};
+  content::ResourceType resource_types[] = {content::ResourceType::kSubResource,
+                                            content::ResourceType::kMainFrame};
 
   // With all permissions withheld, the result of any request should be
   // kWithheld.
@@ -270,8 +269,6 @@ TEST_F(ExtensionWebRequestPermissionsTest,
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
             get_access(example_com, chromium_org_origin,
                        content::ResourceType::kSubResource));
-  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
-            get_access(example_com, chromium_org_origin, base::nullopt));
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
             get_access(example_com, chromium_org_origin,
                        content::ResourceType::kSubFrame));
@@ -322,8 +319,7 @@ TEST_F(ExtensionWebRequestPermissionsTest,
   auto get_access = [extension, this](
                         const GURL& url,
                         const base::Optional<url::Origin>& initiator,
-                        const base::Optional<content::ResourceType>&
-                            resource_type) {
+                        content::ResourceType resource_type) {
     constexpr int kTabId = 42;
     constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR;
@@ -379,8 +375,6 @@ TEST_F(ExtensionWebRequestPermissionsTest,
                             : "empty"));
     EXPECT_EQ(get_access(test_case.url, test_case.initiator,
                          content::ResourceType::kSubResource),
-              test_case.expected_access_subresource);
-    EXPECT_EQ(get_access(test_case.url, test_case.initiator, base::nullopt),
               test_case.expected_access_subresource);
     EXPECT_EQ(get_access(test_case.url, test_case.initiator,
                          content::ResourceType::kSubFrame),

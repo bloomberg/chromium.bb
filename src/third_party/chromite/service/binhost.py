@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import functools
 import os
 
 from chromite.lib import binpkg
@@ -18,6 +19,10 @@ from chromite.lib import portage_util
 
 # The name of the ACL argument file.
 _GOOGLESTORAGE_GSUTIL_FILE = 'googlestorage_acl.txt'
+
+# The name of the package file (relative to sysroot) where the list of packages
+# for dev-install is stored.
+_DEV_INSTALL_PACKAGES_FILE = 'build/dev-install/package.installable'
 
 
 class Error(Exception):
@@ -199,15 +204,25 @@ def SetBinhost(target, key, uri, private=True):
   return conf_path
 
 
-def RegenBuildCache(overlay_type):
+def RegenBuildCache(chroot, overlay_type):
   """Regenerate the Build Cache for the given target.
 
   Args:
+    chroot (chroot_lib): The chroot where the regen command will be run.
     overlay_type: one of "private", "public", or "both".
+
+  Returns:
+    list[str]: The overlays with updated caches.
   """
   overlays = portage_util.FindOverlays(overlay_type)
+
+  task = functools.partial(
+      portage_util.RegenCache, commit_changes=False, chroot=chroot)
   task_inputs = [[o] for o in overlays if os.path.isdir(o)]
-  parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
+  results = parallel.RunTasksInProcessPool(task, task_inputs)
+
+  # Filter out all of the unchanged-overlay results.
+  return [overlay_dir for overlay_dir in results if overlay_dir]
 
 
 def GetPrebuiltAclArgs(build_target):
@@ -248,3 +263,116 @@ def GetBinhosts(build_target):
                                          board=build_target.name,
                                          allow_undefined=True)
   return binhosts.split() if binhosts else []
+
+
+def ReadDevInstallPackageFile(filename):
+  """Parse the dev-install package file.
+
+  Args:
+    filename (str): The full path to the dev-install package list.
+
+  Returns:
+    list[str]: The packages in the package list file.
+  """
+  with open(filename) as f:
+    return [line.strip() for line in f]
+
+
+def ReadDevInstallFilesToCreatePackageIndex(chroot, sysroot, package_index_path,
+                                            upload_uri, upload_path):
+  """Create dev-install Package index specified by package_index_path
+
+  The current Packages file is read and a new Packages file is created based
+  on the subset of packages in the _DEV_INSTALL_PACKAGES_FILE.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot where the sysroot lives.
+    sysroot (sysroot_lib.Sysroot): The sysroot.
+    package_index_path (str): Path to the Packages file to be created.
+    upload_uri: The URI (typically GS bucket) where prebuilts will be uploaded.
+    upload_path: The path at the URI for the prebuilts.
+
+  Returns:
+    list[str]: The list of packages contained in package_index_path,
+      where each package string is a category/file.
+  """
+  # Read the dev-install binhost package file
+  devinstall_binhost_filename = chroot.full_path(sysroot.path,
+                                                 _DEV_INSTALL_PACKAGES_FILE)
+  devinstall_package_list = ReadDevInstallPackageFile(
+      devinstall_binhost_filename)
+
+  # Read the Packages file, remove packages not in package_list
+  package_path = chroot.full_path(sysroot.path, 'packages')
+  CreateFilteredPackageIndex(package_path, devinstall_package_list,
+                             package_index_path,
+                             upload_uri, upload_path)
+
+  # We have the list of packages, create full path and verify each one.
+  upload_targets_list = GetPrebuiltsForPackages(
+      package_path, devinstall_package_list)
+
+  return upload_targets_list
+
+
+def CreateFilteredPackageIndex(package_path, devinstall_package_list,
+                               package_index_path,
+                               upload_uri, upload_path, sudo=False):
+  """Create Package file for dev-install process.
+
+  The created package file (package_index_path) contains only the
+  packages from the system packages file (in package_path) that are in the
+  devinstall_package_list. The new package file will use the provided values
+  for upload_uri and upload_path.
+
+  Args:
+    package_path (str): Absolute path to the standard Packages file.
+    devinstall_package_list (list[str]): Packages from packages.installable
+    package_index_path (str): Absolute path for new Packages file.
+    upload_uri (str): The URI where prebuilts will be uploaded.
+    upload_path (str): The path at the URI for the prebuilts.
+    sudo (bool): Whether to write the file as the root user.
+  """
+
+
+  def ShouldFilterPackage(package):
+    """Local func to filter packages not in the devinstall_package_list
+
+    Args:
+      package (dict): Dictionary with key 'CPV' and package name as value
+
+    Returns:
+      True (filter) if not in the devinstall_package_list, else False (don't
+        filter) if in the devinstall_package_list
+    """
+    value = package['CPV']
+    if value in devinstall_package_list:
+      return False
+    else:
+      return True
+
+  package_index = binpkg.GrabLocalPackageIndex(package_path)
+  package_index.RemoveFilteredPackages(ShouldFilterPackage)
+  package_index.SetUploadLocation(upload_uri, upload_path)
+  package_index.header['TTL'] = 60 * 60 * 24 * 365
+  package_index.WriteFile(package_index_path, sudo=sudo)
+
+
+def GetPrebuiltsForPackages(package_root, package_list):
+  """Create list of file paths for the package list and validate they exist.
+
+  Args:
+    package_root (str): Path to 'packages' directory.
+    package_list (list[str]): List of packages.
+
+  Returns:
+    List of validated targets.
+  """
+  upload_targets_list = []
+  for pkg in package_list:
+    zip_target = pkg + '.tbz2'
+    upload_targets_list.append(zip_target)
+    full_pkg_path = os.path.join(package_root, pkg) + '.tbz2'
+    if not os.path.exists(full_pkg_path):
+      raise LookupError('DevInstall archive %s does not exist' % full_pkg_path)
+  return upload_targets_list

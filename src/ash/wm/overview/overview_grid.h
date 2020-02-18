@@ -10,13 +10,16 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -29,7 +32,9 @@ namespace ash {
 
 class DesksBarView;
 class FpsCounter;
+class OverviewGridEventHandler;
 class OverviewItem;
+class PresentationTimeRecorder;
 
 // Represents a grid of windows in the Overview Mode in a particular root
 // window, and manages a selection widget that can be moved with the arrow keys.
@@ -51,7 +56,8 @@ class OverviewItem;
 // it reaches the end of its movement sequence.
 class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                                 public WindowStateObserver,
-                                public ScreenRotationAnimatorObserver {
+                                public ScreenRotationAnimatorObserver,
+                                public WallpaperControllerObserver {
  public:
   OverviewGrid(aura::Window* root_window,
                const std::vector<aura::Window*>& window_list,
@@ -127,6 +133,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void RearrangeDuringDrag(aura::Window* dragged_window,
                            IndicatorState indicator_state);
 
+  // Updates the desks bar widget bounds if necessary.
+  void MaybeUpdateDesksWidgetBounds();
+
   // Updates the appearance of the drop target to visually indicate when the
   // dragged window is being dragged over it. For dragging from the top, pass
   // null for |dragged_item|.
@@ -179,6 +188,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void OnScreenCopiedBeforeRotation() override;
   void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
                                          bool canceled) override;
+
+  // WallpaperControllerObserver:
+  void OnWallpaperChanging() override;
+  void OnWallpaperChanged() override;
 
   // Called when overview starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
@@ -265,6 +278,17 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   bool MaybeDropItemOnDeskMiniView(const gfx::Point& screen_location,
                                    OverviewItem* drag_item);
 
+  // Prepares the |scroll_offset_min_| as a limit for |scroll_offset| from
+  // scrolling or positioning windows too far offscreen.
+  void StartScroll();
+
+  // |delta| is used for updating |scroll_offset_| with new scroll values so
+  // that windows in tablet overview mode get positioned accordingly. Returns
+  // true if the grid was scrolled.
+  bool UpdateScrollOffset(float delta);
+
+  void EndScroll();
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -292,6 +316,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
 
+  OverviewGridEventHandler* grid_event_handler() {
+    return grid_event_handler_.get();
+  }
+
  private:
   class TargetWindowObserver;
   friend class OverviewSessionTest;
@@ -318,6 +346,14 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // row height which is equivalent assuming fixed height), balanced rows and
   // minimal wasted space.
   std::vector<gfx::RectF> GetWindowRects(
+      const base::flat_set<OverviewItem*>& ignored_items);
+
+  // Gets the layout of the overview items. Currently only for tablet mode.
+  // Positions up to six windows into two rows of equal height, scaling each
+  // window to fit that height. Additional windows are placed off-screen.
+  // |ignored_items| won't be shown along with the other windows in overview
+  // mode.
+  std::vector<gfx::RectF> GetWindowRectsForTabletModeLayout(
       const base::flat_set<OverviewItem*>& ignored_items);
 
   // Attempts to fit all |out_rects| inside |bounds|. The method ensures that
@@ -359,8 +395,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Vector containing all the windows in this grid.
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
 
-  ScopedObserver<aura::Window, OverviewGrid> window_observer_;
-  ScopedObserver<WindowState, OverviewGrid> window_state_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
+  ScopedObserver<WindowState, WindowStateObserver> window_state_observer_{this};
 
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.
@@ -403,9 +439,27 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Measures the animation smoothness of overview animation.
   std::unique_ptr<FpsCounter> fps_counter_;
 
-  // True to skip |PositionWindows()|. Used to avoid O(n^2) layout
-  // when reposition windows in tablet overview mode.
+  // True to skip |PositionWindows()|. Used to avoid O(n^2) layout when
+  // reposition windows in tablet overview mode.
   bool suspend_reposition_ = false;
+
+  // Used by |GetWindowRectsForTabletModeLayout| to shift the x position of the
+  // overview items.
+  float scroll_offset_ = 0;
+
+  // Value to clamp |scroll_offset| so scrolling stays limited to windows that
+  // are visible in tablet overview mode.
+  float scroll_offset_min_ = 0;
+
+  // Cached values of the item bounds so that they do not have to be calculated
+  // on each scroll update.
+  std::vector<gfx::RectF> items_scrolling_bounds_;
+
+  // Handles events that are not handled by the OverviewItems.
+  std::unique_ptr<OverviewGridEventHandler> grid_event_handler_;
+
+  // Records the presentation time of scrolling the grid in overview mode.
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };

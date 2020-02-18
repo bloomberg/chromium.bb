@@ -15,7 +15,8 @@
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/ipc/common/android/surface_owner_android.h"
+#include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gl/android/surface_texture.h"
@@ -29,7 +30,7 @@ namespace gpu {
 class GpuChannel;
 struct Mailbox;
 
-class StreamTexture : public gpu::gles2::GLStreamTextureImage,
+class StreamTexture : public StreamTextureSharedImageInterface,
                       public IPC::Listener,
                       public SharedContextState::ContextLostObserver {
  public:
@@ -43,9 +44,14 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
  private:
   StreamTexture(GpuChannel* channel,
                 int32_t route_id,
-                std::unique_ptr<gles2::AbstractTexture> surface_owner_texture,
                 scoped_refptr<SharedContextState> context_state);
   ~StreamTexture() override;
+
+  // Static function which is used to access |weak_stream_texture| on correct
+  // thread since WeakPtr is not thread safe.
+  static void RunCallback(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<StreamTexture> weak_stream_texture);
 
   // gl::GLImage implementation:
   gfx::Size GetSize() override;
@@ -70,6 +76,8 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
   bool HasMutableState() const override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
 
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
@@ -77,12 +85,22 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                            int display_x,
                            int display_y,
                            int display_width,
-                           int display_height) override {}
+                           int display_height) override;
+
+  // gpu::StreamTextureSharedImageInterface implementation.
+  void ReleaseResources() override {}
+  bool IsUsingGpuMemory() const override;
+  void UpdateAndBindTexImage() override;
+  bool HasTextureOwner() const override;
+  gles2::Texture* GetTexture() const override;
+  void NotifyOverlayPromotion(bool promotion, const gfx::Rect& bounds) override;
+  bool RenderToOverlay() override;
 
   // SharedContextState::ContextLostObserver implementation.
   void OnContextLost() override;
 
-  void UpdateTexImage();
+  void UpdateTexImage(BindingsMode bindings_mode);
+  void EnsureBoundIfNeeded(BindingsMode mode);
 
   // Called when a new frame is available for the SurfaceOwner.
   void OnFrameAvailable();
@@ -98,13 +116,8 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                            uint32_t release_id);
   void OnDestroy();
 
-  // An AbstractTexture which owns |surface_owner_texture_id_|, which is used
-  // by |surface_owner_|.
-  std::unique_ptr<gles2::AbstractTexture> surface_owner_texture_;
-  uint32_t surface_owner_texture_id_;
-
-  // The SurfaceOwner which receives frames.
-  std::unique_ptr<SurfaceOwner> surface_owner_;
+  // The TextureOwner which receives frames.
+  scoped_refptr<TextureOwner> texture_owner_;
 
   // Current transform matrix of the surface owner.
   float current_matrix_[16];
@@ -122,7 +135,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   SequenceId sequence_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
 
-  base::WeakPtrFactory<StreamTexture> weak_factory_;
+  base::WeakPtrFactory<StreamTexture> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);
 };
 

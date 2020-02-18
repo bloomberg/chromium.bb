@@ -83,6 +83,13 @@ void SyncAuthManager::RegisterForAuthNotifications() {
   sync_account_ = DetermineAccountToUse();
 }
 
+bool SyncAuthManager::IsActiveAccountInfoFullyLoaded() const {
+  // The result of DetermineAccountToUse() is influenced by refresh tokens being
+  // loaded due to how IdentityManager::ComputeUnconsentedPrimaryAccountInfo()
+  // is implemented, which requires a refresh token.
+  return identity_manager_->AreRefreshTokensLoaded();
+}
+
 SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
   // Note: |sync_account_| should generally be identical to the result of a
   // DetermineAccountToUse() call, but there are a few edge cases when it isn't:
@@ -369,6 +376,24 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
   credentials_changed_callback_.Run();
 }
 
+void SyncAuthManager::OnRefreshTokensLoaded() {
+  DCHECK(IsActiveAccountInfoFullyLoaded());
+
+  if (UpdateSyncAccountIfNecessary()) {
+    // |account_state_changed_callback_| has already been called, no need to
+    // consider calling it again.
+    return;
+  }
+
+  if (sync_account_.account_info.account_id.empty()) {
+    // Nothing actually changed, so |account_state_changed_callback_| hasn't
+    // been called yet. However, this is the first time we can reliably tell the
+    // user is signed out, exposed via IsActiveAccountInfoFullyLoaded(), so
+    // let's treat it as account state change.
+    account_state_changed_callback_.Run();
+  }
+}
+
 void SyncAuthManager::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
@@ -385,9 +410,7 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
 
 SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
   DCHECK(registered_for_auth_notifications_);
-  return syncer::DetermineAccountToUse(
-      identity_manager_,
-      base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
+  return syncer::DetermineAccountToUse(identity_manager_);
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {

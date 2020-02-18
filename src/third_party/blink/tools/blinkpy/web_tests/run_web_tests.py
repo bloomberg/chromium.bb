@@ -37,7 +37,7 @@ from blinkpy.common import exit_codes
 from blinkpy.common.host import Host
 from blinkpy.web_tests.controllers.manager import Manager
 from blinkpy.web_tests.models import test_run_results
-from blinkpy.web_tests.port.factory import configuration_options, platform_options
+from blinkpy.web_tests.port.factory import configuration_options, platform_options, wpt_options
 from blinkpy.web_tests.views import printing
 
 _log = logging.getLogger(__name__)
@@ -108,6 +108,9 @@ def parse_args(args):
         ('Printing Options', printing.print_options()))
 
     option_group_definitions.append(
+        ('web-platform-tests (WPT) Options', wpt_options()))
+
+    option_group_definitions.append(
         ('Android-specific Options', [
             optparse.make_option(
                 '--adb-device',
@@ -158,6 +161,10 @@ def parse_args(args):
                 default=[],
                 help=('Path to a test_expectations file that will override previous '
                       'expectations. Specify multiple times for multiple sets of overrides.')),
+            optparse.make_option(
+                '--ignore-default-expectations',
+                action='store_true',
+                help=('Do not use the default set of TestExpectations files.')),
             optparse.make_option(
                 '--additional-platform-directory',
                 action='append',
@@ -472,18 +479,15 @@ def parse_args(args):
                 '--zero-tests-executed-ok',
                 action='store_true',
                 help='If set, exit with a success code when no tests are run.'
-                ' Used on trybots when web tests are retried without patch.')
-        ]))
-
-    option_group_definitions.append(
-        ('web-platform-tests (WPT) Options', [
+                ' Used on trybots when web tests are retried without patch.'),
             optparse.make_option(
-                '--no-manifest-update',
-                dest='manifest_update',
-                action='store_false',
-                default=True,
-                help=('Do not update the web-platform-tests MANIFEST.json'
-                      ' (unless it does not exist).')),
+                '--driver-kill-timeout-secs',
+                type=float,
+                default=1.0,
+                help=('Number of seconds to wait before killing a driver, and the main '
+                      'use case is to leave enough time to allow the process to '
+                      'finish post-run hooks, such as dumping code coverage data. '
+                      'Default is 1 second, can be overriden for specific use cases.'))
         ]))
 
     # FIXME: Move these into json_results_generator.py.

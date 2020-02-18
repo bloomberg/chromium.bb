@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -43,7 +43,7 @@ class MonitoredVideoStubTest : public testing::Test {
 
   MOCK_METHOD1(OnVideoChannelStatus, void(bool connected));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockVideoStub video_stub_;
 
   std::unique_ptr<MonitoredVideoStub> monitor_;
@@ -91,7 +91,7 @@ TEST_F(MonitoredVideoStubTest, OnChannelStayDisconnected) {
 
   monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
 
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       // The delay should be much greater than |kTestOverrideDelayMilliseconds|.
       TestTimeouts::tiny_timeout());

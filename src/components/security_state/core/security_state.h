@@ -91,9 +91,31 @@ enum MaliciousContentStatus {
   MALICIOUS_CONTENT_STATUS_MALWARE,
   MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE,
   MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
-  MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
+  MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+  MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE,
   MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
   MALICIOUS_CONTENT_STATUS_BILLING,
+};
+
+// Describes whether the page triggers any safety tips or reputation
+// warnings.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Style note: this differs from other enums in this file to follow new
+// histogram enum naming conventions
+// (https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#usage).
+enum class SafetyTipStatus {
+  // Safety tip status is not applicable, e.g. there is no current navigation.
+  kUnknown = 0,
+  // The current page did not trigger any Safety Tip.
+  kNone = 1,
+  // The current page triggered a Safety Tip because it was bad reputation.
+  kBadReputation = 2,
+  // The current page trigged a Safety Tip because it had a lookalike URL.
+  kLookalike = 3,
+  kMaxValue = kLookalike,
 };
 
 // Contains the security state relevant to computing the SecurityLevel
@@ -104,6 +126,12 @@ struct VisibleSecurityState {
   GURL url;
 
   MaliciousContentStatus malicious_content_status;
+
+  // What type of Safety Tip (if any) triggered on the page. Note that this
+  // field will be set even if the Safety Tip UI was not actually shown due to
+  // the feature being disabled (so that this field can be used to record
+  // metrics independent of whether the UI actually showed).
+  SafetyTipStatus safety_tip_status;
 
   // CONNECTION SECURITY FIELDS
   // Whether the connection security fields are initialized.
@@ -136,6 +164,8 @@ struct VisibleSecurityState {
   bool is_error_page;
   // True if the page is a view-source page.
   bool is_view_source;
+  // True if the page is a devtools page.
+  bool is_devtools;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;
@@ -179,6 +209,10 @@ bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 // Returns the given prefix suffixed with a dot and the current security level.
 std::string GetSecurityLevelHistogramName(
     const std::string& prefix, security_state::SecurityLevel level);
+
+// Returns the given prefix suffixed with a dot and the given Safety Tip status.
+std::string GetSafetyTipHistogramName(const std::string& prefix,
+                                      SafetyTipStatus safety_tip_status);
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
 

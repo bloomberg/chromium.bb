@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -27,8 +27,7 @@ namespace base {
 class FileProxyTest : public testing::Test {
  public:
   FileProxyTest()
-      : scoped_task_environment_(
-            test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(test::TaskEnvironment::MainThreadType::IO),
         file_thread_("FileProxyTestFileThread"),
         error_(File::FILE_OK),
         bytes_written_(-1) {}
@@ -94,7 +93,7 @@ class FileProxyTest : public testing::Test {
   const FilePath TestPath() const { return dir_.GetPath().AppendASCII("test"); }
 
   ScopedTempDir dir_;
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
   Thread file_thread_;
 
   File::Error error_;

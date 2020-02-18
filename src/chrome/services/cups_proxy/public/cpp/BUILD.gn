@@ -26,7 +26,7 @@ source_set("cpp") {
       "ipp_messages.h",
     ]
     public_deps = [
-      "//chrome/services/cups_ipp_parser/public/cpp",
+      "//chrome/services/ipp_parser/public/cpp",
       "//printing",
     ]
   }
@@ -35,26 +35,15 @@ source_set("cpp") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "cups_util_unittest.cc",
-  ]
-  deps = [
-    ":cpp",
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chrome/services/cups_proxy/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
+  if (use_cups) {
+    sources = [
+      "cups_util_unittest.cc",
+    ]
+    deps = [
+      ":cpp",
+      "//base",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
 }

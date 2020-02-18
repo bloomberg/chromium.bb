@@ -28,10 +28,10 @@ from infra_libs.buildbucket.proto import rpc_pb2, build_pb2, common_pb2
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
 
 BBV2_URL_ENDPOINT_PROD = (
-    "cr-buildbucket.appspot.com"
+    'cr-buildbucket.appspot.com'
 )
 BBV2_URL_ENDPOINT_TEST = (
-    "cr-buildbucket-test.appspot.com"
+    'cr-buildbucket-test.appspot.com'
 )
 BB_STATUS_DICT = {
     # A mapping of Buildbucket V2 statuses to chromite's statuses. For
@@ -302,7 +302,7 @@ class BuildbucketV2(object):
         'summary': 'summary',
     }
     try:
-      properties = "output.properties"
+      properties = 'output.properties'
       build_with_properties = self.GetBuild(buildbucket_id, properties)
       build = self.GetBuild(buildbucket_id)
     except ProtocolError:
@@ -332,7 +332,7 @@ class BuildbucketV2(object):
       build_properties = build_with_properties.output.properties
       for property_name, status_name in CIDB_TO_BB_PROPERTIES_MAP.items():
         if (property_name in build_properties and
-            build_properties[property_name] is not "None"):
+            build_properties[property_name] is not 'None'):
           build_status[status_name] = str(build_properties[property_name])
         else:
           build_status[status_name] = None
@@ -362,7 +362,7 @@ class BuildbucketV2(object):
     if (build_status['status'] is not None and
         build_status['status'] in BB_STATUS_DICT):
       build_status['status'] = BB_STATUS_DICT[build_status['status']]
-    if build_status['important'] == "True":
+    if build_status['important'] == 'True':
       build_status['important'] = 1
     for int_property in ['id', 'master_build_id', 'important']:
       if build_status[int_property]:
@@ -401,7 +401,7 @@ class BuildbucketV2(object):
 
   def GetBuildHistory(self, build_config, num_results, ignore_build_id=None,
                       start_date=None, end_date=None, branch=None,
-                      ending_build_id=None):
+                      start_build_id=None):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -420,7 +420,7 @@ class BuildbucketV2(object):
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
       branch: (Optional) Return only results for this branch.
-      ending_build_id: (Optional) The oldest build for which data should
+      start_build_id: (Optional) The oldest build for which data should
           be retrieved.
 
     Returns:
@@ -438,8 +438,8 @@ class BuildbucketV2(object):
       tags.append(common_pb2.StringPair(key='cbb_branch',
                                         value=branch))
     build = None
-    if ending_build_id:
-      build = rpc_pb2.BuildRange(end_build_id=int(ending_build_id))
+    if start_build_id:
+      build = rpc_pb2.BuildRange(start_build_id=int(start_build_id))
     build_predicate = rpc_pb2.BuildPredicate(
         builder=builder, tags=tags, create_time=create_time, build=build)
     search_result = self.SearchBuild(build_predicate, page_size=num_results)

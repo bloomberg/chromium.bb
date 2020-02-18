@@ -71,14 +71,14 @@
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -159,7 +159,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreHiddenElement(
   // being loaded. But if an iframe is injected into the head later, it will
   // stay there and not been displayed. To prevent it from being brought to the
   // saved page and cause it being displayed, we should not include it.
-  if (IsHTMLIFrameElement(element) &&
+  if (IsA<HTMLIFrameElement>(element) &&
       Traversal<HTMLHeadElement>::FirstAncestor(element)) {
     return true;
   }
@@ -235,7 +235,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
 
   // Do not save ping attribute since anyway the ping will be blocked from
   // MHTML.
-  if (IsHTMLAnchorElement(element) &&
+  if (IsA<HTMLAnchorElement>(element) &&
       attribute.LocalName() == html_names::kPingAttr) {
     return true;
   }

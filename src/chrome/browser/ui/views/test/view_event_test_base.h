@@ -20,7 +20,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -136,7 +136,7 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   // Thread for posting background drag events.
   std::unique_ptr<base::Thread> drag_event_thread_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

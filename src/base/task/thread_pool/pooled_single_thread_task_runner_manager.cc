@@ -110,7 +110,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     PlatformThread::SetName(thread_name_);
   }
 
-  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RegisteredTaskSource GetWork(WorkerThread* worker) override {
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     auto task_source = GetWorkLockRequired(worker);
@@ -119,9 +119,9 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
       worker_awake_ = false;
       return nullptr;
     }
-    auto run_intent = task_source->WillRunTask();
-    DCHECK(run_intent);
-    return {std::move(task_source), std::move(run_intent)};
+    auto run_status = task_source.WillRunTask();
+    DCHECK_NE(run_status, TaskSource::RunStatus::kDisallowed);
+    return task_source;
   }
 
   void DidProcessTask(RegisteredTaskSource task_source) override {
@@ -139,19 +139,22 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     // |task| will be pushed to |sequence|, and |sequence| will be queued
     // to |priority_queue_| iff |sequence_should_be_queued| is true.
     const bool sequence_should_be_queued = transaction.WillPushTask();
-    if (!sequence_should_be_queued) {
-      transaction.PushTask(std::move(task));
-      return true;
+    RegisteredTaskSource task_source;
+    if (sequence_should_be_queued) {
+      task_source = task_tracker_->RegisterTaskSource(sequence);
+      // We shouldn't push |task| if we're not allowed to queue |task_source|.
+      if (!task_source)
+        return false;
     }
-    auto registered_task_source = task_tracker_->WillQueueTaskSource(sequence);
-    if (!registered_task_source)
+    if (!task_tracker_->WillPostTaskNow(task, transaction.traits().priority()))
       return false;
-    task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
     transaction.PushTask(std::move(task));
-    bool should_wakeup = EnqueueTaskSource(
-        {std::move(registered_task_source), std::move(transaction)});
-    if (should_wakeup)
-      worker_->WakeUp();
+    if (task_source) {
+      bool should_wakeup =
+          EnqueueTaskSource({std::move(task_source), std::move(transaction)});
+      if (should_wakeup)
+        worker_->WakeUp();
+    }
     return true;
   }
 
@@ -253,7 +256,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();
   }
 
-  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RegisteredTaskSource GetWork(WorkerThread* worker) override {
     // This scheme below allows us to cover the following scenarios:
     // * Only WorkerThreadDelegate::GetWork() has work:
     //   Always return the task source from GetWork().
@@ -310,9 +313,9 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
       worker_awake_ = false;
       return nullptr;
     }
-    auto run_intent = task_source->WillRunTask();
-    DCHECK(run_intent);
-    return {std::move(task_source), std::move(run_intent)};
+    auto run_status = task_source.WillRunTask();
+    DCHECK_NE(run_status, TaskSource::RunStatus::kDisallowed);
+    return task_source;
   }
 
   void OnMainExit(WorkerThread* /* worker */) override {
@@ -348,8 +351,8 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
         DCHECK(sequence_should_be_queued)
             << "GetWorkFromWindowsMessageQueue() does not expect "
                "queueing of pump tasks.";
-        auto registered_task_source =
-            task_tracker_->WillQueueTaskSource(message_pump_sequence_);
+        auto registered_task_source = task_tracker_->RegisterTaskSource(
+            std::move(message_pump_sequence_));
         if (!registered_task_source)
           return nullptr;
         transaction.PushTask(std::move(pump_message_task));
@@ -361,7 +364,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
 
   bool get_work_first_ = true;
   const scoped_refptr<Sequence> message_pump_sequence_ =
-      MakeRefCounted<Sequence>(TaskTraits(MayBlock()),
+      MakeRefCounted<Sequence>(TaskTraits{ThreadPool(), MayBlock()},
                                nullptr,
                                TaskSourceExecutionMode::kParallel);
   std::unique_ptr<win::ScopedCOMInitializer> scoped_com_initializer_;

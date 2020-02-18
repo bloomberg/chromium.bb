@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -274,7 +274,7 @@ class StateController : public ash::mojom::TrayActionClient,
   // lifetime metrics.
   const base::TickClock* tick_clock_ = nullptr;
 
-  base::WeakPtrFactory<StateController> weak_ptr_factory_;
+  base::WeakPtrFactory<StateController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StateController);
 };

@@ -21,10 +21,14 @@
 #include <memory>
 #include <mutex>
 
+namespace yarn
+{
+	class Scheduler;
+}
+
 namespace sw
 {
 	class Blitter;
-	class SamplingRoutineCache;
 }
 
 namespace vk
@@ -38,7 +42,7 @@ class Device
 public:
 	static constexpr VkSystemAllocationScope GetAllocationScope() { return VK_SYSTEM_ALLOCATION_SCOPE_DEVICE; }
 
-	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures);
+	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures, yarn::Scheduler *scheduler);
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
 	static size_t ComputeRequiredAllocationSize(const VkDeviceCreateInfo* pCreateInfo);
@@ -66,18 +70,30 @@ public:
 			uint32_t instruction;
 			uint32_t sampler;
 			uint32_t imageView;
+
+			inline bool operator == (const Key& rhs) const;
+			inline bool operator < (const Key& rhs) const;
+
+			struct Hash
+			{
+				inline std::size_t operator()(const Key& key) const noexcept;
+			};
 		};
 
-		rr::Routine* query(const Key& key) const;
-		void add(const Key& key, rr::Routine* routine);
+		std::shared_ptr<rr::Routine> query(const Key& key) const;
+		void add(const Key& key, const std::shared_ptr<rr::Routine>& routine);
+
+		rr::Routine* queryConst(const Key& key) const;
+		void updateConstCache();
 
 	private:
-		std::size_t hash(const Key &key) const;
-		sw::LRUCache<std::size_t, rr::Routine> cache;
+		sw::LRUConstCache<Key, std::shared_ptr<rr::Routine>, Key::Hash> cache;
 	};
 
-	SamplingRoutineCache* getSamplingRoutineCache();
+	SamplingRoutineCache* getSamplingRoutineCache() const;
 	std::mutex& getSamplingRoutineCacheMutex();
+	rr::Routine* findInConstCache(const SamplingRoutineCache::Key& key) const;
+	void updateSamplingRoutineConstCache();
 
 private:
 	PhysicalDevice *const physicalDevice = nullptr;
@@ -97,6 +113,26 @@ using DispatchableDevice = DispatchableObject<Device, VkDevice>;
 static inline Device* Cast(VkDevice object)
 {
 	return DispatchableDevice::Cast(object);
+}
+
+inline bool vk::Device::SamplingRoutineCache::Key::operator == (const Key& rhs) const
+{
+	return instruction == rhs.instruction && sampler == rhs.sampler && imageView == rhs.imageView;
+}
+
+inline bool vk::Device::SamplingRoutineCache::Key::operator < (const Key& rhs) const
+{
+	return instruction < rhs.instruction || sampler < rhs.sampler || imageView < rhs.imageView;
+}
+
+inline std::size_t vk::Device::SamplingRoutineCache::Key::Hash::operator() (const Key& key) const noexcept
+{
+	// Combine three 32-bit integers into a 64-bit hash.
+	// 2642239 is the largest prime which when cubed is smaller than 2^64.
+	uint64_t hash = key.instruction;
+	hash = (hash * 2642239) ^ key.sampler;
+	hash = (hash * 2642239) ^ key.imageView;
+	return static_cast<std::size_t>(hash);  // Truncates to 32-bits on 32-bit platforms.
 }
 
 } // namespace vk

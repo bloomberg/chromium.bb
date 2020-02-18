@@ -194,6 +194,48 @@ public class BackgroundTaskSchedulerUmaTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
+    public void testReportExactTaskCreated() {
+        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
+        BackgroundTaskSchedulerUma.getInstance().reportExactTaskCreated(TaskIds.TEST);
+        verify(mUmaSpy, times(1))
+                .cacheEvent(eq("Android.BackgroundTaskScheduler.ExactTaskCreated"),
+                        eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testReportTaskScheduledWithExpiration() {
+        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
+        BackgroundTaskSchedulerUma.getInstance().reportTaskCreatedAndExpirationState(
+                TaskIds.TEST, /* expires= */ true);
+        verify(mUmaSpy, times(1))
+                .cacheEvent(eq("Android.BackgroundTaskScheduler.TaskCreated.WithExpiration"),
+                        eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testReportTaskScheduledWithoutExpiration() {
+        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
+        BackgroundTaskSchedulerUma.getInstance().reportTaskCreatedAndExpirationState(
+                TaskIds.TEST, /* expires= */ false);
+        verify(mUmaSpy, times(1))
+                .cacheEvent(eq("Android.BackgroundTaskScheduler.TaskCreated.WithoutExpiration"),
+                        eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testReportTaskExpired() {
+        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
+        BackgroundTaskSchedulerUma.getInstance().reportTaskExpired(TaskIds.TEST);
+        verify(mUmaSpy, times(1))
+                .cacheEvent(eq("Android.BackgroundTaskScheduler.TaskExpired"),
+                        eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
     public void testReportTaskCanceled() {
         doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
         BackgroundTaskSchedulerUma.getInstance().reportTaskCanceled(
@@ -222,6 +264,16 @@ public class BackgroundTaskSchedulerUmaTest {
         verify(mUmaSpy, times(1))
                 .cacheEvent(eq("Android.BackgroundTaskScheduler.TaskStopped"),
                         eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_GCM));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testReportMigrationToProto() {
+        doNothing().when(mUmaSpy).cacheEvent(anyString(), anyInt());
+        BackgroundTaskSchedulerUma.getInstance().reportMigrationToProto(TaskIds.TEST);
+        verify(mUmaSpy, times(1))
+                .cacheEvent(eq("Android.BackgroundTaskScheduler.MigrationToProto"),
+                        eq(BackgroundTaskSchedulerUma.BACKGROUND_TASK_TEST));
     }
 
     @Test

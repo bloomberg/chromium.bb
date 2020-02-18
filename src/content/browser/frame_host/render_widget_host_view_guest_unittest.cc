@@ -25,9 +25,9 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
@@ -78,7 +78,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
@@ -154,7 +154,7 @@ class RenderWidgetHostViewGuestSurfaceTest
     delete widget_host_;
 
     // It's important to make sure that the view finishes destructing before
-    // we hit the destructor for the TestBrowserThreadBundle, so run the message
+    // we hit the destructor for the BrowserTaskEnvironment, so run the message
     // loop here.
     base::RunLoop().RunUntilIdle();
 #if !defined(OS_ANDROID)
@@ -170,7 +170,7 @@ class RenderWidgetHostViewGuestSurfaceTest
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
   BrowserPluginGuestDelegate browser_plugin_guest_delegate_;

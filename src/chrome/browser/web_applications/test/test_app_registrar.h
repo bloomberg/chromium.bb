@@ -20,6 +20,7 @@ class TestAppRegistrar : public AppRegistrar {
   struct AppInfo {
     GURL install_url;
     ExternalInstallSource source = ExternalInstallSource::kExternalDefault;
+    GURL launch_url;
   };
 
   TestAppRegistrar();
@@ -39,9 +40,10 @@ class TestAppRegistrar : public AppRegistrar {
 
   // AppRegistrar
   void Init(base::OnceClosure callback) override;
-  bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
+  bool IsLocallyInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
+  bool WasInstalledByUser(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
       ExternalInstallSource install_source) const override;
   base::Optional<AppId> LookupExternalAppId(
@@ -56,6 +58,11 @@ class TestAppRegistrar : public AppRegistrar {
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
+  web_app::LaunchContainer GetAppLaunchContainer(
+      const web_app::AppId& app_id) const override;
+  void SetAppLaunchContainer(const AppId& app_id,
+                             LaunchContainer launch_container) override;
+  std::vector<AppId> GetAppIds() const override;
 
  private:
   std::map<AppId, AppInfo> installed_apps_;

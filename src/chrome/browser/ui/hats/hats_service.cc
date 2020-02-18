@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
@@ -32,12 +33,14 @@ constexpr char kHatsSurveyEnSiteID[] = "en_site_id";
 
 constexpr double kHatsSurveyProbabilityDefault = 0;
 
-constexpr char kHatsSurveyEnSiteIDDefault[] = "z4cctguzopq5x2ftal6vdgjrui";
+constexpr char kHatsSurveyEnSiteIDDefault[] = "ty52vxwjrabfvhusawtrmkmx6m";
 
 constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
     base::TimeDelta::FromDays(60);
+
+constexpr base::TimeDelta kMinimumProfileAge = base::TimeDelta::FromDays(30);
 
 // Preferences Data Model
 // The kHatsSurveyMetadata pref points to a dictionary.
@@ -84,8 +87,10 @@ void HatsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
     Browser* browser = chrome::FindLastActive();
-    if (browser && browser->is_type_tabbed()) {
-      browser->window()->ShowHatsBubbleFromAppMenuButton();
+    // Never show HaTS bubble in Incognito mode.
+    if (browser && browser->is_type_normal() &&
+        profiles::IsRegularOrGuestSession(browser)) {
+      browser->window()->ShowHatsBubble(en_site_id_);
 
       DictionaryPrefUpdate update(profile_->GetPrefs(),
                                   prefs::kHatsSurveyMetadata);
@@ -125,9 +130,22 @@ void HatsService::SetSurveyMetadataForTesting(
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopDemo)) {
+    // Always show the survey in demo mode.
+    return true;
+  }
+
+  // Survey can not be loaded and shown if there is no network connection.
+  if (net::NetworkChangeNotifier::IsOffline())
+    return false;
+
   bool consent_given =
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven();
   if (!consent_given)
+    return false;
+
+  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED)
     return false;
 
   const base::DictionaryValue* pref_data =
@@ -141,6 +159,9 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
   }
 
   base::Time now = base::Time::Now();
+
+  if ((now - profile_->GetCreationTime()) < kMinimumProfileAge)
+    return false;
 
   base::Optional<base::Time> last_survey_started_time =
       util::ValueToTime(pref_data->FindPath(GetLastSurveyStartedTime(trigger)));

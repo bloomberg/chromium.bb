@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">La date ou l'heure doit être égale ou postérieure à "<ph name="MINIMUM_DATE_OR_TIME" />".</translation>
 <translation id="2759744352195237655">bouton pop-up</translation>
 <translation id="2761667185364618470">Veuillez cocher cette case si vous souhaitez continuer.</translation>
+<translation id="2844350028562914727">détails</translation>
 <translation id="2896972712917208084">groupe de cases d'option</translation>
 <translation id="2908441821576996758">Veuillez saisir une liste d'adresses e-mail séparées par une virgule.</translation>
 <translation id="2940813599313844715">objet</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Cette valeur doit être inférieure ou égale à <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">définition</translation>
 <translation id="3557673793733683882">titre <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">outil de sélection de semaine</translation>
 <translation id="3685101356851116974">Image sans libellé</translation>
 <translation id="3706100364254443312">interrupteur</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">barre de défilement</translation>
 <translation id="4103419683916926126">Millisecondes</translation>
 <translation id="4151657705144244502">élément graphique</translation>
+<translation id="4160057747563657758">téléphone</translation>
 <translation id="4193965531860883258">avant-propos</translation>
 <translation id="4201051445878709314">Afficher le mois précédent</translation>
 <translation id="421884353938374759">palette couleurs</translation>
 <translation id="4248100235867064564">barre de menu</translation>
-<translation id="4254339807215791271">infos sur le contenu</translation>
 <translation id="4360991593054037559">Veuillez saisir une valeur valide. Les deux valeurs valides les plus proches sont "<ph name="VALID_VALUE_LOW" />" et "<ph name="VALID_VALUE_HIGHER" />".</translation>
 <translation id="4384583879834880242">Questions/Réponses</translation>
 <translation id="4413860115965805769">bouton de menu</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="588258955323874662">Plein écran</translation>
 <translation id="5888666972993069672">Diffusion en cours sur l'appareil "<ph name="DEVICE_FRIENDLY_NAME" />"</translation>
+<translation id="591047860372322273">champ de recherche</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5966707198760109579">Semaine</translation>
 <translation id="5987525920412732405">bouton toupie</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">postface</translation>
 <translation id="6209276755895393898">L'image représente probablement : <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossaire</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Quitter le mode PIP (Picture-in-picture)</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
 <translation id="6404546809543547843">curseur durée audio</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Veuillez respecter le format requis.</translation>
 <translation id="7118469954320184356">Aucune description disponible.</translation>
 <translation id="7139483182332611405">préface</translation>
+<translation id="7214187073215825913">informations sur le contenu</translation>
 <translation id="7263440858009898357">Sélectionnez un élément dans la liste.</translation>
 <translation id="727747134524199931">en-tête de colonne</translation>
 <translation id="7320576522385648310">mise en mémoire tampon</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Récupération de la description…</translation>
 <translation id="8117451130807776954">Cette semaine</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8208673686607688524">outil de sélection de la date et de l'heure locales</translation>
 <translation id="8261464734335370856">Orthographe non valide</translation>
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="835897206747267392">Valeur incorrecte</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">sommaire</translation>
 <translation id="8613126697340063924">contrôler la lecture à distance</translation>
 <translation id="862370744433916922">sous-titre</translation>
+<translation id="8711688047404765493">sortie</translation>
 <translation id="8750798805984357768">Veuillez sélectionner l'une de ces options.</translation>
 <translation id="8808573423886751634">chapitre</translation>
 <translation id="8845239796550121995">En cours de diffusion sur votre téléviseur</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> Ko</translation>
 <translation id="8987927404178983737">Mois</translation>
 <translation id="901493112792887934">durée actuelle en secondes</translation>
+<translation id="901834265349196618">e-mail</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9062307380734144336">sélectionner pour lire/mettre en pause</translation>

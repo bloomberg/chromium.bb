@@ -12,7 +12,6 @@ from telemetry.internal.results import results_options
 from telemetry.internal import story_runner
 from telemetry.page import page as page_module
 from telemetry.page import legacy_page_test
-from telemetry.testing import options_for_unittests
 
 
 BENCHMARK_NAME = 'page_test_test_case.RunMeasurement'
@@ -46,25 +45,19 @@ class PageTestTestCase(unittest.TestCase):
     ps = story.StorySet(base_dir=base_dir)
     return ps
 
-  def RunMeasurement(self, measurement, ps, options=None):
-    """Runs a measurement against a pageset, returning the rows its outputs."""
-    if options is None:
-      options = options_for_unittests.GetCopy()
-    assert options
-    temp_parser = options.CreateParser()
-    story_runner.AddCommandLineArgs(temp_parser)
-    defaults = temp_parser.get_default_values()
-    for k, v in defaults.__dict__.items():
-      if hasattr(options, k):
-        continue
-      setattr(options, k, v)
+  def RunMeasurement(self, measurement, story_set, run_options):
+    """Runs a measurement against a story set, returning a results object.
 
+    Args:
+      measurement: A test object: either a story_test.StoryTest or
+        legacy_page_test.LegacyPageTest instance.
+      story_set: A story set.
+      run_options: An object with all options needed to run stories; can be
+        created with the help of options_for_unittests.GetRunOptions().
+    """
     if isinstance(measurement, legacy_page_test.LegacyPageTest):
-      measurement.CustomizeBrowserOptions(options.browser_options)
-    options.output_file = None
-    options.output_formats = ['none']
-    story_runner.ProcessCommandLineArgs(temp_parser, options)
-    results = results_options.CreateResults(
-        options, benchmark_name=BENCHMARK_NAME)
-    story_runner.Run(measurement, ps, options, results)
+      measurement.CustomizeBrowserOptions(run_options.browser_options)
+    with results_options.CreateResults(
+        run_options, benchmark_name=BENCHMARK_NAME) as results:
+      story_runner.Run(measurement, story_set, run_options, results)
     return results

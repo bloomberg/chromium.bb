@@ -203,7 +203,7 @@ MediaNotificationView::MediaNotificationView(
           IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
 
   SetBackground(std::make_unique<MediaNotificationBackground>(
-      this, message_center::kNotificationCornerRadius,
+      message_center::kNotificationCornerRadius,
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
 
   UpdateForegroundColor();
@@ -235,8 +235,26 @@ void MediaNotificationView::SetExpanded(bool expanded) {
 
 void MediaNotificationView::UpdateCornerRadius(int top_radius,
                                                int bottom_radius) {
-  GetMediaNotificationBackground()->UpdateCornerRadius(top_radius,
-                                                       bottom_radius);
+  if (GetMediaNotificationBackground()->UpdateCornerRadius(top_radius,
+                                                           bottom_radius)) {
+    SchedulePaint();
+  }
+}
+
+void MediaNotificationView::SetForcedExpandedState(
+    bool* forced_expanded_state) {
+  if (forced_expanded_state) {
+    if (forced_expanded_state_ == *forced_expanded_state)
+      return;
+    forced_expanded_state_ = *forced_expanded_state;
+  } else {
+    if (!forced_expanded_state_.has_value())
+      return;
+    forced_expanded_state_ = base::nullopt;
+  }
+
+  header_row_->SetExpandButtonEnabled(IsExpandable());
+  UpdateViewForExpandedState();
 }
 
 void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -335,6 +353,8 @@ void MediaNotificationView::UpdateWithMediaArtwork(
 
   UpdateForegroundColor();
 
+  container_->OnMediaArtworkChanged(image);
+
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
@@ -359,6 +379,8 @@ void MediaNotificationView::UpdateActionButtonsVisibility() {
     if (should_invalidate)
       action_button->InvalidateLayout();
   }
+
+  container_->OnVisibleActionsChanged(visible_actions);
 }
 
 void MediaNotificationView::UpdateViewForExpandedState() {
@@ -394,8 +416,10 @@ void MediaNotificationView::UpdateViewForExpandedState() {
 
   main_row_->Layout();
 
-  GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
-      expanded ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct);
+  if (GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
+          expanded ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct)) {
+    SchedulePaint();
+  }
 
   header_row_->SetExpanded(expanded);
 
@@ -421,6 +445,9 @@ MediaNotificationView::GetMediaNotificationBackground() {
 }
 
 bool MediaNotificationView::IsExpandable() const {
+  if (forced_expanded_state_.has_value())
+    return false;
+
   std::set<MediaSessionAction> ignored_actions = {
       GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
 
@@ -432,14 +459,16 @@ bool MediaNotificationView::IsExpandable() const {
 }
 
 bool MediaNotificationView::IsActuallyExpanded() const {
+  if (forced_expanded_state_.has_value())
+    return forced_expanded_state_.value();
   return expanded_ && IsExpandable();
 }
 
 void MediaNotificationView::UpdateForegroundColor() {
   const SkColor background =
-      GetMediaNotificationBackground()->GetBackgroundColor();
+      GetMediaNotificationBackground()->GetBackgroundColor(*this);
   const SkColor foreground =
-      GetMediaNotificationBackground()->GetForegroundColor();
+      GetMediaNotificationBackground()->GetForegroundColor(*this);
 
   title_label_->SetEnabledColor(foreground);
   artist_label_->SetEnabledColor(foreground);

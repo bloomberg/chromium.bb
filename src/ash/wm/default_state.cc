@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/display/display.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
 
@@ -100,7 +101,8 @@ void DefaultState::AttachState(WindowState* window_state,
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           window_state->window());
   if (stored_display_state_.bounds() != current_display.bounds()) {
-    const WMEvent event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const DisplayMetricsChangedWMEvent event(
+        display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
     window_state->OnWMEvent(&event);
   } else if (stored_display_state_.work_area() != current_display.work_area()) {
     const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
@@ -582,11 +584,9 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
 
   if (IsMinimizedWindowStateType(previous_state_type) ||
       window_state->IsFullscreen() || window_state->IsPinned() ||
-      enter_animation_type() == IMMEDIATE) {
+      window_state->bounds_animation_type() ==
+          WindowState::BoundsChangeAnimationType::IMMEDIATE) {
     window_state->SetBoundsDirect(bounds_in_parent);
-    // Reset the |enter_animation_type_| to DEFAULT if it is IMMEDIATE, which is
-    // set for non-top windows when entering clamshell mode.
-    set_enter_animation_type(DEFAULT);
   } else if (window_state->IsMaximized() ||
              IsMaximizedOrFullscreenOrPinnedWindowStateType(
                  previous_state_type)) {

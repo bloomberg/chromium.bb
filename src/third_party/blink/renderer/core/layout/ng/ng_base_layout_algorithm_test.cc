@@ -49,8 +49,8 @@ std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
   auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
   NGBlockNode node(block_flow);
-  NGConstraintSpace space =
-      NGConstraintSpace::CreateFromLayoutObject(*block_flow);
+  NGConstraintSpace space = NGConstraintSpace::CreateFromLayoutObject(
+      *block_flow, false /* is_layout_root */);
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, node);
 
@@ -105,15 +105,15 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
           ? NGFragmentationType::kFragmentColumn
           : NGFragmentationType::kFragmentNone;
 
-  return NGConstraintSpaceBuilder(writing_mode, writing_mode,
-                                  is_new_formatting_context)
-      .SetAvailableSize(size)
-      .SetPercentageResolutionSize(size)
-      .SetTextDirection(direction)
-      .SetIsShrinkToFit(shrink_to_fit)
-      .SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available)
-      .SetFragmentationType(block_fragmentation)
-      .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
+                                   is_new_formatting_context);
+  builder.SetAvailableSize(size);
+  builder.SetPercentageResolutionSize(size);
+  builder.SetTextDirection(direction);
+  builder.SetIsShrinkToFit(shrink_to_fit);
+  builder.SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available);
+  builder.SetFragmentationType(block_fragmentation);
+  return builder.ToConstraintSpace();
 }
 
 }  // namespace blink

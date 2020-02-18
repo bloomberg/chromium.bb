@@ -7,9 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/scoped_command_line.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,8 +23,8 @@ TEST(HiResTimerManagerTest, ToggleOnOff) {
   // The power monitor creates Window to receive power notifications from
   // Windows, which makes this test flaky if you run while the machine
   // goes in or out of AC power.
-  test::ScopedTaskEnvironment scoped_task_environment(
-      test::ScopedTaskEnvironment::MainThreadType::UI);
+  test::TaskEnvironment task_environment(
+      test::TaskEnvironment::MainThreadType::UI);
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());
 
@@ -57,6 +59,34 @@ TEST(HiResTimerManagerTest, ToggleOnOff) {
     }
   }
   base::PowerMonitor::ShutdownForTesting();
+}
+
+TEST(HiResTimerManagerTest, DisableFromCommandLine) {
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitch(
+      switches::kDisableHighResTimer);
+
+  // Reset to known initial state. Test suite implementation
+  // enables the high resolution timer by default.
+  Time::EnableHighResolutionTimer(false);
+
+  HighResolutionTimerManager manager;
+
+  // The high resolution clock is disabled via the command line flag.
+  EXPECT_FALSE(manager.hi_res_clock_available());
+
+  // Time class has it off as well, because it hasn't been activated.
+  EXPECT_FALSE(base::Time::IsHighResolutionTimerInUse());
+
+  // Try to activate the high resolution timer.
+  base::Time::ActivateHighResolutionTimer(true);
+  EXPECT_FALSE(base::Time::IsHighResolutionTimerInUse());
+
+  // De-activate the high resolution timer.
+  base::Time::ActivateHighResolutionTimer(false);
+
+  // Re-enable the high-resolution timer for testing.
+  Time::EnableHighResolutionTimer(true);
 }
 #endif  // defined(OS_WIN)
 

@@ -105,7 +105,6 @@ void ShowInitialPasswordAccountSuggestions(
 LikelyFormFilling SendFillInformationToRenderer(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver,
-    bool is_blacklisted,
     const PasswordForm& observed_form,
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const std::vector<const PasswordForm*>& federated_matches,
@@ -113,9 +112,6 @@ LikelyFormFilling SendFillInformationToRenderer(
     PasswordFormMetricsRecorder* metrics_recorder) {
   DCHECK(driver);
   DCHECK_EQ(PasswordForm::Scheme::kHtml, observed_form.scheme);
-
-  const bool new_parsing_enabled =
-      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
 
   if (best_matches.empty()) {
     driver->InformNoSavedCredentials();
@@ -125,23 +121,12 @@ LikelyFormFilling SendFillInformationToRenderer(
   }
   DCHECK(preferred_match);
 
-  // Chrome tries to avoid filling into fields where the user is asked to enter
-  // a fresh password. The old condition for filling on load was: "does the
-  // form lack a new-password field?" The new one is: "does the form have a
-  // current-password field?" because the current-password field is what should
-  // be filled. The old condition is used with the old parser, and the new
-  // condition with the new one. The new one is not explicitly checked here,
-  // because it is implicit in the way filling is done: if there is no current
-  // password field ID, then PasswordAutofillAgent has no way to fill the
-  // password anywhere.
-  const bool form_good_for_filling =
-      new_parsing_enabled || !observed_form.IsPossibleChangePasswordForm();
-
-  // If the parser of the NewPasswordFormManager decides that there is no
+  // If the parser of the PasswordFormManager decides that there is no
   // current password field, no filling attempt will be made. In this case the
   // renderer won't treat this as the "first filling" and won't record metrics
   // accordingly. The browser should not do that either.
-  const bool no_sign_in_form = !observed_form.HasPasswordElement();
+  const bool no_sign_in_form =
+      !observed_form.HasPasswordElement() && !observed_form.IsSingleUsername();
 
   // Wait for the username before filling passwords in case the
   // FillOnAccountSelectHttp feature is active and the main frame is
@@ -166,8 +151,6 @@ LikelyFormFilling SendFillInformationToRenderer(
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
   } else if (preferred_match->is_public_suffix_match) {
     wait_for_username_reason = WaitForUsernameReason::kPublicSuffixMatch;
-  } else if (!form_good_for_filling) {
-    wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
   } else if (no_sign_in_form) {
     // If the parser did not find a current password element, don't fill.
     wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;

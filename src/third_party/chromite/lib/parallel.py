@@ -15,18 +15,14 @@ import functools
 import multiprocessing
 from multiprocessing.managers import SyncManager
 import os
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 import signal
 import sys
 import tempfile
 import time
 import traceback
+
+import six
+from six.moves import queue as Queue
 
 from chromite.lib import failures_lib
 from chromite.lib import results_lib
@@ -564,7 +560,8 @@ class _BackgroundTask(multiprocessing.Process):
         # Propagate any exceptions; foreground exceptions take precedence.
         if foreground_except is not None:
           # contextlib ignores caught exceptions unless explicitly re-raised.
-          raise foreground_except[0], foreground_except[1], foreground_except[2]
+          six.reraise(foreground_except[0], foreground_except[1],
+                      foreground_except[2])
         if errors:
           raise BackgroundFailure(exc_infos=errors)
 

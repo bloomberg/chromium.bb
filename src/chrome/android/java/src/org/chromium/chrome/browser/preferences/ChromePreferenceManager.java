@@ -219,6 +219,12 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
 
     /**
+     * Whether or not night mode should set "light" as the default option.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_DEFAULT_TO_LIGHT = "night_mode_default_to_light";
+
+    /**
      * Whether or not night mode is available for custom tabs.
      * Default value is false.
      */
@@ -226,7 +232,8 @@ public class ChromePreferenceManager {
 
     /**
      * The current theme setting in the user settings.
-     * Default value is System default (see {@link ThemePreference.ThemeSetting}).
+     * Default value is -1. Use NightModeUtils#getThemeSetting() to retrieve current setting or
+     * default theme.
      */
     public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
 
@@ -318,6 +325,12 @@ public class ChromePreferenceManager {
             "interest_feed_content_suggestions";
 
     /**
+     * Whether or not the start surface is enabled.
+     * Default value is false.
+     */
+    public static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
+
+    /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
      */
@@ -374,11 +387,6 @@ public class ChromePreferenceManager {
     public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
 
     /**
-     * Whether network service is enabled.
-     */
-    public static final String NETWORK_SERVICE_KEY = "network_service";
-
-    /**
      * Whether warming up network service is enabled.
      * Default value is false.
      */
@@ -390,6 +398,13 @@ public class ChromePreferenceManager {
      * enabled.
      */
     public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
+
+    /**
+     * Whether or not we should directly open the dialer when a click to call notification is
+     * received. Default value is false.
+     */
+    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY =
+            "click_to_call_open_dialer_directly";
 
     /**
      * Key to cache whether immersive ui mode is enabled.
@@ -710,8 +725,18 @@ public class ChromePreferenceManager {
      * @return The value of the preference.
      */
     public int readInt(String key) {
+        return readInt(key, 0);
+    }
+
+    /**
+     * Reads the given int value from the named shared preference.
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if the preference is not set.
+     * @return The value of the preference.
+     */
+    public int readInt(String key, int defaultValue) {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getInt(key, 0);
+            return mSharedPreferences.getInt(key, defaultValue);
         }
     }
 

@@ -21,7 +21,7 @@ PipelineStageCodeGenerator::PipelineStageCodeGenerator(
 : INHERITED(context, program, errors, out)
 , fName("Temp")
 , fFullName(String::printf("Gr%s", fName.c_str()))
-, fSectionAndParameterHelper(*program, *errors)
+, fSectionAndParameterHelper(program, *errors)
 , fFormatArgs(outFormatArgs) {}
 
 void PipelineStageCodeGenerator::writef(const char* s, va_list va) {
@@ -78,8 +78,11 @@ void PipelineStageCodeGenerator::writeBinaryExpression(const BinaryExpression& b
 }
 
 void PipelineStageCodeGenerator::writeFunctionCall(const FunctionCall& c) {
-    if (c.fFunction.fBuiltin && c.fFunction.fName == "process") {
+    if (c.fFunction.fBuiltin && c.fFunction.fName == "sample" &&
+        c.fArguments[0]->fType.kind() != Type::Kind::kSampler_Kind) {
         SkASSERT(c.fArguments.size() == 1);
+        SkASSERT("fragmentProcessor"  == c.fArguments[0]->fType.name() ||
+                 "fragmentProcessor?" == c.fArguments[0]->fType.name());
         SkASSERT(Expression::kVariableReference_Kind == c.fArguments[0]->fKind);
         int index = 0;
         bool found = false;
@@ -100,8 +103,6 @@ void PipelineStageCodeGenerator::writeFunctionCall(const FunctionCall& c) {
             }
         }
         SkASSERT(found);
-        fExtraEmitCodeCode += "        this->emitChild(" + to_string(index) + ", fChildren[" +
-                              to_string(index) + "], args);\n";
         this->write("%s");
         fFormatArgs->push_back(Compiler::FormatArg(Compiler::FormatArg::Kind::kChildProcessor,
                                                    index));
@@ -125,10 +126,12 @@ void PipelineStageCodeGenerator::writeVariableReference(const VariableReference&
             fFormatArgs->push_back(Compiler::FormatArg(Compiler::FormatArg::Kind::kOutput));
             break;
         case SK_MAIN_X_BUILTIN:
-            this->write("sk_FragCoord.x");
+            this->write("%s");
+            fFormatArgs->push_back(Compiler::FormatArg(Compiler::FormatArg::Kind::kCoordX));
             break;
         case SK_MAIN_Y_BUILTIN:
-            this->write("sk_FragCoord.y");
+            this->write("%s");
+            fFormatArgs->push_back(Compiler::FormatArg(Compiler::FormatArg::Kind::kCoordY));
             break;
         default:
             if (ref.fVariable.fModifiers.fFlags & Modifiers::kUniform_Flag) {

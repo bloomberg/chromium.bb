@@ -7,13 +7,43 @@
 
 from __future__ import print_function
 
-import mock
-
 from chromite.lib import build_target_util
-from chromite.lib import chroot_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import parallel
+from chromite.lib import portage_util
+from chromite.lib.chroot_lib import Chroot
 from chromite.service import packages
+
+
+class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
+  """Uprev android tests."""
+
+  def test_success(self):
+    """Test successful run handling."""
+    self.PatchObject(packages, '_parse_android_atom',
+                     return_value='ANDROID_ATOM=android/android-1.0')
+
+    build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
+
+    packages.uprev_android('refs/tracking-branch', 'android/package',
+                           'refs/android-build-branch', Chroot(),
+                           build_targets=build_targets)
+    self.assertCommandContains(['cros_mark_android_as_stable',
+                                '--boards=foo:bar'])
+    self.assertCommandContains(['emerge-foo'])
+    self.assertCommandContains(['emerge-bar'])
+
+  def test_no_uprev(self):
+    """Test no uprev handling."""
+    self.PatchObject(packages, '_parse_android_atom', return_value=None)
+    build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
+    packages.uprev_android('refs/tracking-branch', 'android/package',
+                           'refs/android-build-branch', Chroot(),
+                           build_targets=build_targets)
+
+    self.assertCommandContains(['cros_mark_android_as_stable',
+                                '--boards=foo:bar'])
+    self.assertCommandContains(['emerge-foo'], expected=False)
+    self.assertCommandContains(['emerge-bar'], expected=False)
 
 
 class UprevBuildTargetsTest(cros_test_lib.RunCommandTestCase):
@@ -32,6 +62,29 @@ class UprevBuildTargetsTest(cros_test_lib.RunCommandTestCase):
                                    None)
 
 
+class UprevsVersionedPackageTest(cros_test_lib.MockTestCase):
+  """uprevs_versioned_package decorator test."""
+
+  @packages.uprevs_versioned_package('category/package')
+  def uprev_category_package(self, *args, **kwargs):
+    """Registered function for testing."""
+
+  def test_calls_function(self):
+    """Test calling a registered function."""
+    patch = self.PatchObject(self, 'uprev_category_package')
+
+    cpv = portage_util.SplitCPV('category/package', strict=False)
+    packages.uprev_versioned_package(cpv, [], [], Chroot())
+
+    patch.assert_called()
+
+  def test_unregistered_package(self):
+    """Test calling with an unregistered package."""
+    cpv = portage_util.SplitCPV('does-not/exist', strict=False)
+
+    with self.assertRaises(packages.UnknownPackageError):
+      packages.uprev_versioned_package(cpv, [], [], Chroot())
+
 
 class GetBestVisibleTest(cros_test_lib.MockTestCase):
   """get_best_visible tests."""
@@ -39,59 +92,3 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase):
   def test_empty_atom_fails(self):
     with self.assertRaises(AssertionError):
       packages.get_best_visible('')
-
-
-class UprevManagerTest(cros_test_lib.MockTestCase):
-  """UprevManager tests."""
-
-  def test_clean_stale_packages_no_chroot(self):
-    """Test no chroot skip."""
-    manager = packages.UprevManager([], None)
-    patch = self.PatchObject(parallel, 'RunTasksInProcessPool')
-
-    # pylint: disable=protected-access
-    manager._clean_stale_packages()
-
-    # Make sure we aren't doing any work.
-    patch.assert_not_called()
-
-  def test_clean_stale_packages_chroot_not_exists(self):
-    """Cannot run the commands when the chroot does not exist."""
-    chroot = chroot_lib.Chroot()
-    self.PatchObject(chroot, 'exists', return_value=False)
-    manager = packages.UprevManager([], None, chroot=chroot)
-    patch = self.PatchObject(parallel, 'RunTasksInProcessPool')
-
-    # pylint: disable=protected-access
-    manager._clean_stale_packages()
-
-    # Make sure we aren't doing any work.
-    patch.assert_not_called()
-
-  def test_clean_stale_packages_no_build_targets(self):
-    """Make sure it behaves as expected with no build targets provided."""
-    chroot = chroot_lib.Chroot()
-    self.PatchObject(chroot, 'exists', return_value=True)
-    manager = packages.UprevManager([], None, chroot=chroot)
-    patch = self.PatchObject(parallel, 'RunTasksInProcessPool')
-
-    # pylint: disable=protected-access
-    manager._clean_stale_packages()
-
-    # Make sure we aren't doing any work.
-    patch.assert_called_once_with(mock.ANY, [[None]])
-
-  def test_clean_stale_packages_with_boards(self):
-    """Test it cleans all boards as well as the chroot."""
-    targets = ['board1', 'board2']
-    build_targets = [build_target_util.BuildTarget(t) for t in targets]
-    chroot = chroot_lib.Chroot()
-    self.PatchObject(chroot, 'exists', return_value=True)
-    manager = packages.UprevManager([], None, chroot=chroot,
-                                    build_targets=build_targets)
-    patch = self.PatchObject(parallel, 'RunTasksInProcessPool')
-
-    # pylint: disable=protected-access
-    manager._clean_stale_packages()
-
-    patch.assert_called_once_with(mock.ANY, [[t] for t in targets + [None]])

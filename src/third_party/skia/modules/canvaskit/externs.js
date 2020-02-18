@@ -105,6 +105,8 @@ var CanvasKit = {
 		clipRect: function() {},
 		concat: function() {},
 		drawArc: function() {},
+		drawCircle: function() {},
+		drawDRRect:  function() {},
 		drawImage: function() {},
 		drawImageRect: function() {},
 		drawLine: function() {},
@@ -112,6 +114,7 @@ var CanvasKit = {
 		drawPaint: function() {},
 		drawPath: function() {},
 		drawPicture: function() {},
+		drawRRect:  function() {},
 		drawRect: function() {},
 		drawRoundRect: function() {},
 		drawShadow: function() {},
@@ -119,6 +122,7 @@ var CanvasKit = {
 		drawTextBlob: function() {},
 		drawVertices: function() {},
 		flush: function() {},
+		getSaveCount: function() {},
 		getTotalMatrix: function() {},
 		makeSurface: function() {},
 		restore: function() {},
@@ -232,6 +236,7 @@ var CanvasKit = {
 
 		// private API
 		_addArc: function() {},
+		_addOval: function() {},
 		_addPath: function() {},
 		_addRect: function() {},
 		_addRoundRect: function() {},
@@ -276,6 +281,12 @@ var CanvasKit = {
 		fTop: {},
 		fRight: {},
 		fBottom: {},
+	},
+
+	SkRRect: {
+		rect: {},
+		rx: {},
+		ry: {},
 	},
 
 	SkSurface: {
@@ -509,6 +520,7 @@ var CanvasKit = {
 // It's not enough to declare them above, because closure can still erase them
 // unless they go on the prototype.
 CanvasKit.SkPath.prototype.addArc = function() {};
+CanvasKit.SkPath.prototype.addOval = function() {};
 CanvasKit.SkPath.prototype.addPath = function() {};
 CanvasKit.SkPath.prototype.addRect = function() {};
 CanvasKit.SkPath.prototype.addRoundRect = function() {};
@@ -520,6 +532,7 @@ CanvasKit.SkPath.prototype.cubicTo = function() {};
 CanvasKit.SkPath.prototype.dash = function() {};
 CanvasKit.SkPath.prototype.lineTo = function() {};
 CanvasKit.SkPath.prototype.moveTo = function() {};
+CanvasKit.SkPath.prototype.offset = function() {};
 CanvasKit.SkPath.prototype.op = function() {};
 CanvasKit.SkPath.prototype.quadTo = function() {};
 CanvasKit.SkPath.prototype.rect = function() {};

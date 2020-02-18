@@ -58,7 +58,7 @@ LoginView::LoginView(const base::string16& authority,
                         views::GridLayout::FIXED, kMessageWidth, 0);
   AddHeaderLabel(layout, authority, views::style::STYLE_PRIMARY);
   if (!explanation.empty())
-    AddHeaderLabel(layout, explanation, STYLE_SECONDARY);
+    AddHeaderLabel(layout, explanation, views::style::STYLE_SECONDARY);
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));
@@ -84,11 +84,11 @@ LoginView::~LoginView() {
 }
 
 const base::string16& LoginView::GetUsername() const {
-  return username_field_->text();
+  return username_field_->GetText();
 }
 
 const base::string16& LoginView::GetPassword() const {
-  return password_field_->text();
+  return password_field_->GetText();
 }
 
 views::View* LoginView::GetInitiallyFocusedView() {
@@ -100,7 +100,7 @@ views::View* LoginView::GetInitiallyFocusedView() {
 
 void LoginView::OnAutofillDataAvailable(const base::string16& username,
                                         const base::string16& password) {
-  if (username_field_->text().empty()) {
+  if (username_field_->GetText().empty()) {
     username_field_->SetText(username);
     password_field_->SetText(password);
     username_field_->SelectAll(true);

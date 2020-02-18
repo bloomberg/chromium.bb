@@ -58,11 +58,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Each subclass defines its own behavior and transition for each WMEvent.
   class State {
    public:
-    // Animation type of updating window bounds for entering current state.
-    // "IMMEDIATE" means update bounds directly without animation. "STEP_END"
-    // means update bounds at the end of the animation.
-    enum EnterAnimationType { DEFAULT, IMMEDIATE, STEP_END };
-
     State() {}
     virtual ~State() {}
 
@@ -87,16 +82,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Called when the window is being destroyed.
     virtual void OnWindowDestroying(WindowState* window_state) {}
 
-    EnterAnimationType enter_animation_type() const {
-      return enter_animation_type_;
-    }
-    void set_enter_animation_type(EnterAnimationType type) {
-      enter_animation_type_ = type;
-    }
-
    private:
-    EnterAnimationType enter_animation_type_ = DEFAULT;
-
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
@@ -359,15 +345,41 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   friend class DefaultState;
   friend class LockWindowState;
   friend class TabletModeWindowState;
+  friend class ScopedBoundsChangeAnimation;
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
   FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowMaskRecreated);
   FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowHasMaskLayer);
 
+  // Animation type of updating window bounds. "IMMEDIATE" means update bounds
+  // directly without animation. "STEP_END" means update bounds at the end of
+  // the animation.
+  enum class BoundsChangeAnimationType { DEFAULT, IMMEDIATE, STEP_END };
+
+  // A class can temporarily change the window bounds change animation type.
+  class ScopedBoundsChangeAnimation : public aura::WindowObserver {
+   public:
+    ScopedBoundsChangeAnimation(aura::Window* window,
+                                BoundsChangeAnimationType animation_type);
+    ~ScopedBoundsChangeAnimation() override;
+
+    // aura::WindowObserver:
+    void OnWindowDestroying(aura::Window* window) override;
+
+   private:
+    aura::Window* window_;
+    BoundsChangeAnimationType previous_bounds_animation_type_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedBoundsChangeAnimation);
+  };
+
   explicit WindowState(aura::Window* window);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
+  BoundsChangeAnimationType bounds_animation_type() {
+    return bounds_animation_type_;
+  }
 
   bool HasMaximumWidthOrHeight() const;
 
@@ -427,6 +439,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // keyboard position changes.
   void UpdatePipBounds();
 
+  // Collects PIP enter and exit metrics:
+  void CollectPipEnterExitMetrics(bool enter);
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -475,6 +490,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignore_property_change_;
 
   std::unique_ptr<State> current_state_;
+
+  // The animation type for the bounds change.
+  BoundsChangeAnimationType bounds_animation_type_ =
+      BoundsChangeAnimationType::DEFAULT;
+
+  // When the current (or last) PIP session started.
+  base::TimeTicks pip_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

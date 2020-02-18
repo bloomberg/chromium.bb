@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/assistant/assistant_prefs_controller.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
@@ -25,7 +25,7 @@ class SuggestionContainerView;
 
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantFooterView
     : public views::View,
-      public AssistantPrefsObserver {
+      public AssistantStateObserver {
  public:
   explicit AssistantFooterView(AssistantViewDelegate* delegate);
   ~AssistantFooterView() override;
@@ -35,8 +35,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantFooterView
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
 
-  // AssistantPrefsObserver:
-  void OnAssistantConsentStatusUpdated(int consent_status) override;
+  // AssistantStateObserver:
+  void OnAssistantConsentStatusChanged(int consent_status) override;
 
  private:
   void InitLayout();

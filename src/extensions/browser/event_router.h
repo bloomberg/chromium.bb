@@ -23,10 +23,12 @@
 #include "extensions/browser/events/event_ack_data.h"
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/event_filtering_info.h"
+#include "extensions/common/features/feature.h"
 #include "ipc/ipc_sender.h"
 #include "url/gurl.h"
 
@@ -41,7 +43,6 @@ class RenderProcessHost;
 namespace extensions {
 class Extension;
 class ExtensionPrefs;
-class ExtensionRegistry;
 
 struct Event;
 struct EventListenerInfo;
@@ -379,9 +380,9 @@ class EventRouter : public KeyedService,
   ExtensionPrefs* const extension_prefs_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
-  EventListenerMap listeners_;
+  EventListenerMap listeners_{this};
 
   // Map from base event name to observer.
   using ObserverMap = std::unordered_map<std::string, Observer*>;
@@ -405,6 +406,7 @@ struct Event {
   // given context and extension, and false otherwise.
   using WillDispatchCallback =
       base::RepeatingCallback<bool(content::BrowserContext*,
+                                   Feature::Context,
                                    const Extension*,
                                    Event*,
                                    const base::DictionaryValue*)>;

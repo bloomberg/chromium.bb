@@ -55,6 +55,8 @@ jumbo_source_set("blink") {
     "prediction/linear_predictor.h",
     "prediction/linear_resampling.cc",
     "prediction/linear_resampling.h",
+    "prediction/one_euro_filter.cc",
+    "prediction/one_euro_filter.h",
     "prediction/predictor_factory.cc",
     "prediction/predictor_factory.h",
     "scroll_predictor.cc",

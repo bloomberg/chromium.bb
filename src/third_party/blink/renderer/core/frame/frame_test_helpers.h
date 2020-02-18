@@ -237,6 +237,11 @@ class TestWebWidgetClient : public WebWidgetClient {
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
+  void SetBrowserControlsShownRatio(float) override;
+  void SetBrowserControlsHeight(float top_height,
+                                float bottom_height,
+                                bool shrink_viewport) override;
+  viz::FrameSinkId GetFrameSinkId() override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {
@@ -494,8 +499,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
   void ForwardPostMessage(WebLocalFrame* source_frame,
                           WebRemoteFrame* target_frame,
                           WebSecurityOrigin target_origin,
-                          WebDOMMessageEvent,
-                          bool has_user_gesture) override {}
+                          WebDOMMessageEvent) override {}
 
  private:
   // If set to a non-null value, self-deletes on frame detach.

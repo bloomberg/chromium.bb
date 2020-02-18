@@ -276,13 +276,72 @@ int BoostOwned(const int score,
   return std::max(score + (owned ? promotion : -demotion), 0);
 }
 
+// Derived from google3/apps/share/util/docs_url_extractor.cc.
+std::string ExtractDocIdFromUrl(const std::string& url) {
+  static const RE2 docs_url_pattern_(
+      "\\b("  // The first groups matches the whole URL.
+      // Domain.
+      "(?:https?://)?(?:"
+      "spreadsheets|docs|drive|script|sites|jamboard"
+      ")[0-9]?.google.com"
+      "(?::[0-9]+)?\\/"  // Port.
+      "(?:\\S*)"         // Non-whitespace chars.
+      "(?:"
+      // Doc url prefix to match /d/{id}. (?:e/)? deviates from google3.
+      "(?:/d/(?:e/)?(?P<path_docid>[0-9a-zA-Z\\-\\_]+))"
+      "|"
+      // Docs id expr to match a valid id parameter.
+      "(?:(?:\\?|&|&amp;)"
+      "(?:id|docid|key|docID|DocId)=(?P<query_docid>[0-9a-zA-Z\\-\\_]+))"
+      "|"
+      // Folder url prefix to match /folders/{folder_id}.
+      "(?:/folders/(?P<folder_docid>[0-9a-zA-Z\\-\\_]+))"
+      "|"
+      // Sites url prefix.
+      "(?:/?s/)(?P<sites_docid>[0-9a-zA-Z\\-\\_]+)"
+      "(?:/p/[0-9a-zA-Z\\-\\_]+)?/edit"
+      "|"
+      // Jam url.
+      "(?:d/)(?P<jam_docid>[0-9a-zA-Z\\-\\_]+)/(?:edit|viewer)"
+      ")"
+      // Other valid chars.
+      "(?:[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/\\?]*)"
+      // Summarization details.
+      "(?:summarizationDetails=[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/"
+      "\\?(?:%5B)(?:%5D)]*)?"
+      // Pther valid chars.
+      "(?:[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/\\?]*)"
+      "(?:(#[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/\\?]+)?)"  // Fragment
+      ")");
+
+  std::vector<re2::StringPiece> matched_doc_ids(
+      docs_url_pattern_.NumberOfCapturingGroups() + 1);
+  // ANCHOR_START deviates from google3 which uses UNANCHORED. Using
+  // ANCHOR_START prevents incorrectly matching with non-drive URLs but which
+  // contain a drive URL; e.g.,
+  // url-parser.com/?url=https://docs.google.com/document/d/(id)/edit.
+  if (!docs_url_pattern_.Match(url, 0, url.size(), RE2::ANCHOR_START,
+                               matched_doc_ids.data(),
+                               matched_doc_ids.size())) {
+    return std::string();
+  }
+  for (const auto& doc_id_group : docs_url_pattern_.NamedCapturingGroups()) {
+    re2::StringPiece identified_doc_id = matched_doc_ids[doc_id_group.second];
+    if (!identified_doc_id.empty()) {
+      return std::string(identified_doc_id);
+    }
+  }
+  return std::string();
+}
+
 }  // namespace
 
 // static
 DocumentProvider* DocumentProvider::Create(
     AutocompleteProviderClient* client,
-    AutocompleteProviderListener* listener) {
-  return new DocumentProvider(client, listener);
+    AutocompleteProviderListener* listener,
+    size_t cache_size) {
+  return new DocumentProvider(client, listener, cache_size);
 }
 
 // static
@@ -320,8 +379,7 @@ bool DocumentProvider::IsDocumentProviderAllowed(
     return false;
   }
 
-  // Google must be set as default search provider; we mix results which may
-  // change placement.
+  // Google must be set as default search provider.
   auto* template_url_service = client->GetTemplateURLService();
   if (template_url_service == nullptr)
     return false;
@@ -366,11 +424,12 @@ void DocumentProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  if (input.type() == metrics::OmniboxInputType::EMPTY) {
+    return;
+  }
+
   // Experiment: don't issue queries for inputs under some length.
-  const size_t min_query_length =
-      static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
-          omnibox::kDocumentProvider, "DocumentProviderMinQueryLength", 4));
-  if (input.text().length() < min_query_length) {
+  if (input.text().length() < min_query_length_) {
     return;
   }
 
@@ -379,14 +438,16 @@ void DocumentProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  // We currently only provide asynchronous matches.
+  Stop(false, false);
+
+  input_ = input;
+
+  // Return cached suggestions synchronously.
+  CopyCachedMatchesToMatches();
+
   if (!input.want_asynchronous_matches()) {
     return;
   }
-
-  Stop(true, false);
-
-  input_ = input;
 
   done_ = false;  // Set true in callbacks.
   client_->GetDocumentSuggestionsService(/*create_if_necessary=*/true)
@@ -450,13 +511,26 @@ void DocumentProvider::ResetSession() {
 }
 
 DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
-                                   AutocompleteProviderListener* listener)
+                                   AutocompleteProviderListener* listener,
+                                   size_t cache_size)
     : AutocompleteProvider(AutocompleteProvider::TYPE_DOCUMENT),
+      min_query_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMinQueryLength",
+              4))),
+      min_query_show_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMinQueryShowLength",
+              min_query_length_))),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
       client_(client),
-      listener_(listener) {}
+      listener_(listener),
+      cache_size_(cache_size),
+      matches_cache_(MatchesCache::NO_AUTO_EVICT) {}
 
 DocumentProvider::~DocumentProvider() {}
 
@@ -485,7 +559,13 @@ bool DocumentProvider::UpdateResults(const std::string& json_data) {
   if (!response)
     return false;
 
-  return ParseDocumentSearchResults(*response, &matches_);
+  matches_ = ParseDocumentSearchResults(*response);
+  for (auto it = matches_.rbegin(); it != matches_.rend(); ++it)
+    matches_cache_.Put(it->stripped_destination_url, *it);
+  CopyCachedMatchesToMatches(matches_.size());
+  matches_cache_.ShrinkToSize(cache_size_);
+
+  return !matches_.empty();
 }
 
 void DocumentProvider::OnDocumentSuggestionsLoaderAvailable(
@@ -538,12 +618,13 @@ base::string16 GetProductDescriptionString(const std::string& mimetype) {
   return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_GENERAL);
 }
 
-bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
-                                                  ACMatches* matches) {
+ACMatches DocumentProvider::ParseDocumentSearchResults(
+    const base::Value& root_val) {
+  ACMatches matches;
   const base::DictionaryValue* root_dict = nullptr;
   const base::ListValue* results_list = nullptr;
   if (!root_val.GetAsDictionary(&root_dict)) {
-    return false;
+    return matches;
   }
 
   // The server may ask the client to back off, in which case we back off for
@@ -551,12 +632,12 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   // TODO(skare): Respect retryDelay if provided, ideally by calling via gRPC.
   if (ResponseContainsBackoffSignal(root_dict)) {
     backoff_for_session_ = true;
-    return false;
+    return matches;
   }
 
   // Otherwise parse the results.
   if (!root_dict->GetList("results", &results_list)) {
-    return false;
+    return matches;
   }
   size_t num_results = results_list->GetSize();
   UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
@@ -591,17 +672,30 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   bool in_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
       omnibox::kDocumentProvider, "DocumentProviderCounterfactualArm", false);
 
-  // Clear the previous results now that new results are available.
-  matches->clear();
+  // In order to compare groups with different |min_query_length|_ values,
+  // |min_query_show_length_| specifies the min query length for which to show
+  // drive requests. Shorter queries that return drive suggestions will still
+  // log field_trials_triggered. E.g., if |min_query_length_| is 3 and
+  // |min_query_show_length_| is 5, then:
+  // - Inputs of lengths 0 to 2 will not make drive requests.
+  // - Inputs of lengths 3 to 4 will make drive requests; if drive suggestions
+  // are returned, field_trial_triggered will be logged, but the suggestions
+  // will not be shown.
+  // - Inputs of length 5 or more will make drive requests; if drive suggestions
+  // are returned, field_trial_triggered will be logged, and, if not in
+  // counterfactual, the suggestions will be shown.
+  bool show_doc_suggestions = !in_counterfactual_group &&
+                              input_.text().length() >= min_query_show_length_;
+
   // Ensure server's suggestions are added with monotonically decreasing scores.
   int previous_score = INT_MAX;
   for (size_t i = 0; i < num_results; i++) {
-    if (matches->size() >= provider_max_matches_) {
+    if (matches.size() >= provider_max_matches_) {
       break;
     }
     const base::DictionaryValue* result = nullptr;
     if (!results_list->GetDictionary(i, &result)) {
-      return false;
+      return matches;
     }
     base::string16 title;
     base::string16 url;
@@ -679,13 +773,26 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     const std::string* snippet = result->FindStringPath("snippet.snippet");
     if (snippet)
       match.RecordAdditionalInfo("snippet", *snippet);
-    if (!in_counterfactual_group) {
-      matches->push_back(match);
+    if (show_doc_suggestions) {
+      matches.push_back(match);
     }
     field_trial_triggered_ = true;
     field_trial_triggered_in_session_ = true;
   }
-  return true;
+  return matches;
+}
+
+void DocumentProvider::CopyCachedMatchesToMatches(
+    size_t skip_n_most_recent_matches) {
+  std::for_each(std::next(matches_cache_.begin(), skip_n_most_recent_matches),
+                matches_cache_.end(), [this](const auto& cache_key_match_pair) {
+                  auto match = cache_key_match_pair.second;
+                  match.relevance = 0;
+                  match.contents_class =
+                      DocumentProvider::Classify(match.contents, input_.text());
+                  match.RecordAdditionalInfo("from cache", "true");
+                  matches_.push_back(match);
+                });
 }
 
 // static
@@ -700,43 +807,34 @@ ACMatchClassifications DocumentProvider::Classify(
 
 // static
 const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
+  // Early exit to avoid unnecessary and more involved checks.
+  if (!url.DomainIs("google.com"))
+    return GURL();
+
   // We aim to prevent duplicate Drive URLs to appear between the Drive document
   // search provider and history/bookmark entries.
-  // Drive URLs take on two core forms, and may have request parameters.
-  // Additionally, we may have redirector URLs which wrap a drive URL.
   // All URLs are canonicalized to a GURL form only used for deduplication and
   // not guaranteed to be usable for navigation.
-  // URLs of the following forms are handled:
-  // https://drive.google.com/[a/domain.tld]/open?id=(id)
-  // https://docs.google.com/[a/domain.tld/]document/d/(id)/[...]
-  // https://docs.google.com/[a/domain.tld/]spreadsheets/d/(id)/edit#gid=12345
-  // https://docs.google.com/[a/domain.tld/]presentation/d/(id)/edit#slide=id.g12345a_0_26
-  // https://www.google.com/url?[...]url=https://drive.google.com/a/domain.tld/open?id%3D(id)[%26D...][&...]
-  // where id is comprised of characters in [0-9A-Za-z\-_] = [\w\-]
-  std::string id;
 
-  if (url.host() == "drive.google.com") {
-    static re2::LazyRE2 path_regex = {"^/(?:a/[\\w\\.]+/)?open$"};
-    if (RE2::PartialMatch(url.path(), *path_regex))
-      net::GetValueForKeyInQuery(url, "id", &id);
-  } else if (url.host() == "docs.google.com") {
-    static re2::LazyRE2 doc_link_regex = {
-        "^/(?:a/[\\w\\.]+/)?(?:document|spreadsheets|presentation|forms)/d/"
-        "([\\w-]+)/"};
-    RE2::PartialMatch(url.path(), *doc_link_regex, &id);
-  } else if (url.host() == "www.google.com" && url.path() == "/url") {
-    // Redirect links wrapping a drive.google.com/open?id= link.
-    static re2::LazyRE2 redirect_link_regex = {
-        "^[^#]*url=https://drive\\.google\\.com/(?:a/[\\w\\.]+/"
-        ")?open\\?id%3D(.*?)(?:%26|#|&|$)"};
-    RE2::PartialMatch(url.query(), *redirect_link_regex, &id);
-  }
-
-  if (id.empty()) {
-    return GURL();
+  // Drive redirects are already handled by the regex in |ExtractDocIdFromUrl|.
+  // The below logic handles google.com redirects; e.g., google.com/url/q=<url>
+  std::string url_str;
+  if (url.host() == "www.google.com" && url.path() == "/url") {
+    if ((!net::GetValueForKeyInQuery(url, "q", &url_str) || url_str.empty()) &&
+        (!net::GetValueForKeyInQuery(url, "url", &url_str) || url_str.empty()))
+      return GURL();
   } else {
-    // Canonicalize to the /open form without any extra args.
-    // This is similar to what we expect from the server.
-    return GURL("https://drive.google.com/open?id=" + id);
+    url_str = url.spec();
   }
+
+  // Unescape |url_str|
+  url_str = net::UnescapeURLComponent(
+      url_str, net::UnescapeRule::PATH_SEPARATORS |
+                   net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+
+  const std::string id = ExtractDocIdFromUrl(url_str);
+
+  // Canonicalize to the /open form without any extra args.
+  // This is similar to what we expect from the server.
+  return id.empty() ? GURL() : GURL("https://drive.google.com/open?id=" + id);
 }

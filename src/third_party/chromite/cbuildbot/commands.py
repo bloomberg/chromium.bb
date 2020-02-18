@@ -20,6 +20,10 @@ import shutil
 import sys
 import tempfile
 
+import six
+
+from chromite.api.gen.chromite.api import android_pb2
+
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 
@@ -47,6 +51,9 @@ from chromite.lib.paygen import filelib
 
 from chromite.scripts import pushimage
 from chromite.service import artifacts as artifacts_service
+
+from google.protobuf import json_format
+
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -460,7 +467,8 @@ def SetupToolchains(buildroot,
   if sysroot:
     cmd += ['--sysroot', sysroot]
   if boards:
-    boards_str = boards if isinstance(boards, basestring) else ','.join(boards)
+    boards_str = (boards if isinstance(boards, six.string_types)
+                  else ','.join(boards))
     cmd += ['--include-boards', boards_str]
   if output_dir:
     cmd += ['--output-dir', output_dir]
@@ -1458,6 +1466,92 @@ def RunSkylabHWTestSuite(
     return HWTestSuiteResult(to_raise, None)
 
 
+def RunSkylabHWTestPlan(test_plan=None,
+                        build=None,
+                        legacy_suite=None,
+                        pool=None,
+                        board=None,
+                        model=None,
+                        timeout_mins=None,
+                        tags=None,
+                        keyvals=None):
+  """Run a skylab test in the Autotest lab using skylab tool.
+
+  Args:
+    test_plan: A JSONpb string containing a TestPlan object.
+    build: A string full image name.
+    legacy_suite: A string suite name, if non-empty it overrides the test plan
+                  on the autotest backend.
+    pool: A string pool to run the test on.
+    board: A string board to run the test on.
+    model: A string model to run the test on.
+    timeout_mins: An integer to indicate the test's timeout.
+    tags: A list of strings to tag the task in swarming.
+    keyvals: A list of strings to be passed to the test as job_keyvals.
+  """
+  if not test_plan:
+    raise ValueError('Need to specify test plan.')
+  if not build:
+    raise ValueError('Need to specify build.')
+  if not (board or model):
+    raise ValueError('Need to specify either board or model.')
+
+  args = ['-image', build]
+
+  if legacy_suite:
+    args += ['-legacy-suite', legacy_suite]
+
+  if pool:
+    args += ['-pool', pool]
+
+  if board:
+    args += ['-board', board]
+
+  if model:
+    args += ['-model', model]
+
+  if timeout_mins:
+    args += ['-timeout-mins', str(timeout_mins)]
+
+  if tags:
+    for tag in tags:
+      args += ['-tag', tag]
+
+  if keyvals is not None:
+    for k, v in keyvals.items():
+      args += ['-keyval', k+':'+v]
+
+  args += ['-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT]
+
+  args += ['-plan-file', '/dev/stdin']
+
+  skylab_path = _InstallSkylabTool()
+
+  try:
+    result = cros_build_lib.RunCommand(
+        [skylab_path, 'create-testplan'] + args,
+        redirect_stdout=True,
+        input=test_plan)
+
+    task_url = ''
+    try:
+      report = json.loads(result.output)
+      task_url = report.get('task_url')
+
+      logging.info('Launched test plan task %s', task_url)
+      logging.PrintBuildbotLink('Test plan task', task_url)
+
+    except ValueError:
+      logging.warning('Unable to parse output:\n%s', result.output)
+
+    return HWTestSuiteResult(None, None)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    to_raise = failures_lib.TestFailure(
+        '** HWTest failed (code %d) **' % result.returncode)
+    return HWTestSuiteResult(to_raise, None)
+
+
 # pylint: disable=docstring-missing-args
 def _GetRunSuiteArgs(build,
                      suite,
@@ -1976,43 +2070,43 @@ def MarkAndroidAsStable(buildroot,
                         android_version=None,
                         android_gts_build_branch=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
-  command = [
-      'cros_mark_android_as_stable',
-      '--tracking_branch=%s' % tracking_branch
-  ]
-  command.append('--android_package=%s' % android_package)
-  command.append('--android_build_branch=%s' % android_build_branch)
-  if boards:
-    command.append('--boards=%s' % ':'.join(boards))
+  input_msg = android_pb2.MarkStableRequest()
+  input_msg.tracking_branch = tracking_branch
+  input_msg.package_name = android_package
+  input_msg.android_build_branch = android_build_branch
   if android_version:
-    command.append('--force_version=%s' % android_version)
+    input_msg.android_version = android_version
   if android_gts_build_branch:
-    command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
+    input_msg.android_gts_build_branch = android_gts_build_branch
+  if boards:
+    for board in boards:
+      input_msg.build_targets.add().name = board
 
-  portage_atom_string = RunBuildScript(
-      buildroot,
-      command,
-      chromite_cmd=True,
-      enter_chroot=True,
-      redirect_stdout=True).output.rstrip()
-  android_atom = None
-  if portage_atom_string:
-    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
-  if not android_atom:
+  result = CallBuildApiWithInputProto(
+      buildroot, 'chromite.api.AndroidService/MarkStable',
+      json_format.MessageToDict(input_msg))
+
+  if result['status'] == android_pb2.MARK_STABLE_STATUS_EARLY_EXIT:
+    # Early exit (nothing to uprev).
+    return None
+
+  # The result comes back with camelCase names rather than the underscore
+  # separated names we use for the response objects. For now, adding support
+  # for both just in case. Will need to fix that so we can use response
+  # objects in the long term.
+  atom = result.get('androidAtom') or result.get('android_atom')
+  if not atom:
     logging.info('Found nothing to rev.')
     return None
 
-  for board in boards:
-    # Sanity check: We should always be able to merge the version of
-    # Android we just unmasked.
-    try:
-      command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
-      RunBuildScript(buildroot, command, enter_chroot=True)
-    except failures_lib.BuildScriptFailure:
-      logging.error(
-          'Cannot emerge-%s =%s\nIs Android pinned to an older '
-          'version?', board, android_atom)
-      raise AndroidIsPinnedUprevError(android_atom)
+  category = atom['category']
+  package = atom.get('packageName') or atom.get('package_name')
+  version = atom['version']
+  android_atom = '%s/%s-%s' % (category, package, version)
+
+  if result['status'] == android_pb2.MARK_STABLE_STATUS_PINNED:
+    # Failed to emerge the new package, probably pinned.
+    raise AndroidIsPinnedUprevError(android_atom)
 
   return android_atom
 
@@ -2312,7 +2406,7 @@ def GenerateBreakpadSymbols(buildroot,
   cmd = [
       'cros_generate_breakpad_symbols',
       '--board=%s' % board, '--jobs',
-      str(max([1, multiprocessing.cpu_count() / 2]))
+      str(max([1, multiprocessing.cpu_count() // 2]))
   ]
   cmd += ['--exclude-dir=%s' % x for x in exclude_dirs]
   if debug:
@@ -2460,7 +2554,7 @@ def GenerateHtmlIndex(index, files, title='Index', url_base=None):
     return ('<li><a href="%s%s">%s</a></li>' % (url_base, target,
                                                 name if name else target))
 
-  if isinstance(files, (unicode, str)):
+  if isinstance(files, six.string_types):
     if os.path.isdir(files):
       files = os.listdir(files)
     else:
@@ -3095,7 +3189,7 @@ def BuildPinnedGuestImagesTarball(buildroot, board, tarball_dir):
         gs_context.Copy(pin[constants.PIN_KEY_GSURI], filename)
         files.append(pin[constants.PIN_KEY_FILENAME])
       except KeyError as e:
-        logging.warning('Skipping invalid pin file \'%s\': %r', pin_file, e)
+        logging.warning("Skipping invalid pin file '%s': %r", pin_file, e)
 
   if not files:
     return None
@@ -3241,7 +3335,7 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
   if archive == 'tar':
     # Add the .compress extension if we don't have a fixed name.
     if 'output' not in artifact_info and compress:
-      filename = "%s.%s" % (filename, compress)
+      filename = '%s.%s' % (filename, compress)
     extra_env = {'XZ_OPT': '-1'}
     cros_build_lib.CreateTarball(
         os.path.join(archive_dir, filename),
@@ -3317,22 +3411,25 @@ def BuildEbuildLogsTarball(buildroot, board, archive_dir):
   Returns:
     The file name of the output tarball, None if no package found.
   """
-  tarball_paths = []
-  logs_path = os.path.join(buildroot, board, 'tmp/portage')
+  sysroot = sysroot_lib.Sysroot(os.path.join('build', board))
+  chroot = chroot_lib.Chroot(path=os.path.join(buildroot, 'chroot'))
+  return artifacts_service.BundleEBuildLogsTarball(chroot, sysroot, archive_dir)
 
-  if not os.path.isdir(logs_path):
-    return None
 
-  if not os.path.exists(os.path.join(logs_path, 'logs')):
-    return None
+def BuildChromeOSConfig(buildroot, board, archive_dir):
+  """Builds the ChromeOS Config JSON payload.
 
-  tarball_paths.append('logs')
-  tarball_output = os.path.join(archive_dir, 'ebuild_logs.tar.xz')
-  chroot = os.path.join(buildroot, 'chroot')
+  Args:
+    buildroot: Root directory where the build occurs.
+    board: The board for which ChromeOS Configs payload should be built.
+    archive_dir: The directory to drop the payload in.
 
-  cros_build_lib.CreateTarball(
-      tarball_output, cwd=logs_path, chroot=chroot, inputs=tarball_paths)
-  return os.path.basename(tarball_output)
+  Returns:
+    The file name of the output payload.
+  """
+  sysroot = sysroot_lib.Sysroot(os.path.join('build', board))
+  chroot = chroot_lib.Chroot(path=os.path.join(buildroot, 'chroot'))
+  return artifacts_service.BundleChromeOSConfig(chroot, sysroot, archive_dir)
 
 
 def BuildGceTarball(archive_dir, image_dir, image):
@@ -3400,7 +3497,7 @@ def CallBuildApiWithInputProto(buildroot, build_api_command, input_proto):
   Args:
     buildroot: Root directory where build occurs.
     build_api_command: Service (command) to execute.
-    input_proto (BundleRequest): The input proto.
+    input_proto (dict): The input proto as a dict.
 
   Returns:
     The json-encoded output proto.
@@ -3597,45 +3694,6 @@ def SyncChrome(build_root,
   cmd += [chrome_root]
   retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
 
-def GenerateChromeOrderfileArtifacts(buildroot, board, output_path):
-  """Generate orderfile artifacts using build_api proto service.
-
-  Args:
-    buildroot: The root directory where the build occurs.
-    board: Board type that was built on this machine.
-    output_path: The directory used to store output artifacts.
-  """
-  cmd = ['build_api',
-         'chromite.api.ArtifactsService/BundleOrderfileGenerationArtifacts']
-  chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
-
-  with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
-    input_proto_file = os.path.join(tmpdir, 'input.json')
-    output_proto_file = os.path.join(tmpdir, 'output.json')
-    cpv = portage_util.PortageqBestVisible(
-        constants.CHROME_CP, cwd=buildroot)
-    chrome_version = '{0}-orderfile-{1}'.format(cpv.package,
-                                                cpv.version)
-
-    with open(input_proto_file, 'w') as f:
-      input_proto = {
-          'chroot': {
-              'path': os.path.join(buildroot, 'chroot'),
-          },
-          'build_target': {
-              'name': board,
-          },
-          'chrome_version': chrome_version,
-          'output_dir': output_path
-      }
-
-      json.dump(input_proto, f)
-
-    cmd += ['--input-json', input_proto_file,
-            '--output-json', output_proto_file]
-    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
-    output = json.loads(osutils.ReadFile(output_proto_file))
-    return [artifact['path'] for artifact in output['artifacts']]
 
 class ChromeSDK(object):
   """Wrapper for the 'cros chrome-sdk' command."""
@@ -3771,3 +3829,64 @@ class ChromeSDK(object):
       Path to the .ninja_log file.
     """
     return os.path.join(self._GetOutDirectory(debug=debug), '.ninja_log')
+
+
+def GenerateAFDOArtifacts(buildroot, board, output_path, target):
+  """Command to generate AFDO artifacts.
+
+  This is only a wrapper of the build API. It doesn't validate the inputs.
+
+  Args:
+    buildroot: The path to build root.
+    board: Name of the board.
+    output_path: The path to save output.
+    target: A valid toolchain_pb2.AFDOArtifactType.
+
+  Returns:
+    List of artifact names.
+  """
+  input_proto = {
+      'chroot': {
+          'path': os.path.join(buildroot, 'chroot'),
+      },
+      'build_target': {
+          'name': board,
+      },
+      'output_dir': output_path,
+      'artifact_type': target
+  }
+
+  output = CallBuildApiWithInputProto(
+      buildroot,
+      'chromite.api.ArtifactsService/BundleAFDOGenerationArtifacts',
+      input_proto
+  )
+
+  return [artifact['path'] for artifact in output['artifacts']]
+
+
+def VerifyAFDOArtifacts(buildroot, board, target, build_api):
+  """Command to verify AFDO artifacts.
+
+  This is only a wrapper of the build API. It doesn't validate the inputs.
+
+  Args:
+    buildroot: The path to build root.
+    board: Name of the board.
+    target: A valid toolchain_pb2.AFDOArtifactType.
+    build_api: Full path of the build API. Only applies to APIs that returns
+    a single field containing the status.
+
+  Returns:
+    True of False: The status of the build API.
+  """
+  input_proto = {
+      'build_target': {
+          'name': board,
+      },
+      'artifact_type': target
+  }
+
+  output = CallBuildApiWithInputProto(buildroot, build_api, input_proto)
+
+  return output['status']

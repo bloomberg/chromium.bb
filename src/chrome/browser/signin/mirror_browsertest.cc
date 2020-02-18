@@ -33,18 +33,18 @@
 #include "components/signin/core/browser/dice_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace {
 
 // A delegate to insert a user generated X-Chrome-Connected header
 // to a specifict URL.
-class HeaderModifyingThrottle : public content::URLLoaderThrottle {
+class HeaderModifyingThrottle : public blink::URLLoaderThrottle {
  public:
   HeaderModifyingThrottle() = default;
   ~HeaderModifyingThrottle() override = default;
@@ -65,27 +65,17 @@ class ThrottleContentBrowserClient : public ChromeContentBrowserClient {
   ~ThrottleContentBrowserClient() override = default;
 
   // ContentBrowserClient overrides:
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
-  CreateURLLoaderThrottlesOnIO(
-      const network::ResourceRequest& request,
-      content::ResourceContext* resource_context,
-      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-      content::NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override {
-    std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
-    if (request.url == watch_url_)
-      throttles.push_back(std::make_unique<HeaderModifyingThrottle>());
-    return throttles;
-  }
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       content::BrowserContext* browser_context,
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override {
-    return CreateURLLoaderThrottlesOnIO(request, nullptr, wc_getter,
-                                        navigation_ui_data, frame_tree_node_id);
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+    if (request.url == watch_url_)
+      throttles.push_back(std::make_unique<HeaderModifyingThrottle>());
+    return throttles;
   }
 
  private:

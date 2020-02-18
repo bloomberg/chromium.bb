@@ -35,12 +35,29 @@ ValidationTest::ValidationTest() {
     }
 
     ASSERT(foundNullAdapter);
-    device = dawn::Device::Acquire(adapter.CreateDevice());
 
     DawnProcTable procs = dawn_native::GetProcs();
     dawnSetProcs(&procs);
 
-    device.SetErrorCallback(ValidationTest::OnDeviceError, this);
+    device = CreateDeviceFromAdapter(adapter, std::vector<const char*>());
+}
+
+dawn::Device ValidationTest::CreateDeviceFromAdapter(
+    dawn_native::Adapter adapterToTest,
+    const std::vector<const char*>& requiredExtensions) {
+    dawn::Device deviceToTest;
+
+    // Always keep the code path to test creating a device without a device descriptor.
+    if (requiredExtensions.empty()) {
+        deviceToTest = dawn::Device::Acquire(adapterToTest.CreateDevice());
+    } else {
+        dawn_native::DeviceDescriptor descriptor;
+        descriptor.requiredExtensions = requiredExtensions;
+        deviceToTest = dawn::Device::Acquire(adapterToTest.CreateDevice(&descriptor));
+    }
+
+    deviceToTest.SetUncapturedErrorCallback(ValidationTest::OnDeviceError, this);
+    return deviceToTest;
 }
 
 ValidationTest::~ValidationTest() {
@@ -67,7 +84,8 @@ std::string ValidationTest::GetLastDeviceErrorMessage() const {
 }
 
 // static
-void ValidationTest::OnDeviceError(const char* message, void* userdata) {
+void ValidationTest::OnDeviceError(DawnErrorType type, const char* message, void* userdata) {
+    ASSERT(type != DAWN_ERROR_TYPE_NO_ERROR);
     auto self = static_cast<ValidationTest*>(userdata);
     self->mDeviceErrorMessage = message;
 
@@ -87,10 +105,10 @@ ValidationTest::DummyRenderPass::DummyRenderPass(const dawn::Device& device)
     descriptor.sampleCount = 1;
     descriptor.format = attachmentFormat;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+    descriptor.usage = dawn::TextureUsage::OutputAttachment;
     attachment = device.CreateTexture(&descriptor);
 
-    dawn::TextureView view = attachment.CreateDefaultView();
+    dawn::TextureView view = attachment.CreateView();
     mColorAttachment.attachment = view;
     mColorAttachment.resolveTarget = nullptr;
     mColorAttachment.clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };

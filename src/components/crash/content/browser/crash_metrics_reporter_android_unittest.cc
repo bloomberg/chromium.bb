@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace crash_reporter {
@@ -45,8 +45,7 @@ class CrashMetricsReporterObserver : public CrashMetricsReporter::Observer {
 class CrashMetricsReporterTest : public testing::Test {
  public:
   CrashMetricsReporterTest()
-      : scoped_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : scoped_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~CrashMetricsReporterTest() override {}
 
  protected:
@@ -82,7 +81,7 @@ class CrashMetricsReporterTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_environment_;
+  base::test::TaskEnvironment scoped_environment_;
   DISALLOW_COPY_AND_ASSIGN(CrashMetricsReporterTest);
 };
 

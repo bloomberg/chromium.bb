@@ -9,13 +9,14 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/request_priority.h"
 #include "sql/statement.h"
@@ -45,7 +46,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestDeleteData();
   void TestDeleteAllData();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TestingProfile profile_;
   std::unique_ptr<PredictorDatabase> db_;
@@ -302,7 +303,8 @@ void ResourcePrefetchPredictorTablesTest::AddKey(OriginDataMap* m,
 
 std::string ResourcePrefetchPredictorTablesTest::GetKeyForRedirectStat(
     const RedirectStat& stat) const {
-  return stat.url() + "," + stat.url_scheme();
+  return stat.url() + "," + stat.url_scheme() + "," +
+         base::NumberToString(stat.url_port());
 }
 
 void ResourcePrefetchPredictorTablesTest::DeleteAllData() {

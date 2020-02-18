@@ -11,6 +11,7 @@
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -20,6 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
@@ -28,17 +30,19 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -67,6 +71,18 @@ constexpr float kOverviewInsetRatio = 0.05f;
 // Additional vertical inset reserved for windows in overview mode.
 constexpr float kOverviewVerticalInset = 0.1f;
 
+// Number of rows for windows in tablet overview mode.
+constexpr int kTabletLayoutRow = 2;
+
+constexpr int kMinimumItemsForNewLayout = 6;
+
+// The minimum distance that is needed to process a scroll event.
+constexpr float kMinimumScrollDistanceDp = 5.f;
+
+// Wait a while before unpausing the occlusion tracker after a scroll has
+// completed as the user may start another scroll.
+constexpr int kOcclusionUnpauseDurationForScrollMs = 500;
+
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
 constexpr char kOverviewEnterClamshellHistogram[] =
@@ -86,6 +102,13 @@ constexpr char kOverviewExitTabletHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.TabletMode";
 constexpr char kOverviewExitSplitViewHistogram[] =
     "Ash.Overview.AnimationSmoothness.Exit.SplitView";
+
+// The UMA histogram that records presentation time for grid scrolling in the
+// new overview layout.
+constexpr char kOverviewScrollHistogram[] =
+    "Ash.Overview.Scroll.PresentationTime.TabletMode";
+constexpr char kOverviewScrollMaxLatencyHistogram[] =
+    "Ash.Overview.Scroll.PresentationTime.MaxLatency.TabletMode";
 
 template <const char* clamshell_single_name,
           const char* clamshell_multi_name,
@@ -169,15 +192,15 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   params.accept_events = false;
   params.parent = parent;
   params.bounds = bounds;
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Show plus icon if drag a tab from a multi-tab window.
   widget->SetContentsView(new DropTargetView(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
   aura::Window* drop_target_window = widget->GetNativeWindow();
-  drop_target_window->SetProperty(kHideInDeskMiniViewKey, true);
   drop_target_window->parent()->StackChildAtBottom(drop_target_window);
   widget->Show();
 
@@ -236,14 +259,50 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
   }
 }
 
+gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
+  const int horizontal_inset =
+      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * grid_bounds.width(),
+                                 kOverviewInsetRatio * grid_bounds.height()));
+  const int vertical_inset =
+      horizontal_inset +
+      kOverviewVerticalInset * (grid_bounds.height() - 2 * horizontal_inset);
+
+  return gfx::Insets(std::max(0, vertical_inset - kWindowMargin),
+                     std::max(0, horizontal_inset - kWindowMargin));
+}
+
 // Returns the desks widget bounds in root, given the screen bounds of the
 // overview grid.
 gfx::Rect GetDesksWidgetBounds(aura::Window* root,
+                               OverviewSession* overview_session,
                                const gfx::Rect& overview_grid_screen_bounds) {
   gfx::Rect desks_widget_root_bounds = overview_grid_screen_bounds;
   ::wm::ConvertRectFromScreen(root, &desks_widget_root_bounds);
   desks_widget_root_bounds.set_height(DesksBarView::GetBarHeight());
+
+  // Shift the widget down to make room for the splitview indicator guidance
+  // when it's shown at the top of the screen when in portrait mode and no other
+  // windows are snapped.
+  auto* split_view_drag_indicators =
+      overview_session->split_view_drag_indicators();
+  if (split_view_drag_indicators &&
+      split_view_drag_indicators->current_indicator_state() ==
+          IndicatorState::kDragArea &&
+      !IsCurrentScreenOrientationLandscape() &&
+      !Shell::Get()->split_view_controller()->InSplitViewMode()) {
+    desks_widget_root_bounds.Offset(0,
+                                    overview_grid_screen_bounds.height() *
+                                            kHighlightScreenPrimaryAxisRatio +
+                                        2 * kHighlightScreenEdgePaddingDp);
+  }
+
   return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds, root);
+}
+
+// Returns the given |widget|'s bounds in its native window's root coordinates.
+gfx::Rect GetWidgetBoundsInRoot(views::Widget* widget) {
+  auto* window = widget->GetNativeWindow();
+  return window->GetBoundsInRootWindow();
 }
 
 }  // namespace
@@ -321,8 +380,6 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
                            const gfx::Rect& bounds_in_screen)
     : root_window_(root_window),
       overview_session_(overview_session),
-      window_observer_(this),
-      window_state_observer_(this),
       bounds_(bounds_in_screen) {
   for (auto* window : windows) {
     if (window->GetRootWindow() != root_window)
@@ -351,6 +408,8 @@ OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  grid_event_handler_.reset();
 
   bool has_non_cover_animating = false;
   int animate_count = 0;
@@ -392,6 +451,9 @@ void OverviewGrid::PrepareForOverview() {
   if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
   }
+
+  grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
+  Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
 void OverviewGrid::PositionWindows(
@@ -403,7 +465,13 @@ void OverviewGrid::PositionWindows(
 
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
 
-  std::vector<gfx::RectF> rects = GetWindowRects(ignored_items);
+  std::vector<gfx::RectF> rects =
+      ShouldUseTabletModeGridLayout() &&
+              (window_list_.size() - ignored_items.size() >=
+               kMinimumItemsForNewLayout)
+          ? GetWindowRectsForTabletModeLayout(ignored_items)
+          : GetWindowRects(ignored_items);
+
   if (transition == OverviewSession::OverviewTransition::kEnter) {
     CalculateWindowListAnimationStates(/*selected_item=*/nullptr, transition,
                                        rects);
@@ -443,7 +511,7 @@ void OverviewGrid::PositionWindows(
           !has_non_cover_animating) {
         has_non_cover_animating |=
             !CanCoverAvailableWorkspace(window_item->GetWindow());
-        animate_count++;
+        ++animate_count;
       }
     }
     animation_types[i] =
@@ -563,8 +631,7 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
     const gfx::Rect& bounds_in_screen,
     const base::flat_set<OverviewItem*>& ignored_items) {
   bounds_ = bounds_in_screen;
-  if (desks_widget_)
-    desks_widget_->SetBounds(GetDesksWidgetBounds(root_window_, bounds_));
+  MaybeUpdateDesksWidgetBounds();
   PositionWindows(/*animate=*/true, ignored_items);
 }
 
@@ -596,6 +663,16 @@ void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
       ignored_items.insert(drop_target);
     SetBoundsAndUpdatePositions(wanted_grid_bounds, ignored_items);
   }
+}
+
+void OverviewGrid::MaybeUpdateDesksWidgetBounds() {
+  if (!desks_widget_)
+    return;
+
+  const gfx::Rect desks_widget_bounds =
+      GetDesksWidgetBounds(root_window_, overview_session_, bounds_);
+  if (desks_widget_bounds != GetWidgetBoundsInRoot(desks_widget_.get()))
+    desks_widget_->SetBounds(desks_widget_bounds);
 }
 
 void OverviewGrid::UpdateDropTargetBackgroundVisibility(
@@ -813,7 +890,7 @@ void OverviewGrid::OnPostWindowStateTypeChange(WindowState* window_state,
     return;
 
   // When swiping away overview mode via shelf, windows will get minimized, but
-  // we do not want to create minimized widgets in their place.
+  // we do not want show a mirrored view in this case.
   if (overview_session_->enter_exit_overview_type() ==
       OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
     return;
@@ -849,6 +926,14 @@ void OverviewGrid::OnScreenRotationAnimationFinished(
   for (auto& window : window_list())
     window->set_disable_mask(false);
   Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
+}
+
+void OverviewGrid::OnWallpaperChanging() {
+  grid_event_handler_.reset();
+}
+
+void OverviewGrid::OnWallpaperChanged() {
+  grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
 }
 
 void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
@@ -935,6 +1020,26 @@ void OverviewGrid::CalculateWindowListAnimationStates(
             });
 
   SkRegion occluded_region;
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (split_view_controller->InSplitViewMode()) {
+    // Snapped windows and the split view divider are not included in
+    // |target_bounds| or |window_list_|, but can occlude other windows, so add
+    // them manually to |region| here.
+    SkIRect snapped_window_bounds = gfx::RectToSkIRect(
+        split_view_controller->GetDefaultSnappedWindow()->GetBoundsInScreen());
+    occluded_region.op(snapped_window_bounds, SkRegion::kUnion_Op);
+
+    auto* divider = split_view_controller->split_view_divider();
+    if (divider) {
+      aura::Window* divider_window =
+          divider->divider_widget()->GetNativeWindow();
+      SkIRect divider_bounds =
+          gfx::RectToSkIRect(divider_window->GetBoundsInScreen());
+      occluded_region.op(divider_bounds, SkRegion::kUnion_Op);
+    }
+  }
+
+  gfx::Rect screen_bounds = GetGridEffectiveBounds();
   for (size_t i = 0; i < items.size(); ++i) {
     const bool minimized =
         WindowState::Get(items[i]->GetWindow())->IsMinimized();
@@ -963,10 +1068,17 @@ void OverviewGrid::CalculateWindowListAnimationStates(
         ::wm::ConvertRectToScreen(items[i]->root_window(), &src_bounds_temp);
       }
     }
+
     SkIRect src_bounds = gfx::RectToSkIRect(src_bounds_temp);
     SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
         transition == OverviewTransition::kEnter ? target_bounds[i]
                                                  : items[i]->target_bounds()));
+
+    if (!screen_bounds.Contains(gfx::SkIRectToRect(dst_bounds))) {
+      items[i]->set_should_animate_when_entering(false);
+      items[i]->set_should_animate_when_exiting(false);
+      continue;
+    }
 
     if (!occluded_region.isEmpty()) {
       src_occluded |=
@@ -1238,12 +1350,86 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   return false;
 }
 
+void OverviewGrid::StartScroll() {
+  Shell::Get()->overview_controller()->PauseOcclusionTracker();
+
+  // Users are not allowed to scroll past the leftmost or rightmost bounds of
+  // the items on screen in the grid. |scroll_offset_min_| is the amount needed
+  // to fit the rightmost window into |total_bounds|. The max is zero which is
+  // default because windows are aligned to the left from the beginning.
+  gfx::Rect total_bounds = GetGridEffectiveBounds();
+  total_bounds.Inset(GetGridInsets(total_bounds));
+
+  float rightmost_window_right = 0;
+  items_scrolling_bounds_.resize(window_list_.size());
+  for (size_t i = 0; i < items_scrolling_bounds_.size(); ++i) {
+    const gfx::RectF bounds = window_list_[i]->target_bounds();
+    if (rightmost_window_right < bounds.right())
+      rightmost_window_right = bounds.right();
+
+    items_scrolling_bounds_[i] = bounds;
+  }
+
+  // |rightmost_window_right| may have been modified by an earlier scroll.
+  // |scroll_offset_| is added to adjust for that.
+  rightmost_window_right -= scroll_offset_;
+  scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
+
+  presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+      const_cast<ui::Compositor*>(root_window()->layer()->GetCompositor()),
+      kOverviewScrollHistogram, kOverviewScrollMaxLatencyHistogram);
+}
+
+bool OverviewGrid::UpdateScrollOffset(float delta) {
+  float new_scroll_offset = scroll_offset_;
+  new_scroll_offset += delta;
+  new_scroll_offset =
+      base::ClampToRange(new_scroll_offset, scroll_offset_min_, 0.f);
+  if (new_scroll_offset == scroll_offset_)
+    return false;
+
+  // Do not process scrolls that haven't moved much, unless we are at the
+  // edges.
+  if (std::abs(scroll_offset_ - new_scroll_offset) < kMinimumScrollDistanceDp &&
+      scroll_offset_ > scroll_offset_min_ && scroll_offset_ < 0) {
+    return false;
+  }
+
+  // Update the bounds of the items which are currently visible on screen.
+  DCHECK_EQ(items_scrolling_bounds_.size(), window_list_.size());
+  for (size_t i = 0; i < items_scrolling_bounds_.size(); ++i) {
+    const gfx::RectF previous_bounds = items_scrolling_bounds_[i];
+    items_scrolling_bounds_[i].Offset(new_scroll_offset - scroll_offset_, 0.f);
+    const gfx::RectF new_bounds = items_scrolling_bounds_[i];
+    if (gfx::RectF(GetGridEffectiveBounds()).Intersects(new_bounds) ||
+        gfx::RectF(GetGridEffectiveBounds()).Intersects(previous_bounds)) {
+      window_list_[i]->SetBounds(new_bounds, OVERVIEW_ANIMATION_NONE);
+    }
+  }
+
+  scroll_offset_ = new_scroll_offset;
+
+  DCHECK(presentation_time_recorder_);
+  presentation_time_recorder_->RequestNext();
+  return true;
+}
+
+void OverviewGrid::EndScroll() {
+  Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+      kOcclusionUnpauseDurationForScrollMs);
+  items_scrolling_bounds_.clear();
+  presentation_time_recorder_.reset();
+
+  PositionWindows(/*animate=*/false);
+}
+
 void OverviewGrid::MaybeInitDesksWidget() {
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
 
   desks_widget_ = DesksBarView::CreateDesksWidget(
-      root_window_, GetDesksWidgetBounds(root_window_, bounds_));
+      root_window_,
+      GetDesksWidgetBounds(root_window_, overview_session_, bounds_));
   desks_bar_view_ = new DesksBarView;
 
   // The following order of function calls is significant: SetContentsView()
@@ -1261,14 +1447,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   gfx::Rect total_bounds = GetGridEffectiveBounds();
 
   // Windows occupy vertically centered area with additional vertical insets.
-  int horizontal_inset =
-      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),
-                                 kOverviewInsetRatio * total_bounds.height()));
-  int vertical_inset =
-      horizontal_inset +
-      kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
-  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMargin),
-                     std::max(0, vertical_inset - kWindowMargin));
+  total_bounds.Inset(GetGridInsets(total_bounds));
   std::vector<gfx::RectF> rects;
 
   // Keep track of the lowest coordinate.
@@ -1365,6 +1544,64 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
   for (size_t i = 0; i < rects.size(); ++i)
     rects[i] += offset;
+  return rects;
+}
+
+std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
+    const base::flat_set<OverviewItem*>& ignored_items) {
+  gfx::Rect total_bounds = GetGridEffectiveBounds();
+  // Windows occupy vertically centered area with additional vertical insets.
+  total_bounds.Inset(GetGridInsets(total_bounds));
+
+  // When the dragged item becomes an |ignored_item|, move the other windows
+  // accordingly. |window_position| matches the positions of the windows'
+  // indexes from |window_list_|. However, if a window turns out to be an
+  // ignored item, |window_position| remains where the item was as to then
+  // reposition the other window's bounds in place of that item.
+
+  // Since the number of rows is limited, windows are laid out column-wise so
+  // that the most recently used windows are displayed first.
+  const int height = total_bounds.height() / kTabletLayoutRow;
+  int window_position = 0;
+  std::vector<gfx::RectF> rects;
+
+  int i = 0;
+  for (const auto& window : window_list_) {
+    if (window->animating_to_close() || ignored_items.contains(window.get())) {
+      rects.push_back(gfx::RectF());
+      ++i;
+      continue;
+    }
+
+    // Maintains the aspect ratio from the original window. The window's
+    // original height will be shrunk to fit into |height|, minus the margin and
+    // overview header.
+    const float ratio = float{height - kHeaderHeightDp - kOverviewMargin} /
+                        window->GetWindow()->bounds().height();
+    const int width =
+        window->GetWindow()->bounds().width() * ratio + kOverviewMargin;
+    const int y =
+        height * (window_position % kTabletLayoutRow) + total_bounds.y();
+
+    // TODO(sammiequon): Remove this loop and cache the values of the last
+    // bounds for each row.
+    // Search for closest window in the same row to the
+    // left of where the current window would be placed and set the current
+    // window's |x| value to the right of the other window.
+    int x = total_bounds.x() + scroll_offset_;
+    for (int j = i - 1; j >= 0; --j) {
+      if (rects[j].y() == y) {
+        x = rects[j].right();
+        break;
+      }
+    }
+
+    const gfx::RectF bounds(x, y, width, height);
+    rects.push_back(bounds);
+    ++window_position;
+    ++i;
+  }
+
   return rects;
 }
 

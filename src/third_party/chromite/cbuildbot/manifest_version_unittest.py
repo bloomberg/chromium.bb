@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import tempfile
+
+import mock
 
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import manifest_version

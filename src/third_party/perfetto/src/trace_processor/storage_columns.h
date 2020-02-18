@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "src/trace_processor/filtered_row_index.h"
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 #include "src/trace_processor/trace_storage.h"
 
 namespace perfetto {
@@ -55,7 +55,7 @@ class StorageColumn {
   virtual Comparator Sort(const QueryConstraints::OrderBy& ob) const = 0;
 
   // Returns the type of this column.
-  virtual Table::ColumnType GetType() const = 0;
+  virtual SqlValue::Type GetType() const = 0;
 
   // Bounds a filter on this column between a minimum and maximum index.
   // Generally this is only possible if the column is sorted.
@@ -113,9 +113,7 @@ class StringColumn final : public StorageColumn {
     };
   }
 
-  Table::ColumnType GetType() const override {
-    return Table::ColumnType::kString;
-  }
+  SqlValue::Type GetType() const override { return SqlValue::Type::kString; }
 
   bool HasOrdering() const override { return accessor_.HasOrdering(); }
 
@@ -128,14 +126,14 @@ class StringColumn final : public StorageColumn {
 // Acessor trait (see below for definition).
 template <typename Accessor,
           typename sqlite_utils::is_numeric<typename Accessor::Type>* = nullptr>
-class NumericColumn : public StorageColumn {
+class NumericStorageColumn : public StorageColumn {
  public:
   // The type of the column. This is one of uint32_t, int32_t, uint64_t etc.
   using NumericType = typename Accessor::Type;
 
-  NumericColumn(std::string col_name, bool hidden, Accessor accessor)
+  NumericStorageColumn(std::string col_name, bool hidden, Accessor accessor)
       : StorageColumn(col_name, hidden), accessor_(accessor) {}
-  ~NumericColumn() override = default;
+  ~NumericStorageColumn() override = default;
 
   void ReportResult(sqlite3_context* ctx, uint32_t row) const override {
     sqlite_utils::ReportSqliteResult(ctx, accessor_.Get(row));
@@ -211,16 +209,14 @@ class NumericColumn : public StorageColumn {
 
   bool HasOrdering() const override { return accessor_.HasOrdering(); }
 
-  Table::ColumnType GetType() const override {
-    if (std::is_same<NumericType, int32_t>::value) {
-      return Table::ColumnType::kInt;
-    } else if (std::is_same<NumericType, uint8_t>::value ||
-               std::is_same<NumericType, uint32_t>::value) {
-      return Table::ColumnType::kUint;
-    } else if (std::is_same<NumericType, int64_t>::value) {
-      return Table::ColumnType::kLong;
+  SqlValue::Type GetType() const override {
+    if (std::is_same<NumericType, uint8_t>::value ||
+        std::is_same<NumericType, uint32_t>::value ||
+        std::is_same<NumericType, int32_t>::value ||
+        std::is_same<NumericType, int64_t>::value) {
+      return SqlValue::Type::kLong;
     } else if (std::is_same<NumericType, double>::value) {
-      return Table::ColumnType::kDouble;
+      return SqlValue::Type::kDouble;
     }
     PERFETTO_FATAL("Unexpected column type");
   }

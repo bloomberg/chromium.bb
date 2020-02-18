@@ -119,14 +119,6 @@ void ExpectTreesAreIdentical(Layer* root_layer,
           mask_layer_id,
           effect_tree.Node(layer_impl->effect_tree_index())->mask_layer_id);
     }
-
-    const Layer* layer_clip_parent = layer->clip_parent();
-
-    if (layer_clip_parent) {
-      const std::set<Layer*>* clip_children =
-          layer_clip_parent->clip_children();
-      ASSERT_TRUE(clip_children->find(layer) != clip_children->end());
-    }
   }
 }
 
@@ -540,7 +532,7 @@ TEST_F(TreeSynchronizerTest, SyncMaskLayer) {
   // First child gets a mask layer.
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask_layer = PictureLayer::Create(&client);
-  layer_tree_root->children()[0]->SetMaskLayer(mask_layer.get());
+  layer_tree_root->children()[0]->SetMaskLayer(mask_layer);
 
   host_->SetRootLayer(layer_tree_root);
   host_->BuildPropertyTreesForTesting();

@@ -253,8 +253,6 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
     EXPECT_FALSE(result->IsEmpty());
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> layer_;
@@ -322,8 +320,8 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
         EXPECT_EQ(1, callback_count_);
 
         // Prevent drawing so we can't make a copy of the impl_destroyed layer.
-        layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(), 1.f, viz::LocalSurfaceIdAllocation());
+        layer_tree_host()->SetViewportRectAndScale(
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       case 2:
         // Flush the message loops and make sure the callbacks run.
@@ -357,8 +355,6 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
     EXPECT_TRUE(result->IsEmpty());
     ++callback_count_;
   }
-
-  void AfterTest() override {}
 
   int callback_count_;
   FakeContentLayerClient client_;
@@ -465,8 +461,6 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
         break;
     }
   }
-
-  void AfterTest() override {}
 
   int callback_count_;
   FakeContentLayerClient client_;
@@ -649,8 +643,6 @@ class LayerTreeHostCopyRequestTestClippedOut
     EndTest();
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> parent_layer_;
@@ -712,8 +704,6 @@ class LayerTreeHostCopyRequestTestScaledLayer
     EndTest();
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> copy_layer_;
@@ -761,7 +751,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     PostSetNeedsCommitToMainThread();
 
     // Prevent drawing.
-    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(0, 0), 1.f,
+    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(0, 0), 1.f,
                                                viz::LocalSurfaceIdAllocation());
 
     AddCopyRequest(copy_layer_.get());
@@ -777,8 +767,9 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
   void DidCommit() override {
     if (layer_tree_host()->SourceFrameNumber() == 1) {
       // Allow drawing.
-      layer_tree_host()->SetViewportSizeAndScale(
-          gfx::Size(root_->bounds()), 1.f, viz::LocalSurfaceIdAllocation());
+      layer_tree_host()->SetViewportRectAndScale(
+          gfx::Rect(root_->bounds()), 1.f,
+          GetCurrentLocalSurfaceIdAllocation());
 
       AddCopyRequest(copy_layer_.get());
     }
@@ -948,8 +939,6 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
         break;
     }
   }
-
-  void AfterTest() override {}
 
   scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
@@ -1166,8 +1155,9 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
                                base::Unretained(this)));
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
-        layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(), 1.f, viz::LocalSurfaceIdAllocation());
+        // Stop drawing.
+        layer_tree_host()->SetViewportRectAndScale(
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       }
       case 2:
@@ -1178,9 +1168,9 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
       case 3:
         EXPECT_EQ(1, callback_count_);
         // Allow us to draw now.
-        layer_tree_host()->SetViewportSizeAndScale(
-            layer_tree_host()->root_layer()->bounds(), 1.f,
-            viz::LocalSurfaceIdAllocation());
+        layer_tree_host()->SetViewportRectAndScale(
+            gfx::Rect(layer_tree_host()->root_layer()->bounds()), 1.f,
+            GetCurrentLocalSurfaceIdAllocation());
         break;
       case 4:
         EXPECT_EQ(1, callback_count_);
@@ -1188,8 +1178,6 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
         EndTest();
     }
   }
-
-  void AfterTest() override {}
 
   int callback_count_;
   FakeContentLayerClient client_;
@@ -1256,8 +1244,8 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
                                base::Unretained(this)));
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
-        layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(), 1.f, viz::LocalSurfaceIdAllocation());
+        layer_tree_host()->SetViewportRectAndScale(
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       }
       case 2:
@@ -1406,8 +1394,6 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     if (draw_happened_ && copy_happened_)
       EndTest();
   }
-
-  void AfterTest() override {}
 
   scoped_refptr<FakePictureLayer> child_;
   FakeContentLayerClient client_;

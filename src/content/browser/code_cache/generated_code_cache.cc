@@ -14,6 +14,7 @@
 namespace content {
 
 namespace {
+
 constexpr char kPrefix[] = "_key";
 constexpr char kSeparator[] = " \n";
 
@@ -65,6 +66,40 @@ std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
     key.append(net::SimplifyUrlForRequest(origin_lock).spec());
   return key;
 }
+
+constexpr int kResponseTimeSizeInBytes = sizeof(int64_t);
+
+static_assert(mojo_base::BigBuffer::kMaxInlineBytes >=
+                  2 * kResponseTimeSizeInBytes,
+              "Buffer may not be large enough for response time");
+static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
+                  std::numeric_limits<int>::max(),
+              "Buffer size calculations may overflow int");
+
+// A net::IOBufferWithSize backed by a mojo_base::BigBuffer. Using BigBuffer
+// as an IOBuffer allows us to avoid a copy. For large code, this can be slow.
+class BigIOBuffer : public net::IOBufferWithSize {
+ public:
+  explicit BigIOBuffer(size_t size) : net::IOBufferWithSize(nullptr, size) {
+    buffer_ = mojo_base::BigBuffer(size);
+    data_ = reinterpret_cast<char*>(buffer_.data());
+    DCHECK(data_);
+  }
+  mojo_base::BigBuffer TakeBuffer() { return std::move(buffer_); }
+
+ protected:
+  ~BigIOBuffer() override {
+    // Storage is managed by BigBuffer. We must clear these before the base
+    // class destructor runs.
+    this->data_ = nullptr;
+    this->size_ = 0UL;
+  }
+
+ private:
+  mojo_base::BigBuffer buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BigIOBuffer);
+};
 
 }  // namespace
 
@@ -253,7 +288,7 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
   if (backend_state_ == kFailed) {
     CollectStatistics(CacheEntryStatus::kError);
     // Silently ignore the requests.
-    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     return;
   }
 
@@ -370,37 +405,33 @@ void GeneratedCodeCache::WriteDataImpl(
     return;
   }
 
-  scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
-      entry_struct = new base::RefCountedData<disk_cache::EntryWithOpened>();
-  net::CompletionOnceCallback callback =
+  disk_cache::EntryResultCallback callback =
       base::BindOnce(&GeneratedCodeCache::CompleteForWriteData,
-                     weak_ptr_factory_.GetWeakPtr(), buffer, key, entry_struct);
+                     weak_ptr_factory_.GetWeakPtr(), buffer, key);
 
-  int result = backend_->OpenOrCreateEntry(key, net::LOW, &entry_struct->data,
-                                           std::move(callback));
-  if (result != net::ERR_IO_PENDING) {
-    CompleteForWriteData(buffer, key, entry_struct, result);
+  disk_cache::EntryResult result =
+      backend_->OpenOrCreateEntry(key, net::LOW, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING) {
+    CompleteForWriteData(buffer, key, std::move(result));
   }
 }
 
 void GeneratedCodeCache::CompleteForWriteData(
     scoped_refptr<net::IOBufferWithSize> buffer,
     const std::string& key,
-    scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
-        entry_struct,
-    int rv) {
-  if (rv != net::OK) {
+    disk_cache::EntryResult entry_result) {
+  if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kError);
     IssueQueuedOperationForEntry(key);
     return;
   }
 
-  DCHECK(entry_struct->data.entry);
   int result = net::ERR_FAILED;
+  bool opened = entry_result.opened();
   {
-    disk_cache::ScopedEntryPtr disk_entry(entry_struct->data.entry);
+    disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
 
-    if (entry_struct->data.opened) {
+    if (opened) {
       CollectStatistics(CacheEntryStatus::kUpdate);
     } else {
       CollectStatistics(CacheEntryStatus::kCreate);
@@ -431,81 +462,107 @@ void GeneratedCodeCache::WriteDataCompleted(const std::string& key, int rv) {
 void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
                                         ReadDataCallback read_data_callback) {
   if (backend_state_ != kInitialized) {
-    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     IssueQueuedOperationForEntry(key);
     return;
   }
 
-  scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
-      new base::RefCountedData<disk_cache::Entry*>();
-
-  net::CompletionOnceCallback callback = base::BindOnce(
-      &GeneratedCodeCache::OpenCompleteForReadData,
-      weak_ptr_factory_.GetWeakPtr(), read_data_callback, key, entry_ptr);
+  disk_cache::EntryResultCallback callback =
+      base::BindOnce(&GeneratedCodeCache::OpenCompleteForReadData,
+                     weak_ptr_factory_.GetWeakPtr(), read_data_callback, key);
 
   // This is a part of loading cycle and hence should run with a high priority.
-  int result = backend_->OpenEntry(key, net::HIGHEST, &entry_ptr->data,
-                                   std::move(callback));
-  if (result != net::ERR_IO_PENDING) {
-    OpenCompleteForReadData(read_data_callback, key, entry_ptr, result);
+  disk_cache::EntryResult result =
+      backend_->OpenEntry(key, net::HIGHEST, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING) {
+    OpenCompleteForReadData(read_data_callback, key, std::move(result));
   }
 }
 
 void GeneratedCodeCache::OpenCompleteForReadData(
     ReadDataCallback read_data_callback,
     const std::string& key,
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-    int rv) {
-  if (rv != net::OK) {
+    disk_cache::EntryResult entry_result) {
+  if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     IssueQueuedOperationForEntry(key);
     return;
   }
 
+  disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
   // There should be a valid entry if the open was successful.
-  DCHECK(entry->data);
-  int result = net::ERR_FAILED;
-  scoped_refptr<net::IOBufferWithSize> buffer;
-  {
-    disk_cache::ScopedEntryPtr disk_entry(entry->data);
-    int size = disk_entry->GetDataSize(kDataIndex);
-    buffer = base::MakeRefCounted<net::IOBufferWithSize>(size);
-    net::CompletionOnceCallback callback = base::BindOnce(
-        &GeneratedCodeCache::ReadDataComplete, weak_ptr_factory_.GetWeakPtr(),
-        key, read_data_callback, buffer);
-    result = disk_entry->ReadData(kDataIndex, 0, buffer.get(), size,
-                                  std::move(callback));
-  }
+  DCHECK(disk_entry);
+
+  int entry_size = disk_entry->GetDataSize(kDataIndex);
+  // Use a BigIOBuffer backed to read and transfer the entry without copying.
+  // We have to read the data in two parts, response time and code, if we don't
+  // want to copy. Use the same buffer to read the response time and the code.
+  int code_size =
+      std::max(kResponseTimeSizeInBytes, entry_size - kResponseTimeSizeInBytes);
+  // Release the disk entry to pass it to |ReadResponseTimeComplete|.
+  disk_cache::Entry* entry = disk_entry.release();
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      base::MakeRefCounted<BigIOBuffer>(static_cast<size_t>(code_size));
+  net::CompletionOnceCallback callback = base::BindOnce(
+      &GeneratedCodeCache::ReadResponseTimeComplete,
+      weak_ptr_factory_.GetWeakPtr(), key, read_data_callback, buffer, entry);
+  int result = entry->ReadData(kDataIndex, 0, buffer.get(),
+                               kResponseTimeSizeInBytes, std::move(callback));
   if (result != net::ERR_IO_PENDING) {
-    ReadDataComplete(key, read_data_callback, buffer, result);
+    ReadResponseTimeComplete(key, read_data_callback, buffer, entry, result);
   }
 }
 
-void GeneratedCodeCache::ReadDataComplete(
+void GeneratedCodeCache::ReadResponseTimeComplete(
+    const std::string& key,
+    ReadDataCallback read_data_callback,
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    disk_cache::Entry* entry,
+    int rv) {
+  DCHECK(entry);
+  disk_cache::ScopedEntryPtr disk_entry(entry);
+  if (rv != kResponseTimeSizeInBytes) {
+    CollectStatistics(CacheEntryStatus::kMiss);
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
+  } else {
+    // This is considered a cache hit, since response time was read.
+    CollectStatistics(CacheEntryStatus::kHit);
+    int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
+    net::CompletionOnceCallback callback = base::BindOnce(
+        &GeneratedCodeCache::ReadCodeComplete, weak_ptr_factory_.GetWeakPtr(),
+        key, read_data_callback, buffer, raw_response_time);
+    int result =
+        disk_entry->ReadData(kDataIndex, kResponseTimeSizeInBytes, buffer.get(),
+                             buffer->size(), std::move(callback));
+    if (result != net::ERR_IO_PENDING) {
+      ReadCodeComplete(key, read_data_callback, buffer, raw_response_time,
+                       result);
+    }
+  }
+}
+
+void GeneratedCodeCache::ReadCodeComplete(
     const std::string& key,
     ReadDataCallback callback,
     scoped_refptr<net::IOBufferWithSize> buffer,
+    int64_t raw_response_time,
     int rv) {
+  base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(raw_response_time));
   if (rv != buffer->size()) {
-    CollectStatistics(CacheEntryStatus::kMiss);
-    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
+    // Trim the buffer in the unlikely case that code size is less than
+    // kResponseTimeSizeInBytes. On error, return an empty buffer with the
+    // response time, so the renderer can clear the metadata.
+    mojo_base::BigBuffer trimmed_buffer =
+        rv > 0 ? mojo_base::BigBuffer(base::make_span(
+                     reinterpret_cast<const uint8_t*>(buffer->data()),
+                     static_cast<size_t>(rv)))
+               : mojo_base::BigBuffer();
+    std::move(callback).Run(response_time, std::move(trimmed_buffer));
   } else {
-    // DiskCache ensures that the operations that are queued for an entry
-    // go in order. Hence, we would either read an empty data or read the full
-    // data. Note that if WriteData failed, buffer->size() is 0 so we handle
-    // that case here.
-    CollectStatistics(CacheEntryStatus::kHit);
-    int64_t raw_response_time = 0;
-    std::vector<uint8_t> data;
-    if (buffer->size() >= kResponseTimeSizeInBytes) {
-      raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
-      data = std::vector<uint8_t>(buffer->data() + kResponseTimeSizeInBytes,
-                                  buffer->data() + buffer->size());
-    }
-    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(raw_response_time));
-    std::move(callback).Run(response_time, data);
+    std::move(callback).Run(
+        response_time, static_cast<BigIOBuffer*>(buffer.get())->TakeBuffer());
   }
   IssueQueuedOperationForEntry(key);
 }
@@ -571,30 +628,26 @@ void GeneratedCodeCache::SetLastUsedTimeForTest(
   // yet opened.
   DCHECK_EQ(backend_state_, kInitialized);
 
-  scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
-      new base::RefCountedData<disk_cache::Entry*>();
-
-  net::CompletionOnceCallback callback = base::BindOnce(
-      &GeneratedCodeCache::OpenCompleteForSetLastUsedForTest,
-      weak_ptr_factory_.GetWeakPtr(), entry_ptr, time, user_callback);
+  disk_cache::EntryResultCallback callback =
+      base::BindOnce(&GeneratedCodeCache::OpenCompleteForSetLastUsedForTest,
+                     weak_ptr_factory_.GetWeakPtr(), time, user_callback);
 
   std::string key = GetCacheKey(resource_url, origin_lock);
-  int result = backend_->OpenEntry(key, net::LOWEST, &entry_ptr->data,
-                                   std::move(callback));
-  if (result != net::ERR_IO_PENDING) {
-    OpenCompleteForSetLastUsedForTest(entry_ptr, time, user_callback, result);
+  disk_cache::EntryResult result =
+      backend_->OpenEntry(key, net::LOWEST, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING) {
+    OpenCompleteForSetLastUsedForTest(time, user_callback, std::move(result));
   }
 }
 
 void GeneratedCodeCache::OpenCompleteForSetLastUsedForTest(
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     base::Time time,
     base::RepeatingCallback<void(void)> callback,
-    int rv) {
-  DCHECK_EQ(rv, net::OK);
-  DCHECK(entry->data);
+    disk_cache::EntryResult result) {
+  DCHECK_EQ(result.net_error(), net::OK);
   {
-    disk_cache::ScopedEntryPtr disk_entry(entry->data);
+    disk_cache::ScopedEntryPtr disk_entry(result.ReleaseEntry());
+    DCHECK(disk_entry);
     disk_entry->SetLastUsedTimeForTest(time);
   }
   std::move(callback).Run();

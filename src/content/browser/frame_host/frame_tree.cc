@@ -174,10 +174,12 @@ FrameTreeNode* FrameTree::AddFrame(
     int process_id,
     int new_routing_id,
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
-    blink::mojom::DocumentInterfaceBrokerRequest
-        document_interface_broker_content_request,
-    blink::mojom::DocumentInterfaceBrokerRequest
-        document_interface_broker_blink_request,
+    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+        document_interface_broker_content_receiver,
+    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+        document_interface_broker_blink_receiver,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
@@ -220,11 +222,15 @@ FrameTreeNode* FrameTree::AddFrame(
   added_node->current_frame_host()->BindInterfaceProviderRequest(
       std::move(interface_provider_request));
 
-  DCHECK(document_interface_broker_content_request.is_pending());
-  DCHECK(document_interface_broker_blink_request.is_pending());
-  added_node->current_frame_host()->BindDocumentInterfaceBrokerRequest(
-      std::move(document_interface_broker_content_request),
-      std::move(document_interface_broker_blink_request));
+  DCHECK(document_interface_broker_content_receiver.is_valid());
+  DCHECK(document_interface_broker_blink_receiver.is_valid());
+  added_node->current_frame_host()->BindDocumentInterfaceBrokerReceiver(
+      std::move(document_interface_broker_content_receiver),
+      std::move(document_interface_broker_blink_receiver));
+
+  DCHECK(browser_interface_broker_receiver.is_valid());
+  added_node->current_frame_host()->BindBrowserInterfaceBrokerReceiver(
+      std::move(browser_interface_broker_receiver));
 
   // The last committed NavigationEntry may have a FrameNavigationEntry with the
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if
@@ -365,8 +371,7 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
     int32_t routing_id,
     int32_t main_frame_routing_id,
     int32_t widget_routing_id,
-    bool swapped_out,
-    bool hidden) {
+    bool swapped_out) {
   scoped_refptr<RenderViewHostImpl> existing_rvh =
       GetRenderViewHost(site_instance);
   if (existing_rvh)
@@ -375,8 +380,7 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, widget_routing_id, swapped_out,
-          hidden));
+          routing_id, main_frame_routing_id, widget_routing_id, swapped_out));
   render_view_host_map_[site_instance->GetId()] = rvh;
   return base::WrapRefCounted(rvh);
 }

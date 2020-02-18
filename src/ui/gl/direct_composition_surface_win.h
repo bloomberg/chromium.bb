@@ -32,6 +32,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   struct Settings {
     bool disable_nv12_dynamic_textures = false;
     bool disable_larger_than_screen_overlays = false;
+    bool disable_vp_scaling = false;
     size_t max_pending_frames = 2;
   };
 
@@ -47,9 +48,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // chain.  Overridden with --disable-direct-composition.
   static bool IsDirectCompositionSupported();
 
-  // Returns true if hardware overlays are supported, and DirectComposition
-  // surface and layers should be used.  Overridden with
-  // --enable-direct-composition-layers and --disable-direct-composition-layers.
+  // Returns true if hardware video overlays are supported and should be used.
+  // Overridden with --enable-direct-composition-video-overlays and
+  // --disable-direct-composition-video-overlays.
   static bool AreOverlaysSupported();
 
   // Returns true if zero copy decode swap chain is supported.
@@ -76,6 +77,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
 
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
+
+  // Returns true if swap chain tearing is supported.
+  static bool IsSwapChainTearingSupported();
 
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
@@ -148,10 +152,12 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
     PresentationCallback callback;
   };
 
-  bool NeedsVSync() const;
   void EnqueuePendingFrame(PresentationCallback callback);
   void CheckPendingFrames();
 
+  bool VSyncCallbackEnabled() const;
+
+  void StartOrStopVSyncThread();
   void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
                                base::TimeDelta interval);
 
@@ -164,9 +170,12 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+
   const VSyncCallback vsync_callback_;
-  bool vsync_callback_enabled_ = false;
+  mutable base::Lock vsync_callback_lock_;
+  bool GUARDED_BY(vsync_callback_lock_) vsync_callback_enabled_ = false;
   VSyncThreadWin* vsync_thread_ = nullptr;
+
   base::TimeTicks last_vsync_time_;
   base::TimeDelta last_vsync_interval_;
 
@@ -178,7 +187,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
 
   base::WeakPtr<DirectCompositionSurfaceWin> weak_ptr_;
-  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_factory_;
+  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionSurfaceWin);
 };

@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
@@ -26,6 +27,10 @@ constexpr int kShelfButtonIconSizeDense = 36;
 // Size for controls like the home button, back button, etc.
 constexpr int kShelfControlSize = 40;
 constexpr int kShelfControlSizeDense = 36;
+
+// The margin on either side of the group of app icons (including the overflow
+// button).
+constexpr int kAppIconGroupMargin = 16;
 
 ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
     SkColorSetA(SK_ColorWHITE, 26);  // 10%

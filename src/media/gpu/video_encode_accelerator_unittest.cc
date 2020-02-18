@@ -24,6 +24,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -35,7 +36,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -63,6 +64,7 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/parsers/vp8_parser.h"
@@ -112,10 +114,6 @@ const uint32_t kDefaultFramerate = 30;
 const double kDefaultSubsequentFramerateRatio = 0.1;
 // Tolerance factor for how encoded bitrate can differ from requested bitrate.
 const double kBitrateTolerance = 0.1;
-// Minimum required FPS throughput for the basic performance test.
-const uint32_t kMinPerfFPS = 30;
-// The frame size for 2160p (UHD 4K) video in pixels.
-const int k2160PSizeInPixels = 3840 * 2160;
 // Minimum (arbitrary) number of frames required to enforce bitrate requirements
 // over. Streams shorter than this may be too short to realistically require
 // an encoder to be able to converge to the requested bitrate over.
@@ -124,16 +122,12 @@ const int k2160PSizeInPixels = 3840 * 2160;
 const unsigned int kMinFramesForBitrateTests = 300;
 // The percentiles to measure for encode latency.
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
-// Timeout for the flush is completed. The period starts from passing the last
-// frame to the encoder, to the flush callback is called. There might be many
-// pending frames in the encoder, so the timeout might be larger than a frame
-// period.
+// Timeout between each BitstreamBufferReady() call and flush callback.
 // In the multiple encoder test case, the FPS might be lower than expected.
 // Currently the largest resolution we run at lab is 4K. The FPS of the slowest
-// device in single encoder is about 10. In MultipleEncoders test case, the
-// measured time period on the slowest device is about 5 seconds. Here we set
-// the timeout 2x of the measured period.
-const unsigned int kFlushTimeoutMs = 10000;
+// device in MultipleEncoders test case is 3. Here we set the timeout 10x of the
+// expected period for margin.
+const unsigned int kBitstreamBufferReadyTimeoutMs = 3000;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
@@ -337,10 +331,11 @@ static bool IsVP9(VideoCodecProfile profile) {
 
 #if defined(OS_CHROMEOS)
 // Determine the test is known-to-fail and should be skipped.
-bool ShouldSkipTest() {
+bool ShouldSkipTest(VideoPixelFormat format) {
   struct Pattern {
     const char* board_pattern;
     const char* suite_name_prefix;
+    VideoPixelFormat format;  // Set PIXEL_FORMAT_UNKNOWN for any format.
   };
 
   // Warning: The list should be only used as a last resort for known vendor
@@ -348,10 +343,15 @@ bool ShouldSkipTest() {
   constexpr Pattern kSkipTestPatterns[] = {
       // crbug.com/769722: MTK driver doesn't compute bitrate correctly.
       // Disable mid_stream_bitrate_switch test cases for elm/hana.
-      {"elm", "MidStreamParamSwitchBitrate"},
-      {"elm", "MultipleEncoders"},
-      {"hana", "MidStreamParamSwitchBitrate"},
-      {"hana", "MultipleEncoders"},
+      {"elm", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
+      {"elm", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
+      {"hana", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
+      {"hana", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
+
+      // crbug.com/965348#c6: Tegra driver calculates the wrong plane size of
+      // NV12. Disable all tests on nyan family for NV12 test.
+      // TODO(akahuang): Remove this after nyan family are EOL.
+      {"nyan_*", "", PIXEL_FORMAT_NV12},
   };
 
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
@@ -365,10 +365,12 @@ bool ShouldSkipTest() {
                                      ->test_suite_name();
   for (const auto& pattern : kSkipTestPatterns) {
     if (suite_name.find(pattern.suite_name_prefix) == 0 &&
-        base::MatchPattern(board, pattern.board_pattern)) {
+        base::MatchPattern(board, pattern.board_pattern) &&
+        (pattern.format == PIXEL_FORMAT_UNKNOWN || pattern.format == format)) {
       return true;
     }
   }
+
   return false;
 }
 #endif  // defined(OS_CHROMEOS)
@@ -554,25 +556,34 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   int64_t src_file_size = 0;
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
-  size_t visible_buffer_size =
-      VideoFrame::AllocationSize(pixel_format, test_stream->visible_size);
-  LOG_ASSERT(src_file_size % visible_buffer_size == 0U)
+  // NOTE: VideoFrame::AllocationSize() cannot used here because the width and
+  // height on each plane is aligned by 2 for YUV format.
+  size_t frame_buffer_size = 0;
+  for (size_t i = 0; i < num_planes; ++i) {
+    size_t row_bytes = VideoFrame::RowBytes(i, pixel_format,
+                                            test_stream->visible_size.width());
+    size_t rows =
+        VideoFrame::Rows(i, pixel_format, test_stream->visible_size.height());
+    frame_buffer_size += rows * row_bytes;
+  }
+
+  LOG_ASSERT(src_file_size % frame_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
   test_stream->num_frames =
-      static_cast<unsigned int>(src_file_size / visible_buffer_size);
+      static_cast<unsigned int>(src_file_size / frame_buffer_size);
 
   LOG_ASSERT(test_stream->aligned_buffer_size > 0UL);
   test_stream->aligned_in_file_data.resize(test_stream->aligned_buffer_size *
                                            test_stream->num_frames);
 
   base::File src(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  std::vector<char> src_data(visible_buffer_size);
+  std::vector<char> src_data(frame_buffer_size);
   off_t src_offset = 0, dest_offset = 0;
   for (size_t frame = 0; frame < test_stream->num_frames; frame++) {
     LOG_ASSERT(src.Read(src_offset, &src_data[0],
-                        static_cast<int>(visible_buffer_size)) ==
-               static_cast<int>(visible_buffer_size));
+                        static_cast<int>(frame_buffer_size)) ==
+               static_cast<int>(frame_buffer_size));
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
@@ -586,7 +597,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
       }
       dest_offset += static_cast<off_t>(padding_sizes[i]);
     }
-    src_offset += static_cast<off_t>(visible_buffer_size);
+    src_offset += static_cast<off_t>(frame_buffer_size);
   }
   src.Close();
 
@@ -734,7 +745,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
     ui::OzonePlatform::InitializeForUI(params);
 
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
+    options.message_pump_type = base::MessagePumpType::UI;
     ASSERT_TRUE(rendering_thread_.StartWithOptions(options));
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1046,7 +1057,7 @@ void VP9Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   // partition numbers/sizes. For now assume one frame per buffer.
   Vp9FrameHeader header;
   gfx::Size allocate_size;
-  parser_.SetStream(stream, size, {}, nullptr);
+  parser_.SetStream(stream, size, nullptr);
   EXPECT_TRUE(Vp9Parser::kInvalidStream !=
               parser_.ParseNextFrame(&header, &allocate_size, nullptr));
   if (header.IsKeyframe()) {
@@ -1523,7 +1534,6 @@ class VEAClient : public VEAClientBase {
             bool save_to_file,
             unsigned int keyframe_period,
             bool force_bitrate,
-            bool test_perf,
             bool mid_stream_bitrate_switch,
             bool mid_stream_framerate_switch,
             bool verify_output,
@@ -1573,12 +1583,9 @@ class VEAClient : public VEAClientBase {
   void FlushEncoderDone(bool success);
   void FlushEncoderSuccessfully();
 
-  // Timeout function to check the flush callback function is called in the
-  // short period.
-  void FlushTimeout();
-
-  // Verify the minimum FPS requirement.
-  void VerifyMinFPS();
+  // Timeout function to check BitstreamBufferReady() and flush callback is
+  // called in the short period.
+  void BitstreamBufferReadyTimeout(int32_t bitstream_buffer_id);
 
   // Verify that stream bitrate has been close to current_requested_bitrate_,
   // assuming current_framerate_ since the last time VerifyStreamProperties()
@@ -1621,6 +1628,9 @@ class VEAClient : public VEAClientBase {
 
   // Verify that the output timestamp matches input timestamp.
   void VerifyOutputTimestamp(base::TimeDelta timestamp);
+
+  // Cancel and reset |buffer_ready_timeout_|.
+  void UpdateBitstreamBufferReadyTimeout(int32_t bitstream_buffer_id);
 
   ClientState state_;
 
@@ -1683,9 +1693,6 @@ class VEAClient : public VEAClientBase {
   // time we checked bitrate.
   size_t encoded_stream_size_since_last_check_;
 
-  // If true, verify performance at the end of the test.
-  bool test_perf_;
-
   // Check the output frame quality of the encoder.
   bool verify_output_;
 
@@ -1719,8 +1726,10 @@ class VEAClient : public VEAClientBase {
   // The timer used to feed the encoder with the input frames.
   std::unique_ptr<base::RepeatingTimer> input_timer_;
 
-  // The FlushTimeout closure. It is cancelled when flush is finished.
-  base::CancelableClosure flush_timeout_;
+  // The BitstreamBufferReadyTimeout closure. It is set at each
+  // BitstreamBufferReady() call, and cancelled at the next
+  // BitstreamBufferReady() or flush callback is called.
+  base::CancelableClosure buffer_ready_timeout_;
 
   // The timestamps for each frame in the order of CreateFrame() invocation.
   base::queue<base::TimeDelta> frame_timestamps_;
@@ -1734,7 +1743,6 @@ VEAClient::VEAClient(TestStream* test_stream,
                      bool save_to_file,
                      unsigned int keyframe_period,
                      bool force_bitrate,
-                     bool test_perf,
                      bool mid_stream_bitrate_switch,
                      bool mid_stream_framerate_switch,
                      bool verify_output,
@@ -1757,7 +1765,6 @@ VEAClient::VEAClient(TestStream* test_stream,
       current_requested_bitrate_(0),
       current_framerate_(0),
       encoded_stream_size_since_last_check_(0),
-      test_perf_(test_perf),
       verify_output_(verify_output),
       verify_output_timestamp_(verify_output_timestamp),
       requested_bitrate_(0),
@@ -1995,6 +2002,8 @@ void VEAClient::BitstreamBufferReady(
   DCHECK(thread_checker_.CalledOnValidThread());
   ASSERT_LE(metadata.payload_size_bytes, output_buffer_size_);
 
+  UpdateBitstreamBufferReadyTimeout(bitstream_buffer_id);
+
   IdToSHM::iterator it = output_buffers_at_client_.find(bitstream_buffer_id);
   ASSERT_NE(it, output_buffers_at_client_.end());
   base::UnsafeSharedMemoryRegion* shm = it->second;
@@ -2035,7 +2044,7 @@ void VEAClient::BitstreamBufferReady(
     // frames are received.
     if (!encoder_->IsFlushSupported() &&
         num_encoded_frames_ == num_frames_to_encode_) {
-      FlushEncoderSuccessfully();
+      FlushEncoderDone(true);
     }
 
     if (save_to_file_) {
@@ -2052,6 +2061,18 @@ void VEAClient::BitstreamBufferReady(
   }
 
   FeedEncoderWithOutput(shm);
+}
+
+void VEAClient::UpdateBitstreamBufferReadyTimeout(int32_t bitstream_buffer_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOGF(4);
+
+  buffer_ready_timeout_.Reset(
+      base::BindRepeating(&VEAClient::BitstreamBufferReadyTimeout,
+                          base::Unretained(this), bitstream_buffer_id));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, buffer_ready_timeout_.callback(),
+      base::TimeDelta::FromMilliseconds(kBitstreamBufferReadyTimeoutMs));
 }
 
 void VEAClient::SetState(ClientState new_state) {
@@ -2291,7 +2312,6 @@ bool VEAClient::HandleEncodedFrame(bool keyframe,
     }
   } else if (num_encoded_frames_ == num_frames_to_encode_) {
     LogPerf();
-    VerifyMinFPS();
     VerifyStreamProperties();
     // We might receive the last frame before calling Flush(). In this case we
     // set the state to CS_FLUSHING first to bypass the state transition check.
@@ -2344,18 +2364,15 @@ void VEAClient::FlushEncoder() {
   // the state to CS_FLUSHING when receiving the last frame.
   if (state_ != CS_FINISHED)
     SetState(CS_FLUSHING);
-
-  flush_timeout_.Reset(
-      base::BindRepeating(&VEAClient::FlushTimeout, base::Unretained(this)));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, flush_timeout_.callback(),
-      base::TimeDelta::FromMilliseconds(kFlushTimeoutMs));
 }
 
 void VEAClient::FlushEncoderDone(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  flush_timeout_.Cancel();
+  DVLOGF(3);
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
+
+  // Stop the timeout callback.
+  buffer_ready_timeout_.Cancel();
 
   if (!success || num_encoded_frames_ != num_frames_to_encode_) {
     SetState(CS_ERROR);
@@ -2376,27 +2393,11 @@ void VEAClient::FlushEncoderSuccessfully() {
   }
 }
 
-void VEAClient::FlushTimeout() {
+void VEAClient::BitstreamBufferReadyTimeout(int32_t bitstream_buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  LOG(ERROR) << "Flush timeout.";
+  LOG(ERROR) << "Timeout getting next bitstream after BitstreamBufferReady("
+             << bitstream_buffer_id << ").";
   SetState(CS_ERROR);
-}
-
-void VEAClient::VerifyMinFPS() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (test_perf_) {
-    if (input_coded_size_.GetArea() >= k2160PSizeInPixels) {
-      // When |input_coded_size_| is 2160p or more, it is expected that the
-      // calculated FPS might be lower than kMinPerfFPS. Log as warning instead
-      // of failing the test in this case.
-      if (frames_per_second() < kMinPerfFPS) {
-        LOG(WARNING) << "Measured FPS: " << frames_per_second()
-                     << " is below min required: " << kMinPerfFPS << " FPS.";
-      }
-    } else {
-      EXPECT_GE(frames_per_second(), kMinPerfFPS);
-    }
-  }
 }
 
 void VEAClient::VerifyStreamProperties() {
@@ -2707,7 +2708,6 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
 // - Force a keyframe every n frames.
 // - Force bitrate; the actual required value is provided as a property
 //   of the input stream, because it depends on stream type/resolution/etc.
-// - If true, measure performance.
 // - If true, switch bitrate mid-stream.
 // - If true, switch framerate mid-stream.
 // - If true, verify the output frames of encoder.
@@ -2716,25 +2716,22 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
 //   available for H264 encoder for now.
 class VideoEncodeAcceleratorTest
     : public ::testing::TestWithParam<
-          std::
-              tuple<int, bool, int, bool, bool, bool, bool, bool, bool, bool>> {
-};
+          std::tuple<int, bool, int, bool, bool, bool, bool, bool, bool>> {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   size_t num_concurrent_encoders = std::get<0>(GetParam());
   const bool save_to_file = std::get<1>(GetParam());
   const unsigned int keyframe_period = std::get<2>(GetParam());
   const bool force_bitrate = std::get<3>(GetParam());
-  const bool test_perf = std::get<4>(GetParam());
-  const bool mid_stream_bitrate_switch = std::get<5>(GetParam());
-  const bool mid_stream_framerate_switch = std::get<6>(GetParam());
+  const bool mid_stream_bitrate_switch = std::get<4>(GetParam());
+  const bool mid_stream_framerate_switch = std::get<5>(GetParam());
   const bool verify_output =
-      std::get<7>(GetParam()) || g_env->verify_all_output();
-  const bool verify_output_timestamp = std::get<8>(GetParam());
-  const bool force_level = std::get<9>(GetParam());
+      std::get<6>(GetParam()) || g_env->verify_all_output();
+  const bool verify_output_timestamp = std::get<7>(GetParam());
+  const bool force_level = std::get<8>(GetParam());
 
 #if defined(OS_CHROMEOS)
-  if (ShouldSkipTest())
+  if (ShouldSkipTest(g_env->test_streams_[0]->pixel_format))
     GTEST_SKIP();
 #endif  // defined(OS_CHROMEOS)
 
@@ -2783,7 +2780,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         std::make_unique<media::test::ClientStateNotification<ClientState>>());
     clients.push_back(std::make_unique<VEAClient>(
         g_env->test_streams_[test_stream_index].get(), notes.back().get(),
-        encoder_save_to_file, keyframe_period, force_bitrate, test_perf,
+        encoder_save_to_file, keyframe_period, force_bitrate,
         mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output,
         verify_output_timestamp, force_level));
 
@@ -2865,7 +2862,7 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
   ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
 
 #if defined(OS_CHROMEOS)
-  if (ShouldSkipTest())
+  if (ShouldSkipTest(g_env->test_streams_[0]->pixel_format))
     GTEST_SKIP();
 #endif  // defined(OS_CHROMEOS)
 
@@ -2888,7 +2885,6 @@ INSTANTIATE_TEST_SUITE_P(SimpleEncode,
                                                            false,
                                                            false,
                                                            false,
-                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(EncoderPerf,
@@ -2897,7 +2893,6 @@ INSTANTIATE_TEST_SUITE_P(EncoderPerf,
                                                            false,
                                                            0,
                                                            false,
-                                                           true,
                                                            false,
                                                            false,
                                                            false,
@@ -2909,7 +2904,6 @@ INSTANTIATE_TEST_SUITE_P(ForceKeyframes,
                          ::testing::Values(std::make_tuple(1,
                                                            false,
                                                            10,
-                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -2927,7 +2921,6 @@ INSTANTIATE_TEST_SUITE_P(ForceBitrate,
                                                            false,
                                                            false,
                                                            false,
-                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(MidStreamParamSwitchBitrate,
@@ -2936,7 +2929,6 @@ INSTANTIATE_TEST_SUITE_P(MidStreamParamSwitchBitrate,
                                                            false,
                                                            0,
                                                            true,
-                                                           false,
                                                            true,
                                                            false,
                                                            false,
@@ -2950,7 +2942,6 @@ INSTANTIATE_TEST_SUITE_P(DISABLED_MidStreamParamSwitchFPS,
                                                            false,
                                                            0,
                                                            true,
-                                                           false,
                                                            false,
                                                            true,
                                                            false,
@@ -2967,13 +2958,11 @@ INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
                                                            false,
                                                            false,
                                                            false,
-                                                           false,
                                                            false),
                                            std::make_tuple(3,
                                                            false,
                                                            0,
                                                            true,
-                                                           false,
                                                            true,
                                                            false,
                                                            false,
@@ -2989,7 +2978,6 @@ INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
                                                            false,
                                                            false,
                                                            false,
-                                                           false,
                                                            true,
                                                            false)));
 
@@ -2998,7 +2986,6 @@ INSTANTIATE_TEST_SUITE_P(ForceLevel,
                          ::testing::Values(std::make_tuple(1,
                                                            false,
                                                            0,
-                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -3025,12 +3012,10 @@ INSTANTIATE_TEST_SUITE_P(SimpleEncode,
                                                            false,
                                                            false,
                                                            false,
-                                                           false,
                                                            false),
                                            std::make_tuple(1,
                                                            true,
                                                            0,
-                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -3044,7 +3029,6 @@ INSTANTIATE_TEST_SUITE_P(EncoderPerf,
                                                            false,
                                                            0,
                                                            false,
-                                                           true,
                                                            false,
                                                            false,
                                                            false,
@@ -3061,7 +3045,6 @@ INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
                                                            false,
                                                            false,
                                                            false,
-                                                           false,
                                                            false)));
 
 INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
@@ -3069,7 +3052,6 @@ INSTANTIATE_TEST_SUITE_P(VerifyTimestamp,
                          ::testing::Values(std::make_tuple(1,
                                                            false,
                                                            0,
-                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -3084,7 +3066,6 @@ INSTANTIATE_TEST_SUITE_P(ForceBitrate,
                                                            false,
                                                            0,
                                                            true,
-                                                           false,
                                                            false,
                                                            false,
                                                            false,
@@ -3109,12 +3090,10 @@ class VEATestSuite : public base::TestSuite {
     base::TestSuite::Initialize();
 
 #if defined(OS_CHROMEOS)
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::UI);
 #else
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 #endif
     media::g_env =
         reinterpret_cast<media::VideoEncodeAcceleratorTestEnvironment*>(
@@ -3139,12 +3118,12 @@ class VEATestSuite : public base::TestSuite {
   }
 
   void Shutdown() override {
-    scoped_task_environment_.reset();
+    task_environment_.reset();
     base::TestSuite::Shutdown();
   }
 
  private:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 }  // namespace

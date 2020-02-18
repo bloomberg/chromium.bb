@@ -65,10 +65,11 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
   }
   OffscreenCanvas* offscreen_canvas =
       OffscreenCanvas::Create(canvas.width(), canvas.height());
+  offscreen_canvas->SetFilterQuality(canvas.FilterQuality());
 
   DOMNodeId canvas_id = DOMNodeIds::IdForNode(&canvas);
   offscreen_canvas->SetPlaceholderCanvasId(canvas_id);
-  canvas.RegisterPlaceholder(static_cast<int>(canvas_id));
+  canvas.RegisterPlaceholderCanvas(static_cast<int>(canvas_id));
 
   SurfaceLayerBridge* bridge = canvas.SurfaceLayerBridge();
   if (bridge) {

@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -332,7 +332,8 @@ struct MenuBoundsOptions {
   gfx::Rect monitor_bounds = gfx::Rect(0, 0, 1000, 1000);
   gfx::Size menu_size = gfx::Size(100, 100);
   MenuAnchorPosition menu_anchor = MenuAnchorPosition::kTopLeft;
-  MenuItemView::MenuPosition menu_position = MenuItemView::POSITION_BEST_FIT;
+  MenuItemView::MenuPosition menu_position =
+      MenuItemView::MenuPosition::kBestFit;
 };
 
 class MenuControllerTest : public ViewsTestBase {
@@ -746,7 +747,7 @@ class MenuControllerTest : public ViewsTestBase {
     owner_ = std::make_unique<GestureTestWidget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    owner_->Init(params);
+    owner_->Init(std::move(params));
     event_generator_ =
         std::make_unique<ui::test::EventGenerator>(GetRootWindow(owner()));
     owner_->Show();
@@ -1825,13 +1826,13 @@ TEST_F(MenuControllerTest, GrowingMenuMovesLaterallyNotVertically) {
   options.menu_size = gfx::Size(20, 20);
 
   // Ensure the menu is initially drawn below the bounds, and the MenuPosition
-  // is set to POSITION_BELOW_BOUNDS;
+  // is set to MenuPosition::kBelowBounds;
   const gfx::Rect first_drawn_expected(80, 80, 20, 20);
   EXPECT_EQ(first_drawn_expected, CalculateMenuBounds(options));
-  EXPECT_EQ(MenuItemView::MenuPosition::POSITION_BELOW_BOUNDS,
+  EXPECT_EQ(MenuItemView::MenuPosition::kBelowBounds,
             menu_item()->ActualMenuPosition());
 
-  options.menu_position = MenuItemView::MenuPosition::POSITION_BELOW_BOUNDS;
+  options.menu_position = MenuItemView::MenuPosition::kBelowBounds;
 
   // The menu bounds are larger than the remaining space on the monitor. This
   // simulates the case where the menu has been grown vertically and
@@ -2338,5 +2339,33 @@ TEST_F(MenuControllerTest, AccessibilityEmitsSelectChildrenChanged) {
   DispatchKey(ui::VKEY_DOWN);
   EXPECT_EQ(observer.saw_selected_children_changed_, true);
 }
+
+#if defined(OS_MACOSX)
+// This test exercises a Mac-specific behavior, by which hotkeys using modifiers
+// cause menus to close and the hotkeys to be handled by the browser window.
+// This specific test case tries using cmd-ctrl-f, which normally means
+// "Fullscreen".
+TEST_F(MenuControllerTest, BrowserHotkeysCancelMenusAndAreRedispatched) {
+  menu_controller()->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, false, false);
+
+  int options = ui::EF_COMMAND_DOWN;
+  ui::KeyEvent press_cmd(ui::ET_KEY_PRESSED, ui::VKEY_COMMAND, options);
+  menu_controller()->OnWillDispatchKeyEvent(&press_cmd);
+  EXPECT_TRUE(IsShowing());  // ensure the command press itself doesn't cancel
+
+  options |= ui::EF_CONTROL_DOWN;
+  ui::KeyEvent press_ctrl(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, options);
+  menu_controller()->OnWillDispatchKeyEvent(&press_ctrl);
+  EXPECT_TRUE(IsShowing());
+
+  ui::KeyEvent press_f(ui::ET_KEY_PRESSED, ui::VKEY_F, options);
+  menu_controller()->OnWillDispatchKeyEvent(&press_f);  // to pay respects
+  EXPECT_FALSE(IsShowing());
+  EXPECT_FALSE(press_f.handled());
+  EXPECT_FALSE(press_f.stopped_propagation());
+}
+#endif
+
 }  // namespace test
 }  // namespace views

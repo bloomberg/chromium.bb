@@ -49,8 +49,6 @@ const char kAttestationResultHistogram[] =
     "ChromeOS.PlatformVerification.Result";
 const char kAttestationAvailableHistogram[] =
     "ChromeOS.PlatformVerification.Available";
-const char kAttestationExpiryHistogram[] =
-    "ChromeOS.PlatformVerification.ExpiryStatus";
 const int kOpportunisticRenewalThresholdInDays = 30;
 
 // A callback method to handle DBus errors.
@@ -72,12 +70,6 @@ void ReportError(
   UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, error,
                             PlatformVerificationFlow::RESULT_MAX);
   callback.Run(error, std::string(), std::string(), std::string());
-}
-
-// A helper to report expiry status to UMA.
-void ReportExpiryStatus(PlatformVerificationFlow::ExpiryStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(kAttestationExpiryHistogram, status,
-                            PlatformVerificationFlow::EXPIRY_STATUS_MAX);
 }
 
 }  // namespace
@@ -273,9 +265,9 @@ void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
   AttestationFlow::CertificateCallback certificate_callback =
       base::Bind(&PlatformVerificationFlow::OnCertificateReady, this, context,
                  account_id, base::Passed(&timer));
-  attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                    account_id, context.service_id,
-                                    force_new_key, certificate_callback);
+  attestation_flow_->GetCertificate(
+      PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
+      force_new_key, std::string() /*key_name*/, certificate_callback);
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
@@ -300,7 +292,6 @@ void PlatformVerificationFlow::OnCertificateReady(
     return;
   }
   ExpiryStatus expiry_status = CheckExpiry(certificate_chain);
-  ReportExpiryStatus(expiry_status);
   if (expiry_status == EXPIRY_STATUS_EXPIRED) {
     GetCertificate(context, account_id, true /* Force a new key */);
     return;
@@ -350,10 +341,12 @@ void PlatformVerificationFlow::OnChallengeReady(
     AttestationFlow::CertificateCallback renew_callback =
         base::Bind(&PlatformVerificationFlow::RenewCertificateCallback, this,
                    certificate_chain);
-    attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                      account_id, context.service_id,
-                                      true,  // force_new_key
-                                      renew_callback);
+    attestation_flow_->GetCertificate(
+        PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
+        true,           // force_new_key
+        std::string(),  // key_name, empty means a default one will be
+                        // generated.
+        renew_callback);
   }
 }
 

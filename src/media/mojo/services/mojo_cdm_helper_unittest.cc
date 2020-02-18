@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/cdm/api/content_decryption_module.h"
-#include "media/mojo/interfaces/cdm_storage.mojom.h"
+#include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -94,7 +94,7 @@ class MojoCdmHelperTest : public testing::Test {
   MojoCdmHelperTest() : helper_(&test_interface_provider_) {}
   ~MojoCdmHelperTest() override = default;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestInterfaceProvider test_interface_provider_;
   MockFileIOClient file_io_client_;
   MojoCdmHelper helper_;

@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/realtime/policy_engine.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -54,7 +55,7 @@ ListInfos GetListInfos() {
 // - The list doesn't have hash prefixes to match. All requests lead to full
 //   hash checks. For instance: GetChromeUrlApiId()
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const bool kSyncOnlyOnChromeBuilds = true;
 #else
   const bool kSyncOnlyOnChromeBuilds = false;
@@ -62,7 +63,7 @@ ListInfos GetListInfos() {
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
   const bool kSyncRealTimeLookupList =
-      RealTimePolicyEngine::CanFetchAllowlist();
+      RealTimePolicyEngine::IsFetchAllowlistEnabled();
   return ListInfos({
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -264,8 +265,8 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
       list_infos_(GetListInfos()),
       task_runner_(task_runner_for_tests
                        ? task_runner_for_tests
-                       : base::CreateSequencedTaskRunnerWithTraits(
-                             {base::MayBlock(),
+                       : base::CreateSequencedTaskRunner(
+                             {base::ThreadPool(), base::MayBlock(),
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
@@ -402,7 +403,6 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
       !AreAllStoresAvailableNow(stores_to_check)) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
     // navigation URL, or if the allowlist isn't ready yet, return NO_MATCH.
-    // This will lead to a full URL lookup, if other conditions are met.
     return AsyncMatch::NO_MATCH;
   }
 
@@ -519,6 +519,7 @@ void V4LocalDatabaseManager::StartOnIOThread(
   db_updated_callback_ = base::Bind(&V4LocalDatabaseManager::DatabaseUpdated,
                                     weak_factory_.GetWeakPtr());
 
+  SetupRealTimeUrlLookupService(url_loader_factory);
   SetupUpdateProtocolManager(url_loader_factory, config);
   SetupDatabase();
 
@@ -542,6 +543,8 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   // This operation happens on the task_runner on which v4_database_ operates
   // and doesn't block the IO thread.
   V4Database::Destroy(std::move(v4_database_));
+
+  rt_url_lookup_service_.reset();
 
   // Delete the V4UpdateProtocolManager.
   // This cancels any in-flight update request.
@@ -603,7 +606,7 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
     v4_database_->RecordFileSizeHistograms();
     UpdateListClientStates(GetStoreStateMap());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished, this));
@@ -675,6 +678,11 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   return !check->full_hash_to_store_and_hash_prefixes.empty();
 }
 
+RealTimeUrlLookupService*
+V4LocalDatabaseManager::GetRealTimeUrlLookupService() {
+  return rt_url_lookup_service_.get();
+}
+
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
     const std::vector<FullHashInfo>& full_hash_infos,
     const std::vector<FullHash>& full_hashes,
@@ -743,8 +751,9 @@ AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
   // These loops will have exactly 1 entry most of the time.
   for (const auto& entry : check->full_hash_to_store_and_hash_prefixes) {
     for (const auto& store_and_prefix : entry.second) {
-      if (store_and_prefix.hash_prefix.size() == kMaxHashPrefixLength)
+      if (store_and_prefix.hash_prefix.size() == kMaxHashPrefixLength) {
         return AsyncMatch::MATCH;
+      }
     }
   }
 
@@ -808,14 +817,13 @@ void V4LocalDatabaseManager::ScheduleFullHashCheck(
         full_hash_infos.emplace_back(entry.first, list_id, next);
       }
     }
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&V4LocalDatabaseManager::OnFullHashResponse,
-                       weak_factory_.GetWeakPtr(), std::move(check),
-                       full_hash_infos));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&V4LocalDatabaseManager::OnFullHashResponse,
+                                  weak_factory_.GetWeakPtr(), std::move(check),
+                                  full_hash_infos));
   } else {
     // Post on the IO thread to enforce async behavior.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
                        weak_factory_.GetWeakPtr(), std::move(check)));
@@ -988,6 +996,14 @@ void V4LocalDatabaseManager::SetupDatabase() {
       base::Bind(&V4LocalDatabaseManager::DatabaseReadyForChecks,
                  weak_factory_.GetWeakPtr());
   V4Database::Create(task_runner_, base_path_, list_infos_, db_ready_callback);
+}
+
+void V4LocalDatabaseManager::SetupRealTimeUrlLookupService(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  rt_url_lookup_service_ =
+      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
 }
 
 void V4LocalDatabaseManager::SetupUpdateProtocolManager(

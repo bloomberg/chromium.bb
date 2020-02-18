@@ -316,7 +316,7 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
   # Finally, block people from passing options to sudo.
   sudo_cmd.append('--')
 
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, six.string_types):
     # We need to handle shell ourselves so the order is correct:
     #  $ sudo [sudo args] -- bash -c '[shell command]'
     # If we let RunCommand take care of it, we'd end up with:
@@ -547,13 +547,13 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
   # If input is a string, we'll create a pipe and send it through that.
   # Otherwise we assume it's a file object that can be read from directly.
-  if isinstance(input, basestring):
+  if isinstance(input, six.string_types):
     stdin = subprocess.PIPE
   elif input is not None:
     stdin = input
     input = None
 
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, six.string_types):
     if not shell:
       raise Exception('Cannot run a string command without a shell')
     cmd = ['/bin/bash', '-c', cmd]
@@ -1040,7 +1040,7 @@ def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
   # We have people use GetInput() so they don't have to use these bad builtins
   # themselves or deal with version skews.
-  # pylint: disable=bad-builtin,input-builtin,raw_input-builtin
+  # pylint: disable=input-builtin,raw_input-builtin
   if sys.version_info.major < 3:
     return raw_input(prompt)
   else:
@@ -1177,7 +1177,7 @@ def BooleanShellValue(sval, default, msg=None):
   if sval is None:
     return default
 
-  if isinstance(sval, basestring):
+  if isinstance(sval, six.string_types):
     s = sval.lower()
     if s in ('yes', 'y', '1', 'true'):
       return True
@@ -1326,7 +1326,7 @@ class ContextManagerStack(object):
     # Normally a single context manager would return False to allow caller to
     # re-raise the exception itself, but here the exception might have been
     # raised during the exiting of one of the individual context managers.
-    raise exc_type, exc, exc_tb
+    six.reraise(exc_type, exc, exc_tb)
 
 
 class ApiMismatchError(Exception):
@@ -1380,7 +1380,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   return major, minor
 
 
-def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
+def iflatten_instance(iterable, terminate_on_kls=six.string_types):
   """Derivative of snakeoil.lists.iflatten_instance; flatten an object.
 
   Given an object, flatten it into a single depth iterable-
@@ -1400,7 +1400,7 @@ def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
       return False
     # Note strings can be infinitely descended through- thus this
     # recursion limiter.
-    return not isinstance(item, basestring) or len(item) > 1
+    return not isinstance(item, six.string_types) or len(item) > 1
 
   if not descend_into(iterable):
     yield iterable
@@ -1455,7 +1455,7 @@ def PredicateSplit(func, iterable):
 @contextlib.contextmanager
 def Open(obj, mode='r'):
   """Convenience ctx that accepts a file path or an already open file object."""
-  if isinstance(obj, basestring):
+  if isinstance(obj, six.string_types):
     with open(obj, mode=mode) as f:
       yield f
   else:
@@ -1504,10 +1504,10 @@ def LoadKeyValueFile(obj, ignore_missing=False, multiline=False):
                            % (obj, raw_line))
         key = chunks[0].strip()
         val = chunks[1].strip()
-        if len(val) >= 2 and val[0] in "\"'" and val[0] == val[-1]:
+        if len(val) >= 2 and val[0] in '"\'' and val[0] == val[-1]:
           # Strip matching quotes on the same line.
           val = val[1:-1]
-        elif val and multiline and val[0] in "\"'":
+        elif val and multiline and val[0] in '"\'':
           # Unmatched quote here indicates a multiline value. Do not
           # strip the '\n' at the end of the line.
           in_quotes = val[0]
@@ -1550,7 +1550,7 @@ def SafeRun(functors, combine_exceptions=False):
     if len(errors) == 1 or not combine_exceptions:
       # To preserve the traceback.
       inst, tb = errors[0]
-      raise inst, None, tb
+      six.reraise(inst, None, tb)
     else:
       raise RuntimeError([e[0] for e in errors])
 
@@ -1646,7 +1646,7 @@ def SetDefaultBoard(board):
   return True
 
 
-def GetBoard(device_board, override_board=None, force=False):
+def GetBoard(device_board, override_board=None, force=False, strict=False):
   """Gets the board name to use.
 
   Ask user to confirm when |override_board| and |device_board| are
@@ -1656,19 +1656,22 @@ def GetBoard(device_board, override_board=None, force=False):
     device_board: The board detected on the device.
     override_board: Overrides the board.
     force: Force using the default board if |device_board| is None.
+    strict: If True, abort if no valid board can be found.
 
   Returns:
     Returns the first non-None board in the following order:
     |override_board|, |device_board|, and GetDefaultBoard().
 
   Raises:
-    DieSystemExit: If user enters no.
+    DieSystemExit: If board is not set or user enters no.
   """
   if override_board:
     return override_board
 
   board = device_board or GetDefaultBoard()
   if not device_board:
+    if not board and strict:
+      Die('No board specified and no default board found.')
     msg = 'Cannot detect board name; using default board %s.' % board
     if not force and not BooleanPrompt(default=False, prolog=msg):
       Die('Exiting...')
@@ -1846,6 +1849,8 @@ def _ParseCgpt(lines):
   #                              Type: ChromeOS kernel
   #                              UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
   #                              Attr: priority=15 tries=15 successful=1
+  # pylint: disable=invalid-triple-quote
+  # https://github.com/edaniszewski/pylint-quotes/issues/20
   start_pattern = re.compile(r'''\s+(\d+)\s+(\d+)\s+(\d+)\s+Label: "(.+)"''')
   ret = []
   line_no = 0

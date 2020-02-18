@@ -4,7 +4,9 @@
 
 #include "ui/views/widget/native_widget_mac.h"
 
+#include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #include <utility>
 
@@ -50,9 +52,11 @@ NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
   // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
   // parent window still accepts input.
+  // NSFullSizeContentViewWindowMask ensures that calculating the modal's
+  // content rect doesn't account for a nonexistent title bar.
   if (params.delegate &&
       params.delegate->GetModalType() == ui::MODAL_TYPE_WINDOW)
-    return NSTitledWindowMask;
+    return NSTitledWindowMask | NSFullSizeContentViewWindowMask;
 
   // TODO(tapted): Determine better masks when there are use cases for it.
   if (params.remove_standard_frame)
@@ -104,11 +108,29 @@ ui::ZOrderLevel ZOrderLevelForCGWindowLevel(CGWindowLevel level) {
 
 }  // namespace
 
+// Implements zoom following focus for macOS accessibility zoom.
+class NativeWidgetMac::ZoomFocusMonitor : public FocusChangeListener {
+ public:
+  ZoomFocusMonitor() = default;
+  ~ZoomFocusMonitor() override {}
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override {}
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override {
+    if (!focused_now || !UAZoomEnabled())
+      return;
+    // Web content handles its own zooming.
+    if (strcmp("WebView", focused_now->GetClassName()) == 0)
+      return;
+    NSRect rect = NSRectFromCGRect(focused_now->GetBoundsInScreen().ToCGRect());
+    UAZoomChangeFocus(&rect, nullptr, kUAZoomFocusTypeOther);
+  }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, public:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
-    : delegate_(delegate),
+    : zoom_focus_monitor_(std::make_unique<ZoomFocusMonitor>()),
+      delegate_(delegate),
       ns_window_host_(new NativeWidgetMacNSWindowHost(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {}
 
@@ -120,6 +142,8 @@ NativeWidgetMac::~NativeWidgetMac() {
 }
 
 void NativeWidgetMac::WindowDestroying() {
+  if (auto* focus_manager = GetWidget()->GetFocusManager())
+    focus_manager->RemoveFocusChangeListener(zoom_focus_monitor_.get());
   OnWindowDestroying(GetNativeWindow());
   delegate_->OnNativeWidgetDestroying();
 }
@@ -159,7 +183,7 @@ bool NativeWidgetMac::ExecuteCommand(
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 
-void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
+void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
   ownership_ = params.ownership;
   name_ = params.name;
   type_ = params.type;
@@ -197,6 +221,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   if (params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal)
     SetZOrderLevel(params.EffectiveZOrderLevel());
 
+  GetNSWindowMojo()->SetIgnoresMouseEvents(!params.accept_events);
+
   delegate_->OnNativeWidgetCreated();
 
   DCHECK(GetWidget()->GetRootView());
@@ -206,6 +232,9 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     GetNSWindowMojo()->MakeFirstResponder();
     ns_window_host_->SetFocusManager(focus_manager);
+    // Non-top-level widgets use the the top level widget's focus manager.
+    if (GetWidget() == GetTopLevelWidget())
+      focus_manager->AddFocusChangeListener(zoom_focus_monitor_.get());
   }
 
   ns_window_host_->CreateCompositor(params);

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -23,10 +24,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,9 +38,13 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
 
 namespace {
+
+constexpr base::TimeDelta kEmailExpansionDuration =
+    base::TimeDelta::FromSeconds(3);
 
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   ProfileAttributesEntry* entry;
@@ -63,20 +68,23 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
       browser_list_observer_(this),
       profile_observer_(this),
       identity_manager_observer_(this) {
-  if (IsIncognitoCounterActive())
+  if (IsIncognito())
     browser_list_observer_.Add(BrowserList::GetInstance());
 
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
   if (profile_->IsRegularProfile()) {
-    identity_manager_observer_.Add(
-        IdentityManagerFactory::GetForProfile(profile_));
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_);
+    identity_manager_observer_.Add(identity_manager);
+    SetUserEmail(identity_manager->GetUnconsentedPrimaryAccountInfo().email);
   }
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
   // without drag-drop actions (specifically the adjacent browser menu).
-  set_notify_action(Button::NOTIFY_ON_PRESS);
+  button_controller()->set_notify_action(
+      views::ButtonController::NOTIFY_ON_PRESS);
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON);
 
   set_tag(IDC_SHOW_AVATAR_MENU);
@@ -88,17 +96,18 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   Init();
 
 #if defined(OS_CHROMEOS)
-  // On CrOS the avatar toolbar button should only show as badging for Incognito
-  // and Guest sessions. It should not be instantiated for regular profiles and
-  // it should not be enabled as there's no profile switcher to trigger / show,
-  // unless incognito window counter is available.
+  // On CrOS this button should only show as badging for Incognito and Guest
+  // sessions. It's only enabled for Incognito where a menu is available for
+  // closing all Incognito windows.
   DCHECK(!profile_->IsRegularProfile());
-  SetEnabled(IsIncognitoCounterActive());
-#else
-  // The profile switcher is only available outside incognito or if incognito
-  // window counter is enabled.
-  SetEnabled(!IsIncognito() || IsIncognitoCounterActive());
+  SetEnabled(IsIncognito());
 #endif  // !defined(OS_CHROMEOS)
+
+  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    // For consistency with identity representation, we need to have the avatar
+    // on the left and the (potential) user-name / email on the right.
+    SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
 
   // Set initial text and tooltip. UpdateIcon() needs to be called from the
   // outside as GetThemeProvider() is not available until the button is added to
@@ -111,7 +120,21 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 AvatarToolbarButton::~AvatarToolbarButton() {}
 
 void AvatarToolbarButton::UpdateIcon() {
-  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon());
+  // If widget isn't set, the button doesn't have access to the theme provider
+  // to set colors. Defer updating until AddedToWidget(). This may get called as
+  // a result of SetUserEmail() called from the constructor when the button is
+  // not yet added to the ToolbarView's hierarchy.
+  if (!GetWidget())
+    return;
+  gfx::Image gaia_image = GetGaiaImage();
+  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(gaia_image));
+
+  // TODO(crbug.com/990286): Get rid of this logic completely when we cache the
+  // Google account image in the profile cache and thus it is always available.
+  if (waiting_for_image_to_show_user_email_ && !gaia_image.IsEmpty()) {
+    waiting_for_image_to_show_user_email_ = false;
+    ExpandToShowEmail();
+  }
 }
 
 void AvatarToolbarButton::UpdateText() {
@@ -125,21 +148,13 @@ void AvatarToolbarButton::UpdateText() {
     const SkColor text_color = GetThemeProvider()->GetColor(
         ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     SetEnabledTextColors(text_color);
-    // TODO(pbos): Remove this call once the incognito chip always triggers a
-    // menu.
-    if (!IsIncognitoCounterActive())
-      SetTextColor(STATE_DISABLED, text_color);
   }
 
   if (IsIncognito()) {
     int incognito_window_count =
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
-    if (IsIncognitoCounterActive()) {
-      SetAccessibleName(l10n_util::GetPluralStringFUTF16(
-          IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
-    } else {
-      incognito_window_count = 1;
-    }
+    SetAccessibleName(l10n_util::GetPluralStringFUTF16(
+        IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
     text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                             incognito_window_count);
   } else if (!suppress_avatar_button_state_ &&
@@ -155,6 +170,14 @@ void AvatarToolbarButton::UpdateText() {
         gfx::kGoogleBlue050, gfx::kGoogleBlue900);
 
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
+  } else if (user_email_.has_value() &&
+             !waiting_for_image_to_show_user_email_) {
+    text = base::UTF8ToUTF16(*user_email_);
+    if (GetThemeProvider()) {
+      const SkColor text_color =
+          GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+      SetEnabledTextColors(text_color);
+    }
   }
 
   SetInsets();
@@ -175,11 +198,8 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
-  if (IsIncognito() && !IsIncognitoCounterActive())
-    return;
-
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       event.IsKeyEvent());
 }
@@ -239,6 +259,11 @@ void AvatarToolbarButton::OnProfileNameChanged(
   UpdateText();
 }
 
+void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& unconsented_primary_account_info) {
+  SetUserEmail(unconsented_primary_account_info.email);
+}
+
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
@@ -260,23 +285,42 @@ void AvatarToolbarButton::OnTouchUiChanged() {
   PreferredSizeChanged();
 }
 
-bool AvatarToolbarButton::IsIncognito() const {
-  return profile_->IsIncognitoProfile();
+void AvatarToolbarButton::ExpandToShowEmail() {
+  DCHECK(user_email_.has_value());
+  DCHECK(!waiting_for_image_to_show_user_email_);
+
+  UpdateText();
+
+  // Hide the pill after a while.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AvatarToolbarButton::ResetUserEmail,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kEmailExpansionDuration);
 }
 
-bool AvatarToolbarButton::IsIncognitoCounterActive() const {
-  return IsIncognito() &&
-         base::FeatureList::IsEnabled(features::kEnableIncognitoWindowCounter);
+void AvatarToolbarButton::ResetUserEmail() {
+  DCHECK(user_email_.has_value());
+  user_email_ = base::nullopt;
+
+  // Update the text to the pre-shown state. This also makes sure that we now
+  // reflect changes that happened while the identity pill was shown.
+  UpdateText();
+}
+
+bool AvatarToolbarButton::IsIncognito() const {
+  return profile_->IsIncognitoProfile();
 }
 
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // This function should only be used for regular profiles. Guest and Incognito
   // sessions should be handled separately and never call this function.
   DCHECK(profile_->IsRegularProfile());
-#if !defined(OS_CHROMEOS)
-  if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
+
+  if (IdentityManagerFactory::GetForProfile(profile_)
+          ->HasUnconsentedPrimaryAccount()) {
     return false;
-#endif  // !defined(OS_CHROMEOS)
+  }
 
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
   if (!entry) {
@@ -292,8 +336,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   return entry->GetAvatarIconIndex() == 0 &&
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
-                 .GetNumberOfProfiles() == 1 &&
-         !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount();
+                 .GetNumberOfProfiles() == 1;
 }
 
 base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
@@ -305,6 +348,9 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 
   if (ShouldShowGenericIcon())
     return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
+
+  if (user_email_.has_value() && !waiting_for_image_to_show_user_email_)
+    return base::UTF8ToUTF16(*user_email_);
 
   const base::string16 profile_name =
       profiles::GetAvatarNameForProfile(profile_->GetPath());
@@ -323,7 +369,8 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
   return base::string16();
 }
 
-gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
+gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
+    const gfx::Image& gaia_image) const {
   // Note that the non-touchable icon size is larger than the default to
   // make the avatar icon easier to read.
   const int icon_size =
@@ -339,8 +386,14 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
     return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
 
   gfx::Image avatar_icon;
-  if (!ShouldShowGenericIcon())
-    avatar_icon = GetIconImageFromProfile();
+  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
+  if (!ShouldShowGenericIcon() && entry) {
+    if (!gaia_image.IsEmpty()) {
+      avatar_icon = gaia_image;
+    } else {
+      avatar_icon = entry->GetAvatarIcon();
+    }
+  }
 
   if (!avatar_icon.IsEmpty()) {
     return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size, icon_size,
@@ -351,7 +404,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
   return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size, icon_color);
 }
 
-gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
+gfx::Image AvatarToolbarButton::GetGaiaImage() const {
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
   if (!entry) {
     // This can happen if the user deletes the current profile.
@@ -369,24 +422,25 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
     return gfx::Image();
   }
 
-#if !defined(OS_CHROMEOS)
   // Try to show the first account icon of the sync promo when the following
   // conditions are satisfied:
   //  - the user is migrated to Dice
   //  - the user isn't signed in
   //  - the profile icon wasn't explicitly changed
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-      !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount() &&
+      !identity_manager->HasPrimaryAccount() &&
+      identity_manager->HasUnconsentedPrimaryAccount() &&
       entry->IsUsingDefaultAvatar()) {
-    std::vector<AccountInfo> promo_accounts =
-        signin_ui_util::GetAccountsForDicePromos(profile_);
-    if (!promo_accounts.empty()) {
-      return promo_accounts.front().account_image;
-    }
+    base::Optional<AccountInfo> account_info =
+        identity_manager
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                identity_manager->GetUnconsentedPrimaryAccountId());
+    if (account_info.has_value())
+      return account_info->account_image;
   }
-#endif  // !defined(OS_CHROMEOS)
-
-  return entry->GetAvatarIcon();
+  return gfx::Image();
 }
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
@@ -414,4 +468,17 @@ void AvatarToolbarButton::SetInsets() {
   gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui() ? 0 : -2);
 
   SetLayoutInsetDelta(layout_insets);
+}
+
+void AvatarToolbarButton::SetUserEmail(const std::string& user_email) {
+  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
+      user_email.empty()) {
+    return;
+  }
+
+  user_email_ = user_email;
+  // If we already have a gaia image, the pill will be immediately
+  // displayed by UpdateIcon().
+  waiting_for_image_to_show_user_email_ = true;
+  UpdateIcon();
 }

@@ -30,6 +30,14 @@ from pylint.config import ConfigurationMixIn
 from pylint.interfaces import IAstroidChecker
 
 
+_THIRD_PARTY = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), '..', '..', 'third_party')
+_PYLINT_QUOTES = os.path.join(_THIRD_PARTY, 'pylint-quotes')
+sys.path.insert(0, _PYLINT_QUOTES)
+# pylint: disable=unused-import,wrong-import-position
+from pylint_quotes.checker import StringQuoteChecker
+
+
 # pylint: disable=too-few-public-methods
 
 
@@ -138,6 +146,7 @@ class DocStringChecker(BaseChecker):
   class _MessageCP015(object): pass
   class _MessageCP016(object): pass
   class _MessageCP017(object): pass
+  class _MessageCP018(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
   # All the sections we recognize (and in this order).
@@ -191,6 +200,8 @@ class DocStringChecker(BaseChecker):
       'C9017': ('Section %(section)s shows up more than once; previous at '
                 '%(line_old)i',
                 ('docstring-duplicate-section'), _MessageCP017),
+      'C9018': ('Docstrings must start with exactly three quotes',
+                ('docstring-extra-quotes'), _MessageCP018),
   }
 
   def __init__(self, *args, **kwargs):
@@ -261,6 +272,12 @@ class DocStringChecker(BaseChecker):
     """Make sure first line is a short summary by itself"""
     if lines[0] == '':
       self.add_message('C9009', node=node, line=node.fromlineno)
+
+    # We only check the first line for extra quotes because the grammar halts
+    # when it sees the next set of triple quotes (which means extra trailing
+    # quotes are not part of the docstring).
+    if lines[0].startswith('"'):
+      self.add_message('C9018', node=node, line=node.fromlineno)
 
   def _check_second_line_blank(self, node, lines):
     """Make sure the second line is blank"""

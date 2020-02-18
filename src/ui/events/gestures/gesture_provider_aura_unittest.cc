@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -17,8 +17,7 @@ class GestureProviderAuraTest : public testing::Test,
                                 public GestureProviderAuraClient {
  public:
   GestureProviderAuraTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   ~GestureProviderAuraTest() override {}
 
@@ -26,8 +25,8 @@ class GestureProviderAuraTest : public testing::Test,
                       GestureEvent* event) override {}
 
   void SetUp() override {
-    consumer_.reset(new GestureConsumer());
-    provider_.reset(new GestureProviderAura(consumer_.get(), this));
+    consumer_ = std::make_unique<GestureConsumer>();
+    provider_ = std::make_unique<GestureProviderAura>(consumer_.get(), this);
   }
 
   void TearDown() override { provider_.reset(); }
@@ -37,7 +36,7 @@ class GestureProviderAuraTest : public testing::Test,
  private:
   std::unique_ptr<GestureConsumer> consumer_;
   std::unique_ptr<GestureProviderAura> provider_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {

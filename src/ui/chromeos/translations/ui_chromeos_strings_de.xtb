@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Bildauflösung</translation>
 <translation id="1943097386230153518">Neuen Dienst installieren</translation>
 <translation id="1947424002851288782">Deutsche Tastatur</translation>
+<translation id="1972984168337863910">Erweiterte Dateiinformationen maximieren</translation>
 <translation id="197560921582345123">Darf bearbeiten</translation>
 <translation id="1984603991036629094">Armenische phonetische Tastatur</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Sie müssen online sein, um auf diese Datei zugreifen zu können.</translation>
 <translation id="4212740939091998969">Es existiert bereits ein Ordner mit dem Namen "<ph name="FOLDER_NAME" />". Wählen Sie bitte einen anderen Namen aus.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> werden gesichert</translation>
-<translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="426015154560005552">Arabische Tastatur</translation>
 <translation id="4261901459838235729">Google-Präsentation</translation>
 <translation id="4290535918735525311">1 Ordner für Linux freigegeben</translation>
-<translation id="42981349822642051">Maximieren</translation>
 <translation id="4298972503445160211">Dänische Tastatur</translation>
 <translation id="4299729908419173967">Portugiesisch (Brasilien)</translation>
 <translation id="4309915981827077375">Allgemeine Informationen</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Autom. Korrektur</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4886021172213954916">Tamil-Tastatur (Schreibmaschine)</translation>
-<translation id="4892969127351273348">Öffnen mit <ph name="APP_NAME" /> nicht möglich</translation>
 <translation id="4905417359854579806">Bereit zum Sichern von <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Korrigiert</translation>
 <translation id="4935975195727477204">Mittagsgoldblume</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Schweizer Französisch</translation>
 <translation id="5234764350956374838">Schließen</translation>
 <translation id="5241298539944515331">Vietnamesische Tastatur (VIQR)</translation>
-<translation id="52446585071384036">Um Dateien mit <ph name="APP_NAME" /> zu öffnen, kopieren Sie sie zuerst in den Ordner "Linux-Dateien".</translation>
 <translation id="5253070652067921974">Erstellt von</translation>
 <translation id="5257456363153333584">Libelle</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Greifen Sie überall auf Ihre Dateien zu, auch offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Koreanisch</translation>
 <translation id="5819442873484330149">Hangul 3 Set (Final)</translation>
 <translation id="5833610766403489739">Diese Datei kann nicht gefunden werden. Bitte überprüfen Sie Ihre Einstellung für den Downloadspeicherort und versuchen Sie es erneut.</translation>
-<translation id="5838051104334203064">Play Store-Apps können nicht auf dieses Gerät zugreifen</translation>
 <translation id="5838451609423551646">Auswahl aller Einträge wurde aufgehoben.</translation>
 <translation id="5838825566232597749">Internationale US-amerikanische Workman-Tastatur</translation>
 <translation id="5850516540536751549">Dieser Dateityp wird nicht unterstützt. Im <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> können Sie nach einer App suchen, mit der sich dieser Dateityp öffnen lässt.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Wenn Sie diese Dateien zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Dateien und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
 <translation id="8249296373107784235">Abbrechen</translation>
 <translation id="8261506727792406068">Löschen</translation>
+<translation id="8269755669432358899">Erweiterte Dateiinformationen minimieren</translation>
 <translation id="8279388322240498158">Sorani-Tastatur nach englischem Layout</translation>
 <translation id="8280151743281770066">Armenisch – phonetisch</translation>
 <translation id="8294431847097064396">Quelle</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Zu öffnende Datei auswählen</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> Elemente werden synchronisiert...</translation>
 <translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturansicht angezeigt.</translation>
+<translation id="8601932370724196034">Crostini-Bilddatei</translation>
 <translation id="8669949407341943408">Verschieben...</translation>
 <translation id="8671210955687109937">Darf kommentieren</translation>
 <translation id="8686213429977032554">Die Drive-Datei wurde noch nicht geteilt.</translation>

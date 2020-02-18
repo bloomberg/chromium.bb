@@ -219,19 +219,21 @@ static void update_degenerate_test(DegenerateTestData* data, const SkPoint& pt) 
     }
 }
 
-static inline bool get_direction(const SkPath& path, const SkMatrix& m,
-                                 SkPathPriv::FirstDirection* dir) {
-    if (!SkPathPriv::CheapComputeFirstDirection(path, dir)) {
-        return false;
-    }
+static inline SkPathPriv::FirstDirection get_direction(const SkPath& path, const SkMatrix& m) {
+    // At this point, we've already returned true from canDraw(), which checked that the path's
+    // direction could be determined, so this should just be fetching the cached direction.
+    SkPathPriv::FirstDirection dir;
+    SkAssertResult(SkPathPriv::CheapComputeFirstDirection(path, &dir));
+
     // check whether m reverses the orientation
     SkASSERT(!m.hasPerspective());
     SkScalar det2x2 = m.get(SkMatrix::kMScaleX) * m.get(SkMatrix::kMScaleY) -
                       m.get(SkMatrix::kMSkewX)  * m.get(SkMatrix::kMSkewY);
     if (det2x2 < 0) {
-        *dir = SkPathPriv::OppositeFirstDirection(*dir);
+        dir = SkPathPriv::OppositeFirstDirection(dir);
     }
-    return true;
+
+    return dir;
 }
 
 static inline void add_line_to_segment(const SkPoint& pt,
@@ -281,50 +283,54 @@ static bool get_segments(const SkPath& path,
     // line paths. We detect paths that are very close to a line (zero area) and
     // draw nothing.
     DegenerateTestData degenerateData;
-    SkPathPriv::FirstDirection dir;
-    // get_direction can fail for some degenerate paths.
-    if (!get_direction(path, m, &dir)) {
-        return false;
-    }
+    SkPathPriv::FirstDirection dir = get_direction(path, m);
 
     for (;;) {
         SkPoint pts[4];
-        SkPath::Verb verb = iter.next(pts, true, true);
+        SkPath::Verb verb = iter.next(pts);
         switch (verb) {
             case SkPath::kMove_Verb:
                 m.mapPoints(pts, 1);
                 update_degenerate_test(&degenerateData, pts[0]);
                 break;
             case SkPath::kLine_Verb: {
-                m.mapPoints(&pts[1], 1);
-                update_degenerate_test(&degenerateData, pts[1]);
-                add_line_to_segment(pts[1], segments);
+                if (!SkPathPriv::AllPointsEq(pts, 2)) {
+                    m.mapPoints(&pts[1], 1);
+                    update_degenerate_test(&degenerateData, pts[1]);
+                    add_line_to_segment(pts[1], segments);
+                }
                 break;
             }
             case SkPath::kQuad_Verb:
-                m.mapPoints(pts, 3);
-                update_degenerate_test(&degenerateData, pts[1]);
-                update_degenerate_test(&degenerateData, pts[2]);
-                add_quad_segment(pts, segments);
+                if (!SkPathPriv::AllPointsEq(pts, 3)) {
+                    m.mapPoints(pts, 3);
+                    update_degenerate_test(&degenerateData, pts[1]);
+                    update_degenerate_test(&degenerateData, pts[2]);
+                    add_quad_segment(pts, segments);
+                }
                 break;
             case SkPath::kConic_Verb: {
-                m.mapPoints(pts, 3);
-                SkScalar weight = iter.conicWeight();
-                SkAutoConicToQuads converter;
-                const SkPoint* quadPts = converter.computeQuads(pts, weight, 0.25f);
-                for (int i = 0; i < converter.countQuads(); ++i) {
-                    update_degenerate_test(&degenerateData, quadPts[2*i + 1]);
-                    update_degenerate_test(&degenerateData, quadPts[2*i + 2]);
-                    add_quad_segment(quadPts + 2*i, segments);
+                if (!SkPathPriv::AllPointsEq(pts, 3)) {
+                    m.mapPoints(pts, 3);
+                    SkScalar weight = iter.conicWeight();
+                    SkAutoConicToQuads converter;
+                    const SkPoint* quadPts = converter.computeQuads(pts, weight, 0.25f);
+                    for (int i = 0; i < converter.countQuads(); ++i) {
+                        update_degenerate_test(&degenerateData, quadPts[2*i + 1]);
+                        update_degenerate_test(&degenerateData, quadPts[2*i + 2]);
+                        add_quad_segment(quadPts + 2*i, segments);
+                    }
                 }
                 break;
             }
             case SkPath::kCubic_Verb: {
-                m.mapPoints(pts, 4);
-                update_degenerate_test(&degenerateData, pts[1]);
-                update_degenerate_test(&degenerateData, pts[2]);
-                update_degenerate_test(&degenerateData, pts[3]);
-                add_cubic_segments(pts, dir, segments);
+                if (!SkPathPriv::AllPointsEq(pts, 4)) {
+                    m.mapPoints(pts, 4);
+                    update_degenerate_test(&degenerateData, pts[1]);
+                    update_degenerate_test(&degenerateData, pts[2]);
+                    update_degenerate_test(&degenerateData, pts[3]);
+                    add_cubic_segments(pts, dir, segments);
+                }
                 break;
             }
             case SkPath::kDone_Verb:
@@ -653,9 +659,12 @@ sk_sp<GrGeometryProcessor> QuadEdgeEffect::TestCreate(GrProcessorTestData* d) {
 
 GrPathRenderer::CanDrawPath
 GrAAConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
+    // This check requires convexity and known direction, since the direction is used to build
+    // the geometry segments. Degenerate convex paths will fall through to some other path renderer.
     if (args.fCaps->shaderCaps()->shaderDerivativeSupport() &&
         (GrAAType::kCoverage == args.fAAType) && args.fShape->style().isSimpleFill() &&
-        !args.fShape->inverseFilled() && args.fShape->knownToBeConvex()) {
+        !args.fShape->inverseFilled() && args.fShape->knownToBeConvex() &&
+        args.fShape->knownDirection()) {
         return CanDrawPath::kYes;
     }
     return CanDrawPath::kNo;

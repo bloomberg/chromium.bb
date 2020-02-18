@@ -11,7 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
@@ -61,7 +61,7 @@ class TestOverviewDelegate : public OverviewDelegate {
 class ForceDelayObserverTest : public AshTestBase {
  public:
   ForceDelayObserverTest()
-      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~ForceDelayObserverTest() override = default;
 
  private:
@@ -76,12 +76,10 @@ TEST_F(ForceDelayObserverTest, Basic) {
   delegate.AddEnterAnimationObserver(std::move(observer));
   EXPECT_EQ(1u, delegate.num_enter_observers());
 
-  scoped_task_environment_->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(50));
+  task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate.num_enter_observers());
-  scoped_task_environment_->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(55));
+  task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(55));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, delegate.num_enter_observers());
 }

@@ -165,9 +165,9 @@ base::Optional<uint32_t> SliceTracker::End(int64_t timestamp,
 
   // If we are trying to close mismatching slices (e.g., slices that began
   // before tracing started), bail out.
-  if (category && slices->categories()[slice_idx] != category)
+  if (!category.is_null() && slices->categories()[slice_idx] != category)
     return base::nullopt;
-  if (name && slices->names()[slice_idx] != name)
+  if (!name.is_null() && slices->names()[slice_idx] != name)
     return base::nullopt;
 
   PERFETTO_DCHECK(slices->durations()[slice_idx] == kPendingDuration);
@@ -216,7 +216,18 @@ void SliceTracker::MaybeCloseStack(int64_t ts, SlicesStack* stack) {
 
     if (pending_dur_descendent) {
       PERFETTO_DCHECK(ts >= start_ts);
-      PERFETTO_DCHECK(dur == kPendingDuration || ts <= end_ts);
+      // Some trace producers emit END events in the wrong order (even after
+      // sorting by timestamp), e.g. BEGIN A, BEGIN B, END A, END B. We discard
+      // the mismatching END A in End(). Because of this, we can end up in a
+      // situation where we attempt to close the stack on top of A at a
+      // timestamp beyond A's parent. To avoid crashing in such a case, we just
+      // emit a warning instead.
+      if (dur != kPendingDuration && ts > end_ts) {
+        PERFETTO_DLOG(
+            "Incorrect ordering of begin/end slice events around timestamp "
+            "%" PRId64,
+            ts);
+      }
       continue;
     }
 

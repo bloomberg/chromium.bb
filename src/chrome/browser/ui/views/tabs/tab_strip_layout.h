@@ -7,44 +7,58 @@
 
 #include <vector>
 
-#include "ui/gfx/geometry/size.h"
+#include "base/optional.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
+#include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 
 namespace gfx {
 class Rect;
 }
 
-class TabAnimationState;
+// Determines the size of each tab given information on the overall amount
+// of space available relative to how much the tabs could use.
+class TabSizer {
+ public:
+  TabSizer(LayoutDomain domain, float space_fraction_available);
+  TabSizer(const TabSizer&) = default;
+  TabSizer& operator=(const TabSizer&) = default;
 
-struct TabSizeInfo {
-  // The width of pinned tabs.
-  int pinned_tab_width;
+  int CalculateTabWidth(const TabWidthConstraints& tab) const;
 
-  // The min width of active/inactive tabs.
-  int min_active_width;
-  int min_inactive_width;
+  // Returns true iff it's OK for this tab to be one pixel wider than
+  // CalculateTabWidth(|tab|).
+  bool TabAcceptsExtraSpace(const TabWidthConstraints& tab) const;
 
-  // The size of a standard tab, which is the max size active or inactive tabs
-  // have.
-  gfx::Size standard_size;
+  bool IsAlreadyPreferredWidth() const;
 
-  // The overlap between adjacent tabs. When positioning tabs the x-coordinate
-  // of a tab is calculated as the x-coordinate of the previous tab plus the
-  // previous tab's width minus the |tab_overlap|, e.g.
-  // next_tab_x = previous_tab.bounds().right() - tab_overlap.
-  int tab_overlap;
+ private:
+  LayoutDomain domain_;
+
+  // The proportion of space requirements we can fulfill within the layout
+  // domain we're in.
+  float space_fraction_available_;
 };
+
+// Solve layout constraints to determine how much space is available for tabs
+// to use relative to how much they want to use.
+TabSizer CalculateSpaceFractionAvailable(
+    const TabLayoutConstants& layout_constants,
+    const std::vector<TabWidthConstraints>& tabs,
+    int width);
 
 // Calculates and returns the bounds of the tabs. |width| is the available
 // width to use for tab layout. This never sizes the tabs smaller then the
 // minimum widths in TabSizeInfo, and as a result the calculated bounds may go
-// beyond |width|.
+// beyond |width|. If |override_tab_sizer| has a value, it is used to calculate
+// bounds; otherwise, a new sizer is calculated based on the other constraints.
 std::vector<gfx::Rect> CalculateTabBounds(
-    const TabSizeInfo& tab_size_info,
-    const std::vector<TabAnimationState>& tabs,
-    int width);
+    const TabLayoutConstants& layout_constants,
+    const std::vector<TabWidthConstraints>& tabs,
+    int width,
+    base::Optional<TabSizer> override_tab_sizer);
 
 std::vector<gfx::Rect> CalculatePinnedTabBounds(
-    const TabSizeInfo& tab_size_info,
-    const std::vector<TabAnimationState>& pinned_tabs);
+    const TabLayoutConstants& layout_constants,
+    const std::vector<TabWidthConstraints>& pinned_tabs);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_LAYOUT_H_

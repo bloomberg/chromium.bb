@@ -445,7 +445,7 @@ void CFWL_Edit::RenderText(CFX_RenderDevice* pRenderDev,
   if (!font)
     return;
 
-  pRenderDev->SetClip_Rect(clipRect);
+  pRenderDev->SetClip_Rect(clipRect.GetOuterRect());
 
   CFX_RectF rtDocClip = clipRect;
   if (rtDocClip.IsEmpty()) {
@@ -1039,7 +1039,9 @@ void CFWL_Edit::OnProcessMessage(CFWL_Message* pMessage) {
     default:
       break;
   }
-  CFWL_Widget::OnProcessMessage(pMessage);
+  // Dst target could be |this|, continue only if not destroyed by above.
+  if (pMessage->GetDstTarget())
+    CFWL_Widget::OnProcessMessage(pMessage);
 }
 
 void CFWL_Edit::OnProcessEvent(CFWL_Event* pEvent) {

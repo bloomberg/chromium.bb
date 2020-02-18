@@ -174,17 +174,23 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                   const ReferrerScriptInfo&,
                                   ScriptPromiseResolver*) = 0;
 
+  virtual ScriptValue CreateTypeError(const String& message) const = 0;
+  virtual ScriptValue CreateSyntaxError(const String& message) const = 0;
+
   // Import maps. https://github.com/WICG/import-maps
-  virtual void RegisterImportMap(const ImportMap*) = 0;
+  virtual void RegisterImportMap(const ImportMap*,
+                                 ScriptValue error_to_rethrow) = 0;
   virtual bool IsAcquiringImportMaps() const = 0;
   virtual void ClearIsAcquiringImportMaps() = 0;
+  virtual const ImportMap* GetImportMapForTest() const = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
-  virtual ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const = 0;
+  virtual ModuleImportMeta HostGetImportMetaProperties(
+      v8::Local<v8::Module>) const = 0;
 
   virtual bool HasValidContext() = 0;
 
-  virtual ScriptValue InstantiateModule(ModuleRecord) = 0;
+  virtual ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) = 0;
 
   struct ModuleRequest {
     String specifier;
@@ -193,7 +199,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
         : specifier(specifier), position(position) {}
   };
   virtual Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
-      ModuleRecord) = 0;
+      v8::Local<v8::Module>) = 0;
 
   enum class CaptureEvalErrorFlag : bool { kReport, kCapture };
 

@@ -116,7 +116,9 @@ ImageDecodeAcceleratorStub::ImageDecodeAcceleratorStub(
 bool ImageDecodeAcceleratorStub::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration)) {
+          features::kVaapiJpegImageDecodeAcceleration) &&
+      !base::FeatureList::IsEnabled(
+          features::kVaapiWebPImageDecodeAcceleration)) {
     return false;
   }
 
@@ -436,6 +438,7 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
                  completed_decode->buffer_format == gfx::BufferFormat::YVU_420
                      ? cc::YUVDecodeFormat::kYVU3
                      : cc::YUVDecodeFormat::kYUV2,
+                 completed_decode->yuv_color_space,
                  completed_decode->buffer_byte_size, params.needs_mips)) {
       DLOG(ERROR) << "Could not create and insert the transfer cache entry";
       OnError();

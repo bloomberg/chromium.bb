@@ -54,27 +54,28 @@ header = """# Copyright (C) 2019 The Android Open Source Project
 
 # Arguments for the GN output directory.
 # host_os="linux" is to generate the right build files from Mac OS.
-gn_args = 'target_os="linux" is_debug=false host_os="linux"'
+gn_args = ' '.join([
+    'host_os="linux"',
+    'is_debug=false',
+    'is_perfetto_build_generator=true',
+    'target_os="linux"',
+])
 
 # Default targets to translate to the blueprint file.
 default_targets = [
-  '//:trace_processor_shell',
+  '//src/trace_processor:trace_processor_shell',
   '//src/protozero:libprotozero',
   '//src/trace_processor:trace_processor',
-  '//tools/trace_to_text:trace_to_text_host(//gn/standalone/toolchain:gcc_like_host)',
+  '//tools/trace_to_text:trace_to_text',
   '//tools/trace_to_text:libpprofbuilder',
   '//protos/perfetto/config:merged_config_gen',
   '//protos/perfetto/trace:merged_trace_gen',
   '//protos/perfetto/trace_processor:lite_gen',
-  '//protos/perfetto/metrics:lite_gen'
+  '//protos/perfetto/metrics:lite_gen',
 ]
 
-# Aliases to add to the BUILD file
-alias_targets = {
-  '//src/protozero:libprotozero': 'libprotozero',
-  '//src/trace_processor:trace_processor': 'trace_processor',
-  '//tools/trace_to_text:trace_to_text_host': 'trace_to_text',
-}
+# The directory where the generated perfetto_build_flags.h will be copied into.
+buildflags_dir = 'include/perfetto/base/build_configs/bazel'
 
 
 def enable_sqlite(module):
@@ -144,7 +145,8 @@ def is_public_header(label):
   # TODO(135923303): Remove the pprof builder once the long-term solution lands
   return label.endswith('.h') and (
     label.startswith('//include/perfetto/') or
-    label == '//tools/trace_to_text/pprof_builder.h')
+    label == '//tools/trace_to_text/pprof_builder.h' or
+    label == '//tools/trace_to_text/symbolizer.h')
 
 
 @functools.total_ordering
@@ -383,6 +385,10 @@ class BuildGenerator(object):
       else:
         target.srcs.add(label)
 
+    if target.type == 'cc_library' and ('//include/perfetto/base/build_config.h'
+        in module_desc.get('sources', [])):
+      target.hdrs.add(Label(os.path.join(buildflags_dir,
+          'perfetto_build_flags.h')))
 
   def apply_module_dependency(self, target, dep_name):
     """
@@ -587,7 +593,10 @@ class BuildGenerator(object):
 
     label_no_toolchain = gn_utils.label_without_toolchain(gn_target_name)
     target_name_path = gn_utils.label_to_target_name_with_path(label_no_toolchain)
-    target_name = alias_targets.get(label_no_toolchain, target_name_path)
+    if label_no_toolchain in default_targets:
+        target_name = label_no_toolchain.split(':')[-1]
+    else:
+      target_name = target_name_path
     target = Target(target_type, target_name, gn_name=label_no_toolchain)
     target.srcs.update(
         Label(gn_utils.label_to_path(src))
@@ -604,6 +613,9 @@ class BuildGenerator(object):
 def main():
   parser = argparse.ArgumentParser(
       description='Generate BUILD from a GN description.')
+  parser.add_argument(
+        '--check-only', help='Don\'t keep the generated files',
+        action='store_true')
   parser.add_argument(
       '--desc',
       help='GN description (e.g., gn desc out --format=json --all-toolchains "//*"'
@@ -640,22 +652,32 @@ def main():
   else:
     desc = gn_utils.create_build_description(gn_args, args.repo_root)
 
+  out_files = []
+
   build_generator = BuildGenerator(desc)
   build, proto_build = build_generator.create_build_for_targets(
       args.targets or default_targets)
-  with open(args.output, 'w') as f:
+
+  # Generate the main BUILD file.
+  out_files.append(args.output + '.swp')
+  with open(out_files[-1], 'w') as f:
     writer = Writer(f)
     build.write(writer)
     writer.newline()
-
     with open(args.extras, 'r') as r:
       for line in r:
         writer.line(line.rstrip("\n\r"))
 
-  with open(args.output_proto, 'w') as f:
+  # Generate the protos/BUILD file.
+  out_files.append(args.output_proto + '.swp')
+  with open(out_files[-1], 'w') as f:
     proto_build.write(Writer(f))
 
-  return 0
+  # Generate the build flags file.
+  out_files.append(os.path.join(buildflags_dir, 'perfetto_build_flags.h.swp'))
+  gn_utils.gen_buildflags(gn_args, out_files[-1])
+
+  return gn_utils.check_or_commit_generated_files(out_files, args.check_only)
 
 
 if __name__ == '__main__':

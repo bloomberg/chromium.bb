@@ -8,7 +8,9 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -50,7 +52,8 @@ class ConfigFileWatcherTest : public testing::Test {
   void StopWatcher();
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
 
   ConfigFileWatcherDelegate delegate_;
@@ -75,11 +78,11 @@ void ConfigFileWatcherTest::SetUp() {
 
   // Arrange to run |message_loop_| until no components depend on it.
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      message_loop_.task_runner(), run_loop_.QuitClosure());
+      task_environment_.GetMainThreadTaskRunner(), run_loop_.QuitClosure());
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType(
-          "IPC thread", task_runner, base::MessageLoop::TYPE_IO);
+      AutoThread::CreateWithType("IPC thread", task_runner,
+                                 base::MessagePumpType::IO);
 
   // Create an instance of the config watcher.
   watcher_.reset(

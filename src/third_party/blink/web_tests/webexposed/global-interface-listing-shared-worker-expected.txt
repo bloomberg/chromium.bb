@@ -461,6 +461,33 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method readAsBinaryString
 [Worker]     method readAsDataURL
 [Worker]     method readAsText
+[Worker] interface FileSystemDirectoryHandle : FileSystemHandle
+[Worker]     static method getSystemDirectory
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getDirectory
+[Worker]     method getEntries
+[Worker]     method getFile
+[Worker]     method removeEntry
+[Worker] interface FileSystemFileHandle : FileSystemHandle
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method createWriter
+[Worker]     method getFile
+[Worker] interface FileSystemHandle
+[Worker]     attribute @@toStringTag
+[Worker]     getter isDirectory
+[Worker]     getter isFile
+[Worker]     getter name
+[Worker]     method constructor
+[Worker]     method queryPermission
+[Worker]     method requestPermission
+[Worker] interface FileSystemWriter
+[Worker]     attribute @@toStringTag
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method truncate
+[Worker]     method write
 [Worker] interface FontFace
 [Worker]     attribute @@toStringTag
 [Worker]     getter display
@@ -1153,6 +1180,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method formData
 [Worker]     method json
 [Worker]     method text
+[Worker] interface ScreenManager
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method requestDisplays
 [Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter blockedURI
@@ -1276,6 +1307,9 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface TrustedTypePolicyFactory
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
+[Worker]     method getAttributeType
+[Worker]     method getPropertyType
+[Worker]     method getTypeMapping
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL
@@ -1462,6 +1496,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute DRAW_BUFFER9
 [Worker]     attribute DRAW_FRAMEBUFFER
 [Worker]     attribute DRAW_FRAMEBUFFER_BINDING
+[Worker]     attribute DRAW_INDIRECT_BUFFER
+[Worker]     attribute DRAW_INDIRECT_BUFFER_BINDING
 [Worker]     attribute DST_ALPHA
 [Worker]     attribute DST_COLOR
 [Worker]     attribute DYNAMIC_COPY
@@ -3514,8 +3550,16 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onmessage
 [Worker]     setter onopen
+[Worker] interface WebSocketStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     getter connection
+[Worker]     getter url
+[Worker]     method close
+[Worker]     method constructor
 [Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter addressSpace
 [Worker]     getter caches
 [Worker]     getter crypto
 [Worker]     getter fonts
@@ -3578,6 +3622,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
+[Worker]     getter screen
 [Worker]     getter serial
 [Worker]     getter storage
 [Worker]     getter usb

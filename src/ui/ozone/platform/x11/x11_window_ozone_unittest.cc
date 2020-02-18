@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source_default.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -40,14 +40,14 @@ ACTION_P(CloneEvent, event_ptr) {
 class X11WindowOzoneTest : public testing::Test {
  public:
   X11WindowOzoneTest()
-      : task_env_(std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI)) {}
+      : task_env_(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::UI)) {}
 
   ~X11WindowOzoneTest() override = default;
 
   void SetUp() override {
     XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSourceLibevent>(display);
+    event_source_ = std::make_unique<X11EventSourceDefault>(display);
     window_manager_ = std::make_unique<X11WindowManagerOzone>();
 
     TouchFactory::GetInstance()->SetPointerDeviceForTest({kPointerDeviceId});
@@ -61,8 +61,9 @@ class X11WindowOzoneTest : public testing::Test {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     PlatformWindowInitProperties init_params(bounds);
-    auto window = std::make_unique<X11WindowOzone>(delegate, init_params,
-                                                   window_manager_.get());
+    auto window =
+        std::make_unique<X11WindowOzone>(delegate, window_manager_.get());
+    window->Initialize(std::move(init_params));
     return std::move(window);
   }
 
@@ -79,9 +80,9 @@ class X11WindowOzoneTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_env_;
+  std::unique_ptr<base::test::TaskEnvironment> task_env_;
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
-  std::unique_ptr<X11EventSourceLibevent> event_source_;
+  std::unique_ptr<X11EventSourceDefault> event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowOzoneTest);
 };

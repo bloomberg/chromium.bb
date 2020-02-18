@@ -61,7 +61,7 @@ protected:
 	{
 		executionState.renderPass = renderPass;
 		executionState.renderPassFramebuffer = framebuffer;
-		renderPass->begin();
+		executionState.subpassIndex = 0;
 		framebuffer->clear(executionState.renderPass, clearValueCount, clearValues, renderArea);
 	}
 
@@ -83,17 +83,17 @@ public:
 protected:
 	void play(CommandBuffer::ExecutionState& executionState) override
 	{
-		bool hasResolveAttachments = (executionState.renderPass->getCurrentSubpass().pResolveAttachments != nullptr);
+		bool hasResolveAttachments = (executionState.renderPass->getSubpass(executionState.subpassIndex).pResolveAttachments != nullptr);
 		if(hasResolveAttachments)
 		{
 			// FIXME(sugoi): remove the following lines and resolve in Renderer::finishRendering()
 			//               for a Draw command or after the last command of the current subpass
 			//               which modifies pixels.
 			executionState.renderer->synchronize();
-			executionState.renderPassFramebuffer->resolve(executionState.renderPass);
+			executionState.renderPassFramebuffer->resolve(executionState.renderPass, executionState.subpassIndex);
 		}
 
-		executionState.renderPass->nextSubpass();
+		++executionState.subpassIndex;
 	}
 };
 
@@ -114,9 +114,7 @@ protected:
 		// FIXME(sugoi): remove the following line and resolve in Renderer::finishRendering()
 		//               for a Draw command or after the last command of the current subpass
 		//               which modifies pixels.
-		executionState.renderPassFramebuffer->resolve(executionState.renderPass);
-
-		executionState.renderPass->end();
+		executionState.renderPassFramebuffer->resolve(executionState.renderPass, executionState.subpassIndex);
 		executionState.renderPass = nullptr;
 		executionState.renderPassFramebuffer = nullptr;
 	}
@@ -434,16 +432,18 @@ void CommandBuffer::ExecutionState::bindAttachments(sw::Context& context)
 	// there is too much stomping of the renderer's state by setContext() in
 	// draws.
 
-	for (auto i = 0u; i < renderPass->getCurrentSubpass().colorAttachmentCount; i++)
+	auto const & subpass = renderPass->getSubpass(subpassIndex);
+
+	for (auto i = 0u; i < subpass.colorAttachmentCount; i++)
 	{
-		auto attachmentReference = renderPass->getCurrentSubpass().pColorAttachments[i];
+		auto attachmentReference = subpass.pColorAttachments[i];
 		if (attachmentReference.attachment != VK_ATTACHMENT_UNUSED)
 		{
 			context.renderTarget[i] = renderPassFramebuffer->getAttachment(attachmentReference.attachment);
 		}
 	}
 
-	auto attachmentReference = renderPass->getCurrentSubpass().pDepthStencilAttachment;
+	auto attachmentReference = subpass.pDepthStencilAttachment;
 	if (attachmentReference && attachmentReference->attachment != VK_ATTACHMENT_UNUSED)
 	{
 		auto attachment = renderPassFramebuffer->getAttachment(attachmentReference->attachment);
@@ -515,7 +515,7 @@ struct DrawBase : public CommandBuffer::Command
 	{
 		auto const &pipelineState = executionState.pipelineState[VK_PIPELINE_BIND_POINT_GRAPHICS];
 
-		GraphicsPipeline* pipeline = static_cast<GraphicsPipeline*>(pipelineState.pipeline);
+		GraphicsPipeline *pipeline = static_cast<GraphicsPipeline *>(pipelineState.pipeline);
 
 		sw::Context context = pipeline->getContext();
 
@@ -523,16 +523,16 @@ struct DrawBase : public CommandBuffer::Command
 
 		context.descriptorSets = pipelineState.descriptorSets;
 		context.descriptorDynamicOffsets = pipelineState.descriptorDynamicOffsets;
-		context.pushConstants = executionState.pushConstants;
 
 		// Apply either pipeline state or dynamic state
 		executionState.renderer->setScissor(pipeline->hasDynamicState(VK_DYNAMIC_STATE_SCISSOR) ?
-		                                    executionState.dynamicState.scissor : pipeline->getScissor());
+											executionState.dynamicState.scissor : pipeline->getScissor());
 		executionState.renderer->setViewport(pipeline->hasDynamicState(VK_DYNAMIC_STATE_VIEWPORT) ?
-		                                     executionState.dynamicState.viewport : pipeline->getViewport());
+											 executionState.dynamicState.viewport : pipeline->getViewport());
 		executionState.renderer->setBlendConstant(pipeline->hasDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS) ?
-		                                          executionState.dynamicState.blendConstants : pipeline->getBlendConstants());
-		if(pipeline->hasDynamicState(VK_DYNAMIC_STATE_DEPTH_BIAS))
+												  executionState.dynamicState.blendConstants
+																											  : pipeline->getBlendConstants());
+		if (pipeline->hasDynamicState(VK_DYNAMIC_STATE_DEPTH_BIAS))
 		{
 			// If the depth bias clamping feature is not enabled, depthBiasClamp must be 0.0
 			ASSERT(executionState.dynamicState.depthBiasClamp == 0.0f);
@@ -540,25 +540,27 @@ struct DrawBase : public CommandBuffer::Command
 			context.depthBias = executionState.dynamicState.depthBiasConstantFactor;
 			context.slopeDepthBias = executionState.dynamicState.depthBiasSlopeFactor;
 		}
-		if(pipeline->hasDynamicState(VK_DYNAMIC_STATE_DEPTH_BOUNDS) && context.depthBoundsTestEnable)
+		if (pipeline->hasDynamicState(VK_DYNAMIC_STATE_DEPTH_BOUNDS) && context.depthBoundsTestEnable)
 		{
 			// Unless the VK_EXT_depth_range_unrestricted extension is enabled minDepthBounds and maxDepthBounds must be between 0.0 and 1.0, inclusive
-			ASSERT(executionState.dynamicState.minDepthBounds >= 0.0f && executionState.dynamicState.minDepthBounds <= 1.0f);
-			ASSERT(executionState.dynamicState.maxDepthBounds >= 0.0f && executionState.dynamicState.maxDepthBounds <= 1.0f);
+			ASSERT(executionState.dynamicState.minDepthBounds >= 0.0f &&
+				   executionState.dynamicState.minDepthBounds <= 1.0f);
+			ASSERT(executionState.dynamicState.maxDepthBounds >= 0.0f &&
+				   executionState.dynamicState.maxDepthBounds <= 1.0f);
 
 			UNIMPLEMENTED("depthBoundsTestEnable");
 		}
-		if(pipeline->hasDynamicState(VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK) && context.stencilEnable)
+		if (pipeline->hasDynamicState(VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK) && context.stencilEnable)
 		{
 			context.frontStencil.compareMask = executionState.dynamicState.compareMask[0];
 			context.backStencil.compareMask = executionState.dynamicState.compareMask[1];
 		}
-		if(pipeline->hasDynamicState(VK_DYNAMIC_STATE_STENCIL_WRITE_MASK) && context.stencilEnable)
+		if (pipeline->hasDynamicState(VK_DYNAMIC_STATE_STENCIL_WRITE_MASK) && context.stencilEnable)
 		{
 			context.frontStencil.writeMask = executionState.dynamicState.writeMask[0];
 			context.backStencil.writeMask = executionState.dynamicState.writeMask[1];
 		}
-		if(pipeline->hasDynamicState(VK_DYNAMIC_STATE_STENCIL_REFERENCE) && context.stencilEnable)
+		if (pipeline->hasDynamicState(VK_DYNAMIC_STATE_STENCIL_REFERENCE) && context.stencilEnable)
 		{
 			context.frontStencil.reference = executionState.dynamicState.reference[0];
 			context.backStencil.reference = executionState.dynamicState.reference[1];
@@ -566,23 +568,22 @@ struct DrawBase : public CommandBuffer::Command
 
 		executionState.bindAttachments(context);
 
-		context.multiSampleMask = context.sampleMask & ((unsigned)0xFFFFFFFF >> (32 - context.sampleCount));
-		context.occlusionEnabled = executionState.renderer->hasQueryOfType(VK_QUERY_TYPE_OCCLUSION);
+		context.occlusionEnabled = executionState.renderer->hasOcclusionQuery();
 
-		std::vector<std::pair<uint32_t, void*>> indexBuffers;
-		if(indexed)
+		std::vector<std::pair<uint32_t, void *>> indexBuffers;
+		if (indexed)
 		{
-			void* indexBuffer = executionState.indexBufferBinding.buffer->getOffsetPointer(
-				executionState.indexBufferBinding.offset + first * bytesPerIndex(executionState));
-			if(pipeline->hasPrimitiveRestartEnable())
+			void *indexBuffer = executionState.indexBufferBinding.buffer->getOffsetPointer(
+					executionState.indexBufferBinding.offset + first * bytesPerIndex(executionState));
+			if (pipeline->hasPrimitiveRestartEnable())
 			{
-				switch(executionState.indexType)
+				switch (executionState.indexType)
 				{
 				case VK_INDEX_TYPE_UINT16:
-					processPrimitiveRestart(static_cast<uint16_t*>(indexBuffer), count, pipeline, indexBuffers);
+					processPrimitiveRestart(static_cast<uint16_t *>(indexBuffer), count, pipeline, indexBuffers);
 					break;
 				case VK_INDEX_TYPE_UINT32:
-					processPrimitiveRestart(static_cast<uint32_t*>(indexBuffer), count, pipeline, indexBuffers);
+					processPrimitiveRestart(static_cast<uint32_t *>(indexBuffer), count, pipeline, indexBuffers);
 					break;
 				default:
 					UNIMPLEMENTED("executionState.indexType %d", int(executionState.indexType));
@@ -590,23 +591,29 @@ struct DrawBase : public CommandBuffer::Command
 			}
 			else
 			{
-				indexBuffers.push_back({ pipeline->computePrimitiveCount(count), indexBuffer });
+				indexBuffers.push_back({pipeline->computePrimitiveCount(count), indexBuffer});
 			}
 		}
 		else
 		{
-			indexBuffers.push_back({ pipeline->computePrimitiveCount(count), nullptr });
+			indexBuffers.push_back({pipeline->computePrimitiveCount(count), nullptr});
 		}
 
-		for(uint32_t instance = firstInstance; instance != firstInstance + instanceCount; instance++)
+		for (uint32_t instance = firstInstance; instance != firstInstance + instanceCount; instance++)
 		{
-			context.instanceID = instance;
-
-			for(auto indexBuffer : indexBuffers)
+			// FIXME: reconsider instances/views nesting.
+			auto viewMask = executionState.renderPass->getViewMask(executionState.subpassIndex);
+			while (viewMask)
 			{
-				const uint32_t primitiveCount = indexBuffer.first;
-				context.indexBuffer = indexBuffer.second;
-				executionState.renderer->draw(&context, executionState.indexType, primitiveCount, vertexOffset, executionState.events);
+				int viewID = sw::log2i(viewMask);
+				viewMask &= ~(1 << viewID);
+
+				for (auto indexBuffer : indexBuffers)
+				{
+					executionState.renderer->draw(&context, executionState.indexType, indexBuffer.first, vertexOffset,
+												  executionState.events, instance, viewID, indexBuffer.second,
+												  executionState.pushConstants);
+				}
 			}
 
 			executionState.renderer->advanceInstanceAttributes(context.input);
@@ -857,7 +864,7 @@ struct ClearAttachment : public CommandBuffer::Command
 		// however, we don't do the clear through the rasterizer, so need to ensure prior drawing
 		// has completed first.
 		executionState.renderer->synchronize();
-		executionState.renderPassFramebuffer->clear(executionState.renderPass, attachment, rect);
+		executionState.renderPassFramebuffer->clearAttachment(executionState.renderPass, executionState.subpassIndex, attachment, rect);
 	}
 
 private:
@@ -1039,8 +1046,8 @@ struct BeginQuery : public CommandBuffer::Command
 
 	void play(CommandBuffer::ExecutionState& executionState)
 	{
-		executionState.renderer->addQuery(queryPool->getQuery(query));
 		queryPool->begin(query, flags);
+		executionState.renderer->addQuery(queryPool->getQuery(query));
 	}
 
 private:
@@ -1087,19 +1094,31 @@ private:
 
 struct WriteTimeStamp : public CommandBuffer::Command
 {
-	WriteTimeStamp(QueryPool* queryPool, uint32_t query)
-		: queryPool(queryPool), query(query)
+	WriteTimeStamp(QueryPool* queryPool, uint32_t query, VkPipelineStageFlagBits stage)
+		: queryPool(queryPool), query(query), stage(stage)
 	{
 	}
 
 	void play(CommandBuffer::ExecutionState& executionState)
 	{
+		if (stage & ~(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT))
+		{
+			// The `top of pipe` and `draw indirect` stages are handled in command buffer processing so a timestamp write
+			// done in those stages can just be done here without any additional synchronization.
+			// Everything else is deferred to the Renderer; we will treat those stages all as if they were
+			// `bottom of pipe`.
+			//
+			// FIXME(chrisforbes): once Yarn is integrated, do this in a task so we don't have to stall here.
+			executionState.renderer->synchronize();
+		}
+
 		queryPool->writeTimestamp(query);
 	}
 
 private:
 	QueryPool* queryPool;
 	uint32_t query;
+	VkPipelineStageFlagBits stage;
 };
 
 struct CopyQueryPoolResults : public CommandBuffer::Command
@@ -1282,7 +1301,7 @@ void CommandBuffer::resetQueryPool(QueryPool* queryPool, uint32_t firstQuery, ui
 
 void CommandBuffer::writeTimestamp(VkPipelineStageFlagBits pipelineStage, QueryPool* queryPool, uint32_t query)
 {
-	addCommand<WriteTimeStamp>(queryPool, query);
+	addCommand<WriteTimeStamp>(queryPool, query, pipelineStage);
 }
 
 void CommandBuffer::copyQueryPoolResults(const QueryPool* queryPool, uint32_t firstQuery, uint32_t queryCount,

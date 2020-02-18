@@ -13,8 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
-#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -25,10 +24,12 @@
 namespace base {
 
 namespace internal {
-class MessageLoopTaskEnvironment;
+class MessageLoopThreadDelegate;
 }  // namespace internal
 
 class MessageLoopImpl;
+class MessagePump;
+class TaskObserver;
 
 namespace sequence_manager {
 class TaskQueue;
@@ -80,25 +81,15 @@ class SequenceManagerImpl;
 // Please be SURE your task is reentrant (nestable) and all global variables
 // are stable and accessible before calling SetNestableTasksAllowed(true).
 //
-// DEPRECATED: Use a SingleThreadTaskExecutor instead or ScopedTaskEnvironment
+// DEPRECATED: Use a SingleThreadTaskExecutor instead or TaskEnvironment
 // for tests. TODO(https://crbug.com/891670/) remove this class.
 class BASE_EXPORT MessageLoop {
  public:
-  using Type = MessagePump::Type;
-
-  static constexpr Type TYPE_DEFAULT = Type::DEFAULT;
-  static constexpr Type TYPE_UI = Type::UI;
-  static constexpr Type TYPE_CUSTOM = Type::CUSTOM;
-  static constexpr Type TYPE_IO = Type::IO;
-#if defined(OS_ANDROID)
-  static constexpr Type TYPE_JAVA = Type::JAVA;
-#endif  // defined(OS_ANDROID)
-
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it
   // is typical to make use of the current thread's MessageLoop instance.
-  explicit MessageLoop(Type type = Type::DEFAULT);
-  // Creates a TYPE_CUSTOM MessageLoop with the supplied MessagePump, which must
-  // be non-NULL.
+  explicit MessageLoop(MessagePumpType type = MessagePumpType::DEFAULT);
+  // Creates a MessageLoop with the supplied MessagePump, which must be
+  // non-null.
   explicit MessageLoop(std::unique_ptr<MessagePump> custom_pump);
 
   virtual ~MessageLoop();
@@ -106,12 +97,12 @@ class BASE_EXPORT MessageLoop {
   // Set the timer slack for this message loop.
   void SetTimerSlack(TimerSlack timer_slack);
 
-  // Returns true if this loop is |type|. This allows subclasses (especially
-  // those in tests) to specialize how they are identified.
-  virtual bool IsType(Type type) const;
+  // Returns true if this loop's pump is |type|. This allows subclasses
+  // (especially those in tests) to specialize how they are identified.
+  virtual bool IsType(MessagePumpType type) const;
 
   // Returns the type passed to the constructor.
-  Type type() const { return type_; }
+  MessagePumpType type() const { return type_; }
 
   // Sets a new TaskRunner for this message loop. If the message loop was
   // already bound, this must be called on the thread to which it is bound.
@@ -119,9 +110,6 @@ class BASE_EXPORT MessageLoop {
 
   // Gets the TaskRunner associated with this message loop.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const;
-
-  // TODO(yutak): Replace all the use sites with base::TaskObserver.
-  using TaskObserver = MessageLoopCurrent::TaskObserver;
 
   // These functions can only be called on the same thread that |this| is
   // running on.
@@ -151,7 +139,7 @@ class BASE_EXPORT MessageLoop {
   // specific type with a custom loop. The implementation does not call
   // BindToCurrentThread. If this constructor is invoked directly by a subclass,
   // then the subclass must subsequently bind the message loop.
-  MessageLoop(Type type, std::unique_ptr<MessagePump> pump);
+  MessageLoop(MessagePumpType type, std::unique_ptr<MessagePump> pump);
 
   // Configure various members and bind this message loop to the current thread.
   void BindToCurrentThread();
@@ -172,7 +160,7 @@ class BASE_EXPORT MessageLoop {
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
-  friend class internal::MessageLoopTaskEnvironment;
+  friend class internal::MessageLoopThreadDelegate;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
@@ -184,7 +172,7 @@ class BASE_EXPORT MessageLoop {
   // thread the message loop runs on, before calling Run().
   // Before BindToCurrentThread() is called, only Post*Task() functions can
   // be called on the message loop.
-  static std::unique_ptr<MessageLoop> CreateUnbound(Type type);
+  static std::unique_ptr<MessageLoop> CreateUnbound(MessagePumpType type);
   static std::unique_ptr<MessageLoop> CreateUnbound(
       std::unique_ptr<MessagePump> pump);
 
@@ -197,7 +185,7 @@ class BASE_EXPORT MessageLoop {
     return sequence_manager_.get();
   }
 
-  const Type type_;
+  const MessagePumpType type_;
 
   // If set this will be returned by the next call to CreateMessagePump().
   // This is only set if |type_| is TYPE_CUSTOM and |pump_| is null.
@@ -228,7 +216,7 @@ class BASE_EXPORT MessageLoop {
 //
 class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  public:
-  explicit MessageLoopForUI(Type type = TYPE_UI);
+  explicit MessageLoopForUI(MessagePumpType type = MessagePumpType::UI);
 
 #if defined(OS_IOS)
   // On iOS, the main message loop cannot be Run().  Instead call Attach(),
@@ -278,7 +266,7 @@ static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
 //
 class BASE_EXPORT MessageLoopForIO : public MessageLoop {
  public:
-  MessageLoopForIO() : MessageLoop(TYPE_IO) {}
+  MessageLoopForIO() : MessageLoop(MessagePumpType::IO) {}
 };
 
 // Do not add any member variables to MessageLoopForIO!  This is important b/c

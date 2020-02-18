@@ -17,8 +17,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -193,7 +193,7 @@ void WatchPathAndReportHeaders(const std::string& path,
 class DetachedResourceRequestTest : public ::testing::Test {
  public:
   DetachedResourceRequestTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
   ~DetachedResourceRequestTest() override = default;
 
   void SetUp() override {
@@ -288,7 +288,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::TestHostResolver> host_resolver_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
 };
@@ -344,7 +344,8 @@ TEST_F(DetachedResourceRequestTest, SimpleFailure) {
   histogram_tester.ExpectTotalCount(
       "CustomTabs.DetachedResourceRequest.Duration.Failure", 1);
   histogram_tester.ExpectBucketCount(
-      "CustomTabs.DetachedResourceRequest.FinalStatus", -net::ERR_FAILED, 1);
+      "CustomTabs.DetachedResourceRequest.FinalStatus",
+      -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
 }
 
 TEST_F(DetachedResourceRequestTest, ResponseTooLarge) {

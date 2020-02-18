@@ -26,11 +26,8 @@ TEST(SerializedScriptValueThreadedTest,
   // Start a worker.
   WorkerReportingProxy proxy;
   WorkerThreadForTest worker_thread(proxy);
-  ParentExecutionContextTaskRunners* parent_execution_context_task_runners =
-      ParentExecutionContextTaskRunners::Create(&scope.GetDocument());
   worker_thread.StartWithSourceCode(scope.GetDocument().GetSecurityOrigin(),
-                                    "/* no worker script */",
-                                    parent_execution_context_task_runners);
+                                    "/* no worker script */");
 
   // Create a serialized script value that contains transferred array buffer
   // contents.
@@ -45,7 +42,7 @@ TEST(SerializedScriptValueThreadedTest,
           ToV8(array_buffer, scope.GetContext()->Global(), scope.GetIsolate()),
           options, ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(serialized);
-  EXPECT_TRUE(array_buffer->IsNeutered());
+  EXPECT_TRUE(array_buffer->IsDetached());
 
   // Deserialize the serialized value on the worker.
   // Intentionally keep a reference on this thread while this occurs.

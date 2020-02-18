@@ -19,8 +19,7 @@
 
 namespace content {
 
-class BackgroundFetchContext;
-class RenderProcessHost;
+struct ServiceWorkerVersionInfo;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
     : public blink::mojom::BackgroundFetchService {
@@ -29,18 +28,16 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
       int render_frame_tree_node_id,
-      ResourceRequestInfo::WebContentsGetter wc_getter);
+      WebContents::Getter wc_getter);
   ~BackgroundFetchServiceImpl() override;
 
   static void CreateForWorker(
-      blink::mojom::BackgroundFetchServiceRequest request,
-      RenderProcessHost* render_process_host,
-      const url::Origin& origin);
+      const ServiceWorkerVersionInfo& info,
+      mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   static void CreateForFrame(
-      RenderProcessHost* render_process_host,
-      int render_frame_id,
-      blink::mojom::BackgroundFetchServiceRequest request);
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   // blink::mojom::BackgroundFetchService implementation.
   void Fetch(int64_t service_worker_registration_id,
@@ -58,12 +55,12 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
                        GetDeveloperIdsCallback callback) override;
 
  private:
-  static void CreateOnIoThread(
+  static void CreateOnCoreThread(
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
       int render_frame_tree_node_id,
-      ResourceRequestInfo::WebContentsGetter wc_getter,
-      blink::mojom::BackgroundFetchServiceRequest request);
+      WebContents::Getter wc_getter,
+      mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|
   // and |title| respectively have valid values. The renderer will be flagged
@@ -79,7 +76,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   const url::Origin origin_;
 
   int render_frame_tree_node_id_;
-  ResourceRequestInfo::WebContentsGetter wc_getter_;
+  WebContents::Getter wc_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceImpl);
 };

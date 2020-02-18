@@ -13,6 +13,7 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/Context.inl.h"
 #include "libANGLE/entry_points_utils.h"
+#include "libANGLE/gl_enum_utils_autogen.h"
 #include "libANGLE/validationEGL.h"
 #include "libANGLE/validationES.h"
 #include "libANGLE/validationES1.h"
@@ -33,21 +34,27 @@ void GL_APIENTRY BindImageTexture(GLuint unit,
                                   GLenum access,
                                   GLenum format)
 {
-    EVENT(
-        "(GLuint unit = %u, GLuint texture = %u, GLint level = %d, GLboolean layered = %u, GLint "
-        "layer = %d, GLenum access = 0x%X, GLenum format = 0x%X)",
-        unit, texture, level, layered, layer, access, format);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glBindImageTexture",
+          "context = %d, GLuint unit = %u, GLuint texture = %u, GLint level = %d, GLboolean "
+          "layered = %s, GLint layer = %d, GLenum access = %s, GLenum format = %s",
+          CID(context), unit, texture, level, GLbooleanToString(layered), layer,
+          GLenumToString(GLenumGroup::BufferAccessARB, access),
+          GLenumToString(GLenumGroup::InternalFormat, format));
+
     if (context)
     {
-        ANGLE_CAPTURE(BindImageTexture, context, unit, texture, level, layered, layer, access,
-                      format);
-        if (context->skipValidation() ||
-            ValidateBindImageTexture(context, unit, texture, level, layered, layer, access, format))
+        TextureID texturePacked                       = FromGL<TextureID>(texture);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateBindImageTexture(context, unit, texturePacked, level, layered,
+                                                     layer, access, format));
+        if (isCallValid)
         {
-            context->bindImageTexture(unit, texture, level, layered, layer, access, format);
+            context->bindImageTexture(unit, texturePacked, level, layered, layer, access, format);
         }
+        ANGLE_CAPTURE(BindImageTexture, isCallValid, context, unit, texturePacked, level, layered,
+                      layer, access, format);
     }
 }
 
@@ -57,23 +64,27 @@ void GL_APIENTRY DrawArraysInstancedBaseInstance(GLenum mode,
                                                  GLsizei instancecount,
                                                  GLuint baseinstance)
 {
-    EVENT(
-        "(GLenum mode = 0x%X, GLint first = %d, GLsizei count = %d, GLsizei instancecount = %d, "
-        "GLuint baseinstance = %u)",
-        mode, first, count, instancecount, baseinstance);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glDrawArraysInstancedBaseInstance",
+          "context = %d, GLenum mode = %s, GLint first = %d, GLsizei count = %d, GLsizei "
+          "instancecount = %d, GLuint baseinstance = %u",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode), first, count,
+          instancecount, baseinstance);
+
     if (context)
     {
-        ANGLE_CAPTURE(DrawArraysInstancedBaseInstance, context, mode, first, count, instancecount,
-                      baseinstance);
-        if (context->skipValidation() ||
-            ValidateDrawArraysInstancedBaseInstance(context, mode, first, count, instancecount,
-                                                    baseinstance))
+        PrimitiveMode modePacked                      = FromGL<PrimitiveMode>(mode);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateDrawArraysInstancedBaseInstance(
+                                context, modePacked, first, count, instancecount, baseinstance));
+        if (isCallValid)
         {
-            context->drawArraysInstancedBaseInstance(mode, first, count, instancecount,
+            context->drawArraysInstancedBaseInstance(modePacked, first, count, instancecount,
                                                      baseinstance);
         }
+        ANGLE_CAPTURE(DrawArraysInstancedBaseInstance, isCallValid, context, modePacked, first,
+                      count, instancecount, baseinstance);
     }
 }
 
@@ -84,23 +95,27 @@ void GL_APIENTRY DrawElementsInstancedBaseInstance(GLenum mode,
                                                    GLsizei instancecount,
                                                    GLuint baseinstance)
 {
-    EVENT(
-        "(GLenum mode = 0x%X, GLsizei count = %d, GLenum type = 0x%X, const void *indices = "
-        "0x%016" PRIxPTR ", GLsizei instancecount = %d, GLuint baseinstance = %u)",
-        mode, count, type, (uintptr_t)indices, instancecount, baseinstance);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glDrawElementsInstancedBaseInstance",
+          "context = %d, GLenum mode = %s, GLsizei count = %d, GLenum type = %s, const void "
+          "*indices = 0x%016" PRIxPTR ", GLsizei instancecount = %d, GLuint baseinstance = %u",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode), count,
+          GLenumToString(GLenumGroup::PrimitiveType, type), (uintptr_t)indices, instancecount,
+          baseinstance);
+
     if (context)
     {
-        ANGLE_CAPTURE(DrawElementsInstancedBaseInstance, context, mode, count, type, indices,
-                      instancecount, baseinstance);
-        if (context->skipValidation() ||
-            ValidateDrawElementsInstancedBaseInstance(context, mode, count, type, indices,
-                                                      instancecount, baseinstance))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateDrawElementsInstancedBaseInstance(
+                                context, mode, count, type, indices, instancecount, baseinstance));
+        if (isCallValid)
         {
             context->drawElementsInstancedBaseInstance(mode, count, type, indices, instancecount,
                                                        baseinstance);
         }
+        ANGLE_CAPTURE(DrawElementsInstancedBaseInstance, isCallValid, context, mode, count, type,
+                      indices, instancecount, baseinstance);
     }
 }
 
@@ -112,41 +127,54 @@ void GL_APIENTRY DrawElementsInstancedBaseVertexBaseInstance(GLenum mode,
                                                              GLint basevertex,
                                                              GLuint baseinstance)
 {
-    EVENT(
-        "(GLenum mode = 0x%X, GLsizei count = %d, GLenum type = 0x%X, const void *indices = "
-        "0x%016" PRIxPTR
-        ", GLsizei instancecount = %d, GLint basevertex = %d, GLuint baseinstance = %u)",
-        mode, count, type, (uintptr_t)indices, instancecount, basevertex, baseinstance);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glDrawElementsInstancedBaseVertexBaseInstance",
+          "context = %d, GLenum mode = %s, GLsizei count = %d, GLenum type = %s, const void "
+          "*indices = 0x%016" PRIxPTR
+          ", GLsizei instancecount = %d, GLint basevertex = %d, GLuint baseinstance = %u",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode), count,
+          GLenumToString(GLenumGroup::PrimitiveType, type), (uintptr_t)indices, instancecount,
+          basevertex, baseinstance);
+
     if (context)
     {
-        ANGLE_CAPTURE(DrawElementsInstancedBaseVertexBaseInstance, context, mode, count, type,
-                      indices, instancecount, basevertex, baseinstance);
-        if (context->skipValidation() ||
-            ValidateDrawElementsInstancedBaseVertexBaseInstance(
-                context, mode, count, type, indices, instancecount, basevertex, baseinstance))
+        PrimitiveMode modePacked                      = FromGL<PrimitiveMode>(mode);
+        DrawElementsType typePacked                   = FromGL<DrawElementsType>(type);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() || ValidateDrawElementsInstancedBaseVertexBaseInstance(
+                                              context, modePacked, count, typePacked, indices,
+                                              instancecount, basevertex, baseinstance));
+        if (isCallValid)
         {
             context->drawElementsInstancedBaseVertexBaseInstance(
-                mode, count, type, indices, instancecount, basevertex, baseinstance);
+                modePacked, count, typePacked, indices, instancecount, basevertex, baseinstance);
         }
+        ANGLE_CAPTURE(DrawElementsInstancedBaseVertexBaseInstance, isCallValid, context, modePacked,
+                      count, typePacked, indices, instancecount, basevertex, baseinstance);
     }
 }
 
 void GL_APIENTRY DrawTransformFeedbackInstanced(GLenum mode, GLuint id, GLsizei instancecount)
 {
-    EVENT("(GLenum mode = 0x%X, GLuint id = %u, GLsizei instancecount = %d)", mode, id,
-          instancecount);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glDrawTransformFeedbackInstanced",
+          "context = %d, GLenum mode = %s, GLuint id = %u, GLsizei instancecount = %d",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode), id, instancecount);
+
     if (context)
     {
-        ANGLE_CAPTURE(DrawTransformFeedbackInstanced, context, mode, id, instancecount);
-        if (context->skipValidation() ||
-            ValidateDrawTransformFeedbackInstanced(context, mode, id, instancecount))
+        TransformFeedbackID idPacked                  = FromGL<TransformFeedbackID>(id);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateDrawTransformFeedbackInstanced(context, mode, idPacked, instancecount));
+        if (isCallValid)
         {
-            context->drawTransformFeedbackInstanced(mode, id, instancecount);
+            context->drawTransformFeedbackInstanced(mode, idPacked, instancecount);
         }
+        ANGLE_CAPTURE(DrawTransformFeedbackInstanced, isCallValid, context, mode, idPacked,
+                      instancecount);
     }
 }
 
@@ -155,19 +183,26 @@ void GL_APIENTRY DrawTransformFeedbackStreamInstanced(GLenum mode,
                                                       GLuint stream,
                                                       GLsizei instancecount)
 {
-    EVENT("(GLenum mode = 0x%X, GLuint id = %u, GLuint stream = %u, GLsizei instancecount = %d)",
-          mode, id, stream, instancecount);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glDrawTransformFeedbackStreamInstanced",
+          "context = %d, GLenum mode = %s, GLuint id = %u, GLuint stream = %u, GLsizei "
+          "instancecount = %d",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode), id, stream,
+          instancecount);
+
     if (context)
     {
-        ANGLE_CAPTURE(DrawTransformFeedbackStreamInstanced, context, mode, id, stream,
-                      instancecount);
-        if (context->skipValidation() ||
-            ValidateDrawTransformFeedbackStreamInstanced(context, mode, id, stream, instancecount))
+        TransformFeedbackID idPacked                  = FromGL<TransformFeedbackID>(id);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() || ValidateDrawTransformFeedbackStreamInstanced(
+                                              context, mode, idPacked, stream, instancecount));
+        if (isCallValid)
         {
-            context->drawTransformFeedbackStreamInstanced(mode, id, stream, instancecount);
+            context->drawTransformFeedbackStreamInstanced(mode, idPacked, stream, instancecount);
         }
+        ANGLE_CAPTURE(DrawTransformFeedbackStreamInstanced, isCallValid, context, mode, idPacked,
+                      stream, instancecount);
     }
 }
 
@@ -176,20 +211,26 @@ void GL_APIENTRY GetActiveAtomicCounterBufferiv(GLuint program,
                                                 GLenum pname,
                                                 GLint *params)
 {
-    EVENT(
-        "(GLuint program = %u, GLuint bufferIndex = %u, GLenum pname = 0x%X, GLint *params = "
-        "0x%016" PRIxPTR ")",
-        program, bufferIndex, pname, (uintptr_t)params);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glGetActiveAtomicCounterBufferiv",
+          "context = %d, GLuint program = %u, GLuint bufferIndex = %u, GLenum pname = %s, GLint "
+          "*params = 0x%016" PRIxPTR "",
+          CID(context), program, bufferIndex,
+          GLenumToString(GLenumGroup::AtomicCounterBufferPName, pname), (uintptr_t)params);
+
     if (context)
     {
-        ANGLE_CAPTURE(GetActiveAtomicCounterBufferiv, context, program, bufferIndex, pname, params);
-        if (context->skipValidation() ||
-            ValidateGetActiveAtomicCounterBufferiv(context, program, bufferIndex, pname, params))
+        ShaderProgramID programPacked                 = FromGL<ShaderProgramID>(program);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() || ValidateGetActiveAtomicCounterBufferiv(
+                                              context, programPacked, bufferIndex, pname, params));
+        if (isCallValid)
         {
-            context->getActiveAtomicCounterBufferiv(program, bufferIndex, pname, params);
+            context->getActiveAtomicCounterBufferiv(programPacked, bufferIndex, pname, params);
         }
+        ANGLE_CAPTURE(GetActiveAtomicCounterBufferiv, isCallValid, context, programPacked,
+                      bufferIndex, pname, params);
     }
 }
 
@@ -199,75 +240,92 @@ void GL_APIENTRY GetInternalformativ(GLenum target,
                                      GLsizei bufSize,
                                      GLint *params)
 {
-    EVENT(
-        "(GLenum target = 0x%X, GLenum internalformat = 0x%X, GLenum pname = 0x%X, GLsizei bufSize "
-        "= %d, GLint *params = 0x%016" PRIxPTR ")",
-        target, internalformat, pname, bufSize, (uintptr_t)params);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glGetInternalformativ",
+          "context = %d, GLenum target = %s, GLenum internalformat = %s, GLenum pname = %s, "
+          "GLsizei bufSize = %d, GLint *params = 0x%016" PRIxPTR "",
+          CID(context), GLenumToString(GLenumGroup::TextureTarget, target),
+          GLenumToString(GLenumGroup::InternalFormat, internalformat),
+          GLenumToString(GLenumGroup::InternalFormatPName, pname), bufSize, (uintptr_t)params);
+
     if (context)
     {
-        ANGLE_CAPTURE(GetInternalformativ, context, target, internalformat, pname, bufSize, params);
-        if (context->skipValidation() ||
-            ValidateGetInternalformativ(context, target, internalformat, pname, bufSize, params))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateGetInternalformativ(context, target, internalformat, pname, bufSize, params));
+        if (isCallValid)
         {
             context->getInternalformativ(target, internalformat, pname, bufSize, params);
         }
+        ANGLE_CAPTURE(GetInternalformativ, isCallValid, context, target, internalformat, pname,
+                      bufSize, params);
     }
 }
 
 void GL_APIENTRY MemoryBarrier(GLbitfield barriers)
 {
-    EVENT("(GLbitfield barriers = 0x%X)", barriers);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glMemoryBarrier", "context = %d, GLbitfield barriers = %s", CID(context),
+          GLbitfieldToString(GLenumGroup::MemoryBarrierMask, barriers).c_str());
+
     if (context)
     {
-        ANGLE_CAPTURE(MemoryBarrier, context, barriers);
-        if (context->skipValidation() || ValidateMemoryBarrier(context, barriers))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid = (context->skipValidation() || ValidateMemoryBarrier(context, barriers));
+        if (isCallValid)
         {
             context->memoryBarrier(barriers);
         }
+        ANGLE_CAPTURE(MemoryBarrier, isCallValid, context, barriers);
     }
 }
 
 void GL_APIENTRY TexStorage1D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width)
 {
-    EVENT(
-        "(GLenum target = 0x%X, GLsizei levels = %d, GLenum internalformat = 0x%X, GLsizei width = "
-        "%d)",
-        target, levels, internalformat, width);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glTexStorage1D",
+          "context = %d, GLenum target = %s, GLsizei levels = %d, GLenum internalformat = %s, "
+          "GLsizei width = %d",
+          CID(context), GLenumToString(GLenumGroup::TextureTarget, target), levels,
+          GLenumToString(GLenumGroup::InternalFormat, internalformat), width);
+
     if (context)
     {
-        ANGLE_CAPTURE(TexStorage1D, context, target, levels, internalformat, width);
-        if (context->skipValidation() ||
-            ValidateTexStorage1D(context, target, levels, internalformat, width))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateTexStorage1D(context, target, levels, internalformat, width));
+        if (isCallValid)
         {
             context->texStorage1D(target, levels, internalformat, width);
         }
+        ANGLE_CAPTURE(TexStorage1D, isCallValid, context, target, levels, internalformat, width);
     }
 }
 
 void GL_APIENTRY
 TexStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    EVENT(
-        "(GLenum target = 0x%X, GLsizei levels = %d, GLenum internalformat = 0x%X, GLsizei width = "
-        "%d, GLsizei height = %d)",
-        target, levels, internalformat, width, height);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glTexStorage2D",
+          "context = %d, GLenum target = %s, GLsizei levels = %d, GLenum internalformat = %s, "
+          "GLsizei width = %d, GLsizei height = %d",
+          CID(context), GLenumToString(GLenumGroup::TextureTarget, target), levels,
+          GLenumToString(GLenumGroup::InternalFormat, internalformat), width, height);
+
     if (context)
     {
-        TextureType targetPacked = FromGLenum<TextureType>(target);
-        ANGLE_CAPTURE(TexStorage2D, context, targetPacked, levels, internalformat, width, height);
-        if (context->skipValidation() ||
-            ValidateTexStorage2D(context, targetPacked, levels, internalformat, width, height))
+        TextureType targetPacked                      = FromGL<TextureType>(target);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateTexStorage2D(context, targetPacked, levels, internalformat, width, height));
+        if (isCallValid)
         {
             context->texStorage2D(targetPacked, levels, internalformat, width, height);
         }
+        ANGLE_CAPTURE(TexStorage2D, isCallValid, context, targetPacked, levels, internalformat,
+                      width, height);
     }
 }
 
@@ -278,22 +336,26 @@ void GL_APIENTRY TexStorage3D(GLenum target,
                               GLsizei height,
                               GLsizei depth)
 {
-    EVENT(
-        "(GLenum target = 0x%X, GLsizei levels = %d, GLenum internalformat = 0x%X, GLsizei width = "
-        "%d, GLsizei height = %d, GLsizei depth = %d)",
-        target, levels, internalformat, width, height, depth);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glTexStorage3D",
+          "context = %d, GLenum target = %s, GLsizei levels = %d, GLenum internalformat = %s, "
+          "GLsizei width = %d, GLsizei height = %d, GLsizei depth = %d",
+          CID(context), GLenumToString(GLenumGroup::TextureTarget, target), levels,
+          GLenumToString(GLenumGroup::InternalFormat, internalformat), width, height, depth);
+
     if (context)
     {
-        TextureType targetPacked = FromGLenum<TextureType>(target);
-        ANGLE_CAPTURE(TexStorage3D, context, targetPacked, levels, internalformat, width, height,
-                      depth);
-        if (context->skipValidation() || ValidateTexStorage3D(context, targetPacked, levels,
-                                                              internalformat, width, height, depth))
+        TextureType targetPacked                      = FromGL<TextureType>(target);
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateTexStorage3D(context, targetPacked, levels, internalformat,
+                                                 width, height, depth));
+        if (isCallValid)
         {
             context->texStorage3D(targetPacked, levels, internalformat, width, height, depth);
         }
+        ANGLE_CAPTURE(TexStorage3D, isCallValid, context, targetPacked, levels, internalformat,
+                      width, height, depth);
     }
 }
 }  // namespace gl

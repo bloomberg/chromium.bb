@@ -15,7 +15,6 @@ import org.junit.Assert;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -131,7 +130,7 @@ public class ChromeTabUtils {
      */
     public static void waitForTabPageLoaded(final Tab tab, @Nullable final String url)
             throws InterruptedException {
-        waitForTabPageLoaded(tab, url, null, ScalableTimeout.scaleTimeout(10));
+        waitForTabPageLoaded(tab, url, null, 10L);
     }
 
     /**
@@ -313,8 +312,7 @@ public class ChromeTabUtils {
         });
 
         try {
-            interactableCallback.waitForCallback(
-                    0, 1, ScalableTimeout.scaleTimeout(10), TimeUnit.SECONDS);
+            interactableCallback.waitForCallback(0, 1, 10L, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             Assert.fail("Page never became interactable.");
         }
@@ -370,8 +368,7 @@ public class ChromeTabUtils {
      * Returns when the tab has been created and has finished navigating.
      */
     public static void newTabFromMenu(Instrumentation instrumentation,
-            final ChromeTabbedActivity activity)
-            throws InterruptedException {
+            final ChromeActivity activity) throws InterruptedException {
         newTabFromMenu(instrumentation, activity, false, true);
     }
 
@@ -381,7 +378,7 @@ public class ChromeTabUtils {
      * Returns when the tab has been created and has finished navigating.
      */
     public static void newTabFromMenu(Instrumentation instrumentation,
-            final ChromeTabbedActivity activity, boolean incognito, boolean waitForNtpLoad)
+            final ChromeActivity activity, boolean incognito, boolean waitForNtpLoad)
             throws InterruptedException {
         final CallbackHelper createdCallback = new CallbackHelper();
         final CallbackHelper selectedCallback = new CallbackHelper();
@@ -488,8 +485,7 @@ public class ChromeTabUtils {
      * Returns after the tab has been closed.
      */
     public static void closeCurrentTab(final Instrumentation instrumentation,
-            final ChromeTabbedActivity activity)
-            throws InterruptedException {
+            final ChromeActivity activity) throws InterruptedException {
         closeTabWithAction(instrumentation, activity, new Runnable() {
             @Override
             public void run() {
@@ -507,7 +503,7 @@ public class ChromeTabUtils {
      * Closes a tab with the given action and waits for a tab closure to be observed.
      */
     public static void closeTabWithAction(Instrumentation instrumentation,
-            final ChromeTabbedActivity activity, Runnable action) throws InterruptedException {
+            final ChromeActivity activity, Runnable action) throws InterruptedException {
         final CallbackHelper closeCallback = new CallbackHelper();
         final TabModelObserver observer = new EmptyTabModelObserver() {
             @Override

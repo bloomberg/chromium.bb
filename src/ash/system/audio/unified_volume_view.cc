@@ -6,9 +6,11 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
@@ -66,10 +68,12 @@ class MoreButton : public views::Button {
                     2),
         2));
 
+    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconPrimary,
+        AshColorProvider::AshColorMode::kDark);
     auto* headset = new views::ImageView();
     headset->set_can_process_events_within_subtree(false);
-    headset->SetImage(
-        CreateVectorIcon(vector_icons::kHeadsetIcon, kUnifiedMenuIconColor));
+    headset->SetImage(CreateVectorIcon(vector_icons::kHeadsetIcon, icon_color));
     AddChildView(headset);
 
     auto* more = new views::ImageView();
@@ -78,8 +82,7 @@ class MoreButton : public views::Button {
                              ? SkBitmapOperations::ROTATION_270_CW
                              : SkBitmapOperations::ROTATION_90_CW;
     more->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
-        CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor),
-        icon_rotation));
+        CreateVectorIcon(kUnifiedMenuExpandIcon, icon_color), icon_rotation));
     AddChildView(more);
 
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
@@ -98,7 +101,9 @@ class MoreButton : public views::Button {
     gfx::Rect rect(GetContentsBounds());
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kUnifiedMenuButtonColor);
+    flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+        kUnifiedMenuButtonColor));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRoundRect(rect, kTrayItemSize / 2, flags);
   }
@@ -110,13 +115,15 @@ class MoreButton : public views::Button {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return TrayPopupUtils::CreateInkDropRipple(
         TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+        GetInkDropCenterBasedOnLastEvent(),
+        UnifiedSystemTrayView::GetBackgroundColor());
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+        TrayPopupInkDropStyle::FILL_BOUNDS, this,
+        UnifiedSystemTrayView::GetBackgroundColor());
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
@@ -157,10 +164,15 @@ void UnifiedVolumeView::Update(bool by_user) {
   // Indicate that the slider is inactive when it's muted.
   slider()->SetIsActive(!is_muted);
 
-  // The button should be gray whay muted and colored otherwise.
+  // The button should be gray when muted and colored otherwise.
   button()->SetToggled(!is_muted);
   button()->SetVectorIcon(is_muted ? kUnifiedMenuVolumeMuteIcon
                                    : GetVolumeIconForLevel(level));
+  base::string16 state_tooltip_text = l10n_util::GetStringUTF16(
+      is_muted ? IDS_ASH_STATUS_TRAY_VOLUME_STATE_MUTED
+               : IDS_ASH_STATUS_TRAY_VOLUME_STATE_ON);
+  button()->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_VOLUME, state_tooltip_text));
 
   more_button_->SetVisible(CrasAudioHandler::Get()->has_alternative_input() ||
                            CrasAudioHandler::Get()->has_alternative_output());

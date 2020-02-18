@@ -46,9 +46,12 @@ struct DisplaySnapshot_Params {
   bool has_color_correction_matrix = false;
   bool color_correction_in_linear_space = false;
   gfx::ColorSpace color_space;
+  uint32_t bits_per_channel = 0;
   std::string display_name;
   base::FilePath sys_path;
   std::vector<DisplayMode_Params> modes;
+  display::PanelOrientation panel_orientation =
+      display::PanelOrientation::kNormal;
   std::vector<uint8_t> edid;
   bool has_current_mode = false;
   DisplayMode_Params current_mode;
@@ -64,7 +67,6 @@ struct OverlayCheck_Params {
   OverlayCheck_Params(const OverlaySurfaceCandidate& candidate);
   OverlayCheck_Params(const OverlayCheck_Params& other);
   ~OverlayCheck_Params();
-
 
   gfx::Size buffer_size;
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;

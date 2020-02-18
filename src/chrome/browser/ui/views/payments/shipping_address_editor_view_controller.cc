@@ -253,7 +253,7 @@ ShippingAddressEditorViewController::ShippingAddressValidationDelegate::Format(
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     IsValidTextfield(views::Textfield* textfield,
                      base::string16* error_message) {
-  return ValidateValue(textfield->text(), error_message);
+  return ValidateValue(textfield->GetText(), error_message);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
@@ -268,7 +268,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     return true;
 
   base::string16 error_message;
-  bool is_valid = ValidateValue(textfield->text(), &error_message);
+  bool is_valid = ValidateValue(textfield->GetText(), &error_message);
   controller_->DisplayErrorMessageForField(field_.type, error_message);
   return is_valid;
 }
@@ -435,6 +435,14 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
   autofill::GetAddressComponents(chosen_country_code,
                                  state()->GetApplicationLocale(),
                                  components.get(), &language_code_);
+
+  // Insert the Country combobox at the top.
+  editor_fields_.emplace_back(
+      autofill::ADDRESS_HOME_COUNTRY,
+      l10n_util::GetStringUTF16(IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL),
+      EditorField::LengthHint::HINT_SHORT, /*required=*/true,
+      EditorField::ControlType::COMBOBOX);
+
   for (size_t line_index = 0; line_index < components->GetSize();
        ++line_index) {
     const base::ListValue* line = nullptr;
@@ -482,17 +490,9 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
       editor_fields_.emplace_back(server_field_type,
                                   base::UTF8ToUTF16(field_name), length_hint,
                                   autofill::i18n::IsFieldRequired(
-                                      server_field_type, chosen_country_code),
+                                      server_field_type, chosen_country_code) ||
+                                      server_field_type == autofill::NAME_FULL,
                                   control_type);
-      // Insert the Country combobox right after NAME_FULL.
-      if (server_field_type == autofill::NAME_FULL) {
-        editor_fields_.emplace_back(
-            autofill::ADDRESS_HOME_COUNTRY,
-            l10n_util::GetStringUTF16(
-                IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL),
-            EditorField::LengthHint::HINT_SHORT, /*required=*/true,
-            EditorField::ControlType::COMBOBOX);
-      }
     }
   }
   // Always add phone number at the end.
@@ -548,12 +548,13 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     // ValidatingTextfield* is the key, EditorField is the value.
     if (field.first->IsValid()) {
       success =
-          profile->SetInfo(field.second.type, field.first->text(), locale);
+          profile->SetInfo(field.second.type, field.first->GetText(), locale);
     } else {
       success = false;
     }
     LOG_IF(ERROR, !success && !ignore_errors)
-        << "Can't setinfo(" << field.second.type << ", " << field.first->text();
+        << "Can't setinfo(" << field.second.type << ", "
+        << field.first->GetText();
     if (!success && !ignore_errors)
       return false;
   }

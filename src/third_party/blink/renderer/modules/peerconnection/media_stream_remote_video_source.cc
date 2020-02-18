@@ -14,11 +14,11 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_video_utils.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -235,18 +235,18 @@ MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
 }
 
 MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!observer_);
 }
 
 void MediaStreamRemoteVideoSource::OnSourceTerminated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   StopSourceImpl();
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!delegate_.get());
   delegate_ = base::MakeRefCounted<RemoteVideoSourceDelegate>(io_task_runner(),
                                                               frame_callback);
@@ -257,7 +257,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // StopSourceImpl is called either when MediaStreamTrack.stop is called from
   // JS or blink gc the MediaStreamSource object or when OnSourceTerminated()
   // is called. Garbage collection will happen after the PeerConnection no
@@ -279,7 +279,7 @@ MediaStreamRemoteVideoSource::SinkInterfaceForTesting() {
 
 void MediaStreamRemoteVideoSource::OnChanged(
     webrtc::MediaStreamTrackInterface::TrackState state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   switch (state) {
     case webrtc::MediaStreamTrackInterface::kLive:
       SetReadyState(WebMediaStreamSource::kReadyStateLive);

@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
@@ -64,7 +63,14 @@ bool InitializeVisuals() {
 
 }  // namespace
 
-ViewsTestBase::ViewsTestBase() = default;
+ViewsTestBase::ViewsTestBase(
+    ViewsTestBase::SubclassManagesTaskEnvironment /* tag */)
+    : task_environment_(base::nullopt) {
+  // MaterialDesignController is initialized here instead of in SetUp because
+  // a subclass might construct a MaterialDesignControllerTestAPI as a member to
+  // override the value, and this must happen first.
+  ui::MaterialDesignController::Initialize();
+}
 
 ViewsTestBase::~ViewsTestBase() {
   CHECK(setup_called_)
@@ -74,15 +80,9 @@ ViewsTestBase::~ViewsTestBase() {
 }
 
 void ViewsTestBase::SetUp() {
-  if (!scoped_task_environment_) {
-    scoped_task_environment_ = std::make_unique<ScopedTaskEnvironment>(
-        ScopedTaskEnvironment::MainThreadType::UI);
-  }
-
   has_compositing_manager_ = InitializeVisuals();
 
   testing::Test::SetUp();
-  ui::MaterialDesignController::Initialize();
   setup_called_ = true;
   if (!views_delegate_for_setup_)
     views_delegate_for_setup_ = std::make_unique<TestViewsDelegate>();

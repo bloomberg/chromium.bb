@@ -17,8 +17,8 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
@@ -69,7 +69,7 @@ class ChildProcessSecurityPolicyTestBrowserClient
 class ChildProcessSecurityPolicyTest : public testing::Test {
  public:
   ChildProcessSecurityPolicyTest()
-      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(BrowserTaskEnvironment::REAL_IO_THREAD),
         old_browser_client_(nullptr) {}
 
   void SetUp() override {
@@ -216,7 +216,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
   BrowserContext* browser_context() { return &browser_context_; }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   ChildProcessSecurityPolicyTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;
@@ -1143,7 +1143,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
 
   // Post a task that will run on the IO thread before the task that
   // Remove() will post to the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         // Capture state on the IO thread before Remove() is called.
         io_before_remove = p->CanAccessDataForOrigin(kRendererID, url);
@@ -1166,15 +1166,15 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   p->Remove(kRendererID);
 
   // Post a task to run after the task Remove() posted on the IO thread.
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindLambdaForTesting([&]() {
-                             io_after_io_task_completed =
-                                 p->CanAccessDataForOrigin(kRendererID, url);
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindLambdaForTesting([&]() {
+                   io_after_io_task_completed =
+                       p->CanAccessDataForOrigin(kRendererID, url);
 
-                             // Tell the UI thread that the task from Remove()
-                             // has completed on the IO thread.
-                             pending_remove_complete_event.Signal();
-                           }));
+                   // Tell the UI thread that the task from Remove()
+                   // has completed on the IO thread.
+                   pending_remove_complete_event.Signal();
+                 }));
 
   // Capture state after Remove() has been called, but before its IO thread
   // task has run. We know the IO thread task hasn't run yet because the
@@ -1198,7 +1198,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   bool io_after_remove_complete = false;
   base::WaitableEvent after_remove_complete_event;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         io_after_remove_complete = p->CanAccessDataForOrigin(kRendererID, url);
 
@@ -1225,56 +1225,161 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   EXPECT_FALSE(io_after_remove_complete);
 }
 
-TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin) {
+TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_URL) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   GURL file_url("file:///etc/passwd");
-  GURL http_url("http://foo.com/index.html");
-  GURL http2_url("http://bar.com/index.html");
+  GURL foo_http_url("http://foo.com/index.html");
+  GURL foo_blob_url("blob:http://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a");
+  GURL foo_filesystem_url("filesystem:http://foo.com/temporary/test.html");
+  GURL bar_http_url("http://bar.com/index.html");
 
   // Test invalid ID case.
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
 
   TestBrowserContext browser_context;
   p->Add(kRendererID, &browser_context);
 
   // Verify unlocked origin permissions.
   EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
 
   // Isolate |http_url| so we can't get a default SiteInstance.
-  p->AddIsolatedOrigins({url::Origin::Create(http_url)},
+  p->AddIsolatedOrigins({url::Origin::Create(foo_http_url)},
                         IsolatedOriginSource::TEST, &browser_context);
 
   // Lock process to |http_url| origin.
   scoped_refptr<SiteInstanceImpl> foo_instance =
-      SiteInstanceImpl::CreateForURL(&browser_context, http_url);
+      SiteInstanceImpl::CreateForURL(&browser_context, foo_http_url);
   EXPECT_FALSE(foo_instance->IsDefaultSiteInstance());
   p->LockToOrigin(foo_instance->GetIsolationContext(), kRendererID,
                   foo_instance->GetSiteURL());
 
   // Verify that file access is no longer allowed.
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
 
   p->Remove(kRendererID);
 
   // Post a task to the IO loop that then posts a task to the UI loop.
   // This should cause the |run_loop| to return after the removal has completed.
   base::RunLoop run_loop;
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
-                                   base::DoNothing(), run_loop.QuitClosure());
+  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+                         run_loop.QuitClosure());
   run_loop.Run();
 
-  // Verify invalid ID is rejected now that Remove() has complted.
+  // Verify invalid ID is rejected now that Remove() has completed.
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
+}
+
+TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  const std::vector<const char*> foo_urls = {
+      "http://foo.com/index.html",
+      "blob:http://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:http://foo.com/temporary/test.html",
+      // Port differences considered equal.
+      "http://foo.com:1234/index.html",
+      "blob:http://foo.com:1234/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:http://foo.com:1234/temporary/test.html"};
+
+  const std::vector<const char*> non_foo_urls = {
+      "file:///etc/passwd",
+      "http://bar.com/index.html",
+      "blob:http://bar.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:http://bar.com/temporary/test.html",
+      "data:text/html,Hello!"
+      // foo.com with a different scheme not considered equal.
+      "https://foo.com/index.html",
+      "blob:https://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:https://foo.com/temporary/test.html"};
+
+  std::vector<url::Origin> foo_origins;
+  std::vector<url::Origin> non_foo_origins;
+  std::vector<url::Origin> all_origins;
+  for (auto* url : foo_urls) {
+    auto origin = url::Origin::Create(GURL(url));
+    foo_origins.push_back(origin);
+    all_origins.push_back(origin);
+  }
+  auto foo_origin = url::Origin::Create(GURL("http://foo.com"));
+  auto opaque_with_foo_precursor = foo_origin.DeriveNewOpaqueOrigin();
+  foo_origins.push_back(opaque_with_foo_precursor);
+  all_origins.push_back(opaque_with_foo_precursor);
+
+  for (auto* url : non_foo_urls) {
+    auto origin = url::Origin::Create(GURL(url));
+    non_foo_origins.push_back(origin);
+    all_origins.push_back(origin);
+  }
+  url::Origin opaque_origin_without_precursor;
+  non_foo_origins.push_back(opaque_origin_without_precursor);
+  all_origins.push_back(opaque_origin_without_precursor);
+
+  auto opaque_with_bar_precursor =
+      url::Origin::Create(GURL("http://bar.com")).DeriveNewOpaqueOrigin();
+  non_foo_origins.push_back(opaque_with_bar_precursor);
+  all_origins.push_back(opaque_with_bar_precursor);
+
+  // Test invalid ID case.
+  for (const auto& origin : all_origins)
+    EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  TestBrowserContext browser_context;
+  p->Add(kRendererID, &browser_context);
+
+  // Verify unlocked process permissions.
+  for (const auto& origin : all_origins)
+    EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  // Isolate |foo_origin| so we can't get a default SiteInstance.
+  p->AddIsolatedOrigins({foo_origin}, IsolatedOriginSource::TEST,
+                        &browser_context);
+
+  // Lock process to |foo_origin| origin.
+  scoped_refptr<SiteInstanceImpl> foo_instance =
+      SiteInstanceImpl::CreateForURL(&browser_context, foo_origin.GetURL());
+  EXPECT_FALSE(foo_instance->IsDefaultSiteInstance());
+  p->LockToOrigin(foo_instance->GetIsolationContext(), kRendererID,
+                  foo_instance->GetSiteURL());
+
+  // Verify that access is no longer allowed for origins that are not associated
+  // with foo.com.
+  for (const auto& origin : foo_origins)
+    EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  for (const auto& origin : non_foo_origins)
+    EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  p->Remove(kRendererID);
+
+  // Post a task to the IO loop that then posts a task to the UI loop.
+  // This should cause the |run_loop| to return after the removal has completed.
+  base::RunLoop run_loop;
+  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Verify invalid ID is rejected now that Remove() has completed.
+  for (const auto& origin : all_origins)
+    EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
 }
 
 // Test the granting of origin permissions, and their interactions with
@@ -2054,21 +2159,21 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
 
   // Post a task that will run on the IO thread before the task that
   // Remove() will post to the IO thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
-        // Capture state on the IO thread before Remove() is called.
-        io_before_remove = p->HasSecurityState(kRendererID);
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindLambdaForTesting([&]() {
+                   // Capture state on the IO thread before Remove() is called.
+                   io_before_remove = p->HasSecurityState(kRendererID);
 
-        // Tell the UI thread we are ready for Remove() to be called.
-        ready_for_remove_event.Signal();
+                   // Tell the UI thread we are ready for Remove() to be called.
+                   ready_for_remove_event.Signal();
 
-        // Wait for Remove() to be called on the UI thread.
-        remove_called_event.Wait();
+                   // Wait for Remove() to be called on the UI thread.
+                   remove_called_event.Wait();
 
-        // Capture state after Remove() is called, but before its task on
-        // the IO thread runs.
-        io_while_io_task_pending = p->HasSecurityState(kRendererID);
-      }));
+                   // Capture state after Remove() is called, but before its
+                   // task on the IO thread runs.
+                   io_while_io_task_pending = p->HasSecurityState(kRendererID);
+                 }));
 
   ready_for_remove_event.Wait();
 
@@ -2077,7 +2182,7 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
   p->Remove(kRendererID);
 
   // Post a task to run after the task Remove() posted on the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         io_after_io_task_completed = p->HasSecurityState(kRendererID);
 
@@ -2108,14 +2213,14 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
   bool io_after_remove_complete = false;
   base::WaitableEvent after_remove_complete_event;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
-        io_after_remove_complete = p->HasSecurityState(kRendererID);
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindLambdaForTesting([&]() {
+                   io_after_remove_complete = p->HasSecurityState(kRendererID);
 
-        // Tell the UI thread that this task has
-        // has completed on the IO thread.
-        after_remove_complete_event.Signal();
-      }));
+                   // Tell the UI thread that this task has
+                   // has completed on the IO thread.
+                   after_remove_complete_event.Signal();
+                 }));
 
   // Wait for the task we just posted to the IO thread to complete.
   after_remove_complete_event.Wait();

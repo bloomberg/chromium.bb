@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -36,27 +36,12 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 namespace {
-
-// Gets the icon to use if the extension app icon is not available.
-gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
-  gfx::ImageSkia page_icon = browser->GetCurrentPageIcon().AsImageSkia();
-  if (!page_icon.isNull())
-    return page_icon;
-
-  // The extension icon may be loading still. Return a transparent icon rather
-  // than using a placeholder to avoid flickering.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
-  bitmap.eraseColor(SK_ColorTRANSPARENT);
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
 
 // Returns true if |app_url| and |page_url| are the same origin. To avoid
 // breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
@@ -129,7 +114,7 @@ bool HostedAppBrowserController::IsHostedApp() const {
   return true;
 }
 
-bool HostedAppBrowserController::ShouldShowToolbar() const {
+bool HostedAppBrowserController::ShouldShowCustomTabBar() const {
   const Extension* extension = GetExtension();
   if (!extension)
     return false;
@@ -205,27 +190,22 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   return false;
 }
 
-bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
-  // System Web Apps don't get the Hosted App buttons.
-  return IsForWebAppBrowser(browser()) && !IsForSystemWebApp();
-}
-
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
   // TODO(calamity): Use the app name to retrieve the app icon without using the
   // extensions tab helper to make icon load more immediate.
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (!contents)
-    return GetFallbackAppIcon(browser());
+    return GetFallbackAppIcon();
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(contents);
   if (!extensions_tab_helper)
-    return GetFallbackAppIcon(browser());
+    return GetFallbackAppIcon();
 
   const SkBitmap* icon_bitmap = extensions_tab_helper->GetExtensionAppIcon();
   if (!icon_bitmap)
-    return GetFallbackAppIcon(browser());
+    return GetFallbackAppIcon();
 
   return gfx::ImageSkia::CreateFrom1xBitmap(*icon_bitmap);
 }
@@ -258,7 +238,7 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
 base::string16 HostedAppBrowserController::GetTitle() const {
   // When showing the toolbar, display the name of the app, instead of the
   // current page as the title.
-  if (ShouldShowToolbar()) {
+  if (ShouldShowCustomTabBar()) {
     const Extension* extension = GetExtension();
     return base::UTF8ToUTF16(extension->name());
   }
@@ -305,16 +285,14 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool HostedAppBrowserController::CanUninstall() const {
-  return web_app::WebAppProvider::Get(browser()->profile())
-      ->ui_manager()
-      .dialog_manager()
+  return web_app::WebAppUiManagerImpl::Get(browser()->profile())
+      ->dialog_manager()
       .CanUninstallWebApp(extension_id_);
 }
 
 void HostedAppBrowserController::Uninstall() {
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->ui_manager()
-      .dialog_manager()
+  web_app::WebAppUiManagerImpl::Get(browser()->profile())
+      ->dialog_manager()
       .UninstallWebApp(extension_id_,
                        web_app::WebAppDialogManager::UninstallSource::kAppMenu,
                        browser()->window(), base::DoNothing());
@@ -325,7 +303,7 @@ bool HostedAppBrowserController::IsInstalled() const {
 }
 
 void HostedAppBrowserController::OnReceivedInitialURL() {
-  UpdateToolbarVisibility(false);
+  UpdateCustomTabBarVisibility(false);
 
   // If the window bounds have not been overridden, there is no need to resize
   // the window.

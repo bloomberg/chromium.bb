@@ -109,7 +109,7 @@ def get_parser():
 def start_userspace_oom_killer():
     # Start userspace OOM killer: https://github.com/rfjakob/earlyoom
     # It will report memory usage every minute and prefer to kill browsers.
-    start(["sudo", "earlyoom", "-p", "-r", "60" "--prefer=(chrome|firefox)", "--avoid=python"])
+    start(["sudo", "earlyoom", "-p", "-r", "60", "--prefer=(chrome|firefox)", "--avoid=python"])
 
 
 def make_hosts_file():
@@ -150,7 +150,7 @@ def start_xvfb():
 def get_extra_jobs(event):
     body = None
     jobs = set()
-    if "commits" in event:
+    if "commits" in event and event["commits"]:
         body = event["commits"][0]["message"]
     elif "pull_request" in event:
         body = event["pull_request"]["body"]

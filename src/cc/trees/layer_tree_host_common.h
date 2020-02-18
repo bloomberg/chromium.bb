@@ -37,34 +37,34 @@ class CC_EXPORT LayerTreeHostCommon {
   struct CC_EXPORT CalcDrawPropsMainInputsForTesting {
    public:
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       float page_scale_factor,
                                       const Layer* page_scale_layer,
                                       const Layer* inner_viewport_scroll_layer,
-                                      const Layer* outer_viewport_scroll_layer,
-                                      TransformNode* page_scale_transform_node);
+                                      const Layer* outer_viewport_scroll_layer);
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform);
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size);
+                                      const gfx::Rect& device_viewport_rect);
     Layer* root_layer;
-    gfx::Size device_viewport_size;
+    gfx::Rect device_viewport_rect;
     gfx::Transform device_transform;
     float device_scale_factor;
     float page_scale_factor;
     const Layer* page_scale_layer;
     const Layer* inner_viewport_scroll_layer;
     const Layer* outer_viewport_scroll_layer;
-    TransformNode* page_scale_transform_node;
+    // If not null, accepts layers output from FindLayersThatNeedUpdates().
+    LayerList* update_layer_list = nullptr;
   };
 
   struct CC_EXPORT CalcDrawPropsImplInputs {
    public:
     CalcDrawPropsImplInputs(LayerImpl* root_layer,
-                            const gfx::Size& device_viewport_size,
+                            const gfx::Rect& device_viewport_rect,
                             const gfx::Transform& device_transform,
                             float device_scale_factor,
                             float page_scale_factor,
@@ -79,7 +79,7 @@ class CC_EXPORT LayerTreeHostCommon {
                             TransformNode* page_scale_transform_node);
 
     LayerImpl* root_layer;
-    gfx::Size device_viewport_size;
+    gfx::Rect device_viewport_rect;
     gfx::Transform device_transform;
     float device_scale_factor;
     float page_scale_factor;
@@ -97,21 +97,24 @@ class CC_EXPORT LayerTreeHostCommon {
   struct CC_EXPORT CalcDrawPropsImplInputsForTesting
       : public CalcDrawPropsImplInputs {
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       RenderSurfaceList* render_surface_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       RenderSurfaceList* render_surface_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list);
+
+    // If not null, accepts layers output from FindLayersThatNeedUpdates().
+    LayerImplList* update_layer_list = nullptr;
   };
 
   static int CalculateLayerJitter(LayerImpl* scrolling_layer);
@@ -119,6 +122,9 @@ class CC_EXPORT LayerTreeHostCommon {
       CalcDrawPropsMainInputsForTesting* inputs);
 
   static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
+
+  // TODO(wangxianzhu): Move these functions into testing classes.
+  static void PrepareForUpdateDrawPropertiesForTesting(LayerTreeImpl*);
   static void CalculateDrawPropertiesForTesting(
       CalcDrawPropsImplInputsForTesting* inputs);
 
@@ -218,8 +224,8 @@ void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* tree_impl,
   }
 }
 
-CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer);
-CC_EXPORT PropertyTrees* GetPropertyTrees(LayerImpl* layer);
+CC_EXPORT PropertyTrees* GetPropertyTrees(const Layer* layer);
+CC_EXPORT PropertyTrees* GetPropertyTrees(const LayerImpl* layer);
 
 }  // namespace cc
 

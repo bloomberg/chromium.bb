@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "android_webview/browser/aw_browser_policy_connector.h"
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
@@ -20,9 +19,9 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/cookie_manager.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/native_jni/AwBrowserContext_jni.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -58,7 +57,6 @@
 #include "media/mojo/buildflags.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;
@@ -89,6 +87,17 @@ AwBrowserContext::AwBrowserContext()
 
   BrowserContext::Initialize(this, context_storage_path_);
 
+  CreateUserPrefService();
+
+  visitedlink_master_.reset(
+      new visitedlink::VisitedLinkMaster(this, this, false));
+  visitedlink_master_->Init();
+
+  form_database_service_.reset(
+      new AwFormDatabaseService(context_storage_path_));
+
+  EnsureResourceContextInitialized(this);
+
   // This constructor is entered during the creation of ContentBrowserClient,
   // before browser threads are created. Therefore any checks to enforce
   // threading (such as BrowserThread::CurrentlyOn()) will fail here.
@@ -98,6 +107,8 @@ AwBrowserContext::~AwBrowserContext() {
   DCHECK_EQ(this, g_browser_context);
   BrowserContext::NotifyWillBeDestroyed(this);
   SimpleKeyMap::GetInstance()->Dissociate(this);
+  ShutdownStoragePartitions();
+
   g_browser_context = NULL;
 }
 
@@ -136,14 +147,8 @@ base::FilePath AwBrowserContext::GetPrefStorePath() {
   return pref_store_path;
 }
 
-// static
 base::FilePath AwBrowserContext::GetCookieStorePath() {
-  FilePath cookie_store_path;
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &cookie_store_path)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
-  }
-  cookie_store_path = cookie_store_path.Append(FILE_PATH_LITERAL("Cookies"));
-  return cookie_store_path;
+  return GetCookieManager()->GetCookieStorePath();
 }
 
 // static
@@ -183,8 +188,6 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void AwBrowserContext::CreateUserPrefService() {
-  browser_policy_connector_ = std::make_unique<AwBrowserPolicyConnector>();
-
   auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
 
   RegisterPrefs(pref_registry.get());
@@ -202,17 +205,20 @@ void AwBrowserContext::CreateUserPrefService() {
       /*validation_delegate=*/nullptr));
 
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
+  AwBrowserPolicyConnector* browser_policy_connector =
+      AwBrowserProcess::GetInstance()->browser_policy_connector();
   pref_service_factory.set_managed_prefs(
       base::MakeRefCounted<policy::ConfigurationPolicyPrefStore>(
-          browser_policy_connector_.get(),
-          browser_policy_connector_->GetPolicyService(),
-          browser_policy_connector_->GetHandlerList(),
+          browser_policy_connector,
+          browser_policy_connector->GetPolicyService(),
+          browser_policy_connector->GetHandlerList(),
           policy::POLICY_LEVEL_MANDATORY));
 
   user_pref_service_ = pref_service_factory.Create(pref_registry);
 
-  // TODO(amalova): Do not call this method for non-default profile.
-  MigrateLocalStatePrefs();
+  if (IsDefaultBrowserContext()) {
+    MigrateLocalStatePrefs();
+  }
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
@@ -235,32 +241,6 @@ std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
   std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
                                                 "negotiate"};
   return supported_schemes;
-}
-
-void AwBrowserContext::PreMainMessageLoopRun() {
-  CreateUserPrefService();
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(amalova): Create a new instance for non-default profiles.
-    url_request_context_getter_ =
-        AwBrowserProcess::GetInstance()->GetAwURLRequestContext();
-  }
-
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  visitedlink_master_.reset(
-      new visitedlink::VisitedLinkMaster(this, this, false));
-  visitedlink_master_->Init();
-
-  form_database_service_.reset(
-      new AwFormDatabaseService(context_storage_path_));
-
-  EnsureResourceContextInitialized(this);
-
-  content::WebUIControllerFactory::RegisterFactory(
-      AwWebUIControllerFactory::GetInstance());
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -290,6 +270,11 @@ AwBrowserContext::GetAutocompleteHistoryManager() {
   }
 
   return autocomplete_history_manager_.get();
+}
+
+CookieManager* AwBrowserContext::GetCookieManager() {
+  // TODO(amalova): create cookie manager for non-default profile
+  return CookieManager::GetInstance();
 }
 
 base::FilePath AwBrowserContext::GetPath() {
@@ -366,30 +351,10 @@ AwBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  // This function cannot actually create the request context because
-  // there is a reentrant dependency on GetResourceContext() via
-  // content::StoragePartitionImplMap::Create(). This is not fixable
-  // until http://crbug.com/159193. Until then, assert that the context
-  // has already been allocated and just handle setting the protocol_handlers.
-  DCHECK(url_request_context_getter_);
-  url_request_context_getter_->SetHandlersAndInterceptors(
-      protocol_handlers, std::move(request_interceptors));
-  return url_request_context_getter_.get();
-}
-
-net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return AwBrowserProcess::GetInstance()->GetAwURLRequestContext();
-}
-
 download::InProgressDownloadManager*
 AwBrowserContext::RetriveInProgressDownloadManager() {
   return new download::InProgressDownloadManager(
-      nullptr, base::FilePath(),
+      nullptr, base::FilePath(), nullptr,
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
 }
@@ -437,7 +402,7 @@ AwBrowserContext::GetNetworkContextParams(
   context_params->cookie_manager_params =
       network::mojom::CookieManagerParams::New();
   context_params->cookie_manager_params->allow_file_scheme_cookies =
-      CookieManager::GetInstance()->AllowFileSchemeCookies();
+      GetCookieManager()->AllowFileSchemeCookies();
 
   context_params->initial_ssl_config = network::mojom::SSLConfig::New();
   // Allow SHA-1 to be used for locally-installed trust anchors, as WebView
@@ -471,6 +436,25 @@ AwBrowserContext::GetNetworkContextParams(
       context_params);
 
   return context_params;
+}
+
+base::android::ScopedJavaLocalRef<jobject> JNI_AwBrowserContext_GetDefaultJava(
+    JNIEnv* env) {
+  return g_browser_context->GetJavaBrowserContext();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+AwBrowserContext::GetJavaBrowserContext() {
+  if (!obj_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    obj_ = Java_AwBrowserContext_create(env, reinterpret_cast<intptr_t>(this),
+                                        IsDefaultBrowserContext());
+  }
+  return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+jlong AwBrowserContext::GetQuotaManagerBridge(JNIEnv* env) {
+  return reinterpret_cast<intptr_t>(GetQuotaManagerBridge());
 }
 
 }  // namespace android_webview

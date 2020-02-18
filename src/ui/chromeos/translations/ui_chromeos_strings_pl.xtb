@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Rozdzielczość grafiki</translation>
 <translation id="1943097386230153518">Zainstaluj nową usługę</translation>
 <translation id="1947424002851288782">Klawiatura niemiecka</translation>
+<translation id="1972984168337863910">Rozwiń panele informacji zwrotnej o plikach</translation>
 <translation id="197560921582345123">Może edytować</translation>
 <translation id="1984603991036629094">Armeńska klawiatura fonetyczna</translation>
 <translation id="2001796770603320721">Zarządzaj na Dysku</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Musisz być w trybie online, by uzyskać dostęp do tego pliku.</translation>
 <translation id="4212740939091998969">Istnieje już folder „<ph name="FOLDER_NAME" />”. Wybierz inną nazwę.</translation>
 <translation id="4215448920900139318">Tworzę kopie zapasowe – <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Otwórz ustawienia</translation>
 <translation id="426015154560005552">Klawiatura arabska</translation>
 <translation id="4261901459838235729">Prezentacja Google</translation>
 <translation id="4290535918735525311">Folder udostępniono Linuksowi</translation>
-<translation id="42981349822642051">Rozwiń</translation>
 <translation id="4298972503445160211">Klawiatura duńska</translation>
 <translation id="4299729908419173967">brazylijski</translation>
 <translation id="4309915981827077375">Informacje ogólne</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Autokorekta</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4886021172213954916">Klawiatura tamilska (maszyna do pisania)</translation>
-<translation id="4892969127351273348">Nie można otworzyć za pomocą aplikacji <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Wszystko gotowe do utworzenia kopii zapasowych: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Poprawione</translation>
 <translation id="4935975195727477204">Kwiat gazanii</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">szwajcarski francuski</translation>
 <translation id="5234764350956374838">Zamknij</translation>
 <translation id="5241298539944515331">Klawiatura wietnamska (VIQR)</translation>
-<translation id="52446585071384036">Aby otworzyć plik w aplikacji <ph name="APP_NAME" />, skopiuj go najpierw do folderu Pliki Linuksa.</translation>
 <translation id="5253070652067921974">Autor:</translation>
 <translation id="5257456363153333584">Ważka</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Korzystaj z plików, gdziekolwiek jesteś – nawet offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Koreański</translation>
 <translation id="5819442873484330149">Zestaw Hangul 3 (ostateczny)</translation>
 <translation id="5833610766403489739">Plik gdzieś się zawieruszył. Sprawdź ustawienie lokalizacji pobierania i spróbuj ponownie.</translation>
-<translation id="5838051104334203064">Aplikacje ze Sklepu Play nie mają dostępu do tego urządzenia</translation>
 <translation id="5838451609423551646">Usunięto wszystkie elementy z zaznaczenia.</translation>
 <translation id="5838825566232597749">Amerykańska klawiatura międzynarodowa Workman</translation>
 <translation id="5850516540536751549">Ten typ plików nie jest obsługiwany. W <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> znajdziesz aplikację umożliwiającą otwieranie plików tego typu.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Aby zapisać te pliki i używać ich offline, przejdź do trybu online, kliknij pliki prawym przyciskiem myszy i wybierz opcję <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Przerwij</translation>
 <translation id="8261506727792406068">Usuń</translation>
+<translation id="8269755669432358899">Zwiń panele informacji zwrotnej o plikach</translation>
 <translation id="8279388322240498158">Klawiatura dla języka sorani oparta na angielskiej</translation>
 <translation id="8280151743281770066">ormiańska klawiatura fonetyczna</translation>
 <translation id="8294431847097064396">Źródło</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Wybierz plik do otwarcia</translation>
 <translation id="8579285237314169903">Synchronizuję elementy – <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="8600173386174225982">Lista plików została przełączona na widok miniatur.</translation>
+<translation id="8601932370724196034">Plik graficzny Crostini</translation>
 <translation id="8669949407341943408">Przenoszę...</translation>
 <translation id="8671210955687109937">Może komentować</translation>
 <translation id="8686213429977032554">Ten plik na Dysku nie jest jeszcze udostępniany</translation>

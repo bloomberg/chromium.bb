@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright 2002 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 209
+#define ANGLE_SH_VERSION 215
 
 enum ShShaderSpec
 {
@@ -39,7 +39,8 @@ enum ShShaderSpec
     SH_GLES3_1_SPEC,
     SH_WEBGL3_SPEC,
 
-    SH_GL3_3_SPEC,
+    SH_GL_CORE_SPEC,
+    SH_GL_COMPATIBILITY_SPEC,
 };
 
 enum ShShaderOutput
@@ -286,6 +287,23 @@ const ShCompileOptions SH_FORCE_ATOMIC_VALUE_RESOLUTION = UINT64_C(1) << 42;
 // Rewrite gl_BaseVertex and gl_BaseInstance as uniform int
 const ShCompileOptions SH_EMULATE_GL_BASE_VERTEX_BASE_INSTANCE = UINT64_C(1) << 43;
 
+// Emulate seamful cube map sampling for OpenGL ES2.0.  Currently only applies to the Vulkan
+// backend, as is done after samplers are moved out of structs.  Can likely be made to work on
+// the other backends as well.
+const ShCompileOptions SH_EMULATE_SEAMFUL_CUBE_MAP_SAMPLING = UINT64_C(1) << 44;
+
+// If requested, validates the AST after every transformation.  Useful for debugging.
+const ShCompileOptions SH_VALIDATE_AST = UINT64_C(1) << 46;
+
+// Use old version of RewriteStructSamplers, which doesn't produce as many
+// sampler arrays in parameters. This causes a few tests to pass on Android.
+const ShCompileOptions SH_USE_OLD_REWRITE_STRUCT_SAMPLERS = UINT64_C(1) << 47;
+
+// This flag works around a inconsistent behavior in Mac AMD driver where gl_VertexID doesn't
+// include base vertex value. It replaces gl_VertexID with (gl_VertexID + angle_BaseVertex)
+// when angle_BaseVertex is available.
+const ShCompileOptions SH_ADD_BASE_VERTEX_TO_VERTEX_ID = UINT64_C(1) << 48;
+
 // Defines alternate strategies for implementing array index clamping.
 enum ShArrayIndexClampingStrategy
 {
@@ -333,6 +351,7 @@ struct ShBuiltInResources
     int ARM_shader_framebuffer_fetch;
     int OVR_multiview;
     int OVR_multiview2;
+    int EXT_multisampled_render_to_texture;
     int EXT_YUV_target;
     int EXT_geometry_shader;
     int OES_texture_storage_multisample_2d_array;
@@ -678,7 +697,7 @@ inline bool IsWebGLBasedSpec(ShShaderSpec spec)
 //
 inline bool IsDesktopGLSpec(ShShaderSpec spec)
 {
-    return spec == SH_GL3_3_SPEC;
+    return spec == SH_GL_CORE_SPEC || spec == SH_GL_COMPATIBILITY_SPEC;
 }
 }  // namespace sh
 

@@ -156,13 +156,13 @@ absl::optional<uint32_t> EstimateRtpClockFrequency(
   double estimated_frequency =
       (last_rtp_timestamp - first_rtp_timestamp) / duration;
   for (uint32_t f : {8000, 16000, 32000, 48000, 90000}) {
-    if (std::fabs(estimated_frequency - f) < 0.05 * f) {
+    if (std::fabs(estimated_frequency - f) < 0.15 * f) {
       return f;
     }
   }
   RTC_LOG(LS_WARNING) << "Failed to estimate RTP clock frequency: Estimate "
                       << estimated_frequency
-                      << "not close to any stardard RTP frequency.";
+                      << " not close to any stardard RTP frequency.";
   return absl::nullopt;
 }
 
@@ -1218,7 +1218,7 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
 
   SimulatedClock clock(0);
   BitrateObserver observer;
-  RtcEventLogNullImpl null_event_log;
+  RtcEventLogNull null_event_log;
   PacketRouter packet_router;
   PacedSender pacer(&clock, &packet_router, &null_event_log);
   TransportFeedbackAdapter transport_feedback;

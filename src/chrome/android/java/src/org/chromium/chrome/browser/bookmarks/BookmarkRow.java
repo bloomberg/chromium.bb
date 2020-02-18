@@ -15,8 +15,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.widget.ListMenuButton;
-import org.chromium.chrome.browser.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton.PopupMenuShownListener;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -37,17 +38,18 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     protected BookmarkId mBookmarkId;
     private boolean mIsAttachedToWindow;
     private final boolean mReorderBookmarksEnabled;
+    private final boolean mShowInFolderEnabled;
+    private PopupMenuShownListener mPopupListener;
     @Location
     private int mLocation;
 
-    private static final String TAG = "BookmarkRow";
-
-    @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM})
+    @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM, Location.SOLO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Location {
         int TOP = 0;
         int MIDDLE = 1;
         int BOTTOM = 2;
+        int SOLO = 3;
     }
 
     /**
@@ -56,6 +58,8 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     public BookmarkRow(Context context, AttributeSet attrs) {
         super(context, attrs);
         mReorderBookmarksEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS);
+        mShowInFolderEnabled = mReorderBookmarksEnabled
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.BOOKMARKS_SHOW_IN_FOLDER);
     }
 
     /**
@@ -111,7 +115,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
         mMoreIcon.setVisibility(GONE);
 
         if (mReorderBookmarksEnabled && mDelegate.getDragStateDelegate().getDragActive()) {
-            mDragHandle.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
+            mDragHandle.setVisibility(bookmarkItem.isMovable() ? VISIBLE : GONE);
             mDragHandle.setEnabled(isItemSelected());
         } else {
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
@@ -133,10 +137,13 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     private void initialize() {
         mDelegate.addUIObserver(this);
+        mPopupListener = () -> mDelegate.onBookmarkItemMenuOpened();
+        mMoreIcon.addPopupListener(mPopupListener);
     }
 
     private void cleanup() {
         mMoreIcon.dismiss();
+        mMoreIcon.removePopupListener(mPopupListener);
         if (mDelegate != null) mDelegate.removeUIObserver(this);
     }
 
@@ -155,19 +162,20 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                         new Item(getContext(), R.string.bookmark_item_edit, true),
                         new Item(getContext(), R.string.bookmark_item_move, canMove),
                         new Item(getContext(), R.string.bookmark_item_delete, true)));
-        if (mReorderBookmarksEnabled
-                && mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER) {
-            if (mLocation != Location.TOP) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
-            }
-            if (mLocation != Location.BOTTOM) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_down, true));
-            }
-            if (mLocation != Location.TOP) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_to_top, true));
-            }
-            if (mLocation != Location.BOTTOM) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_to_bottom, true));
+        if (mReorderBookmarksEnabled) {
+            if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
+                if (mShowInFolderEnabled) {
+                    menuItems.add(new Item(getContext(), R.string.bookmark_show_in_folder, true));
+                }
+            } else if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER
+                    && mLocation != Location.SOLO) {
+                // Only add move up / move down buttons if there is more than 1 item
+                if (mLocation != Location.TOP) {
+                    menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
+                }
+                if (mLocation != Location.BOTTOM) {
+                    menuItems.add(new Item(getContext(), R.string.menu_item_move_down, true));
+                }
             }
         }
         return menuItems.toArray(new Item[menuItems.size()]);
@@ -190,6 +198,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
         } else if (item.getTextId() == R.string.bookmark_item_move) {
             BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(), mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerMoveToFolder");
 
         } else if (item.getTextId() == R.string.bookmark_item_delete) {
             if (mDelegate != null && mDelegate.getModel() != null) {
@@ -197,14 +206,17 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                 RecordUserAction.record("Android.BookmarkPage.RemoveItem");
             }
 
+        } else if (item.getTextId() == R.string.bookmark_show_in_folder) {
+            BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
+            mDelegate.openFolder(bookmarkItem.getParentId());
+            mDelegate.highlightBookmark(mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerShowInFolder");
         } else if (item.getTextId() == R.string.menu_item_move_up) {
             mDelegate.moveUpOne(mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerMoveUp");
         } else if (item.getTextId() == R.string.menu_item_move_down) {
             mDelegate.moveDownOne(mBookmarkId);
-        } else if (item.getTextId() == R.string.menu_item_move_to_top) {
-            mDelegate.moveToTop(mBookmarkId);
-        } else if (item.getTextId() == R.string.menu_item_move_to_bottom) {
-            mDelegate.moveToBottom(mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerMoveDown");
         }
     }
 
@@ -276,6 +288,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     public boolean onLongClick(View view) {
         // Override is needed in order to support long-press-to-drag on already-selected items.
         if (isDragActive() && isItemSelected()) return true;
+        RecordUserAction.record("MobileBookmarkManagerLongPressToggleSelect");
         return super.onLongClick(view);
     }
 
@@ -285,6 +298,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
         // Since we override #onLongClick(), we cannot rely on the base class for this behavior.
         if (isDragActive()) {
             toggleSelectionForItem(getItem());
+            RecordUserAction.record("MobileBookmarkManagerTapToggleSelect");
         } else {
             super.onClick(view);
         }

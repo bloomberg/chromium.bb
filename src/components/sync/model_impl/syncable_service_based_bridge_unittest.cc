@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_error.h"
@@ -159,7 +159,7 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
   const std::string kClientTagHash =
       GenerateSyncableHash(kModelType, kClientTag);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::NiceMock<MockSyncableService> syncable_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   base::MockCallback<ModelErrorHandler> mock_error_handler_;
@@ -526,7 +526,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
      ShouldDropIfCommitted) {
   const std::string kClientTagHash = "clienttaghash1";
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<ModelTypeStore> store =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
   SyncableServiceBasedBridge::InMemoryStore in_memory_store;
@@ -561,7 +561,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
      ShouldNotDropIfUnsynced) {
   const std::string kClientTagHash = "clienttaghash1";
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<ModelTypeStore> store =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
   SyncableServiceBasedBridge::InMemoryStore in_memory_store;

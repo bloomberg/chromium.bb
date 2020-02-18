@@ -77,10 +77,13 @@ static bool prepare_level(const GrMipLevel& inLevel, size_t bpp, int w, int h, b
 }
 
 sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
+                                                   const GrBackendFormat& format,
                                                    GrRenderable renderable,
-                                                   int renderTargetSampleCnt, SkBudgeted budgeted,
+                                                   int renderTargetSampleCnt,
+                                                   SkBudgeted budgeted,
                                                    GrProtected isProtected,
-                                                   const GrMipLevel texels[], int mipLevelCount) {
+                                                   const GrMipLevel texels[],
+                                                   int mipLevelCount) {
     ASSERT_SINGLE_OWNER
 
     SkASSERT(mipLevelCount > 0);
@@ -90,7 +93,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
     }
 
     GrMipMapped mipMapped = mipLevelCount > 1 ? GrMipMapped::kYes : GrMipMapped::kNo;
-    if (!fCaps->validateSurfaceDesc(desc, renderable, renderTargetSampleCnt, mipMapped)) {
+    if (!fCaps->validateSurfaceParams({desc.fWidth, desc.fHeight}, format, desc.fConfig, renderable,
+                                      renderTargetSampleCnt, mipMapped)) {
         return nullptr;
     }
     bool mustInitializeAllLevels = this->caps()->createTextureMustSpecifyAllLevels();
@@ -112,18 +116,19 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
             h = std::max(h / 2, 1);
         }
     }
-    return fGpu->createTexture(desc, renderable, renderTargetSampleCnt, budgeted, isProtected,
-                               tmpTexels.get(), mipLevelCount);
+    return fGpu->createTexture(desc, format, renderable, renderTargetSampleCnt, budgeted,
+                               isProtected, tmpTexels.get(), mipLevelCount);
 }
 
 sk_sp<GrTexture> GrResourceProvider::getExactScratch(const GrSurfaceDesc& desc,
+                                                     const GrBackendFormat& format,
                                                      GrRenderable renderable,
                                                      int renderTargetSampleCnt,
                                                      SkBudgeted budgeted,
                                                      GrProtected isProtected,
                                                      Flags flags) {
-    sk_sp<GrTexture> tex(
-            this->refScratchTexture(desc, renderable, renderTargetSampleCnt, isProtected, flags));
+    sk_sp<GrTexture> tex(this->refScratchTexture(desc, format, renderable, renderTargetSampleCnt,
+                                                 isProtected, flags));
     if (tex && SkBudgeted::kNo == budgeted) {
         tex->resourcePriv().makeUnbudgeted();
     }
@@ -132,11 +137,13 @@ sk_sp<GrTexture> GrResourceProvider::getExactScratch(const GrSurfaceDesc& desc,
 }
 
 sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
+                                                   const GrBackendFormat& format,
                                                    GrRenderable renderable,
                                                    int renderTargetSampleCnt,
                                                    SkBudgeted budgeted,
                                                    SkBackingFit fit,
                                                    GrProtected isProtected,
+                                                   GrColorType srcColorType,
                                                    const GrMipLevel& mipLevel,
                                                    Flags flags) {
     ASSERT_SINGLE_OWNER
@@ -149,7 +156,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
         return nullptr;
     }
 
-    if (!fCaps->validateSurfaceDesc(desc, renderable, renderTargetSampleCnt, GrMipMapped::kNo)) {
+    if (!fCaps->validateSurfaceParams({desc.fWidth, desc.fHeight}, format, desc.fConfig, renderable,
+                                      renderTargetSampleCnt, GrMipMapped::kNo)) {
         return nullptr;
     }
 
@@ -167,47 +175,49 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
         return nullptr;
     }
 
-    GrColorType colorType = GrPixelConfigToColorType(desc.fConfig);
     sk_sp<GrTexture> tex =
             (SkBackingFit::kApprox == fit)
-                    ? this->createApproxTexture(desc, renderable, renderTargetSampleCnt,
+                    ? this->createApproxTexture(desc, format, renderable, renderTargetSampleCnt,
                                                 isProtected, flags)
-                    : this->createTexture(desc, renderable, renderTargetSampleCnt, budgeted,
+                    : this->createTexture(desc, format, renderable, renderTargetSampleCnt, budgeted,
                                           isProtected, flags);
     if (!tex) {
         return nullptr;
     }
 
-    sk_sp<GrTextureProxy> proxy = proxyProvider->createWrapped(tex, kTopLeft_GrSurfaceOrigin);
+    sk_sp<GrTextureProxy> proxy = proxyProvider->createWrapped(
+            tex, srcColorType, kTopLeft_GrSurfaceOrigin, GrSurfaceProxy::UseAllocator::kYes);
     if (!proxy) {
         return nullptr;
     }
     // Here we don't really know the alpha type of the data we want to upload. All we really
     // care about is that it is not converted. So we use the same alpha type for the data
     // and the surface context.
-    static constexpr auto kAlphaType = kPremul_SkAlphaType;
-    sk_sp<GrSurfaceContext> sContext =
-            context->priv().makeWrappedSurfaceContext(std::move(proxy), colorType, kAlphaType);
+    static constexpr auto kAlphaType = kUnpremul_SkAlphaType;
+    auto sContext =
+            context->priv().makeWrappedSurfaceContext(std::move(proxy), srcColorType, kAlphaType);
     if (!sContext) {
         return nullptr;
     }
-    GrPixelInfo srcInfo(colorType, kAlphaType, nullptr, desc.fWidth, desc.fHeight);
+    GrPixelInfo srcInfo(srcColorType, kAlphaType, nullptr, desc.fWidth, desc.fHeight);
     SkAssertResult(sContext->writePixels(srcInfo, tmpLevel.fPixels, tmpLevel.fRowBytes, {0, 0}));
     return tex;
 }
 
 sk_sp<GrTexture> GrResourceProvider::createCompressedTexture(int width, int height,
+                                                             const GrBackendFormat& format,
                                                              SkImage::CompressionType compression,
                                                              SkBudgeted budgeted, SkData* data) {
     ASSERT_SINGLE_OWNER
     if (this->isAbandoned()) {
         return nullptr;
     }
-    return fGpu->createCompressedTexture(width, height, compression, budgeted, data->data(),
+    return fGpu->createCompressedTexture(width, height, format, compression, budgeted, data->data(),
                                          data->size());
 }
 
 sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
+                                                   const GrBackendFormat& format,
                                                    GrRenderable renderable,
                                                    int renderTargetSampleCnt,
                                                    SkBudgeted budgeted,
@@ -218,14 +228,15 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
         return nullptr;
     }
 
-    if (!fCaps->validateSurfaceDesc(desc, renderable, renderTargetSampleCnt, GrMipMapped::kNo)) {
+    if (!fCaps->validateSurfaceParams({desc.fWidth, desc.fHeight}, format, desc.fConfig, renderable,
+                                      renderTargetSampleCnt, GrMipMapped::kNo)) {
         return nullptr;
     }
 
     // Compressed textures are read-only so they don't support re-use for scratch.
     if (!GrPixelConfigIsCompressed(desc.fConfig)) {
-        sk_sp<GrTexture> tex = this->getExactScratch(desc, renderable, renderTargetSampleCnt,
-                                                     budgeted, isProtected, flags);
+        sk_sp<GrTexture> tex = this->getExactScratch(
+                desc, format, renderable, renderTargetSampleCnt, budgeted, isProtected, flags);
         if (tex) {
             return tex;
         }
@@ -238,11 +249,12 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(const GrSurfaceDesc& desc,
         GrMipLevel level;
         level.fRowBytes = rowBytes;
         level.fPixels = zeros.get();
-        return fGpu->createTexture(desc, renderable, renderTargetSampleCnt, budgeted, isProtected,
-                                   &level, 1);
+        return fGpu->createTexture(desc, format, renderable, renderTargetSampleCnt, budgeted,
+                                   isProtected, &level, 1);
     }
 
-    return fGpu->createTexture(desc, renderable, renderTargetSampleCnt, budgeted, isProtected);
+    return fGpu->createTexture(desc, format, renderable, renderTargetSampleCnt, budgeted,
+                               isProtected);
 }
 
 // Map 'value' to a larger multiple of 2. Values <= 'kMagicTol' will pop up to
@@ -272,9 +284,11 @@ uint32_t GrResourceProvider::MakeApprox(uint32_t value) {
 }
 
 sk_sp<GrTexture> GrResourceProvider::createApproxTexture(const GrSurfaceDesc& desc,
+                                                         const GrBackendFormat& format,
                                                          GrRenderable renderable,
                                                          int renderTargetSampleCnt,
-                                                         GrProtected isProtected, Flags flags) {
+                                                         GrProtected isProtected,
+                                                         Flags flags) {
     ASSERT_SINGLE_OWNER
     SkASSERT(Flags::kNone == flags || Flags::kNoPendingIO == flags);
 
@@ -287,44 +301,37 @@ sk_sp<GrTexture> GrResourceProvider::createApproxTexture(const GrSurfaceDesc& de
         return nullptr;
     }
 
-    if (!fCaps->validateSurfaceDesc(desc, renderable, renderTargetSampleCnt, GrMipMapped::kNo)) {
+    if (!fCaps->validateSurfaceParams({desc.fWidth, desc.fHeight}, format, desc.fConfig, renderable,
+                                      renderTargetSampleCnt, GrMipMapped::kNo)) {
         return nullptr;
     }
 
-    if (auto tex = this->refScratchTexture(desc, renderable, renderTargetSampleCnt, isProtected,
-                                           flags)) {
-        return tex;
-    }
-
-    SkTCopyOnFirstWrite<GrSurfaceDesc> copyDesc(desc);
-
     // bin by some multiple or power of 2 with a reasonable min
-    if (fGpu->caps()->reuseScratchTextures() || renderable == GrRenderable::kYes) {
-        GrSurfaceDesc* wdesc = copyDesc.writable();
-        wdesc->fWidth = MakeApprox(wdesc->fWidth);
-        wdesc->fHeight = MakeApprox(wdesc->fHeight);
-    }
+    GrSurfaceDesc copyDesc(desc);
+    copyDesc.fWidth = MakeApprox(desc.fWidth);
+    copyDesc.fHeight = MakeApprox(desc.fHeight);
 
-    if (auto tex = this->refScratchTexture(*copyDesc, renderable, renderTargetSampleCnt,
+    if (auto tex = this->refScratchTexture(copyDesc, format, renderable, renderTargetSampleCnt,
                                            isProtected, flags)) {
         return tex;
     }
 
     if (this->caps()->createTextureMustSpecifyAllLevels()) {
-        size_t rowBytes = GrBytesPerPixel(copyDesc->fConfig) * copyDesc->fWidth;
-        size_t size = rowBytes * copyDesc->fHeight;
+        size_t rowBytes = GrBytesPerPixel(copyDesc.fConfig) * copyDesc.fWidth;
+        size_t size = rowBytes * copyDesc.fHeight;
         std::unique_ptr<char[]> zeros(new char[size]());
         GrMipLevel level;
         level.fRowBytes = rowBytes;
         level.fPixels = zeros.get();
-        return fGpu->createTexture(*copyDesc, renderable, renderTargetSampleCnt, SkBudgeted::kYes,
-                                   isProtected, &level, 1);
+        return fGpu->createTexture(copyDesc, format, renderable, renderTargetSampleCnt,
+                                   SkBudgeted::kYes, isProtected, &level, 1);
     }
-    return fGpu->createTexture(*copyDesc, renderable, renderTargetSampleCnt, SkBudgeted::kYes,
-                               isProtected);
+    return fGpu->createTexture(copyDesc, format, renderable, renderTargetSampleCnt,
+                               SkBudgeted::kYes, isProtected);
 }
 
 sk_sp<GrTexture> GrResourceProvider::refScratchTexture(const GrSurfaceDesc& desc,
+                                                       const GrBackendFormat& format,
                                                        GrRenderable renderable,
                                                        int renderTargetSampleCnt,
                                                        GrProtected isProtected,
@@ -332,7 +339,8 @@ sk_sp<GrTexture> GrResourceProvider::refScratchTexture(const GrSurfaceDesc& desc
     ASSERT_SINGLE_OWNER
     SkASSERT(!this->isAbandoned());
     SkASSERT(!GrPixelConfigIsCompressed(desc.fConfig));
-    SkASSERT(fCaps->validateSurfaceDesc(desc, renderable, renderTargetSampleCnt, GrMipMapped::kNo));
+    SkASSERT(fCaps->validateSurfaceParams({desc.fWidth, desc.fHeight}, format, desc.fConfig,
+                                          renderable, renderTargetSampleCnt, GrMipMapped::kNo));
 
     // We could make initial clears work with scratch textures but it is a rare case so we just opt
     // to fall back to making a new texture.
@@ -353,6 +361,9 @@ sk_sp<GrTexture> GrResourceProvider::refScratchTexture(const GrSurfaceDesc& desc
         if (resource) {
             fGpu->stats()->incNumScratchTexturesReused();
             GrSurface* surface = static_cast<GrSurface*>(resource);
+            if (GrRenderTarget* rt = surface->asRenderTarget()) {
+                rt->flagAsResolved();  // Scratch textures always start without dirty MSAA.
+            }
             return sk_sp<GrTexture>(surface->asTexture());
         }
     }
@@ -419,7 +430,7 @@ sk_sp<const GrGpuBuffer> GrResourceProvider::findOrMakeStaticBuffer(GrGpuBufferT
                                                                     const void* data,
                                                                     const GrUniqueKey& key) {
     if (auto buffer = this->findByUniqueKey<GrGpuBuffer>(key)) {
-        return std::move(buffer);
+        return buffer;
     }
     if (auto buffer = this->createBuffer(size, intendedType, kStatic_GrAccessPattern, data)) {
         // We shouldn't bin and/or cache static buffers.
@@ -469,7 +480,7 @@ sk_sp<const GrGpuBuffer> GrResourceProvider::createPatternedIndexBuffer(const ui
         SkASSERT(key->isValid());
         this->assignUniqueKeyToResource(*key, buffer.get());
     }
-    return std::move(buffer);
+    return buffer;
 }
 
 static constexpr int kMaxQuads = 1 << 12;  // max possible: (1 << 14) - 1;

@@ -9,6 +9,9 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOff;
+import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightPulse;
+
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
@@ -26,12 +29,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
-import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -74,6 +79,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addBookmark(TEST_TITLE_A, TEST_URL_A);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         BookmarkRow test =
@@ -115,6 +121,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addFolder(TEST_TITLE_A);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
@@ -131,11 +138,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
 
         // Callback occurs when Item "test" is selected.
-        CriteriaHelper.pollUiThread(()
-                                            -> mBookmarkActivity.getManagerForTesting()
-                                                       .getToolbarForTests()
-                                                       .isSearching(),
-                "Expected to enter search mode");
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
 
         toggleSelectionAndEndAnimation(testId, test);
 
@@ -188,6 +192,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         expected.add(aId);
         expected.add(googleId);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         // Callback occurs upon changes inside of the bookmark model.
@@ -252,6 +257,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         expected.add(aId);
         expected.add(testId);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         // Callback occurs upon changes inside of the bookmark model.
@@ -314,6 +320,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         expected.add(testId);
         expected.add(aId);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         // Callback occurs upon changes inside of the bookmark model.
@@ -357,6 +364,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testPromoDraggability() throws Exception {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         ViewHolder promo = mItemsContainer.findViewHolderForAdapterPosition(0);
@@ -376,6 +384,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     @MediumTest
     public void testPartnerFolderDraggability() throws Exception {
         BookmarkId testId = addFolderWithPartner(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         ViewHolder partner = mItemsContainer.findViewHolderForAdapterPosition(2);
@@ -397,6 +406,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId aId = addBookmark("a", "http://a.com");
         addFolder(TEST_FOLDER_TITLE);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         ViewHolder test = mItemsContainer.findViewHolderForAdapterPosition(1);
@@ -419,6 +429,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testCannotSelectPromo() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
 
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View promo = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
@@ -433,6 +444,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     @MediumTest
     public void testCannotSelectPartner() throws Exception {
         addFolderWithPartner(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View partner = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
@@ -448,6 +460,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveUpMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
@@ -473,6 +486,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveDownMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -498,6 +512,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveDownGoneForBottomElement() throws Exception {
         addBookmarkWithPartner(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolderWithPartner(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
@@ -513,6 +528,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveUpGoneForTopElement() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -533,11 +549,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
 
         // Callback occurs when Item "test" is selected.
-        CriteriaHelper.pollUiThread(()
-                                            -> mBookmarkActivity.getManagerForTesting()
-                                                       .getToolbarForTests()
-                                                       .isSearching(),
-                "Expected to enter search mode");
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
@@ -549,12 +562,183 @@ public class BookmarkReorderTest extends BookmarkTest {
         onView(withText("Move down")).check(doesNotExist());
     }
 
+    @Test
+    @MediumTest
+    public void testMoveButtonsGoneWithOneBookmark() throws Exception {
+        addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolder).getTitle());
+        View more = testFolder.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
+
+        onView(withText("Move up")).check(doesNotExist());
+        onView(withText("Move down")).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testTopLevelFolderUpdateAfterSync() throws Exception {
+        // Set up the test and open the bookmark manager to the Mobile Bookmarks folder.
+        MockSyncContentResolverDelegate syncDelegate = new MockSyncContentResolverDelegate();
+        syncDelegate.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(syncDelegate, null);
+        readPartnerBookmarks();
+        openBookmarkManager();
+        ReorderBookmarkItemsAdapter adapter = getReorderAdapter();
+
+        // Open the root folder.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getRootFolderId()));
+
+        // Add a bookmark to the Other Bookmarks folder.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel.addBookmark(
+                    mBookmarkModel.getOtherFolderId(), 0, TEST_TITLE_A, TEST_URL_A);
+        });
+
+        // Dismiss promo header and simulate a sign in.
+        syncDelegate.setMasterSyncAutomatically(false);
+        TestThreadUtils.runOnUiThreadBlocking(adapter::simulateSignInForTests);
+        Assert.assertEquals(
+                "Expected \"Other Bookmarks\" folder to appear!", 2, adapter.getItemCount());
+    }
+
+    @Test
+    @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.BOOKMARKS_SHOW_IN_FOLDER)
+    public void testShowInFolderDisabled() throws Exception {
+        addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
+        openBookmarkManager();
+        enterSearch();
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
+
+        onView(withText("Show in folder")).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testShowInFolder_NoScroll() throws Exception {
+        addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        // Enter search mode.
+        enterSearch();
+
+        // Click "Show in folder".
+        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
+        onView(withText("Show in folder")).perform(click());
+
+        // Assert that the view pulses.
+        Assert.assertTrue("Expected bookmark row to pulse after clicking \"show in folder\"!",
+                checkHighlightPulse(testFolder));
+
+        // Enter search mode again.
+        enterSearch();
+
+        Assert.assertTrue("Expected bookmark row to not be highlighted "
+                        + "after entering search mode",
+                checkHighlightOff(testFolder));
+
+        // Click "Show in folder" again.
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
+        onView(withText("Show in folder")).perform(click());
+        Assert.assertTrue(
+                "Expected bookmark row to pulse after clicking \"show in folder\" a 2nd time!",
+                checkHighlightPulse(testFolder));
+    }
+
+    @Test
+    @MediumTest
+    public void testShowInFolder_Scroll() throws Exception {
+        addFolder(TEST_FOLDER_TITLE); // Index 8
+        addBookmark(TEST_TITLE_A, TEST_URL_A);
+        addBookmark(TEST_PAGE_TITLE_FOO, "http://foo.com");
+        addFolder(TEST_PAGE_TITLE_GOOGLE2);
+        addFolder("B");
+        addFolder("C");
+        addFolder("D");
+        addFolder("E"); // Index 1
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        // Enter search mode.
+        enterSearch();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.onSearchTextChanged(TEST_FOLDER_TITLE));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        // This should be the only (& therefore 0-indexed) item.
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
+
+        // Show in folder.
+        onView(withText("Show in folder")).perform(click());
+
+        // This should be in the 8th position now.
+        ViewHolder testFolderInList = mItemsContainer.findViewHolderForAdapterPosition(8);
+        Assert.assertFalse(
+                "Expected list to scroll bookmark item into view", testFolderInList == null);
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolderInList.itemView).getTitle());
+        Assert.assertTrue("Expected highlight to pulse on after scrolling to the item!",
+                checkHighlightPulse(testFolderInList.itemView));
+    }
+
+    @Test
+    @MediumTest
+    public void testShowInFolder_OpenOtherFolder() throws Exception {
+        BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.addBookmark(testId, 0, TEST_TITLE_A, TEST_URL_A));
+        forceSyncHeaderState();
+        openBookmarkManager();
+
+        // Enter search mode.
+        enterSearch();
+        TestThreadUtils.runOnUiThreadBlocking(() -> mManager.onSearchTextChanged(TEST_URL_A));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        // This should be the only (& therefore 0-indexed) item.
+        clickMoreButtonOnFirstItem(TEST_TITLE_A);
+
+        // Show in folder.
+        onView(withText("Show in folder")).perform(click());
+
+        // Make sure that we're in the right folder (index 1 because of promo).
+        View itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
+                ((BookmarkItemRow) itemA).getTitle());
+
+        Assert.assertTrue("Expected highlight to pulse after opening an item in another folder!",
+                checkHighlightPulse(itemA));
+
+        // Open mobile bookmarks folder, then go back to the subfolder.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mManager.openFolder(mBookmarkModel.getMobileFolderId());
+            mManager.openFolder(testId);
+        });
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        View itemASecondView = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
+                ((BookmarkItemRow) itemASecondView).getTitle());
+        Assert.assertTrue(
+                "Expected highlight to not be highlighted after exiting and re-entering folder!",
+                checkHighlightOff(itemASecondView));
+    }
+
     @Override
     protected void openBookmarkManager() throws InterruptedException {
         super.openBookmarkManager();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mManager.getDragStateDelegate().setA11yStateForTesting(false);
-            BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
         });
     }
 
@@ -601,8 +785,34 @@ public class BookmarkReorderTest extends BookmarkTest {
                 () -> mBookmarkModel.addFolder(mBookmarkModel.getDefaultFolder(), 0, title));
     }
 
+    /**
+     * Ignores the Android sync settings, and forces a sync header for tests.
+     */
+    private void forceSyncHeaderState() {
+        MockSyncContentResolverDelegate syncDelegate = new MockSyncContentResolverDelegate();
+        syncDelegate.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(syncDelegate, null);
+        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+    }
+
     private ReorderBookmarkItemsAdapter getReorderAdapter() {
         return (ReorderBookmarkItemsAdapter) getAdapter();
+    }
+
+    private void enterSearch() throws Exception {
+        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
+        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+    }
+
+    private void clickMoreButtonOnFirstItem(String expectedBookmarkItemTitle) throws Exception {
+        View firstItem = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", expectedBookmarkItemTitle,
+                firstItem instanceof BookmarkItemRow ? ((BookmarkItemRow) firstItem).getTitle()
+                                                     : ((BookmarkFolderRow) firstItem).getTitle());
+        View more = firstItem.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
     }
 
     @Override

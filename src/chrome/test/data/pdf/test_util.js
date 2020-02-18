@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Utilities that are used in multiple tests.
+
 function MockWindow(width, height, sizer) {
   this.innerWidth = width;
   this.innerHeight = height;
@@ -98,6 +99,16 @@ function MockDocumentDimensions(width, height) {
       height: h
     });
   };
+  this.addPageForTwoUpView = function(x, y, w, h) {
+    this.width = Math.max(this.width, 2 * w);
+    this.height = Math.max(this.height, y + h);
+    this.pageDimensions.push({
+      x: x,
+      y: y,
+      width: w,
+      height: h
+    });
+  };
   this.reset = function() {
     this.width = 0;
     this.height = 0;
@@ -120,4 +131,28 @@ async function testAsync(f) {
   } catch (e) {
     chrome.test.fail(e);
   }
+}
+
+/**
+ * @return {!HTMLElement} An element containing a dom-repeat of bookmarks, for
+ *     testing the bookmarks outside of the toolbar.
+ */
+function createBookmarksForTest() {
+  const module = document.createElement('dom-module');
+  module.id = 'test-bookmarks';
+  module.innerHTML = `
+      <template>
+        <template is="dom-repeat" items="[[bookmarks]]">
+          <viewer-bookmark bookmark="[[item]]" depth="0"></viewer-bookmark>
+        </template>
+      </template>
+  `;
+  document.body.appendChild(module);
+  Polymer({
+    is: 'test-bookmarks',
+    properties: {
+      bookmarks: Array,
+    },
+  });
+  return document.createElement('test-bookmarks');
 }

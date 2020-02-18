@@ -23,16 +23,17 @@
 #include "api/function_view.h"
 #include "api/media_transport_interface.h"
 #include "api/peer_connection_interface.h"
+#include "api/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/test/audio_quality_analyzer_interface.h"
 #include "api/test/simulated_network.h"
+#include "api/test/stats_observer_interface.h"
 #include "api/test/video_quality_analyzer_interface.h"
 #include "api/transport/network_control.h"
 #include "api/units/time_delta.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/video_encoder_factory.h"
-#include "logging/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "media/base/media_constants.h"
 #include "rtc_base/network.h"
 #include "rtc_base/rtc_certificate_generator.h"
@@ -176,10 +177,16 @@ class PeerConnectionE2EQualityTestFixture {
     // If presented video will be transfered in simulcast/SVC mode depending on
     // which encoder is used.
     //
-    // Simulcast is supported only from 1st added peer and for now only for
-    // Vp8 encoder. Also RTX doesn't supported with simulcast and will
-    // automatically disabled for tracks with simulcast.
+    // Simulcast is supported only from 1st added peer. For VP8 simulcast only
+    // without RTX is supported so it will be automatically disabled for all
+    // simulcast tracks. For VP9 simulcast enables VP9 SVC mode and support RTX,
+    // but only on non-lossy networks. See more in documentation to
+    // VideoSimulcastConfig.
     absl::optional<VideoSimulcastConfig> simulcast_config;
+    // Count of temporal layers for video stream. This value will be set into
+    // each RtpEncodingParameters of RtpParameters of corresponding
+    // RtpSenderInterface for this video stream.
+    absl::optional<int> temporal_layers_count;
     // If specified the input stream will be also copied to specified file.
     // It is actually one of the test's output file, which contains copy of what
     // was captured during the test for this video stream on sender side.
@@ -273,6 +280,13 @@ class PeerConnectionE2EQualityTestFixture {
         PeerConnectionInterface::BitrateParameters bitrate_params) = 0;
   };
 
+  // Contains configuration for echo emulator.
+  struct EchoEmulationConfig {
+    // Delay which represents the echo path delay, i.e. how soon rendered signal
+    // should reach capturer.
+    TimeDelta echo_delay = TimeDelta::ms(50);
+  };
+
   // Contains parameters, that describe how long framework should run quality
   // test.
   struct RunParams {
@@ -308,10 +322,14 @@ class PeerConnectionE2EQualityTestFixture {
     // If true will set conference mode in SDP media section for all video
     // tracks for all peers.
     bool use_conference_mode = false;
+    // If specified echo emulation will be done, by mixing the render audio into
+    // the capture signal. In such case input signal will be reduced by half to
+    // avoid saturation or compression in the echo path simulation.
+    absl::optional<EchoEmulationConfig> echo_emulation_config;
   };
 
   // Represent an entity that will report quality metrics after test.
-  class QualityMetricsReporter {
+  class QualityMetricsReporter : public StatsObserverInterface {
    public:
     virtual ~QualityMetricsReporter() = default;
 

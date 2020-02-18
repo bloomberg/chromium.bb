@@ -11,18 +11,16 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 class RenderFrameHost;
-class SmsDialog;
 
 // SmsService handles mojo connections from the renderer, observing the incoming
 // SMS messages from an SmsProvider.
@@ -37,32 +35,33 @@ class CONTENT_EXPORT SmsService
  public:
   static void Create(SmsProvider*,
                      RenderFrameHost*,
-                     blink::mojom::SmsReceiverRequest);
+                     mojo::PendingReceiver<blink::mojom::SmsReceiver>);
 
-  SmsService(SmsProvider*, RenderFrameHost*, blink::mojom::SmsReceiverRequest);
+  SmsService(SmsProvider*,
+             RenderFrameHost*,
+             mojo::PendingReceiver<blink::mojom::SmsReceiver>);
   SmsService(SmsProvider*,
              const url::Origin&,
              RenderFrameHost*,
-             blink::mojom::SmsReceiverRequest);
+             mojo::PendingReceiver<blink::mojom::SmsReceiver>);
   ~SmsService() override;
 
   // content::SmsProvider::Observer:
-  bool OnReceive(const url::Origin&, const std::string& message) override;
+  bool OnReceive(const url::Origin&,
+                 const std::string& one_time_code,
+                 const std::string& sms) override;
 
   // blink::mojom::SmsReceiver:
-  void Receive(base::TimeDelta timeout, ReceiveCallback) override;
+  void Receive(ReceiveCallback) override;
 
  private:
+  void OpenInfoBar(const std::string& one_time_code);
   void Process(blink::mojom::SmsStatus, base::Optional<std::string> sms);
-  // Shows/Dismisses the dialog.
-  void Prompt();
-  void Dismiss();
+  void CleanUp();
 
-  // Callback when the |timer_| times out.
-  void OnTimeout();
-  // Callback when the user manually clicks 'Continue' button.
-  void OnContinue();
-  // Callback when the user manually dismisses the dialog.
+  // Called when the user manually clicks the 'Enter code' button.
+  void OnConfirm();
+  // Called when the user manually dismisses the infobar.
   void OnCancel();
 
   // |sms_provider_| is safe because all instances of SmsProvider are owned
@@ -70,16 +69,17 @@ class CONTENT_EXPORT SmsService
   // owns SmsServices.
   SmsProvider* sms_provider_;
 
-  // The currently opened sms dialog.
-  std::unique_ptr<SmsDialog> prompt_;
-
   const url::Origin origin_;
 
-  base::OneShotTimer timer_;
   ReceiveCallback callback_;
   base::Optional<std::string> sms_;
+  base::TimeTicks start_time_;
+  base::TimeTicks receive_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SmsService> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(SmsService);
 };
 

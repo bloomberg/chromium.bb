@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow_impl.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -82,7 +82,7 @@ class GCDApiFlowTest : public testing::Test {
   MockDelegate* mock_delegate_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_environment_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_url_loader_factory_;

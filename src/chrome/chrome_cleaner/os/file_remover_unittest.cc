@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
@@ -96,7 +96,7 @@ class FileRemoverTest : public ::testing::Test {
   }
 
   FileRemover default_file_remover_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   bool reboot_required_ = false;
 };
 
@@ -444,7 +444,7 @@ class FileRemoverQuarantineTest : public base::MultiProcessTest,
   }
 
   bool use_reboot_removal_ = false;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<FileRemover> file_remover_;
 };

@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
@@ -10,20 +11,22 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="cups_add_printer_dialog.html">
 <link rel="import" href="cups_edit_printer_dialog.html">
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_list.html">
 <link rel="import" href="cups_saved_printers.html">
 <link rel="import" href="cups_nearby_printers.html">
+<link rel="import" href="../route.html">
 
 <dom-module id="settings-cups-printers">
   <template>
-    <style include="cups-printer-shared action-link">
+    <style include="cups-printer-shared action-link iron-flex
+        iron-flex-alignment">
       .custom-list-item {
-        align-items: center;
         border-bottom: var(--cr-separator-line);
-        display: flex;
         min-height: var(--settings-row-min-height);
       }
 
@@ -42,12 +45,41 @@
         flex: 1;
       }
 
+      #addManualPrinterIcon {
+        --iron-icon-fill-color: rgb(138, 180, 248);
+        --cr-icon-button-margin-end: 0;
+      }
+
+      #cloudOffIcon {
+        --iron-icon-fill-color: rgb(95, 99, 104);
+        margin-top: 10px;
+      }
+
+      #connectionMessage {
+        padding-inline-start: 20px;
+      }
+
+      #noConnectivityContentContainer {
+        border-bottom: var(--cr-separator-line);
+        padding-inline-start: 20px;
+      }
+
       #noSearchResultsMessage {
         color: var(--md-loading-message-color);
         font-size: 16px;
         font-weight: 500;
         margin-top: 80px;
         text-align: center;
+      }
+
+      #savedPrintersContainer {
+        border-bottom: var(--cr-separator-line);
+      }
+
+      :host(:not([can-add-printer])) #addPrinterSection,
+      :host(:not([can-add-printer])) #nearbyPrinters {
+        opacity: var(--cr-disabled-opacity);
+        pointer-events: none;
       }
     </style>
 
@@ -58,11 +90,11 @@
           <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
             $i18n{learnMore}
           </a>
-          <div class="secondary" hidden="[[canAddPrinter_]]">
+          <div class="secondary" hidden="[[canAddPrinter]]">
             $i18n{requireNetworkMessage}
           </div>
         </div>
-        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter,
             prefs.native_printing.user_native_printers_allowed.value)]]">
           <cr-policy-pref-indicator
               pref="[[prefs.native_printing.user_native_printers_allowed]]"
@@ -71,7 +103,7 @@
         </template>
         <cr-button class="action-button" id="addPrinter"
             on-click="onAddPrinterTap_"
-            disabled="[[!addPrinterButtonActive_(canAddPrinter_,
+            disabled="[[!addPrinterButtonActive_(canAddPrinter,
                 prefs.native_printing.user_native_printers_allowed.value)]]">
           $i18n{addCupsPrinter}
         </cr-button>
@@ -80,32 +112,52 @@
           active-printer="{{activePrinter}}"
           search-term="[[searchTerm]]">
       </settings-cups-printers-list>
+
+      <div id="noSearchResultsMessage"
+          hidden="[[!showNoSearchResultsMessage_(searchTerm)]]">
+        $i18n{noSearchResults}
+      </div>
     </template>
 
     <template is="dom-if" if="[[enableUpdatedUi_]]">
-      <div class="settings-box first">
-        <div class="start">
-          <span>$i18n{savedPrintersTitle}</span>
+      <template is="dom-if" if="[[!canAddPrinter]]">
+        <div id="noConnectivityContentContainer"
+            class="layout horizontal padded">
+          <iron-icon id="cloudOffIcon" icon="settings20:cloud-off"></iron-icon>
+          <div id="connectionMessage" class="layout vertical">
+            <div>$i18n{noInternetConnection}</div>
+            <div class="secondary">$i18n{checkNetworkAndTryAgain}</div>
+          </div>
         </div>
-      </div>
+      </template>
 
-      <settings-cups-saved-printers id="savedPrinters"
-          active-printer="{{activePrinter}}"
-          search-term="[[searchTerm]]">
-      </settings-cups-saved-printers>
+      <template is="dom-if"
+          if="[[doesAccountHaveSavedPrinters_(savedPrinters_)]]" restamp>
+        <div id="savedPrintersContainer">
+          <div class="settings-box first">
+            <div class="start">
+              <span>$i18n{savedPrintersTitle}</span>
+            </div>
+          </div>
+
+          <settings-cups-saved-printers id="savedPrinters"
+              active-printer="{{activePrinter}}"
+              saved-printers="[[savedPrinters_]]"
+              search-term="[[searchTerm]]">
+          </settings-cups-saved-printers>
+        </div>
+      </template>
 
       <div class="padded first" id="nearbyPrinters">
         <div>$i18n{nearbyPrintersListTitle}</div>
         <span class="secondary">
           $i18n{nearbyPrintersListDescription}
         </span>
-        <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
+        <a href="$i18n{printingCUPSPrintLearnMoreUrl}"
+            target="_blank">
           $i18n{learnMore}
         </a>
-        <div class="secondary" hidden="[[canAddPrinter_]]">
-          $i18n{requireNetworkMessage}
-        </div>
-        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter,
             prefs.native_printing.user_native_printers_allowed.value)]]">
           <cr-policy-pref-indicator
               pref="[[prefs.native_printing.user_native_printers_allowed]]"
@@ -115,20 +167,22 @@
       </div>
 
       <div id="addPrinterSection">
-        <div class="custom-list-item">
+        <div class="layout horizontal center custom-list-item">
           <div id="addPrinterText">$i18n{addCupsPrinter}</div>
-          <cr-button class="action-button" id="addPrinter"
+          <cr-icon-button class="action-button" id="addManualPrinterIcon"
+              iron-icon="settings20:printer-add"
               on-click="onAddPrinterTap_"
-              disabled="[[!addPrinterButtonActive_(canAddPrinter_,
-                  prefs.native_printing.user_native_printers_allowed.value)]]">
-            $i18n{addCupsPrinter}
-          </cr-button>
+              disabled="[[!addPrinterButtonActive_(canAddPrinter,
+                  prefs.native_printing.user_native_printers_allowed.value)]]"
+              title="$i18n{addCupsPrinter}">
+          </cr-icon-button>
         </div>
       </div>
-
-      <settings-cups-nearby-printers search-term="[[searchTerm]]"
-          active-printer="{{activePrinter}}">
-      </settings-cups-nearby-printers>
+      <template is="dom-if" if="[[canAddPrinter]]" restamp>
+        <settings-cups-nearby-printers search-term="[[searchTerm]]"
+            active-printer="{{activePrinter}}">
+        </settings-cups-nearby-printers>
+      </template>
     </template>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog"
@@ -142,11 +196,6 @@
           on-close="onEditPrinterDialogClose_">
       </settings-cups-edit-printer-dialog>
     </template>
-
-    <div id="noSearchResultsMessage"
-        hidden="[[!showNoSearchResultsMessage_(searchTerm)]]">
-      $i18n{noSearchResults}
-    </div>
 
     <cr-toast id="errorToast" duration="3000">
       <div class="error-message" id="addPrinterDoneMessage">

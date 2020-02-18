@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/test_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -32,7 +32,7 @@ namespace util {
 namespace {
 
 // Sets up ProfileManager for testing and marks the current thread as UI by
-// TestBrowserThreadBundle. We need the thread since Profile objects must be
+// BrowserTaskEnvironment. We need the thread since Profile objects must be
 // touched from UI and hence has CHECK/DCHECKs for it.
 class ProfileRelatedFileSystemUtilTest : public testing::Test {
  protected:
@@ -46,7 +46,7 @@ class ProfileRelatedFileSystemUtilTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
 };
 

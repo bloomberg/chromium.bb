@@ -10,32 +10,34 @@
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_ui.h"
 
-VersionHandlerChromeOS::VersionHandlerChromeOS() : weak_factory_(this) {}
+VersionHandlerChromeOS::VersionHandlerChromeOS() {}
 
 VersionHandlerChromeOS::~VersionHandlerChromeOS() {}
 
 void VersionHandlerChromeOS::HandleRequestVersionInfo(
     const base::ListValue* args) {
+  VersionHandler::HandleRequestVersionInfo(args);
+
   // Start the asynchronous load of the versions.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&chromeos::version_loader::GetVersion,
                  chromeos::version_loader::VERSION_FULL),
       base::Bind(&VersionHandlerChromeOS::OnVersion,
                  weak_factory_.GetWeakPtr()));
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&chromeos::version_loader::GetFirmware),
       base::Bind(&VersionHandlerChromeOS::OnOSFirmware,
                  weak_factory_.GetWeakPtr()));
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&chromeos::version_loader::GetARCVersion),
       base::Bind(&VersionHandlerChromeOS::OnARCVersion,
                  weak_factory_.GetWeakPtr()));
-
-  // Parent class takes care of the rest.
-  VersionHandler::HandleRequestVersionInfo(args);
 }
 
 void VersionHandlerChromeOS::OnVersion(const std::string& version) {

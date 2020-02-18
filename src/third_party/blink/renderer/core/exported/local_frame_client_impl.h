@@ -36,6 +36,11 @@
 
 #include "base/memory/scoped_refptr.h"
 
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -45,6 +50,7 @@
 
 namespace blink {
 
+class BrowserInterfaceBrokerProxy;
 class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
@@ -72,8 +78,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void RunScriptsAtDocumentReady(bool document_is_empty) override;
   void RunScriptsAtDocumentIdle() override;
 
-  void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) override;
-  void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) override;
+  void DidCreateScriptContext(v8::Local<v8::Context>,
+                              int32_t world_id) override;
+  void WillReleaseScriptContext(v8::Local<v8::Context>,
+                                int32_t world_id) override;
 
   // Returns true if we should allow register V8 extensions to be added.
   bool AllowScriptExtensions() override;
@@ -121,11 +129,12 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp,
-      mojom::blink::BlobURLTokenPtr,
+      mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
       WebContentSecurityPolicyList,
-      mojom::blink::NavigationInitiatorPtr) override;
+      network::mojom::IPAddressSpace,
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -134,7 +143,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DownloadURL(const ResourceRequest&,
                    DownloadCrossOriginRedirects) override;
   void LoadErrorPage(int reason) override;
-  bool NavigateBackForward(int offset) const override;
+  bool NavigateBackForward(int offset, bool from_script) const override;
   void DidAccessInitialDocument() override;
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
@@ -149,7 +158,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
-  void DidObserveNewCssPropertyUsage(int, bool) override;
+  void DidObserveNewCssPropertyUsage(mojom::CSSSampleId, bool) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
   void DidObserveLazyLoadBehavior(
       WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
@@ -193,8 +202,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) override;
+      WebMediaPlayerClient*) override;
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) override;
   void DidChangeScrollOffset() override;
@@ -241,7 +249,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   KURL OverrideFlashEmbedWithHTML(const KURL&) override;
 
-  void NotifyUserActivation() override;
+  void NotifyUserActivation(bool need_browser_verification) override;
   void ConsumeUserActivation() override;
 
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
@@ -270,6 +278,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   // forward the calls to methods that have not been overridden.
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle) override;
+
+  blink::BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
@@ -324,7 +334,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
-  WebLocalFrameClient::AppCacheType GetAppCacheType() override;
+
+  void EvictFromBackForwardCache() override;
 
  private:
   struct DocumentInterfaceBrokerForwarderTraits {
@@ -349,20 +360,18 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   String user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
 
-  mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
+  mojo::Remote<mojom::blink::DocumentInterfaceBroker>
+      document_interface_broker_;
 
-  // |document_interface_broker_bindings_| basically just forwards the broker
+  // |document_interface_broker_receivers_| basically just forwards the broker
   // methods to GetDocumentInterfaceBroker()
   // via DocumentInterfaceBrokerForwarderTraits.
   // Used to connect JavaScript clients of DocumentInterfaceBroker with the same
   // implementation that |document_interface_broker_| is bound to.
-  using DocumentInterfaceBrokerBinding =
-      mojo::Binding<mojom::blink::DocumentInterfaceBroker,
-                    DocumentInterfaceBrokerForwarderTraits>;
-  mojo::BindingSetBase<mojom::blink::DocumentInterfaceBroker,
-                       DocumentInterfaceBrokerBinding,
-                       void>
-      document_interface_broker_bindings_;
+  mojo::ReceiverSetBase<mojo::Receiver<mojom::blink::DocumentInterfaceBroker,
+                                       DocumentInterfaceBrokerForwarderTraits>,
+                        void>
+      document_interface_broker_receivers_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,

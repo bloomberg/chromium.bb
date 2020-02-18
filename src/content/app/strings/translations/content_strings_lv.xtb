@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Vērtībai ir jābūt “<ph name="MINIMUM_DATE_OR_TIME" />” vai vēlākam datumam vai laikam.</translation>
 <translation id="2759744352195237655">uznirstoša poga</translation>
 <translation id="2761667185364618470">Lai turpinātu, atzīmējiet šo izvēles rūtiņu.</translation>
+<translation id="2844350028562914727">detalizēta informācija</translation>
 <translation id="2896972712917208084">radiopogu grupa</translation>
 <translation id="2908441821576996758">Lūdzu, ievadiet ar komatu atdalītu e-pasta adrešu sarakstu.</translation>
 <translation id="2940813599313844715">objekts</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Vērtībai ir jābūt mazākai vai vienādai ar <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definīcija</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />. virsraksts</translation>
+<translation id="3670698553867754311">nedēļas atlasītājs</translation>
 <translation id="3685101356851116974">Attēls bez iezīmes</translation>
 <translation id="3706100364254443312">slēdzis</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">ritjosla</translation>
 <translation id="4103419683916926126">Milisekundes</translation>
 <translation id="4151657705144244502">grafiskais elements</translation>
+<translation id="4160057747563657758">tālrunis</translation>
 <translation id="4193965531860883258">priekšvārds</translation>
 <translation id="4201051445878709314">Rādīt iepriekšējo mēnesi</translation>
 <translation id="421884353938374759">krāsu izvēle</translation>
 <translation id="4248100235867064564">izvēļņu josla</translation>
-<translation id="4254339807215791271">satura informācija</translation>
 <translation id="4360991593054037559">Lūdzu, ievadiet derīgu vērtību. Divas tuvākās derīgās vērtības ir <ph name="VALID_VALUE_LOW" /> un <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Jautājumi un atbildes</translation>
 <translation id="4413860115965805769">izvēlnes poga</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Izsl.</translation>
 <translation id="588258955323874662">Pilnekrāna</translation>
 <translation id="5888666972993069672">Notiek apraide šajā ierīcē: <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">meklēšanas lodziņš</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="5966707198760109579">Nedēļa</translation>
 <translation id="5987525920412732405">skaitītājpoga</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">pēcvārds</translation>
 <translation id="6209276755895393898">Šķiet, ka tas ir: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosārijs</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Aizvērt režīmu “Attēls attēlā”</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
 <translation id="6404546809543547843">audio laika skalas slīdnis</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Pieskaņojiet vērtību prasītajam formātam.</translation>
 <translation id="7118469954320184356">Nav apraksta.</translation>
 <translation id="7139483182332611405">ievadraksts</translation>
+<translation id="7214187073215825913">informācija par saturu</translation>
 <translation id="7263440858009898357">Atlasiet vienumu sarakstā.</translation>
 <translation id="727747134524199931">slejas virsraksts</translation>
 <translation id="7320576522385648310">notiek ievietošana buferī</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Notiek apraksta iegūšana...</translation>
 <translation id="8117451130807776954">Šī nedēļa</translation>
 <translation id="8199524924445686405">gggg</translation>
+<translation id="8208673686607688524">vietējā datuma un laika atlasītājs</translation>
 <translation id="8261464734335370856">Nederīga pareizrakstība</translation>
 <translation id="8284326494547611709">Paraksti</translation>
 <translation id="835897206747267392">Nederīga vērtība.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">satura rādītājs</translation>
 <translation id="8613126697340063924">kontrolēt attālināto atskaņošanu</translation>
 <translation id="862370744433916922">apakšvirsraksts</translation>
+<translation id="8711688047404765493">izvade</translation>
 <translation id="8750798805984357768">Lūdzu, atlasiet vienu no šīm opcijām.</translation>
 <translation id="8808573423886751634">nodaļa</translation>
 <translation id="8845239796550121995">Pašlaik notiek apraide uz jūsu TV</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="901493112792887934">pašreizējais laiks sekundēs</translation>
+<translation id="901834265349196618">e-pasts</translation>
 <translation id="9048119486235211610">navigācija</translation>
 <translation id="9062295712474918030">dokuments</translation>
 <translation id="9062307380734144336">lai pārslēgtu no atskaņošanas uz pauzēšanu vai otrādi, atlasiet šo darbību</translation>

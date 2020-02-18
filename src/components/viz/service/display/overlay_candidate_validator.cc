@@ -56,15 +56,8 @@ CreateOverlayCandidateValidatorOzone(
 std::unique_ptr<OverlayCandidateValidatorWin>
 CreateOverlayCandidateValidatorWin(const ContextProvider* context_provider) {
   DCHECK(context_provider);
-
   const auto& capabilities = context_provider->ContextCapabilities();
-  const bool use_overlays_for_sw_protected_video = base::FeatureList::IsEnabled(
-      features::kUseDCOverlaysForSoftwareProtectedVideo);
-  const bool use_overlays =
-      capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
-                                 use_overlays_for_sw_protected_video);
-
-  if (use_overlays) {
+  if (capabilities.dc_layers) {
     return std::make_unique<OverlayCandidateValidatorWin>();
   } else {
     return nullptr;
@@ -128,6 +121,12 @@ std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
     return CreateOverlayCandidateValidatorWin(context_provider);
 #elif defined(OS_ANDROID)
     return CreateOverlayCandidateValidatorAndroid(context_provider);
+#elif defined(USE_OZONE)
+    // Chromecast could either be backed by Ozone-DRM, which is covered by
+    // Surfaceless code path above, or Ozone-Cast, which is the type of Ozone
+    // platform that doesn't use Surfaceless Surface.
+    return CreateOverlayCandidateValidatorOzone(surface_handle,
+                                                renderer_settings);
 #else
     return nullptr;
 #endif
@@ -143,14 +142,20 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_pass_list,
+    PrimaryPlane* primary_plane,
     OverlayCandidateList* candidates,
-    std::vector<gfx::Rect>* content_bounds) const {
+    std::vector<gfx::Rect>* content_bounds) {
+  last_successful_strategy_ = nullptr;
   for (const auto& strategy : strategies_) {
     if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                          resource_provider, render_pass_list, candidates,
-                          content_bounds)) {
+                          resource_provider, render_pass_list, primary_plane,
+                          candidates, content_bounds)) {
+      // This function is used by the underlay strategy to mark the primary
+      // plane as enable_blending.
+      strategy->AdjustOutputSurfaceOverlay(primary_plane);
       UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                                 strategy->GetUMAEnum());
+      last_successful_strategy_ = strategy.get();
       return true;
     }
   }
@@ -162,6 +167,15 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
 gfx::Rect OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& candidate) const {
   return ToEnclosedRect(candidate.display_rect);
+}
+
+bool OverlayCandidateValidator::StrategyNeedsOutputSurfacePlaneRemoved() {
+  // The full screen strategy will remove the output surface as an overlay
+  // plane.
+  if (last_successful_strategy_)
+    return last_successful_strategy_->RemoveOutputSurfaceAsOverlay();
+
+  return false;
 }
 
 }  // namespace viz

@@ -54,6 +54,7 @@ test('SysConfig', () => {
 test('toPbtxt', () => {
   const config = {
     durationMs: 1000,
+    maxFileSizeBytes: 43,
     buffers: [
       {
         sizeKb: 42,
@@ -94,13 +95,15 @@ duration_ms: 1000
 producers: {
     producer_name: "perfetto.traced_probes"
 }
+max_file_size_bytes: 43
 `);
 });
 
 test('RecordController', () => {
   const app = dingus<App>('globals');
   (app.state.recordConfig as RecordConfig) = createEmptyRecordConfig();
-  const controller = new RecordController({app});
+  const m: MessageChannel = dingus<MessageChannel>('extensionPort');
+  const controller = new RecordController({app, extensionPort: m.port1});
   controller.run();
   controller.run();
   controller.run();

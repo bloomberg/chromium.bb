@@ -125,6 +125,8 @@ def executor_kwargs(test_type, server_config, cache_manager, run_info_data,
         options["prefs"] = {
             "network.dns.localDomains": ",".join(server_config.domains_set)
         }
+        for pref, value in kwargs["extra_prefs"]:
+            options["prefs"].update({pref: Preferences.cast(value)})
         capabilities["moz:firefoxOptions"] = options
     if kwargs["certutil_binary"] is None:
         capabilities["acceptInsecureCerts"] = True
@@ -179,8 +181,8 @@ def run_info_browser_version(binary):
 
 
 def update_properties():
-    return (["debug", "webrender", "e10s", "os", "version", "processor", "bits"],
-            {"debug", "e10s", "webrender"})
+    return (["os", "debug", "webrender", "e10s", "sw-e10s", "processor"],
+            {"os": ["version"], "processor": ["bits"]})
 
 
 class FirefoxBrowser(Browser):

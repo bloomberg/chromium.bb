@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/hats/hats_service.h"
-#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/browser_resources.h"
@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 #include "url/url_canon.h"
@@ -29,17 +30,17 @@
 namespace {
 
 // Default width/height of the dialog in screen size.
-const int kDefaultHatsDialogWidth = 400;
-const int kDefaultHatsDialogHeight = 420;
+const int kDefaultHatsDialogWidth = 448;
+const int kDefaultHatsDialogHeight = 440;
 
-// Placeholder strings in html file to be replaced when the file is loaded.
-constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
-constexpr char kDoneButtonLabelReplacementToken[] = "$DONE_BUTTON_LABEL";
+// Placeholder string in html file to be replaced when the file is loaded.
+constexpr char kScriptSrcReplacementToken[] = "scriptSrc";
 
+// Google consumer survey host site.
+constexpr char kSurveyHost[] =
+    "https://www.google.com/insights/consumersurveys";
 // Base URL to fetch the Google consumer survey script.
-constexpr char kBaseFormatUrl[] =
-    "https://www.google.com/insights/consumersurveys/"
-    "async_survey?site=%s&force_https=1&sc=%s";
+constexpr char kBaseFormatUrl[] = "%s/async_survey?site=%s&force_https=1&sc=%s";
 
 // Returns the local HaTS HTML file as a string with the correct Hats script
 // URL.
@@ -49,55 +50,39 @@ constexpr char kBaseFormatUrl[] =
 // survey feedback to the HaTS server.
 std::string LoadLocalHtmlAsString(const std::string& site_id,
                                   const std::string& site_context) {
-  std::string html_data;
-  ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DESKTOP_HATS_HTML)
-      .CopyToString(&html_data);
-
-  size_t pos = html_data.find(kScriptSrcReplacementToken);
-  DCHECK(pos != std::string::npos);
-  html_data.replace(pos, strlen(kScriptSrcReplacementToken),
-                    base::StringPrintf(kBaseFormatUrl, site_id.c_str(),
-                                       site_context.c_str()));
-
-  pos = html_data.find(kDoneButtonLabelReplacementToken);
-  DCHECK(pos != std::string::npos);
-  html_data.replace(pos, strlen(kDoneButtonLabelReplacementToken),
-                    l10n_util::GetStringUTF8(IDS_DONE));
-
-  return html_data;
+  base::StringPiece raw_html =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_DESKTOP_HATS_HTML);
+  ui::TemplateReplacements replacements;
+  replacements[kScriptSrcReplacementToken] = base::StringPrintf(
+      kBaseFormatUrl, kSurveyHost, site_id.c_str(), site_context.c_str());
+  return ui::ReplaceTemplateExpressions(raw_html, replacements);
 }
 
 }  // namespace
 
 // static
-void HatsWebDialog::Show(const Browser* browser) {
+void HatsWebDialog::Create(Browser* browser, const std::string& site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(browser);
 
-  Profile* profile = browser->profile();
-
   // Self deleting upon close.
-  auto* hats_dialog = new HatsWebDialog(
-      HatsServiceFactory::GetForProfile(profile, true)->en_site_id());
-
-  // Create a web dialog aligned to the bottom center of the location bar.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
-  DCHECK(location_bar);
-  gfx::Rect bounds(location_bar->bounds());
-  views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
-  views::Widget::InitParams params;
-  params.bounds = gfx::Rect(
-      bounds.x() +
-          std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
-      bounds.bottom(), kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
-  chrome::ShowWebDialogWithParams(browser_view->GetWidget()->GetNativeView(),
-                                  profile, hats_dialog, &params);
+  auto* hats_dialog = new HatsWebDialog(browser, site_id);
+  hats_dialog->CreateWebDialog(browser);
 }
 
-HatsWebDialog::HatsWebDialog(const std::string& site_id) : site_id_(site_id) {
+HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
+    : otr_profile_registration_(
+          IndependentOTRProfileManager::GetInstance()
+              ->CreateFromOriginalProfile(
+                  browser->profile(),
+                  base::BindOnce(&HatsWebDialog::OnOriginalProfileDestroyed,
+                                 base::Unretained(this)))),
+      browser_(browser),
+      site_id_(site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(
+      otr_profile_registration_->profile()->IsIndependentOffTheRecordProfile());
 }
 
 HatsWebDialog::~HatsWebDialog() {
@@ -155,4 +140,99 @@ bool HatsWebDialog::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
+}
+
+void HatsWebDialog::OnWebContentsFinishedLoad() {
+  // If this happens after the time out, the dialog is to be deleted. We
+  // should not handle this any more.
+  if (!loading_timer_.IsRunning())
+    return;
+  loading_timer_.Stop();
+
+  if (resource_loaded_) {
+    // Only after the confirmation that we have already loaded the resource, we
+    // will proceed with showing the bubble.
+    HatsBubbleView::Show(browser_, base::BindOnce(&HatsWebDialog::Show,
+                                                  weak_factory_.GetWeakPtr(),
+                                                  preloading_widget_));
+  } else {
+    preloading_widget_->Close();
+  }
+}
+
+void HatsWebDialog::OnMainFrameResourceLoadComplete(
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  // Due to https://crbug.com/1011433, we don't always get called due to failed
+  // loading for javascript resource. So, We monitor all the resource load,
+  // and explicitly HaTS library code. We only claim |resource_loaded_| is true
+  // if HaTS library code is loaded successfully, thus this function is called,
+  // and there isn't any error for loading other resources.
+  // TODO(weili): once the bug is fixed, we no longer need this check nor
+  // |resource_loaded_|, remove them then.
+  if (resource_load_info.net_error == net::Error::OK) {
+    if (resource_load_info.url.spec().find(kSurveyHost) == 0) {
+      // The resource from survey host is loaded successfully.
+      resource_loaded_ = true;
+    }
+  } else {
+    // Any error indicates some resource failed to load. Exit early.
+    loading_timer_.Stop();
+    preloading_widget_->Close();
+  }
+}
+
+void HatsWebDialog::OnLoadTimedOut() {
+  // Once loading is timed out, it means there is some problem such as network
+  // error, unresponsive server etc. No need to wait any longer. Delete the
+  // dialog.
+  preloading_widget_->Close();
+}
+
+const base::TimeDelta HatsWebDialog::ContentLoadingTimeout() const {
+  // Time out for loading the survey content in the dialog.
+  static const base::TimeDelta kLoadingTimeOut =
+      base::TimeDelta::FromSeconds(10);
+
+  return kLoadingTimeOut;
+}
+
+void HatsWebDialog::CreateWebDialog(Browser* browser) {
+  // Create a web dialog aligned to the bottom center of the location bar.
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  LocationBarView* location_bar = browser_view->GetLocationBarView();
+  DCHECK(location_bar);
+  gfx::Rect bounds(location_bar->bounds());
+  views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
+  bounds = gfx::Rect(
+      bounds.x() +
+          std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
+      bounds.bottom() - views::BubbleBorder::GetBorderAndShadowInsets().top(),
+      kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
+  gfx::NativeWindow native_window = chrome::CreateWebDialogWithBounds(
+      browser_view->GetWidget()->GetNativeView(), off_the_record_profile(),
+      this, bounds,
+      /*show=*/false);
+  preloading_widget_ = views::Widget::GetWidgetForNativeWindow(native_window);
+
+  // Start the loading timer once it is created.
+  loading_timer_.Start(FROM_HERE, ContentLoadingTimeout(),
+                       base::BindOnce(&HatsWebDialog::OnLoadTimedOut,
+                                      weak_factory_.GetWeakPtr()));
+}
+
+void HatsWebDialog::OnOriginalProfileDestroyed(Profile* profile) {
+  if (otr_profile_registration_ &&
+      profile == otr_profile_registration_->profile())
+    otr_profile_registration_.reset();
+}
+
+void HatsWebDialog::Show(views::Widget* widget, bool accept) {
+  if (accept) {
+    if (widget)
+      widget->Show();
+    return;
+  }
+
+  // Delete this dialog.
+  widget->Close();
 }

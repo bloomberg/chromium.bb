@@ -200,6 +200,22 @@ void SessionService::SetTabGroup(const SessionID& window_id,
   ScheduleCommand(sessions::CreateTabGroupCommand(tab_id, group));
 }
 
+void SessionService::SetTabGroupMetadata(const SessionID& window_id,
+                                         const base::Token& group_id,
+                                         const base::string16& title,
+                                         SkColor color) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  // Any group metadata changes happening in a closing window can be ignored.
+  if (base::Contains(pending_window_close_ids_, window_id) ||
+      base::Contains(window_closing_ids_, window_id))
+    return;
+
+  ScheduleCommand(
+      sessions::CreateTabGroupMetadataUpdateCommand(group_id, title, color));
+}
+
 void SessionService::SetPinnedState(const SessionID& window_id,
                                     const SessionID& tab_id,
                                     bool is_pinned) {
@@ -250,9 +266,7 @@ void SessionService::WindowOpened(Browser* browser) {
     return;
 
   RestoreIfNecessary(std::vector<GURL>(), browser);
-  SetWindowType(browser->session_id(),
-                browser->type(),
-                browser->is_app() ? TYPE_APP : TYPE_NORMAL);
+  SetWindowType(browser->session_id(), browser->type());
   SetWindowAppName(browser->session_id(), browser->app_name());
 }
 
@@ -369,11 +383,10 @@ void SessionService::TabClosing(WebContents* contents) {
 }
 
 void SessionService::SetWindowType(const SessionID& window_id,
-                                   Browser::Type type,
-                                   AppType app_type) {
+                                   Browser::Type type) {
   sessions::SessionWindow::WindowType window_type =
       WindowTypeForBrowserType(type);
-  if (!ShouldRestoreWindowOfType(window_type, app_type))
+  if (!ShouldRestoreWindowOfType(window_type))
     return;
 
   windows_tracking_.insert(window_id);
@@ -569,16 +582,14 @@ void SessionService::Init() {
 }
 
 bool SessionService::ShouldRestoreWindowOfType(
-    sessions::SessionWindow::WindowType window_type,
-    AppType app_type) const {
+    sessions::SessionWindow::WindowType window_type) const {
 #if defined(OS_CHROMEOS)
   // Restore app popups for ChromeOS alone.
-  if (window_type == sessions::SessionWindow::TYPE_POPUP &&
-      app_type == TYPE_APP)
+  if (window_type == sessions::SessionWindow::TYPE_APP)
     return true;
 #endif
 
-  return window_type == sessions::SessionWindow::TYPE_TABBED;
+  return window_type == sessions::SessionWindow::TYPE_NORMAL;
 }
 
 void SessionService::RemoveUnusedRestoreWindows(
@@ -586,9 +597,7 @@ void SessionService::RemoveUnusedRestoreWindows(
   auto i = window_list->begin();
   while (i != window_list->end()) {
     sessions::SessionWindow* window = i->get();
-    if (!ShouldRestoreWindowOfType(window->type,
-                                   window->app_name.empty() ? TYPE_NORMAL :
-                                                              TYPE_APP)) {
+    if (!ShouldRestoreWindowOfType(window->type)) {
       i = window_list->erase(i);
     } else {
       ++i;
@@ -766,6 +775,14 @@ void SessionService::BuildCommandsForBrowser(
                         tab_strip->IsTabPinned(i), tab_to_available_range);
   }
 
+  // Set the visual data for each tab group.
+  for (const TabGroupId& group_id : tab_strip->ListTabGroups()) {
+    const TabGroupVisualData* data = tab_strip->GetVisualDataForGroup(group_id);
+    base_session_service_->AppendRebuildCommand(
+        sessions::CreateTabGroupMetadataUpdateCommand(
+            group_id.token(), data->title(), data->color()));
+  }
+
   base_session_service_->AppendRebuildCommand(
       sessions::CreateSetSelectedTabInWindowCommand(
           browser->session_id(),
@@ -898,12 +915,10 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   // Never track app popup windows that do not have a trusted source (i.e.
   // popup windows spawned by an app). If this logic changes, be sure to also
   // change SessionRestoreImpl::CreateRestoredBrowser().
-  if (browser->is_app() && browser->is_type_popup() &&
-      !browser->is_trusted_source()) {
+  if (browser->deprecated_is_app() && !browser->is_trusted_source()) {
     return false;
   }
-  return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()),
-                                   browser->is_app() ? TYPE_APP : TYPE_NORMAL);
+  return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()));
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {

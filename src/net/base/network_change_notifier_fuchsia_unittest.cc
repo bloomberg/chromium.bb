@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "net/base/ip_address.h"
@@ -165,7 +165,7 @@ class FakeNetstackAsync {
   explicit FakeNetstackAsync(
       fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request)
       : thread_("Netstack Thread") {
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     CHECK(thread_.StartWithOptions(options));
     netstack_ = base::SequenceBound<FakeNetstack>(thread_.task_runner(),
                                                   std::move(netstack_request));
@@ -258,7 +258,9 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO};
   testing::StrictMock<MockConnectionTypeObserver> observer_;
   testing::StrictMock<MockIPAddressObserver> ip_observer_;
   fuchsia::netstack::NetstackPtr netstack_ptr_;

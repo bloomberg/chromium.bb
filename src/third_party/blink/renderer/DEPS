@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/allocator/partition_allocator/partition_alloc.h",
     "+base/auto_reset.h",
     "+base/bind.h",
     "+base/bind_helpers.h",
@@ -47,15 +48,21 @@ include_rules = [
     "+base/trace_event/memory_dump_provider.h",
     "+base/trace_event/trace_event.h",
     "+base/util/type_safety/pass_key.h",
+    "+base/util/type_safety/strong_alias.h",
     "+build",
     "+components/crash/core/common/crash_key.h",
     "+services/network/public/mojom",
-    "+services/service_manager/public/cpp/connector.h",
     "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
     "+third_party/blink/public/platform",
     "+third_party/blink/renderer/platform",
+
+    # Blink knows about grd files, but the specifics of how to get a resource
+    # given its id is left to the embedder.
+    "-ui/base/l10n",
+    "-ui/base/resource",
+
     "+ui/events/keycodes/dom",
     "+v8",
 ]

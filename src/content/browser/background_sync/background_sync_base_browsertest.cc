@@ -7,15 +7,18 @@
 #include <memory>
 #include <set>
 #include <vector>
-
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/test/mock_entropy_provider.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/mock_background_sync_controller.h"
 
 namespace content {
 
@@ -51,10 +54,10 @@ bool BackgroundSyncBaseBrowserTest::RegistrationPending(
       base::Unretained(this), run_loop.QuitClosure(),
       base::ThreadTaskRunnerHandle::Get(), &is_pending);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          &BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread,
+          &BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread,
           base::Unretained(this), base::WrapRefCounted(sync_context),
           base::WrapRefCounted(service_worker_context), tag,
           https_server_->GetURL(kDefaultTestURL), std::move(callback)));
@@ -62,6 +65,12 @@ bool BackgroundSyncBaseBrowserTest::RegistrationPending(
   run_loop.Run();
 
   return is_pending;
+}
+
+bool BackgroundSyncBaseBrowserTest::CompleteDelayedSyncEvent() {
+  std::string script_result;
+  EXPECT_TRUE(RunScript("completeDelayedSyncEvent()", &script_result));
+  return script_result == BuildExpectedResult("delay", "completing");
 }
 
 void BackgroundSyncBaseBrowserTest::RegistrationPendingCallback(
@@ -106,7 +115,7 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingDidGetSWRegistration(
                      base::Unretained(this), tag, std::move(callback)));
 }
 
-void BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread(
+void BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread(
     const scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const scoped_refptr<ServiceWorkerContextWrapper> sw_context,
     const std::string& tag,
@@ -119,17 +128,37 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread(
                           std::move(callback)));
 }
 
-void BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnIOThread(
-    const scoped_refptr<BackgroundSyncContextImpl>& sync_context,
-    int max_sync_attempts) {
+void BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread(
+    BackgroundSyncContextImpl* sync_context,
+    base::SimpleTestClock* clock) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(clock);
+
   BackgroundSyncManager* background_sync_manager =
       sync_context->background_sync_manager();
-  background_sync_manager->SetMaxSyncAttemptsForTesting(max_sync_attempts);
+  background_sync_manager->set_clock(clock);
 }
 
 void BackgroundSyncBaseBrowserTest::SetUp() {
-  background_sync_test_util::SetIgnoreNetworkChanges(true);
+  const char kTrialName[] = "BackgroundSync";
+  const char kGroupName[] = "BackgroundSync";
+  const char kFeatureName[] = "PeriodicBackgroundSync";
+  base::FieldTrialList field_trial_list(
+      std::make_unique<base::MockEntropyProvider>());
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+  std::map<std::string, std::string> params;
+  params["max_sync_attempts"] = "1";
+  params["min_periodic_sync_events_interval_sec"] = "5";
+  base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+      kTrialName, kGroupName, params);
+  std::unique_ptr<base::FeatureList> feature_list(
+      std::make_unique<base::FeatureList>());
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+  scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
+  background_sync_test_util::SetIgnoreNetworkChanges(true);
   ContentBrowserTest::SetUp();
 }
 
@@ -156,7 +185,6 @@ void BackgroundSyncBaseBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(https_server_->Start());
 
   SetIncognitoMode(false);
-  SetMaxSyncAttempts(1);
   background_sync_test_util::SetOnline(web_contents(), true);
   ASSERT_TRUE(LoadTestPage(kDefaultTestURL));
 
@@ -176,21 +204,25 @@ bool BackgroundSyncBaseBrowserTest::RunScript(const std::string& script,
   return content::ExecuteScriptAndExtractString(web_contents(), script, result);
 }
 
-void BackgroundSyncBaseBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
-  base::RunLoop run_loop;
-
+void BackgroundSyncBaseBrowserTest::SetTestClock(base::SimpleTestClock* clock) {
   StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnIOThread,
-          base::Unretained(this), base::WrapRefCounted(sync_context),
-          max_sync_attempts),
-      run_loop.QuitClosure());
-
-  run_loop.Run();
+  // TODO(crbug.com/824858): Remove the else branch after the feature is
+  // enabled. Also, try to make a RunOrPostTaskOnThreadAndReply() function so
+  // the if/else isn't needed.
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    SetTestClockOnCoreThread(sync_context, clock);
+  } else {
+    base::RunLoop run_loop;
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+        base::BindOnce(&BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread,
+                       base::Unretained(this), base::Unretained(sync_context),
+                       clock),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
 }
 
 void BackgroundSyncBaseBrowserTest::ClearStoragePartitionData() {

@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,10 +53,11 @@
 @dynamic delegate;
 
 - (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-              webStateList:(WebStateList*)webStateList
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                  webStateList:(WebStateList*)webStateList
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+                    dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState
                           injectionHandler:injectionHandler];
@@ -76,9 +76,10 @@ initWithBaseViewController:(UIViewController*)viewController
     std::vector<autofill::CreditCard*> cards =
         _personalDataManager->GetCreditCards();
 
-    _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
+    _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards
+                                                       dispatcher:dispatcher];
     _cardMediator.navigationDelegate = self;
-    _cardMediator.contentDelegate = self.manualFillInjectionHandler;
+    _cardMediator.contentInjector = self.injectionHandler;
     _cardMediator.consumer = _cardViewController;
 
     _cardRequester = [[ManualFillFullCardRequester alloc]

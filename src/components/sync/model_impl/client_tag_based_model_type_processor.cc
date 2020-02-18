@@ -201,8 +201,9 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
+  // TODO(https://crbug.com/959157): Use CoreAccountId instead of std::string.
   model_type_state_.set_authenticated_account_id(
-      activation_request_.authenticated_account_id);
+      activation_request_.authenticated_account_id.id);
 
   // For commit-only types, no updates are expected and hence we can consider
   // initial_sync_done(), reflecting that sync is enabled.
@@ -731,13 +732,16 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     return;
   }
 
-  if (is_initial_sync &&
-      activation_request_.storage_option == STORAGE_IN_MEMORY) {
+  if (is_initial_sync) {
     base::TimeDelta configuration_duration =
         base::Time::Now() - activation_request_.configuration_start_time;
     base::UmaHistogramCustomTimes(
-        base::StringPrintf("Sync.ModelTypeConfigurationTime.Ephemeral.%s",
-                           ModelTypeToHistogramSuffix(type_)),
+        base::StringPrintf(
+            "Sync.ModelTypeConfigurationTime.%s.%s",
+            (activation_request_.storage_option == STORAGE_IN_MEMORY)
+                ? "Ephemeral"
+                : "Persistent",
+            ModelTypeToHistogramSuffix(type_)),
         configuration_duration,
         /*min=*/base::TimeDelta::FromMilliseconds(1),
         /*min=*/base::TimeDelta::FromSeconds(60),

@@ -17,7 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
@@ -123,7 +123,6 @@ TestDirectory::TestDirectory(
     : Directory(base::WrapUnique(backing_store),
                 handler,
                 base::Closure(),
-                nullptr,
                 nullptr),
       backing_store_(backing_store) {}
 
@@ -136,7 +135,7 @@ TestDirectory::~TestDirectory() {}
 #define MAYBE_FailInitialWrite FailInitialWrite
 #endif
 TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
   base::ScopedTempDir temp_dir;
@@ -328,7 +327,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
           }),
           file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
-      base::Closure(), nullptr, nullptr);
+      base::Closure(), nullptr);
 
   ASSERT_TRUE(dir().get());
   ASSERT_EQ(OPENED_EXISTING,
@@ -526,7 +525,7 @@ class SyncableDirectoryManagement : public testing::Test {
   void TearDown() override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
@@ -544,7 +543,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
                       }),
                       path),
                   MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
-                  nullptr, nullptr);
+                  nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
     ASSERT_EQ(result, OPENED_NEW);

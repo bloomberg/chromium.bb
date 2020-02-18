@@ -18,7 +18,7 @@ function check_clang_format() {
 
 function check_include_guard() {
   # Replace all folder slashes with underscores, and add "_" suffix.
-  guard_name=${1//[\/\.]/_}_
+  guard_name=${1//[\/\.\-]/_}_
 
   # This to-uppercase syntax is available in bash 4.0+
   guard_name=${guard_name^^}

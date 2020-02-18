@@ -223,9 +223,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   bool use_oopr = false;
   if (raster_context_provider) {
     lock.emplace(raster_context_provider);
-    use_oopr = raster_context_provider->GetGpuFeatureInfo()
-                   .status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-               gpu::kGpuFeatureStatusEnabled;
+    use_oopr =
+        raster_context_provider->ContextCapabilities().supports_oop_raster;
     if (!use_oopr) {
       raster_context_provider = nullptr;
       lock.reset();
@@ -374,7 +373,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
           gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
 
       {
-        ScopedGpuRaster gpu_raster(context_provider);
+        ScopedGpuRaster scoped_gpu_raster(context_provider);
         viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
             context_provider->GrContext(),
             pool_resource.color_space().ToSkColorSpace(), mailbox_texture_id,
@@ -399,9 +398,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     // into a software bitmap and upload it to a texture for compositing.
     DCHECK(pool_resource.gpu_backing());
     auto* backing = static_cast<HudGpuBacking*>(pool_resource.gpu_backing());
-    viz::ContextProvider* context_provider =
-        layer_tree_impl()->context_provider();
-    gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+    gpu::gles2::GLES2Interface* gl =
+        layer_tree_impl()->context_provider()->ContextGL();
 
     if (!staging_surface_ ||
         gfx::SkISizeToSize(staging_surface_->getCanvas()->getBaseLayerSize()) !=

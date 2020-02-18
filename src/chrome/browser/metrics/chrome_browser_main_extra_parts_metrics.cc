@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
@@ -38,7 +39,6 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
-#include "chrome/browser/metrics/tab_usage_recorder.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && defined(__arm__)
@@ -72,21 +72,12 @@ namespace {
 
 void RecordMemoryMetrics();
 
-// Records memory metrics after a delay, with a fixed mean interval but randomly
-// distributed samples using a poisson process.
+// Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
-#if defined(OS_ANDROID)
-  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(5);
-#else
-  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(30);
-#endif
-
-  // Compute the actual delay before sampling using a Poisson process.
-  double uniform = base::RandDouble();
-  base::TimeDelta delay = -std::log(uniform) * mean_time;
-
-  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  base::BindOnce(&RecordMemoryMetrics), delay);
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&RecordMemoryMetrics),
+      memory_instrumentation::GetDelayForNextMemoryLog());
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.
@@ -225,6 +216,14 @@ void RecordStartupMetrics() {
   UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
                             os_info.Kernel32Version(),
                             base::win::Version::WIN_LAST);
+  int patch = os_info.version_number().patch;
+  int build = os_info.version_number().build;
+  int patch_level = 0;
+
+  if (patch < 65536 && build < 65536)
+    patch_level = MAKELONG(patch, build);
+  DCHECK(patch_level) << "Windows version too high!";
+  base::UmaHistogramSparse("Windows.PatchLevel", patch_level);
 
   UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
                         base::TimeTicks::IsHighResolution());
@@ -568,11 +567,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #endif
 
   constexpr base::TaskTraits background_task_traits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  base::PostTaskWithTraits(FROM_HERE, background_task_traits,
-                           base::BindOnce(&RecordLinuxDistro));
+  base::PostTask(FROM_HERE, background_task_traits,
+                 base::BindOnce(&RecordLinuxDistro));
 #endif
 
 #if defined(USE_OZONE) || defined(USE_X11)
@@ -596,11 +595,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #if defined(OS_WIN)
   // RecordStartupMetrics calls into shell_integration::GetDefaultBrowser(),
   // which requires a COM thread on Windows.
-  base::CreateCOMSTATaskRunnerWithTraits(background_task_traits)
+  base::CreateCOMSTATaskRunner(background_task_traits)
       ->PostTask(FROM_HERE, base::BindOnce(&RecordStartupMetrics));
 #else
-  base::PostTaskWithTraits(FROM_HERE, background_task_traits,
-                           base::BindOnce(&RecordStartupMetrics));
+  base::PostTask(FROM_HERE, background_task_traits,
+                 base::BindOnce(&RecordStartupMetrics));
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
@@ -608,7 +607,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // breaking some tests, including all of the ProcessMemoryMetricsEmitterTest
   // tests. Figure out why there is a dependency and fix the tests.
   auto background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(background_task_traits);
+      base::CreateSequencedTaskRunner(background_task_traits);
 
   background_task_runner->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
@@ -628,7 +627,6 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 
 #if !defined(OS_ANDROID)
   metrics::BeginFirstWebContentsProfiling();
-  metrics::TabUsageRecorder::InitializeIfNeeded();
   // Only instantiate the tab stats tracker if a local state exists. This is
   // always the case for Chrome but not for the unittests.
   if (g_browser_process != nullptr &&

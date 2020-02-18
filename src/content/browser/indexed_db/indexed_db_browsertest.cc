@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -35,6 +34,7 @@
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -155,10 +155,9 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   static void SetTempQuota(int per_host_quota_kilobytes,
                            scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
-                         per_host_quota_kilobytes, qm));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
+                                    per_host_quota_kilobytes, qm));
       return;
     }
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -271,8 +270,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     IndexedDBOriginStateHandle handle;
     leveldb::Status s;
     std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-        context->GetIDBFactory()->GetOrOpenOriginFactory(origin,
-                                                         context->data_path());
+        context->GetIDBFactory()->GetOrOpenOriginFactory(
+            origin, context->data_path(), /*create_if_missing=*/true);
     CHECK(s.ok()) << s.ToString();
     CHECK(handle.IsHeld());
 
@@ -280,10 +279,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         handle.origin_state()->backing_store()->db();
     s = db->Put(key, &value);
     CHECK(s.ok()) << s.ToString();
-
-    // Force close to ensure a cold start on the next database open.
-    handle.origin_state()->ForceClose();
     handle.Release();
+
+    context->GetIDBFactory()->ForceClose(origin, true);
+
     CHECK(!context->GetIDBFactory()->IsBackingStoreOpen(origin));
     context.reset();
   }
@@ -435,20 +434,6 @@ class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTestWithGCExposed);
-};
-
-class IndexedDBBrowserTestWithExperimentalWebFeatures
-    : public IndexedDBBrowserTest {
- public:
-  IndexedDBBrowserTestWithExperimentalWebFeatures() = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTestWithExperimentalWebFeatures);
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
@@ -701,18 +686,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginIncognito) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
   // Ignore several preceding transactions:
   // * The test calls deleteDatabase() which opens the backing store:
-  //   #1: IndexedDBBackingStore::OpenBackingStore
-  //       => IndexedDBBackingStore::SetUpMetadata
-  //   #2: IndexedDBBackingStore::OpenBackingStore
-  //       => IndexedDBBackingStore::CleanUpBlobJournal (no-op)
-  // * The test calls open(), to create a new database:
-  //   #3: IndexedDBFactoryImpl::Open
-  //       => IndexedDBDatabase::Create
-  //       => IndexedDBBackingStore::CreateIDBDatabaseMetaData
-  //   #4: IndexedDBTransaction::Commit - initial "versionchange" transaction
+  //   #1: IndexedDBTransaction::Commit - initial "versionchange" transaction
   // * Once the connection is opened, the test runs:
-  //   #5: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
-  const int instance_num = 5;
+  //   #2: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
+  const int instance_num = 2;
   const int call_num = 1;
   FailOperation(FAIL_CLASS_LEVELDB_TRANSACTION, FAIL_METHOD_COMMIT_DISK_FULL,
                 instance_num, call_num);
@@ -871,6 +848,18 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
         failure_method = FAIL_METHOD_SEEK;
       else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
+    } else if (fail_class == "LevelDBDatabase") {
+      failure_class = FAIL_CLASS_LEVELDB_DATABASE;
+      if (fail_method == "Write")
+        failure_method = FAIL_METHOD_WRITE;
+      else
+        NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
+    } else if (fail_class == "LevelDBDirectTransaction") {
+      failure_class = FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION;
+      if (fail_method == "Get")
+        failure_method = FAIL_METHOD_GET;
+      else
+        NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
     } else {
       NOTREACHED() << "Unknown class: \"" << fail_class << "\"";
     }
@@ -934,10 +923,23 @@ INSTANTIATE_TEST_SUITE_P(IndexedDBBrowserTestInstantiation,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
   SimpleTest(GURL(test_url.spec() + "#fill"));
+  {
+    // Cycle through the task runner to ensure that all IDB tasks are completed.
+    base::RunLoop loop;
+    GetContext()->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
   int64_t after_filling = RequestUsage(kFileOrigin);
   EXPECT_GT(after_filling, 0);
 
   SimpleTest(GURL(test_url.spec() + "#purge"));
+  {
+    // Cycle through the task runner to ensure that the cleanup task is
+    // executed.
+    base::RunLoop loop;
+    GetContext()->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
   int64_t after_deleting = RequestUsage(kFileOrigin);
   EXPECT_LT(after_deleting, after_filling);
 
@@ -949,10 +951,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   // metadata and log data remains after a deletion. It is possible that
   // changes to the implementation may require these constants to be tweaked.
 
-  const int kTestFillBytes = 1024 * 1024 * 5;  // 5MB
+  // 1MB, as sometimes the leveldb log is compacted to .ldb files, which are
+  // compressed.
+  const int kTestFillBytes = 1 * 1024 * 1024;
   EXPECT_GT(after_filling, kTestFillBytes);
 
-  const int kTestCompactBytes = 1024 * 10;  // 10kB
+  const int kTestCompactBytes = 300 * 1024;  // 300kB
   EXPECT_LT(after_deleting, kTestCompactBytes);
 }
 
@@ -1027,35 +1031,6 @@ IN_PROC_BROWSER_TEST_F(
   shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0);
   shell()->Close();
 
-  EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
-}
-
-// Testing abort ordering for commit. Verifies that an explicitly committed
-// transaction blocked by another pending transaction will be committed rather
-// than aborted in the event that the page crashes before its committed.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithExperimentalWebFeatures,
-                       CommitContinuesOnAbort) {
-  // Sets up a database, opens four transactions against it such that two end
-  // up indefinitely blocked, one of which is explicitly committed.
-  NavigateAndWaitForTitle(shell(), "blocked_explicit_commit.html", "#tab1",
-                          "transactions registered");
-
-  // Crashes the tab to cause the database set up above to force close with the
-  // blocked transactions still open.
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
-  shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0);
-
-  // Reopens the same page that was just crashed and inspects the database to
-  // see the results of the transactions that were open at time of crash.
-  Shell* new_shell = CreateBrowser();
-  GURL url = GetTestUrl("indexeddb", "blocked_explicit_commit.html");
-  url = GURL(url.spec() + "#tab2");
-  base::string16 expected_title16(
-      ASCIIToUTF16("transactions aborted and committed as expected"));
-  TitleWatcher title_watcher(new_shell->web_contents(), expected_title16);
-  title_watcher.AlsoWaitForTitle(
-      ASCIIToUTF16("fail - transactions did not abort and commit as expected"));
-  NavigateToURL(new_shell, url);
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 

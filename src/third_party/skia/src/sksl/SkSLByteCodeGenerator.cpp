@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2019 Google LLC
  *
  * Use of this source code is governed by a BSD-style license that can be
@@ -17,14 +17,12 @@ ByteCodeGenerator::ByteCodeGenerator(const Context* context, const Program* prog
     , fContext(*context)
     , fOutput(output)
     , fIntrinsics {
-         { "cos",     ByteCodeInstruction::kCos },
-         { "cross",   ByteCodeInstruction::kCross },
-         { "dot",     SpecialIntrinsic::kDot },
-         { "inverse", ByteCodeInstruction::kInverse2x2 },
-         { "sin",     ByteCodeInstruction::kSin },
-         { "sqrt",    ByteCodeInstruction::kSqrt },
-         { "tan",     ByteCodeInstruction::kTan },
-         { "mix",     ByteCodeInstruction::kMix },
+        { "cos",     ByteCodeInstruction::kCos },
+        { "dot",     SpecialIntrinsic::kDot },
+        { "inverse", ByteCodeInstruction::kInverse2x2 },
+        { "sin",     ByteCodeInstruction::kSin },
+        { "sqrt",    ByteCodeInstruction::kSqrt },
+        { "tan",     ByteCodeInstruction::kTan },
       } {}
 
 
@@ -262,14 +260,6 @@ int ByteCodeGenerator::StackUsage(ByteCodeInstruction inst, int count_) {
 
 #undef VECTOR_BINARY_OP
 #undef VECTOR_MATRIX_BINARY_OP
-
-        // Strange math operations with other behavior:
-        case ByteCodeInstruction::kCross: return -3;
-        // Binary, but also consumes T:
-        case ByteCodeInstruction::kMix:  return -2;
-        case ByteCodeInstruction::kMix2: return -3;
-        case ByteCodeInstruction::kMix3: return -4;
-        case ByteCodeInstruction::kMix4: return -5;
 
         // Ops that push or load data to grow the stack:
         case ByteCodeInstruction::kDup:
@@ -747,7 +737,9 @@ bool ByteCodeGenerator::writeBinaryExpression(const BinaryExpression& b, bool di
                 break;
 
             default:
-                SkASSERT(false);
+                fErrors.error(b.fOffset, SkSL::String::printf("Unsupported binary operator '%s'",
+                                                              Compiler::OperatorName(op)));
+                break;
         }
     }
     if (lvalue) {
@@ -879,26 +871,29 @@ void ByteCodeGenerator::writeIntrinsicCall(const FunctionCall& c) {
     }
     int count = SlotCount(c.fArguments[0]->fType);
     if (found->second.fIsSpecial) {
-        SkASSERT(found->second.fValue.fSpecial == SpecialIntrinsic::kDot);
-        SkASSERT(c.fArguments.size() == 2);
-        SkASSERT(count == SlotCount(c.fArguments[1]->fType));
-        this->write((ByteCodeInstruction)((int)ByteCodeInstruction::kMultiplyF + count - 1));
-        for (int i = count; i > 1; --i) {
-            this->write(ByteCodeInstruction::kAddF);
+        SpecialIntrinsic special = found->second.fValue.fSpecial;
+        switch (special) {
+            case SpecialIntrinsic::kDot: {
+                SkASSERT(c.fArguments.size() == 2);
+                SkASSERT(count == SlotCount(c.fArguments[1]->fType));
+                this->write((ByteCodeInstruction)((int)ByteCodeInstruction::kMultiplyF + count-1));
+                for (int i = count; i > 1; --i) {
+                    this->write(ByteCodeInstruction::kAddF);
+                }
+                break;
+            }
+            default:
+                SkASSERT(false);
         }
     } else {
         switch (found->second.fValue.fInstruction) {
             case ByteCodeInstruction::kCos:
-            case ByteCodeInstruction::kMix:
             case ByteCodeInstruction::kSin:
             case ByteCodeInstruction::kSqrt:
             case ByteCodeInstruction::kTan:
                 SkASSERT(c.fArguments.size() > 0);
                 this->write((ByteCodeInstruction) ((int) found->second.fValue.fInstruction +
                             count - 1));
-                break;
-            case ByteCodeInstruction::kCross:
-                this->write(found->second.fValue.fInstruction);
                 break;
             case ByteCodeInstruction::kInverse2x2: {
                 SkASSERT(c.fArguments.size() > 0);
@@ -910,7 +905,8 @@ void ByteCodeGenerator::writeIntrinsicCall(const FunctionCall& c) {
                     default: SkASSERT(false);
                 }
                 this->write(op);
-            } break;
+                break;
+            }
             default:
                 SkASSERT(false);
         }

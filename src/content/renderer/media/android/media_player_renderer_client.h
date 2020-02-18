@@ -19,7 +19,7 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/clients/mojo_renderer_wrapper.h"
-#include "media/mojo/interfaces/renderer_extensions.mojom.h"
+#include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -114,7 +114,7 @@ class CONTENT_EXPORT MediaPlayerRendererClient
   mojo::Binding<MediaPlayerRendererClientExtension> client_extension_binding_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaPlayerRendererClient> weak_factory_;
+  base::WeakPtrFactory<MediaPlayerRendererClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerRendererClient);
 };

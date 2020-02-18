@@ -57,6 +57,7 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate,
     : isolate_(isolate),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
+      lifecycle_state_(mojom::FrameLifecycleState::kRunning),
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       agent_(agent),
@@ -155,6 +156,10 @@ bool ExecutionContext::DispatchErrorEventInternal(
   return error_event->defaultPrevented();
 }
 
+bool ExecutionContext::IsContextPaused() const {
+  return lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
+}
+
 int ExecutionContext::CircularSequentialID() {
   ++circular_sequential_id_;
   if (circular_sequential_id_ > ((1U << 31) - 1U))
@@ -190,6 +195,10 @@ SecurityOrigin* ExecutionContext::GetMutableSecurityOrigin() {
 
 ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicy() {
   return GetSecurityContext().GetContentSecurityPolicy();
+}
+
+const base::UnguessableToken& ExecutionContext::GetAgentClusterID() const {
+  return agent_->cluster_id();
 }
 
 void ExecutionContext::AllowWindowInteraction() {
@@ -303,9 +312,14 @@ void ExecutionContext::CountFeaturePolicyUsage(mojom::WebFeature feature) {
 
 bool ExecutionContext::FeaturePolicyFeatureObserved(
     mojom::FeaturePolicyFeature feature) {
-  if (parsed_feature_policies_[static_cast<size_t>(feature)])
+  size_t feature_index = static_cast<size_t>(feature);
+  if (parsed_feature_policies_.size() == 0) {
+    parsed_feature_policies_.resize(
+        static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
+  } else if (parsed_feature_policies_[feature_index]) {
     return true;
-  parsed_feature_policies_.set(static_cast<size_t>(feature));
+  }
+  parsed_feature_policies_[feature_index] = true;
   return false;
 }
 

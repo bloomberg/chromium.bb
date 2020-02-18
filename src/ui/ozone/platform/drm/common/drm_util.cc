@@ -188,6 +188,16 @@ bool IsAspectPreserving(int fd, drmModeConnector* connector) {
           "Full aspect");
 }
 
+display::PanelOrientation GetPanelOrientation(int fd,
+                                              drmModeConnector* connector) {
+  ScopedDrmPropertyPtr property;
+  int index = GetDrmProperty(fd, connector, "panel orientation", &property);
+  if (index < 0)
+    return display::PanelOrientation::kNormal;
+  DCHECK_LT(connector->prop_values[index], display::PanelOrientation::kLast);
+  return static_cast<display::PanelOrientation>(connector->prop_values[index]);
+}
+
 int ConnectorIndex(int device_index, int display_index) {
   DCHECK_LT(device_index, 16);
   DCHECK_LT(display_index, 16);
@@ -288,8 +298,7 @@ HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
     size_t index)
     : connector_(std::move(connector)), crtc_(std::move(crtc)), index_(index) {}
 
-HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
-}
+HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() = default;
 
 std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>
 GetAvailableDisplayControllerInfos(int fd) {
@@ -392,8 +401,14 @@ display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
     if (info->crtc()->mode_valid && SameMode(info->crtc()->mode, mode))
       *out_current_mode = modes.back().get();
 
-    if (mode.type & DRM_MODE_TYPE_PREFERRED)
-      *out_native_mode = modes.back().get();
+    if (mode.type & DRM_MODE_TYPE_PREFERRED) {
+      if (*out_native_mode == nullptr) {
+        *out_native_mode = modes.back().get();
+      } else {
+        LOG(WARNING) << "Found more than one preferred modes. The first one "
+                        "will be used.";
+      }
+    }
   }
 
   // If we couldn't find a preferred mode, then try to find a mode that has the
@@ -427,6 +442,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const display::DisplayConnectionType type = GetDisplayType(info->connector());
   const bool is_aspect_preserving_scaling =
       IsAspectPreserving(fd, info->connector());
+  const display::PanelOrientation panel_orientation =
+      GetPanelOrientation(fd, info->connector());
   const bool has_color_correction_matrix =
       HasColorCorrectionMatrix(fd, info->crtc()) ||
       HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
@@ -443,6 +460,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   bool has_overscan = false;
   gfx::ColorSpace display_color_space;
+  uint32_t bits_per_channel = 8u;
   // Active pixels size from the first detailed timing descriptor in the EDID.
   gfx::Size active_pixel_size;
 
@@ -464,6 +482,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     has_overscan =
         edid_parser.has_overscan_flag() && edid_parser.overscan_flag();
     display_color_space = GetColorSpaceFromEdid(edid_parser);
+    bits_per_channel = std::max(edid_parser.bits_per_channel(), 0);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << info->connector()->connector_id;
@@ -477,9 +496,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
-      color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      color_correction_in_linear_space, display_color_space, bits_per_channel,
+      display_name, sys_path, std::move(modes), panel_orientation, edid,
+      current_mode, native_mode, product_code, year_of_manufacture,
+      maximum_cursor_size);
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -498,6 +518,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     p.has_color_correction_matrix = d->has_color_correction_matrix();
     p.color_correction_in_linear_space = d->color_correction_in_linear_space();
     p.color_space = d->color_space();
+    p.bits_per_channel = d->bits_per_channel();
     p.display_name = d->display_name();
     p.sys_path = d->sys_path();
 
@@ -506,6 +527,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
       mode_params.push_back(GetDisplayModeParams(*m));
     }
     p.modes = mode_params;
+    p.panel_orientation = d->panel_orientation();
     p.edid = d->edid();
 
     p.has_current_mode = d->current_mode();
@@ -543,9 +565,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       params.is_aspect_preserving_scaling, params.has_overscan,
       params.has_color_correction_matrix,
       params.color_correction_in_linear_space, params.color_space,
-      params.display_name, params.sys_path, std::move(modes), params.edid,
-      current_mode, native_mode, params.product_code,
-      params.year_of_manufacture, params.maximum_cursor_size);
+      params.bits_per_channel, params.display_name, params.sys_path,
+      std::move(modes), params.panel_orientation, params.edid, current_mode,
+      native_mode, params.product_code, params.year_of_manufacture,
+      params.maximum_cursor_size);
 }
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
@@ -565,8 +588,6 @@ int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
       return DRM_FORMAT_XBGR2101010;
     case gfx::BufferFormat::BGR_565:
       return DRM_FORMAT_RGB565;
-    case gfx::BufferFormat::UYVY_422:
-      return DRM_FORMAT_UYVY;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
     case gfx::BufferFormat::YVU_420:

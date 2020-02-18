@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/layout/line/line_layout_state.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/line/word_measurement.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/vertical_position_cache.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -1719,8 +1718,8 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
         bool clear_previous_float;
         if (child->IsFloating()) {
           if (prev_float) {
-            EFloat f = ResolvedFloating(prev_float->StyleRef(), style_to_use);
-            EClear c = ResolvedClear(child->StyleRef(), style_to_use);
+            EFloat f = prev_float->StyleRef().Floating(style_to_use);
+            EClear c = child->StyleRef().Clear(style_to_use);
             clear_previous_float =
                 ((f == EFloat::kLeft &&
                   (c == EClear::kBoth || c == EClear::kLeft)) ||
@@ -2030,6 +2029,13 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
     DCHECK(!is_full_layout || !LineBoxes()->First());
     for (LayoutBox* atomic_inline_child : atomic_inline_children) {
       atomic_inline_child->LayoutIfNeeded();
+#if DCHECK_IS_ON()
+      // |LayoutIfNeeded| should not mark itself and its ancestors to
+      // |NeedsLayout|.
+      for (const LayoutObject* parent = atomic_inline_child;
+           parent && parent != this; parent = parent->Parent())
+        DCHECK(!parent->NeedsLayout());
+#endif
     }
 
     LayoutRunsAndFloats(layout_state);
@@ -2212,7 +2218,7 @@ bool LayoutBlockFlow::LineBoxHasBRWithClearance(RootInlineBox* curr) {
                             ? curr->LastLeafChild()
                             : curr->FirstLeafChild();
   return last_box && last_box->GetLineLayoutItem().IsBR() &&
-         last_box->GetLineLayoutItem().StyleRef().Clear() != EClear::kNone;
+         last_box->GetLineLayoutItem().StyleRef().HasClear();
 }
 
 void LayoutBlockFlow::DetermineEndPosition(LineLayoutState& layout_state,

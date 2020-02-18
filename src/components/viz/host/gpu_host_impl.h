@@ -20,6 +20,7 @@
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
+#include "components/ui_devtools/buildflags.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"
@@ -32,10 +33,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
-#include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -152,7 +153,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void ConnectFrameSinkManager(mojom::FrameSinkManagerRequest request,
                                mojom::FrameSinkManagerClientPtrInfo client);
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   // Connects to Viz DevTools running in the Viz service.
   void ConnectVizDevTools(mojom::VizDevToolsParamsPtr params);
 #endif

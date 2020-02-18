@@ -4,6 +4,10 @@
 
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 
+#include <list>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/rand_util.h"
@@ -18,6 +22,8 @@
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 
 namespace content {
@@ -70,19 +76,24 @@ constexpr const base::TimeDelta
     IndexedDBOriginState::kMaxEarliestOriginSweepFromNow;
 
 IndexedDBOriginState::IndexedDBOriginState(
+    url::Origin origin,
     bool persist_for_incognito,
     base::Clock* clock,
     indexed_db::LevelDBFactory* leveldb_factory,
     base::Time* earliest_global_sweep_time,
-    base::OnceClosure destruct_myself,
+    std::unique_ptr<DisjointRangeLockManager> lock_manager,
+    TasksAvailableCallback notify_tasks_callback,
+    TearDownCallback tear_down_callback,
     std::unique_ptr<IndexedDBBackingStore> backing_store)
-    : persist_for_incognito_(persist_for_incognito),
+    : origin_(std::move(origin)),
+      persist_for_incognito_(persist_for_incognito),
       clock_(clock),
       leveldb_factory_(leveldb_factory),
       earliest_global_sweep_time_(earliest_global_sweep_time),
-      lock_manager_(kIndexedDBLockLevelCount),
+      lock_manager_(std::move(lock_manager)),
       backing_store_(std::move(backing_store)),
-      destruct_myself_(std::move(destruct_myself)) {
+      notify_tasks_callback_(std::move(notify_tasks_callback)),
+      tear_down_callback_(std::move(tear_down_callback)) {
   DCHECK(clock_);
   DCHECK(earliest_global_sweep_time_);
   if (*earliest_global_sweep_time_ == base::Time())
@@ -91,6 +102,8 @@ IndexedDBOriginState::IndexedDBOriginState(
 
 IndexedDBOriginState::~IndexedDBOriginState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (backing_store_ && backing_store_->IsBlobCleanupPending())
+    backing_store_->ForceRunBlobCleanup();
 }
 
 void IndexedDBOriginState::AbortAllTransactions(bool compact) {
@@ -105,6 +118,7 @@ void IndexedDBOriginState::AbortAllTransactions(bool compact) {
     origins.push_back(pair.first);
   }
 
+  base::WeakPtr<IndexedDBOriginState> weak_ptr = AsWeakPtr();
   for (const base::string16& origin : origins) {
     auto it = databases_.find(origin);
     if (it == databases_.end())
@@ -120,12 +134,19 @@ void IndexedDBOriginState::AbortAllTransactions(bool compact) {
 
     for (base::WeakPtr<IndexedDBConnection> connection : weak_connections) {
       if (connection) {
-        connection->FinishAllTransactions(IndexedDBDatabaseError(
-            blink::kWebIDBDatabaseExceptionUnknownError,
-            "Aborting all transactions for the origin."));
+        leveldb::Status status =
+            connection->AbortAllTransactions(IndexedDBDatabaseError(
+                blink::kWebIDBDatabaseExceptionUnknownError,
+                "Aborting all transactions for the origin."));
+        if (!status.ok()) {
+          // This call should delete this object.
+          tear_down_callback().Run(status);
+          return;
+        }
       }
     }
   }
+
   if (compact)
     backing_store_->Compact();
 }
@@ -137,9 +158,10 @@ void IndexedDBOriginState::ForceClose() {
   // no-op. This allows force closing all of the databases without having the
   // map mutate. Afterwards the map is manually deleted.
   IndexedDBOriginStateHandle handle = CreateHandle();
-  db_destruction_weak_factory_.InvalidateWeakPtrs();
   for (const auto& pair : databases_) {
-    pair.second->ForceClose();
+    // Note: We purposefully ignore the result here as force close needs to
+    // continue tearing things down anyways.
+    pair.second->ForceCloseAndRunTasks();
   }
   databases_.clear();
   if (has_blobs_outstanding_) {
@@ -161,27 +183,40 @@ void IndexedDBOriginState::StopPersistingForIncognito() {
   MaybeStartClosing();
 }
 
+std::tuple<IndexedDBOriginState::RunTasksResult, leveldb::Status>
+IndexedDBOriginState::RunTasks() {
+  task_run_scheduled_ = false;
+  running_tasks_ = true;
+  leveldb::Status status;
+  for (auto db_it = databases_.begin(); db_it != databases_.end();) {
+    IndexedDBDatabase& db = *db_it->second;
+
+    IndexedDBDatabase::RunTasksResult tasks_result;
+    std::tie(tasks_result, status) = db.RunTasks();
+    switch (tasks_result) {
+      case IndexedDBDatabase::RunTasksResult::kDone:
+        ++db_it;
+        continue;
+      case IndexedDBDatabase::RunTasksResult::kError:
+        running_tasks_ = false;
+        return {RunTasksResult::kError, status};
+      case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
+        db_it = databases_.erase(db_it);
+        break;
+    }
+  }
+  running_tasks_ = false;
+  if (CanCloseFactory() && closing_stage_ == ClosingState::kClosed)
+    return {RunTasksResult::kCanBeDestroyed, leveldb::Status::OK()};
+  return {RunTasksResult::kDone, leveldb::Status::OK()};
+}
+
 IndexedDBDatabase* IndexedDBOriginState::AddDatabase(
     const base::string16& name,
     std::unique_ptr<IndexedDBDatabase> database) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::Contains(databases_, name));
   return databases_.emplace(name, std::move(database)).first->second.get();
-}
-
-base::OnceClosure IndexedDBOriginState::CreateDatabaseDeleteClosure(
-    const base::string16& name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::BindOnce(
-      [](base::WeakPtr<IndexedDBOriginState> factory,
-         const base::string16& name) {
-        if (!factory)
-          return;
-        DCHECK_CALLED_ON_VALID_SEQUENCE(factory->sequence_checker_);
-        size_t delete_size = factory->databases_.erase(name);
-        DCHECK(delete_size) << "Database " << name << " did not exist.";
-      },
-      db_destruction_weak_factory_.GetWeakPtr(), name);
 }
 
 IndexedDBOriginStateHandle IndexedDBOriginState::CreateHandle() {
@@ -227,7 +262,9 @@ void IndexedDBOriginState::StartClosing() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           kIDBCloseImmediatelySwitch)) {
     closing_stage_ = ClosingState::kClosed;
-    CloseAndDestruct();
+    close_timer_.AbandonAndStop();
+    pre_close_task_queue_.reset();
+    notify_tasks_callback_.Run();
     return;
   }
 
@@ -260,7 +297,8 @@ void IndexedDBOriginState::StartPreCloseTasks() {
           return;
         factory->closing_stage_ = ClosingState::kClosed;
         factory->pre_close_task_queue_.reset();
-        factory->CloseAndDestruct();
+        factory->close_timer_.AbandonAndStop();
+        factory->notify_tasks_callback_.Run();
       },
       weak_factory_.GetWeakPtr()));
 
@@ -283,9 +321,13 @@ void IndexedDBOriginState::StartPreCloseTasks() {
 
   // A sweep will happen now, so reset the sweep timers.
   *earliest_global_sweep_time_ = GenerateNextGlobalSweepTime(now);
-  scoped_refptr<TransactionalLevelDBTransaction> txn =
-      leveldb_factory_->CreateLevelDBTransaction(backing_store_->db());
-  indexed_db::SetEarliestSweepTime(txn.get(), GenerateNextOriginSweepTime(now));
+  std::unique_ptr<LevelDBDirectTransaction> txn =
+      leveldb_factory_->CreateLevelDBDirectTransaction(backing_store_->db());
+  s = indexed_db::SetEarliestSweepTime(txn.get(),
+                                       GenerateNextOriginSweepTime(now));
+  // TODO(dmurph): Log this or report to UMA.
+  if (!s.ok())
+    return;
   s = txn->Commit();
 
   // TODO(dmurph): Log this or report to UMA.
@@ -306,19 +348,6 @@ void IndexedDBOriginState::StartPreCloseTasks() {
   pre_close_task_queue_->Start(
       base::BindOnce(&IndexedDBBackingStore::GetCompleteMetadata,
                      base::Unretained(backing_store_.get())));
-}
-
-void IndexedDBOriginState::CloseAndDestruct() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(CanCloseFactory());
-  DCHECK(closing_stage_ == ClosingState::kClosed);
-  close_timer_.AbandonAndStop();
-  pre_close_task_queue_.reset();
-
-  if (backing_store_ && backing_store_->IsBlobCleanupPending())
-    backing_store_->ForceRunBlobCleanup();
-
-  std::move(destruct_myself_).Run();
 }
 
 }  // namespace content

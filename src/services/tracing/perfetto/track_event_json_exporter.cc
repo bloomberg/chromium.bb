@@ -204,6 +204,21 @@ base::Optional<int64_t> TrackEventJSONExporter::ComputeThreadTimeUs(
   }
 }
 
+base::Optional<int64_t> TrackEventJSONExporter::ComputeThreadInstructionCount(
+    const TrackEvent& event) {
+  switch (event.thread_instruction_count_case()) {
+    case TrackEvent::kThreadInstructionCountAbsolute:
+      return event.thread_instruction_count_absolute();
+    case TrackEvent::kThreadInstructionCountDelta:
+      DCHECK_NE(current_state_->thread_instruction_count, -1);
+      current_state_->thread_instruction_count +=
+          event.thread_instruction_count_delta();
+      return current_state_->thread_instruction_count;
+    case TrackEvent::THREAD_INSTRUCTION_COUNT_NOT_SET:
+      return base::nullopt;
+  }
+}
+
 void TrackEventJSONExporter::HandleInternedData(
     const ChromeTracePacket& packet) {
   DCHECK(packet.has_interned_data());
@@ -221,8 +236,8 @@ void TrackEventJSONExporter::HandleInternedData(
         std::make_pair(event_cat.iid(), event_cat.name()));
     DCHECK(iter.second || iter.first->second == event_cat.name());
   }
-  for (const auto& event_name : data.legacy_event_names()) {
-    auto iter = current_state_->interned_legacy_event_names_.insert(
+  for (const auto& event_name : data.event_names()) {
+    auto iter = current_state_->interned_event_names_.insert(
         std::make_pair(event_name.iid(), event_name.name()));
     DCHECK(iter.second || iter.first->second == event_name.name());
   }
@@ -380,6 +395,8 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
   current_state_->tid = thread.tid();
   current_state_->time_us = thread.reference_timestamp_us();
   current_state_->thread_time_us = thread.reference_thread_time_us();
+  current_state_->thread_instruction_count =
+      thread.reference_thread_instruction_count();
 
   // If we aren't outputting traceEvents then we don't need to look at the
   // metadata that might need to be emitted.
@@ -468,6 +485,8 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   int64_t timestamp_us = ComputeTimeUs(track);
   DCHECK_NE(timestamp_us, -1);
   base::Optional<int64_t> thread_time_us = ComputeThreadTimeUs(track);
+  base::Optional<int64_t> thread_instruction_count =
+      ComputeThreadInstructionCount(track);
 
   std::vector<base::StringPiece> all_categories;
   all_categories.reserve(track.category_iids().size());
@@ -488,6 +507,10 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
 
   if (thread_time_us) {
     builder.AddThreadTimestamp(*thread_time_us);
+  }
+
+  if (thread_instruction_count) {
+    builder.AddThreadInstructionCount(*thread_instruction_count);
   }
 
   // Now we add args from both |task_execution| and |debug_annotations|. Recall
@@ -616,15 +639,22 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
 
 void TrackEventJSONExporter::HandleProfiledFrameSymbols(
     const perfetto::protos::ProfiledFrameSymbols& frame_symbols) {
-  auto iter =
-      unordered_state_data_[current_state_->trusted_packet_sequence_id]
-          .interned_profiled_frame_.insert(std::make_pair(
-              frame_symbols.frame_iid(), frame_symbols.function_name_id()));
+  int64_t function_name_id = 0;
+  // Chrome never has more than one function for an address, so we can just
+  // take the first one.
+  if (!frame_symbols.function_name_id().empty()) {
+    DCHECK(frame_symbols.function_name_id().size() == 1);
+    function_name_id = frame_symbols.function_name_id()[0];
+  }
+
+  auto iter = unordered_state_data_[current_state_->trusted_packet_sequence_id]
+                  .interned_profiled_frame_.insert(std::make_pair(
+                      frame_symbols.frame_iid(), function_name_id));
   auto& frame_names =
       unordered_state_data_[current_state_->trusted_packet_sequence_id]
           .interned_frame_names_;
-  DCHECK(iter.second || frame_names[iter.first->second] ==
-                            frame_names[frame_symbols.function_name_id()]);
+  DCHECK(iter.second ||
+         frame_names[iter.first->second] == frame_names[function_name_id]);
 }
 
 void TrackEventJSONExporter::HandleDebugAnnotation(
@@ -682,8 +712,8 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   int32_t tid =
       event.tid_override() == 0 ? current_state_->tid : event.tid_override();
 
-  const std::string& name = GetInternedName(
-      event.name_iid(), current_state_->interned_legacy_event_names_);
+  const std::string& name =
+      GetInternedName(event.name_iid(), current_state_->interned_event_names_);
 
   // Build the actual json output, if we are missing the interned name we just
   // use the interned ID.

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 import json
 import logging
 import os
@@ -17,6 +18,8 @@ from telemetry.internal.results import html_output_formatter
 from telemetry.internal.results import gtest_progress_reporter
 from telemetry.internal.results import results_processor
 from telemetry.internal.results import story_run
+from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 
 from tracing.value import convert_chart_json
 from tracing.value import histogram_set
@@ -24,9 +27,14 @@ from tracing.value.diagnostics import all_diagnostics
 from tracing.value.diagnostics import reserved_infos
 
 
+TELEMETRY_RESULTS = '_telemetry_results.jsonl'
+HISTOGRAM_DICTS_NAME = 'histogram_dicts.json'
+
+
 class PageTestResults(object):
   def __init__(self, output_formatters=None, progress_stream=None,
-               output_dir=None, should_add_value=None, benchmark_name=None,
+               output_dir=None, intermediate_dir=None,
+               should_add_value=None, benchmark_name=None,
                benchmark_description=None,
                upload_bucket=None, results_label=None):
     """
@@ -56,6 +64,10 @@ class PageTestResults(object):
     self._output_formatters = (
         output_formatters if output_formatters is not None else [])
     self._output_dir = output_dir
+    self._intermediate_dir = intermediate_dir
+    if intermediate_dir is None and output_dir is not None:
+      self._intermediate_dir = os.path.join(output_dir, 'artifacts')
+
     self._upload_bucket = upload_bucket
     if should_add_value is not None:
       self._should_add_value = should_add_value
@@ -72,13 +84,23 @@ class PageTestResults(object):
 
     self._benchmark_name = benchmark_name or '(unknown benchmark)'
     self._benchmark_description = benchmark_description or ''
-    self._benchmark_start_us = time.time() * 1e6
+
     # |_interruption| is None if the benchmark has not been interrupted.
     # Otherwise it is a string explaining the reason for the interruption.
     # Interruptions occur for unrecoverable exceptions.
     self._interruption = None
     self._results_label = results_label
-    self._histogram_dicts_to_add = []
+
+    # If the object has been finalized, no more results can be added to it.
+    self._finalized = False
+    self._start_time = time.time()
+    self._results_stream = None
+    if self._intermediate_dir is not None:
+      if not os.path.exists(self._intermediate_dir):
+        os.makedirs(self._intermediate_dir)
+      self._results_stream = open(
+          os.path.join(self._intermediate_dir, TELEMETRY_RESULTS), 'w')
+      self._RecordBenchmarkStart()
 
   @property
   def benchmark_name(self):
@@ -90,7 +112,7 @@ class PageTestResults(object):
 
   @property
   def benchmark_start_us(self):
-    return self._benchmark_start_us
+    return self._start_time * 1e6
 
   @property
   def benchmark_interrupted(self):
@@ -100,6 +122,10 @@ class PageTestResults(object):
   def benchmark_interruption(self):
     """Returns a string explaining why the benchmark was interrupted."""
     return self._interruption
+
+  @property
+  def start_datetime(self):
+    return datetime.datetime.utcfromtimestamp(self._start_time)
 
   @property
   def label(self):
@@ -112,6 +138,10 @@ class PageTestResults(object):
   @property
   def upload_bucket(self):
     return self._upload_bucket
+
+  @property
+  def finalized(self):
+    return self._finalized
 
   def AsHistogramDicts(self):
     return self._histograms.AsDicts()
@@ -140,7 +170,6 @@ class PageTestResults(object):
                     vinn_result.stdout)
       return []
     self._histograms.ImportDicts(json.loads(vinn_result.stdout))
-    self._histograms.ImportDicts(self._histogram_dicts_to_add)
 
   @property
   def all_summary_values(self):
@@ -208,6 +237,34 @@ class PageTestResults(object):
     """Whether there were any story runs or results."""
     return not self._all_story_runs and not self._all_summary_values
 
+  def _WriteJsonLine(self, data, close=False):
+    if self._results_stream is not None:
+      # Use a compact encoding and sort keys to get deterministic outputs.
+      self._results_stream.write(
+          json.dumps(data, sort_keys=True, separators=(',', ':')) + '\n')
+      if close:
+        self._results_stream.close()
+      else:
+        self._results_stream.flush()
+
+  def _RecordBenchmarkStart(self):
+    self._WriteJsonLine({
+        'benchmarkRun': {
+            'startTime': self.start_datetime.isoformat() + 'Z',
+            # TODO(crbug.com/981349): Fill this in with benchmark and platform
+            # diagnostics info.
+            'diagnostics': {}
+        }
+    })
+
+  def _RecordBenchmarkFinish(self):
+    self._WriteJsonLine({
+        'benchmarkRun': {
+            'finalized': self.finalized,
+            'interrupted': self.benchmark_interrupted,
+        }
+    }, close=True)
+
   def IterStoryRuns(self):
     return iter(self._all_story_runs)
 
@@ -216,23 +273,18 @@ class PageTestResults(object):
       for value in run.values:
         yield value
 
-  def CloseOutputFormatters(self):
-    """
-    Clean up any open output formatters contained within this results object
-    """
-    for output_formatter in self._output_formatters:
-      output_formatter.output_stream.close()
-
   def __enter__(self):
     return self
 
   def __exit__(self, _, __, ___):
-    self.CloseOutputFormatters()
+    self.Finalize()
 
   def WillRunPage(self, page, story_run_index=0):
+    assert not self.finalized, 'Results are finalized, cannot run more stories.'
     assert not self._current_story_run, 'Did not call DidRunPage.'
     self._current_story_run = story_run.StoryRun(
-        page, self._output_dir, story_run_index)
+        page, test_prefix=self.benchmark_name, index=story_run_index,
+        intermediate_dir=self._intermediate_dir)
     self._progress_reporter.WillRunStory(self)
 
   def DidRunPage(self, page):  # pylint: disable=unused-argument
@@ -259,9 +311,16 @@ class PageTestResults(object):
       for fail in result['fail']:
         self.Fail(fail)
       if result['histogram_dicts']:
-        self.ImportHistogramDicts(result['histogram_dicts'])
-      for scalar in result['scalars']:
-        self.AddValue(scalar)
+        self._ImportHistogramDicts(result['histogram_dicts'])
+        # Saving histograms as an artifact is a temporary hack to keep
+        # things working while we gradually move code from Telemetry to
+        # Results Processor.
+        # TODO(crbug.com/981349): Remove this after metrics running is
+        # implemented in Results Processor.
+        with self.CreateArtifact(HISTOGRAM_DICTS_NAME) as f:
+          json.dump(result['histogram_dicts'], f)
+      for value in result['scalars']:
+        self.AddValue(value)
     finally:
       self._current_story_run = None
 
@@ -275,6 +334,7 @@ class PageTestResults(object):
     This is because later interruptions may be simply additional fallout from
     the first interruption.
     """
+    assert not self.finalized, 'Results are finalized, cannot interrupt.'
     assert reason, 'A reason string to interrupt must be provided.'
     logging.fatal(reason)
     self._interruption = self._interruption or reason
@@ -313,25 +373,12 @@ class PageTestResults(object):
       diags[diag.name] = diag_class(value)
     return diags
 
-  def ImportHistogramDicts(self, histogram_dicts, import_immediately=True):
+  def _ImportHistogramDicts(self, histogram_dicts):
     histograms = histogram_set.HistogramSet()
     histograms.ImportDicts(histogram_dicts)
     histograms.FilterHistograms(lambda hist: not self._ShouldAddHistogram(hist))
     dicts_to_add = histograms.AsDicts()
-
-    # For measurements that add both TBMv2 and legacy metrics to results, we
-    # want TBMv2 histograms be imported at the end, when PopulateHistogramSet is
-    # called so that legacy histograms can be built, too, from scalar value
-    # data.
-    #
-    # Measurements that add only TBMv2 metrics and also add scalar value data
-    # should set import_immediately to True (i.e. the default behaviour) to
-    # prevent PopulateHistogramSet from trying to build more histograms from the
-    # scalar value data.
-    if import_immediately:
-      self._histograms.ImportDicts(dicts_to_add)
-    else:
-      self._histogram_dicts_to_add.extend(dicts_to_add)
+    self._histograms.ImportDicts(dicts_to_add)
 
   def _ShouldAddHistogram(self, hist):
     assert self._current_story_run, 'Not currently running test.'
@@ -342,12 +389,34 @@ class PageTestResults(object):
         '%s_%s' % (hist.name, s) for  s in hist.statistics_scalars.iterkeys()]
     return any(self._should_add_value(s, is_first_result) for s in stat_names)
 
-  def AddValue(self, value):
-    """Associate a legacy Telemetry value with the current story run.
+  def AddMeasurement(self, name, unit, samples):
+    """Record a measurement of the currently running story.
 
-    This should not be used in new benchmarks. All values/measurements should
-    be recorded in traces.
+    Measurements are numeric values obtained directly by a benchmark while
+    a story is running (e.g. by evaluating some JavaScript on the page or
+    calling some platform methods). These are appended together with
+    measurements obtained by running metrics on collected traces (if any)
+    after the benchmark run has finished.
+
+    TODO(crbug.com/999484): Currently measurements are stored as legacy
+    Telemetry values. This will allow clients to switch to this new API while
+    preserving the existing behavior. When no more clients create legacy
+    values on their own, the implementation details below can be changed.
+
+    Args:
+      name: A string with the name of the measurement (e.g. 'score', 'runtime',
+        etc).
+      unit: A string specifying the unit used for measurements (e.g. 'ms',
+        'count', etc).
+      samples: Either a single numeric value or a list of numeric values to
+        record as part of this measurement.
     """
+    assert self._current_story_run, 'Not currently running a story.'
+    value = _MeasurementToValue(self.current_story, name, unit, samples)
+    self.AddValue(value)
+
+  def AddValue(self, value):
+    """DEPRECATED: Use AddMeasurement instead."""
     assert self._current_story_run, 'Not currently running a story.'
 
     self._ValidateValue(value)
@@ -356,7 +425,7 @@ class PageTestResults(object):
 
     if not self._should_add_value(value.name, is_first_result):
       return
-    self._current_story_run.AddValue(value)
+    self._current_story_run.AddLegacyValue(value)
 
   def AddSharedDiagnosticToAllHistograms(self, name, diagnostic):
     self._histograms.AddSharedDiagnosticToAllHistograms(name, diagnostic)
@@ -410,6 +479,7 @@ class PageTestResults(object):
       self._current_story_run.SetTbmMetrics(tbm_metrics)
 
   def AddSummaryValue(self, value):
+    assert not self.finalized, 'Results are finalized, cannot add values.'
     assert value.page is None
     self._ValidateValue(value)
     self._all_summary_values.append(value)
@@ -422,7 +492,20 @@ class PageTestResults(object):
         value.name]
     assert value.IsMergableWith(representative_value)
 
-  def PrintSummary(self):
+  def Finalize(self):
+    """Finalize this object to prevent more results from being recorded.
+
+    When progress reporting is enabled, also prints a final summary with the
+    number of story runs that suceeded, failed, or were skipped.
+
+    It's fine to call this method multiple times, later calls are just a no-op.
+    """
+    if self.finalized:
+      return
+
+    assert self._current_story_run is None, (
+        'Cannot finalize while stories are still running.')
+    self._finalized = True
     self._progress_reporter.DidFinishAllStories(self)
 
     # Only serialize the trace if output_format is json or html.
@@ -432,9 +515,21 @@ class PageTestResults(object):
       # Just to make sure that html trace is there in artifacts dir
       results_processor.SerializeAndUploadHtmlTraces(self)
 
+    # TODO(crbug.com/981349): Ideally we want to write results for each story
+    # run individually at DidRunPage when the story finished executing. For
+    # now, however, we need to wait until this point after html traces have
+    # been serialized, uploaded, and recorded as artifacts for them to show up
+    # in intermediate results. When both trace serialization and artifact
+    # upload are handled by results_processor, remove the for-loop from here
+    # and write results instead at the end of each story run.
+    for run in self._all_story_runs:
+      self._WriteJsonLine(run.AsDict())
+    self._RecordBenchmarkFinish()
+
     for output_formatter in self._output_formatters:
       output_formatter.Format(self)
       output_formatter.PrintViewResults()
+      output_formatter.output_stream.close()
 
   def FindAllPageSpecificValuesNamed(self, value_name):
     """DEPRECATED: New benchmarks should not use legacy values."""
@@ -444,3 +539,11 @@ class PageTestResults(object):
     for run in self._IterAllStoryRuns():
       if run.HasArtifactsInDir('trace/'):
         yield run
+
+
+def _MeasurementToValue(story, name, unit, samples):
+  if isinstance(samples, list):
+    return list_of_scalar_values.ListOfScalarValues(
+        story, name=name, units=unit, values=samples)
+  else:
+    return scalar.ScalarValue(story, name=name, units=unit, value=samples)

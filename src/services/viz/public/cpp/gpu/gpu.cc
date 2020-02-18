@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace viz {
 
@@ -270,9 +270,18 @@ std::unique_ptr<Gpu> Gpu::Create(
     service_manager::Connector* connector,
     const std::string& service_name,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  mojom::GpuPtr gpu_ptr;
-  connector->BindInterface(service_name, &gpu_ptr);
-  return base::WrapUnique(new Gpu(std::move(gpu_ptr), std::move(task_runner)));
+  mojo::PendingRemote<mojom::Gpu> remote;
+  connector->Connect(service_name, remote.InitWithNewPipeAndPassReceiver());
+  return Create(std::move(remote), std::move(task_runner));
+}
+
+// static
+std::unique_ptr<Gpu> Gpu::Create(
+    mojo::PendingRemote<mojom::Gpu> remote,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  mojom::GpuPtr gpu_ptr(std::move(remote));
+  return base::WrapUnique(
+      new Gpu(std::move(gpu_ptr), std::move(io_task_runner)));
 }
 
 #if defined(OS_CHROMEOS)

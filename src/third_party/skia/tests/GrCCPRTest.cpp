@@ -42,7 +42,7 @@ public:
 private:
     bool apply(GrRecordingContext* context, GrRenderTargetContext* rtc, bool useHWAA,
                bool hasUserStencilSettings, GrAppliedClip* out, SkRect* bounds) const override {
-        out->addCoverageFP(fCCPR->makeClipProcessor(rtc->priv().testingOnly_getOpListID(), fPath,
+        out->addCoverageFP(fCCPR->makeClipProcessor(rtc->priv().testingOnly_getOpsTaskID(), fPath,
                                                     SkIRect::MakeWH(rtc->width(), rtc->height()),
                                                     *context->priv().caps()));
         return true;
@@ -50,7 +50,7 @@ private:
     bool quickContains(const SkRect&) const final { return false; }
     bool isRRect(const SkRect& rtBounds, SkRRect* rr, GrAA*) const final { return false; }
     void getConservativeBounds(int width, int height, SkIRect* rect, bool* iior) const final {
-        rect->set(0, 0, width, height);
+        rect->setWH(width, height);
         if (iior) {
             *iior = false;
         }
@@ -83,7 +83,6 @@ public:
     void clear() const { fRTC->clear(nullptr, SK_PMColor4fTRANSPARENT,
                                      GrRenderTargetContext::CanClearFullscreen::kYes); }
     void destroyGrContext() {
-        SkASSERT(fRTC->unique());
         SkASSERT(fCtx->unique());
         fRTC.reset();
         fCCPR = nullptr;
@@ -134,7 +133,7 @@ public:
 private:
     sk_sp<GrContext> fCtx;
     GrCoverageCountingPathRenderer* fCCPR;
-    sk_sp<GrRenderTargetContext> fRTC;
+    std::unique_ptr<GrRenderTargetContext> fRTC;
     const bool fDoStroke;
 };
 
@@ -322,8 +321,8 @@ protected:
         int lastCopyAtlasID() const { return fLastCopyAtlasID; }
         int lastRenderedAtlasID() const { return fLastRenderedAtlasID; }
 
-        void preFlush(GrOnFlushResourceProvider*, const uint32_t* opListIDs, int numOpListIDs,
-                      SkTArray<sk_sp<GrRenderTargetContext>>* out) override {
+        void preFlush(GrOnFlushResourceProvider*, const uint32_t* opsTaskIDs,
+                      int numOpsTaskIDs) override {
             fLastRenderedAtlasID = fLastCopyAtlasID = 0;
 
             const GrCCPerFlushResources* resources = fCCPR->testingOnly_getCurrentFlushResources();
@@ -840,7 +839,7 @@ class CCPR_cache_partialInvalidate : public CCPRCacheTest {
 };
 DEF_CCPR_TEST(CCPR_cache_partialInvalidate)
 
-class CCPR_unrefPerOpListPathsBeforeOps : public CCPRTest {
+class CCPR_unrefPerOpsTaskPathsBeforeOps : public CCPRTest {
     void onRun(skiatest::Reporter* reporter, CCPRPathDrawer& ccpr) override {
         REPORTER_ASSERT(reporter, SkPathPriv::TestingOnly_unique(fPath));
         for (int i = 0; i < 10000; ++i) {
@@ -848,9 +847,9 @@ class CCPR_unrefPerOpListPathsBeforeOps : public CCPRTest {
             ccpr.drawPath(fPath);
         }
 
-        // Unref the GrCCPerOpListPaths object.
-        auto perOpListPathsMap = ccpr.ccpr()->detachPendingPaths();
-        perOpListPathsMap.clear();
+        // Unref the GrCCPerOpsTaskPaths object.
+        auto perOpsTaskPathsMap = ccpr.ccpr()->detachPendingPaths();
+        perOpsTaskPathsMap.clear();
 
         // Now delete the Op and all its draws.
         REPORTER_ASSERT(reporter, !SkPathPriv::TestingOnly_unique(fPath));
@@ -858,7 +857,7 @@ class CCPR_unrefPerOpListPathsBeforeOps : public CCPRTest {
         REPORTER_ASSERT(reporter, SkPathPriv::TestingOnly_unique(fPath));
     }
 };
-DEF_CCPR_TEST(CCPR_unrefPerOpListPathsBeforeOps)
+DEF_CCPR_TEST(CCPR_unrefPerOpsTaskPathsBeforeOps)
 
 class CCPRRenderingTest {
 public:

@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
@@ -89,15 +89,12 @@ class Result {
   FileWriterDelegate::WriteProgressStatus write_status_;
 };
 
-class BlobURLRequestJobFactory;
-
 }  // namespace (anonymous)
 
 class FileWriterDelegateTest : public PlatformTest {
  public:
   FileWriterDelegateTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
  protected:
   void SetUp() override;
@@ -168,7 +165,7 @@ class FileWriterDelegateTest : public PlatformTest {
   }
 
   // This should be alive until the very end of this instance.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<storage::BlobStorageContext> blob_context_;

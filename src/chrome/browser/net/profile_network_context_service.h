@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
@@ -23,6 +24,7 @@
 #include "net/net_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
+class PrefRegistrySimple;
 class Profile;
 class TrialComparisonCertVerifierController;
 
@@ -48,14 +50,13 @@ class ProfileNetworkContextService
       const base::FilePath& relative_partition_path);
 
 #if defined(OS_CHROMEOS)
-  void UpdateAdditionalCertificates(
-      const net::CertificateList& all_additional_certificates,
-      const net::CertificateList& trust_anchors);
+  void UpdateAdditionalCertificates();
 
   bool using_builtin_cert_verifier() { return using_builtin_cert_verifier_; }
 #endif
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Packages up configuration info in |profile| and |cookie_settings| into a
   // mojo-friendly form.
@@ -69,6 +70,11 @@ class ProfileNetworkContextService
   static void SetDiscardDomainReliabilityUploadsForTesting(bool value);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ProfileNetworkContextServiceBrowsertest,
+                           DefaultCacheSize);
+  FRIEND_TEST_ALL_PREFIXES(ProfileNetworkContextServiceDiskCacheBrowsertest,
+                           DiskCacheSize);
+
   // Checks |quic_allowed_|, and disables QUIC if needed.
   void DisableQuicIfNotAllowed();
 

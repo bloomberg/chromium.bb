@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,6 +17,7 @@
 #include "common/bitset_utils.h"
 #include "libANGLE/Debug.h"
 #include "libANGLE/GLES1State.h"
+#include "libANGLE/Overlay.h"
 #include "libANGLE/Program.h"
 #include "libANGLE/ProgramPipeline.h"
 #include "libANGLE/RefCountObject.h"
@@ -58,6 +59,7 @@ class State : angle::NonCopyable
     State(ContextID contextIn,
           const State *shareContextState,
           TextureManager *shareTextures,
+          const OverlayType *overlay,
           const EGLenum clientType,
           const Version &clientVersion,
           bool debug,
@@ -66,6 +68,8 @@ class State : angle::NonCopyable
           bool robustResourceInit,
           bool programBinaryCacheEnabled);
     ~State();
+
+    int id() const { return mID; }
 
     void initialize(Context *context);
     void reset(const Context *context);
@@ -231,7 +235,7 @@ class State : angle::NonCopyable
     }
 
     GLuint getSamplerTextureId(unsigned int sampler, TextureType type) const;
-    void detachTexture(const Context *context, const TextureMap &zeroTextures, GLuint texture);
+    void detachTexture(const Context *context, const TextureMap &zeroTextures, TextureID texture);
     void initializeZeroTextures(const Context *context, const TextureMap &zeroTextures);
 
     void invalidateTexture(TextureType type);
@@ -249,13 +253,13 @@ class State : angle::NonCopyable
     using SamplerBindingVector = std::vector<BindingPointer<Sampler>>;
     const SamplerBindingVector &getSamplers() const { return mSamplers; }
 
-    void detachSampler(const Context *context, GLuint sampler);
+    void detachSampler(const Context *context, SamplerID sampler);
 
     // Renderbuffer binding manipulation
     void setRenderbufferBinding(const Context *context, Renderbuffer *renderbuffer);
     GLuint getRenderbufferId() const { return mRenderbuffer.id(); }
     Renderbuffer *getCurrentRenderbuffer() const { return mRenderbuffer.get(); }
-    void detachRenderbuffer(const Context *context, GLuint renderbuffer);
+    void detachRenderbuffer(const Context *context, RenderbufferID renderbuffer);
 
     // Framebuffer binding manipulation
     void setReadFramebufferBinding(Framebuffer *framebuffer);
@@ -264,13 +268,13 @@ class State : angle::NonCopyable
     Framebuffer *getReadFramebuffer() const { return mReadFramebuffer; }
     Framebuffer *getDrawFramebuffer() const { return mDrawFramebuffer; }
 
-    bool removeReadFramebufferBinding(GLuint framebuffer);
-    bool removeDrawFramebufferBinding(GLuint framebuffer);
+    bool removeReadFramebufferBinding(FramebufferID framebuffer);
+    bool removeDrawFramebufferBinding(FramebufferID framebuffer);
 
     // Vertex array object binding manipulation
     void setVertexArrayBinding(const Context *context, VertexArray *vertexArray);
-    bool removeVertexArrayBinding(const Context *context, GLuint vertexArray);
-    GLuint getVertexArrayId() const;
+    bool removeVertexArrayBinding(const Context *context, VertexArrayID vertexArray);
+    VertexArrayID getVertexArrayId() const;
 
     VertexArray *getVertexArray() const
     {
@@ -312,7 +316,8 @@ class State : angle::NonCopyable
                !curTransformFeedback->isPaused();
     }
 
-    bool removeTransformFeedbackBinding(const Context *context, GLuint transformFeedback);
+    bool removeTransformFeedbackBinding(const Context *context,
+                                        TransformFeedbackID transformFeedback);
 
     // Query binding manipulation
     bool isQueryActive(QueryType type) const;
@@ -323,7 +328,7 @@ class State : angle::NonCopyable
 
     // Program Pipeline binding manipulation
     void setProgramPipelineBinding(const Context *context, ProgramPipeline *pipeline);
-    void detachProgramPipeline(const Context *context, GLuint pipeline);
+    void detachProgramPipeline(const Context *context, ProgramPipelineID pipeline);
 
     //// Typed buffer binding point manipulation ////
     ANGLE_INLINE void setBufferBinding(const Context *context, BufferBinding target, Buffer *buffer)
@@ -348,6 +353,8 @@ class State : angle::NonCopyable
                                           Buffer *buffer,
                                           GLintptr offset,
                                           GLsizeiptr size);
+
+    size_t getAtomicCounterBufferCount() const { return mAtomicCounterBuffers.size(); }
 
     const OffsetBindingPointer<Buffer> &getIndexedUniformBuffer(size_t index) const;
     const OffsetBindingPointer<Buffer> &getIndexedAtomicCounterBuffer(size_t index) const;
@@ -674,6 +681,8 @@ class State : angle::NonCopyable
         mProvokingVertex = val;
     }
 
+    const OverlayType *getOverlay() const { return mOverlay; }
+
   private:
     friend class Context;
 
@@ -723,6 +732,8 @@ class State : angle::NonCopyable
 
     // Dispatch table for buffer update functions.
     static const angle::PackedEnumMap<BufferBinding, BufferBindingSetter> kBufferSetters;
+
+    int mID;
 
     EGLenum mClientType;
     Version mClientVersion;
@@ -885,6 +896,9 @@ class State : angle::NonCopyable
     ActiveTextureMask mDirtyTextures;
     ActiveTextureMask mDirtySamplers;
     ImageUnitMask mDirtyImages;
+
+    // The Overlay object, used by the backend to render the overlay.
+    const OverlayType *mOverlay;
 };
 
 ANGLE_INLINE angle::Result State::syncDirtyObjects(const Context *context,

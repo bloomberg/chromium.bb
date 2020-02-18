@@ -15,6 +15,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/mock_occlusion_tracker.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -30,18 +31,6 @@ namespace cc {
 
 // Align with expected and actual output.
 const char* LayerTestCommon::quad_string = "    Quad: ";
-
-RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl) {
-  EffectTree& effect_tree =
-      layer_impl->layer_tree_impl()->property_trees()->effect_tree;
-
-  if (RenderSurfaceImpl* surface =
-          effect_tree.GetRenderSurface(layer_impl->effect_tree_index()))
-    return surface;
-
-  return effect_tree.GetRenderSurface(
-      effect_tree.Node(layer_impl->effect_tree_index())->target_id);
-}
 
 static bool CanRectFBeSafelyRoundedToRect(const gfx::RectF& r) {
   // Ensure that range of float values is not beyond integer range.
@@ -150,32 +139,39 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
       render_pass_(viz::RenderPass::Create()),
       layer_impl_id_(2) {
   std::unique_ptr<LayerImpl> root =
-      LayerImpl::Create(host_->host_impl()->active_tree(), 1);
-  host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
-  host_->host_impl()->SetVisible(true);
-  EXPECT_TRUE(
-      host_->host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get()));
+      LayerImpl::Create(host_impl()->active_tree(), 1);
+  host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl()->SetVisible(true);
+  EXPECT_TRUE(host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get()));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);
   animation_host_->AddAnimationTimeline(timeline_);
   // Create impl-side instance.
-  animation_host_->PushPropertiesTo(host_->host_impl()->animation_host());
-  timeline_impl_ =
-      host_->host_impl()->animation_host()->GetTimelineById(timeline_id);
+  animation_host_->PushPropertiesTo(host_impl()->animation_host());
+  timeline_impl_ = host_impl()->animation_host()->GetTimelineById(timeline_id);
 }
 
 LayerTestCommon::LayerImplTest::~LayerImplTest() {
   animation_host_->RemoveAnimationTimeline(timeline_);
   timeline_ = nullptr;
-  host_->host_impl()->ReleaseLayerTreeFrameSink();
+  host_impl()->ReleaseLayerTreeFrameSink();
+}
+
+LayerImpl* LayerTestCommon::LayerImplTest::EnsureRootLayerInPendingTree() {
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+  if (LayerImpl* root = pending_tree->root_layer_for_testing())
+    return root;
+  pending_tree->SetRootLayerForTesting(LayerImpl::Create(pending_tree, 1));
+  return pending_tree->root_layer_for_testing();
 }
 
 void LayerTestCommon::LayerImplTest::CalcDrawProps(
     const gfx::Size& viewport_size) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer_for_testing(), viewport_size, &render_surface_list);
+      root_layer_for_testing(), gfx::Rect(viewport_size), &render_surface_list);
+  inputs.update_layer_list = &update_layer_impl_list_;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
@@ -232,6 +228,62 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
 void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
   root_layer_for_testing()->test_properties()->copy_requests.push_back(
       viz::CopyOutputRequest::CreateStubForTesting());
+}
+
+void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
+    LayerImpl* root_layer,
+    float device_scale_factor,
+    const gfx::Transform& device_transform,
+    float page_scale_factor,
+    LayerImpl* page_scale_layer) {
+  if (device_scale_factor !=
+          root_layer->layer_tree_impl()->device_scale_factor() &&
+      !root_layer->layer_tree_impl()->settings().use_layer_lists)
+    root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
+  root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
+
+  EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
+
+  gfx::Rect device_viewport_rect =
+      gfx::Rect(root_layer->bounds().width() * device_scale_factor,
+                root_layer->bounds().height() * device_scale_factor);
+
+  render_surface_list_impl_.reset(new RenderSurfaceList);
+
+  // We are probably not testing what is intended if the root_layer bounds are
+  // empty.
+  DCHECK(!root_layer->bounds().IsEmpty());
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, device_viewport_rect, render_surface_list_impl_.get());
+  inputs.device_scale_factor = device_scale_factor;
+  inputs.page_scale_factor = page_scale_factor;
+  inputs.page_scale_layer = page_scale_layer;
+  inputs.device_transform = device_transform;
+  inputs.update_layer_list = &update_layer_impl_list_;
+
+  if (page_scale_layer) {
+    PropertyTrees* property_trees =
+        root_layer->layer_tree_impl()->property_trees();
+    inputs.page_scale_transform_node = property_trees->transform_tree.Node(
+        page_scale_layer->transform_tree_index());
+  }
+
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+}
+
+void LayerTestCommon::LayerImplTest::
+    ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
+        LayerImpl* root_layer) {
+  gfx::Rect device_viewport_rect =
+      gfx::Rect(root_layer->bounds().width(), root_layer->bounds().height());
+  render_surface_list_impl_.reset(new RenderSurfaceList);
+
+  DCHECK(!root_layer->bounds().IsEmpty());
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, device_viewport_rect, render_surface_list_impl_.get());
+
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
 void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
@@ -291,9 +343,16 @@ void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
   tree_impl->SetViewportLayersFromIds(viewport_ids);
   tree_impl->BuildPropertyTreesForTesting();
 
-  tree_impl->SetDeviceViewportSize(inner_viewport_size);
+  tree_impl->SetDeviceViewportRect(gfx::Rect(inner_viewport_size));
   LayerImpl* root_clip_ptr = tree_impl->root_layer_for_testing();
   EXPECT_EQ(inner_viewport_size, root_clip_ptr->bounds());
+}
+
+void LayerTestCommon::LayerImplTest::UpdateDrawProperties(
+    LayerTreeImpl* layer_tree_impl) {
+  LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
+      layer_tree_impl);
+  layer_tree_impl->UpdateDrawProperties();
 }
 
 }  // namespace cc

@@ -17,13 +17,13 @@
 
 #include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "api/test/fake_media_transport.h"
 #include "api/test/mock_audio_mixer.h"
 #include "audio/audio_receive_stream.h"
 #include "audio/audio_send_stream.h"
 #include "call/audio_state.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/audio_device/include/mock_audio_device.h"
 #include "modules/audio_processing/include/mock_audio_processing.h"
 #include "modules/pacing/mock/mock_paced_sender.h"
@@ -54,7 +54,7 @@ struct CallHelper {
   webrtc::Call* operator->() { return call_.get(); }
 
  private:
-  webrtc::RtcEventLogNullImpl event_log_;
+  webrtc::RtcEventLogNull event_log_;
   std::unique_ptr<webrtc::TaskQueueFactory> task_queue_factory_;
   std::unique_ptr<webrtc::Call> call_;
 };
@@ -293,32 +293,6 @@ TEST(CallTest, RecreatingAudioStreamWithSameSsrcReusesRtpState) {
   EXPECT_EQ(rtp_state1.last_timestamp_time_ms,
             rtp_state2.last_timestamp_time_ms);
   EXPECT_EQ(rtp_state1.media_has_been_sent, rtp_state2.media_has_been_sent);
-}
-
-TEST(CallTest, RegisterMediaTransportBitrateCallbacksInCreateStream) {
-  CallHelper call;
-  MediaTransportSettings settings;
-  webrtc::FakeMediaTransport fake_media_transport(settings);
-
-  EXPECT_EQ(0, fake_media_transport.target_rate_observers_size());
-  // TODO(solenberg): This test shouldn't require a Transport, but currently
-  //                  RTCPSender requires one.
-  MockTransport send_transport;
-  AudioSendStream::Config config(&send_transport,
-                                 MediaTransportConfig(&fake_media_transport));
-
-  call->MediaTransportChange(&fake_media_transport);
-  AudioSendStream* stream = call->CreateAudioSendStream(config);
-
-  // We get 2 subscribers: one subscriber from call.cc, and one from
-  // ChannelSend.
-  EXPECT_EQ(2, fake_media_transport.target_rate_observers_size());
-
-  call->DestroyAudioSendStream(stream);
-  EXPECT_EQ(1, fake_media_transport.target_rate_observers_size());
-
-  call->MediaTransportChange(nullptr);
-  EXPECT_EQ(0, fake_media_transport.target_rate_observers_size());
 }
 
 }  // namespace webrtc

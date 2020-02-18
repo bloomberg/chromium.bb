@@ -26,7 +26,7 @@ from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
 
 
-def DebugInfoTest(input_proto, _output_proto):
+def DebugInfoTest(input_proto, _output_proto, config):
   """Run the debug info tests."""
   sysroot_path = input_proto.sysroot.path
   target_name = input_proto.sysroot.build_target.name
@@ -43,6 +43,9 @@ def DebugInfoTest(input_proto, _output_proto):
   if not sysroot.Exists():
     cros_build_lib.Die('The provided sysroot does not exist.')
 
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
   if test.DebugInfoTest(sysroot_path):
     return controller.RETURN_CODE_SUCCESS
   else:
@@ -50,7 +53,9 @@ def DebugInfoTest(input_proto, _output_proto):
 
 
 @validate.require('build_target.name', 'result_path')
-def BuildTargetUnitTest(input_proto, output_proto):
+@validate.exists('result_path')
+@validate.validation_complete
+def BuildTargetUnitTest(input_proto, output_proto, _config):
   """Run a build target's ebuild unit tests."""
   # Required args.
   board = input_proto.build_target.name
@@ -90,7 +95,8 @@ def BuildTargetUnitTest(input_proto, output_proto):
     output_proto.tarball_path = tarball
 
 
-def ChromiteUnitTest(_input_proto, _output_proto):
+@validate.validation_complete
+def ChromiteUnitTest(_input_proto, _output_proto, _config):
   """Run the chromite unit tests."""
   cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
   result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
@@ -102,14 +108,13 @@ def ChromiteUnitTest(_input_proto, _output_proto):
 
 @validate.require('build_target.name', 'vm_path.path', 'test_harness',
                   'vm_tests')
-def VmTest(input_proto, _output_proto):
+@validate.validation_complete
+def VmTest(input_proto, _output_proto, _config):
   """Run VM tests."""
   build_target_name = input_proto.build_target.name
   vm_path = input_proto.vm_path.path
 
   test_harness = input_proto.test_harness
-  if test_harness == test_pb2.VmTestRequest.UNSPECIFIED:
-    cros_build_lib.Die('test_harness is required')
 
   vm_tests = input_proto.vm_tests
 
@@ -134,7 +139,9 @@ def VmTest(input_proto, _output_proto):
     cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60)
 
 
-def MoblabVmTest(input_proto, _output_proto):
+@validate.require('image_payload.path.path', 'cache_payloads')
+@validate.validation_complete
+def MoblabVmTest(input_proto, _output_proto, _config):
   """Run Moblab VM tests."""
   chroot = controller_util.ParseChroot(input_proto.chroot)
   image_payload_dir = input_proto.image_payload.path.path
@@ -167,3 +174,13 @@ def MoblabVmTest(input_proto, _output_proto):
     cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
     test.RunMoblabVmTest(chroot, vms, builder, cache_dir, results_dir)
     test.ValidateMoblabVmTest(results_dir)
+
+
+@validate.validation_complete
+def CrosSigningTest(_input_proto, _output_proto, _config):
+  """Run the cros-signing unit tests."""
+  test_runner = os.path.join(constants.SOURCE_ROOT, 'cros-signing', 'signer',
+                             'run_tests.py')
+  result = cros_build_lib.RunCommand([test_runner], error_code_ok=True)
+
+  return result.returncode

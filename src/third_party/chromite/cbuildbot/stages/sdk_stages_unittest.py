@@ -11,6 +11,8 @@ import json
 import os
 import unittest
 
+import six
+
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
@@ -18,6 +20,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
@@ -58,10 +61,10 @@ class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTestCase,
     # Sanity check args passed to RunBuildScript.
     for call in self.run_mock.call_args_list:
       buildroot, cmd = call[0]
-      self.assertTrue(isinstance(buildroot, basestring))
+      self.assertTrue(isinstance(buildroot, six.string_types))
       self.assertTrue(isinstance(cmd, (tuple, list)))
       for ele in cmd:
-        self.assertTrue(isinstance(ele, basestring))
+        self.assertTrue(isinstance(ele, six.string_types))
 
 
 class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
@@ -248,7 +251,7 @@ class SDKPackageToolchainOverlaysStageTest(
                                                        self.buildstore)
 
   # TODO(akeshet): determine why this test is flaky
-  @unittest.skip("Skip flaky test.")
+  @unittest.skip('Skip flaky test.')
   def testTarballCreation(self):
     """Tests that tarballs are created for all board toolchains."""
     self._Prepare('chromiumos-sdk')
@@ -335,3 +338,20 @@ class SDKUprevStageTest(generic_stages_unittest.AbstractStageTestCase):
             'SDK_LATEST_VERSION': self._VERSION,
             'TC_PATH': '2017/09/%(target)s-2017.09.01.155318.tar.xz'
         })
+
+
+class SDKUtilTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Tests various utility functions."""
+
+  def testCreateTarballBasic(self):
+    """Basic sanity checks for CreateTarball."""
+    sdk_stages.CreateTarball(self.tempdir, '/chromite.tar')
+    self.assertCommandContains(['tar', '/chromite.tar', '.'])
+
+  def testCreateTarballExclude(self):
+    """Verify CreateTarball exclude_path handling."""
+    sdk_stages.CreateTarball(self.tempdir, '/chromite.tar',
+                             exclude_paths=['tmp', 'usr/lib/debug'])
+    self.assertCommandContains(
+        ['tar', '--anchored', '--exclude=./tmp/*',
+         '--exclude=./usr/lib/debug/*', '/chromite.tar', '.'])

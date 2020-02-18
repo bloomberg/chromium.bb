@@ -28,10 +28,6 @@
 #include "chrome/browser/shell_integration.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-
 namespace {
 
 // Attempts to find an existing, non-empty tabbed browser for this profile.
@@ -39,7 +35,7 @@ bool ProfileHasOtherTabbedBrowser(Profile* profile) {
   BrowserList* browser_list = BrowserList::GetInstance();
   auto other_tabbed_browser = std::find_if(
       browser_list->begin(), browser_list->end(), [profile](Browser* browser) {
-        return browser->profile() == profile && browser->is_type_tabbed() &&
+        return browser->profile() == profile && browser->is_type_normal() &&
                !browser->tab_strip_model()->empty();
       });
   return other_tabbed_browser != browser_list->end();
@@ -48,7 +44,7 @@ bool ProfileHasOtherTabbedBrowser(Profile* profile) {
 }  // namespace
 
 StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
-// Onboarding content has not been launched on Chrome OS.
+// Chrome OS has its own welcome flow provided by OOBE.
 #if defined(OS_CHROMEOS)
   return StartupTabs();
 #else

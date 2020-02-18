@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_observer_init.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -73,9 +72,9 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
   options->setBuffered(true);
   EXPECT_EQ(0, NumPerformanceEntries());
 
-  // add a layoutjank to performance so getEntries() returns it
+  // add a layout-shift to performance so getEntries() returns it
   auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234, true, 5678);
-  base_->AddLayoutJankBuffer(*entry);
+  base_->AddLayoutShiftBuffer(*entry);
 
   // call observe with the buffered flag
   observer_->observe(options, exception_state);

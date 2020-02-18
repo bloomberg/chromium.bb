@@ -15,9 +15,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -50,7 +51,7 @@ public class SyncAndServicesPreferencesTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
-        final ChromeSwitchPreferenceCompat syncSwitch = getSyncSwitch(fragment);
+        final ChromeSwitchPreference syncSwitch = getSyncSwitch(fragment);
 
         Assert.assertTrue(syncSwitch.isChecked());
         Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
@@ -119,6 +120,7 @@ public class SyncAndServicesPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/991135")
     public void testSyncSwitchClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.setPaymentsIntegrationEnabled(true);
@@ -132,7 +134,7 @@ public class SyncAndServicesPreferencesTest {
         Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
         SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
         assertSyncOnState(fragment);
-        ChromeSwitchPreferenceCompat syncSwitch = getSyncSwitch(fragment);
+        ChromeSwitchPreference syncSwitch = getSyncSwitch(fragment);
         Assert.assertTrue(syncSwitch.isChecked());
         Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
         mSyncTestRule.togglePreference(syncSwitch);
@@ -148,7 +150,7 @@ public class SyncAndServicesPreferencesTest {
     private SyncAndServicesPreferences startSyncAndServicesPreferences() {
         mPreferences = mSyncTestRule.startPreferences(SyncAndServicesPreferences.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (SyncAndServicesPreferences) mPreferences.getMainFragmentCompat();
+        return (SyncAndServicesPreferences) mPreferences.getMainFragment();
     }
 
     private void closeFragment(SyncAndServicesPreferences fragment) {
@@ -159,8 +161,8 @@ public class SyncAndServicesPreferencesTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    private ChromeSwitchPreferenceCompat getSyncSwitch(SyncAndServicesPreferences fragment) {
-        return (ChromeSwitchPreferenceCompat) fragment.findPreference(
+    private ChromeSwitchPreference getSyncSwitch(SyncAndServicesPreferences fragment) {
+        return (ChromeSwitchPreference) fragment.findPreference(
                 SyncAndServicesPreferences.PREF_SYNC_REQUESTED);
     }
 

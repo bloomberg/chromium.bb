@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -151,7 +151,8 @@ class DaemonProcessTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<MockDaemonProcess> daemon_process_;
   int terminal_id_;
@@ -164,9 +165,8 @@ DaemonProcessTest::~DaemonProcessTest() = default;
 
 void DaemonProcessTest::SetUp() {
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      message_loop_.task_runner(),
-      base::Bind(&DaemonProcessTest::QuitMessageLoop,
-                 base::Unretained(this)));
+      task_environment_.GetMainThreadTaskRunner(),
+      base::Bind(&DaemonProcessTest::QuitMessageLoop, base::Unretained(this)));
   daemon_process_.reset(
       new MockDaemonProcess(task_runner, task_runner,
                             base::Bind(&DaemonProcessTest::DeleteDaemonProcess,
@@ -210,7 +210,7 @@ void DaemonProcessTest::DeleteDaemonProcess() {
 }
 
 void DaemonProcessTest::QuitMessageLoop() {
-  message_loop_.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
@@ -392,7 +392,7 @@ TEST_F(DaemonProcessTest, StopProcessStatsReportWhenTheWorkerProcessDied) {
           }));
   static_cast<WorkerProcessIpcDelegate*>(daemon_process_.get())
       ->OnWorkerProcessStopped();
-  message_loop_.task_runner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(10));
   run_loop.Run();
 }

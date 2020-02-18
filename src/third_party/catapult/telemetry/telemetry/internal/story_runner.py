@@ -13,7 +13,6 @@ import time
 
 import py_utils
 from py_utils import cloud_storage  # pylint: disable=import-error
-from py_utils import memory_debug  # pylint: disable=import-error
 from py_utils import logging_util  # pylint: disable=import-error
 
 from telemetry.core import exceptions
@@ -49,7 +48,6 @@ class ArchiveError(Exception):
 
 def AddCommandLineArgs(parser):
   story_module.StoryFilter.AddCommandLineArgs(parser)
-  results_options.AddResultsOptions(parser)
 
   group = optparse.OptionGroup(parser, 'Story runner options')
   # Note that the default for pageset-repeat is 1 unless the benchmark
@@ -105,7 +103,6 @@ def AddCommandLineArgs(parser):
 
 def ProcessCommandLineArgs(parser, args):
   story_module.StoryFilter.ProcessCommandLineArgs(parser, args)
-  results_options.ProcessCommandLineArgs(args)
 
   if args.pageset_repeat < 1:
     parser.error('--pageset-repeat must be a positive integer.')
@@ -113,7 +110,7 @@ def ProcessCommandLineArgs(parser, args):
 
 @contextlib.contextmanager
 def CaptureLogsAsArtifacts(results):
-  with results.CreateArtifact('logs') as log_file:
+  with results.CreateArtifact('logs.txt') as log_file:
     with logging_util.CaptureLogs(log_file):
       yield
 
@@ -128,7 +125,7 @@ def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
       if isinstance(exc, exceptions.AppCrashException):
         minidump_path = exc.minidump_path
         if minidump_path:
-          with results.CaptureArtifact('minidump') as path:
+          with results.CaptureArtifact('minidump.dmp') as path:
             shutil.move(minidump_path, path)
 
     # Note: calling Fail on the results object also normally causes the
@@ -291,8 +288,7 @@ def Run(test, story_set, finder_options, results, max_failures=None,
         results.WillRunPage(story, storyset_repeat_counter)
 
         if expectations:
-          disabled = expectations.IsStoryDisabled(
-              story, state.platform, finder_options)
+          disabled = expectations.IsStoryDisabled(story)
           if disabled:
             if finder_options.run_disabled_tests:
               logging.warning('Force running a disabled story: %s' %
@@ -383,46 +379,13 @@ def ValidateStory(story):
 
 
 def _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
-  if not possible_browser:
-    print ('No browser of type "%s" found for running benchmark "%s".' % (
-        finder_options.browser_options.browser_type, benchmark.Name()))
-    return False
-
-  benchmark.expectations.SetTags(
-      possible_browser.GetTypExpectationsTags())
-
-  # In other cases, if there is a browser, we exit early if we determine
-  # that the benchmark should be run.
-
   if finder_options.print_only:
     return True  # Should always run on print-only mode.
-
   if benchmark._CanRunOnPlatform(possible_browser.platform, finder_options):
-    disabled_reason = benchmark.expectations.IsBenchmarkDisabled(
-        possible_browser.platform, finder_options)
-    if not disabled_reason:
-      return True  # Can run on this platform and is not disabled.
-    print 'Benchmark "%s" is disabled on the chosen browser due to: %s.' % (
-        benchmark.Name(), disabled_reason)
-    if finder_options.run_disabled_tests:
-      print 'Running benchmark anyway due to: --also-run-disabled-tests'
-      return True
-    else:
-      print 'Try --also-run-disabled-tests to force the benchmark to run.'
-  else:
-    print ('Benchmark "%s" is not supported on the current platform. If this '
-           "is in error please add it to the benchmark's SUPPORTED_PLATFORMS."
-           % benchmark.Name())
-
-  # If we reach this point the benchmark should not be run; but we still need
-  # to report the disabled state of the benchmark with an empty set of results.
-  with results_options.CreateResults(
-      finder_options,
-      benchmark_name=benchmark.Name(),
-      benchmark_description=benchmark.Description(),
-      report_progress=not finder_options.suppress_gtest_report,
-      should_add_value=benchmark.ShouldAddValue) as results:
-    results.PrintSummary()
+    return True
+  print ('Benchmark "%s" is not supported on the current platform. If this '
+         "is in error please add it to the benchmark's SUPPORTED_PLATFORMS."
+         % benchmark.Name())
   return False
 
 
@@ -436,27 +399,35 @@ def RunBenchmark(benchmark, finder_options):
     2 if there was an uncaught exception.
   """
   benchmark.CustomizeOptions(finder_options)
-  possible_browser = browser_finder.FindBrowser(finder_options)
-  if not _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
-    return -1
-
-  pt = benchmark.CreatePageTest(finder_options)
-  pt.__name__ = benchmark.__class__.__name__
-
-  story_set = benchmark.CreateStorySet(finder_options)
-
-  if isinstance(pt, legacy_page_test.LegacyPageTest):
-    if any(not isinstance(p, page.Page) for p in story_set.stories):
-      raise Exception(
-          'PageTest must be used with StorySet containing only '
-          'telemetry.page.Page stories.')
-
   with results_options.CreateResults(
       finder_options,
       benchmark_name=benchmark.Name(),
       benchmark_description=benchmark.Description(),
       report_progress=not finder_options.suppress_gtest_report,
       should_add_value=benchmark.ShouldAddValue) as results:
+
+    possible_browser = browser_finder.FindBrowser(finder_options)
+    if not possible_browser:
+      print ('No browser of type "%s" found for running benchmark "%s".' % (
+          finder_options.browser_options.browser_type, benchmark.Name()))
+      return -1
+    typ_expectation_tags = possible_browser.GetTypExpectationsTags()
+    logging.info('The following expectations condition tags were generated %s',
+                 str(typ_expectation_tags))
+    benchmark.expectations.SetTags(typ_expectation_tags)
+    if not _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
+      return -1
+
+    pt = benchmark.CreatePageTest(finder_options)
+    pt.__name__ = benchmark.__class__.__name__
+
+    story_set = benchmark.CreateStorySet(finder_options)
+
+    if isinstance(pt, legacy_page_test.LegacyPageTest):
+      if any(not isinstance(p, page.Page) for p in story_set.stories):
+        raise Exception(
+            'PageTest must be used with StorySet containing only '
+            'telemetry.page.Page stories.')
     try:
       Run(pt, story_set, finder_options, results, benchmark.max_failures,
           expectations=benchmark.expectations,
@@ -469,9 +440,6 @@ def RunBenchmark(benchmark, finder_options):
         return_code = 0
       else:
         return_code = -1  # All stories were skipped.
-      # We want to make sure that all expectations are linked to real stories,
-      # this will log error messages if names do not match what is in the set.
-      benchmark.GetBrokenExpectations(story_set)
     except Exception as exc: # pylint: disable=broad-except
       interruption = 'Benchmark execution interrupted: %r' % exc
       results.InterruptBenchmark(interruption)
@@ -494,12 +462,8 @@ def RunBenchmark(benchmark, finder_options):
       results.AddSharedDiagnosticToAllHistograms(
           reserved_infos.DOCUMENTATION_URLS.name, benchmark_documentation_url)
 
-    try:
-      if finder_options.upload_results:
-        results_processor.UploadArtifactsToCloud(results)
-    finally:
-      memory_debug.LogHostMemoryUsage()
-      results.PrintSummary()
+    if finder_options.upload_results:
+      results_processor.UploadArtifactsToCloud(results)
   return return_code
 
 def _UpdateAndCheckArchives(archive_data_file, wpr_archive_info,

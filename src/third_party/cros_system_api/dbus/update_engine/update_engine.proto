@@ -56,4 +56,7 @@ message StatusResult {
   // Whether the update is actually an enterprise rollback.
   // TODO(crbug.com/864672): Actually set its value from update_attempter.cc.
   bool is_enterprise_rollback = 6;
+
+  // Indication of install for DLC(s).
+  bool is_install = 7;
 }

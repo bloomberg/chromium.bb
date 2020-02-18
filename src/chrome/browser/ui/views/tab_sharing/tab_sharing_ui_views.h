@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -75,13 +74,15 @@ class TabSharingUIViews : public TabSharingUI,
   void CreateInfobarForWebContents(content::WebContents* contents);
   void RemoveInfobarsForAllTabs();
 
+  void CreateTabCaptureIndicator();
+
   std::map<content::WebContents*, infobars::InfoBar*> infobars_;
-  ScopedObserver<TabStripModel, TabStripModelObserver>
-      tab_strip_models_observer_{this};
+  content::DesktopMediaID shared_tab_media_id_;
   const base::string16 app_name_;
   content::WebContents* shared_tab_;
   base::string16 shared_tab_name_;
   Profile* profile_;
+  std::unique_ptr<content::MediaStreamUI> tab_capture_indicator_ui_;
 
   content::MediaStreamUI::SourceCallback source_callback_;
   base::OnceClosure stop_callback_;

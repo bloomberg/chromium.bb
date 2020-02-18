@@ -34,13 +34,20 @@
 #include <stdint.h>
 #include <memory>
 #include <utility>
+#include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
-#include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_message_chunk_accumulator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -53,14 +60,18 @@ namespace blink {
 
 class BaseFetchContext;
 enum class FileErrorCode;
-class SharedBuffer;
 class WebSocketChannelClient;
 class WebSocketHandshakeThrottle;
 
 // This is an implementation of WebSocketChannel. This is created on the main
 // thread for Document, or on the worker thread for WorkerGlobalScope. All
 // functions must be called on the execution context's thread.
-class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
+class MODULES_EXPORT WebSocketChannelImpl final
+    : public WebSocketChannel,
+      public network::mojom::blink::WebSocketHandshakeClient,
+      public network::mojom::blink::WebSocketClient {
+  USING_PRE_FINALIZER(WebSocketChannelImpl, Dispose);
+
  public:
   // You can specify the source file and the line number information
   // explicitly by passing the last parameter.
@@ -70,30 +81,24 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
                                       WebSocketChannelClient* client,
                                       std::unique_ptr<SourceLocation> location);
   static WebSocketChannelImpl* CreateForTesting(
-      Document*,
+      ExecutionContext*,
       WebSocketChannelClient*,
       std::unique_ptr<SourceLocation>,
-      WebSocketHandle*,
       std::unique_ptr<WebSocketHandshakeThrottle>);
 
   WebSocketChannelImpl(ExecutionContext*,
                        WebSocketChannelClient*,
-                       std::unique_ptr<SourceLocation>,
-                       std::unique_ptr<WebSocketHandle>);
+                       std::unique_ptr<SourceLocation>);
   ~WebSocketChannelImpl() override;
-
-  // Allows the caller to provide the Mojo pipe through which the socket is
-  // connected, overriding the interface provider of the Document.
-  bool Connect(const KURL&,
-               const String& protocol,
-               network::mojom::blink::WebSocketPtr);
 
   // WebSocketChannel functions.
   bool Connect(const KURL&, const String& protocol) override;
-  void Send(const std::string& message) override;
-  void Send(const DOMArrayBuffer&,
-            unsigned byte_offset,
-            unsigned byte_length) override;
+  SendResult Send(const std::string& message,
+                  base::OnceClosure completion_callback) override;
+  SendResult Send(const DOMArrayBuffer&,
+                  unsigned byte_offset,
+                  unsigned byte_length,
+                  base::OnceClosure completion_callback) override;
   void Send(scoped_refptr<BlobDataHandle>) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
   // argument to omit payload.
@@ -102,58 +107,48 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
             mojom::ConsoleMessageLevel,
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
+  void ApplyBackpressure() override;
+  void RemoveBackpressure() override;
+
+  // network::mojom::blink::WebSocketHandshakeClient methods:
+  void OnOpeningHandshakeStarted(
+      network::mojom::blink::WebSocketHandshakeRequestPtr) override;
+  void OnResponseReceived(
+      network::mojom::blink::WebSocketHandshakeResponsePtr) override;
+  void OnConnectionEstablished(
+      mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
+      mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
+          client_receiver,
+      const String& selected_protocol,
+      const String& extensions,
+      mojo::ScopedDataPipeConsumerHandle readable) override;
+
+  // network::mojom::blink::WebSocketClient methods:
+  void OnDataFrame(bool fin,
+                   network::mojom::blink::WebSocketMessageType,
+                   uint64_t data_length) override;
+  void AddSendFlowControlQuota(int64_t quota) override;
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const String& reason) override;
+  void OnClosingHandshake() override;
 
   ExecutionContext* GetExecutionContext();
-
-  // Called when the handle is opened.
-  void DidConnect(WebSocketHandle* handle,
-                  const String& selected_protocol,
-                  const String& extensions,
-                  uint64_t receive_quota_threshold);
-
-  // Called when the browser starts the opening handshake.
-  // This notification can be omitted when the inspector is not active.
-  void DidStartOpeningHandshake(
-      WebSocketHandle*,
-      network::mojom::blink::WebSocketHandshakeRequestPtr);
-
-  // Called when the browser finishes the opening handshake.
-  // This notification precedes didConnect.
-  // This notification can be omitted when the inspector is not active.
-  void DidFinishOpeningHandshake(
-      WebSocketHandle*,
-      network::mojom::blink::WebSocketHandshakeResponsePtr);
-
-  // Called when the browser is required to fail the connection.
-  // |message| can be displayed in the inspector, but should not be passed
-  // to scripts.
-  // This message also implies that channel is closed with
-  // (wasClean = false, code = 1006, reason = "") and
-  // |handle| becomes unavailable.
-  void DidFail(WebSocketHandle*, const String& message);
-
-  // Called when data are received.
-  void DidReceiveData(WebSocketHandle*,
-                      bool fin,
-                      WebSocketHandle::MessageType,
-                      const char* data,
-                      size_t);
-
-  // Called when the handle is closed.
-  // |handle| becomes unavailable once this notification arrives.
-  void DidClose(WebSocketHandle* handle,
-                bool was_clean,
-                uint16_t code,
-                const String& reason);
-  void AddSendFlowControlQuota(WebSocketHandle*, int64_t quota);
-
-  // Called when the browser receives a Close frame from the remote
-  // server. Not called when the renderer initiates the closing handshake.
-  void DidStartClosingHandshake(WebSocketHandle*);
 
   void Trace(blink::Visitor*) override;
 
  private:
+  struct DataFrame final {
+    DataFrame(bool fin,
+              network::mojom::blink::WebSocketMessageType type,
+              uint32_t data_length)
+        : fin(fin), type(type), data_length(data_length) {}
+
+    bool fin;
+    network::mojom::blink::WebSocketMessageType type;
+    uint32_t data_length;
+  };
+
   friend class WebSocketChannelImplHandshakeThrottleTest;
   FRIEND_TEST_ALL_PREFIXES(WebSocketChannelImplHandshakeThrottleTest,
                            ThrottleSucceedsFirst);
@@ -180,13 +175,33 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
     Vector<char> data;
   };
 
-  void SendInternal(WebSocketHandle::MessageType,
+  // The state is defined to see the conceptual state more clearly than checking
+  // various members (for DCHECKs for example). This is only used internally.
+  enum class State {
+    // The channel is running an opening handshake. This is the initial state.
+    // It becomes |kOpen| when the connection is established. It becomes
+    // |kDisconnected| when detecting an error.
+    kConnecting,
+    // The channel is ready to send / receive messages. It becomes
+    // |kDisconnected| when the connection is closed or when an error happens.
+    kOpen,
+    // The channel is not ready for communication. The channel stays in this
+    // state forever.
+    kDisconnected,
+  };
+  State GetState() const;
+
+  void SendInternal(network::mojom::blink::WebSocketMessageType,
                     const char* data,
                     wtf_size_t total_size,
                     uint64_t* consumed_buffered_amount);
+  void SendAndAdjustQuota(bool final,
+                          network::mojom::blink::WebSocketMessageType,
+                          base::span<const char>,
+                          uint64_t* consumed_buffered_amount);
+  bool MaybeSendSynchronously(network::mojom::blink::WebSocketMessageType,
+                              base::span<const char>);
   void ProcessSendQueue();
-  void AddReceiveFlowControlIfNecessary();
-  void InitialReceiveFlowControl();
   void FailAsError(const String& reason) {
     Fail(reason, mojom::ConsoleMessageLevel::kError,
          location_at_construction_->Clone());
@@ -206,38 +221,52 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
 
   BaseFetchContext* GetBaseFetchContext() const;
 
-  // |handle_| is a handle of the connection.
-  // |handle_| == nullptr means this channel is closed.
-  std::unique_ptr<WebSocketHandle> handle_;
+  // Called when |readable_| becomes readable.
+  void OnReadable(MojoResult result, const mojo::HandleSignalsState& state);
+  void ConsumePendingDataFrames();
+  void ConsumeDataFrame(bool fin,
+                        network::mojom::blink::WebSocketMessageType type,
+                        const char* data,
+                        size_t data_size);
+  void OnConnectionError(const base::Location& set_from,
+                         uint32_t custom_reason,
+                         const std::string& description);
+  void Dispose();
 
-  // |client_| can be deleted while this channel is alive, but this class
-  // expects that disconnect() is called before the deletion.
-  Member<WebSocketChannelClient> client_;
+  const Member<WebSocketChannelClient> client_;
   KURL url_;
   uint64_t identifier_;
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
-  scoped_refptr<SharedBuffer> receiving_message_data_;
-  Member<ExecutionContext> execution_context_;
+  WebSocketMessageChunkAccumulator message_chunks_;
+  const Member<ExecutionContext> execution_context_;
 
-  bool receiving_message_type_is_text_;
-  uint64_t sending_quota_;
-  uint64_t received_data_size_for_flow_control_;
-  wtf_size_t sent_size_of_top_message_;
+  bool backpressure_ = false;
+  bool receiving_message_type_is_text_ = false;
+  bool throttle_passed_ = false;
+  bool has_initiated_opening_handshake_ = false;
+  uint64_t sending_quota_ = 0;
+  wtf_size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
 
-  std::unique_ptr<SourceLocation> location_at_construction_;
+  const std::unique_ptr<const SourceLocation> location_at_construction_;
   network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;
   std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle_;
   // This field is only initialised if the object is still waiting for a
   // throttle response when DidConnect is called.
   std::unique_ptr<ConnectInfo> connect_info_;
-  bool throttle_passed_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
+  mojo::Remote<network::mojom::blink::WebSocket> websocket_;
+  mojo::Receiver<network::mojom::blink::WebSocketHandshakeClient>
+      handshake_client_receiver_{this};
+  mojo::Receiver<network::mojom::blink::WebSocketClient> client_receiver_;
 
-  base::Optional<uint64_t> receive_quota_threshold_;
+  mojo::ScopedDataPipeConsumerHandle readable_;
+  mojo::SimpleWatcher readable_watcher_;
+  WTF::Deque<DataFrame> pending_data_frames_;
+
+  const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 };
 
 MODULES_EXPORT std::ostream& operator<<(std::ostream&,

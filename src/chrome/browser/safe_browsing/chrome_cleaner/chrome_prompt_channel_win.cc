@@ -369,7 +369,7 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
            ChromePromptActions::PromptAcceptance acceptance) {
           auto mojo_acceptance =
               static_cast<chrome_cleaner::mojom::PromptAcceptance>(acceptance);
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})
               ->PostTask(FROM_HERE, base::BindOnce(std::move(mojo_callback),
                                                    mojo_acceptance));
         };
@@ -420,8 +420,7 @@ ChromePromptChannelMojo::ChromePromptChannelMojo(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : ChromePromptChannel(std::move(on_connection_closed),
                           std::move(actions),
-                          std::move(task_runner)),
-      weak_factory_(this) {}
+                          std::move(task_runner)) {}
 
 ChromePromptChannelMojo::~ChromePromptChannelMojo() = default;
 
@@ -476,8 +475,7 @@ ChromePromptChannelProtobuf::ChromePromptChannelProtobuf(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : ChromePromptChannel(std::move(on_connection_closed),
                           std::move(actions),
-                          std::move(task_runner)),
-      weak_factory_(this) {
+                          std::move(task_runner)) {
   // The sequence checker validates that all handler methods and the destructor
   // are called from the same sequence, which is not the same sequence as the
   // constructor.
@@ -546,7 +544,8 @@ void ChromePromptChannelProtobuf::ConnectToCleaner(
   // ServiceChromePromptRequests will return.
   base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ServiceChromePromptRequests, weak_factory_.GetWeakPtr(),
                      task_runner_, request_read_handle_.Get(),
                      std::move(cleaner_process),

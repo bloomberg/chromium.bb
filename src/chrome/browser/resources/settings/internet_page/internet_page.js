@@ -15,6 +15,7 @@ Polymer({
   is: 'settings-internet-page',
 
   behaviors: [
+    CrNetworkListenerBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
@@ -84,11 +85,8 @@ Polymer({
       value: false,
     },
 
-    /** @private {!chrome.networkingPrivate.GlobalPolicy|undefined} */
-    globalPolicy_: {
-      type: Object,
-      value: null,
-    },
+    /** @private {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+    globalPolicy_: Object,
 
     /**
      * Whether a managed network is available in the visible network list.
@@ -100,23 +98,11 @@ Polymer({
     },
 
     /**
-     * List of third party VPN providers.
-     * @type {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}
+     * List of third party (Extension + Arc) VPN providers.
+     * @type {!Array<!chromeos.networkConfig.mojom.VpnProvider>}
      * @private
      */
-    thirdPartyVpnProviders_: {
-      type: Array,
-      value: function() {
-        return [];
-      }
-    },
-
-    /**
-     * List of Arc VPN providers.
-     * @type {!Array<!settings.ArcVpnProvider>}
-     * @private
-     */
-    arcVpnProviders_: {
+    vpnProviders_: {
       type: Array,
       value: function() {
         return [];
@@ -145,16 +131,6 @@ Polymer({
     'show-networks': 'onShowNetworks_',
   },
 
-  // chrome.management listeners
-  /** @private {Function} */
-  onExtensionAddedListener_: null,
-
-  /** @private {Function} */
-  onExtensionRemovedListener_: null,
-
-  /** @private {Function} */
-  onExtensionDisabledListener_: null,
-
   /** @private  {?settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
@@ -162,58 +138,23 @@ Polymer({
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
    */
-  networkConfigProxy_: null,
+  networkConfig_: null,
 
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
-  },
-
-  /** @override */
-  ready: function() {
-    this.browserProxy_.setUpdateArcVpnProvidersCallback(
-        this.onArcVpnProvidersReceived_.bind(this));
-    this.browserProxy_.requestArcVpnProviders();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
   attached: function() {
-    this.onExtensionAddedListener_ =
-        this.onExtensionAddedListener_ || this.onExtensionAdded_.bind(this);
-    chrome.management.onInstalled.addListener(this.onExtensionAddedListener_);
-    chrome.management.onEnabled.addListener(this.onExtensionAddedListener_);
-
-    this.onExtensionRemovedListener_ =
-        this.onExtensionRemovedListener_ || this.onExtensionRemoved_.bind(this);
-    chrome.management.onUninstalled.addListener(
-        this.onExtensionRemovedListener_);
-
-    this.onExtensionDisabledListener_ = this.onExtensionDisabledListener_ ||
-        this.onExtensionDisabled_.bind(this);
-    chrome.management.onDisabled.addListener(this.onExtensionDisabledListener_);
-
-    chrome.management.getAll(this.onGetAllExtensions_.bind(this));
-
-    this.networkingPrivate.getGlobalPolicy(policy => {
-      this.globalPolicy_ = policy;
+    this.networkConfig_.getGlobalPolicy().then(response => {
+      this.globalPolicy_ = response.result;
     });
-  },
-
-  /** @override */
-  detached: function() {
-    chrome.management.onInstalled.removeListener(
-        assert(this.onExtensionAddedListener_));
-    chrome.management.onEnabled.removeListener(
-        assert(this.onExtensionAddedListener_));
-    chrome.management.onUninstalled.removeListener(
-        assert(this.onExtensionRemovedListener_));
-    chrome.management.onDisabled.removeListener(
-        assert(this.onExtensionDisabledListener_));
+    this.onVpnProvidersChanged();
   },
 
   /**
@@ -278,6 +219,15 @@ Polymer({
     }
   },
 
+  /** CrosNetworkConfigObserver impl */
+  onVpnProvidersChanged: function() {
+    this.networkConfig_.getVpnProviders().then(response => {
+      const providers = response.providers;
+      providers.sort(this.compareVpnProviders_);
+      this.vpnProviders_ = providers;
+    });
+  },
+
   /**
    * Event triggered by a device state enabled toggle.
    * @param {!CustomEvent<!{
@@ -287,7 +237,7 @@ Polymer({
    * @private
    */
   onDeviceEnabledToggled_: function(event) {
-    this.networkConfigProxy_.setNetworkTypeEnabledState(
+    this.networkConfig_.setNetworkTypeEnabledState(
         event.detail.type, event.detail.enabled);
   },
 
@@ -336,7 +286,7 @@ Polymer({
     const params = new URLSearchParams;
     params.append('guid', networkState.guid);
     params.append('type', oncType);
-    params.append('name', OncMojo.getNetworkDisplayName(networkState));
+    params.append('name', OncMojo.getNetworkStateDisplayName(networkState));
     settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
   },
 
@@ -454,19 +404,12 @@ Polymer({
   },
 
   /**
-   * @param {!{model:
-   *            !{item: !chrome.networkingPrivate.ThirdPartyVPNProperties},
-   *        }} event
+   * @param {!{model: !{item: !mojom.VpnProvider}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.ExtensionID);
-  },
-
-  /** @private */
-  onAddArcVpnTap_: function() {
-    this.showNetworksSubpage_(mojom.NetworkType.kVPN);
+    this.browserProxy_.addThirdPartyVpn(provider.appId);
   },
 
   /**
@@ -483,98 +426,28 @@ Polymer({
   },
 
   /**
-   * chrome.management.getAll callback.
-   * @param {!Array<!chrome.management.ExtensionInfo>} extensions
-   * @private
+   * @param {!mojom.VpnProvider} vpnProvider1
+   * @param {!mojom.VpnProvider} vpnProvider2
+   * @return {number}
    */
-  onGetAllExtensions_: function(extensions) {
-    const vpnProviders = [];
-    for (let i = 0; i < extensions.length; ++i) {
-      this.addVpnProvider_(vpnProviders, extensions[i]);
-    }
-    this.thirdPartyVpnProviders_ = vpnProviders;
-  },
-
-  /**
-   * If |extension| is a third-party VPN provider, add it to |vpnProviders|.
-   * @param {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}
-   *     vpnProviders
-   * @param {!chrome.management.ExtensionInfo} extension
-   * @private
-   */
-  addVpnProvider_: function(vpnProviders, extension) {
-    if (!extension.enabled ||
-        extension.permissions.indexOf('vpnProvider') == -1) {
-      return;
-    }
-    if (vpnProviders.find(function(provider) {
-          return provider.ExtensionID == extension.id;
-        })) {
-      return;
-    }
-    const newProvider = {
-      ExtensionID: extension.id,
-      ProviderName: extension.name,
-    };
-    vpnProviders.push(newProvider);
-  },
-
-  /**
-   * chrome.management.onInstalled or onEnabled event.
-   * @param {!chrome.management.ExtensionInfo} extension
-   * @private
-   */
-  onExtensionAdded_: function(extension) {
-    this.addVpnProvider_(this.thirdPartyVpnProviders_, extension);
-  },
-
-  /**
-   * chrome.management.onUninstalled event.
-   * @param {string} extensionId
-   * @private
-   */
-  onExtensionRemoved_: function(extensionId) {
-    for (let i = 0; i < this.thirdPartyVpnProviders_.length; ++i) {
-      const provider = this.thirdPartyVpnProviders_[i];
-      if (provider.ExtensionID == extensionId) {
-        this.splice('thirdPartyVpnProviders_', i, 1);
-        break;
-      }
-    }
-  },
-
-  /**
-   * Compares Arc VPN Providers based on LastlauchTime
-   * @param {!settings.ArcVpnProvider} arcVpnProvider1
-   * @param {!settings.ArcVpnProvider} arcVpnProvider2
-   * @private
-   */
-  compareArcVpnProviders_: function(arcVpnProvider1, arcVpnProvider2) {
-    if (arcVpnProvider1.LastLaunchTime > arcVpnProvider2.LastLaunchTime) {
+  compareVpnProviders_: function(vpnProvider1, vpnProvider2) {
+    // Show Extension VPNs before Arc VPNs.
+    if (vpnProvider1.type < vpnProvider2.type) {
       return -1;
     }
-    if (arcVpnProvider1.LastLaunchTime < arcVpnProvider2.LastLaunchTime) {
+    if (vpnProvider1.type > vpnProvider2.type) {
+      return 1;
+    }
+    // Show VPNs of the same type by lastLaunchTime.
+    if (vpnProvider1.lastLaunchTime.internalValue >
+        vpnProvider2.lastLaunchTime.internalValue) {
+      return -1;
+    }
+    if (vpnProvider1.lastLaunchTime.internalValue <
+        vpnProvider2.lastLaunchTime.internalValue) {
       return 1;
     }
     return 0;
-  },
-
-  /**
-   * @param {?Array<!settings.ArcVpnProvider>} arcVpnProviders
-   * @private
-   */
-  onArcVpnProvidersReceived_: function(arcVpnProviders) {
-    arcVpnProviders.sort(this.compareArcVpnProviders_);
-    this.arcVpnProviders_ = arcVpnProviders;
-  },
-
-  /**
-   * chrome.management.onDisabled event.
-   * @param {{id: string}} extension
-   * @private
-   */
-  onExtensionDisabled_: function(extension) {
-    this.onExtensionRemoved_(extension.id);
   },
 
   /**
@@ -591,7 +464,7 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    */
@@ -600,17 +473,17 @@ Polymer({
       return true;
     }
 
-    return !globalPolicy.AllowOnlyPolicyNetworksToConnect &&
-        (!globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable ||
+    return !globalPolicy.allowOnlyPolicyNetworksToConnect &&
+        (!globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable ||
          !managedNetworkAvailable);
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} provider
+   * @param {!mojom.VpnProvider} provider
    * @return {string}
    */
   getAddThirdPartyVpnLabel_: function(provider) {
-    return this.i18n('internetAddThirdPartyVPN', provider.ProviderName || '');
+    return this.i18n('internetAddThirdPartyVPN', provider.providerName || '');
   },
 
   /**
@@ -625,7 +498,7 @@ Polymer({
   onNetworkConnect_: function(event) {
     const networkState = event.detail.networkState;
     const oncType = OncMojo.getNetworkTypeString(networkState.type);
-    const displayName = OncMojo.getNetworkDisplayName(networkState);
+    const displayName = OncMojo.getNetworkStateDisplayName(networkState);
 
     if (!event.detail.bypassConnectionDialog &&
         networkState.type == mojom.NetworkType.kTether &&
@@ -647,24 +520,32 @@ Polymer({
       return;
     }
 
-    this.networkingPrivate.startConnect(networkState.guid, () => {
-      if (chrome.runtime.lastError) {
-        const message = chrome.runtime.lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
+    this.networkConfig_.startConnect(networkState.guid).then(response => {
+      switch (response.result) {
+        case mojom.StartConnectResult.kSuccess:
           return;
-        }
-        console.error(
-            'networkingPrivate.startConnect error: ' + message +
-            ' For: ' + networkState.guid);
-
-        // There is no configuration flow for Mobile Networks.
-        if (!isMobile) {
-          this.showConfig_(
-              true /* configAndConnect */, oncType, networkState.guid,
-              displayName);
-        }
+        case mojom.StartConnectResult.kInvalidGuid:
+        case mojom.StartConnectResult.kInvalidState:
+        case mojom.StartConnectResult.kCanceled:
+          // TODO(stevenjb/khorimoto): Consider handling these cases.
+          return;
+        case mojom.StartConnectResult.kNotConfigured:
+          if (!isMobile) {
+            this.showConfig_(
+                true /* configAndConnect */, oncType, networkState.guid,
+                displayName);
+          }
+          return;
+        case mojom.StartConnectResult.kBlocked:
+          // This shouldn't happen, the UI should prevent this, fall through and
+          // show the error.
+        case mojom.StartConnectResult.kUnknown:
+          console.error(
+              'startConnect failed for: ' + networkState.guid +
+              ' Error: ' + response.message);
+          return;
       }
+      assertNotReached();
     });
   },
 });

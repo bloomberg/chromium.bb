@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
@@ -41,15 +42,16 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
 
   void Trace(blink::Visitor*) override;
 
+  mojo::Remote<device::mojom::blink::VRService>& Service() { return service_; }
+
  private:
+  bool ShouldResolveGetDisplays();
+  void EnsureDisplay();
   void OnGetDisplays();
+  void OnNonImmersiveSessionRequestReturned(
+      device::mojom::blink::RequestSessionResultPtr result);
 
   void OnGetDevicesSuccess(ScriptPromiseResolver*, VRDisplayVector);
-
-  // Initial callback for requesting the device when VR boots up.
-  void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr);
-  // Callback for subsequent request device calls.
-  void OnNewDeviceReturned(device::mojom::blink::XRDevicePtr);
 
   void OnImmersiveDisplayInfoReturned(
       device::mojom::blink::VRDisplayInfoPtr info);
@@ -63,16 +65,22 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   Member<NavigatorVR> navigator_vr_;
   Member<VRDisplay> display_;
 
-  bool display_synced_;
+  // True if we don't have an outstanding call to GetImmersiveVRDisplayInfo, so
+  // we know what the "latest" immersive display info is.
+  bool have_latest_immersive_info_ = false;
+
+  // True if the call to request a non-immersive session has returned.
+  bool nonimmersive_session_returned_ = false;
+  device::mojom::blink::RequestSessionResultPtr nonimmersive_session_;
 
   bool has_presentation_capable_display_ = false;
-  bool has_display_ = false;
+  bool disposed_ = false;
   bool pending_listening_for_activate_ = false;
   bool listening_for_activate_ = false;
 
   HeapDeque<Member<ScriptPromiseResolver>> pending_promise_resolvers_;
-  device::mojom::blink::VRServicePtr service_;
-  mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
+  mojo::Remote<device::mojom::blink::VRService> service_;
+  mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};
 
   FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;

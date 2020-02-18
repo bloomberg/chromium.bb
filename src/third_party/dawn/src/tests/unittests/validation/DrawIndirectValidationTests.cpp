@@ -24,14 +24,14 @@ class DrawIndirectValidationTest : public ValidationTest {
         ValidationTest::SetUp();
 
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 gl_Position = vec4(0.0);
             })");
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             layout(location = 0) out vec4 fragColor;
             void main() {
@@ -43,7 +43,7 @@ class DrawIndirectValidationTest : public ValidationTest {
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.layout = pipelineLayout;
-        descriptor.cVertexStage.module = vsModule;
+        descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
 
         pipeline = device.CreateRenderPipeline(&descriptor);
@@ -73,8 +73,8 @@ class DrawIndirectValidationTest : public ValidationTest {
                             std::initializer_list<uint32_t> bufferList,
                             uint64_t indirectOffset,
                             bool indexed) {
-        dawn::Buffer indirectBuffer = utils::CreateBufferFromData<uint32_t>(
-            device, dawn::BufferUsageBit::Indirect, bufferList);
+        dawn::Buffer indirectBuffer =
+            utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsage::Indirect, bufferList);
 
         DummyRenderPass renderPass(device);
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -82,8 +82,8 @@ class DrawIndirectValidationTest : public ValidationTest {
         pass.SetPipeline(pipeline);
         if (indexed) {
             uint32_t zeros[100] = {};
-            dawn::Buffer indexBuffer = utils::CreateBufferFromData(device, zeros, sizeof(zeros),
-                                                                   dawn::BufferUsageBit::Index);
+            dawn::Buffer indexBuffer =
+                utils::CreateBufferFromData(device, zeros, sizeof(zeros), dawn::BufferUsage::Index);
             pass.SetIndexBuffer(indexBuffer, 0);
             pass.DrawIndexedIndirect(indirectBuffer, indirectOffset);
         } else {

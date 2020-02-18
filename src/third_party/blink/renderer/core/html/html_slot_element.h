@@ -129,7 +129,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
       const HeapVector<Member<Node>>& old_slotted,
       const HeapVector<Member<Node>>& new_slotted);
   static void NotifySlottedNodesOfFlatTreeChangeNaive(
-      const HeapVector<Member<Node>>& new_slotted);
+      const HeapVector<Member<Node>>& old_assigned_nodes,
+      const HeapVector<Member<Node>>& new_assigned_nodes);
   static void NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(
       const HeapVector<Member<Node>>& old_slotted,
       const HeapVector<Member<Node>>& new_slotted);
@@ -194,6 +195,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   }
 
   friend class HTMLSlotElementTest;
+  friend class HTMLSlotElementInDocumentTest;
 };
 
 inline const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(

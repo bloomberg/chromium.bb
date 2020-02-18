@@ -25,6 +25,8 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_header_view.h"
+#include "ash/app_list/views/horizontal_page_container.h"
+#include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_answer_card_view.h"
@@ -50,7 +52,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -69,6 +71,30 @@ namespace test {
 namespace {
 
 constexpr int kInitialItems = 34;
+
+// Constants used for for testing app list layout in fullscreen state:
+// The expected bottom of suggestion chip view. The top is expected to be 96,
+// and height 32.
+constexpr int kFullscreenSuggestionChipBottom = 96 + 32;
+
+// The app list grid top inset - the height of the view fadeout area.
+constexpr int kGridTopInset = 24;
+
+// The horizontal spacing between apps grid view and the page switcher.
+constexpr int kPageSwitcherSpacing = 8;
+
+// The maximum allowed margin between items in apps item grid.
+constexpr int kMaxItemMargin = 96;
+
+int GridItemSizeWithMargins(int grid_size, int item_size, int item_count) {
+  int margin = (grid_size - item_size * item_count) / (2 * (item_count - 1));
+  return item_size + 2 * margin;
+}
+
+// Calculates the apps item grid size with maximum allowed margin between items.
+int GetItemGridSizeWithMaxItemMargins(int item_size, int item_count) {
+  return item_size * item_count + (item_count - 1) * kMaxItemMargin;
+}
 
 template <class T>
 size_t GetVisibleViews(const std::vector<T*>& tiles) {
@@ -176,11 +202,31 @@ class AppListViewTest : public views::ViewsTestBase,
     ContentsView* contents_view = view_->app_list_main_view()->contents_view();
     bool success = true;
     for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
-      success = success &&
-                (contents_view->GetPageView(i)->GetPageBoundsForState(state) ==
-                 contents_view->GetPageView(i)->bounds());
+      const gfx::Rect expected_bounds =
+          contents_view->GetPageView(i)->GetPageBoundsForState(
+              state);
+      const views::View* page_view = contents_view->GetPageView(i);
+      if (page_view->bounds() != expected_bounds) {
+        ADD_FAILURE() << "Page " << i << " bounds do not match "
+                      << "expected: " << expected_bounds.ToString()
+                      << " actual: " << page_view->bounds().ToString();
+        success = false;
+      }
+
+      if (contents_view->GetPageIndexForState(state) == i &&
+          !page_view->GetVisible()) {
+        ADD_FAILURE() << "Target page not visible " << i;
+        success = false;
+      }
     }
-    return success && state == delegate_->GetModel()->state();
+
+    if (state != delegate_->GetModel()->state()) {
+      ADD_FAILURE() << "Model state does not match state "
+                    << static_cast<int>(state);
+      success = false;
+    }
+
+    return success;
   }
 
   // Checks the search box widget is at |expected| in the contents view's
@@ -216,6 +262,10 @@ class AppListViewTest : public views::ViewsTestBase,
     return contents_view()->GetAppsContainerView()->apps_grid_view();
   }
 
+  PageSwitcher* page_switcher_view() {
+    return contents_view()->GetAppsContainerView()->page_switcher();
+  }
+
   gfx::Point GetPointBetweenTwoApps() {
     const views::ViewModelT<AppListItemView>* view_model =
         apps_grid_view()->view_model();
@@ -228,6 +278,77 @@ class AppListViewTest : public views::ViewsTestBase,
 
   int show_wallpaper_context_menu_count() {
     return delegate_->show_wallpaper_context_menu_count();
+  }
+
+  // Verifies fullscreen apps grid bounds and layout with
+  // app_list_features::kScalableAppList feature enabled.
+  void VerifyAppsGridLayout(const gfx::Size& container_size,
+                            int row_count,
+                            int column_count,
+                            int expected_horizontal_margin,
+                            int expected_item_size,
+                            bool expect_max_grid_height) {
+    const int kShelfHeight = AppListConfig::instance().shelf_height();
+    // The apps grid height including insets and margins.
+    const int kExpectedTotalGridHeight = container_size.height() -
+                                         kFullscreenSuggestionChipBottom -
+                                         kShelfHeight;
+    const int kMaxGridHeight =
+        GetItemGridSizeWithMaxItemMargins(expected_item_size, column_count) +
+        2 * kGridTopInset;
+    const int kExpectedGridVerticalMargin =
+        expect_max_grid_height ? (kExpectedTotalGridHeight - kMaxGridHeight) / 2
+                               : kExpectedTotalGridHeight / 16 - kGridTopInset;
+    const int kExpectedGridHeight =
+        kExpectedTotalGridHeight - 2 * kExpectedGridVerticalMargin;
+    const int kExpectedGridTop =
+        kFullscreenSuggestionChipBottom + kExpectedGridVerticalMargin;
+    const int kExpectedGridWidth =
+        container_size.width() - 2 * expected_horizontal_margin;
+
+    EXPECT_EQ(
+        gfx::Rect(expected_horizontal_margin, kExpectedGridTop,
+                  kExpectedGridWidth,
+                  kExpectedTotalGridHeight - 2 * kExpectedGridVerticalMargin),
+        apps_grid_view()->bounds());
+    EXPECT_EQ(gfx::Rect(kExpectedGridWidth + expected_horizontal_margin +
+                            kPageSwitcherSpacing,
+                        kFullscreenSuggestionChipBottom,
+                        PageSwitcher::kPreferredButtonStripWidth,
+                        container_size.height() -
+                            kFullscreenSuggestionChipBottom - kShelfHeight),
+              page_switcher_view()->bounds());
+
+    // Horizontal offset between app list item views.
+    const int kHorizontalOffset = GridItemSizeWithMargins(
+        kExpectedGridWidth, expected_item_size, row_count);
+
+    // Verify expected bounds for the first row:
+    for (int i = 0; i < row_count; ++i) {
+      EXPECT_EQ(gfx::Rect(i * kHorizontalOffset, kGridTopInset,
+                          expected_item_size, expected_item_size),
+                test_api_->GetItemTileRectAtVisualIndex(0, i))
+          << "Item " << i << " bounds";
+    }
+
+    // Vertical offset between app list item views.
+    const int kVerticalOffset =
+        GridItemSizeWithMargins(kExpectedGridHeight - 2 * kGridTopInset,
+                                expected_item_size, column_count);
+
+    // Verify expected bounds for the first column:
+    for (int j = 1; j < column_count; ++j) {
+      EXPECT_EQ(gfx::Rect(0, kGridTopInset + j * kVerticalOffset,
+                          expected_item_size, expected_item_size),
+                test_api_->GetItemTileRectAtVisualIndex(0, j * row_count))
+          << "Item " << j * row_count << " bounds";
+    }
+
+    // The last item in the page (bottom right):
+    EXPECT_EQ(gfx::Rect((row_count - 1) * kHorizontalOffset,
+                        kGridTopInset + (column_count - 1) * kVerticalOffset,
+                        expected_item_size, expected_item_size),
+              test_api_->GetItemTileRectAtVisualIndex(0, 19));
   }
 
   AppListView* view_ = nullptr;  // Owned by native widget.
@@ -459,7 +580,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Test the behavior triggered by left and right key when focus is on the
   // |textfield|. Does not insert text.
   void TestLeftAndRightKeyTraversalOnTextfield(views::Textfield* textfield) {
-    EXPECT_TRUE(textfield->text().empty());
+    EXPECT_TRUE(textfield->GetText().empty());
     EXPECT_EQ(textfield, focused_view());
 
     views::View* next_view =
@@ -748,7 +869,7 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
   // The selected view will always be a result when using
   // |result_selection_controller|
   if (app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(tile_views[0]);
+    forward_view_list.push_back(nullptr);
   else
     forward_view_list.push_back(search_box_view()->search_box());
 
@@ -757,10 +878,22 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     // Test traversal triggered by tab.
+    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
     TestSelectionTraversal(forward_view_list, ui::VKEY_TAB, false);
+    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
+
+    // Focus cycles from the close button to the first result.
+    TestSelectionTraversal({nullptr, forward_view_list[0]}, ui::VKEY_TAB,
+                           false);
+    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+
+    // The shift+tab key should move focus back to the close button.
+    TestSelectionTraversal({forward_view_list[0], nullptr}, ui::VKEY_TAB, true);
+    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
 
     // Test traversal triggered by shift+tab.
     TestSelectionTraversal(backward_view_list, ui::VKEY_TAB, true);
+    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
   } else {
     // Test traversal triggered by tab.
     TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
@@ -768,6 +901,61 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
     // Test traversal triggered by shift+tab.
     TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
   }
+}
+
+// Tests return key with search box close button focused (with app list view in
+// half state):
+// *   search box text is cleared
+// *   search box gets focus, but it's not active
+// *   subsequent tab keys move focus to app list folder view.
+TEST_F(AppListViewFocusTest, CloseButtonClearsSearchOnEnter) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake search results.
+  search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test"));
+  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
+  constexpr int kTileResults = 3;
+  constexpr int kListResults = 2;
+  SetUpSearchResults(kTileResults, kListResults, true);
+
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      contents_view()
+          ->search_result_tile_item_list_view_for_test()
+          ->tile_views_for_test();
+  ASSERT_FALSE(tile_views.empty());
+  views::View* first_result_view = tile_views[0];
+
+  // Shift+Tab to focus close button.
+  if (app_list_features::IsSearchBoxSelectionEnabled()) {
+    TestSelectionTraversal({first_result_view, nullptr}, ui::VKEY_TAB, true);
+    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
+  } else {
+    TestFocusTraversal(
+        {search_box_view()->search_box(), search_box_view()->close_button()},
+        ui::VKEY_TAB, false);
+  }
+
+  // Enter - it should clear the search box.
+  SimulateKeyPress(ui::VKEY_RETURN, false /*shift_down*/);
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+  EXPECT_EQ(base::string16(), search_box_view()->search_box()->GetText());
+  EXPECT_FALSE(search_box_view()->is_search_box_active());
+  EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
+  ResultSelectionController* selection_controller =
+      contents_view()
+          ->search_results_page_view()
+          ->result_selection_controller();
+  EXPECT_EQ(nullptr, selection_controller->selected_result());
+
+  // Tab traversal continues with app list folder items.
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  const views::ViewModelT<AppListItemView>* view_model =
+      app_list_folder_view()->items_grid_view()->view_model();
+  for (int i = 0; i < view_model->view_size(); ++i)
+    forward_view_list.push_back(view_model->view_at(i));
+  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
 }
 
 // Tests focus traversal in HALF state with opened search box using |VKEY_LEFT|
@@ -988,7 +1176,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
     contents_view()
         ->search_results_page_view()
         ->result_selection_controller()
-        ->ResetSelection();
+        ->ResetSelection(nullptr);
   }
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
@@ -1178,7 +1366,7 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   GetAllSuggestions()[0]->RequestFocus();
   SimulateKeyPress(ui::VKEY_SPACE, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" "));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(), base::UTF8ToUTF16(" "));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // UI and Focus behavior is different with Zero State enabled.
@@ -1186,21 +1374,24 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   expand_arrow_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_A, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16(" a"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and type a character.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_B, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" ab"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16(" ab"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and hitting backspace.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_BACK, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16(" a"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 }
 
@@ -1215,7 +1406,8 @@ TEST_F(AppListViewFocusTest, SearchBoxTextfieldHasNoSelectionWhenFocusLeaves) {
   Show();
 
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16("test"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16("test"));
 
   // Move selection away from the searchbox.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -1242,18 +1434,18 @@ TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
     SimulateKeyPress(ui::VKEY_TAB, false);
     SimulateKeyPress(ui::VKEY_TAB, false);
 
-    EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult1"));
+    EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
   }
   // Change focus to the next result
   SimulateKeyPress(ui::VKEY_TAB, false);
 
-  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult2"));
+  EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult2"));
 
   // This should remain after the flag is removed.
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     SimulateKeyPress(ui::VKEY_TAB, true);
 
-    EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult1"));
+    EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
 
     SimulateKeyPress(ui::VKEY_TAB, false);
   }
@@ -1261,7 +1453,7 @@ TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
   // Change focus to the final result
   SimulateKeyPress(ui::VKEY_TAB, false);
 
-  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult3"));
+  EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult3"));
 }
 
 // Tests that the search box selects the whole query when focus moves to the
@@ -1278,7 +1470,8 @@ TEST_F(AppListViewFocusTest, SearchBoxSelectionCoversWholeQueryOnFocus) {
   constexpr int kListResults = 1;
   SetUpSearchResults(0, kListResults, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(base::UTF8ToUTF16("test"), search_box_view()->search_box()->text());
+  EXPECT_EQ(base::UTF8ToUTF16("test"),
+            search_box_view()->search_box()->GetText());
 
   // Hit Tab to move focus away from the searchbox.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -1690,7 +1883,10 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   Show(false /*is_tablet_mode*/, true /*is_side_shelf*/);
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   // The rounded corners should be off screen in side shelf.
-  EXPECT_EQ(gfx::Transform(),
+  gfx::Transform translation;
+  translation.Translate(0, -AppListConfig::instance().background_radius());
+  // The rounded corners should be off screen in side shelf.
+  EXPECT_EQ(translation,
             view_->GetAppListBackgroundShieldForTest()->GetTransform());
 }
 
@@ -2151,20 +2347,22 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
   contents_view->SetActiveState(ash::AppListState::kStateApps);
   contents_view->Layout();
 
-  IsStateShown(ash::AppListState::kStateApps);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
   // Change pages. View should not have moved without Layout().
   contents_view->ShowSearchResults(true);
-  IsStateShown(ash::AppListState::kStateApps);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
 
-  // Change to a third page. This queues up the second animation behind the
-  // first.
+  // Change back to the apps container.
   contents_view->SetActiveState(ash::AppListState::kStateApps);
-  IsStateShown(ash::AppListState::kStateApps);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
-  // Call Layout(). Should jump to the third page.
-  contents_view->Layout();
-  IsStateShown(ash::AppListState::kStateApps);
+  // Verify that search results are shown when going back to search results
+  // page.
+  contents_view->ShowSearchResults(true);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
+
+  AppListView::SetShortAnimationForTesting(true);
 }
 
 // Tests that the correct views are displayed for showing search results.
@@ -2206,7 +2404,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   main_view->search_box_view()->search_box()->InsertText(search_text);
   // Check that the current search is using |search_text|.
   EXPECT_EQ(search_text, delegate_->GetSearchModel()->search_box()->text());
-  EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
+  EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->GetText());
   contents_view->Layout();
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
@@ -2224,7 +2422,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   // Check that the current search is using |new_search_text|.
   EXPECT_EQ(new_search_text, delegate_->GetSearchModel()->search_box()->text());
   EXPECT_EQ(new_search_text,
-            main_view->search_box_view()->search_box()->text());
+            main_view->search_box_view()->search_box()->GetText());
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
@@ -2396,9 +2594,7 @@ TEST_F(AppListViewTest, BackAction) {
 // Tests selecting search result to show embedded Assistant UI.
 TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
   scoped_feature_list_.InitWithFeatures(
-      {chromeos::switches::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   Show();
 
   // Initially the search box is inactive, hitting Enter to activate it.
@@ -2426,13 +2622,35 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
   EXPECT_EQ(1, GetTotalOpenAssistantUICount());
 }
 
+// Tests that the correct contents is visible in the contents_view upon
+// reshowing. See b/142069648 for the details.
+TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
+  Initialize(true /*is_tablet_mode*/);
+  Show(true /*is_tablet_mode*/);
+
+  contents_view()->ShowEmbeddedAssistantUI(true);
+  EXPECT_FALSE(contents_view()->horizontal_page_container()->GetVisible());
+  EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
+  const int assistant_page_index = contents_view()->GetPageIndexForState(
+      ash::AppListState::kStateEmbeddedAssistant);
+  EXPECT_TRUE(contents_view()->GetPageView(assistant_page_index)->GetVisible());
+
+  view_->OnTabletModeChanged(false);
+  Show(false /*is_tablet_mode*/);
+  EXPECT_TRUE(contents_view()->horizontal_page_container()->GetVisible());
+  EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
+  EXPECT_FALSE(
+      contents_view()->GetPageView(assistant_page_index)->GetVisible());
+}
+
 // Tests that no answer card view when kEnableEmbeddedAssistantUI is enabled.
 TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::switches::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2446,9 +2664,7 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
 TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::switches::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2470,9 +2686,7 @@ TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
 TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::switches::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2507,9 +2721,7 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
 TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::switches::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2522,6 +2734,194 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
   contents_view()->ShowEmbeddedAssistantUI(true);
   EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
   EXPECT_TRUE(contents_view()->expand_arrow_view()->layer()->opacity() == 0.0f);
+}
+
+// Tests fullscreen apps grid sizing and layout for small screens (width < 960)
+// in landscape layout.
+TEST_F(AppListViewTest, AppListViewLayoutForSmallLandscapeScreen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(800, 600);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  VerifyAppsGridLayout(window_size, 5 /*row_count*/, 4 /*column_count*/,
+                       window_size.width() / 16 /*expected_horizontal_margin*/,
+                       80 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Tests fullscreen apps grid sizing and layout for small screens (width < 600)
+// in portrait layout.
+TEST_F(AppListViewTest, AppListViewLayoutForSmallPortraitScreen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(500, 800);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  VerifyAppsGridLayout(window_size, 4 /*row_count*/, 5 /*column_count*/,
+                       window_size.width() / 12 /*expected_horizontal_margin*/,
+                       80 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Tests fullscreen apps grid sizing and layout for medium sized screens
+// (width < 1200) in lanscape layout.
+TEST_F(AppListViewTest, AppListViewLayoutForMediumLandscapeScreen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(960, 800);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  // Horizontal margin should be set so apps grid doesn't go over the max size.
+  const int expected_horizontal_margin =
+      (window_size.width() - GetItemGridSizeWithMaxItemMargins(88, 5)) / 2;
+  VerifyAppsGridLayout(window_size, 5 /*row_count*/, 4 /*column_count*/,
+                       expected_horizontal_margin, 88 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Tests fullscreen apps grid sizing and layout for medium sized screens
+// (width < 768) in portrait layout.
+TEST_F(AppListViewTest, AppListViewLayoutForMediumPortraitScreen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(700, 800);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  VerifyAppsGridLayout(window_size, 4 /*row_count*/, 5 /*column_count*/,
+                       window_size.width() / 16 /*expected_horizontal_margin*/,
+                       88 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Tests fullscreen apps grid sizing and layout for large screens
+// (width >= 1200) in landscape layout.
+TEST_F(AppListViewTest, AppListViewLayoutForLargeLandscapeScreen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(1200, 960);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  // Horizontal margin should be set so apps grid doesn't go over the max size.
+  const int expected_horizontal_margin =
+      (window_size.width() - GetItemGridSizeWithMaxItemMargins(120, 5)) / 2;
+
+  VerifyAppsGridLayout(window_size, 5 /*row_count*/, 4 /*column_count*/,
+                       expected_horizontal_margin, 120 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Tests fullscreen apps grid sizing and layout for large screens (width >= 768)
+// in portrait layout.
+TEST_F(AppListViewTest, AppListViewLayoutForLargePortraitScreen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(800, 1200);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  VerifyAppsGridLayout(window_size, 4 /*row_count*/, 5 /*column_count*/,
+                       window_size.width() / 16 /*expected_horizontal_margin*/,
+                       120 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Tests that apps grid horizontal margin have minimum that ensures the page
+// switcher view can fit next to the apps grid.
+TEST_F(AppListViewTest, EnsurePageSwitcherFitsAppsGridMargin) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(600, 800);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  // The horizontal margin is selected so the page switcher fits the margin
+  // space (note that 600 / 16, which is how the margin is normally calculated
+  // is smaller than the width required by page switcher).
+  VerifyAppsGridLayout(window_size, 4 /*row_count*/, 5 /*column_count*/,
+                       40 /*expected_horizontal_margin*/,
+                       88 /*expected_item_size*/,
+                       false /*expect_max_grid_height*/);
+}
+
+// Verifies that the vertical spacing between items in apps grid has an upper
+// limit, and that the apps grid is centered in the available space if item
+// spacing hits that limit.
+TEST_F(AppListViewTest, VerticalAppsGridItemSpacingIsBounded) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
+                                       {});
+
+  const gfx::Size window_size = gfx::Size(960, 1600);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  // Horizontal margin should be set so apps grid doesn't go over the max size.
+  const int expected_horizontal_margin =
+      (window_size.width() - GetItemGridSizeWithMaxItemMargins(120, 4)) / 2;
+
+  VerifyAppsGridLayout(window_size, 4 /*row_count*/, 5 /*column_count*/,
+                       expected_horizontal_margin, 120 /*expected_item_size*/,
+                       true /*expect_max_grid_height*/);
 }
 
 }  // namespace test

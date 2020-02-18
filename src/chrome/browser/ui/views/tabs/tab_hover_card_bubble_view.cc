@@ -21,8 +21,10 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -70,7 +72,7 @@ bool AreHoverCardImagesEnabled() {
 base::TimeDelta GetMinimumTriggerDelay() {
   int delay_group = base::GetFieldTrialParamByFeatureAsInt(
       features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
-      0);
+      2);
   switch (delay_group) {
     case 2:
       return base::TimeDelta::FromMilliseconds(150);
@@ -85,7 +87,7 @@ base::TimeDelta GetMinimumTriggerDelay() {
 base::TimeDelta GetMaximumTriggerDelay() {
   int delay_group = base::GetFieldTrialParamByFeatureAsInt(
       features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
-      0);
+      2);
   switch (delay_group) {
     case 2:
       return base::TimeDelta::FromMilliseconds(500);
@@ -220,29 +222,34 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   void AnimateToAnchorView(views::View* desired_anchor_view) {
     DCHECK(!current_bubble_bounds_.IsEmpty());
     desired_anchor_view_ = desired_anchor_view;
-    gfx::Rect anchor_bounds = desired_anchor_view->GetAnchorBoundsInScreen();
-    anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
-
     starting_bubble_bounds_ = current_bubble_bounds_;
-
+    target_bubble_bounds_ = CalculateTargetBounds(desired_anchor_view);
     slide_animation_->Reset(0);
-
-    target_bubble_bounds_ =
-        bubble_delegate_->GetBubbleFrameView()->GetUpdatedWindowBounds(
-            anchor_bounds, bubble_delegate_->arrow(),
-            bubble_delegate_->GetWidget()->client_view()->GetPreferredSize(),
-            true);
-
     slide_animation_->Show();
   }
 
   void StopAnimation() { AnimationCanceled(slide_animation_.get()); }
 
-  void SetBounds() {
+  // Stores the current bubble bounds now to be used when animating to a new
+  // view. We do this now since the anchor view is needed to get bubble bounds
+  // and could be deleting later when using the bounds to animate.
+  void SetCurrentBounds() {
     current_bubble_bounds_ = bubble_delegate_->GetBubbleBounds();
   }
 
-  bool IsAnimating() { return slide_animation_->is_animating(); }
+  gfx::Rect CalculateTargetBounds(views::View* desired_anchor_view) const {
+    gfx::Rect anchor_bounds = desired_anchor_view->GetAnchorBoundsInScreen();
+    anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
+    return bubble_delegate_->GetBubbleFrameView()->GetUpdatedWindowBounds(
+        anchor_bounds, bubble_delegate_->arrow(),
+        bubble_delegate_->GetWidget()->client_view()->GetPreferredSize(), true);
+  }
+
+  bool is_animating() const { return slide_animation_->is_animating(); }
+  views::View* desired_anchor_view() { return desired_anchor_view_; }
+  const views::View* desired_anchor_view() const {
+    return desired_anchor_view_;
+  }
 
  private:
   void AnimationProgressed(const gfx::Animation* animation) override {
@@ -252,8 +259,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
         value, starting_bubble_bounds_, target_bubble_bounds_);
 
     if (current_bubble_bounds_ == target_bubble_bounds_) {
-      bubble_delegate_->SetAnchorView(desired_anchor_view_);
-      AnimationEnded(animation);
+      if (desired_anchor_view_)
+        bubble_delegate_->SetAnchorView(desired_anchor_view_);
     }
     bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
   }
@@ -264,7 +271,6 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
 
   void AnimationCanceled(const gfx::Animation* animation) override {
     AnimationEnded(animation);
-    slide_animation_->Stop();
   }
 
   TabHoverCardBubbleView* const bubble_delegate_;
@@ -300,14 +306,19 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
   title_label_->SetMultiLine(true);
   title_label_->SetMaxLines(kTitleMaxLines);
+  title_label_->SetProperty(views::kFlexBehaviorKey,
+                            views::FlexSpecification::ForSizeRule(
+                                views::MinimumFlexSizeRule::kPreferred,
+                                views::MaximumFlexSizeRule::kPreferred,
+                                /* adjust_height_for_width */ true));
   AddChildView(title_label_);
 
-  domain_label_ =
-      new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                       ChromeTextStyle::STYLE_SECONDARY,
-                       gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
+  domain_label_ = new views::Label(
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY,
+      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
   domain_label_->SetElideBehavior(gfx::ELIDE_HEAD);
   domain_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   domain_label_->SetMultiLine(false);
@@ -337,6 +348,10 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetProperty(views::kMarginsKey,
                             gfx::Insets(kHorizontalMargin, kVerticalMargin,
                                         kLineSpacing, kVerticalMargin));
+  title_label_->SetProperty(views::kFlexBehaviorKey,
+                            views::FlexSpecification::ForSizeRule(
+                                views::MinimumFlexSizeRule::kScaleToMinimum,
+                                views::MaximumFlexSizeRule::kPreferred));
   domain_label_->SetProperty(views::kMarginsKey,
                              gfx::Insets(kLineSpacing, kVerticalMargin,
                                          kHorizontalMargin, kVerticalMargin));
@@ -388,11 +403,21 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   if (preview_image_)
     preview_image_->SetVisible(!tab->IsActive());
 
+  // If we're not anchored, need to do this before updating card content.
+  bool anchor_view_set = false;
+  if (!GetAnchorView()) {
+    SetAnchorView(tab);
+    anchor_view_set = true;
+  }
+
   UpdateCardContent(tab);
+
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
   if (widget_->IsVisible() && GetAnchorView() == tab &&
-      !slide_animation_delegate_->IsAnimating()) {
+      !slide_animation_delegate_->is_animating()) {
+    widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
+    slide_animation_delegate_->SetCurrentBounds();
     return;
   }
 
@@ -402,11 +427,10 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
   } else {
-    SetAnchorView(tab);
-    // Store the current bubble bounds now to be used when animating to a new
-    // view. We do this now since the anchor view is needed to get bubble
-    // bounds and could be deleting later when using the bounds to animate.
-    slide_animation_delegate_->SetBounds();
+    if (!anchor_view_set)
+      SetAnchorView(tab);
+    widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
+    slide_animation_delegate_->SetCurrentBounds();
   }
 
   if (!widget_->IsVisible()) {
@@ -425,6 +449,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
+  RegisterToThumbnailImageUpdates(nullptr);
   if (!widget_->IsVisible())
     return;
   slide_animation_delegate_->StopAnimation();
@@ -438,6 +463,12 @@ void TabHoverCardBubbleView::FadeOutToHide() {
 
 bool TabHoverCardBubbleView::IsFadingOut() const {
   return fade_animation_delegate_->IsFadingOut();
+}
+
+views::View* TabHoverCardBubbleView::GetDesiredAnchorView() {
+  return slide_animation_delegate_->is_animating()
+             ? slide_animation_delegate_->desired_anchor_view()
+             : GetAnchorView();
 }
 
 void TabHoverCardBubbleView::RecordHoverCardsSeenRatioMetric() {
@@ -511,53 +542,90 @@ void TabHoverCardBubbleView::FadeInToShow() {
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
-  title_label_->SetText(tab->data().title);
-
-  base::string16 domain = url_formatter::FormatUrl(
-      tab->data().last_committed_url,
-      url_formatter::kFormatUrlOmitDefaults |
-          url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitTrivialSubdomains |
-          url_formatter::kFormatUrlTrimAfterHost,
-      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+  base::string16 title;
+  GURL domain_url;
+  // Use committed URL to determine if no page has yet loaded, since the title
+  // can be blank for some web pages.
+  if (tab->data().last_committed_url.is_empty()) {
+    domain_url = tab->data().visible_url;
+    title = tab->data().IsCrashed()
+                ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)
+                : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+  } else {
+    domain_url = tab->data().last_committed_url;
+    title = tab->data().title;
+  }
+  base::string16 domain;
+  if (domain_url.SchemeIsFile()) {
+    title_label_->SetMultiLine(false);
+    title_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
+    domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_FILE_URL_SOURCE);
+  } else {
+    title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
+    title_label_->SetMultiLine(true);
+    domain = url_formatter::FormatUrl(
+        domain_url,
+        url_formatter::kFormatUrlOmitDefaults |
+            url_formatter::kFormatUrlOmitHTTPS |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlTrimAfterHost,
+        net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+  }
+  title_label_->SetText(title);
   domain_label_->SetText(domain);
 
   // If the preview image feature is not enabled, |preview_image_| will be null.
   if (preview_image_ && preview_image_->GetVisible()) {
-    // If there is no valid thumbnail data, blank out the preview, else wait for
-    // the image data to be decoded and update momentarily.
-    if (!tab->data().thumbnail.AsImageSkiaAsync(
-            base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
-                           weak_factory_.GetWeakPtr()))) {
-      // Check the no-preview color and size to see if it needs to be
-      // regenerated. DPI or theme change can cause a regeneration.
-      const SkColor foreground_color = tab->GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
-
-      // Set the no-preview placeholder image. All sizes are in DIPs.
-      // gfx::CreateVectorIcon() caches its result so there's no need to store
-      // images here; if a particular size/color combination has already been
-      // requested it will be low-cost to request it again.
-      constexpr gfx::Size kNoPreviewImageSize{64, 64};
-      const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
-          kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
-      preview_image_->SetImage(no_preview_image);
-      preview_image_->SetImageSize(kNoPreviewImageSize);
-      preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
-
-      // Also possibly regenerate the background if it has changed.
-      const SkColor background_color = tab->GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
-      if (!preview_image_->background() ||
-          preview_image_->background()->get_color() != background_color) {
-        preview_image_->SetBackground(
-            views::CreateSolidBackground(background_color));
-      }
-    }
+    if (tab->data().thumbnail != thumbnail_image_)
+      ClearPreviewImage();
+    RegisterToThumbnailImageUpdates(tab->data().thumbnail);
   }
 }
 
-void TabHoverCardBubbleView::UpdatePreviewImage(gfx::ImageSkia preview_image) {
+void TabHoverCardBubbleView::RegisterToThumbnailImageUpdates(
+    scoped_refptr<ThumbnailImage> thumbnail_image) {
+  if (thumbnail_image_ == thumbnail_image)
+    return;
+  if (thumbnail_image_) {
+    thumbnail_observer_.Remove(thumbnail_image_.get());
+    thumbnail_image_.reset();
+  }
+  if (thumbnail_image) {
+    thumbnail_image_ = thumbnail_image;
+    thumbnail_observer_.Add(thumbnail_image_.get());
+    thumbnail_image->RequestThumbnailImage();
+  }
+}
+
+void TabHoverCardBubbleView::ClearPreviewImage() {
+  // Check the no-preview color and size to see if it needs to be
+  // regenerated. DPI or theme change can cause a regeneration.
+  const SkColor foreground_color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
+
+  // Set the no-preview placeholder image. All sizes are in DIPs.
+  // gfx::CreateVectorIcon() caches its result so there's no need to store
+  // images here; if a particular size/color combination has already been
+  // requested it will be low-cost to request it again.
+  constexpr gfx::Size kNoPreviewImageSize{64, 64};
+  const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
+      kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
+  preview_image_->SetImage(no_preview_image);
+  preview_image_->SetImageSize(kNoPreviewImageSize);
+  preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+
+  // Also possibly regenerate the background if it has changed.
+  const SkColor background_color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
+  if (!preview_image_->background() ||
+      preview_image_->background()->get_color() != background_color) {
+    preview_image_->SetBackground(
+        views::CreateSolidBackground(background_color));
+  }
+}
+
+void TabHoverCardBubbleView::OnThumbnailImageAvailable(
+    gfx::ImageSkia preview_image) {
   preview_image_->SetImage(preview_image);
   preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
   preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());

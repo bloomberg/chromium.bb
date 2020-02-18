@@ -42,9 +42,17 @@ NGLayoutResult::NGLayoutResult(
                      /* cache_space */ true) {
   bitfields_.is_initial_block_size_indefinite =
       builder->is_initial_block_size_indefinite_;
+  bitfields_.subtree_modified_margin_strut =
+      builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
   if (builder->minimal_space_shortage_ != LayoutUnit::Max())
     EnsureRareData()->minimal_space_shortage = builder->minimal_space_shortage_;
+  if (builder->custom_layout_data_) {
+    EnsureRareData()->custom_layout_data =
+        std::move(builder->custom_layout_data_);
+  }
+  if (builder->column_spanner_)
+    EnsureRareData()->column_spanner = builder->column_spanner_;
   bitfields_.initial_break_before =
       static_cast<unsigned>(builder->initial_break_before_);
   bitfields_.final_break_after =
@@ -71,8 +79,10 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
 
 NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                const NGConstraintSpace& new_space,
+                               const NGMarginStrut& new_end_margin_strut,
                                LayoutUnit bfc_line_offset,
-                               base::Optional<LayoutUnit> bfc_block_offset)
+                               base::Optional<LayoutUnit> bfc_block_offset,
+                               LayoutUnit block_offset_delta)
     : space_(new_space),
       physical_fragment_(other.physical_fragment_),
       intrinsic_block_size_(other.intrinsic_block_size_),
@@ -93,7 +103,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
   }
 
   NGExclusionSpace new_exclusion_space = MergeExclusionSpaces(
-      other, space_.ExclusionSpace(), bfc_line_offset, bfc_block_offset);
+      other, space_.ExclusionSpace(), bfc_line_offset, block_offset_delta);
 
   if (new_exclusion_space != space_.ExclusionSpace()) {
     bitfields_.has_rare_data_exclusion_space = true;
@@ -101,6 +111,9 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
   } else {
     space_.ExclusionSpace().MoveDerivedGeometry(new_exclusion_space);
   }
+
+  if (new_end_margin_strut != NGMarginStrut() || HasRareData())
+    EnsureRareData()->end_margin_strut = new_end_margin_strut;
 }
 
 NGLayoutResult::NGLayoutResult(
@@ -163,18 +176,9 @@ NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
     const NGLayoutResult& other,
     const NGExclusionSpace& new_input_exclusion_space,
     LayoutUnit bfc_line_offset,
-    base::Optional<LayoutUnit> bfc_block_offset) {
-  // If we are merging exclusion spaces we should be copying a previous layout
-  // result. It is impossible to reach a state where bfc_block_offset has a
-  // value, and the result which we are copying doesn't (or visa versa).
-  // This would imply the result has switched its "empty" state for margin
-  // collapsing, which would mean it isn't possible to reuse the result.
-  DCHECK_EQ(bfc_block_offset.has_value(), other.BfcBlockOffset().has_value());
-
+    LayoutUnit block_offset_delta) {
   NGBfcDelta offset_delta = {bfc_line_offset - other.BfcLineOffset(),
-                             bfc_block_offset && other.BfcBlockOffset()
-                                 ? *bfc_block_offset - *other.BfcBlockOffset()
-                                 : LayoutUnit()};
+                             block_offset_delta};
 
   return NGExclusionSpace::MergeExclusionSpaces(
       /* old_output */ other.ExclusionSpace(),
@@ -222,6 +226,9 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
             other.bitfields_.is_pushed_by_floats);
   DCHECK_EQ(bitfields_.adjoining_object_types,
             other.bitfields_.adjoining_object_types);
+
+  DCHECK_EQ(bitfields_.subtree_modified_margin_strut,
+            other.bitfields_.subtree_modified_margin_strut);
 
   DCHECK_EQ(bitfields_.initial_break_before,
             other.bitfields_.initial_break_before);

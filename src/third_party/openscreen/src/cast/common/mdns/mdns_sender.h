@@ -19,19 +19,21 @@ using IPEndpoint = openscreen::IPEndpoint;
 
 class MdnsSender {
  public:
+  // MdnsSender does not own |socket| and expects that its lifetime exceeds the
+  // lifetime of MdnsSender.
   explicit MdnsSender(UdpSocket* socket);
   MdnsSender(const MdnsSender& other) = delete;
-  MdnsSender(MdnsSender&& other) noexcept = default;
+  MdnsSender(MdnsSender&& other) noexcept = delete;
   ~MdnsSender() = default;
 
   MdnsSender& operator=(const MdnsSender& other) = delete;
-  MdnsSender& operator=(MdnsSender&& other) noexcept = default;
+  MdnsSender& operator=(MdnsSender&& other) noexcept = delete;
 
   Error SendMulticast(const MdnsMessage& message);
   Error SendUnicast(const MdnsMessage& message, const IPEndpoint& endpoint);
 
  private:
-  UdpSocket* socket_;
+  UdpSocket* const socket_;
 };
 
 }  // namespace mdns

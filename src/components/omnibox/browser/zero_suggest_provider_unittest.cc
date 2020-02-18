@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
@@ -52,9 +52,6 @@ class FakeEmptyTopSites : public history::TopSites {
     return false;
   }
   void ClearBlacklistedURLs() override {}
-  bool IsKnownURL(const GURL& url) override {
-    return false;
-  }
   bool IsFull() override { return false; }
   bool loaded() const override {
     return false;
@@ -155,7 +152,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void CreateMostVisitedFieldTrial();
   void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
@@ -517,38 +514,4 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   // Expect the new results have been stored.
   EXPECT_EQ(empty_response,
             prefs->GetString(omnibox::kZeroSuggestCachedResults));
-}
-
-TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
-  // Coverage for the URL-specific page. (Regression test for a DCHECK).
-  // This is exercising RemoteSuggestionsService::CreateExperimentalRequest,
-  // and to do that, ZeroSuggestProvider needs to be looking for
-  // REMOTE_SEND_URL results (which needs various personalization
-  // experiments off, IsPersonalizedDataCollectionActive true), and the
-  // custom on-focus suggestions endpoint enabled.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      omnibox::kOnFocusSuggestions,
-      {
-          {std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
-           ZeroSuggestProvider::kRemoteSendUrlVariant},
-          {OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam,
-           "https://valid-but-fake-endpoint.com/fakepath"},
-      });
-
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
-      .WillRepeatedly(testing::Return(true));
-
-  std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url),
-                          metrics::OmniboxEventProto::OTHER,
-                          TestSchemeClassifier());
-  input.set_current_url(GURL(url));
-  input.set_from_omnibox_focus(true);
-  provider_->Start(input, false);
-  EXPECT_TRUE(test_loader_factory()->IsPending(
-      "https://valid-but-fake-endpoint.com/fakepath"));
-  base::RunLoop().RunUntilIdle();
 }

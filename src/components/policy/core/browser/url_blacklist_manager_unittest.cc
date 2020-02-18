@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -70,19 +70,19 @@ class URLBlacklistManagerTest : public testing::Test {
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlBlacklist);
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlWhitelist);
     blacklist_manager_.reset(new TestingURLBlacklistManager(&pref_service_));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
     if (blacklist_manager_)
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     blacklist_manager_.reset();
   }
 
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<TestingURLBlacklistManager> blacklist_manager_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Parameters for the FilterToComponents test.
@@ -209,7 +209,7 @@ TEST_F(URLBlacklistManagerTest, LoadBlacklistOnCreate) {
   list->AppendString("example.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, std::move(list));
   auto manager = std::make_unique<URLBlacklistManager>(&pref_service_);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(URLBlacklist::URL_IN_BLACKLIST,
             manager->GetURLBlacklistState(GURL("http://example.com")));
 }
@@ -219,7 +219,7 @@ TEST_F(URLBlacklistManagerTest, LoadWhitelistOnCreate) {
   list->AppendString("example.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlWhitelist, std::move(list));
   auto manager = std::make_unique<URLBlacklistManager>(&pref_service_);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(URLBlacklist::URL_IN_WHITELIST,
             manager->GetURLBlacklistState(GURL("http://example.com")));
 }
@@ -233,7 +233,7 @@ TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
                                std::move(blacklist));
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
                                std::move(whitelist));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1, blacklist_manager_->update_called());
 }
@@ -455,6 +455,25 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
   allowed->AppendString("example.com");
   blacklist.Allow(allowed.get());
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://example.com")));
+
+  // Treats chrome-devtools and devtools schemes the same way.
+  blocked.reset(new base::ListValue);
+  blocked->AppendString("*");
+  blacklist.Block(blocked.get());
+  allowed.reset(new base::ListValue);
+  allowed->AppendString("chrome-devtools://*");
+  blacklist.Allow(allowed.get());
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("devtools://something.com")));
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://something.com")));
+
+  blocked.reset(new base::ListValue);
+  blocked->AppendString("*");
+  blacklist.Block(blocked.get());
+  allowed.reset(new base::ListValue);
+  allowed->AppendString("devtools://*");
+  blacklist.Allow(allowed.get());
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("devtools://something.com")));
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://something.com")));
 }
 
 TEST_F(URLBlacklistManagerTest, QueryParameters) {

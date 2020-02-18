@@ -25,7 +25,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -35,7 +34,7 @@
 #include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
-#include "chrome/browser/ui/android/sms_dialog_android.h"
+#include "chrome/browser/ui/android/sms/sms_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
@@ -63,6 +62,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/browser/print_composite_client.h"
@@ -161,9 +161,15 @@ TabWebContentsDelegateAndroid::RunBluetoothChooser(
   return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
 }
 
-std::unique_ptr<content::SmsDialog>
-TabWebContentsDelegateAndroid::CreateSmsDialog() {
-  return std::make_unique<SmsDialogAndroid>();
+void TabWebContentsDelegateAndroid::CreateSmsPrompt(
+    content::RenderFrameHost* host,
+    const url::Origin& origin,
+    const std::string& one_time_code,
+    base::OnceClosure on_confirm,
+    base::OnceClosure on_cancel) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(host);
+  SmsInfoBar::Create(web_contents, origin, one_time_code, std::move(on_confirm),
+                     std::move(on_cancel));
 }
 
 std::unique_ptr<content::BluetoothScanningPrompt>
@@ -581,50 +587,6 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
       ->AsHungRendererInfoBarDelegate()
       ->OnRendererResponsive();
   infobar_service->RemoveInfoBar(hung_renderer_infobar);
-}
-
-jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingAudio(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingAudio(web_contents);
-}
-
-jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingVideo(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingVideo(web_contents);
-}
-
-jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingScreen(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingDesktop(web_contents);
-}
-
-void JNI_TabWebContentsDelegateAndroid_NotifyStopped(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  indicator->NotifyStopped(web_contents);
 }
 
 void JNI_TabWebContentsDelegateAndroid_ShowFramebustBlockInfoBar(

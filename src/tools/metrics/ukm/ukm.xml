@@ -1962,6 +1962,26 @@ be describing additional metrics about the same event.
       observer state. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="Layout">
+    <summary>
+      The time taken for layout for the main frame in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LayoutPercentage">
+    <summary>
+      The percentage of the main frame time used in layout work. An int in the
+      range [0,100].
+    </summary>
+  </metric>
   <metric name="MainFrame">
     <summary>
       The time between a BeginMainFrame and the commit of paint results for the
@@ -2218,6 +2238,20 @@ be describing additional metrics about the same event.
       int in the range [0,100].
     </summary>
   </metric>
+  <metric name="Style">
+    <summary>
+      The time taken for style update for the main frame in microseconds during
+      the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="StyleAndLayout">
     <summary>
       The time taken for style and layout for the main frame in microseconds
@@ -2281,6 +2315,12 @@ be describing additional metrics about the same event.
     <summary>
       The percentage of the main frame time used in style and layout work. An
       int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="StylePercentage">
+    <summary>
+      The percentage of the main frame time used in style work. An int in the
+      range [0,100].
     </summary>
   </metric>
   <metric name="UpdateLayers">
@@ -2408,6 +2448,70 @@ be describing additional metrics about the same event.
     <summary>
       The number of visible tiles per frame checkerboarded during this
       interaction.
+    </summary>
+  </metric>
+</event>
+
+<event name="ContactsPicker.ShareStatistics">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Measures statistics about the contacts shared in the contacts picker (when
+    the Contacts Picker dialog is dismissed.)
+  </summary>
+  <metric name="PropertiesRequested">
+    <summary>
+      Measures the contact properties requested by the website (names, emails,
+      telephone numbers). Bit 1 - telephone numbers, bit 2 - emails, bit 3 -
+      names.
+    </summary>
+  </metric>
+  <metric name="SelectCount">
+    <summary>
+      Measures the total number of contacts selected in the contacts picker.
+    </summary>
+  </metric>
+  <metric name="SelectPercentage">
+    <summary>
+      Measures the percentage of contacts selected in the contacts picker.
+    </summary>
+  </metric>
+</event>
+
+<event name="ContentIndex.Added">
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Collected when a new Content Index entry is registered.
+  </summary>
+  <metric name="Category" enum="ContentIndexCategory">
+    <summary>
+      The type of the content registered. Corresponds to
+      blink.mojom.ContentCategory.
+    </summary>
+  </metric>
+</event>
+
+<event name="ContentIndex.DeletedByUser">
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Collected when a Content Index entry is deleted by the user from the
+    Downloads page.
+  </summary>
+  <metric name="Deleted" enum="Boolean">
+    <summary>
+      Always true.
+    </summary>
+  </metric>
+</event>
+
+<event name="ContentIndex.Opened">
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Collected when a Content Index entry is opened from the Downloads page.
+  </summary>
+  <metric name="IsOffline" enum="Boolean">
+    <summary>
+      Whether the browser was offline when the content was opened.
     </summary>
   </metric>
 </event>
@@ -4793,6 +4897,130 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationPredictorAnchorElementMetrics">
+  <owner>ryansturm@chromium.com</owner>
+  <summary>
+    Metrics that describe an anchor element's data. This event is emitted at
+    most 10 times per page load, once for each of the top n URLs on a page, and
+    the order of the events is randomized. If there is no nth anchor element, no
+    value is returned.
+  </summary>
+  <metric name="AnchorIndex">
+    <summary>
+      The index of the clicked-on anchor element in NavigationPredictor's
+      |top_urls_|.
+    </summary>
+  </metric>
+  <metric name="ContainsImage">
+    <summary>
+      1 if the anchor element contains an image.
+    </summary>
+  </metric>
+  <metric name="IsInIframe">
+    <summary>
+      1 if the anchor element is in an iframe.
+    </summary>
+  </metric>
+  <metric name="IsURLIncrementedByOne">
+    <summary>
+      1 if the anchor element's target URL and the document's source URL only
+      differ by one number, and the target URL increments that number in the
+      source URL by 1.
+    </summary>
+  </metric>
+  <metric name="PercentClickableArea">
+    <summary>
+      The percent of the total document area that this anchor element's
+      clickable area occupies.
+    </summary>
+  </metric>
+  <metric name="PercentVerticalDistance">
+    <summary>
+      How far down the document the top of the anchor element is, expressed as a
+      ratio with the total document height.
+    </summary>
+  </metric>
+  <metric name="SameOrigin">
+    <summary>
+      1 if the anchor element's target URL and the document's source URL are the
+      same origin.
+    </summary>
+  </metric>
+</event>
+
+<event name="NavigationPredictorPageLinkClick">
+  <summary>
+    Sent on an in-page link click. An integer from 0-10 (1-indexed),
+    corresponding to the index of that anchor element in the list of top ten
+    anchor elements on that page, sorted by their navigation scores. If an
+    anchor element is clicked that is not on the top ten list, 0 is returned.
+  </summary>
+  <metric name="AnchorElementIndex"/>
+</event>
+
+<event name="NavigationPredictorPageLinkMetrics" singular="True">
+  <owner>ryansturm@chromium.com</owner>
+  <summary>
+    Metrics that describe aggregate information about the links within a page.
+    Some anchor elements present on a page may not be represented in these
+    metrics, if they are outside the viewport or if their placement in the page
+    is after the 40th anchor element. This event is emitted at most once per
+    page load. Unless otherwise specified, each of the aggregate metrics is
+    bucketted with exponential buckets of size 1.3.
+  </summary>
+  <metric name="MedianLinkLocation">
+    <summary>
+      The median vertical link location in the viewport, as a ratio of the
+      distance from the top of the link to the visible top of the page.
+      Bucketted with a linear bucket size of 10.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.ContainsImage">
+    <summary>
+      The total number of links in the page that are images.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.InIframe">
+    <summary>
+      The total number of links in the page in any iframe.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.SameHost">
+    <summary>
+      The total number of links in the page that point to the same origin as the
+      current page's origin.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.Total">
+    <summary>
+      The total number of links within a page.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.URLIncremented">
+    <summary>
+      The total number of links on the page, where each link only differs from
+      the current page's URL by a number, and that number is incremented by 1 in
+      the link.
+    </summary>
+  </metric>
+  <metric name="TotalClickableSpace">
+    <summary>
+      The total clickable space in the entire page, expressed as a ratio of the
+      visible clickable region to the entire viewport region.
+    </summary>
+  </metric>
+  <metric name="Viewport.Height">
+    <summary>
+      The height of the viewport, in pixels.
+    </summary>
+  </metric>
+  <metric name="Viewport.Width">
+    <summary>
+      The width of the viewport, in pixels.
+    </summary>
+  </metric>
+</event>
+
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>
@@ -6328,6 +6556,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="coin_flip_result">
+    <obsolete>
+      Replaced by the PreviewsCoinFlip event in M78.
+    </obsolete>
     <summary>
       Set to 0 if there was no attempted preview for this page load, or the coin
       flip holdback is disabled in this session. Set to 1 if a preview was
@@ -6459,6 +6690,24 @@ be describing additional metrics about the same event.
     </obsolete>
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="PreviewsCoinFlip" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <summary>
+    Coin flip experiment metrics associated with a Preview page load. See
+    //components/previews/. This is recorded as a separate event from Previews
+    so that it can be recorded earlier than commit which happens in some cases.
+  </summary>
+  <metric name="coin_flip_result" enum="PreviewsCoinFlipResult">
+    <summary>
+      Set to 0 if there was no attempted preview for this page load, or the coin
+      flip holdback is disabled in this session. Set to 1 if a preview was
+      attempted and was allowed to proceed by the coin flip. Set to 2 if a
+      preview would have been attempted but was held back by the coin flip. Note
+      that a non-zero value in this field implies previews_likely.
     </summary>
   </metric>
 </event>
@@ -6899,6 +7148,20 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="SafetyTipStatus" enum="SafetyTipStatus">
+    <summary>
+      The Safety Tip status of the page when the navigation commits, after the
+      reputation check finishes.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="ScoreDelta">
     <summary>
       The change in Site Engagement score for the page before it is closed or
@@ -6912,6 +7175,39 @@ be describing additional metrics about the same event.
       The final Site Engagement score for the page before it is closed or
       another navigation occurs. Score is between 0.0 and 100.0; this metric is
       rounded down to a multiple of 10 to limit granularity.
+    </summary>
+  </metric>
+</event>
+
+<event name="Sharing.ClickToCall">
+  <owner>knollr@chromium.org</owner>
+  <summary>
+    Collected when a user finishes a Click to Call journey.
+  </summary>
+  <metric name="EntryPoint" enum="SharingClickToCallEntryPoint">
+    <summary>
+      Specifies the entry point of the user journey (i.e. left click, right
+      click, text selection).
+    </summary>
+  </metric>
+  <metric name="HasApps" enum="Boolean">
+    <summary>
+      Boolean value indicating whether any (&gt;0) apps are available that the
+      call could be sent to.
+    </summary>
+  </metric>
+  <metric name="HasDevices" enum="Boolean">
+    <summary>
+      Boolean value indicating whether any (&gt;0) devices are available that
+      the call could be sent to. These belong to the same account and are
+      running Android.
+    </summary>
+  </metric>
+  <metric name="Selection" enum="SharingClickToCallSelection">
+    <summary>
+      Whether the user selected a device, an app or nothing (i.e. dismissal) in
+      the user interface. For some entry points this might always be the same
+      value (e.g. right clicks always select devices).
     </summary>
   </metric>
 </event>
@@ -6954,6 +7250,21 @@ be describing additional metrics about the same event.
   <metric name="NeededSniffing">
     <summary>
       Whether the HTTP response needed sniffing to confirm its MIME type.
+    </summary>
+  </metric>
+</event>
+
+<event name="SMSReceiver">
+  <owner>goto@chromium.org</owner>
+  <owner>reillyg@chromium.org</owner>
+  <owner>juncai@chromium.org</owner>
+  <owner>ayui@chromium.org</owner>
+  <summary>
+    Records performance metrics for SMSReceiver API.
+  </summary>
+  <metric name="Outcome" enum="SMSReceiverOutcome">
+    <summary>
+      Records the result of a call to the SmsReceiver API.
     </summary>
   </metric>
 </event>
@@ -7468,6 +7779,12 @@ be describing additional metrics about the same event.
     <summary>
       Boolean indicating that the intervention was disallowed because the tab is
       sharing its BrowsingInstance with at least one other tab.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateUsingBluetooth">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab is
+      currently connnected to at least one bluetooth device.
     </summary>
   </metric>
   <metric name="FailureLiveStateUsingWebSockets">

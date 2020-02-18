@@ -11,9 +11,9 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
-#include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -67,8 +68,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
         network_loader_factory_(std::move(network_loader_factory)),
         local_client_binding_(this),
         host_(appcache_host) {
-    DCHECK_CURRENTLY_ON(
-        NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     remote_binding_.set_connection_error_handler(base::BindOnce(
         &SubresourceLoader::OnConnectionError, base::Unretained(this)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -88,7 +88,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
       return;
     }
     handler_ = host_->CreateRequestHandler(
-        std::make_unique<AppCacheURLLoaderRequest>(request_),
+        std::make_unique<AppCacheRequest>(request_),
         static_cast<ResourceType>(request_.resource_type),
         request_.should_reset_appcache);
     if (!handler_) {
@@ -158,8 +158,6 @@ class SubresourceLoader : public network::mojom::URLLoader,
   }
 
   // network::mojom::URLLoader implementation
-  void ProceedWithResponse() override { NOTREACHED(); }
-
   void ContinueFollowRedirect(
       SingleRequestURLLoaderFactory::RequestHandler handler) {
     if (handler) {
@@ -195,18 +193,19 @@ class SubresourceLoader : public network::mojom::URLLoader,
   // network::mojom::URLLoaderClient implementation
   // Called by either the appcache or network loader, whichever is in use.
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     // Don't MaybeFallback for appcache produced responses.
     if (appcache_loader_ || !handler_) {
-      remote_client_->OnReceiveResponse(response_head);
+      remote_client_->OnReceiveResponse(std::move(response_head));
       return;
     }
 
     did_receive_network_response_ = true;
     handler_->MaybeFallbackForSubresourceResponse(
-        response_head,
+        network::ResourceResponseHead(response_head),
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveResponse,
-                       weak_factory_.GetWeakPtr(), response_head));
+                       weak_factory_.GetWeakPtr(),
+                       network::ResourceResponseHead(response_head)));
   }
 
   void ContinueOnReceiveResponse(
@@ -221,7 +220,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(network_loader_) << "appcache loader does not produce redirects";
     if (!redirect_limit_--) {
       OnComplete(
@@ -229,14 +228,16 @@ class SubresourceLoader : public network::mojom::URLLoader,
       return;
     }
     if (!handler_) {
-      remote_client_->OnReceiveRedirect(redirect_info_, response_head);
+      remote_client_->OnReceiveRedirect(redirect_info_,
+                                        std::move(response_head));
       return;
     }
     redirect_info_ = redirect_info;
     handler_->MaybeFallbackForSubresourceRedirect(
         redirect_info,
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveRedirect,
-                       weak_factory_.GetWeakPtr(), response_head));
+                       weak_factory_.GetWeakPtr(),
+                       network::ResourceResponseHead(response_head)));
   }
 
   void ContinueOnReceiveRedirect(
@@ -343,19 +344,13 @@ void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
     network::mojom::URLLoaderFactoryPtr* loader_factory) {
   DCHECK(host.get());
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory;
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    // The partition has shutdown, return without binding |loader_factory|.
-    if (!host->service()->partition())
-      return;
-    network_loader_factory =
-        host->service()
-            ->partition()
-            ->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
-  } else {
-    network_loader_factory = host->service()
-                                 ->url_loader_factory_getter()
-                                 ->GetNetworkFactoryWithCORBEnabled();
-  }
+  // The partition has shutdown, return without binding |loader_factory|.
+  if (!host->service()->partition())
+    return;
+  network_loader_factory =
+      host->service()
+          ->partition()
+          ->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
   // This instance is effectively reference counted by the number of pipes open
   // to it and will get deleted when all clients drop their connections.
   // Please see OnConnectionError() for details.
@@ -376,8 +371,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(943887): Replace HasSecurityState() call with something that can
   // preserve security state after process shutdown. The security state check
@@ -411,7 +405,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
 
   // Subresource requests from renderer processes should not be allowed to use
   // network::mojom::FetchRequestMode::kNavigate.
-  if (request.mode == network::mojom::RequestMode::kNavigate) {
+  if (network::IsNavigationRequestMode(request.mode)) {
     mojo::ReportBadMessage("APPCACHE_SUBRESOURCE_URL_FACTORY_NAVIGATE");
     return;
   }

@@ -19,7 +19,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import partition_lib
@@ -211,7 +210,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         'ExtractPublicKey')
 
     build = self.new_build
-    build.bucket = "foo-bucket"
+    build.bucket = 'foo-bucket'
     gen._SetupSigner(build)
     self.assertIsInstance(
         gen.signer, signer_payloads_client.UnofficialSignerPayloadsClient)
@@ -225,7 +224,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen._private_key = 'some-foo-private-key'
 
     build = self.new_build
-    build.bucket = "foo-bucket"
+    build.bucket = 'foo-bucket'
 
     gen._SetupSigner(build)
     self.assertIsInstance(
@@ -324,7 +323,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                      'RUN_POSTINSTALL_root=true\n')
 
   def testGeneratePostinstConfigFalse(self):
-    "Tests creating the postinstall config file."
+    """Tests creating the postinstall config file."""
     gen = self._GetStdGenerator(payload=self.full_payload,
                                 work_dir=self.tempdir)
 
@@ -631,7 +630,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--part_names', 'foo-root', 'foo-kernel',
            '--dst_part_paths', '/work/tgt_root.bin', '/work/tgt_kernel.bin',
            '--meta-sig', gen.metadata_signature_file,
-           '--metadata-size', "10",
+           '--metadata-size', '10',
            '--src_part_paths', '/work/src_root.bin', '/work/src_kernel.bin']
     run_mock.assert_called_once_with(cmd)
 
@@ -656,7 +655,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--part_names', 'foo-root', 'foo-kernel',
            '--dst_part_paths', '/work/tgt_root.bin', '/work/tgt_kernel.bin',
            '--meta-sig', gen.metadata_signature_file,
-           '--metadata-size', "10"]
+           '--metadata-size', '10']
     run_mock.assert_called_once_with(cmd)
 
   def testVerifyPayloadPublicKey(self):
@@ -668,7 +667,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
     gen.metadata_size = 10
-    gen._private_key = "foo-private-key"
+    gen._private_key = 'foo-private-key'
 
     # Run the test.
     gen._VerifyPayload()

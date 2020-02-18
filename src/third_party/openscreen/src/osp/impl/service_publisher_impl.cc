@@ -87,10 +87,6 @@ bool ServicePublisherImpl::Resume() {
   return true;
 }
 
-void ServicePublisherImpl::RunTasks() {
-  delegate_->RunTasksPublisher();
-}
-
 void ServicePublisherImpl::SetState(State state) {
   OSP_DCHECK(IsTransitionValid(state_, state));
   state_ = state;

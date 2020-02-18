@@ -56,7 +56,8 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
     // If a table cell, or the column that it belongs to, has a specified fixed
     // positive inline-size, and the measured intrinsic max size is less than
     // that, use specified size as max size.
-    LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
+    LayoutNGTableCellInterface* cell =
+        ToInterface<LayoutNGTableCellInterface>(node.GetLayoutBox());
     Length table_cell_width = cell->StyleOrColLogicalWidth();
     if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
       sizes.max_size = std::max(sizes.min_size,
@@ -78,7 +79,8 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
                                                 : Base::ContainingBlock();
   const ComputedStyle* container_style = container->Style();
   NGConstraintSpace constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(*this);
+      NGConstraintSpace::CreateFromLayoutObject(*this,
+                                                false /* is_layout_root */);
 
   // As this is part of the Legacy->NG bridge, the container_builder is used
   // for indicating the resolved size of the OOF-positioned containing-block

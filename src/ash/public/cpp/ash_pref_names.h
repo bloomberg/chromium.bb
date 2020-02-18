@@ -42,6 +42,8 @@ ASH_PUBLIC_EXPORT extern const char
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessPreviousSetting[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessAutoScanEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessAutoScanSpeedMs[];
+ASH_PUBLIC_EXPORT extern const char
+    kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityDictationEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
@@ -165,7 +167,7 @@ ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoShownInLauncher[];
 ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
 
-ASH_PUBLIC_EXPORT extern const char kLockScreenMediaKeysEnabled[];
+ASH_PUBLIC_EXPORT extern const char kLockScreenMediaControlsEnabled[];
 
 }  // namespace prefs
 

@@ -40,8 +40,7 @@ AutofillKeyboardAccessoryAdapter::AutofillKeyboardAccessoryAdapter(
     bool should_limit_label_width)
     : controller_(controller),
       animation_duration_millis_(animation_duration_millis),
-      should_limit_label_width_(should_limit_label_width),
-      weak_ptr_factory_(this) {}
+      should_limit_label_width_(should_limit_label_width) {}
 
 AutofillKeyboardAccessoryAdapter::~AutofillKeyboardAccessoryAdapter() = default;
 
@@ -175,6 +174,10 @@ void AutofillKeyboardAccessoryAdapter::ViewDestroyed() {
     controller_->ViewDestroyed();
 
   view_.reset();
+
+  // The controller has now deleted itself.
+  controller_ = nullptr;
+  delete this;  // Remove dangling weak reference.
 }
 
 void AutofillKeyboardAccessoryAdapter::SetSelectionAtPoint(

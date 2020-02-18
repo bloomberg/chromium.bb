@@ -12,16 +12,22 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
+class StoragePartition;
+}
 
 namespace policy {
 
@@ -135,6 +141,15 @@ SigninProfileExtensionsPolicyPerChannelTest::
     SigninProfileExtensionsPolicyPerChannelTest()
     : SigninProfileExtensionsPolicyTestBase(GetParam()) {}
 
+content::StoragePartition* GetStoragePartitionForSigninExtension(
+    Profile* profile,
+    const std::string& extension_id) {
+  const GURL site =
+      extensions::util::GetSiteForExtensionId(extension_id, profile);
+  return content::BrowserContext::GetStoragePartitionForSite(
+      profile, site, /*can_create=*/false);
+}
+
 }  // namespace
 
 // Tests that a whitelisted app gets installed on any browser channel.
@@ -194,44 +209,25 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
   }
 }
 
-// Tests that a whitelisted extension (as opposed to an app) gets installed when
-// on Dev, Canary or "unknown" (trunk) channels, but not on Beta or Stable
-// channels. Force-installed extensions on the sign-in screen should also
-// automatically have the |login_screen_extension| type.
+// Tests that a whitelisted extension is installed on any browser channel.
+// Force-installed extensions on the sign-in screen should also automatically
+// have the |login_screen_extension| type.
 IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
                        WhitelistedExtensionInstallation) {
   Profile* profile = GetInitialProfile();
 
   extensions::TestExtensionRegistryObserver registry_observer(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
-  ExtensionInstallErrorObserver install_error_observer(profile,
-                                                       kWhitelistedExtensionId);
 
   AddExtensionForForceInstallation(kWhitelistedExtensionId,
                                    kWhitelistedExtensionUpdateManifestPath);
 
-  switch (channel_) {
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV: {
-      registry_observer.WaitForExtensionLoaded();
-      const extensions::Extension* extension =
-          extensions::ExtensionRegistry::Get(profile)
-              ->enabled_extensions()
-              .GetByID(kWhitelistedExtensionId);
-      ASSERT_TRUE(extension);
-      EXPECT_TRUE(extension->is_login_screen_extension());
-      break;
-    }
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE: {
-      install_error_observer.Wait();
-      EXPECT_FALSE(
-          extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-              kWhitelistedExtensionId));
-      break;
-    }
-  }
+  registry_observer.WaitForExtensionLoaded();
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          kWhitelistedExtensionId);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(extension->is_login_screen_extension());
 }
 
 // Tests that a non-whitelisted extension (as opposed to an app) is forbidden
@@ -310,6 +306,40 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, MultipleApps) {
 
   registry_observer1.WaitForExtensionLoaded();
   registry_observer2.WaitForExtensionLoaded();
+}
+
+// Tests that a sign-in profile app or a sign-in profile extension has isolated
+// storage, i.e. that it does not reuse the Profile's default StoragePartition.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
+                       IsolatedStoragePartition) {
+  Profile* profile = GetInitialProfile();
+
+  ExtensionBackgroundPageReadyObserver page_observer_for_app(kWhitelistedAppId);
+  ExtensionBackgroundPageReadyObserver page_observer_for_extension(
+      kWhitelistedExtensionId);
+
+  AddExtensionForForceInstallation(kWhitelistedAppId,
+                                   kWhitelistedAppUpdateManifestPath);
+  AddExtensionForForceInstallation(kWhitelistedExtensionId,
+                                   kWhitelistedExtensionUpdateManifestPath);
+
+  page_observer_for_app.Wait();
+  page_observer_for_extension.Wait();
+
+  content::StoragePartition* storage_partition_for_app =
+      GetStoragePartitionForSigninExtension(profile, kWhitelistedAppId);
+  content::StoragePartition* storage_partition_for_extension =
+      GetStoragePartitionForSigninExtension(profile, kWhitelistedExtensionId);
+  content::StoragePartition* default_storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+
+  ASSERT_TRUE(storage_partition_for_app);
+  ASSERT_TRUE(storage_partition_for_extension);
+  ASSERT_TRUE(default_storage_partition);
+
+  EXPECT_NE(default_storage_partition, storage_partition_for_app);
+  EXPECT_NE(default_storage_partition, storage_partition_for_extension);
+  EXPECT_NE(storage_partition_for_app, storage_partition_for_extension);
 }
 
 }  // namespace policy

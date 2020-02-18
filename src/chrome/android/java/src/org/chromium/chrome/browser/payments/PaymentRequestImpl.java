@@ -310,8 +310,9 @@ public class PaymentRequestImpl
     private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
+    private List<AutofillProfile> mAutofillProfiles;
+    private boolean mHaveRequestedAutofillData = true;
     private boolean mIsCanMakePaymentResponsePending;
-    private boolean mUseLegacyCanMakePayment;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
@@ -377,6 +378,17 @@ public class PaymentRequestImpl
     private TabModel mObservedTabModel;
     private OverviewModeBehavior mOverviewModeBehavior;
     private PaymentHandlerHost mPaymentHandlerHost;
+
+    /**
+     * A mapping of the payment method names to the corresponding payment method specific data. If
+     * STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT is enabled, then the key "basic-card-payment-options"
+     * also maps to the following payment options:
+     *  - requestPayerEmail
+     *  - requestPayerName
+     *  - requestPayerPhone
+     *  - requestShipping
+     */
+    private Map<String, PaymentMethodData> mQueryForQuota;
 
     /** Aborts should only be recorded if the Payment Request was shown to the user. */
     private boolean mShouldRecordAbortReason;
@@ -465,7 +477,7 @@ public class PaymentRequestImpl
      */
     @Override
     public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
-            PaymentDetails details, PaymentOptions options) {
+            PaymentDetails details, PaymentOptions options, boolean googlePayBridgeEligible) {
         if (mClient != null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.ATTEMPTED_INITIALIZATION_TWICE);
@@ -502,6 +514,7 @@ public class PaymentRequestImpl
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
+            mQueryForQuota = new HashMap<>();
             onAllPaymentAppsCreated();
             return;
         }
@@ -517,6 +530,7 @@ public class PaymentRequestImpl
             Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
+            mQueryForQuota = new HashMap<>();
             onAllPaymentAppsCreated();
             return;
         }
@@ -526,6 +540,17 @@ public class PaymentRequestImpl
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
             return;
+        }
+
+        mQueryForQuota = new HashMap<>(mMethodData);
+        if (mQueryForQuota.containsKey("basic-card")
+                && PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
+            PaymentMethodData paymentMethodData = new PaymentMethodData();
+            paymentMethodData.stringifiedData = String.format(
+                    "{payerEmail:%s,payerName:%s,payerPhone:%s,shipping:%s}", mRequestPayerEmail,
+                    mRequestPayerName, mRequestPayerPhone, mRequestShipping);
+            mQueryForQuota.put("basic-card-payment-options", paymentMethodData);
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
@@ -542,6 +567,42 @@ public class PaymentRequestImpl
                 AutofillPaymentApp.merchantSupportsAutofillPaymentInstruments(mMethodData);
         mUserCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
+
+        if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
+            mAutofillProfiles = Collections.unmodifiableList(
+                    PersonalDataManager.getInstance().getProfilesToSuggest(
+                            false /* includeNameInLabel */));
+        }
+
+        if (mRequestShipping) {
+            boolean haveCompleteShippingAddress = false;
+            for (int i = 0; i < mAutofillProfiles.size(); i++) {
+                if (AutofillAddress.checkAddressCompletionStatus(
+                            mAutofillProfiles.get(i), AutofillAddress.CompletenessCheckType.NORMAL)
+                        == AutofillAddress.CompletionStatus.COMPLETE) {
+                    haveCompleteShippingAddress = true;
+                    break;
+                }
+            }
+            mHaveRequestedAutofillData &= haveCompleteShippingAddress;
+        }
+
+        if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
+            // Do not persist changes on disk in incognito mode.
+            mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
+                    mRequestPayerEmail, /*saveToDisk=*/!mIsIncognito);
+            boolean haveCompleteContactInfo = false;
+            for (int i = 0; i < mAutofillProfiles.size(); i++) {
+                AutofillProfile profile = mAutofillProfiles.get(i);
+                if (mContactEditor.checkContactCompletionStatus(profile.getFullName(),
+                            profile.getPhoneNumber(), profile.getEmailAddress())
+                        == ContactEditor.COMPLETE) {
+                    haveCompleteContactInfo = true;
+                    break;
+                }
+            }
+            mHaveRequestedAutofillData &= haveCompleteContactInfo;
+        }
 
         boolean mayCrawl = !mUserCanAddCreditCard
                 || PaymentsExperimentalFeatures.isEnabled(
@@ -623,22 +684,13 @@ public class PaymentRequestImpl
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
 
-        List<AutofillProfile> profiles = null;
-        if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
-                    false /* includeNameInLabel */);
-        }
-
         if (mRequestShipping && !mWaitForUpdatedDetails) {
-            createShippingSection(activity, Collections.unmodifiableList(profiles));
+            createShippingSection(activity, mAutofillProfiles);
         }
 
         if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            // Do not persist changes on disk in incognito mode.
-            mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
-                    mRequestPayerEmail, /*saveToDisk=*/!mIsIncognito);
-            mContactSection = new ContactDetailsSection(activity,
-                    Collections.unmodifiableList(profiles), mContactEditor, mJourneyLogger);
+            mContactSection = new ContactDetailsSection(
+                    activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
         }
 
         setIsAnyPaymentRequestShowing(true);
@@ -763,6 +815,7 @@ public class PaymentRequestImpl
         }
 
         mIsCurrentPaymentRequestShowing = true;
+        mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
@@ -873,10 +926,9 @@ public class PaymentRequestImpl
         }
 
         if (mIsCanMakePaymentResponsePending) {
-            // New canMakePayment doesn't need to wait for all apps to be queried.
-            if (!mUseLegacyCanMakePayment || queryApps.isEmpty()) {
-                respondCanMakePaymentQuery(mUseLegacyCanMakePayment);
-            }
+            // canMakePayment doesn't need to wait for all apps to be queried because it only needs
+            // to test the existence of a payment handler.
+            respondCanMakePaymentQuery();
         }
 
         if (mIsHasEnrolledInstrumentResponsePending && queryApps.isEmpty()) {
@@ -1066,12 +1118,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mRequestShipping) {
-            createShippingSection(chromeActivity,
-                    Collections.unmodifiableList(
-                            PersonalDataManager.getInstance().getProfilesToSuggest(
-                                    false /* includeNameInLabel */)));
-        }
+        if (mRequestShipping) createShippingSection(chromeActivity, mAutofillProfiles);
 
         if (!mShouldSkipShowingPaymentRequestUi) {
             enableUserInterfaceAfterPaymentRequestUpdateEvent();
@@ -1683,7 +1730,7 @@ public class PaymentRequestImpl
 
         if (mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp) {
             if (mPaymentHandlerHost == null) {
-                mPaymentHandlerHost = new PaymentHandlerHost(this /* delegate */);
+                mPaymentHandlerHost = new PaymentHandlerHost(mWebContents, this /* delegate */);
             }
 
             ((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
@@ -1847,7 +1894,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        PreferencesLauncher.launchSettingsPageCompat(context, MainPreferences.class);
+        PreferencesLauncher.launchSettingsPage(context, MainPreferences.class);
     }
 
     @Override
@@ -1919,42 +1966,26 @@ public class PaymentRequestImpl
      * Called by the merchant website to check if the user has complete payment instruments.
      */
     @Override
-    public void canMakePayment(boolean legacyMode) {
+    public void canMakePayment() {
         if (mClient == null) return;
 
         if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentCalled();
 
         if (isFinishedQueryingPaymentApps()) {
-            respondCanMakePaymentQuery(legacyMode);
+            respondCanMakePaymentQuery();
         } else {
             mIsCanMakePaymentResponsePending = true;
-            mUseLegacyCanMakePayment = legacyMode;
         }
     }
 
-    private void respondCanMakePaymentQuery(boolean legacyMode) {
+    private void respondCanMakePaymentQuery() {
         if (mClient == null) return;
 
         mIsCanMakePaymentResponsePending = false;
 
-        boolean response = legacyMode ? mHasEnrolledInstrument : mArePaymentMethodsSupported;
-        response &= mDelegate.prefsCanMakePayment();
-
-        // Only need to enforce query quota in legacy mode. Per-method quota not supported.
-        if (legacyMode
-                && !CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin,
-                        mPaymentRequestOrigin, mMethodData, /*perMethodQuota=*/false)) {
-            if (shouldEnforceCanMakePaymentQueryQuota()) {
-                mClient.onCanMakePayment(CanMakePaymentQueryResult.QUERY_QUOTA_EXCEEDED);
-            } else {
-                mClient.onCanMakePayment(response
-                                ? CanMakePaymentQueryResult.WARNING_CAN_MAKE_PAYMENT
-                                : CanMakePaymentQueryResult.WARNING_CANNOT_MAKE_PAYMENT);
-            }
-        } else {
-            mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                                              : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
-        }
+        boolean response = mArePaymentMethodsSupported && mDelegate.prefsCanMakePayment();
+        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                                          : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
         mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
 
@@ -1988,7 +2019,7 @@ public class PaymentRequestImpl
         mIsHasEnrolledInstrumentResponsePending = false;
 
         if (CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin, mPaymentRequestOrigin,
-                    mMethodData, mHasEnrolledInstrumentUsesPerMethodQuota)) {
+                    mQueryForQuota, mHasEnrolledInstrumentUsesPerMethodQuota)) {
             mClient.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
@@ -2064,6 +2095,7 @@ public class PaymentRequestImpl
                 if (!instrumentMethodNames.isEmpty()) {
                     mHideServerAutofillInstruments |=
                             instrument.isServerAutofillInstrumentReplacement();
+                    instrument.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
                     mHasEnrolledInstrument |= instrument.canMakePayment();
                     mPendingInstruments.add(instrument);
                 } else {
@@ -2117,7 +2149,7 @@ public class PaymentRequestImpl
                 : SectionInformation.NO_SELECTION;
 
         if (mIsCanMakePaymentResponsePending) {
-            respondCanMakePaymentQuery(mUseLegacyCanMakePayment);
+            respondCanMakePaymentQuery();
         }
 
         if (mIsHasEnrolledInstrumentResponsePending) {

@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -111,13 +110,13 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     ~AsyncTraceState();
 
     // Used to transfer the trace end event state to an IDBRequest.
-    AsyncTraceState(AsyncTraceState&& other) {
+    AsyncTraceState(AsyncTraceState&& other) noexcept {
       DCHECK(IsEmpty());
       this->trace_event_name_ = other.trace_event_name_;
       this->id_ = other.id_;
       other.trace_event_name_ = nullptr;
     }
-    AsyncTraceState& operator=(AsyncTraceState&& rhs) {
+    AsyncTraceState& operator=(AsyncTraceState&& rhs) noexcept {
       DCHECK(IsEmpty());
       this->trace_event_name_ = rhs.trace_event_name_;
       this->id_ = rhs.id_;

@@ -8,8 +8,9 @@ generator as a source for generating ADM,ADMX,etc files.'''
 from __future__ import print_function
 
 import json
-import types
 import sys
+
+import six
 
 from grit.gather import skeleton_gatherer
 from grit import util
@@ -84,7 +85,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       node = minidom.parseString(xml).childNodes[0]
     except ExpatError:
       reason = '''Input isn't valid XML (has < & > been escaped?): ''' + string
-      raise Exception, reason, sys.exc_info()[2]
+      six.reraise(Exception, reason, sys.exc_info()[2])
 
     for child in node.childNodes:
       if child.nodeType == minidom.Node.TEXT_NODE:
@@ -241,7 +242,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     '''
     for item_count, (item1) in enumerate(items, 1):
       self._AddIndentedNontranslateableChunk(depth, "{\n")
-      keys = item1.keys()
+      keys = sorted(item1.keys())
       for keys_count, (key) in enumerate(keys, 1):
         if key == 'items':
           self._AddIndentedNontranslateableChunk(depth + 1, "\"items\": [\n")

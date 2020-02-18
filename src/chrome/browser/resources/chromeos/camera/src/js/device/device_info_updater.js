@@ -142,7 +142,7 @@ cca.device.DeviceInfoUpdater = class {
   async enumerateDevices_() {
     const devices = (await navigator.mediaDevices.enumerateDevices())
                         .filter((device) => device.kind == 'videoinput');
-    if (devices.length == 0) {
+    if (devices.length === 0) {
       throw new Error('Device list empty.');
     }
     return devices;
@@ -158,22 +158,12 @@ cca.device.DeviceInfoUpdater = class {
    * @private
    */
   async queryMojoDevicesInfo_() {
-    const devices = await this.devicesInfo_;
-    let /** ?Array<Object> */ privateInfos;
-    try {
-      privateInfos = await Promise.all(devices.map((d) => Promise.all([
-        d,
-        cca.mojo.getCameraFacing(d.deviceId),
-        cca.mojo.getPhotoResolutions(d.deviceId),
-        cca.mojo.getVideoConfigs(d.deviceId),
-        cca.mojo.getSupportedFpsRanges(d.deviceId),
-      ])));
-    } catch (e) {
-      privateInfos = null;
+    if (!await cca.mojo.DeviceOperator.isSupported()) {
+      return null;
     }
-
-    return privateInfos &&
-        privateInfos.map((info) => new cca.device.Camera3DeviceInfo(...info));
+    const deviceInfos = await this.devicesInfo_;
+    return Promise.all(
+        deviceInfos.map((d) => cca.device.Camera3DeviceInfo.create(d)));
   }
 
   /**

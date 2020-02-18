@@ -96,6 +96,9 @@ settings.StatusAction = {
  *   typedUrlsEnforced: boolean,
  *   typedUrlsRegistered: boolean,
  *   typedUrlsSynced: boolean,
+ *   wifiConfigurationsEnforced: boolean,
+ *   wifiConfigurationsRegistered: boolean,
+ *   wifiConfigurationsSynced: boolean,
  * }}
  */
 settings.SyncPrefs;
@@ -211,6 +214,13 @@ cr.define('settings', function() {
      * Opens the Google Activity Controls url in a new tab.
      */
     openActivityControlsUrl() {}
+
+    /**
+     * Function to dispatch event sync-prefs-changed even without a change.
+     * This is used to decide whether we should show the link to password
+     * manager in passwords section on page load.
+     */
+    sendSyncPrefsChanged() {}
   }
 
   /**
@@ -297,6 +307,11 @@ cr.define('settings', function() {
     openActivityControlsUrl() {
       chrome.metricsPrivate.recordUserAction(
           'Signin_AccountSettings_GoogleActivityControlsClicked');
+    }
+
+    /** @override */
+    sendSyncPrefsChanged() {
+      chrome.send('SyncPrefsDispatch');
     }
   }
 

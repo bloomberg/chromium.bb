@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 
@@ -137,8 +138,19 @@ bool IsControl(const ax::mojom::Role role) {
 
 bool IsDocument(const ax::mojom::Role role) {
   switch (role) {
+    case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kWebArea:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsDialog(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kAlertDialog:
+    case ax::mojom::Role::kDialog:
       return true;
     default:
       return false;

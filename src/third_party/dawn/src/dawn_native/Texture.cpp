@@ -139,30 +139,6 @@ namespace dawn_native {
             return {};
         }
 
-        TextureViewDescriptor MakeDefaultTextureViewDescriptor(const TextureBase* texture) {
-            TextureViewDescriptor descriptor;
-            descriptor.format = texture->GetFormat().format;
-            descriptor.baseArrayLayer = 0;
-            descriptor.arrayLayerCount = texture->GetArrayLayers();
-            descriptor.baseMipLevel = 0;
-            descriptor.mipLevelCount = texture->GetNumMipLevels();
-
-            // TODO(jiawei.shao@intel.com): support all texture dimensions.
-            switch (texture->GetDimension()) {
-                case dawn::TextureDimension::e2D:
-                    if (texture->GetArrayLayers() == 1u) {
-                        descriptor.dimension = dawn::TextureViewDimension::e2D;
-                    } else {
-                        descriptor.dimension = dawn::TextureViewDimension::e2DArray;
-                    }
-                    break;
-                default:
-                    UNREACHABLE();
-            }
-
-            return descriptor;
-        }
-
         MaybeError ValidateTextureSize(const TextureDescriptor* descriptor, const Format* format) {
             ASSERT(descriptor->size.width != 0 && descriptor->size.height != 0);
 
@@ -181,23 +157,23 @@ namespace dawn_native {
         }
 
         MaybeError ValidateTextureUsage(const TextureDescriptor* descriptor, const Format* format) {
-            DAWN_TRY(ValidateTextureUsageBit(descriptor->usage));
+            DAWN_TRY(dawn_native::ValidateTextureUsage(descriptor->usage));
 
-            constexpr dawn::TextureUsageBit kValidCompressedUsages =
-                dawn::TextureUsageBit::Sampled | dawn::TextureUsageBit::CopySrc |
-                dawn::TextureUsageBit::CopyDst;
+            constexpr dawn::TextureUsage kValidCompressedUsages = dawn::TextureUsage::Sampled |
+                                                                  dawn::TextureUsage::CopySrc |
+                                                                  dawn::TextureUsage::CopyDst;
             if (format->isCompressed && (descriptor->usage & (~kValidCompressedUsages))) {
                 return DAWN_VALIDATION_ERROR(
                     "Compressed texture format is incompatible with the texture usage");
             }
 
             if (!format->isRenderable &&
-                (descriptor->usage & dawn::TextureUsageBit::OutputAttachment)) {
+                (descriptor->usage & dawn::TextureUsage::OutputAttachment)) {
                 return DAWN_VALIDATION_ERROR(
                     "Non-renderable format used with OutputAttachment usage");
             }
 
-            if (descriptor->usage & dawn::TextureUsageBit::Storage) {
+            if (descriptor->usage & dawn::TextureUsage::Storage) {
                 return DAWN_VALIDATION_ERROR("storage textures aren't supported (yet)");
             }
 
@@ -208,6 +184,9 @@ namespace dawn_native {
 
     MaybeError ValidateTextureDescriptor(const DeviceBase* device,
                                          const TextureDescriptor* descriptor) {
+        if (descriptor == nullptr) {
+            return DAWN_VALIDATION_ERROR("Texture descriptor is nullptr");
+        }
         if (descriptor->nextInChain != nullptr) {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
         }
@@ -235,14 +214,15 @@ namespace dawn_native {
         return {};
     }
 
-    MaybeError ValidateTextureViewDescriptor(const DeviceBase* device,
-                                             const TextureBase* texture,
+    MaybeError ValidateTextureViewDescriptor(const TextureBase* texture,
                                              const TextureViewDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
         }
 
-        DAWN_TRY(device->ValidateObject(texture));
+        // Parent texture should have been already validated.
+        ASSERT(texture);
+        ASSERT(!texture->IsError());
         if (texture->GetTextureState() == TextureBase::TextureState::Destroyed) {
             return DAWN_VALIDATION_ERROR("Destroyed texture used to create texture view");
         }
@@ -274,6 +254,53 @@ namespace dawn_native {
         DAWN_TRY(ValidateTextureViewDimensionCompatibility(texture, descriptor));
 
         return {};
+    }
+
+    TextureViewDescriptor GetTextureViewDescriptorWithDefaults(
+        const TextureBase* texture,
+        const TextureViewDescriptor* descriptor) {
+        ASSERT(texture);
+
+        TextureViewDescriptor desc = {};
+        if (descriptor) {
+            desc = *descriptor;
+        }
+
+        // The default value for the view dimension depends on the texture's dimension with a
+        // special case for 2DArray being chosen automatically if arrayLayerCount is unspecified.
+        if (desc.dimension == dawn::TextureViewDimension::Undefined) {
+            switch (texture->GetDimension()) {
+                case dawn::TextureDimension::e1D:
+                    desc.dimension = dawn::TextureViewDimension::e1D;
+                    break;
+
+                case dawn::TextureDimension::e2D:
+                    if (texture->GetArrayLayers() > 1u && desc.arrayLayerCount == 0) {
+                        desc.dimension = dawn::TextureViewDimension::e2DArray;
+                    } else {
+                        desc.dimension = dawn::TextureViewDimension::e2D;
+                    }
+                    break;
+
+                case dawn::TextureDimension::e3D:
+                    desc.dimension = dawn::TextureViewDimension::e3D;
+                    break;
+
+                default:
+                    UNREACHABLE();
+            }
+        }
+
+        if (desc.format == dawn::TextureFormat::Undefined) {
+            desc.format = texture->GetFormat().format;
+        }
+        if (desc.arrayLayerCount == 0) {
+            desc.arrayLayerCount = texture->GetArrayLayers() - desc.baseArrayLayer;
+        }
+        if (desc.mipLevelCount == 0) {
+            desc.mipLevelCount = texture->GetNumMipLevels() - desc.baseMipLevel;
+        }
+        return desc;
     }
 
     bool IsValidSampleCount(uint32_t sampleCount) {
@@ -343,7 +370,7 @@ namespace dawn_native {
         ASSERT(!IsError());
         return mSampleCount;
     }
-    dawn::TextureUsageBit TextureBase::GetUsage() const {
+    dawn::TextureUsage TextureBase::GetUsage() const {
         ASSERT(!IsError());
         return mUsage;
     }
@@ -430,16 +457,6 @@ namespace dawn_native {
         }
 
         return extent;
-    }
-
-    TextureViewBase* TextureBase::CreateDefaultView() {
-        TextureViewDescriptor descriptor = {};
-
-        if (!IsError()) {
-            descriptor = MakeDefaultTextureViewDescriptor(this);
-        }
-
-        return GetDevice()->CreateTextureView(this, &descriptor);
     }
 
     TextureViewBase* TextureBase::CreateView(const TextureViewDescriptor* descriptor) {

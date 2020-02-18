@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +56,7 @@ class TestingJsonParserTest : public testing::Test {
     EXPECT_FALSE(error.empty());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   TestingJsonParser::ScopedFactoryOverride factory_override_;
   bool did_success_ = false;
   bool did_error_ = false;

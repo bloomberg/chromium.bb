@@ -14,7 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
@@ -22,12 +22,14 @@
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -39,15 +41,15 @@ using leveldb::Uint8VectorToStdString;
 using leveldb::mojom::DatabaseError;
 
 template <typename Interface, typename Impl>
-void CreateStrongBindingOnTaskRunner(
+void CreateSelfOwnedreceiverOnTaskRunner(
     scoped_refptr<base::SequencedTaskRunner> runner,
-    mojo::InterfacePtr<Interface>* interface_ptr,
+    mojo::PendingReceiver<Interface> pending_receiver,
     std::unique_ptr<Impl> interface) {
   runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          base::IgnoreResult(&mojo::MakeStrongBinding<Interface, Impl>),
-          std::move(interface), mojo::MakeRequest(interface_ptr), runner));
+          base::IgnoreResult(&mojo::MakeSelfOwnedReceiver<Interface, Impl>),
+          std::move(interface), std::move(pending_receiver), runner));
 }
 
 class MockListener : public SessionStorageDataMap::Listener {
@@ -69,15 +71,15 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
     auto file_runner =
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
-    CreateStrongBindingOnTaskRunner(
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-        &leveldb_service_,
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+    CreateSelfOwnedreceiverOnTaskRunner(
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
+        leveldb_service_.BindNewPipeAndPassReceiver(),
         std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
 
     leveldb_service_->OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
-        mojo::MakeRequest(&leveldb_database_), base::DoNothing());
+        leveldb_database_.BindNewEndpointAndPassReceiver(), base::DoNothing());
 
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
@@ -108,13 +110,13 @@ class SessionStorageAreaImplTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr leveldb_database_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;
@@ -135,9 +137,9 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
           leveldb_database_.get()),
       GetRegisterNewAreaMapCallback());
 
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb;
   ss_leveldb_impl->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb));
+      ss_leveldb.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
@@ -164,9 +166,9 @@ TEST_F(SessionStorageAreaImplTest, ExplicitlyEmptyMap) {
           leveldb_database_.get()),
       GetRegisterNewAreaMapCallback());
 
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb;
   ss_leveldb_impl->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb));
+      ss_leveldb.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
@@ -190,15 +192,15 @@ TEST_F(SessionStorageAreaImplTest, DoubleBind) {
           leveldb_database_.get()),
       GetRegisterNewAreaMapCallback());
 
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb1;
   base::RunLoop loop;
   ss_leveldb_impl->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
-  ss_leveldb1.set_connection_error_handler(loop.QuitClosure());
+      ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  ss_leveldb1.set_disconnect_handler(loop.QuitClosure());
   // Check that we can bind twice and get data from the second binding.
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb2;
   ss_leveldb_impl->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
+      ss_leveldb2.BindNewEndpointAndPassDedicatedReceiverForTesting());
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(1ul, data.size());
@@ -234,12 +236,12 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb1;
   ss_leveldb_impl1->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
+      ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb2;
   ss_leveldb_impl2->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
+      ss_leveldb2.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   // Same maps are used.
   EXPECT_EQ(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
@@ -299,16 +301,14 @@ TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
           leveldb_database_.get()),
       GetRegisterNewAreaMapCallback());
 
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb1;
   ss_leveldb_impl1->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
+      ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
-  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
-  ss_leveldb1->AddObserver(std::move(observer_ptr_info));
+  ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
   ss_leveldb1.FlushForTesting();
 
   base::RunLoop loop;
@@ -345,12 +345,12 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb1;
   ss_leveldb_impl1->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
+      ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  mojo::AssociatedRemote<blink::mojom::StorageArea> ss_leveldb2;
   ss_leveldb_impl2->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
+      ss_leveldb2.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   // Same maps are used.
   EXPECT_EQ(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
@@ -359,11 +359,9 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // any changes (see SessionStorageAreaImpl class comment about when observers
   // are called).
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
-  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
-  ss_leveldb1->AddObserver(std::move(observer_ptr_info));
+  ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
 
   // The |DeleteAll| call will fork the maps, and the observer should see a
   // DeleteAll.

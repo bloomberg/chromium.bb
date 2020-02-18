@@ -73,10 +73,7 @@ void RecordApkDownloadTelemetryIncompleteReason(
 AndroidTelemetryService::AndroidTelemetryService(
     SafeBrowsingService* sb_service,
     Profile* profile)
-    : TelemetryService(),
-      profile_(profile),
-      sb_service_(sb_service),
-      weak_ptr_factory_(this) {
+    : TelemetryService(), profile_(profile), sb_service_(sb_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(sb_service_);
@@ -247,7 +244,7 @@ void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SafeBrowsingDatabaseManager::GetSafetyNetId,
                      sb_service_->database_manager()),
@@ -266,7 +263,7 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
   }
   sb_service_->ping_manager()->ReportThreatDetails(serialized);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),

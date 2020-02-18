@@ -5,8 +5,25 @@
 #include "chromeos/constants/chromeos_features.h"
 
 namespace chromeos {
-
 namespace features {
+namespace {
+
+// Controls whether Instant Tethering supports hosts which use the background
+// advertisement model.
+const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
+    "InstantTetheringBackgroundAdvertisementSupport",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
+
+// Controls whether to enable Chrome OS Account Manager.
+// Rollout controlled by Finch.
+const base::Feature kAccountManager{"ChromeOSAccountManager",
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether to enable Ambient mode feature.
+const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
@@ -16,7 +33,7 @@ const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
 // Enables or disables more aggressive filtering out of Bluetooth devices with
 // "appearances" that are less likely to be pairable or useful.
 const base::Feature kBluetoothAggressiveAppearanceFilter{
-    "BluetoothAggressiveAppearanceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BluetoothAggressiveAppearanceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
@@ -29,18 +46,13 @@ const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
 
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini GPU support.
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini support for usb mounting.
-const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Crostini usb mounting for unsupported devices.
-// To enable, CrostiniUsbSupport must also be enabled.
 const base::Feature kCrostiniUsbAllowUnsupported{
     "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -66,7 +78,7 @@ const base::Feature kDriveFsMirroring{"DriveFsMirroring",
 
 // If enabled shows the visual signals feedback panel.
 const base::Feature kEnableFileManagerFeedbackPanel{
-    "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableFeedbackPanel", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the enhanced external media formatting dialog in the file manager,
 // with support for labelling and also NTFS/exFAT filesystems.
@@ -82,16 +94,14 @@ const base::Feature kEnableFileManagerPiexWasm{
 const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the next generation file manager.
+const base::Feature kFilesNG{"FilesNG", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
 // must use PowerManagerMojoClient::Get().
 const base::Feature kMojoDBusRelay{"MojoDBusRelay",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, MyFiles will be a root/volume and user can create other
-// sub-folders and files in addition to the Downloads folder inside MyFiles.
-const base::Feature kMyFilesVolume{"MyFilesVolume",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, will display blocking screens during re-authentication after a
 // supervision transition occurred.
@@ -110,23 +120,49 @@ const base::Feature kGesturePropertiesDBusService{
 const base::Feature kGaiaActionButtons{"GaiaActionButtons",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable Unified Input Logic for FST decocder in the IME extension
+// Enable or disable Unified Input Logic for HMM decoder in the IME extension
+// on Chrome OS.
+const base::Feature kImeInputLogicHmm{"ImeInputLogicHmm",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable Unified Input Logic for FST decoder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable Unified Input Logic for FST decoder for non-English in
+// the IME extension on Chrome OS.
+const base::Feature kImeInputLogicFstNonEnglish{
+    "ImeInputLogicFstNonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable IME service decoder engine and 'ime' sandbox on Chrome OS.
+const base::Feature kImeDecoderWithSandbox{"ImeDecoderWithSandbox",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable the Parental Controls section of settings.
+const base::Feature kParentalControlsSettings{
+    "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables Release Notes on Chrome OS.
+const base::Feature kReleaseNotes{"ReleaseNotes",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables Release Notes notifications on Chrome OS.
+const base::Feature kReleaseNotesNotification{
+    "ReleaseNotesNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables showing the battery level in the System Tray and Settings
 // UI for supported Bluetooth Devices.
 const base::Feature kShowBluetoothDeviceBattery{
     "ShowBluetoothDeviceBattery", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Release Notes on Chrome OS.
-const base::Feature kReleaseNotes{"ReleaseNotes",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
+// Shows the Play Store icon in Demo Mode.
+const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
 // (~2018-11) model.
@@ -136,7 +172,7 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 // Splits OS settings (display, mouse, keyboard, etc.) out from browser settings
 // into a separate window.
 const base::Feature kSplitSettings{"SplitSettings",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{
@@ -168,10 +204,36 @@ const base::Feature kUseSearchClickForRightClick{
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
+////////////////////////////////////////////////////////////////////////////////
+
+bool IsAccountManagerEnabled() {
+  return base::FeatureList::IsEnabled(kAccountManager);
+}
+
+bool IsAmbientModeEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeFeature);
+}
+
+bool IsImeDecoderWithSandboxEnabled() {
+  return base::FeatureList::IsEnabled(kImeDecoderWithSandbox);
+}
+
+bool IsInstantTetheringBackgroundAdvertisingSupported() {
+  return base::FeatureList::IsEnabled(
+      kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool IsParentalControlsSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kParentalControlsSettings);
+}
+
 bool IsSplitSettingsEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettings);
 }
 
-}  // namespace features
+bool ShouldShowPlayStoreInDemoMode() {
+  return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
+}
 
+}  // namespace features
 }  // namespace chromeos

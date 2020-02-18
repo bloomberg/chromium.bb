@@ -12,10 +12,15 @@ if (is_android) {
 
 # TODO(crbug.com/706392): Fix password reuse detection for Android.
 password_reuse_detection_support = !is_android && !is_ios
+password_on_focus_ping_support = !is_ios
 
 config("password_reuse_detection_config") {
+  defines = []
   if (password_reuse_detection_support) {
-    defines = [ "SYNC_PASSWORD_REUSE_DETECTION_ENABLED" ]
+    defines += [ "SYNC_PASSWORD_REUSE_DETECTION_ENABLED" ]
+  }
+  if (password_on_focus_ping_support) {
+    defines += [ "ON_FOCUS_PING_ENABLED" ]
   }
 }
 
@@ -98,8 +103,6 @@ jumbo_static_library("browser") {
     "login_database_mac.cc",
     "login_database_win.cc",
     "manage_passwords_referrer.h",
-    "new_password_form_manager.cc",
-    "new_password_form_manager.h",
     "origin_credential_store.cc",
     "origin_credential_store.h",
     "password_autofill_manager.cc",
@@ -133,6 +136,8 @@ jumbo_static_library("browser") {
     "password_manager_metrics_recorder.h",
     "password_manager_metrics_util.cc",
     "password_manager_metrics_util.h",
+    "password_manager_onboarding.cc",
+    "password_manager_onboarding.h",
     "password_manager_util.cc",
     "password_manager_util.h",
     "password_requirements_service.cc",
@@ -204,6 +209,7 @@ jumbo_static_library("browser") {
 
   public_deps = [
     "//base",
+    "//components/safe_browsing:buildflags",
     "//components/sync",
   ]
   deps = [
@@ -222,6 +228,7 @@ jumbo_static_library("browser") {
     "//components/keyed_service/core",
     "//components/os_crypt",
     "//components/password_manager/core/browser/form_parsing",
+    "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
     "//components/password_manager/core/common",
     "//components/pref_registry",
     "//components/prefs",
@@ -252,6 +259,12 @@ jumbo_static_library("browser") {
       "hsts_query.h",
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
+      "leak_detection_delegate.cc",
+      "leak_detection_delegate.h",
+      "leak_detection_delegate_helper.cc",
+      "leak_detection_delegate_helper.h",
+      "leak_detection_dialog_utils.cc",
+      "leak_detection_dialog_utils.h",
     ]
     deps += [
       "//components/password_manager/core/browser/leak_detection:leak_detection",
@@ -285,6 +298,8 @@ static_library("csv") {
     "import/csv_field_parser.h",
     "import/csv_password.cc",
     "import/csv_password.h",
+    "import/csv_password_iterator.cc",
+    "import/csv_password_iterator.h",
   ]
   deps = [
     ":affiliation",
@@ -298,6 +313,7 @@ source_set("csv_unittests") {
   testonly = true
   sources = [
     "import/csv_field_parser_unittest.cc",
+    "import/csv_password_iterator_unittest.cc",
     "import/csv_password_unittest.cc",
   ]
   deps = [
@@ -394,6 +410,7 @@ jumbo_static_library("test_support") {
     ":browser",
     ":hash_password_manager",
     "//components/autofill/core/browser:test_support",
+    "//components/safe_browsing:buildflags",
     "//components/ukm",
     "//services/network/public/cpp",
     "//testing/gmock",
@@ -432,6 +449,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/password_manager/login_db_v22.sql",
     "//components/test/data/password_manager/login_db_v23.sql",
     "//components/test/data/password_manager/login_db_v24.sql",
+    "//components/test/data/password_manager/login_db_v25.sql",
     "//components/test/data/password_manager/login_db_v2_broken.sql",
     "//components/test/data/password_manager/login_db_v3.sql",
     "//components/test/data/password_manager/login_db_v3_broken.sql",
@@ -480,7 +498,6 @@ source_set("unit_tests") {
     "import/password_csv_reader_unittest.cc",
     "import/password_importer_unittest.cc",
     "login_database_unittest.cc",
-    "new_password_form_manager_unittest.cc",
     "origin_credential_store_unittest.cc",
     "password_autofill_manager_unittest.cc",
     "password_bubble_experiment_unittest.cc",
@@ -492,6 +509,7 @@ source_set("unit_tests") {
     "password_hash_data_unittest.cc",
     "password_list_sorter_unittest.cc",
     "password_manager_metrics_recorder_unittest.cc",
+    "password_manager_onboarding_unittest.cc",
     "password_manager_unittest.cc",
     "password_manager_util_unittest.cc",
     "password_requirements_service_unittest.cc",
@@ -522,6 +540,8 @@ source_set("unit_tests") {
     sources += [
       "hsts_query_unittest.cc",
       "http_credentials_cleaner_unittest.cc",
+      "leak_detection_delegate_helper_unittest.cc",
+      "leak_detection_delegate_unittest.cc",
     ]
   }
   if (password_reuse_detection_support) {
@@ -554,6 +574,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/browser:proto",
     "//components/password_manager/core/browser/form_parsing:unit_tests",
     "//components/password_manager/core/browser/form_parsing/fuzzer:unit_tests",
+    "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
     "//components/security_state/core",
@@ -582,6 +603,13 @@ source_set("unit_tests") {
     deps += [
       "//components/safe_browsing:features",
       "//components/safe_browsing/common:safe_browsing_prefs",
+    ]
+  }
+
+  if (!is_ios) {
+    deps += [
+      "//components/password_manager/core/browser/leak_detection",
+      "//components/password_manager/core/browser/leak_detection:unit_tests",
     ]
   }
 }

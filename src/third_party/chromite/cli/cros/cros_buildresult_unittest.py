@@ -54,7 +54,7 @@ class BuildresultReportTest(BuildresultTest):
 
   def testReport(self):
     result = cros_buildresult.Report([FAKE_BUILD_STATUS])
-    expected = '''buildbucket_id: buildbucket_value
+    expected = """buildbucket_id: buildbucket_value
 status: pass
 artifacts_url: fake_artifacts_url
 toolchain_url: fake_toolchain_url
@@ -63,7 +63,7 @@ stages:
   stage_b: pass
   stage_c: pass
 
-'''
+"""
 
     self.assertEqual(expected, result)
 

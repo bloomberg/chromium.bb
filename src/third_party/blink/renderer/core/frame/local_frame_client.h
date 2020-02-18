@@ -35,10 +35,13 @@
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -105,7 +108,6 @@ class ResourceResponse;
 class SecurityOrigin;
 class WebContentCaptureClient;
 class WebDedicatedWorkerHostFactoryClient;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -173,11 +175,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
           should_check_main_world_content_security_policy,
-      mojom::blink::BlobURLTokenPtr,
+      mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
       WebContentSecurityPolicyList,
-      mojom::blink::NavigationInitiatorPtr) = 0;
+      network::mojom::IPAddressSpace,
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
 
@@ -191,7 +194,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                            DownloadCrossOriginRedirects) = 0;
   virtual void LoadErrorPage(int reason) = 0;
 
-  virtual bool NavigateBackForward(int offset) const = 0;
+  virtual bool NavigateBackForward(int offset, bool from_script) const = 0;
 
   // Another page has accessed the initial empty document of this frame. It is
   // no longer safe to display a provisional URL, since a URL spoof is now
@@ -241,8 +244,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Will be called when a new UseCounter CSS property or animated CSS property
   // has been observed in a frame. This propogates feature usage to the browser
   // process for histograms.
-  virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
-                                             bool /*is_animated*/) {}
+  virtual void DidObserveNewCssPropertyUsage(
+      mojom::CSSSampleId /*css_property*/,
+      bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
@@ -286,8 +290,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                   HTMLFrameOwnerElement*) = 0;
 
   // Creates a portal for the |HTMLPortalElement| and binds the other end of the
-  // |PortalRequest|. Returns a pair of a RemoteFrame and a token that
-  // identifies the portal.
+  // |mojo::PendingAssociatedReceiver<mojom::blink::Portal>|. Returns a pair of
+  // a RemoteFrame and a token that identifies the portal.
   virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
@@ -316,8 +320,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*,
-      WebLayerTreeView*) = 0;
+      WebMediaPlayerClient*) = 0;
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) = 0;
 
@@ -328,9 +331,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void RunScriptsAtDocumentReady(bool document_is_empty) = 0;
   virtual void RunScriptsAtDocumentIdle() = 0;
 
-  virtual void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) = 0;
+  virtual void DidCreateScriptContext(v8::Local<v8::Context>,
+                                      int32_t world_id) = 0;
   virtual void WillReleaseScriptContext(v8::Local<v8::Context>,
-                                        int world_id) = 0;
+                                        int32_t world_id) = 0;
   virtual bool AllowScriptExtensions() = 0;
 
   virtual void DidChangeScrollOffset() {}
@@ -415,6 +419,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
+  virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
+
   // Used in tests to set a custom override for DocumentInterfaceBroker methods.
   // |blink_handle| is bound to the test implementation on the caller side.
   // Returns the handle to the previously bound 'production' implementation,
@@ -432,7 +438,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   // Notify the embedder that the associated frame has user activation so that
   // the replicated states in the browser and other renderers can be updated.
-  virtual void NotifyUserActivation() {}
+  virtual void NotifyUserActivation(bool need_browser_verification) {}
 
   // Tell the embedder that the associated frame has consumed user activation so
   // that the replicated states in the browser and other renderers can be
@@ -526,9 +532,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
-  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
-    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
-  }
+
+  virtual void EvictFromBackForwardCache() = 0;
 };
 
 }  // namespace blink

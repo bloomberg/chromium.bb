@@ -24,12 +24,12 @@ MetricEvaluatorsHelperWin* g_metric_evaluator_instance = nullptr;
 }  // namespace
 
 MetricEvaluatorsHelperWin::MetricEvaluatorsHelperWin()
-    : wmi_initialization_sequence_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+    : wmi_initialization_sequence_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+           base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       wmi_refresher_(new win::WMIRefresher(),
-                     base::OnTaskRunnerDeleter(wmi_initialization_sequence_)),
-      weak_factory_(this) {
+                     base::OnTaskRunnerDeleter(wmi_initialization_sequence_)) {
   DCHECK(!g_metric_evaluator_instance);
   g_metric_evaluator_instance = this;
 
@@ -78,6 +78,13 @@ base::Optional<float> MetricEvaluatorsHelperWin::GetDiskIdleTimePercent() {
     wmi_refresher_initialized_ = false;
   }
   return result;
+}
+
+base::Optional<int>
+MetricEvaluatorsHelperWin::GetChromeTotalResidentSetEstimateMb() {
+  // TODO(sebmarchand): Implement this.
+  NOTREACHED();
+  return base::nullopt;
 }
 
 }  // namespace performance_monitor

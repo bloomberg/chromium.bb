@@ -4,6 +4,7 @@
 
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js2gtest("interactive_ui_tests_js_webui") {
   test_type = "webui"
@@ -11,6 +12,8 @@ js2gtest("interactive_ui_tests_js_webui") {
   sources = [
     "bookmarks/bookmarks_focus_test.js",
     "cr_elements/cr_elements_focus_test.js",
+    "cr_elements/cr_elements_v3_focus_test.js",
+    "cr_focus_outline_manager_test.js",
     "cr_focus_row_behavior_interactive_test.js",
     "extensions/cr_extensions_interactive_ui_tests.js",
     "history/history_focus_test.js",
@@ -25,9 +28,18 @@ js2gtest("interactive_ui_tests_js_webui") {
   ]
 
   deps = [
+    ":modulize",
     "//chrome/browser/ui",
   ]
-
+  data = [
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_checkbox_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_focus_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_input_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_tabs_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toggle_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
+  ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
 
@@ -50,8 +62,10 @@ js2gtest("browser_tests_js_webui") {
     "chrome_send_browsertest.js",
     "cr_components/cr_components_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
+    "cr_elements/cr_elements_v3_browsertest.js",
     "find_shortcut_behavior_browsertest.js",
     "history/history_browsertest.js",
+    "js/webui_resource_module_async_browsertest.js",
     "js2gtest_browsertest.js",
     "load_time_data_browsertest.js",
     "management/a11y/management_a11y_test.js",
@@ -81,10 +95,6 @@ js2gtest("browser_tests_js_webui") {
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",
   ]
-
-  if (!optimize_webui) {
-    sources += [ "js/webui_resource_module_async_browsertest.js" ]
-  }
 
   extra_js_files = [
     "test_browser_proxy.js",
@@ -124,7 +134,7 @@ js2gtest("browser_tests_js_webui") {
       "signin/signin_browsertest.js",
       "user_manager/user_manager_browsertest.js",
       "welcome/a11y_tests.js",
-      "welcome/onboarding_welcome_browsertest.js",
+      "welcome/welcome_browsertest.js",
     ]
   }
 
@@ -141,9 +151,27 @@ js2gtest("browser_tests_js_webui") {
   if (enable_print_preview) {
     sources += [ "print_preview/print_preview_ui_browsertest.js" ]
   }
+  if (enable_webui_tab_strip) {
+    sources += [ "tab_strip/tab_strip_browsertest.js" ]
+  }
   deps = [
+    ":modulize",
     "//chrome/browser/ui",
     "//skia",
+  ]
+  data = [
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_dialog_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_drawer_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_button_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_group_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_search_field_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_view_manager_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
@@ -219,4 +247,19 @@ js2gtest("unit_tests_js") {
       "../../../browser/resources/chromeos/switch_access/rect_helper.js",
     ]
   }
+}
+
+group("modulize") {
+  deps = [
+    ":modulize_local",
+    "./cr_elements:modulize",
+  ]
+}
+
+js_modulizer("modulize_local") {
+  input_files = [
+    "mock_timer.js",
+    "test_browser_proxy.js",
+    "test_util.js",
+  ]
 }

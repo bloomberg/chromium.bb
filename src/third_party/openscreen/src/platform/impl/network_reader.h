@@ -41,11 +41,10 @@ class NetworkReader {
   Error ReadRepeatedly(UdpSocket* socket, Callback callback);
 
   // Cancels any pending wait on reading |socket|. Following this call, any
-  //  pending reads will proceed but their associated callbacks will not fire.
-  // This function returns false only if the socket was not yet being watched,
-  // and true if the operation is successful and the socket is no longer
-  // watched.
-  bool CancelRead(UdpSocket* socket);
+  // pending reads will proceed but their associated callbacks will not fire.
+  // This function returns Error::Code::kNone if the operation is successful and
+  // the socket is no longer watched and returns an error on failure.
+  Error CancelRead(UdpSocket* socket);
 
   // Runs the Wait function in a loop until the below RequestStopSoon function
   // is called.

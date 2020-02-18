@@ -13,10 +13,13 @@
 # limitations under the License.
 
 9370|AWCC
-937280|Roshan
-93729|Roshan
+9371|AWCC
+9372|Roshan
+9373|Etisalat
 93744|Afghan Telecom
 93747|Afghan Telecom
+93748|Afghan Telecom
+93749|Afghan Telecom
 9375|Afghan Telecom
 9376|MTN
 9377|MTN

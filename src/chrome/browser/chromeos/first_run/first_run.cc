@@ -4,41 +4,39 @@
 
 #include "chrome/browser/chromeos/first_run/first_run.h"
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -48,21 +46,22 @@ namespace first_run {
 namespace {
 
 void LaunchDialogForProfile(Profile* profile) {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
     return;
 
   const extensions::Extension* extension =
-      service->GetExtensionById(extension_misc::kFirstRunDialogId, false);
+      registry->GetExtensionById(extension_misc::kFirstRunDialogId,
+                                 extensions::ExtensionRegistry::ENABLED);
   if (!extension)
     return;
 
-  OpenApplication(
+  apps::LaunchService::Get(profile)->OpenApplication(
       AppLaunchParams(profile, extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceChromeInternal));
+                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
 }
 
@@ -77,8 +76,8 @@ void TryLaunchFirstRunDialog(Profile* profile) {
     return;
   }
 
-  // TabletModeClient does not exist in some tests.
-  if (TabletModeClient::Get() && TabletModeClient::Get()->tablet_mode_enabled())
+  // ash::TabletMode does not exist in some tests.
+  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     return;
 
   if (profile->GetProfilePolicyConnector()->IsManaged())
@@ -106,34 +105,25 @@ void TryLaunchFirstRunDialog(Profile* profile) {
 // Object of this class waits for session start. Then it launches or not
 // launches first-run dialog depending on user prefs and flags. Than object
 // deletes itself.
-class DialogLauncher : public content::NotificationObserver {
+class DialogLauncher : public session_manager::SessionManagerObserver {
  public:
-  explicit DialogLauncher(Profile* profile)
-      : profile_(profile) {
-    DCHECK(profile);
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SESSION_STARTED,
-                   content::NotificationService::AllSources());
+  DialogLauncher() {
+    session_manager::SessionManager::Get()->AddObserver(this);
   }
 
-  ~DialogLauncher() override {}
+  ~DialogLauncher() override {
+    session_manager::SessionManager::Get()->RemoveObserver(this);
+  }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK(type == chrome::NOTIFICATION_SESSION_STARTED);
-    DCHECK(content::Details<const user_manager::User>(details).ptr() ==
-           ProfileHelper::Get()->GetUserByProfile(profile_));
-
-    TryLaunchFirstRunDialog(profile_);
-
+  // session_manager::SessionManagerObserver:
+  void OnUserSessionStarted(bool is_primary_user) override {
+    auto* profile = ProfileHelper::Get()->GetProfileByUser(
+        user_manager::UserManager::Get()->GetActiveUser());
+    TryLaunchFirstRunDialog(profile);
     delete this;
   }
 
  private:
-  Profile* profile_;
-  content::NotificationRegistrar registrar_;
-
   DISALLOW_COPY_AND_ASSIGN(DialogLauncher);
 };
 
@@ -147,13 +137,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }
 
 void MaybeLaunchDialogAfterSessionStart() {
-  new DialogLauncher(ProfileHelper::Get()->GetProfileByUserUnsafe(
-      user_manager::UserManager::Get()->GetActiveUser()));
-}
-
-void MaybeLaunchDialogImmediately() {
-  TryLaunchFirstRunDialog(ProfileHelper::Get()->GetProfileByUser(
-      user_manager::UserManager::Get()->GetActiveUser()));
+  new DialogLauncher();
 }
 
 void LaunchTutorial() {

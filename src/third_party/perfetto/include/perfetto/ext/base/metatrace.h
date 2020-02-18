@@ -23,10 +23,10 @@
 #include <string>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/base/time.h"
 #include "perfetto/ext/base/metatrace_events.h"
 #include "perfetto/ext/base/thread_annotations.h"
 #include "perfetto/ext/base/thread_utils.h"
-#include "perfetto/ext/base/time.h"
 #include "perfetto/ext/base/utils.h"
 
 // A facility to trace execution of the perfetto codebase itself.
@@ -83,6 +83,16 @@ void Disable();
 
 inline uint64_t TraceTimeNowNs() {
   return static_cast<uint64_t>(base::GetBootTimeNs().count());
+}
+
+// Returns a relaxed view of whether metatracing is enabled for the given tag.
+// Useful for skipping unnecessary argument computation if metatracing is off.
+inline bool IsEnabled(uint32_t tag) {
+  auto enabled_tags = g_enabled_tags.load(std::memory_order_relaxed);
+  if (PERFETTO_LIKELY((enabled_tags & tag) == 0))
+    return false;
+  else
+    return true;
 }
 
 // Holds the data for a metatrace event or counter.

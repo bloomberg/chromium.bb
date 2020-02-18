@@ -16,8 +16,8 @@
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -227,7 +227,7 @@ class CookieStoreManagerTest
       public testing::WithParamInterface<bool /* reset_context */> {
  public:
   CookieStoreManagerTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     // Use an on-disk service worker storage to test saving and loading.
@@ -237,14 +237,19 @@ class CookieStoreManagerTest
   }
 
   void TearDown() override {
-    thread_bundle_.RunUntilIdle();
+    // Let the service worker context cleanly shut down, so its storage can be
+    // safely opened again if the test will continue.
+    if (worker_test_helper_)
+      worker_test_helper_->ShutdownContext();
+
+    task_environment_.RunUntilIdle();
 
     // Smart pointers are reset manually in destruction order because this is
     // called by ResetServiceWorkerContext().
     example_service_.reset();
     google_service_.reset();
-    example_service_ptr_.reset();
-    google_service_ptr_.reset();
+    example_service_remote_.reset();
+    google_service_remote_.reset();
     cookie_manager_.reset();
     cookie_store_context_ = nullptr;
     storage_partition_impl_.reset();
@@ -262,33 +267,31 @@ class CookieStoreManagerTest
                                       base::BindOnce([](bool success) {
                                         CHECK(success) << "Initialize failed";
                                       }));
-    storage_partition_impl_ = base::WrapUnique(
-        new StoragePartitionImpl(worker_test_helper_->browser_context(),
-                                 user_data_directory_.GetPath(), nullptr));
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      storage_partition_impl_->SetURLRequestContext(
-          worker_test_helper_->browser_context()->CreateRequestContext(
-              nullptr, URLRequestInterceptorScopedVector()));
-    }
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        worker_test_helper_->browser_context(), true /* in_memory */,
+        base::FilePath() /* relative_partition_path */,
+        std::string() /* partition_domain */);
+    storage_partition_impl_->Initialize();
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
     cookie_store_context_->ListenToCookieChanges(
         network_context, base::BindOnce([](bool success) {
           CHECK(success) << "ListenToCookieChanges failed";
         }));
-    network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+    network_context->GetCookieManager(
+        cookie_manager_.BindNewPipeAndPassReceiver());
 
     cookie_store_context_->CreateService(
-        mojo::MakeRequest(&example_service_ptr_),
+        example_service_remote_.BindNewPipeAndPassReceiver(),
         url::Origin::Create(GURL(kExampleScope)));
     example_service_ =
-        std::make_unique<CookieStoreSync>(example_service_ptr_.get());
+        std::make_unique<CookieStoreSync>(example_service_remote_.get());
 
     cookie_store_context_->CreateService(
-        mojo::MakeRequest(&google_service_ptr_),
+        google_service_remote_.BindNewPipeAndPassReceiver(),
         url::Origin::Create(GURL(kGoogleScope)));
     google_service_ =
-        std::make_unique<CookieStoreSync>(google_service_ptr_.get());
+        std::make_unique<CookieStoreSync>(google_service_remote_.get());
   }
 
   int64_t RegisterServiceWorker(const char* scope, const char* script_url) {
@@ -325,9 +328,8 @@ class CookieStoreManagerTest
     cookie_manager_->SetCanonicalCookie(
         cookie, "https", options,
         base::BindLambdaForTesting(
-            [&](net::CanonicalCookie::CookieInclusionStatus service_success) {
-              success = (service_success ==
-                         net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            [&](net::CanonicalCookie::CookieInclusionStatus service_status) {
+              success = service_status.IsInclude();
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -354,14 +356,15 @@ class CookieStoreManagerTest
   static constexpr const int64_t kInvalidRegistrationId = -1;
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<CookieStoreWorkerTestHelper> worker_test_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
-  ::network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<::network::mojom::CookieManager> cookie_manager_;
 
-  blink::mojom::CookieStorePtr example_service_ptr_, google_service_ptr_;
+  mojo::Remote<blink::mojom::CookieStore> example_service_remote_,
+      google_service_remote_;
   std::unique_ptr<CookieStoreSync> example_service_, google_service_;
 };
 
@@ -380,7 +383,7 @@ bool CookieChangeSubscriptionLessThan(
 TEST_P(CookieStoreManagerTest, NoSubscriptions) {
   worker_test_helper_->SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions>(),
-      example_service_ptr_.get());
+      example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -398,7 +401,7 @@ TEST_P(CookieStoreManagerTest, EmptySubscriptions) {
   std::vector<CookieStoreSync::Subscriptions> batches;
   batches.emplace_back();
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -424,7 +427,7 @@ TEST_P(CookieStoreManagerTest, OneSubscription) {
   subscriptions.back()->url = GURL(kExampleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -456,7 +459,7 @@ TEST_P(CookieStoreManagerTest, WrongDomainSubscription) {
   subscriptions.back()->url = GURL(kGoogleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get(),
+                                                 example_service_remote_.get(),
                                                  false /* expecting failure */);
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
@@ -464,7 +467,7 @@ TEST_P(CookieStoreManagerTest, WrongDomainSubscription) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name", "cookie-value", "google.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(0u, worker_test_helper_->changes().size());
 }
@@ -472,7 +475,7 @@ TEST_P(CookieStoreManagerTest, WrongDomainSubscription) {
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterEmptyInstall) {
   worker_test_helper_->SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions>(),
-      example_service_ptr_.get());
+      example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -508,8 +511,8 @@ TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterInstall) {
         ::network::mojom::CookieMatchType::STARTS_WITH;
     subscriptions.back()->url = GURL(kExampleScope);
 
-    worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                   example_service_ptr_.get());
+    worker_test_helper_->SetOnInstallSubscriptions(
+        std::move(batches), example_service_remote_.get());
   }
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
@@ -545,7 +548,7 @@ TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterInstall) {
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsFromWrongOrigin) {
   worker_test_helper_->SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions>(),
-      example_service_ptr_.get());
+      example_service_remote_.get());
   int64_t example_registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(example_registration_id, kInvalidRegistrationId);
@@ -572,7 +575,7 @@ TEST_P(CookieStoreManagerTest, AppendSubscriptionsFromWrongOrigin) {
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsInvalidRegistrationId) {
   worker_test_helper_->SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions>(),
-      example_service_ptr_.get());
+      example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -608,8 +611,8 @@ TEST_P(CookieStoreManagerTest, MultiWorkerSubscriptions) {
         ::network::mojom::CookieMatchType::STARTS_WITH;
     subscriptions.back()->url = GURL(kExampleScope);
 
-    worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                   example_service_ptr_.get());
+    worker_test_helper_->SetOnInstallSubscriptions(
+        std::move(batches), example_service_remote_.get());
   }
   int64_t example_registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
@@ -626,8 +629,8 @@ TEST_P(CookieStoreManagerTest, MultiWorkerSubscriptions) {
         ::network::mojom::CookieMatchType::EQUALS;
     subscriptions.back()->url = GURL(kGoogleScope);
 
-    worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                   google_service_ptr_.get());
+    worker_test_helper_->SetOnInstallSubscriptions(
+        std::move(batches), google_service_remote_.get());
   }
   int64_t google_registration_id =
       RegisterServiceWorker(kGoogleScope, kGoogleWorkerScript);
@@ -693,7 +696,7 @@ TEST_P(CookieStoreManagerTest, MultipleSubscriptions) {
   }
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -737,7 +740,7 @@ TEST_P(CookieStoreManagerTest, OneCookieChange) {
   subscriptions.back()->url = GURL(kExampleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -752,7 +755,7 @@ TEST_P(CookieStoreManagerTest, OneCookieChange) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name", "cookie-value", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].first.Name());
@@ -775,7 +778,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   subscriptions.back()->url = GURL(kExampleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -790,13 +793,13 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-1", "cookie-value-1", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());
@@ -809,7 +812,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(SetSessionCookie("cookie-name-22", "cookie-value-22",
                                "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-22", worker_test_helper_->changes()[0].first.Name());
@@ -832,7 +835,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   subscriptions.back()->url = GURL(kExampleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -847,19 +850,19 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-1", "cookie-value-1", "google.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com",
                                "/a/subpath"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-3", "cookie-value-3", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-3", worker_test_helper_->changes()[0].first.Name());
@@ -872,7 +875,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-4", "cookie-value-4", "example.com", "/a"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-4", worker_test_helper_->changes()[0].first.Name());
@@ -895,7 +898,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
   subscriptions.back()->url = GURL(kExampleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
@@ -914,7 +917,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
       /* secure = */ false,
       /* httponly = */ true, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT)));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
@@ -924,7 +927,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
       /* secure = */ false,
       /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT)));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());
@@ -947,7 +950,7 @@ TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {
   subscriptions.back()->url = GURL(kExampleScope);
 
   worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
-                                                 example_service_ptr_.get());
+                                                 example_service_remote_.get());
   int64_t example_registration_id =
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(example_registration_id, kInvalidRegistrationId);

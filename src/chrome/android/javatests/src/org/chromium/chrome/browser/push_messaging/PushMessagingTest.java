@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.push_messaging;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.content.Context;
@@ -68,7 +66,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     private static final String PUSH_TEST_PAGE =
             "/chrome/test/data/push_messaging/push_messaging_test_android.html";
     private static final String ABOUT_BLANK = "about:blank";
-    private static final int TITLE_UPDATE_TIMEOUT_SECONDS = (int) scaleTimeout(5);
+    private static final int TITLE_UPDATE_TIMEOUT_SECONDS = 5;
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     private final CallbackHelper mMessageHandledHelper;
@@ -186,7 +184,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @Test
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
-    @CommandLineFlags.Add("disable-features=ModalPermissionPrompts")
+    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testPushPermissionGranted() throws InterruptedException, TimeoutException {
         // Notifications permission should initially be prompt.
         Assert.assertEquals("\"default\"", runScriptBlocking("Notification.permission"));

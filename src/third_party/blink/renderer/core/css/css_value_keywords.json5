@@ -131,9 +131,10 @@
     "large",
     "x-large",
     "xx-large",
-    "-webkit-xxx-large",
+    "xxx-large",
     "smaller",
     "larger",
+    "-webkit-xxx-large",
 
     //
     // font-family (<generic-family> in CSS 2.1)
@@ -196,6 +197,7 @@
     "inactivecaptiontext",
     "infobackground",
     "infotext",
+    "linktext",
     "menutext",
     "scrollbar",
     "threeddarkshadow",
@@ -203,6 +205,7 @@
     "threedhighlight",
     "threedlightshadow",
     "threedshadow",
+    "visitedtext",
     "window",
     "windowframe",
     "windowtext",
@@ -1073,6 +1076,7 @@
     "rgba",
     "hsl",
     "hsla",
+    "-internal-light-dark-color",
 
     // transform
     "matrix",

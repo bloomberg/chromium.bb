@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -49,6 +48,9 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   DCHECK_EQ(ConstraintSpace().BfcOffset(),
             previous_result_.GetConstraintSpaceForCaching().BfcOffset());
 
+  if (result.SubtreeModifiedMarginStrut())
+    container_builder_.SetSubtreeModifiedMarginStrut();
+
   container_builder_.SetBfcLineOffset(result.BfcLineOffset());
   if (result.BfcBlockOffset())
     container_builder_.SetBfcBlockOffset(*result.BfcBlockOffset());
@@ -70,7 +72,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   }
 
   container_builder_.SetBlockSize(ComputeBlockSizeForFragment(
-      ConstraintSpace(), Node(),
+      ConstraintSpace(), Style(),
       container_builder_.Borders() + container_builder_.Padding(),
       result.IntrinsicBlockSize()));
 
@@ -82,12 +84,18 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   // We need the previous physical container size to calculate the position of
   // any child fragments.
   previous_physical_container_size_ = physical_fragment.Size();
+
+  // The static-position needs to account for any intrinsic-padding.
+  if (ConstraintSpace().IsTableCell()) {
+    border_scrollbar_padding_ += ComputeIntrinsicPadding(
+        ConstraintSpace(), Style(), container_builder_.Scrollbar());
+  }
 }
 
 scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
   // Since simplified layout's |Layout()| function deals with laying out
   // children, we can early out if we are display-locked.
-  if (Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (Node().LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return container_builder_.ToBoxFragment();
 
   const auto previous_child_fragments =
@@ -253,7 +261,7 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
 
     exclusion_space_.Add(
         NGExclusion::Create(NGBfcRect(start_offset, end_offset),
-                            ResolvedFloating(child_style, Style()), nullptr));
+                            child_style.Floating(Style()), nullptr));
   }
 }
 

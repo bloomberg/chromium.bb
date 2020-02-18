@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
@@ -26,6 +27,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/policy_check.h"
@@ -125,7 +127,7 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   }
 
   if (only_allow_apps && !extension()->is_platform_app()) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Avoid crashing for users with hijacked shortcuts.
     return true;
 #else
@@ -168,10 +170,11 @@ void UnpackedInstaller::StartInstallChecks() {
       const std::vector<SharedModuleInfo::ImportInfo>& imports =
           SharedModuleInfo::GetImports(extension());
       std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
+      ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
       for (i = imports.begin(); i != imports.end(); ++i) {
         base::Version version_required(i->minimum_version);
-        const Extension* imported_module =
-            service->GetExtensionById(i->extension_id, true);
+        const Extension* imported_module = registry->GetExtensionById(
+            i->extension_id, ExtensionRegistry::COMPATIBILITY);
         if (!imported_module) {
           ReportExtensionLoadError(kImportMissing);
           return;
@@ -300,7 +303,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 void UnpackedInstaller::GetAbsolutePath() {
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
@@ -323,16 +326,14 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
-                       error));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError,
+                                  this, error));
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {

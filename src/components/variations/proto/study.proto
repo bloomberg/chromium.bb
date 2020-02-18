@@ -218,7 +218,7 @@ message Study {
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 18
+  // Next tag: 19
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
@@ -299,7 +299,8 @@ message Study {
     // Takes the same range of values as form_factor, e.g. [PHONE, TABLET].
     repeated FormFactor exclude_form_factor = 14;
 
-    // List of Chrome OS hardware classes that will receive this study.
+    // List of hardware classes that will receive this study.
+    // This supports Chrome OS and as of M77, Android.
     //
     // Starting with Chrome M67, this does a case insensitive match on the same
     // hardware class field that is reported to UMA in the SystemProfileProto's
@@ -315,7 +316,8 @@ message Study {
     // Ex: ["veyron_minnie", "daisy"]
     repeated string hardware_class = 8;
 
-    // List of Chrome OS hardware classes that will be excluded in this study.
+    // List of hardware classes that will be excluded in this study.
+    // This supports Chrome OS and as of M77, Android.
     //
     // Starting with Chrome M67, this does a case insensitive match on the same
     // hardware class field that is reported to UMA in the SystemProfileProto's
@@ -346,6 +348,14 @@ message Study {
     // Specifies whether the config should apply to low-end devices only. This
     // is currently only supported on Android.
     optional bool is_low_end_device = 15;
+
+    // Specifies whether the config should apply to enterprise or non-enterprise
+    // only. If omitted, the config applies to both groups.
+    // - On windows and mac, machines on a domain network are considered
+    //   enterprise.
+    // - On chromeOS, registered mode determines enterprise status.
+    // - Android, iOS, and linux consider all clients as non-enterprise.
+    optional bool is_enterprise = 18;
   }
 
   // Filtering criteria for this study. A study that is filtered out for a given

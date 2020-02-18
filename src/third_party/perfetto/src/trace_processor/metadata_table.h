@@ -98,11 +98,11 @@ class MetadataTable : public StorageTable {
 
     bool HasOrdering() const override { return false; }
 
-    Table::ColumnType GetType() const override {
+    SqlValue::Type GetType() const override {
       if (type_ == Variadic::Type::kInt)
-        return Table::ColumnType::kLong;
+        return SqlValue::Type::kLong;
       if (type_ == Variadic::Type::kString)
-        return Table::ColumnType::kString;
+        return SqlValue::Type::kString;
       PERFETTO_FATAL("Unimplemented metadata value type.");
     }
 

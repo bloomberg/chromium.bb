@@ -11,7 +11,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
@@ -88,17 +87,14 @@ void LogMetricsToUMA(const UserActivityEvent& event) {
 
 }  // namespace
 
-// TODO(alanlxl): Fix the variable names and comments related to screen dim
-// imminent signals, because after powerd refactor (https://crrev.com/c/1601992)
-// ScreenDimImminent signals are deprecated.
 struct UserActivityManager::PreviousIdleEventData {
-  // Gap between two ScreenDimImminent signals.
-  base::TimeDelta dim_imminent_signal_interval;
-  // Features recorded for the ScreenDimImminent signal at the beginning of
-  // |dim_imminent_signal_interval|.
+  // Gap between two smart dim decision requests.
+  base::TimeDelta smart_dim_request_interval;
+  // Features recorded for the smart dim decision request at the beginning of
+  // |smart_dim_request_interval|.
   UserActivityEvent::Features features;
-  // Model prediction recorded for the ScreenDimImminent signal at the beginning
-  // of |dim_imminent_signal_interval|.
+  // Model prediction recorded for the smart dim decision request signal at the
+  // beginning of |smart_dim_request_interval|.
   UserActivityEvent::ModelPrediction model_prediction;
 };
 
@@ -110,8 +106,7 @@ UserActivityManager::UserActivityManager(
     viz::mojom::VideoDetectorObserverRequest request,
     const chromeos::ChromeUserManager* user_manager,
     SmartDimModel* smart_dim_model)
-    : boot_clock_(std::make_unique<RealBootClock>()),
-      ukm_logger_(ukm_logger),
+    : ukm_logger_(ukm_logger),
       smart_dim_model_(smart_dim_model),
       user_activity_observer_(this),
       power_manager_client_observer_(this),
@@ -119,8 +114,7 @@ UserActivityManager::UserActivityManager(
       session_manager_(session_manager),
       binding_(this, std::move(request)),
       user_manager_(user_manager),
-      power_manager_client_(power_manager_client),
-      weak_ptr_factory_(this) {
+      power_manager_client_(power_manager_client) {
   DCHECK(ukm_logger_);
 
   DCHECK(detector);
@@ -240,7 +234,7 @@ void UserActivityManager::UpdateAndGetSmartDimDecision(
     const IdleEventNotifier::ActivityData& activity_data,
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::TimeDelta now = boot_clock_->GetTimeSinceBoot();
+  const base::TimeDelta now = boot_clock_.GetTimeSinceBoot();
   if (waiting_for_final_action_) {
     if (waiting_for_model_decision_) {
       CancelDimDecisionRequest();
@@ -304,11 +298,6 @@ void UserActivityManager::HandleSmartDimDecision(
   }
   model_prediction_ = prediction;
   std::move(callback).Run(dim_deferred_);
-}
-
-void UserActivityManager::OnSessionManagerDestroyed() {
-  session_manager_observer_.RemoveAll();
-  session_manager_ = nullptr;
 }
 
 void UserActivityManager::OnSessionStateChanged() {
@@ -514,7 +503,7 @@ void UserActivityManager::MaybeLogEvent(
   event->set_reason(reason);
   if (idle_event_start_since_boot_) {
     event->set_log_duration_sec(
-        (boot_clock_->GetTimeSinceBoot() - idle_event_start_since_boot_.value())
+        (boot_clock_.GetTimeSinceBoot() - idle_event_start_since_boot_.value())
             .InSeconds());
   }
   event->set_screen_dim_occurred(screen_dim_occurred_);
@@ -536,7 +525,7 @@ void UserActivityManager::MaybeLogEvent(
     if (previous_event->has_log_duration_sec()) {
       previous_event->set_log_duration_sec(
           previous_event->log_duration_sec() +
-          previous_idle_event_data_->dim_imminent_signal_interval.InSeconds());
+          previous_idle_event_data_->smart_dim_request_interval.InSeconds());
     }
 
     *previous_activity_event.mutable_features() =
@@ -558,12 +547,6 @@ void UserActivityManager::MaybeLogEvent(
     previous_positive_actions_count_++;
   }
   ResetAfterLogging();
-}
-
-void UserActivityManager::SetTaskRunnerForTesting(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    std::unique_ptr<BootClock> test_boot_clock) {
-  boot_clock_ = std::move(test_boot_clock);
 }
 
 void UserActivityManager::PopulatePreviousEventData(
@@ -597,7 +580,7 @@ void UserActivityManager::PopulatePreviousEventData(
   LogPowerMLPreviousEventLoggingResult(result);
 
   previous_idle_event_data_ = std::make_unique<PreviousIdleEventData>();
-  previous_idle_event_data_->dim_imminent_signal_interval =
+  previous_idle_event_data_->smart_dim_request_interval =
       now - idle_event_start_since_boot_.value();
 
   previous_idle_event_data_->features = features_;

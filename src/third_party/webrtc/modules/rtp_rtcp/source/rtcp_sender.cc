@@ -16,8 +16,8 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/events/rtc_event_rtcp_packet_outgoing.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/app.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/bye.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/compound_packet.h"
@@ -130,7 +130,7 @@ RTCPSender::RTCPSender(const RtpRtcp::Configuration& config)
       timestamp_offset_(0),
       last_rtp_timestamp_(0),
       last_frame_capture_time_ms_(-1),
-      ssrc_(config.media_send_ssrc.value_or(0)),
+      ssrc_(config.local_media_ssrc.value_or(0)),
       remote_ssrc_(0),
       receive_statistics_(config.receive_statistics),
 
@@ -743,7 +743,7 @@ int32_t RTCPSender::SendCompoundRTCP(
 
       BuilderFunc func = builder_it->second;
       std::unique_ptr<rtcp::RtcpPacket> packet = (this->*func)(context);
-      if (packet.get() == nullptr)
+      if (packet == nullptr)
         return -1;
       // If there is a BYE, don't append now - save it and append it
       // at the end later.

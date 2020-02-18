@@ -83,6 +83,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   void OutputResult(const CodecPicture* picture,
                     D3D11PictureBuffer* picture_buffer) override;
 
+  static bool GetD3D11FeatureLevel(ComD3D11Device dev,
+                                   D3D_FEATURE_LEVEL* feature_level);
+
   // Return the set of video decoder configs that we support.
   static std::vector<SupportedVideoDecoderConfig>
   GetSupportedVideoDecoderConfigs(
@@ -259,7 +262,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   SupportedConfigs supported_configs_;
 
-  base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
+  base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(D3D11VideoDecoder);
 };

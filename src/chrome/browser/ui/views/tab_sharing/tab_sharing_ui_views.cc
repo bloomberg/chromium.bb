@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -31,9 +32,8 @@
 
 namespace {
 
-#if !defined(OS_MACOSX)
-const int kContentsBorderThickness = 10;
-const float kContentsBorderOpacity = 0.24;
+const int kContentsBorderThickness = 5;
+const float kContentsBorderOpacity = 0.50;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
 
 void InitContentsBorderWidget(content::WebContents* contents) {
@@ -70,7 +70,6 @@ void InitContentsBorderWidget(content::WebContents* contents) {
 
   browser_view->set_contents_border_widget(widget);
 }
-#endif
 
 void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
   if (!contents)
@@ -78,10 +77,15 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   if (!browser)
     return;
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (!browser_view->contents_border_widget()) {
+    if (!visible)
+      return;
+    InitContentsBorderWidget(contents);
+  }
   views::Widget* contents_border_widget =
-      BrowserView::GetBrowserViewForBrowser(browser)->contents_border_widget();
-  if (!contents_border_widget)
-    return;
+      browser_view->contents_border_widget();
   if (visible)
     contents_border_widget->Show();
   else
@@ -89,10 +93,12 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
 }
 
 base::string16 GetTabName(content::WebContents* tab) {
-  GURL url = tab->GetURL();
-  return content::IsOriginSecure(url)
-             ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
-             : url_formatter::FormatUrlForSecurityDisplay(url.GetOrigin());
+  GURL url = tab->GetLastCommittedURL();
+  const base::string16 tab_name =
+      content::IsOriginSecure(url)
+          ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
+          : url_formatter::FormatUrlForSecurityDisplay(url.GetOrigin());
+  return tab_name.empty() ? tab->GetTitle() : tab_name;
 }
 
 }  // namespace
@@ -106,17 +112,14 @@ std::unique_ptr<TabSharingUI> TabSharingUI::Create(
 
 TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
                                      base::string16 app_name)
-    : app_name_(std::move(app_name)) {
+    : shared_tab_media_id_(media_id), app_name_(std::move(app_name)) {
   shared_tab_ = content::WebContents::FromRenderFrameHost(
       content::RenderFrameHost::FromID(
           media_id.web_contents_id.render_process_id,
           media_id.web_contents_id.main_render_frame_id));
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
-#if !defined(OS_MACOSX)
-  // TODO(https://crbug.com/991896) fix contents border on Mac.
   InitContentsBorderWidget(shared_tab_);
-#endif
 }
 
 TabSharingUIViews::~TabSharingUIViews() {
@@ -131,6 +134,7 @@ gfx::NativeViewId TabSharingUIViews::OnStarted(
   stop_callback_ = std::move(stop_callback);
   CreateInfobarsForAllTabs();
   SetContentsBorderVisible(shared_tab_, true);
+  CreateTabCaptureIndicator();
   return 0;
 }
 
@@ -167,7 +171,7 @@ void TabSharingUIViews::StopSharing() {
 
 void TabSharingUIViews::OnBrowserAdded(Browser* browser) {
   if (browser->profile()->GetOriginalProfile() == profile_)
-    tab_strip_models_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
 }
 
 void TabSharingUIViews::OnBrowserRemoved(Browser* browser) {
@@ -175,9 +179,7 @@ void TabSharingUIViews::OnBrowserRemoved(Browser* browser) {
   if (browser_list->empty())
     browser_list->RemoveObserver(this);
 
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  if (tab_strip_models_observer_.IsObserving(tab_strip_model))
-    tab_strip_models_observer_.Remove(tab_strip_model);
+  browser->tab_strip_model()->RemoveObserver(this);
 }
 
 void TabSharingUIViews::OnTabStripModelChanged(
@@ -263,7 +265,7 @@ void TabSharingUIViews::CreateInfobarForWebContents(
 
 void TabSharingUIViews::RemoveInfobarsForAllTabs() {
   BrowserList::GetInstance()->RemoveObserver(this);
-  tab_strip_models_observer_.RemoveAll();
+  TabStripModelObserver::StopObservingAll(this);
 
   for (const auto& infobars_entry : infobars_) {
     infobars_entry.second->owner()->RemoveObserver(this);
@@ -271,4 +273,15 @@ void TabSharingUIViews::RemoveInfobarsForAllTabs() {
   }
 
   infobars_.clear();
+}
+
+void TabSharingUIViews::CreateTabCaptureIndicator() {
+  const blink::MediaStreamDevice device(
+      blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
+      shared_tab_media_id_.ToString(), std::string());
+  tab_capture_indicator_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
+                                  ->GetMediaStreamCaptureIndicator()
+                                  ->RegisterMediaStream(shared_tab_, {device});
+  tab_capture_indicator_ui_->OnStarted(
+      base::OnceClosure(), content::MediaStreamUI::SourceCallback());
 }

@@ -13,7 +13,7 @@
 
 namespace chromeos {
 
-FakeConciergeClient::FakeConciergeClient() : weak_ptr_factory_(this) {
+FakeConciergeClient::FakeConciergeClient() {
   InitializeProtoResponses();
 }
 FakeConciergeClient::~FakeConciergeClient() = default;
@@ -170,6 +170,16 @@ void FakeConciergeClient::GetVmEnterpriseReportingInfo(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback),
                                 get_vm_enterprise_reporting_info_response_));
+}
+
+void FakeConciergeClient::SetVmCpuRestriction(
+    const vm_tools::concierge::SetVmCpuRestrictionRequest& request,
+    DBusMethodCallback<vm_tools::concierge::SetVmCpuRestrictionResponse>
+        callback) {
+  set_vm_cpu_restriction_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), set_vm_cpu_restriction_response_));
 }
 
 void FakeConciergeClient::WaitForServiceToBeAvailable(

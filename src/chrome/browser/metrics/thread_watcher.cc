@@ -101,10 +101,6 @@ ThreadWatcherObserver::ThreadWatcherObserver(
                           base::Unretained(this)));
 #endif
 
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
@@ -163,8 +159,7 @@ void ThreadWatcherObserver::OnUserActivityDetected() {
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),
       thread_name_(params.thread_name),
-      watched_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({params.thread_id})),
+      watched_runner_(base::CreateSingleThreadTaskRunner({params.thread_id})),
       sleep_time_(params.sleep_time),
       unresponsive_time_(params.unresponsive_time),
       ping_time_(base::TimeTicks::Now()),
@@ -636,8 +631,8 @@ void ThreadWatcherList::InitializeAndStartWatching(
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Disarm the startup timebomb, even if stop has been called.
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&DisarmStartupTimeBomb));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DisarmStartupTimeBomb));
 
   // This method is deferred in relationship to its StopWatchingAll()
   // counterpart. If a previous initialization has already happened, or if

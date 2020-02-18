@@ -16,10 +16,9 @@
 
 #include "src/trace_processor/span_join_operator_table.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "src/trace_processor/trace_processor_context.h"
 #include "src/trace_processor/trace_storage.h"
+#include "test/gtest_and_gmock.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -29,6 +28,7 @@ class SpanJoinOperatorTableTest : public ::testing::Test {
  public:
   SpanJoinOperatorTableTest() {
     sqlite3* db = nullptr;
+    PERFETTO_CHECK(sqlite3_initialize() == SQLITE_OK);
     PERFETTO_CHECK(sqlite3_open(":memory:", &db) == SQLITE_OK);
     db_.reset(db);
 
@@ -57,8 +57,6 @@ class SpanJoinOperatorTableTest : public ::testing::Test {
                 elements[i]);
     }
   }
-
-  ~SpanJoinOperatorTableTest() override { context_.storage->ResetStorage(); }
 
  protected:
   TraceProcessorContext context_;

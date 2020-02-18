@@ -153,6 +153,9 @@ void TargetAutoAttacher::UpdatePortals() {
          outer_web_contents->GetInnerWebContents()) {
       WebContentsImpl* web_contents_impl =
           static_cast<WebContentsImpl*>(web_contents);
+      if (!web_contents_impl->IsPortal())
+        continue;
+
       scoped_refptr<DevToolsAgentHost> new_host =
           RenderFrameDevToolsAgentHost::GetOrCreateFor(
               web_contents_impl->GetFrameTree()->root());
@@ -233,8 +236,8 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
     return nullptr;
 
   if (new_cross_process) {
-    agent_host =
-        RenderFrameDevToolsAgentHost::GetOrCreateForDangling(frame_tree_node);
+    agent_host = RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
+        navigation_handle);
     DCHECK(auto_attached_hosts_.find(agent_host) == auto_attached_hosts_.end());
     attach_callback_.Run(agent_host.get(), wait_for_debugger_on_start_);
     auto_attached_hosts_.insert(agent_host);

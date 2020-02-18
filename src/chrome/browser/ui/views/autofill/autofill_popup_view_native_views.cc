@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -465,7 +466,7 @@ std::unique_ptr<views::Label> AutofillPopupItemView::CreateSecondaryLabel(
     const base::string16& text) const {
   return CreateLabelWithStyleAndContext(
       text, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-      ChromeTextStyle::STYLE_SECONDARY);
+      views::style::STYLE_SECONDARY);
 }
 
 std::unique_ptr<views::Label>
@@ -540,7 +541,7 @@ std::unique_ptr<views::View> AutofillPopupSuggestionView::CreateSubtextLabel() {
 
   auto label = CreateLabelWithStyleAndContext(
       label_text, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      ChromeTextStyle::STYLE_SECONDARY);
+      views::style::STYLE_SECONDARY);
   return label;
 }
 
@@ -665,7 +666,7 @@ std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
-  return ChromeTextStyle::STYLE_SECONDARY;
+  return views::style::STYLE_SECONDARY;
 }
 
 gfx::Font::Weight AutofillPopupFooterView::GetPrimaryTextWeight() const {
@@ -822,6 +823,13 @@ void AutofillPopupRowView::Init() {
   RefreshStyle();
 }
 
+bool AutofillPopupRowView::HandleAccessibleAction(
+    const ui::AXActionData& action_data) {
+  if (action_data.action == ax::mojom::Action::kFocus)
+    popup_view_->controller()->SetSelectedLine(line_number_);
+  return View::HandleAccessibleAction(action_data);
+}
+
 /************** AutofillPopupViewNativeViews **************/
 
 AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
@@ -839,6 +847,33 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
 
+void AutofillPopupViewNativeViews::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kMenu;
+  // If controller_ is valid, then the view is expanded.
+  if (controller_) {
+    node_data->AddState(ax::mojom::State::kExpanded);
+  } else {
+    node_data->AddState(ax::mojom::State::kCollapsed);
+    node_data->AddState(ax::mojom::State::kInvisible);
+  }
+  node_data->SetName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
+}
+
+void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
+                                                     bool is_visible) {
+  // Fire menu end event. The menu start event is delayed until the user
+  // navigates into the menu, otherwise some screen readers will ignore
+  // any focus events outside of the menu, including a focus event on
+  // the form control itself.
+  if (!is_visible) {
+    if (is_ax_menu_start_event_fired_)
+      NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+    is_ax_menu_start_event_fired_ = false;
+  }
+}
+
 void AutofillPopupViewNativeViews::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
   // |body_container_| and |footer_container_| will be null if there is no body
@@ -854,13 +889,14 @@ void AutofillPopupViewNativeViews::OnThemeChanged() {
 }
 
 void AutofillPopupViewNativeViews::Show() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
   DoShow();
 }
 
 void AutofillPopupViewNativeViews::Hide() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
   // The controller is no longer valid after it hides us.
   controller_ = nullptr;
-
   DoHide();
 }
 
@@ -873,6 +909,17 @@ void AutofillPopupViewNativeViews::OnSelectedRowChanged(
 
   if (current_row_selection)
     rows_[*current_row_selection]->SetSelected(true);
+
+  if (!is_ax_menu_start_event_fired_) {
+    // By firing these and the matching kMenuEnd events, we are telling screen
+    // readers that the focus is only changing temporarily, and the screen
+    // reader will restore the focus back to the appropriate textfield when the
+    // menu closes. Wait until item is selected before firing, otherwise if it's
+    // fired when the menu is first visible, then the focus on the form control
+    // is not read.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+    is_ax_menu_start_event_fired_ = true;
+  }
 }
 
 void AutofillPopupViewNativeViews::OnSuggestionsChanged() {

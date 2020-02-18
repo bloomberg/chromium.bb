@@ -32,6 +32,8 @@ bool PasswordManagerClient::OnCredentialManagerUsed() {
   return true;
 }
 
+void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
+
 void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
@@ -42,6 +44,10 @@ void PasswordManagerClient::PasswordWasAutofilled(
 void PasswordManagerClient::AutofillHttpAuth(
     const autofill::PasswordForm& preferred_match,
     const PasswordFormManagerForUI* form_manager) {}
+
+void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
+    password_manager::CredentialLeakType leak_type,
+    const GURL& origin) {}
 
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;

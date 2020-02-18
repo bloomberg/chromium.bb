@@ -203,6 +203,11 @@ void SetAudioFrameActivityAndType(bool vad_enabled,
       audio_frame->vad_activity_ = AudioFrame::kVadPassive;
       break;
     }
+    case NetEqImpl::OutputType::kCodecPLC: {
+      audio_frame->speech_type_ = AudioFrame::kCodecPLC;
+      audio_frame->vad_activity_ = last_vad_activity;
+      break;
+    }
     default:
       RTC_NOTREACHED();
   }
@@ -893,8 +898,7 @@ int NetEqImpl::GetAudioInternal(AudioFrame* audio_frame,
 
   // We treat it as if all packets referenced to by |last_decoded_packet_infos_|
   // were mashed together when creating the samples in |algorithm_buffer_|.
-  RtpPacketInfos packet_infos(std::move(last_decoded_packet_infos_));
-  last_decoded_packet_infos_.clear();
+  RtpPacketInfos packet_infos(last_decoded_packet_infos_);
 
   // Copy samples from |algorithm_buffer_| to |sync_buffer_|.
   //
@@ -2088,6 +2092,8 @@ NetEqImpl::OutputType NetEqImpl::LastOutputType() {
     return OutputType::kPLC;
   } else if (vad_->running() && !vad_->active_speech()) {
     return OutputType::kVadPassive;
+  } else if (last_mode_ == kModeCodecPlc) {
+    return OutputType::kCodecPLC;
   } else {
     return OutputType::kNormalSpeech;
   }

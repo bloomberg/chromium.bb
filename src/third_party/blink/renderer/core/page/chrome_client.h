@@ -92,7 +92,6 @@ class PagePopup;
 class PagePopupClient;
 class PopupOpeningObserver;
 class WebDragData;
-class WebLayerTreeView;
 class WebViewImpl;
 
 struct DateTimeChooserParameters;
@@ -113,8 +112,10 @@ class CORE_EXPORT ChromeClient
   virtual ~ChromeClient() = default;
 
   // Converts the scalar value from the window coordinates to the viewport
-  // scale.
+  // scale. TODO(darin): Convert all callers over to the LocalFrame version.
   virtual float WindowToViewportScalar(const float) const = 0;
+  virtual float WindowToViewportScalar(LocalFrame*,
+                                       const float value) const = 0;
 
   virtual bool IsPopup() { return false; }
 
@@ -408,7 +409,10 @@ class CORE_EXPORT ChromeClient
 
   virtual bool IsSVGImageChromeClient() const { return false; }
 
-  virtual bool RequestPointerLock(LocalFrame*) { return false; }
+  virtual bool RequestPointerLock(LocalFrame*,
+                                  bool request_unadjusted_movement) {
+    return false;
+  }
   virtual void RequestPointerUnlock(LocalFrame*) {}
 
   virtual IntSize MinimumWindowSize() const { return IntSize(100, 100); }
@@ -446,7 +450,9 @@ class CORE_EXPORT ChromeClient
 
   virtual void InstallSupplements(LocalFrame&);
 
-  virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
+  virtual viz::FrameSinkId GetFrameSinkId(LocalFrame*) {
+    return viz::FrameSinkId();
+  }
 
   virtual void RequestDecode(LocalFrame*,
                              const PaintImage& image,
@@ -470,6 +476,16 @@ class CORE_EXPORT ChromeClient
 
   virtual void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
                                                      bool visible) = 0;
+
+  // Enable or disable BeginMainFrameNotExpected signals from the compositor of
+  // the local root of |frame|. These signals would be consumed by the blink
+  // scheduler.
+  virtual void RequestBeginMainFrameNotExpected(LocalFrame& frame,
+                                                bool request) = 0;
+
+  // A stable numeric Id for |frame|'s local root's compositor. For
+  // tracing/debugging purposes.
+  virtual int GetLayerTreeId(LocalFrame& frame) = 0;
 
   virtual void Trace(blink::Visitor*);
 

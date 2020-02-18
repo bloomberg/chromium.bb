@@ -36,7 +36,7 @@
 namespace {
 
 const int kHorizontalMargin = 10;
-const float kWindowAlphaValue = 0.85f;
+const float kWindowAlphaValue = 0.96f;
 const int kPaddingVertical = 5;
 const int kPaddingHorizontal = 10;
 
@@ -179,6 +179,9 @@ ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
 gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
     base::OnceClosure stop_callback,
     content::MediaStreamUI::SourceCallback source_callback) {
+  if (GetWidget())
+    return 0;
+
   stop_callback_ = std::move(stop_callback);
   source_callback_ = std::move(source_callback);
 
@@ -206,8 +209,8 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   params.context = ash::Shell::GetPrimaryRootWindow();
 #endif
 
-  widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-  widget->Init(params);
+  widget->set_frame_type(views::Widget::FrameType::kForceCustom);
+  widget->Init(std::move(params));
 
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));
@@ -229,11 +232,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   widget->SetOpacity(kWindowAlphaValue);
   widget->SetVisibleOnAllWorkspaces(true);
 
-#if defined(OS_WIN)
-  return gfx::NativeViewId(views::HWNDForWidget(widget));
-#else
   return 0;
-#endif
 }
 
 void ScreenCaptureNotificationUIViews::Layout() {

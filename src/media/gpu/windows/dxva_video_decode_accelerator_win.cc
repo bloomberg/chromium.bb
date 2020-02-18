@@ -412,7 +412,7 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
   // Detects stream configuration changes.
   // Returns false on failure.
   bool DetectConfig(const uint8_t* stream, unsigned int size) override {
-    parser_.SetStream(stream, size, {} /* spatial_layer_frame_size */, nullptr);
+    parser_.SetStream(stream, size, nullptr);
     Vp9FrameHeader fhdr;
     gfx::Size allocate_size;
     std::unique_ptr<DecryptConfig> null_config;
@@ -519,8 +519,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       using_angle_device_(false),
       enable_accelerated_vpx_decode_(
           !workarounds.disable_accelerated_vpx_decode),
-      processing_config_changed_(false),
-      weak_this_factory_(this) {
+      processing_config_changed_(false) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));

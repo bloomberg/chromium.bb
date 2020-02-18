@@ -455,6 +455,6 @@ function callFunction(func, args, w3c, opt_unwrappedReturn) {
       };
     }).catch(buildError);
   } catch (error) {
-    return buildError(error);
+    return Promise.resolve(buildError(error));
   }
 }

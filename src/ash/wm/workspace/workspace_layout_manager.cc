@@ -199,9 +199,18 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
 void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
                                             const gfx::Rect& requested_bounds) {
+  WindowState* window_state = WindowState::Get(child);
   SetBoundsWMEvent event(requested_bounds);
-  WindowState::Get(child)->OnWMEvent(&event);
-  UpdateShelfVisibility();
+  window_state->OnWMEvent(&event);
+
+  // Setting bounds shouldn't trigger UpdateShelfVisibility(), especially for
+  // PIP because it can cause an unexpected call of updatePipBounds(). So avoid
+  // calling this for PIP windows for now.
+  // TODO(takise): Remove UpdateShelfVisibility() completely, which may be
+  // obsolete now.
+  if (!window_state->IsPip()) {
+    UpdateShelfVisibility();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -337,10 +346,6 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  if (root_window_ == window) {
-    const WMEvent wm_event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
-    AdjustAllWindowsBoundsForWorkAreaChange(&wm_event);
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -393,6 +398,12 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
   if (display::Screen::GetScreen()->GetDisplayNearestWindow(window_).id() !=
       display.id()) {
     return;
+  }
+
+  if (changed_metrics & (display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                         display::DisplayObserver::DISPLAY_METRIC_PRIMARY)) {
+    const DisplayMetricsChangedWMEvent wm_event(changed_metrics);
+    AdjustAllWindowsBoundsForWorkAreaChange(&wm_event);
   }
 
   const gfx::Rect work_area(

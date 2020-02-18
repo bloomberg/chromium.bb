@@ -7,25 +7,50 @@ import datetime
 import logging
 import os
 import posixpath
-import random
 import time
+import urllib
+
 
 PASS = 'PASS'
 FAIL = 'FAIL'
 SKIP = 'SKIP'
 
 
+_CONTENT_TYPES = {
+    '.dat': 'application/octet-stream',  # Generic data blob.
+    '.dmp': 'application/x-dmp',  # A minidump file.
+    '.gz': 'application/gzip',
+    '.html': 'text/html',
+    '.json': 'application/json',
+    '.pb': 'application/x-protobuf',
+    '.png': 'image/png',
+    '.txt': 'text/plain',
+}
+_DEFAULT_CONTENT_TYPE = _CONTENT_TYPES['.dat']
+
+
 def _FormatDuration(seconds):
   return '{:.2f}s'.format(seconds)
 
 
+def ContentTypeFromExt(name):
+  """Infer a suitable content_type from the extension in a file name."""
+  _, ext = posixpath.splitext(name)
+  if ext in _CONTENT_TYPES:
+    return _CONTENT_TYPES[ext]
+  else:
+    logging.info('Unable to infer content type for artifact: %s', name)
+    logging.info('Falling back to: %s', _DEFAULT_CONTENT_TYPE)
+    return _DEFAULT_CONTENT_TYPE
+
+
 class Artifact(object):
-  def __init__(self, name, local_path, content_type=None):
+  def __init__(self, name, local_path, content_type):
     """
     Args:
       name: name of the artifact.
       local_path: an absolute local path to an artifact file.
-      content_type: optional. A string representing the MIME type of a file.
+      content_type: A string representing the MIME type of a file.
     """
     self._name = name
     self._local_path = local_path
@@ -52,10 +77,32 @@ class Artifact(object):
     assert not self._url, 'Artifact URL has been already set'
     self._url = url
 
+  def AsDict(self):
+    d = {
+        'filePath': self.local_path,
+        'contentType': self.content_type
+    }
+    # TODO(crbug.com/981349): Remove this when artifact uploading is
+    # switched over to the results processor.
+    if self.url:
+      d['remoteUrl'] = self.url
+    return d
+
 
 class StoryRun(object):
-  def __init__(self, story, output_dir=None, index=0):
+  def __init__(self, story, test_prefix=None, index=0, intermediate_dir=None):
+    """StoryRun objects track results for a single run of a story.
+
+    Args:
+      story: The story.Story being currently run.
+      test_prefix: A string prefix to use for the test path identifying the
+        test being run.
+      index: If the same story is run multiple times, the index of this run.
+      output_dir: The path to a directory where outputs are stored. Test
+        artifacts, in particluar, are stored at '{output_dir}/artifacts'.
+    """
     self._story = story
+    self._test_prefix = test_prefix
     self._index = index
     self._values = []
     self._tbm_metrics = []
@@ -67,20 +114,16 @@ class StoryRun(object):
     self._end_time = None
     self._artifacts = {}
 
-    if output_dir is None:
+    if intermediate_dir is None:
       self._artifacts_dir = None
     else:
-      output_dir = os.path.realpath(output_dir)
-      run_dir = '%s_%s_%s' % (
-          self._story.file_safe_name,
-          self.start_datetime.strftime('%Y%m%dT%H%M%SZ'),
-          random.randint(1, 1e5),
-      )
-      self._artifacts_dir = os.path.join(output_dir, 'artifacts', run_dir)
+      intermediate_dir = os.path.realpath(intermediate_dir)
+      run_dir = '%s_%s' % (self._story.file_safe_name, self._index + 1)
+      self._artifacts_dir = os.path.join(intermediate_dir, run_dir)
       if not os.path.exists(self._artifacts_dir):
         os.makedirs(self._artifacts_dir)
 
-  def AddValue(self, value):
+  def AddLegacyValue(self, value):
     self._values.append(value)
 
   def SetTbmMetrics(self, metrics):
@@ -114,13 +157,27 @@ class StoryRun(object):
     assert self.finished, 'story must be finished first'
     return {
         'testResult': {
-            'testName': self.test_name,
+            'testPath': self.test_path,
             'status': self.status,
             'isExpected': self.is_expected,
             'startTime': self.start_datetime.isoformat() + 'Z',
-            'runDuration': _FormatDuration(self.duration)
+            'runDuration': _FormatDuration(self.duration),
+            'artifacts': {
+                name: artifact.AsDict()
+                for name, artifact in self._artifacts.items()
+            },
+            'tags': [
+                {'key': key, 'value': value}
+                for key, value in self._IterTags()
+            ],
         }
     }
+
+  def _IterTags(self):
+    for metric in self._tbm_metrics:
+      yield 'tbmv2', metric
+    if 'GTEST_SHARD_INDEX' in os.environ:
+      yield 'shard', os.environ['GTEST_SHARD_INDEX']
 
   @property
   def story(self):
@@ -131,9 +188,16 @@ class StoryRun(object):
     return self._index
 
   @property
-  def test_name(self):
-    # TODO(crbug.com/966835): This should be prefixed with the benchmark name.
-    return self.story.name
+  def test_path(self):
+    # Some stories use URLs as names, often containing special characters.
+    # To avoid potential issues, and to make it easy to identify the components
+    # on a test_path, we percent encode those special chars.
+    # TODO(crbug.com/983993): Remove this when all stories have good names.
+    story_name = urllib.quote(self.story.name, safe='')
+    if self._test_prefix is not None:
+      return '/'.join([self._test_prefix, story_name])
+    else:
+      return story_name
 
   @property
   def values(self):
@@ -208,12 +272,15 @@ class StoryRun(object):
     return local_path
 
   @contextlib.contextmanager
-  def CreateArtifact(self, name):
+  def CreateArtifact(self, name, content_type=None):
     """Create an artifact.
 
     Args:
       name: File path that this artifact will have inside the artifacts dir.
           The name can contain sub-directories with '/' as a separator.
+      content_type: A string representing the MIME type of the artifact.
+          If omitted a content type is inferred from a file extension in name.
+
     Returns:
       A generator yielding a file object.
     """
@@ -227,16 +294,18 @@ class StoryRun(object):
         'Story already has an artifact: %s' % name)
 
     local_path = self._PrepareLocalPath(name)
+    if content_type is None:
+      content_type = ContentTypeFromExt(name)
 
     with open(local_path, 'w+b') as file_obj:
       # We want to keep track of all artifacts (e.g. logs) even in the case
       # of an exception in the client code, so we create a record for
       # this artifact before yielding the file handle.
-      self._artifacts[name] = Artifact(name, local_path)
+      self._artifacts[name] = Artifact(name, local_path, content_type)
       yield file_obj
 
   @contextlib.contextmanager
-  def CaptureArtifact(self, name):
+  def CaptureArtifact(self, name, content_type=None):
     """Generate an absolute file path for an artifact, but do not
     create a file. File creation is a responsibility of the caller of this
     method. It is assumed that the file exists at the exit of the context.
@@ -244,6 +313,9 @@ class StoryRun(object):
     Args:
       name: File path that this artifact will have inside the artifacts dir.
         The name can contain sub-directories with '/' as a separator.
+      content_type: A string representing the MIME type of the artifact.
+          If omitted a content type is inferred from a file extension in name.
+
     Returns:
       A generator yielding a file name.
     """
@@ -252,10 +324,13 @@ class StoryRun(object):
         'Story already has an artifact: %s' % name)
 
     local_path = self._PrepareLocalPath(name)
+    if content_type is None:
+      content_type = ContentTypeFromExt(name)
+
     yield local_path
     assert os.path.isfile(local_path), (
         'Failed to capture an artifact: %s' % local_path)
-    self._artifacts[name] = Artifact(name, local_path)
+    self._artifacts[name] = Artifact(name, local_path, content_type)
 
   def IterArtifacts(self, subdir=None):
     """Iterate over all artifacts in a given sub-directory.

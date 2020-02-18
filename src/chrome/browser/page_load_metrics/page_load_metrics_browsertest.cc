@@ -47,6 +47,7 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -59,6 +60,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -1170,7 +1172,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1193,7 +1195,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 class PageLoadMetricsBrowserTestWithAutoupgradesDisabled
@@ -1269,7 +1271,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
@@ -1299,7 +1301,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1532,7 +1534,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter CSS Properties observed in multiple child frames are
@@ -1558,7 +1560,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       internal::kCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter CSS properties observed in a child frame are recorded,
@@ -1583,7 +1585,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter CSS Properties observed in multiple child frames are
@@ -1609,7 +1611,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName,
-      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+      blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
 // Test UseCounter Features observed for SVG pages.
@@ -1665,12 +1667,8 @@ class SessionRestorePageLoadMetricsBrowserTest
 
     // Create a new window, which should trigger session restore.
     chrome::NewEmptyWindow(profile);
-    ui_test_utils::BrowserAddedObserver window_observer;
-    SessionRestoreTestHelper restore_observer;
-
-    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-    restore_observer.Wait();
-    return new_browser;
+    SessionRestoreTestHelper().Wait();
+    return BrowserList::GetInstance()->GetLastActive();
   }
 
   void WaitForTabsToLoad(Browser* browser) {
@@ -1911,9 +1909,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   sessions::SessionTab tab;
   tab.tab_visual_index = 0;
   tab.current_navigation_index = 1;
-  tab.navigations.push_back(
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-          GetTestURL().spec(), "one"));
+  tab.navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+      GetTestURL().spec(), "one"));
   tab.navigations.back().set_encoded_page_state("");
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -1976,9 +1973,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
     tab1->tab_visual_index = 0;
     tab1->current_navigation_index = 0;
     tab1->pinned = true;
-    tab1->navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            GetTestURL().spec(), "one"));
+    tab1->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+        GetTestURL().spec(), "one"));
     tab1->navigations.back().set_encoded_page_state("");
     window.tabs.push_back(std::move(tab1));
   }
@@ -1988,24 +1984,23 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
     tab2->tab_visual_index = 1;
     tab2->current_navigation_index = 0;
     tab2->pinned = false;
-    tab2->navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            GetTestURL2().spec(), "two"));
+    tab2->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+        GetTestURL2().spec(), "two"));
     tab2->navigations.back().set_encoded_page_state("");
     window.tabs.push_back(std::move(tab2));
   }
 
   // Restore the session window with 2 tabs.
   session.push_back(static_cast<const sessions::SessionWindow*>(&window));
-  ui_test_utils::BrowserAddedObserver window_observer;
   SessionRestorePaintWaiter session_restore_paint_waiter;
   SessionRestore::RestoreForeignSessionWindows(profile, session.begin(),
                                                session.end());
-  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  session_restore_paint_waiter.WaitForForegroundTabs(1);
+
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
 
-  session_restore_paint_waiter.WaitForForegroundTabs(1);
   ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
   ExpectFirstPaintMetricsTotalCount(1);
 }

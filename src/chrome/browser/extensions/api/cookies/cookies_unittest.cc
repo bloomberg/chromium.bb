@@ -10,13 +10,14 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,7 @@ struct DomainMatchCase {
 
 class ExtensionCookiesTest : public testing::Test {
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
@@ -186,9 +187,9 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
   std::unique_ptr<net::CanonicalCookie> canonical_cookie(
-      net::CanonicalCookie::Create(GURL("http://test.com"),
-                                   "=011Q255bNX_1!yd\203e+;path=/path\203",
-                                   base::Time::Now(), net::CookieOptions()));
+      net::CanonicalCookie::Create(
+          GURL("http://test.com"), "=011Q255bNX_1!yd\203e+;path=/path\203",
+          base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_NE(nullptr, canonical_cookie.get());
   Cookie cookie =
       cookies_helpers::CreateCookie(*canonical_cookie, "some cookie store");

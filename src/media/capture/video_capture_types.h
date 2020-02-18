@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/base/video_types.h"
 #include "media/capture/capture_export.h"
@@ -18,7 +19,7 @@ namespace media {
 
 // TODO(wjia): this type should be defined in a common place and
 // shared with device manager.
-typedef int VideoCaptureSessionId;
+using VideoCaptureSessionId = base::UnguessableToken;
 
 // Policies for capture devices that have source content that varies in size.
 // It is up to the implementation how the captured content will be transformed
@@ -58,9 +59,7 @@ enum class VideoCaptureBufferType {
   kSharedMemory,
   kSharedMemoryViaRawFileDescriptor,
   kMailboxHolder,
-#if defined(OS_CHROMEOS)
   kGpuMemoryBuffer
-#endif
 };
 
 // WARNING: Do not change the values assigned to the entries. They are used for

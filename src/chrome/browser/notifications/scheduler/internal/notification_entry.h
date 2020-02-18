@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_ENTRY_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_ENTRY_H_
 
+#include <map>
 #include <string>
 
 #include "base/time/time.h"
@@ -21,6 +22,7 @@ struct NotificationEntry {
   NotificationEntry(SchedulerClientType type, const std::string& guid);
   NotificationEntry(const NotificationEntry& other);
   bool operator==(const NotificationEntry& other) const;
+  bool operator!=(const NotificationEntry& other) const;
   ~NotificationEntry();
 
   // The type of the notification.
@@ -37,9 +39,9 @@ struct NotificationEntry {
   // shown.
   NotificationData notification_data;
 
-  // The unique identifier of the icons, which must be loaded asynchronously
-  // into memory.
-  std::vector<std::string> icons_uuid;
+  // The map of icons uuid on notification, which must be
+  // loaded asynchronously into memory.
+  std::map<IconType, std::string> icons_uuid;
 
   // Scheduling details.
   ScheduleParams schedule_params;

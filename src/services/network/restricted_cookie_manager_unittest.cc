@@ -7,12 +7,15 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
@@ -111,7 +114,8 @@ class RestrictedCookieManagerSync {
     base::RunLoop run_loop;
     std::vector<net::CanonicalCookie> result;
     cookie_service_->GetAllForUrl(
-        url, site_for_cookies, std::move(options),
+        url, site_for_cookies, url::Origin::Create(site_for_cookies),
+        std::move(options),
         base::BindLambdaForTesting(
             [&run_loop,
              &result](const std::vector<net::CanonicalCookie>& backend_result) {
@@ -128,7 +132,7 @@ class RestrictedCookieManagerSync {
     base::RunLoop run_loop;
     bool result = false;
     cookie_service_->SetCanonicalCookie(
-        cookie, url, site_for_cookies,
+        cookie, url, site_for_cookies, url::Origin::Create(site_for_cookies),
         base::BindLambdaForTesting([&run_loop, &result](bool backend_result) {
           result = backend_result;
           run_loop.Quit();
@@ -137,12 +141,14 @@ class RestrictedCookieManagerSync {
     return result;
   }
 
-  void AddChangeListener(const GURL& url,
-                         const GURL& site_for_cookies,
-                         mojom::CookieChangeListenerPtr listener) {
+  void AddChangeListener(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      mojo::PendingRemote<mojom::CookieChangeListener> listener) {
     base::RunLoop run_loop;
     cookie_service_->AddChangeListener(
-        url, site_for_cookies, std::move(listener), run_loop.QuitClosure());
+        url, site_for_cookies, url::Origin::Create(site_for_cookies),
+        std::move(listener), run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -166,9 +172,10 @@ class RestrictedCookieManagerTest
             false /* is_service_worker*/,
             kProcessId,
             kRoutingId)),
-        binding_(service_.get(), mojo::MakeRequest(&service_ptr_)) {
+        receiver_(service_.get(),
+                  service_remote_.BindNewPipeAndPassReceiver()) {
     sync_service_ =
-        std::make_unique<RestrictedCookieManagerSync>(service_ptr_.get());
+        std::make_unique<RestrictedCookieManagerSync>(service_remote_.get());
   }
   ~RestrictedCookieManagerTest() override {}
 
@@ -198,14 +205,13 @@ class RestrictedCookieManagerTest
                            net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result() ==
-           net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+    return callback.result().IsInclude();
   }
 
   // Simplified helper for SetCanonicalCookie.
   //
   // Creates a CanonicalCookie that is not secure, not http-only,
-  // and not restricted to first parties. Crashes if the creation fails.
+  // and has SameSite=None. Crashes if the creation fails.
   void SetSessionCookie(const char* name,
                         const char* value,
                         const char* domain,
@@ -237,7 +243,7 @@ class RestrictedCookieManagerTest
 
   bool received_bad_message() { return received_bad_message_; }
 
-  mojom::RestrictedCookieManager* backend() { return service_ptr_.get(); }
+  mojom::RestrictedCookieManager* backend() { return service_remote_.get(); }
 
  protected:
   void OnBadMessage(const std::string& reason) {
@@ -250,13 +256,14 @@ class RestrictedCookieManagerTest
     return recording_client_.recorded_activity();
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::CookieMonster cookie_monster_;
   CookieSettings cookie_settings_;
   RecordingNetworkContextClient recording_client_;
   std::unique_ptr<RestrictedCookieManager> service_;
-  mojom::RestrictedCookieManagerPtr service_ptr_;
-  mojo::Binding<mojom::RestrictedCookieManager> binding_;
+  mojo::Remote<mojom::RestrictedCookieManager> service_remote_;
+  mojo::Receiver<mojom::RestrictedCookieManager> receiver_;
   std::unique_ptr<RestrictedCookieManagerSync> sync_service_;
   bool expecting_bad_message_ = false;
   bool received_bad_message_ = false;
@@ -295,9 +302,9 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlBlankFilter) {
 
   // Can also use the document.cookie-style API to get the same info.
   std::string cookies_out;
-  EXPECT_TRUE(backend()->GetCookiesString(GURL("http://example.com/test/"),
-                                          GURL("http://example.com"),
-                                          &cookies_out));
+  EXPECT_TRUE(backend()->GetCookiesString(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      url::Origin::Create(GURL("http://example.com")), &cookies_out));
   EXPECT_EQ("cookie-name=cookie-value; cookie-name-2=cookie-value-2",
             cookies_out);
 }
@@ -407,9 +414,9 @@ TEST_P(RestrictedCookieManagerTest, GetCookieStringFromWrongOrigin) {
 
   ExpectBadMessage();
   std::string cookies_out;
-  EXPECT_TRUE(backend()->GetCookiesString(GURL("http://notexample.com/test/"),
-                                          GURL("http://example.com"),
-                                          &cookies_out));
+  EXPECT_TRUE(backend()->GetCookiesString(
+      GURL("http://notexample.com/test/"), GURL("http://example.com"),
+      url::Origin::Create(GURL("http://example.com")), &cookies_out));
   EXPECT_TRUE(received_bad_message());
   EXPECT_TRUE(cookies_out.empty());
 }
@@ -431,26 +438,16 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     EXPECT_EQ("cookie-value", cookies[0].Value());
   }
 
-  ASSERT_EQ(2u, recorded_activity().size());
+  ASSERT_EQ(1u, recorded_activity().size());
   EXPECT_EQ(recorded_activity()[0].get, true);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/test/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-
-  // Duplicated for exclusion warning.
-  EXPECT_EQ(recorded_activity()[1].get, true);
-  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookie,
-              net::MatchesCookieLine("cookie-name=cookie-value"));
-  // SetSessionCookie uses net::CookieSameSite::NO_RESTRICTION, but this is an
-  // insecure cookie.
-  EXPECT_EQ(recorded_activity()[1].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_NONE_INSECURE);
+  EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
+  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                WARN_SAMESITE_NONE_INSECURE,
+            recorded_activity()[0].status.warning());
 
   // Disabing getting third-party cookies works correctly.
   cookie_settings_.set_block_third_party_cookies(true);
@@ -465,15 +462,16 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     ASSERT_THAT(cookies, testing::SizeIs(0));
   }
 
-  ASSERT_EQ(3u, recorded_activity().size());
-  EXPECT_EQ(recorded_activity()[2].get, true);
-  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[2].cookie,
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[1].get, true);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[1].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(
-      recorded_activity()[2].status,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  EXPECT_TRUE(
+      recorded_activity()[1].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_USER_PREFERENCES}));
 }
 
 TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
@@ -503,9 +501,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_NONE_INSECURE);
+  EXPECT_TRUE(
+      recorded_activity()[0].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_NONE_INSECURE}));
 }
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -557,10 +556,32 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieHttpOnly) {
   }
 }
 
+TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieValidateDomain) {
+  GURL other_site("https://not-example.com");
+  auto cookie = net::CanonicalCookie::Create(
+      other_site, "cookie=foo;domain=not-example.com", base::Time::Now(),
+      base::nullopt);
+  ASSERT_EQ(".not-example.com", cookie->Domain());
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      *cookie, GURL("http://example.com/test"), GURL("http://example.com")));
+  ASSERT_EQ(1u, recorded_activity().size());
+  EXPECT_TRUE(recorded_activity()[0].status.HasExclusionReason(
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH));
+
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "cookie";
+  options->match_type = mojom::CookieMatchType::EQUALS;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+  EXPECT_THAT(cookies, testing::SizeIs(0));
+}
+
 TEST_P(RestrictedCookieManagerTest, SetCookieFromString) {
-  EXPECT_TRUE(backend()->SetCookieFromString(GURL("http://example.com/test/"),
-                                             GURL("http://example.com"),
-                                             "new-name=new-value;path=/"));
+  EXPECT_TRUE(backend()->SetCookieFromString(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      url::Origin::Create(GURL("http://example.com")),
+      "new-name=new-value;path=/"));
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "new-name";
   options->match_type = mojom::CookieMatchType::EQUALS;
@@ -590,6 +611,7 @@ TEST_P(RestrictedCookieManagerTest, SetCookieFromStringWrongOrigin) {
   ExpectBadMessage();
   EXPECT_TRUE(backend()->SetCookieFromString(
       GURL("http://notexample.com/test/"), GURL("http://example.com"),
+      url::Origin::Create(GURL("http://example.com")),
       "new-name=new-value;path=/"));
   ASSERT_TRUE(received_bad_message());
 }
@@ -597,48 +619,43 @@ TEST_P(RestrictedCookieManagerTest, SetCookieFromStringWrongOrigin) {
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   {
     // With default settings object, setting a third-party cookie is OK.
-    auto cookie =
-        net::CanonicalCookie::Create(GURL("http://example.com"), "A=B",
-                                     base::Time::Now(), net::CookieOptions());
+    auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"),
+                                               "A=B", base::Time::Now(),
+                                               base::nullopt /* server_time */);
     EXPECT_TRUE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
   }
 
-  ASSERT_EQ(2u, recorded_activity().size());
+  ASSERT_EQ(1u, recorded_activity().size());
   EXPECT_EQ(recorded_activity()[0].get, false);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
-
-  EXPECT_EQ(recorded_activity()[1].get, false);
-  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
-  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[1].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
+  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+            recorded_activity()[0].status.warning());
 
   {
     // Not if third-party cookies are disabled, though.
     cookie_settings_.set_block_third_party_cookies(true);
-    auto cookie =
-        net::CanonicalCookie::Create(GURL("http://example.com"), "A2=B2",
-                                     base::Time::Now(), net::CookieOptions());
+    auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"),
+                                               "A2=B2", base::Time::Now(),
+                                               base::nullopt /* server_time */);
     EXPECT_FALSE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("http://example.com"), GURL("http://otherexample.com")));
   }
 
-  ASSERT_EQ(3u, recorded_activity().size());
-  EXPECT_EQ(recorded_activity()[2].get, false);
-  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/");
-  EXPECT_EQ(recorded_activity()[2].site_for_cookies,
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[1].get, false);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies,
             "http://otherexample.com/");
-  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A2=B2"));
-  EXPECT_EQ(
-      recorded_activity()[2].status,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A2=B2"));
+  EXPECT_TRUE(
+      recorded_activity()[1].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_USER_PREFERENCES}));
 
   // Read back, in first-party context
   auto options = mojom::CookieManagerGetOptions::New();
@@ -652,13 +669,12 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("B", cookies[0].Value());
 
-  ASSERT_EQ(4u, recorded_activity().size());
-  EXPECT_EQ(recorded_activity()[3].get, true);
-  EXPECT_EQ(recorded_activity()[3].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[3].site_for_cookies, "http://example.com/");
-  EXPECT_THAT(recorded_activity()[3].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[3].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  ASSERT_EQ(3u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[2].get, true);
+  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://example.com/");
+  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_TRUE(recorded_activity()[2].status.IsInclude());
 }
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
@@ -667,12 +683,9 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
 
-  // Uses different options between create/set here for failure to be at set.
-  net::CookieOptions create_options;
-  create_options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"), "A=B",
-                                             base::Time::Now(), create_options);
+                                             base::Time::Now(),
+                                             base::nullopt /* server_time */);
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
       *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
 
@@ -681,27 +694,31 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
+  EXPECT_TRUE(
+      recorded_activity()[0].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
 }
 
 TEST_P(RestrictedCookieManagerTest, CookiesEnabledFor) {
   // Default, third-party access is OK.
   bool result = false;
   EXPECT_TRUE(backend()->CookiesEnabledFor(
-      GURL("http://example.com"), GURL("http://notexample.com"), &result));
+      GURL("http://example.com"), GURL("http://notexample.com"),
+      url::Origin::Create(GURL("http://notexample.com")), &result));
   EXPECT_TRUE(result);
 
   // Third-part cookies disabled.
   cookie_settings_.set_block_third_party_cookies(true);
   EXPECT_TRUE(backend()->CookiesEnabledFor(
-      GURL("http://example.com"), GURL("http://notexample.com"), &result));
+      GURL("http://example.com"), GURL("http://notexample.com"),
+      url::Origin::Create(GURL("http://notexample.com")), &result));
   EXPECT_FALSE(result);
 
   // First-party ones still OK.
   EXPECT_TRUE(backend()->CookiesEnabledFor(
-      GURL("http://example.com"), GURL("http://example.com"), &result));
+      GURL("http://example.com"), GURL("http://example.com"),
+      url::Origin::Create(GURL("http://example.com")), &result));
   EXPECT_TRUE(result);
 }
 
@@ -720,8 +737,9 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
     network::mojom::CookieChangeCause change_cause;
   };
 
-  TestCookieChangeListener(network::mojom::CookieChangeListenerRequest request)
-      : binding_(this, std::move(request)) {}
+  TestCookieChangeListener(
+      mojo::PendingReceiver<network::mojom::CookieChangeListener> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~TestCookieChangeListener() override = default;
 
   // Spin in a run loop until a change is received.
@@ -748,7 +766,7 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
 
  private:
   std::vector<Change> observed_changes_;
-  mojo::Binding<network::mojom::CookieChangeListener> binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener> receiver_;
 
   // If not null, will be stopped when a cookie change notification is received.
   base::RunLoop* run_loop_ = nullptr;
@@ -757,13 +775,13 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
 }  // anonymous namespace
 
 TEST_P(RestrictedCookieManagerTest, ChangeDispatch) {
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  network::mojom::CookieChangeListenerRequest request =
-      mojo::MakeRequest(&listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener> listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> receiver =
+      listener_remote.InitWithNewPipeAndPassReceiver();
   sync_service_->AddChangeListener(GURL("http://example.com/test/"),
                                    GURL("http://example.com"),
-                                   std::move(listener_ptr));
-  TestCookieChangeListener listener(std::move(request));
+                                   std::move(listener_remote));
+  TestCookieChangeListener listener(std::move(receiver));
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
@@ -778,13 +796,13 @@ TEST_P(RestrictedCookieManagerTest, ChangeDispatch) {
 }
 
 TEST_P(RestrictedCookieManagerTest, ChangeSettings) {
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  network::mojom::CookieChangeListenerRequest request =
-      mojo::MakeRequest(&listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener> listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> receiver =
+      listener_remote.InitWithNewPipeAndPassReceiver();
   sync_service_->AddChangeListener(GURL("http://example.com/test/"),
                                    GURL("http://notexample.com"),
-                                   std::move(listener_ptr));
-  TestCookieChangeListener listener(std::move(request));
+                                   std::move(listener_remote));
+  TestCookieChangeListener listener(std::move(receiver));
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
@@ -795,23 +813,24 @@ TEST_P(RestrictedCookieManagerTest, ChangeSettings) {
 }
 
 TEST_P(RestrictedCookieManagerTest, AddChangeListenerFromWrongOrigin) {
-  network::mojom::CookieChangeListenerPtr bad_listener_ptr;
-  network::mojom::CookieChangeListenerRequest bad_request =
-      mojo::MakeRequest(&bad_listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener> bad_listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> bad_receiver =
+      bad_listener_remote.InitWithNewPipeAndPassReceiver();
   ExpectBadMessage();
   sync_service_->AddChangeListener(GURL("http://not-example.com/test/"),
                                    GURL("http://not-example.com"),
-                                   std::move(bad_listener_ptr));
+                                   std::move(bad_listener_remote));
   EXPECT_TRUE(received_bad_message());
-  TestCookieChangeListener bad_listener(std::move(bad_request));
+  TestCookieChangeListener bad_listener(std::move(bad_receiver));
 
-  network::mojom::CookieChangeListenerPtr good_listener_ptr;
-  network::mojom::CookieChangeListenerRequest good_request =
-      mojo::MakeRequest(&good_listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener>
+      good_listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> good_receiver =
+      good_listener_remote.InitWithNewPipeAndPassReceiver();
   sync_service_->AddChangeListener(GURL("http://example.com/test/"),
                                    GURL("http://example.com"),
-                                   std::move(good_listener_ptr));
-  TestCookieChangeListener good_listener(std::move(good_request));
+                                   std::move(good_listener_remote));
+  TestCookieChangeListener good_listener(std::move(good_receiver));
 
   ASSERT_THAT(bad_listener.observed_changes(), testing::SizeIs(0));
   ASSERT_THAT(good_listener.observed_changes(), testing::SizeIs(0));

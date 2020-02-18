@@ -17,7 +17,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -28,7 +28,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
 #include "net/log/net_log_values.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -223,7 +223,7 @@ void ExpectDictionaryContainsProperty(const base::DictionaryValue* dict,
 // Used for tests that are common to both bounded and unbounded modes of the
 // the FileNetLogObserver. The param is true if bounded mode is used.
 class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
-                               public WithScopedTaskEnvironment {
+                               public WithTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -290,7 +290,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
 
 // Used for tests that are exclusive to the bounded mode of FileNetLogObserver.
 class FileNetLogObserverBoundedTest : public ::testing::Test,
-                                      public WithScopedTaskEnvironment {
+                                      public WithTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

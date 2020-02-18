@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Skritje filtrov toka dogodkov</translation>
 <translation id="1088219014394087294">Ni naslovov.</translation>
 <translation id="1106741348836243114">Vklop/izklop zvočnih povratnih informacij (zvočnih ikon).</translation>
-<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "celje", "d": "delta", "e": "eho", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "indija", "j": "julija","k": "kilo", "l": "lima", "m": "maribor", "n": "november", "o": "oskar","p": "postojna", "q": "quebec", "r": "romeo", "s": "sežana", "t": "tango", "u": "uniforma", "v": "viktor", "w": "wroclaw","x": "xenia", "y": "yukon", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "celje", "č": "časopis", "d": "delta", "e": "eho", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "indija", "j": "julija", "k": "kilo", "l": "lima", "m": "maribor", "n": "november", "o": "oskar", "p": "postojna", "q": "quebec", "r": "romeo", "s": "sežana", "š": "štajerska", "t": "tango", "u": "uniforma", "v": "viktor", "w": "washington", "x": "iks", "y": "youtube", "z": "zulu", "ž": "žaba"}</translation>
 <translation id="1120938014254001895">Z dvema prstoma povlecite gor</translation>
 <translation id="1124771028211010580">Trenutno je izbran vzporedni slog prikaza.</translation>
 <translation id="1126928665165112660">Ni ležeče</translation>
@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1385214448885562192">Pritisnite »enter« za sprejetje ali »escape« za preklic, dol za naprej in gor za nazaj.</translation>
 <translation id="1396114365388024581">sezzav</translation>
-<translation id="139902759009894363">Izgovorjava atributov obogatenega besedila</translation>
 <translation id="1405567553485452995">Svetlo zelena</translation>
 <translation id="1417889266572670458">Mornarsko modra</translation>
 <translation id="1431911867058218151">Slivova</translation>
@@ -170,6 +169,7 @@
 <translation id="2220529011494928058">Prijavite težavo</translation>
 <translation id="2223693656926968778">Ukrepanje za trenutni element</translation>
 <translation id="225732394367814946">Povečanje hitrosti govora</translation>
+<translation id="2267538686624070261">Zapuščanje napačnega črkovanja</translation>
 <translation id="2267945578749931355">Naslednji znak</translation>
 <translation id="2278490101488436824">S tremi prsti povlecite v levo</translation>
 <translation id="2281234842553884450">Prejšnji drsnik</translation>
@@ -208,6 +208,7 @@
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Razen</translation>
 <translation id="2592212930811759050">Dvakrat se dotaknite, če želite začeti urejati</translation>
+<translation id="2598495320872286378">Slovnična napaka</translation>
 <translation id="2606210917827248971">s/z {COUNT,plural, =1{# elementom}one{# elementom}two{# elementoma}few{# elementi}other{# elementi}}</translation>
 <translation id="2614981083756825552">Postavitev Math ML</translation>
 <translation id="2624431853467395961">Odpiranje načina za učenje</translation>
@@ -423,7 +424,6 @@
 <translation id="4039983576244166038">Prazna glava vrstice</translation>
 <translation id="4042843249978639960">Ni naslednjega naslova na ravni 2.</translation>
 <translation id="4043348641337972076">Ni prejšnjega mejnika točke v različici ARIA.</translation>
-<translation id="4045764028670444336">Začetek napačno črkovane besede</translation>
 <translation id="4047216625641135770">Oznaka</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Zelenorumena</translation>
@@ -485,6 +485,7 @@
 <translation id="4372705107434148843">Ustavitev govora</translation>
 <translation id="4373197658375206385">Ni prejšnjega elementa, ki ni povezava.</translation>
 <translation id="4376316291247992553">Ogled grafike v brailovi pisavi</translation>
+<translation id="437809255587011096">Oblikovanje sloga za predstavitev besedila</translation>
 <translation id="4378308539633073595">Pomik naprej</translation>
 <translation id="4384583879834880242">Vprašanja</translation>
 <translation id="4391478986194775161">podovseb</translation>
@@ -505,7 +506,6 @@
 <translation id="4547556996012970016">Naslednji naslov na ravni 5</translation>
 <translation id="4562381607973973258">Glava</translation>
 <translation id="4569941707103739422">Pritisnite puščico gor ali dol, če se želite pomikati; pritisnite »enter«, če želite aktivirati.</translation>
-<translation id="4570424871453628777">Konec napačno črkovane besede</translation>
 <translation id="4591507479202817876">je izbran</translation>
 <translation id="4597532268155981612">obrazec</translation>
 <translation id="4597896406374528575">april</translation>
@@ -728,7 +728,6 @@
 <translation id="6037602951055904232">Panoramsko premikanje naprej</translation>
 <translation id="6042826534790431634">Pritisnite tipko za iskanje + preslednico, če želite aktivirati.</translation>
 <translation id="6044160928851315051">Zatemnitev zaslona</translation>
-<translation id="6065293622157674001">Začetek slovnične napake</translation>
 <translation id="6082768461603900813">Osnovno pomikanje</translation>
 <translation id="6118126368611144850">Aplikacije Android za Chrome. Če imate v napravi Trgovino Play, si lahko z aplikacijami za Android pred izdajo ogledate ChromeVox. Preskusite poskusno podporo, tako da iz Trgovine Play prenesete delovno različico Google Chroma.</translation>
 <translation id="611827076493383239">obs</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">Mračno siva</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{točka}one{# točka}two{# točki}few{# točke}other{# točk}}</translation>
 <translation id="6355910664415701303">Ni prejšnjega elementa seznama.</translation>
-<translation id="6360318852623800555">Atributi obogatenega besedila</translation>
 <translation id="6364795331201459219">n6</translation>
 <translation id="6368143427468974988">Prejšnji naslov</translation>
 <translation id="6376999910001533545">Kostanjeva</translation>
@@ -825,6 +823,7 @@
 <translation id="6833103209700200188">Noga</translation>
 <translation id="6858047746862060282">Uvod</translation>
 <translation id="6859876496651143278">Z enim prstom povlecite v levo</translation>
+<translation id="6865519907510167493">Napačno črkovano</translation>
 <translation id="6871161210040114857">Prezrtje razlikovanja velikih in malih črk.</translation>
 <translation id="6877435256196695200">Ni naslednje grafike.</translation>
 <translation id="6897341342232909480">Pomik v levo</translation>
@@ -870,7 +869,6 @@
 <translation id="7143207342074048698">Vzpostavljanje povezave</translation>
 <translation id="7153618581592392745">Svetlo vijolična</translation>
 <translation id="7157306005867877619">Izvleček</translation>
-<translation id="7161425887892204659">Konec ujemajočega se besedila</translation>
 <translation id="7161771961008409533">Pojavni gumb</translation>
 <translation id="7165714724802225287">Trenutno je izbran prepleten slog prikaza.</translation>
 <translation id="7167657087543110">izgovarjanje znakov ob vnosu</translation>
@@ -908,7 +906,6 @@
 <translation id="737396357417333429">klk</translation>
 <translation id="7374104575779636480">Izhod iz tabele.</translation>
 <translation id="738899727977260036">Skrilasto modra</translation>
-<translation id="7392145451309930991">Začetek ujemajočega se besedila</translation>
 <translation id="739763518212184081">Prejšnja vrstica</translation>
 <translation id="7400575256015741911">Zaznana je bila napaka v črkovanju</translation>
 <translation id="7408482676469142474">tab</translation>
@@ -1087,7 +1084,6 @@
 <translation id="8153880621934657047">Zunaj tabele.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčrtaj}one{# podčrtaj}two{# podčrtaja}few{# podčrtaji}other{# podčrtajev}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">Samodejno zaznaj in preklopi jezik ChromeVoxa.</translation>
 <translation id="8184828902145951186">vrstica</translation>
 <translation id="8186185314313222077">preklop celozaslonskega načina</translation>
 <translation id="8199231515320852133">Obvestilo o glavah trenutne celice</translation>
@@ -1118,12 +1114,13 @@
 <translation id="8446884382197647889">Več o tem</translation>
 <translation id="8455868257606149352">Največ <ph name="X" /></translation>
 <translation id="84575901236241018">ima tipko za dostop <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Zapuščanje slovnične napake</translation>
 <translation id="847154984256717791">zaseden</translation>
 <translation id="8476408756881832830">Zaustavi predvajanje, ko ChromeVox govori</translation>
 <translation id="8476508772960940536">pregled okna</translation>
 <translation id="8503360654911991865">Zmanjšanje razdrobljenosti krmarjenja</translation>
-<translation id="8504695234784218301">Konec slovnične napake</translation>
 <translation id="8520472399088452386">Pomikalnik</translation>
+<translation id="8534394844575788431">Oblikovanje</translation>
 <translation id="8538744478902126321">Ugibanje glave vrstice v trenutni celici</translation>
 <translation id="8540054775867439484">Prelom do vrha</translation>
 <translation id="8542271685829952264">Če želite raziskati vse ukaze in bližnjice ChromeVoxa, pritisnite tipko za iskanje in piko, nato se po menijih pomikajte s puščičnimi tipkami in pritisnite tipko Enter, če želite aktivirati ukaz. Sem se vrnete tako, da pritisnete tipko za iskanje in tipko O, nato pa tipko T.</translation>
@@ -1203,6 +1200,7 @@
 <translation id="9149560530563164529">razd</translation>
 <translation id="9150735707954472829">Zavihek</translation>
 <translation id="9151211641321628915">Objavi kratek opis trenutnega položaja</translation>
+<translation id="9151249085738989067">Samodejni preklop glasu ChromeVoxa glede na jezik</translation>
 <translation id="9153606228985488238">Višina tona: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Pomik na konec trenutnega stolpca</translation>
 <translation id="9173115498289768110">Glasnost: <ph name="PERCENT" /> %</translation>

@@ -24,7 +24,7 @@ LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
       start_time_(clock_->NowTicks()) {}
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
-    ScopedUkmHierarchicalTimer&& other)
+    ScopedUkmHierarchicalTimer&& other) noexcept
     : aggregator_(other.aggregator_),
       metric_index_(other.metric_index_),
       clock_(other.clock_),
@@ -268,6 +268,14 @@ void LocalFrameUkmAggregator::RecordEvent() {
             .SetStyleAndLayout(
                 absolute_record.interval_duration.InMicroseconds())
             .SetStyleAndLayoutPercentage(percentage);
+        break;
+      case kStyle:
+        builder.SetStyle(absolute_record.interval_duration.InMicroseconds())
+            .SetStylePercentage(percentage);
+        break;
+      case kLayout:
+        builder.SetLayout(absolute_record.interval_duration.InMicroseconds())
+            .SetLayoutPercentage(percentage);
         break;
       case kForcedStyleAndLayout:
         builder

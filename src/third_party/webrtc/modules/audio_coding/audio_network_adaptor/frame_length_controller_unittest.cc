@@ -30,10 +30,16 @@ constexpr int kFl20msTo60msBandwidthBps = 40000;
 constexpr int kFl60msTo20msBandwidthBps = 50000;
 constexpr int kFl60msTo120msBandwidthBps = 30000;
 constexpr int kFl120msTo60msBandwidthBps = 40000;
+constexpr int kFl20msTo40msBandwidthBps = 45000;
+constexpr int kFl40msTo20msBandwidthBps = 50000;
+constexpr int kFl40msTo60msBandwidthBps = 40000;
+constexpr int kFl60msTo40msBandwidthBps = 45000;
+
 constexpr int kMediumBandwidthBps =
-    (kFl60msTo20msBandwidthBps + kFl20msTo60msBandwidthBps) / 2;
+    (kFl40msTo20msBandwidthBps + kFl20msTo40msBandwidthBps) / 2;
 constexpr float kMediumPacketLossFraction =
     (kFlDecreasingPacketLossFraction + kFlIncreasingPacketLossFraction) / 2;
+const std::set<int> kDefaultEncoderFrameLengthsMs = {20, 40, 60, 120};
 
 int VeryLowBitrate(int frame_length_ms) {
   return kMinEncoderBitrateBps + kPreventOveruseMarginBps +
@@ -65,6 +71,15 @@ CreateChangeCriteriaFor20msAnd60ms() {
 }
 
 std::map<FrameLengthController::Config::FrameLengthChange, int>
+CreateChangeCriteriaFor20msAnd40ms() {
+  return std::map<FrameLengthController::Config::FrameLengthChange, int>{
+      {FrameLengthController::Config::FrameLengthChange(20, 40),
+       kFl20msTo40msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(40, 20),
+       kFl40msTo20msBandwidthBps}};
+}
+
+std::map<FrameLengthController::Config::FrameLengthChange, int>
 CreateChangeCriteriaFor20ms60msAnd120ms() {
   return std::map<FrameLengthController::Config::FrameLengthChange, int>{
       {FrameLengthController::Config::FrameLengthChange(20, 60),
@@ -75,6 +90,36 @@ CreateChangeCriteriaFor20ms60msAnd120ms() {
        kFl60msTo120msBandwidthBps},
       {FrameLengthController::Config::FrameLengthChange(120, 60),
        kFl120msTo60msBandwidthBps}};
+}
+
+std::map<FrameLengthController::Config::FrameLengthChange, int>
+CreateChangeCriteriaFor20ms40ms60msAnd120ms() {
+  return std::map<FrameLengthController::Config::FrameLengthChange, int>{
+      {FrameLengthController::Config::FrameLengthChange(20, 60),
+       kFl20msTo60msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(60, 20),
+       kFl60msTo20msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(20, 40),
+       kFl20msTo40msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(40, 20),
+       kFl40msTo20msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(40, 60),
+       kFl40msTo60msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(60, 40),
+       kFl60msTo40msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(60, 120),
+       kFl60msTo120msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(120, 60),
+       kFl120msTo60msBandwidthBps}};
+}
+
+std::map<FrameLengthController::Config::FrameLengthChange, int>
+CreateChangeCriteriaFor40msAnd60ms() {
+  return std::map<FrameLengthController::Config::FrameLengthChange, int>{
+      {FrameLengthController::Config::FrameLengthChange(40, 60),
+       kFl40msTo60msBandwidthBps},
+      {FrameLengthController::Config::FrameLengthChange(60, 40),
+       kFl60msTo40msBandwidthBps}};
 }
 
 void UpdateNetworkMetrics(
@@ -112,16 +157,16 @@ void CheckDecision(FrameLengthController* controller,
 }  // namespace
 
 TEST(FrameLengthControllerTest, DecreaseTo20MsOnHighUplinkBandwidth) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 60);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 60);
   UpdateNetworkMetrics(controller.get(), kFl60msTo20msBandwidthBps,
                        absl::nullopt, kOverheadBytesPerPacket);
   CheckDecision(controller.get(), 20);
 }
 
 TEST(FrameLengthControllerTest, DecreaseTo20MsOnHighUplinkPacketLossFraction) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 60);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 60);
   UpdateNetworkMetrics(controller.get(), absl::nullopt,
                        kFlDecreasingPacketLossFraction,
                        kOverheadBytesPerPacket);
@@ -137,13 +182,35 @@ TEST(FrameLengthControllerTest,
   CheckDecision(controller.get(), 60);
 }
 
+TEST(FrameLengthControllerTest, IncreaseTo40MsOnMultipleConditions) {
+  // Increase to 40ms frame length if
+  // 1. |uplink_bandwidth_bps| is known to be smaller than a threshold AND
+  // 2. |uplink_packet_loss_fraction| is known to be smaller than a threshold
+  //    AND
+  // 3. FEC is not decided or OFF.
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd40ms(),
+                                     kDefaultEncoderFrameLengthsMs, 20);
+  UpdateNetworkMetrics(controller.get(), kFl20msTo40msBandwidthBps,
+                       kFlIncreasingPacketLossFraction,
+                       kOverheadBytesPerPacket);
+  CheckDecision(controller.get(), 40);
+}
+
+TEST(FrameLengthControllerTest, DecreaseTo40MsOnHighUplinkBandwidth) {
+  auto controller = CreateController(CreateChangeCriteriaFor40msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 40);
+  UpdateNetworkMetrics(controller.get(), kFl60msTo40msBandwidthBps,
+                       absl::nullopt, kOverheadBytesPerPacket);
+  CheckDecision(controller.get(), 40);
+}
+
 TEST(FrameLengthControllerTest, Maintain60MsOnMultipleConditions) {
   // Maintain 60ms frame length if
   // 1. |uplink_bandwidth_bps| is at medium level,
   // 2. |uplink_packet_loss_fraction| is at medium,
   // 3. FEC is not decided ON.
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 60);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 60);
   UpdateNetworkMetrics(controller.get(), kMediumBandwidthBps,
                        kMediumPacketLossFraction, kOverheadBytesPerPacket);
   CheckDecision(controller.get(), 60);
@@ -155,8 +222,8 @@ TEST(FrameLengthControllerTest, IncreaseTo60MsOnMultipleConditions) {
   // 2. |uplink_packet_loss_fraction| is known to be smaller than a threshold
   //    AND
   // 3. FEC is not decided or OFF.
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 20);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 20);
   UpdateNetworkMetrics(controller.get(), kFl20msTo60msBandwidthBps,
                        kFlIncreasingPacketLossFraction,
                        kOverheadBytesPerPacket);
@@ -164,8 +231,8 @@ TEST(FrameLengthControllerTest, IncreaseTo60MsOnMultipleConditions) {
 }
 
 TEST(FrameLengthControllerTest, IncreaseTo60MsOnVeryLowUplinkBandwidth) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 20);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 20);
   // We set packet loss fraction to kFlDecreasingPacketLossFraction, which
   // should have prevented frame length to increase, if the uplink bandwidth
   // was not this low.
@@ -176,8 +243,8 @@ TEST(FrameLengthControllerTest, IncreaseTo60MsOnVeryLowUplinkBandwidth) {
 }
 
 TEST(FrameLengthControllerTest, Maintain60MsOnVeryLowUplinkBandwidth) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 60);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 60);
   // We set packet loss fraction to FlDecreasingPacketLossFraction, which should
   // have caused the frame length to decrease, if the uplink bandwidth was not
   // this low.
@@ -195,8 +262,8 @@ TEST(FrameLengthControllerTest, UpdateMultipleNetworkMetricsAtOnce) {
   // FrameLengthController::UpdateNetworkMetrics(...) can handle multiple
   // network updates at once. This is, however, not a common use case in current
   // audio_network_adaptor_impl.cc.
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 20);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 20);
   Controller::NetworkMetrics network_metrics;
   network_metrics.uplink_bandwidth_bps = kFl20msTo60msBandwidthBps;
   network_metrics.uplink_packet_loss_fraction = kFlIncreasingPacketLossFraction;
@@ -217,8 +284,8 @@ TEST(FrameLengthControllerTest,
 }
 
 TEST(FrameLengthControllerTest, Maintain20MsOnMediumUplinkBandwidth) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 20);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 20);
   UpdateNetworkMetrics(controller.get(), kMediumBandwidthBps,
                        kFlIncreasingPacketLossFraction,
                        kOverheadBytesPerPacket);
@@ -226,8 +293,8 @@ TEST(FrameLengthControllerTest, Maintain20MsOnMediumUplinkBandwidth) {
 }
 
 TEST(FrameLengthControllerTest, Maintain20MsOnMediumUplinkPacketLossFraction) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60}, 20);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 20);
   // Use a low uplink bandwidth that would cause frame length to increase if
   // uplink packet loss fraction was low.
   UpdateNetworkMetrics(controller.get(), kFl20msTo60msBandwidthBps,
@@ -236,8 +303,8 @@ TEST(FrameLengthControllerTest, Maintain20MsOnMediumUplinkPacketLossFraction) {
 }
 
 TEST(FrameLengthControllerTest, Maintain60MsWhenNo120msCriteriaIsSet) {
-  auto controller =
-      CreateController(CreateChangeCriteriaFor20msAnd60ms(), {20, 60, 120}, 60);
+  auto controller = CreateController(CreateChangeCriteriaFor20msAnd60ms(),
+                                     kDefaultEncoderFrameLengthsMs, 60);
   UpdateNetworkMetrics(controller.get(), kFl60msTo120msBandwidthBps,
                        kFlIncreasingPacketLossFraction,
                        kOverheadBytesPerPacket);
@@ -246,7 +313,7 @@ TEST(FrameLengthControllerTest, Maintain60MsWhenNo120msCriteriaIsSet) {
 
 TEST(FrameLengthControllerTest, From120MsTo20MsOnHighUplinkBandwidth) {
   auto controller = CreateController(CreateChangeCriteriaFor20ms60msAnd120ms(),
-                                     {20, 60, 120}, 120);
+                                     kDefaultEncoderFrameLengthsMs, 120);
   // It takes two steps for frame length to go from 120ms to 20ms.
   UpdateNetworkMetrics(controller.get(), kFl60msTo20msBandwidthBps,
                        absl::nullopt, kOverheadBytesPerPacket);
@@ -259,7 +326,7 @@ TEST(FrameLengthControllerTest, From120MsTo20MsOnHighUplinkBandwidth) {
 
 TEST(FrameLengthControllerTest, From120MsTo20MsOnHighUplinkPacketLossFraction) {
   auto controller = CreateController(CreateChangeCriteriaFor20ms60msAnd120ms(),
-                                     {20, 60, 120}, 120);
+                                     kDefaultEncoderFrameLengthsMs, 120);
   // It takes two steps for frame length to go from 120ms to 20ms.
   UpdateNetworkMetrics(controller.get(), absl::nullopt,
                        kFlDecreasingPacketLossFraction,
@@ -274,7 +341,7 @@ TEST(FrameLengthControllerTest, From120MsTo20MsOnHighUplinkPacketLossFraction) {
 
 TEST(FrameLengthControllerTest, Maintain120MsOnVeryLowUplinkBandwidth) {
   auto controller = CreateController(CreateChangeCriteriaFor20ms60msAnd120ms(),
-                                     {20, 60, 120}, 120);
+                                     kDefaultEncoderFrameLengthsMs, 120);
   // We set packet loss fraction to FlDecreasingPacketLossFraction, which should
   // have caused the frame length to decrease, if the uplink bandwidth was not
   // this low.
@@ -286,7 +353,7 @@ TEST(FrameLengthControllerTest, Maintain120MsOnVeryLowUplinkBandwidth) {
 
 TEST(FrameLengthControllerTest, From60MsTo120MsOnVeryLowUplinkBandwidth) {
   auto controller = CreateController(CreateChangeCriteriaFor20ms60msAnd120ms(),
-                                     {20, 60, 120}, 60);
+                                     kDefaultEncoderFrameLengthsMs, 60);
   // We set packet loss fraction to FlDecreasingPacketLossFraction, which should
   // have prevented frame length to increase, if the uplink bandwidth was not
   // this low.
@@ -301,7 +368,7 @@ TEST(FrameLengthControllerTest, From20MsTo120MsOnMultipleConditions) {
   // 1. |uplink_bandwidth_bps| is known to be smaller than a threshold AND
   // 2. |uplink_packet_loss_fraction| is known to be smaller than a threshold.
   auto controller = CreateController(CreateChangeCriteriaFor20ms60msAnd120ms(),
-                                     {20, 60, 120}, 20);
+                                     kDefaultEncoderFrameLengthsMs, 20);
   // It takes two steps for frame length to go from 20ms to 120ms.
   UpdateNetworkMetrics(controller.get(), kFl60msTo120msBandwidthBps,
                        kFlIncreasingPacketLossFraction,
@@ -327,12 +394,22 @@ TEST(FrameLengthControllerTest, Stall60MsIf120MsNotInReceiverFrameLengthRange) {
 }
 
 TEST(FrameLengthControllerTest, CheckBehaviorOnChangingNetworkMetrics) {
-  auto controller = CreateController(CreateChangeCriteriaFor20ms60msAnd120ms(),
-                                     {20, 60, 120}, 20);
+  auto controller =
+      CreateController(CreateChangeCriteriaFor20ms40ms60msAnd120ms(),
+                       kDefaultEncoderFrameLengthsMs, 20);
   UpdateNetworkMetrics(controller.get(), kMediumBandwidthBps,
                        kFlIncreasingPacketLossFraction,
                        kOverheadBytesPerPacket);
   CheckDecision(controller.get(), 20);
+
+  UpdateNetworkMetrics(controller.get(), kFl20msTo40msBandwidthBps,
+                       kFlIncreasingPacketLossFraction,
+                       kOverheadBytesPerPacket);
+  CheckDecision(controller.get(), 40);
+
+  UpdateNetworkMetrics(controller.get(), kFl60msTo40msBandwidthBps,
+                       kMediumPacketLossFraction, kOverheadBytesPerPacket);
+  CheckDecision(controller.get(), 40);
 
   UpdateNetworkMetrics(controller.get(), kFl20msTo60msBandwidthBps,
                        kFlIncreasingPacketLossFraction,
@@ -352,6 +429,11 @@ TEST(FrameLengthControllerTest, CheckBehaviorOnChangingNetworkMetrics) {
                        kFlIncreasingPacketLossFraction,
                        kOverheadBytesPerPacket);
   CheckDecision(controller.get(), 60);
+
+  UpdateNetworkMetrics(controller.get(), kFl60msTo40msBandwidthBps,
+                       kFlDecreasingPacketLossFraction,
+                       kOverheadBytesPerPacket);
+  CheckDecision(controller.get(), 40);
 
   UpdateNetworkMetrics(controller.get(), kMediumBandwidthBps,
                        kFlDecreasingPacketLossFraction,

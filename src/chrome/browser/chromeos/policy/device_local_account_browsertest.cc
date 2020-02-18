@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-
 #include <stddef.h>
 
 #include <map>
@@ -40,6 +38,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
@@ -61,6 +62,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -83,8 +85,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -529,16 +529,19 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     DevicePolicyCrosBrowserTest::TearDownOnMainThread();
   }
 
+  // user_manager::UserManager::Observer:
   void LocalStateChanged(user_manager::UserManager* user_manager) override {
-    if (run_loop_)
-      run_loop_->Quit();
+    if (local_state_changed_run_loop_)
+      local_state_changed_run_loop_->Quit();
   }
 
+  // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override {
     if (run_loop_)
       run_loop_->Quit();
   }
 
+  // extensions::AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     if (run_loop_)
       run_loop_->Quit();
@@ -629,7 +632,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   void CheckPublicSessionPresent(const AccountId& account_id) {
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(account_id);
-    ASSERT_TRUE(user);
+    ASSERT_TRUE(user) << " account " << account_id.GetUserEmail()
+                      << " not found";
     EXPECT_EQ(account_id, user->GetAccountId());
     EXPECT_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
   }
@@ -732,8 +736,14 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     if (IsSessionStarted())
       return;
     chromeos::WizardController::SkipPostLoginScreensForTesting();
-    content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
-                                          base::Bind(IsSessionStarted)).Wait();
+    chromeos::test::WaitForPrimaryUserSessionStart();
+  }
+
+  void WaitUntilLocalStateChanged() {
+    local_state_changed_run_loop_ = std::make_unique<base::RunLoop>();
+    user_manager::UserManager::Get()->AddObserver(this);
+    local_state_changed_run_loop_->Run();
+    user_manager::UserManager::Get()->RemoveObserver(this);
   }
 
   void VerifyKeyboardLayoutMatchesLocale() {
@@ -783,6 +793,10 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   std::string initial_language_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
+
+  // Specifically exists to assist with waiting for a LocalStateChanged()
+  // invocation.
+  std::unique_ptr<base::RunLoop> local_state_changed_run_loop_;
 
   UserPolicyBuilder device_local_account_policy_;
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
@@ -871,13 +885,47 @@ class ExtensionInstallObserver : public content::NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallObserver);
 };
 
+// Tests that the data associated with a device local account is removed when
+// that local account is no longer part of policy.
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PRE_DataIsRemoved) {
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitUntilLocalStateChanged();
+
+  EXPECT_TRUE(IsKnownUser(account_id_1_));
+  CheckPublicSessionPresent(account_id_1_);
+
+  // Data for the account is normally added after successful authentication.
+  // Shortcut that here.
+  DictionaryPrefUpdate given_name_update(g_browser_process->local_state(),
+                                         "UserGivenName");
+  given_name_update->SetKey(account_id_1_.GetUserEmail(),
+                            base::Value("Elaine"));
+
+  // Add some arbitrary data to make sure the "UserGivenName" dictionary isn't
+  // cleaning up itself.
+  given_name_update->SetKey("sanity.check@example.com", base::Value("Anne"));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DataIsRemoved) {
+  // The device local account should have been removed.
+  EXPECT_FALSE(g_browser_process->local_state()
+                   ->GetDictionary("UserGivenName")
+                   ->FindKey(account_id_1_.GetUserEmail()));
+
+  // The arbitrary data remains.
+  const std::string* value = g_browser_process->local_state()
+                                 ->GetDictionary("UserGivenName")
+                                 ->FindStringKey("sanity.check@example.com");
+  ASSERT_TRUE(value);
+  EXPECT_EQ("Anne", *value);
+}
+
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
-  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, account_id_1_))
-      .Wait();
+  WaitUntilLocalStateChanged();
+  EXPECT_TRUE(IsKnownUser(account_id_1_));
   EXPECT_TRUE(IsKnownUser(account_id_2_));
 
   CheckPublicSessionPresent(account_id_1_);
@@ -983,17 +1031,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
       kAccountId1).empty());
 }
 
-static bool IsNotKnownUser(const AccountId& account_id) {
-  return !IsKnownUser(account_id);
-}
-
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
-  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, account_id_1_))
-      .Wait();
+  WaitUntilLocalStateChanged();
+  EXPECT_TRUE(IsKnownUser(account_id_1_));
   EXPECT_TRUE(IsKnownUser(account_id_2_));
 
   // Update policy to remove kAccountId2.
@@ -1013,10 +1056,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 
   // Make sure the second device-local account disappears.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&IsNotKnownUser, account_id_2_))
-      .Wait();
+  WaitUntilLocalStateChanged();
+  EXPECT_FALSE(IsKnownUser(account_id_2_));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
@@ -1129,12 +1170,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Verify that the hosted app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(extension_registry->GetExtensionById(
+      kHostedAppID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the extension was not installed.
-  EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
+  EXPECT_FALSE(extension_registry->GetExtensionById(
+      kGoodExtensionID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the app was downloaded to the account's extension cache.
   base::FilePath test_dir;
@@ -1213,12 +1256,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   // Verify that the hosted app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(extension_registry->GetExtensionById(
+      kHostedAppID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the extension was not installed.
-  EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
+  EXPECT_FALSE(extension_registry->GetExtensionById(
+      kGoodExtensionID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the app is still in the account's extension cache.
   {
@@ -1508,11 +1553,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
           account_id_1_.GetUserEmail());
   ASSERT_TRUE(broker);
 
-  run_loop_.reset(new base::RunLoop);
-  user_manager::UserManager::Get()->AddObserver(this);
   broker->core()->store()->Load();
-  run_loop_->Run();
-  user_manager::UserManager::Get()->RemoveObserver(this);
+  WaitUntilLocalStateChanged();
 
   gfx::ImageSkia policy_image =
       chromeos::test::ImageLoader(
@@ -1599,10 +1641,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
 
   // Start the platform app, causing it to open a window.
   run_loop_.reset(new base::RunLoop);
-  OpenApplication(AppLaunchParams(
-      profile, app->id(), extensions::LaunchContainer::kLaunchContainerNone,
+  apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
+      profile, app->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
       WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceTest));
+      apps::mojom::AppLaunchSource::kSourceTest));
   run_loop_->Run();
   EXPECT_EQ(1U, app_window_registry->app_windows().size());
 
@@ -2301,9 +2343,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Verify that the app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kShowManagedStorageID, true));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(extension_registry->GetExtensionById(
+      kShowManagedStorageID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Wait for the app policy if it hasn't been fetched yet.
   ProfilePolicyConnector* connector = profile->GetProfilePolicyConnector();
@@ -2356,9 +2399,7 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
     explicit CertsObserver(base::OnceClosure on_change)
         : on_change_(std::move(on_change)) {}
 
-    void OnPolicyProvidedCertsChanged(
-        const net::CertificateList& all_server_and_authority_certs,
-        const net::CertificateList& trust_anchors) override {
+    void OnPolicyProvidedCertsChanged() override {
       std::move(on_change_).Run();
     }
 

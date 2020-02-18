@@ -144,6 +144,14 @@ void IncludeFinderPPCallbacks::AddFile(const string& path) {
   source_file_paths_->insert(path);
 }
 
+template <typename T>
+static T* getValueOrNull(llvm::ErrorOr<T*> maybe_val) {
+  if (maybe_val) {
+    return *maybe_val;
+  }
+  return nullptr;
+}
+
 void IncludeFinderPPCallbacks::InclusionDirective(
     clang::SourceLocation hash_loc,
     const clang::Token& include_tok,
@@ -160,11 +168,10 @@ void IncludeFinderPPCallbacks::InclusionDirective(
     return;
 
   assert(!current_files_.top().empty());
-  const clang::DirectoryEntry* const search_path_entry =
-      source_manager_->getFileManager().getDirectory(search_path);
+  const clang::DirectoryEntry* const search_path_entry = getValueOrNull(
+      source_manager_->getFileManager().getDirectory(search_path));
   const clang::DirectoryEntry* const current_file_parent_entry =
-      source_manager_->getFileManager()
-          .getFile(current_files_.top().c_str())
+      (*source_manager_->getFileManager().getFile(current_files_.top().c_str()))
           ->getDir();
 
   // If the include file was found relatively to the current file's parent
@@ -251,11 +258,9 @@ void CompilationIndexerAction::ExecuteAction() {
 
 void CompilationIndexerAction::Preprocess() {
   clang::Preprocessor& preprocessor = getCompilerInstance().getPreprocessor();
-  preprocessor.addPPCallbacks(llvm::make_unique<IncludeFinderPPCallbacks>(
-      &getCompilerInstance().getSourceManager(),
-      &main_source_file_,
-      &source_file_paths_,
-      &getCompilerInstance().getHeaderSearchOpts()));
+  preprocessor.addPPCallbacks(std::make_unique<IncludeFinderPPCallbacks>(
+      &getCompilerInstance().getSourceManager(), &main_source_file_,
+      &source_file_paths_, &getCompilerInstance().getHeaderSearchOpts()));
   preprocessor.getDiagnostics().setIgnoreAllWarnings(true);
   preprocessor.SetSuppressIncludeNotFoundError(true);
   preprocessor.EnterMainSourceFile();

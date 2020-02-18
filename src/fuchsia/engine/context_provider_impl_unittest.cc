@@ -29,9 +29,9 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"
@@ -46,7 +46,9 @@ constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
 
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
-  base::MessageLoopForIO message_loop;
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   base::FilePath data_dir;
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
@@ -177,7 +179,9 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<ContextProviderImpl> provider_;
   fuchsia::web::ContextProviderPtr provider_ptr_;
   fidl::BindingSet<fuchsia::web::ContextProvider> bindings_;
@@ -326,8 +330,7 @@ static bool WaitUntilJobIsEmpty(zx::unowned_job job, zx::duration timeout) {
 TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
   // Replace the default job with one that is guaranteed to be empty.
   zx::job job;
-  ASSERT_EQ(base::GetDefaultJob()->duplicate(ZX_RIGHT_SAME_RIGHTS, &job),
-            ZX_OK);
+  ASSERT_EQ(zx::job::create(*base::GetDefaultJob(), 0, &job), ZX_OK);
   base::ScopedDefaultJobForTest empty_default_job(std::move(job));
 
   // Bind to the ContextProvider.

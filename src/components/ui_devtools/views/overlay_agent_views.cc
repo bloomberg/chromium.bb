@@ -410,14 +410,15 @@ protocol::Response OverlayAgentViews::hideHighlight() {
 
 void OverlayAgentViews::ShowDistancesInHighlightOverlay(int pinned_id,
                                                         int element_id) {
+  UIElement* element_r1 = dom_agent()->GetElementFromNodeId(pinned_id);
+  UIElement* element_r2 = dom_agent()->GetElementFromNodeId(element_id);
+  if (!element_r1 || !element_r2)
+    return;
+
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r2(
-      dom_agent()
-          ->GetElementFromNodeId(element_id)
-          ->GetNodeWindowAndScreenBounds());
+      element_r2->GetNodeWindowAndScreenBounds());
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r1(
-      dom_agent()
-          ->GetElementFromNodeId(pinned_id)
-          ->GetNodeWindowAndScreenBounds());
+      element_r1->GetNodeWindowAndScreenBounds());
 #if defined(OS_MACOSX)
   // TODO(lgrey): Explain this
   if (pair_r1.first != pair_r2.first) {
@@ -470,6 +471,9 @@ Response OverlayAgentViews::HighlightNode(int node_id, bool show_size) {
   UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
   if (!element)
     return Response::Error("No node found with that id");
+
+  if (element->type() == UIElementType::ROOT)
+    return Response::Error("Cannot highlight root node.");
 
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));

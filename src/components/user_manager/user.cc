@@ -263,8 +263,10 @@ bool User::has_gaia_account() const {
 }
 
 void User::AddProfileCreatedObserver(base::OnceClosure on_profile_created) {
-  DCHECK(!profile_is_created_);
-  on_profile_created_observers_.push_back(std::move(on_profile_created));
+  if (profile_is_created_)
+    std::move(on_profile_created).Run();
+  else
+    on_profile_created_observers_.push_back(std::move(on_profile_created));
 }
 
 bool User::IsAffiliated() const {
@@ -309,8 +311,11 @@ User* User::CreateSupervisedUser(const AccountId& account_id) {
   return new SupervisedUser(account_id);
 }
 
-User* User::CreatePublicAccountUser(const AccountId& account_id) {
-  return new PublicAccountUser(account_id);
+User* User::CreatePublicAccountUser(const AccountId& account_id,
+                                    bool is_using_saml) {
+  User* user = new PublicAccountUser(account_id);
+  user->set_using_saml(is_using_saml);
+  return user;
 }
 
 void User::SetAccountLocale(const std::string& resolved_account_locale) {
@@ -476,7 +481,10 @@ std::string SupervisedUser::display_email() const {
 }
 
 PublicAccountUser::PublicAccountUser(const AccountId& account_id)
-    : DeviceLocalAccountUserBase(account_id) {}
+    : DeviceLocalAccountUserBase(account_id) {
+  // Public accounts do not have a real email address, so they do not set
+  // |display_email_|.
+}
 
 PublicAccountUser::~PublicAccountUser() {
 }

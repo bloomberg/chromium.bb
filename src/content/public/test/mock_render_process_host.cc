@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/token.h"
@@ -325,8 +326,16 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() {
 void MockRenderProcessHost::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (binder_overrides_.count(interface_name) > 0)
-    binder_overrides_[interface_name].Run(std::move(interface_pipe));
+  auto it = binder_overrides_.find(interface_name);
+  if (it != binder_overrides_.end())
+    it->second.Run(std::move(interface_pipe));
+}
+
+void MockRenderProcessHost::BindReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  auto it = binder_overrides_.find(*receiver.interface_name());
+  if (it != binder_overrides_.end())
+    it->second.Run(receiver.PassPipe());
 }
 
 const service_manager::Identity& MockRenderProcessHost::GetChildIdentity() {
@@ -390,9 +399,11 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
 
 void MockRenderProcessHost::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
+    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   url_loader_factory_->Clone(std::move(request));
 }
@@ -427,9 +438,9 @@ void MockRenderProcessHost::LockToOrigin(
 }
 
 void MockRenderProcessHost::BindCacheStorage(
-    blink::mojom::CacheStorageRequest request,
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
     const url::Origin& origin) {
-  cache_storage_request_ = std::move(request);
+  cache_storage_receiver_ = std::move(receiver);
 }
 
 void MockRenderProcessHost::BindIndexedDB(

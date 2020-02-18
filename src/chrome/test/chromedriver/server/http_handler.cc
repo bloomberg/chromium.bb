@@ -45,6 +45,11 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+const char kCreateWebSocketPath[] =
+    "session/:sessionId/chromium/create_websocket";
+const char kSendCommandFromWebSocket[] =
+    "session/:sessionId/chromium/send_command_from_websocket";
+
 namespace {
 
 const char kLocalStorage[] = "localStorage";
@@ -756,6 +761,52 @@ HttpHandler::HttpHandler(
                   &ExecuteWebAuthnCommand,
                   base::BindRepeating(&ExecuteRemoveVirtualAuthenticator)))),
 
+      CommandMapping(
+          kPost,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credential",
+          WrapToCommand(
+              "AddCredential",
+              base::BindRepeating(&ExecuteWebAuthnCommand,
+                                  base::BindRepeating(&ExecuteAddCredential)))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credentials",
+          WrapToCommand("GetCredentials",
+                        base::BindRepeating(
+                            &ExecuteWebAuthnCommand,
+                            base::BindRepeating(&ExecuteGetCredentials)))),
+      CommandMapping(
+          kDelete,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credentials/:credentialId",
+          WrapToCommand("RemoveCredential",
+                        base::BindRepeating(
+                            &ExecuteWebAuthnCommand,
+                            base::BindRepeating(&ExecuteRemoveCredential)))),
+      CommandMapping(
+          kDelete,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credentials",
+          WrapToCommand(
+              "RemoveAllCredentials",
+              base::BindRepeating(
+                  &ExecuteWebAuthnCommand,
+                  base::BindRepeating(&ExecuteRemoveAllCredentials)))),
+      CommandMapping(
+          kPost,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/uv",
+          WrapToCommand("SetUserVerified",
+                        base::BindRepeating(
+                            &ExecuteWebAuthnCommand,
+                            base::BindRepeating(&ExecuteSetUserVerified)))),
+      // Extension for Permissions Standard Automation "set permission" command:
+      // https://w3c.github.io/permissions/#set-permission-command
+      CommandMapping(kPost, "session/:sessionId/permissions",
+                     WrapToCommand("SetPermission",
+                                   base::BindRepeating(&ExecuteSetPermission))),
+
       //
       // Non-standard extension commands
       //
@@ -866,6 +917,16 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/is_loading",
           WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
 
+      //
+      // Special commands used by internal implementation
+      // Client apps should never use this over a normal
+      // WebDriver http connection
+      //
+
+      CommandMapping(
+          kPost, kSendCommandFromWebSocket,
+          WrapToCommand("SendCommandFromWebSocket",
+                        base::BindRepeating(&ExecuteSendCommandFromWebSocket))),
   };
   command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }

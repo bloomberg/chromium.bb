@@ -374,6 +374,9 @@ void VerifyVoiceReceiverInfoReport(const StatsReport* report,
   EXPECT_TRUE(GetValue(report, StatsReport::kStatsValueNameDecodingPLC,
                        &value_in_report));
   EXPECT_EQ(rtc::ToString(info.decoding_plc), value_in_report);
+  EXPECT_TRUE(GetValue(report, StatsReport::kStatsValueNameDecodingCodecPLC,
+                       &value_in_report));
+  EXPECT_EQ(rtc::ToString(info.decoding_codec_plc), value_in_report);
   EXPECT_TRUE(GetValue(report, StatsReport::kStatsValueNameDecodingCNG,
                        &value_in_report));
   EXPECT_EQ(rtc::ToString(info.decoding_cng), value_in_report);
@@ -532,7 +535,6 @@ void InitVoiceSenderInfo(cricket::VoiceSenderInfo* voice_sender_info,
   voice_sender_info->fraction_lost = 103;
   voice_sender_info->jitter_ms = 104;
   voice_sender_info->packets_lost = 105;
-  voice_sender_info->ext_seqnum = 106;
   voice_sender_info->audio_level = 107;
   voice_sender_info->apm_statistics.echo_return_loss = 108;
   voice_sender_info->apm_statistics.echo_return_loss_enhancement = 109;
@@ -565,7 +567,6 @@ void InitVoiceReceiverInfo(cricket::VoiceReceiverInfo* voice_receiver_info) {
   voice_receiver_info->bytes_rcvd = 110;
   voice_receiver_info->packets_rcvd = 111;
   voice_receiver_info->packets_lost = 114;
-  voice_receiver_info->ext_seqnum = 115;
   voice_receiver_info->jitter_ms = 116;
   voice_receiver_info->jitter_buffer_ms = 117;
   voice_receiver_info->jitter_buffer_preferred_ms = 118;
@@ -577,6 +578,7 @@ void InitVoiceReceiverInfo(cricket::VoiceReceiverInfo* voice_receiver_info) {
   voice_receiver_info->accelerate_rate = 124;
   voice_receiver_info->preemptive_expand_rate = 125;
   voice_receiver_info->secondary_discarded_rate = 126;
+  voice_receiver_info->decoding_codec_plc = 127;
 }
 
 class StatsCollectorForTest : public StatsCollector {
@@ -1294,7 +1296,7 @@ TEST_F(StatsCollectorTest, IceCandidateReport) {
   connection_info.local_candidate = local;
   connection_info.remote_candidate = remote;
   TransportChannelStats channel_stats;
-  channel_stats.connection_infos.push_back(connection_info);
+  channel_stats.ice_transport_stats.connection_infos.push_back(connection_info);
 
   pc->AddVoiceChannel("audio", kTransportName);
   pc->SetTransportStats(kTransportName, channel_stats);

@@ -19,7 +19,7 @@ class TestCommitInfo(cros_test_lib.TestCase):
     info = common.CommitInfo()
     self.assertEqual(
         "CommitInfo(sha1='', title='', score=Score(values=[]), label='', "
-        "timestamp=0)",
+        'timestamp=0)',
         repr(info))
 
   def testAssigned(self):

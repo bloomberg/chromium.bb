@@ -21,6 +21,10 @@
 #include <string>
 #include <vector>
 
+namespace dawn_platform {
+    class Platform;
+}  // namespace dawn_platform
+
 namespace dawn_native {
 
     struct PCIInfo {
@@ -50,6 +54,7 @@ namespace dawn_native {
     // An optional parameter of Adapter::CreateDevice() to send additional information when creating
     // a Device. For example, we can use it to enable a workaround, optimization or feature.
     struct DAWN_NATIVE_EXPORT DeviceDescriptor {
+        std::vector<const char*> requiredExtensions;
         std::vector<const char*> forceEnabledToggles;
         std::vector<const char*> forceDisabledToggles;
     };
@@ -62,6 +67,11 @@ namespace dawn_native {
         const char* description;
         const char* url;
     };
+
+    // A struct to record the information of an extension. An extension is a GPU feature that is not
+    // required to be supported by all Dawn backends and can only be used when it is enabled on the
+    // creation of device.
+    using ExtensionInfo = ToggleInfo;
 
     // An adapter is an object that represent on possibility of creating devices in the system.
     // Most of the time it will represent a combination of a physical GPU and an API. Not that the
@@ -78,6 +88,7 @@ namespace dawn_native {
         BackendType GetBackendType() const;
         DeviceType GetDeviceType() const;
         const PCIInfo& GetPCIInfo() const;
+        std::vector<const char*> GetSupportedExtensions() const;
 
         explicit operator bool() const;
 
@@ -133,6 +144,9 @@ namespace dawn_native {
         void EnableBeginCaptureOnStartup(bool beginCaptureOnStartup);
         bool IsBeginCaptureOnStartupEnabled() const;
 
+        void SetPlatform(dawn_platform::Platform* platform);
+        dawn_platform::Platform* GetPlatform() const;
+
       private:
         InstanceBase* mImpl = nullptr;
     };
@@ -143,6 +157,8 @@ namespace dawn_native {
     // Query the names of all the toggles that are enabled in device
     DAWN_NATIVE_EXPORT std::vector<const char*> GetTogglesUsed(DawnDevice device);
 
+    // Backdoor to get the number of lazy clears for testing
+    DAWN_NATIVE_EXPORT size_t GetLazyClearCountForTesting(DawnDevice device);
 }  // namespace dawn_native
 
 #endif  // DAWNNATIVE_DAWNNATIVE_H_

@@ -46,9 +46,9 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
 
   explicit TabReloader(content::WebContents* web_contents)
       : web_contents_(web_contents) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&TabReloader::ReloadImpl,
-                                            weak_ptr_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&TabReloader::ReloadImpl,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   void ReloadImpl() {
@@ -82,8 +82,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
   if (template_url_service) {
     search_engine_base_url_tracker_ =
         std::make_unique<SearchEngineBaseURLTracker>(
-            template_url_service,
-            std::make_unique<UIThreadSearchTermsData>(profile()),
+            template_url_service, std::make_unique<UIThreadSearchTermsData>(),
             base::Bind(&BrowserInstantController::OnSearchEngineBaseURLChanged,
                        base::Unretained(this)));
   }

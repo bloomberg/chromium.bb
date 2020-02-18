@@ -46,18 +46,6 @@ std::unique_ptr<RtpRtcp> RtpRtcp::Create(const Configuration& configuration) {
   return absl::make_unique<ModuleRtpRtcpImpl>(configuration);
 }
 
-RtpRtcp* RtpRtcp::CreateRtpRtcp(const RtpRtcp::Configuration& configuration) {
-  if (configuration.clock) {
-    return new ModuleRtpRtcpImpl(configuration);
-  } else {
-    // No clock implementation provided, use default clock.
-    RtpRtcp::Configuration configuration_copy;
-    memcpy(&configuration_copy, &configuration, sizeof(RtpRtcp::Configuration));
-    configuration_copy.clock = Clock::GetRealTimeClock();
-    return new ModuleRtpRtcpImpl(configuration_copy);
-  }
-}
-
 ModuleRtpRtcpImpl::ModuleRtpRtcpImpl(const Configuration& configuration)
     : rtcp_sender_(configuration),
       rtcp_receiver_(configuration, this),
@@ -366,16 +354,6 @@ bool ModuleRtpRtcpImpl::OnSendingRtpFrame(uint32_t timestamp,
   return true;
 }
 
-RtpPacketSendResult ModuleRtpRtcpImpl::TimeToSendPacket(
-    uint32_t ssrc,
-    uint16_t sequence_number,
-    int64_t capture_time_ms,
-    bool retransmission,
-    const PacedPacketInfo& pacing_info) {
-  return rtp_sender_->TimeToSendPacket(ssrc, sequence_number, capture_time_ms,
-                                       retransmission, pacing_info);
-}
-
 bool ModuleRtpRtcpImpl::TrySendPacket(RtpPacketToSend* packet,
                                       const PacedPacketInfo& pacing_info) {
   return rtp_sender_->TrySendPacket(packet, pacing_info);
@@ -387,12 +365,6 @@ bool ModuleRtpRtcpImpl::SupportsPadding() const {
 
 bool ModuleRtpRtcpImpl::SupportsRtxPayloadPadding() const {
   return rtp_sender_->SupportsRtxPayloadPadding();
-}
-
-size_t ModuleRtpRtcpImpl::TimeToSendPadding(
-    size_t bytes,
-    const PacedPacketInfo& pacing_info) {
-  return rtp_sender_->TimeToSendPadding(bytes, pacing_info);
 }
 
 std::vector<std::unique_ptr<RtpPacketToSend>>
@@ -666,6 +638,10 @@ RtcpStatisticsCallback* ModuleRtpRtcpImpl::GetRtcpStatisticsCallback() {
   return rtcp_receiver_.GetRtcpStatisticsCallback();
 }
 
+void ModuleRtpRtcpImpl::RegisterRtcpCnameCallback(RtcpCnameCallback* callback) {
+  rtcp_receiver_.RegisterRtcpCnameCallback(callback);
+}
+
 void ModuleRtpRtcpImpl::SetReportBlockDataObserver(
     ReportBlockDataObserver* observer) {
   return rtcp_receiver_.SetReportBlockDataObserver(observer);
@@ -718,7 +694,7 @@ void ModuleRtpRtcpImpl::OnReceivedNack(
   if (!rtp_sender_)
     return;
 
-  if (!rtp_sender_->StorePackets() || nack_sequence_numbers.size() == 0) {
+  if (!rtp_sender_->StorePackets() || nack_sequence_numbers.empty()) {
     return;
   }
   // Use RTT from RtcpRttStats class if provided.

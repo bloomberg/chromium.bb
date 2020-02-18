@@ -24,14 +24,13 @@
 #include "android_webview/browser/gfx/aw_picture.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/child_frame.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/java_browser_view_renderer_helper.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
 #include "android_webview/browser/permission/simple_permission_request.h"
-#include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/state_serializer.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/aw_switches.h"
@@ -65,6 +64,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -226,7 +226,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
       browser_view_renderer_(
           this,
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI})),
       web_contents_(std::move(web_contents)) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -235,16 +235,13 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
                              std::make_unique<AwContentsUserData>(this));
   browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
 
-  CompositorID compositor_id;
-  if (web_contents_->GetRenderViewHost() &&
-      web_contents_->GetRenderViewHost()->GetProcess()) {
-    compositor_id.process_id =
-        web_contents_->GetRenderViewHost()->GetProcess()->GetID();
-    compositor_id.routing_id =
-        web_contents_->GetRenderViewHost()->GetWidget()->GetRoutingID();
+  viz::FrameSinkId frame_sink_id;
+  if (web_contents_->GetRenderViewHost()) {
+    frame_sink_id =
+        web_contents_->GetRenderViewHost()->GetWidget()->GetFrameSinkId();
   }
 
-  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+  browser_view_renderer_.SetActiveFrameSinkId(frame_sink_id);
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
 
@@ -292,14 +289,6 @@ void AwContents::SetJavaPeers(
   if (!autofill_provider.is_null()) {
     autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
         autofill_provider, web_contents_.get());
-  }
-
-  // Finally, having setup the associations, release any deferred requests
-  for (content::RenderFrameHost* rfh : web_contents_->GetAllFrames()) {
-    int render_process_id = rfh->GetProcess()->GetID();
-    int render_frame_id = rfh->GetRoutingID();
-    AwResourceDispatcherHostDelegate::OnIoThreadClientReady(render_process_id,
-                                                            render_frame_id);
   }
 }
 
@@ -381,6 +370,15 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
   return web_contents_->GetJavaWebContents();
 }
 
+base::android::ScopedJavaLocalRef<jobject> AwContents::GetBrowserContext(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  if (!web_contents_)
+    return base::android::ScopedJavaLocalRef<jobject>();
+  return AwBrowserContext::FromWebContents(web_contents_.get())
+      ->GetJavaBrowserContext();
+}
+
 void AwContents::SetCompositorFrameConsumer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -403,17 +401,16 @@ ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
   return render_process->GetJavaObject();
 }
 
-void AwContents::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void AwContents::Destroy(JNIEnv* env) {
   java_ref_.reset();
   delete this;
 }
 
-static jlong JNI_AwContents_Init(JNIEnv* env,
-                                 const JavaParamRef<jobject>& browser_context) {
-  // TODO(joth): Use |browser_context| to get the native BrowserContext, rather
-  // than hard-code the default instance lookup here.
+static jlong JNI_AwContents_Init(JNIEnv* env, jlong browser_context_pointer) {
+  AwBrowserContext* browser_context =
+      reinterpret_cast<AwBrowserContext*>(browser_context_pointer);
   std::unique_ptr<WebContents> web_contents(content::WebContents::Create(
-      content::WebContents::CreateParams(AwBrowserContext::GetDefault())));
+      content::WebContents::CreateParams(browser_context)));
   // Return an 'uninitialized' instance; most work is deferred until the
   // subsequent SetJavaPeers() call.
   return reinterpret_cast<intptr_t>(new AwContents(std::move(web_contents)));
@@ -424,8 +421,9 @@ static jboolean JNI_AwContents_HasRequiredHardwareExtensions(JNIEnv* env) {
   // Make sure GPUInfo is collected. This will initialize GL bindings,
   // collect GPUInfo, and compute GpuFeatureInfo if they have not been
   // already done.
-  return DeferredGpuCommandService::GetInstance()
-      ->CanSupportThreadedTextureMailbox();
+  return GpuServiceWebView::GetInstance()
+      ->gpu_info()
+      .can_support_threaded_texture_mailbox;
 }
 
 static void JNI_AwContents_SetAwDrawSWFunctionTable(JNIEnv* env,
@@ -558,7 +556,7 @@ void ShowGeolocationPromptHelper(const JavaObjectWeakGlobalRef& java_ref,
                                  const GURL& origin) {
   JNIEnv* env = AttachCurrentThread();
   if (java_ref.get(env).obj()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ShowGeolocationPromptHelperTask, java_ref, origin));
   }
@@ -670,8 +668,8 @@ void AwContents::RequestProtectedMediaIdentifierPermission(
     const GURL& origin,
     base::OnceCallback<void(bool)> callback) {
   permission_request_handler_->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::ProtectedMediaId, std::move(callback))));
+      std::make_unique<SimplePermissionRequest>(
+          origin, AwPermissionRequest::ProtectedMediaId, std::move(callback)));
 }
 
 void AwContents::CancelProtectedMediaIdentifierPermissionRequests(
@@ -693,8 +691,8 @@ void AwContents::RequestGeolocationPermission(
     return;
   }
   permission_request_handler_->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::Geolocation, std::move(callback))));
+      std::make_unique<SimplePermissionRequest>(
+          origin, AwPermissionRequest::Geolocation, std::move(callback)));
 }
 
 void AwContents::CancelGeolocationPermissionRequests(const GURL& origin) {
@@ -715,8 +713,8 @@ void AwContents::RequestMIDISysexPermission(
     const GURL& origin,
     base::OnceCallback<void(bool)> callback) {
   permission_request_handler_->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::MIDISysex, std::move(callback))));
+      std::make_unique<SimplePermissionRequest>(
+          origin, AwPermissionRequest::MIDISysex, std::move(callback)));
 }
 
 void AwContents::CancelMIDISysexPermissionRequests(const GURL& origin) {
@@ -1196,8 +1194,9 @@ void AwContents::SmoothScroll(JNIEnv* env,
     scale *= browser_view_renderer_.dip_scale();
 
   DCHECK_GE(duration_ms, 0);
-  render_view_host_ext_->SmoothScroll(target_x / scale, target_y / scale,
-                                      duration_ms);
+  render_view_host_ext_->SmoothScroll(
+      target_x / scale, target_y / scale,
+      base::TimeDelta::FromMilliseconds(duration_ms));
 }
 
 void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {
@@ -1305,17 +1304,19 @@ bool AwContents::IsOriginAllowedForOnPostMessage(url::Origin& origin) {
   return GetJsJavaConfiguratorHost()->IsOriginAllowedForOnPostMessage(origin);
 }
 
-void AwContents::OnPostMessage(JNIEnv* env,
-                               const base::android::JavaRef<jstring>& message,
-                               const base::android::JavaRef<jstring>& origin,
-                               jboolean is_main_frame,
-                               const base::android::JavaRef<jintArray>& ports) {
+void AwContents::OnPostMessage(
+    JNIEnv* env,
+    const base::android::JavaRef<jstring>& message,
+    const base::android::JavaRef<jstring>& origin,
+    jboolean is_main_frame,
+    const base::android::JavaRef<jintArray>& ports,
+    const base::android::JavaRef<jobject>& reply_proxy) {
   const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  // TODO(ctzsm): Implement the replyPort (0 below).
-  Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame,
-                                /* MOJO_HANDLE_INVALID */ 0, ports);
+
+  Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame, ports,
+                                reply_proxy);
 }
 
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -1398,15 +1399,12 @@ void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
                                        content::RenderViewHost* new_host) {
   DCHECK(new_host);
 
-  int process_id = new_host->GetProcess()->GetID();
-  int routing_id = new_host->GetWidget()->GetRoutingID();
-
   // At this point, the current RVH may or may not contain a compositor. So
   // compositor_ may be nullptr, in which case
   // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
   // new compositor is constructed.
-  browser_view_renderer_.SetActiveCompositorID(
-      CompositorID(process_id, routing_id));
+  browser_view_renderer_.SetActiveFrameSinkId(
+      new_host->GetWidget()->GetFrameSinkId());
 }
 
 void AwContents::DidFinishNavigation(
@@ -1434,28 +1432,16 @@ void AwContents::DidFinishNavigation(
 }
 
 void AwContents::DidAttachInterstitialPage() {
-  CompositorID compositor_id;
   RenderFrameHost* rfh = web_contents_->GetInterstitialPage()->GetMainFrame();
-  compositor_id.process_id = rfh->GetProcess()->GetID();
-  compositor_id.routing_id =
-      rfh->GetRenderViewHost()->GetWidget()->GetRoutingID();
-  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+  browser_view_renderer_.SetActiveFrameSinkId(
+      rfh->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
 }
 
 void AwContents::DidDetachInterstitialPage() {
-  CompositorID compositor_id;
   if (!web_contents_)
     return;
-  if (web_contents_->GetRenderViewHost() &&
-      web_contents_->GetRenderViewHost()->GetProcess()) {
-    compositor_id.process_id =
-        web_contents_->GetRenderViewHost()->GetProcess()->GetID();
-    compositor_id.routing_id =
-        web_contents_->GetRenderViewHost()->GetWidget()->GetRoutingID();
-  } else {
-    LOG(WARNING) << "failed setting the compositor on detaching interstitital";
-  }
-  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+  browser_view_renderer_.SetActiveFrameSinkId(
+      web_contents_->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
 }
 
 bool AwContents::CanShowInterstitial() {

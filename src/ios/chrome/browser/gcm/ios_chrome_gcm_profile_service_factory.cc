@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -41,7 +42,7 @@ void RequestProxyResolvingSocketFactory(
     web::BrowserState* context,
     base::WeakPtr<gcm::GCMProfileService> service,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI})
+  base::CreateSingleThreadTaskRunner({web::WebThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, context,
@@ -66,7 +67,7 @@ IOSChromeGCMProfileServiceFactory::GetInstance() {
 
 // static
 std::string IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return "com.chrome.ios";
 #else
   return "org.chromium.ios";
@@ -88,8 +89,9 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
   DCHECK(!context->IsOffTheRecord());
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
@@ -101,7 +103,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
       GetProductCategoryForSubtypes(),
       IdentityManagerFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new gcm::GCMClientFactory),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
       blocking_task_runner);
 }

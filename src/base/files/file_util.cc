@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <limits>
+#include <memory>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -25,17 +26,6 @@
 namespace base {
 
 #if !defined(OS_NACL_NONSFI)
-namespace {
-
-// The maximum number of 'uniquified' files we will try to create.
-// This is used when the filename we're trying to download is already in use,
-// so we create a new unique filename by appending " (nnn)" before the
-// extension, where 1 <= nnn <= kMaxUniqueFiles.
-// Also used by code that cleans up said files.
-static const int kMaxUniqueFiles = 100;
-
-}  // namespace
-
 int64_t ComputeDirectorySize(const FilePath& root_path) {
   int64_t running_size = 0;
   FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
@@ -280,35 +270,68 @@ bool TruncateFile(FILE* file) {
   return true;
 }
 
-int GetUniquePathNumber(const FilePath& path,
-                        const FilePath::StringType& suffix) {
-  bool have_suffix = !suffix.empty();
-  if (!PathExists(path) &&
-      (!have_suffix || !PathExists(FilePath(path.value() + suffix)))) {
+int GetUniquePathNumber(const FilePath& path) {
+  DCHECK(!path.empty());
+  if (!PathExists(path))
     return 0;
-  }
 
-  FilePath new_path;
+  std::string number;
   for (int count = 1; count <= kMaxUniqueFiles; ++count) {
-    new_path = path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", count));
-    if (!PathExists(new_path) &&
-        (!have_suffix || !PathExists(FilePath(new_path.value() + suffix)))) {
+    StringAppendF(&number, " (%d)", count);
+    if (!PathExists(path.InsertBeforeExtensionASCII(number)))
       return count;
-    }
+    number.clear();
   }
 
   return -1;
 }
 
 FilePath GetUniquePath(const FilePath& path) {
-  FilePath unique_path = path;
-  int uniquifier = GetUniquePathNumber(path, FilePath::StringType());
-  if (uniquifier > 0) {
-    unique_path = unique_path.InsertBeforeExtensionASCII(
-        StringPrintf(" (%d)", uniquifier));
-  }
-  return unique_path;
+  DCHECK(!path.empty());
+  const int uniquifier = GetUniquePathNumber(path);
+  if (uniquifier > 0)
+    return path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
+  return uniquifier == 0 ? path : base::FilePath();
 }
+
+namespace internal {
+
+bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes) {
+  DCHECK_GE(max_bytes, 0);
+
+  File file(file_path, File::FLAG_OPEN | File::FLAG_READ |
+                           File::FLAG_SEQUENTIAL_SCAN |
+                           File::FLAG_SHARE_DELETE);
+  if (!file.IsValid())
+    return false;
+
+  constexpr int kBufferSize = 1024 * 1024;
+  // Ensures the buffer is deallocated at function exit.
+  std::unique_ptr<char[]> buffer_deleter(new char[kBufferSize]);
+  char* const buffer = buffer_deleter.get();
+
+  while (max_bytes > 0) {
+    // The static_cast<int> is safe because kBufferSize is int, and both values
+    // are non-negative. So, the minimum is guaranteed to fit in int.
+    const int read_size =
+        static_cast<int>(std::min<int64_t>(max_bytes, kBufferSize));
+    DCHECK_GE(read_size, 0);
+    DCHECK_LE(read_size, kBufferSize);
+
+    const int read_bytes = file.ReadAtCurrentPos(buffer, read_size);
+    if (read_bytes < 0)
+      return false;
+    if (read_bytes == 0)
+      break;
+
+    max_bytes -= read_bytes;
+  }
+
+  return true;
+}
+
+}  // namespace internal
+
 #endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace base

@@ -43,6 +43,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if running on an iPad.
 - (BOOL)isIPadIdiom;
 
+// Returns YES if the main application window's rootViewController has a compact
+// horizontal size class.
+- (BOOL)isCompactWidth;
+
 #pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
@@ -293,6 +297,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // If the condition is not met within a timeout a GREYAssert is induced.
 - (void)waitForWebStateContainingLoadedImageElementWithID:
     (const std::string&)UTF8ImageID;
+
+// Returns the current web state's VisibleURL.
+- (GURL)webStateVisibleURL;
 
 #pragma mark - Bookmarks Utilities (EG2)
 

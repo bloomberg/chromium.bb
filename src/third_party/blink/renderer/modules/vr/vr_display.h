@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -53,9 +54,10 @@ class SessionClientBinding
     kNonImmersive = 1,
   };
 
-  SessionClientBinding(VRDisplay* display,
-                       SessionBindingType immersive,
-                       device::mojom::blink::XRSessionClientRequest request);
+  SessionClientBinding(
+      VRDisplay* display,
+      SessionBindingType immersive,
+      mojo::PendingReceiver<device::mojom::blink::XRSessionClient> receiver);
   ~SessionClientBinding() override;
   void Close();
 
@@ -71,7 +73,7 @@ class SessionClientBinding
   // VRDisplay is destroyed, so is the SessionClientBinding.
   Member<VRDisplay> display_;
   bool is_immersive_;
-  mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
+  mojo::Receiver<device::mojom::blink::XRSessionClient> client_receiver_;
 };
 
 enum VREye { kVREyeNone, kVREyeLeft, kVREyeRight };
@@ -85,15 +87,13 @@ class VRDisplay final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(VRDisplay, Dispose);
 
  public:
-  static VRDisplay* Create(NavigatorVR* navigator,
-                           device::mojom::blink::XRDevicePtr device) {
-    VRDisplay* display =
-        MakeGarbageCollected<VRDisplay>(navigator, std::move(device));
+  static VRDisplay* Create(NavigatorVR* navigator) {
+    VRDisplay* display = MakeGarbageCollected<VRDisplay>(navigator);
     display->UpdateStateIfNeeded();
     return display;
   }
 
-  VRDisplay(NavigatorVR*, device::mojom::blink::XRDevicePtr);
+  VRDisplay(NavigatorVR*);
   ~VRDisplay() override;
 
   // We hand out at most one VRDisplay, so hardcode displayId to 1.
@@ -102,7 +102,6 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   VRDisplayCapabilities* capabilities() const { return capabilities_; }
   VRStageParameters* stageParameters() const { return stage_parameters_; }
-  device::mojom::blink::XRDevice* device() { return device_ptr_.get(); }
 
   bool isPresenting() const { return is_presenting_; }
   bool canPresent() const { return capabilities_->canPresent(); }
@@ -129,7 +128,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   void submitFrame();
 
   Document* GetDocument();
-  device::mojom::blink::VRDisplayClientPtr GetDisplayClient();
+  mojo::PendingRemote<device::mojom::blink::VRDisplayClient> GetDisplayClient();
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;
@@ -170,10 +169,11 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   VRController* Controller();
 
+  void SetNonImmersiveSession(
+      device::mojom::blink::RequestSessionResultPtr result);
+
  private:
   void OnRequestImmersiveSessionReturned(
-      device::mojom::blink::RequestSessionResultPtr result);
-  void OnNonImmersiveSessionRequestReturned(
       device::mojom::blink::RequestSessionResultPtr result);
 
   void OnConnected();
@@ -264,13 +264,12 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool non_immersive_session_initialized_ = false;
   device::mojom::blink::XRFrameDataProviderPtr non_immersive_provider_;
 
-  device::mojom::blink::XRDevicePtr device_ptr_;
-
   bool present_image_needs_copy_ = false;
 
   Member<SessionClientBinding> non_immersive_client_binding_;
   Member<SessionClientBinding> immersive_client_binding_;
-  mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
+  mojo::Receiver<device::mojom::blink::VRDisplayClient>
+      display_client_receiver_{this};
   device::mojom::blink::XRFrameDataProviderPtr vr_presentation_data_provider_;
   device::mojom::blink::XRPresentationProviderPtr vr_presentation_provider_;
 

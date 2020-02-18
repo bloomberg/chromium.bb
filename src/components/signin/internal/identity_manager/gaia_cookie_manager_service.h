@@ -18,12 +18,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -293,6 +294,9 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Final call in the Setting accounts in cookie procedure. Public for testing.
   void OnSetAccountsFinished(signin::SetAccountsInCookieResult result);
 
+  // Registers prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
  private:
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
@@ -319,6 +323,9 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
   void OnLogOutSuccess() override;
   void OnLogOutFailure(const GoogleServiceAuthError& error) override;
+
+  // Helper method to initialize listed accounts ids.
+  void InitializeListedAccountsIds();
 
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(
@@ -378,7 +385,8 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   std::string access_token_;
 
   // Connection to the CookieManager that signals when the GAIA cookies change.
-  mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener>
+      cookie_listener_receiver_{this};
 
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be

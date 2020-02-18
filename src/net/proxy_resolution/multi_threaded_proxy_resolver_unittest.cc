@@ -27,7 +27,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -210,7 +210,7 @@ class SingleShotMultiThreadedProxyResolverFactory
   std::unique_ptr<ProxyResolverFactory> factory_;
 };
 
-class MultiThreadedProxyResolverTest : public TestWithScopedTaskEnvironment {
+class MultiThreadedProxyResolverTest : public TestWithTaskEnvironment {
  public:
   void Init(size_t num_threads) {
     std::unique_ptr<BlockableProxyResolverFactory> factory_owner(
@@ -737,7 +737,7 @@ TEST_F(MultiThreadedProxyResolverTest, CancelCreate) {
     std::unique_ptr<ProxyResolver> resolver;
     EXPECT_EQ(ERR_IO_PENDING, resolver_factory.CreateProxyResolver(
                                   PacFileData::FromUTF8("pac script bytes"),
-                                  &resolver, base::Bind(&Fail), &request));
+                                  &resolver, base::BindOnce(&Fail), &request));
     EXPECT_TRUE(request);
     request.reset();
   }
@@ -782,7 +782,7 @@ TEST_F(MultiThreadedProxyResolverTest, DestroyFactoryWithRequestsInProgress) {
         kNumThreads, std::make_unique<BlockableProxyResolverFactory>());
     EXPECT_EQ(ERR_IO_PENDING, resolver_factory.CreateProxyResolver(
                                   PacFileData::FromUTF8("pac script bytes"),
-                                  &resolver, base::Bind(&Fail), &request));
+                                  &resolver, base::BindOnce(&Fail), &request));
     EXPECT_TRUE(request);
   }
   // The factory destructor will block until the worker thread stops, but it may

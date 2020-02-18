@@ -62,7 +62,8 @@ void initBuffers() {
         20, 21, 22,
         20, 22, 23
     };
-    indexBuffer = utils::CreateBufferFromData(device, indexData, sizeof(indexData), dawn::BufferUsageBit::Index);
+    indexBuffer =
+        utils::CreateBufferFromData(device, indexData, sizeof(indexData), dawn::BufferUsage::Index);
 
     static const float vertexData[6 * 4 * 6] = {
         -1.0, -1.0,  1.0,    1.0, 0.0, 0.0,
@@ -95,7 +96,8 @@ void initBuffers() {
         -1.0,  1.0,  1.0,    1.0, 1.0, 1.0,
         -1.0,  1.0, -1.0,    1.0, 1.0, 1.0
     };
-    vertexBuffer = utils::CreateBufferFromData(device, vertexData, sizeof(vertexData), dawn::BufferUsageBit::Vertex);
+    vertexBuffer = utils::CreateBufferFromData(device, vertexData, sizeof(vertexData),
+                                               dawn::BufferUsage::Vertex);
 
     static const float planeData[6 * 4] = {
         -2.0, -1.0, -2.0,    0.5, 0.5, 0.5,
@@ -103,7 +105,8 @@ void initBuffers() {
         2.0, -1.0,  2.0,    0.5, 0.5, 0.5,
         -2.0, -1.0,  2.0,    0.5, 0.5, 0.5,
     };
-    planeBuffer = utils::CreateBufferFromData(device, planeData, sizeof(planeData), dawn::BufferUsageBit::Vertex);
+    planeBuffer = utils::CreateBufferFromData(device, planeData, sizeof(planeData),
+                                              dawn::BufferUsage::Vertex);
 }
 
 struct CameraData {
@@ -116,12 +119,13 @@ void init() {
 
     queue = device.CreateQueue();
     swapchain = GetSwapChain(device);
-    swapchain.Configure(GetPreferredSwapChainTextureFormat(),
-                        dawn::TextureUsageBit::OutputAttachment, 640, 480);
+    swapchain.Configure(GetPreferredSwapChainTextureFormat(), dawn::TextureUsage::OutputAttachment,
+                        640, 480);
 
     initBuffers();
 
-    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+    dawn::ShaderModule vsModule =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
         layout(set = 0, binding = 0) uniform cameraData {
             mat4 view;
@@ -139,7 +143,7 @@ void init() {
         })");
 
     dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(location = 2) in vec3 f_col;
         layout(location = 0) out vec4 fragColor;
@@ -148,7 +152,7 @@ void init() {
         })");
 
     dawn::ShaderModule fsReflectionModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(location = 2) in vec3 f_col;
         layout(location = 0) out vec4 fragColor;
@@ -168,22 +172,24 @@ void init() {
 
     auto bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer},
+                    {0, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer},
+                    {1, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer},
                 });
 
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::BufferDescriptor cameraBufDesc;
     cameraBufDesc.size = sizeof(CameraData);
-    cameraBufDesc.usage = dawn::BufferUsageBit::CopyDst | dawn::BufferUsageBit::Uniform;
+    cameraBufDesc.usage = dawn::BufferUsage::CopyDst | dawn::BufferUsage::Uniform;
     cameraBuffer = device.CreateBuffer(&cameraBufDesc);
 
     glm::mat4 transform(1.0);
-    transformBuffer[0] = utils::CreateBufferFromData(device, &transform, sizeof(glm::mat4), dawn::BufferUsageBit::Uniform);
+    transformBuffer[0] = utils::CreateBufferFromData(device, &transform, sizeof(glm::mat4),
+                                                     dawn::BufferUsage::Uniform);
 
     transform = glm::translate(transform, glm::vec3(0.f, -2.f, 0.f));
-    transformBuffer[1] = utils::CreateBufferFromData(device, &transform, sizeof(glm::mat4), dawn::BufferUsageBit::Uniform);
+    transformBuffer[1] = utils::CreateBufferFromData(device, &transform, sizeof(glm::mat4),
+                                                     dawn::BufferUsage::Uniform);
 
     bindGroup[0] = utils::MakeBindGroup(device, bgl, {
         {0, cameraBuffer, 0, sizeof(CameraData)},
@@ -199,7 +205,7 @@ void init() {
 
     utils::ComboRenderPipelineDescriptor descriptor(device);
     descriptor.layout = pl;
-    descriptor.cVertexStage.module = vsModule;
+    descriptor.vertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
     descriptor.vertexInput = &vertexInput;
     descriptor.depthStencilState = &descriptor.cDepthStencilState;
@@ -212,7 +218,7 @@ void init() {
 
     utils::ComboRenderPipelineDescriptor pDescriptor(device);
     pDescriptor.layout = pl;
-    pDescriptor.cVertexStage.module = vsModule;
+    pDescriptor.vertexStage.module = vsModule;
     pDescriptor.cFragmentStage.module = fsModule;
     pDescriptor.vertexInput = &vertexInput;
     pDescriptor.depthStencilState = &pDescriptor.cDepthStencilState;
@@ -226,7 +232,7 @@ void init() {
 
     utils::ComboRenderPipelineDescriptor rfDescriptor(device);
     rfDescriptor.layout = pl;
-    rfDescriptor.cVertexStage.module = vsModule;
+    rfDescriptor.vertexStage.module = vsModule;
     rfDescriptor.cFragmentStage.module = fsReflectionModule;
     rfDescriptor.vertexInput = &vertexInput;
     rfDescriptor.depthStencilState = &rfDescriptor.cDepthStencilState;
@@ -260,8 +266,7 @@ void frame() {
     cameraBuffer.SetSubData(0, sizeof(CameraData), &cameraData);
 
     dawn::Texture backbuffer = swapchain.GetNextTexture();
-    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
-                                                depthStencilView);
+    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateView()}, depthStencilView);
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {

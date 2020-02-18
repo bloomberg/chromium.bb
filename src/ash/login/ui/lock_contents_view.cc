@@ -23,12 +23,13 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
-#include "ash/login/ui/parent_access_view.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -39,9 +40,12 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -553,16 +557,45 @@ void LockContentsView::FocusPreviousUser() {
   }
 }
 
-void LockContentsView::ShowParentAccessDialog(bool show) {
-  if (!primary_big_view_)
-    return;
+void LockContentsView::ShowParentAccessDialog() {
+  // ParentAccessDialog should only be shown on lock screen from here.
+  DCHECK(primary_big_view_);
+  const AccountId account_id =
+      CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id;
 
-  if (show)
-    primary_big_view_->ShowParentAccessView();
-  else
-    primary_big_view_->HideParentAccessView();
+  DCHECK(!ParentAccessWidget::Get());
+  ParentAccessWidget::Show(
+      account_id,
+      base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
+                          weak_ptr_factory_.GetWeakPtr(), account_id),
+      ParentAccessRequestReason::kUnlockTimeLimits);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
+}
 
-  Layout();
+void LockContentsView::RequestSecurityTokenPin(
+    SecurityTokenPinRequest request) {
+  // Find which of the current big users, if any, should handle the request.
+  for (auto* big_user : {primary_big_view_, opt_secondary_big_view_}) {
+    if (big_user && big_user->auth_user() &&
+        big_user->GetCurrentUser().basic_user_info.account_id ==
+            request.account_id) {
+      big_user->auth_user()->RequestSecurityTokenPin(std::move(request));
+      return;
+    }
+  }
+  // The PIN request is obsolete.
+  std::move(request.pin_ui_closed_callback).Run();
+}
+
+void LockContentsView::ClearSecurityTokenPinRequest() {
+  // Try both big users - it's safe since at most one PIN request can happen at
+  // a time, and as clearing a non-existing PIN request is a no-op.
+  // Note that if the PIN UI used to be shown in some other big view, then it
+  // had already been closed while switching the view(s).
+  if (primary_big_view_ && primary_big_view_->auth_user())
+    primary_big_view_->auth_user()->ClearSecurityTokenPinRequest();
+  if (opt_secondary_big_view_ && opt_secondary_big_view_->auth_user())
+    opt_secondary_big_view_->auth_user()->ClearSecurityTokenPinRequest();
 }
 
 void LockContentsView::Layout() {
@@ -724,6 +757,25 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
       TryToFindBigUser(user, true /*require_auth_active*/);
   if (big_user && big_user->auth_user())
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::OnChallengeResponseAuthEnabledForUserChanged(
+    const AccountId& user,
+    bool enabled) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR)
+        << "Unable to find user when changing challenge-response auth state to "
+        << enabled;
+    return;
+  }
+
+  state->show_challenge_response_auth = enabled;
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, /*require_auth_active=*/true);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, /*opt_to_hide=*/nullptr, /*animate=*/true);
 }
 
 void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
@@ -1212,8 +1264,7 @@ void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
 bool LockContentsView::AreMediaControlsEnabled() const {
   return screen_type_ == LockScreen::ScreenType::kLock &&
          !expanded_view_->GetVisible() &&
-         Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled() &&
-         base::FeatureList::IsEnabled(features::kLockScreenMediaControls);
+         Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled();
 }
 
 void LockContentsView::HideMediaControlsLayout() {
@@ -1451,7 +1502,8 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
   }
 }
 
-void LockContentsView::OnAuthenticate(bool auth_success) {
+void LockContentsView::OnAuthenticate(bool auth_success,
+                                      bool display_error_messages) {
   if (auth_success) {
     if (auth_error_bubble_->GetVisible())
       auth_error_bubble_->Hide();
@@ -1471,7 +1523,8 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
     }
   } else {
     ++unlock_attempt_;
-    ShowAuthErrorMessage();
+    if (display_error_messages)
+      ShowAuthErrorMessage();
   }
 }
 
@@ -1507,6 +1560,10 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
       } else if (state->disable_auth) {
         to_update_auth = LoginAuthUserView::AUTH_DISABLED;
+      } else if (state->show_challenge_response_auth) {
+        // Currently the challenge-response authentication can't be combined
+        // with the password or PIN based one.
+        to_update_auth = LoginAuthUserView::AUTH_CHALLENGE_RESPONSE;
       } else {
         to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
         // Need to check |GetKeyboardControllerForView| as the keyboard may be
@@ -1794,8 +1851,12 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   }
 }
 
-void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
-  ShowParentAccessDialog(false);
+void LockContentsView::OnParentAccessValidationFinished(
+    const AccountId& account_id,
+    bool access_granted) {
+  LockContentsView::UserState* state = FindStateForUser(account_id);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(
+      state && state->disable_auth && !access_granted);
 }
 
 keyboard::KeyboardUIController* LockContentsView::GetKeyboardControllerForView()
@@ -1861,14 +1922,8 @@ LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
       base::BindRepeating(&LockContentsView::OnPublicAccountTapped,
                           base::Unretained(this), is_primary);
 
-  ParentAccessView::Callbacks parent_access_callbacks;
-  parent_access_callbacks.on_finished =
-      base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
-                          base::Unretained(this));
-
   return new LoginBigUserView(user, auth_user_callbacks,
-                              public_account_callbacks,
-                              parent_access_callbacks);
+                              public_account_callbacks);
 }
 
 LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,

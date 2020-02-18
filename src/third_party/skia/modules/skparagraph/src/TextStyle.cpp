@@ -1,7 +1,7 @@
 // Copyright 2019 Google LLC.
-#include "modules/skparagraph/include/TextStyle.h"
 #include "include/core/SkColor.h"
 #include "include/core/SkFontStyle.h"
+#include "modules/skparagraph/include/TextStyle.h"
 
 namespace skia {
 namespace textlayout {
@@ -21,13 +21,33 @@ TextStyle::TextStyle() : fFontStyle() {
     fLetterSpacing = 0.0;
     fWordSpacing = 0.0;
     fHeight = 1.0;
+    fHeightOverride = false;
     fHasBackground = false;
     fHasForeground = false;
     fTextBaseline = TextBaseline::kAlphabetic;
     fLocale = "";
+    fIsPlaceholder = false;
+}
+
+TextStyle:: TextStyle(const TextStyle& other, bool placeholder) {
+    fColor = other.fColor;
+    fFontSize = other.fFontSize;
+    fFontFamilies = other.fFontFamilies;
+    fDecoration = other.fDecoration;
+    fHasBackground = other.fHasBackground;
+    fHasForeground = other.fHasForeground;
+    fBackground = other.fBackground;
+    fForeground = other.fForeground;
+    fHeightOverride = other.fHeightOverride;
+    fIsPlaceholder = placeholder;
 }
 
 bool TextStyle::equals(const TextStyle& other) const {
+
+    if (fIsPlaceholder || other.fIsPlaceholder) {
+        return false;
+    }
+
     if (fColor != other.fColor) {
         return false;
     }
@@ -118,6 +138,24 @@ bool TextStyle::matchOneAttribute(StyleType styleType, const TextStyle& other) c
         default:
             SkASSERT(false);
             return false;
+    }
+}
+
+void TextStyle::getFontMetrics(SkFontMetrics* metrics) const {
+    SkFont font(fTypeface, fFontSize);
+    font.setEdging(SkFont::Edging::kAntiAlias);
+    font.setSubpixel(true);
+    font.setHinting(SkFontHinting::kSlight);
+    font.getMetrics(metrics);
+    if (fHeightOverride) {
+        auto multiplier = fHeight * fFontSize;
+        auto height = metrics->fDescent - metrics->fAscent + metrics->fLeading;
+        metrics->fAscent = (metrics->fAscent - metrics->fLeading / 2) * multiplier / height;
+        metrics->fDescent = (metrics->fDescent + metrics->fLeading / 2) * multiplier / height;
+
+    } else {
+        metrics->fAscent = (metrics->fAscent - metrics->fLeading / 2);
+        metrics->fDescent = (metrics->fDescent + metrics->fLeading / 2);
     }
 }
 

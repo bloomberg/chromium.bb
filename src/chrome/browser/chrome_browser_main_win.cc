@@ -38,6 +38,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/memory/memory_pressure_monitor.h"
@@ -94,7 +95,7 @@
 #include "ui/gfx/win/crash_id_helper.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 #endif
 
@@ -381,9 +382,10 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
         // task.
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE,
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(&HandleModuleLoadEventWithoutTimeDateStamp,
                            event.module_path, event.module_size));
@@ -406,7 +408,7 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   DCHECK(module_watcher);
 
   bool third_party_blocking_policy_enabled =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       ModuleDatabase::IsThirdPartyBlockingPolicyEnabled();
 #else
       false;
@@ -427,7 +429,7 @@ void ShowCloseBrowserFirstMessageBox() {
 
 void MaybePostSettingsResetPrompt() {
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
@@ -551,7 +553,7 @@ void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
 void ChromeBrowserMainPartsWin::PostProfileInit() {
   ChromeBrowserMainParts::PostProfileInit();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Explicitly disable the third-party modules blocking.
   //
   // Because the blocking code lives in chrome_elf, it is not possible to check
@@ -565,8 +567,8 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
       !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
       !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
-        base::CreateTaskRunnerWithTraits(
-            {base::TaskPriority::BEST_EFFORT,
+        base::CreateTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::MayBlock()})
             .get());
@@ -605,9 +607,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
-  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  base::BindOnce(&DetectFaultTolerantHeap),
-                                  base::TimeDelta::FromMinutes(1));
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&DetectFaultTolerantHeap),
+                        base::TimeDelta::FromMinutes(1));
 
   // Start the swap thrashing monitor if it's enabled.
   //

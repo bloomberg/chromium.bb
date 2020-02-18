@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ShellAutofillDelegate () <CWVCreditCardVerifierDelegate>
+@interface ShellAutofillDelegate ()
 
 // Autofill controller.
 @property(nonatomic, strong) CWVAutofillController* autofillController;
@@ -67,16 +67,6 @@
     for (CWVAutofillSuggestion* suggestion in suggestions) {
       [alertController addAction:[self actionForSuggestion:suggestion]];
     }
-    UIAlertAction* clearAction = [UIAlertAction
-        actionWithTitle:@"Clear"
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction* _Nonnull action) {
-                  [autofillController clearFormWithName:formName
-                                        fieldIdentifier:fieldIdentifier
-                                                frameID:frameID
-                                      completionHandler:nil];
-                }];
-    [alertController addAction:clearAction];
 
     [UIApplication.sharedApplication.keyWindow.rootViewController
         presentViewController:alertController
@@ -119,28 +109,36 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePolicyForLocalStorageOfCreditCard:(CWVCreditCard*)creditCard
-                            decisionHandler:
-                                (void (^)(CWVStoragePolicy))decisionHandler {
+    saveCreditCardWithSaver:(CWVCreditCardSaver*)saver {
+  CWVCreditCard* creditCard = saver.creditCard;
   NSString* cardSummary = [NSString
       stringWithFormat:@"%@ %@ %@/%@", creditCard.cardHolderFullName,
                        creditCard.cardNumber, creditCard.expirationMonth,
                        creditCard.expirationYear];
+  NSArray<NSString*>* legalMessages =
+      [saver.legalMessages valueForKey:@"string"];
+  NSString* message = [[legalMessages arrayByAddingObject:cardSummary]
+      componentsJoinedByString:@"\n"];
   UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Update Password"
-                       message:cardSummary
+      alertControllerWithTitle:@"Save card?"
+                       message:message
                 preferredStyle:UIAlertControllerStyleActionSheet];
-  UIAlertAction* allowAction =
-      [UIAlertAction actionWithTitle:@"Allow"
-                               style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction* _Nonnull action) {
-                               decisionHandler(CWVStoragePolicyAllow);
-                             }];
+  UIAlertAction* allowAction = [UIAlertAction
+      actionWithTitle:@"Allow"
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* _Nonnull action) {
+                [saver acceptWithRiskData:self.riskDataLoader.riskData
+                        completionHandler:^(BOOL cardSaved) {
+                          if (!cardSaved) {
+                            NSLog(@"Failed to save: %@", saver.creditCard);
+                          }
+                        }];
+              }];
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:@"Cancel"
                                style:UIAlertActionStyleCancel
                              handler:^(UIAlertAction* _Nonnull action) {
-                               decisionHandler(CWVStoragePolicyReject);
+                               [saver decline];
                              }];
   [alertController addAction:allowAction];
   [alertController addAction:cancelAction];
@@ -235,21 +233,34 @@
                                           message:@"Enter CVC"
                                    preferredStyle:UIAlertControllerStyleAlert];
 
+  __weak UIAlertController* weakAlertController = alertController;
   UIAlertAction* submit = [UIAlertAction
       actionWithTitle:@"Confirm"
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
-                UITextField* textField = alertController.textFields.firstObject;
+                UITextField* textField =
+                    weakAlertController.textFields.firstObject;
                 NSString* CVC = textField.text;
                 [verifier verifyWithCVC:CVC
                         expirationMonth:nil
                          expirationYear:nil
                            storeLocally:NO
-                             dataSource:self.riskDataLoader
-                               delegate:self];
+                               riskData:self.riskDataLoader.riskData
+                      completionHandler:^(NSError* error) {
+                        if (error) {
+                          NSLog(@"Card %@ failed to verify error: %@",
+                                verifier.creditCard, error);
+                        }
+                      }];
               }];
 
   [alertController addAction:submit];
+
+  UIAlertAction* cancel =
+      [UIAlertAction actionWithTitle:@"Cancel"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:cancel];
 
   [alertController
       addTextFieldWithConfigurationHandler:^(UITextField* textField) {
@@ -263,27 +274,6 @@
                  completion:nil];
 }
 
-#pragma mark - CWVCreditCardVerifierDelegate
-
-- (void)creditCardVerifier:(CWVCreditCardVerifier*)creditCardVerifier
-    didFinishVerificationWithError:(nullable NSError*)error {
-  if (error) {
-    UIAlertController* alertController = [UIAlertController
-        alertControllerWithTitle:@"Verification Error"
-                         message:error.localizedDescription
-                  preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction* action =
-        [UIAlertAction actionWithTitle:@"OK"
-                                 style:UIAlertActionStyleDefault
-                               handler:nil];
-    [alertController addAction:action];
-    [UIApplication.sharedApplication.keyWindow.rootViewController
-        presentViewController:alertController
-                     animated:YES
-                   completion:nil];
-  }
-}
-
 #pragma mark - Private Methods
 
 - (UIAlertAction*)actionForSuggestion:(CWVAutofillSuggestion*)suggestion {
@@ -293,8 +283,9 @@
   return [UIAlertAction actionWithTitle:title
                                   style:UIAlertActionStyleDefault
                                 handler:^(UIAlertAction* _Nonnull action) {
-                                  [_autofillController fillSuggestion:suggestion
-                                                    completionHandler:nil];
+                                  [_autofillController
+                                       acceptSuggestion:suggestion
+                                      completionHandler:nil];
                                   [UIApplication.sharedApplication.keyWindow
                                       endEditing:YES];
                                 }];

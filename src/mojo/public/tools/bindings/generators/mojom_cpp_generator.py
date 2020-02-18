@@ -273,6 +273,17 @@ class Generator(generator.Generator):
         headers.update(typemap.get("public_headers", []))
     return sorted(headers)
 
+  def _ReferencesAnyHandleOrInterfaceType(self):
+    """Returns whether this module uses interfaces directly or indirectly.
+
+    When false, the generated headers do not need to include interface_ptr.h
+    and similar.
+    """
+    if len(self.module.interfaces) > 0:
+      return True
+    return any(map(mojom.ContainsHandlesOrInterfaces,
+                   self.module.structs + self.module.unions))
+
   def _GetDirectlyUsedKinds(self):
     for struct in self.module.structs + self.module.unions:
       for field in struct.fields:
@@ -310,6 +321,7 @@ class Generator(generator.Generator):
       "structs": self.module.structs,
       "support_lazy_serialization": self.support_lazy_serialization,
       "unions": self.module.unions,
+      "uses_interfaces": self._ReferencesAnyHandleOrInterfaceType(),
       "variant": self.variant,
     }
 
@@ -426,31 +438,32 @@ class Generator(generator.Generator):
 
     if self.generate_non_variant_code:
       if self.generate_message_ids:
-        self.Write(self._GenerateModuleSharedMessageIdsHeader(),
-           "%s-shared-message-ids.h" % self.module.path)
+        self.WriteWithComment(self._GenerateModuleSharedMessageIdsHeader(),
+                              "%s-shared-message-ids.h" % self.module.path)
       else:
-        self.Write(self._GenerateModuleSharedHeader(),
-                   "%s-shared.h" % self.module.path)
-        self.Write(self._GenerateModuleSharedInternalHeader(),
-                   "%s-shared-internal.h" % self.module.path)
-        self.Write(self._GenerateModuleSharedSource(),
-                   "%s-shared.cc" % self.module.path)
-        self.Write(self._GenerateModuleParamsDataHeader(),
-                   "%s-params-data.h" % self.module.path)
+        self.WriteWithComment(self._GenerateModuleSharedHeader(),
+                              "%s-shared.h" % self.module.path)
+        self.WriteWithComment(self._GenerateModuleSharedInternalHeader(),
+                              "%s-shared-internal.h" % self.module.path)
+        self.WriteWithComment(self._GenerateModuleSharedSource(),
+                              "%s-shared.cc" % self.module.path)
+        self.WriteWithComment(self._GenerateModuleParamsDataHeader(),
+                              "%s-params-data.h" % self.module.path)
     else:
       suffix = "-%s" % self.variant if self.variant else ""
-      self.Write(self._GenerateModuleHeader(),
-                 "%s%s.h" % (self.module.path, suffix))
-      self.Write(self._GenerateModuleForwardHeader(),
-                 "%s%s-forward.h" % (self.module.path, suffix))
-      self.Write(self._GenerateModuleSource(),
-                 "%s%s.cc" % (self.module.path, suffix))
-      self.Write(self._GenerateModuleImportHeadersHeader(),
-                 "%s%s-import-headers.h" % (self.module.path, suffix))
-      self.Write(self._GenerateModuleTestUtilsHeader(),
-                 "%s%s-test-utils.h" % (self.module.path, suffix))
-      self.Write(self._GenerateModuleTestUtilsSource(),
-                 "%s%s-test-utils.cc" % (self.module.path, suffix))
+      self.WriteWithComment(self._GenerateModuleHeader(),
+                            "%s%s.h" % (self.module.path, suffix))
+      self.WriteWithComment(self._GenerateModuleForwardHeader(),
+                            "%s%s-forward.h" % (self.module.path, suffix))
+      self.WriteWithComment(self._GenerateModuleSource(),
+                            "%s%s.cc" % (self.module.path, suffix))
+      self.WriteWithComment(self._GenerateModuleImportHeadersHeader(),
+                            "%s%s-import-headers.h" % (self.module.path,
+                                                       suffix))
+      self.WriteWithComment(self._GenerateModuleTestUtilsHeader(),
+                            "%s%s-test-utils.h" % (self.module.path, suffix))
+      self.WriteWithComment(self._GenerateModuleTestUtilsSource(),
+                            "%s%s-test-utils.cc" % (self.module.path, suffix))
 
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)

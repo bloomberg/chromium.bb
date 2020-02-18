@@ -40,10 +40,6 @@ class ASH_EXPORT MediaNotificationControllerImpl
     : public media_session::mojom::AudioFocusObserver,
       public media_message_center::MediaNotificationController {
  public:
-  // The name of the histogram used to record the number of concurrent media
-  // notifications.
-  static const char kCountHistogramName[];
-
   explicit MediaNotificationControllerImpl(
       service_manager::Connector* connector);
   ~MediaNotificationControllerImpl() override;
@@ -57,6 +53,9 @@ class ASH_EXPORT MediaNotificationControllerImpl
   // media_message_center::MediaNotificationController:
   void ShowNotification(const std::string& id) override;
   void HideNotification(const std::string& id) override;
+  void RemoveItem(const std::string& id) override;
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
+  void LogMediaSessionActionButtonPressed(const std::string& id) override {}
 
   std::unique_ptr<MediaNotificationContainerImpl> CreateMediaNotification(
       const message_center::Notification& notification);
@@ -67,12 +66,15 @@ class ASH_EXPORT MediaNotificationControllerImpl
     return &it->second;
   }
 
- private:
-  // Called when we display a new media notification. It will record the
-  // concurrent number of media notifications displayed.
-  void RecordConcurrentNotificationCount();
+  bool HasItemForTesting(const std::string& id) const;
+  void set_task_runner_for_testing(
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing) {
+    task_runner_for_testing_ = task_runner_for_testing;
+  }
 
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr_;
+ private:
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      controller_manager_remote;
 
   mojo::Receiver<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_receiver_{this};
@@ -81,6 +83,9 @@ class ASH_EXPORT MediaNotificationControllerImpl
   // session keyed by its |request_id| in string format.
   std::map<const std::string, media_message_center::MediaNotificationItem>
       notifications_;
+
+  // Tick clock used for testing.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing_;
 
   std::unique_ptr<MediaNotificationBlocker> blocker_;
 

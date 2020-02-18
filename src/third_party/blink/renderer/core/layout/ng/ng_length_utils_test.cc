@@ -26,14 +26,13 @@ static NGConstraintSpace ConstructConstraintSpace(
     WritingMode writing_mode = WritingMode::kHorizontalTb) {
   LogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
 
-  return NGConstraintSpaceBuilder(
-             writing_mode, writing_mode,
-             /* is_new_fc */ false)
-      .SetAvailableSize(size)
-      .SetPercentageResolutionSize(size)
-      .SetIsFixedSizeInline(fixed_inline)
-      .SetIsFixedSizeBlock(fixed_block)
-      .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
+                                   /* is_new_fc */ false);
+  builder.SetAvailableSize(size);
+  builder.SetPercentageResolutionSize(size);
+  builder.SetIsFixedInlineSize(fixed_inline);
+  builder.SetIsFixedBlockSize(fixed_block);
+  return builder.ToConstraintSpace();
 }
 
 class NGLengthUtilsTest : public testing::Test {
@@ -116,11 +115,10 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
     LayoutBox* body = ToLayoutBox(GetDocument().body()->GetLayoutObject());
     body->SetStyle(style_);
     body->SetPreferredLogicalWidthsDirty();
-    NGBlockNode node(body);
 
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
-    return ::blink::ComputeBlockSizeForFragment(constraint_space, node,
+    return ::blink::ComputeBlockSizeForFragment(constraint_space, *style_,
                                                 border_padding, content_size);
   }
 

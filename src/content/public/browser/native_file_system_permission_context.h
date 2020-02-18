@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "content/public/browser/native_file_system_permission_grant.h"
+#include "content/public/browser/native_file_system_write_item.h"
 #include "url/origin.h"
 
 namespace content {
@@ -72,10 +73,13 @@ class NativeFileSystemPermissionContext {
       int frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) = 0;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class SensitiveDirectoryResult {
-    kAllowed,   // Access to directory is okay.
-    kTryAgain,  // User should pick a different directory.
-    kAbort,     // Abandon entirely, as if picking was cancelled.
+    kAllowed = 0,   // Access to directory is okay.
+    kTryAgain = 1,  // User should pick a different directory.
+    kAbort = 2,     // Abandon entirely, as if picking was cancelled.
+    kMaxValue = kAbort
   };
   // Checks if access to the given |paths| should be allowed or blocked. This is
   // used to implement blocks for certain sensitive directories such as the
@@ -85,9 +89,24 @@ class NativeFileSystemPermissionContext {
   virtual void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
+      bool is_directory,
       int process_id,
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) = 0;
+
+  enum class SafeBrowsingResult { kAllow, kBlock };
+  // Runs a recently finished write operation through Safe Browsing code to
+  // determine if the write should be allowed or blocked.
+  virtual void PerformSafeBrowsingChecks(
+      std::unique_ptr<NativeFileSystemWriteItem> item,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SafeBrowsingResult)> callback) = 0;
+
+  // Returns whether the given |origin| is allowed to ask for write access.
+  // This is used to block save file dialogs from being shown
+  // if an origin isn't allowed to ask for write access.
+  virtual bool CanRequestWritePermission(const url::Origin& origin) = 0;
 
  protected:
   virtual ~NativeFileSystemPermissionContext() = default;

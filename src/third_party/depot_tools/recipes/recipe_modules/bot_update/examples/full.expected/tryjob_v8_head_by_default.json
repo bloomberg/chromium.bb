@@ -64,7 +64,7 @@
       "src/v8@HEAD",
       "--disable-syntax-validation"
     ],
-    "env_prefixes": {
+    "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
       ]
@@ -171,7 +171,7 @@
       "--revision",
       "src/v8@801ada225ddc271c132c3a35f03975671d43e399"
     ],
-    "env_prefixes": {
+    "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
       ]

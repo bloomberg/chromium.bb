@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -31,9 +31,9 @@
 #include "content/common/frame_visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
@@ -161,7 +161,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
@@ -275,8 +275,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
 
   widget_host_->Init();
 
-  constexpr gfx::Size compositor_viewport_pixel_size(100, 100);
-  constexpr gfx::Rect screen_space_rect(compositor_viewport_pixel_size);
+  constexpr gfx::Rect compositor_viewport_pixel_rect(100, 100);
+  constexpr gfx::Rect screen_space_rect(compositor_viewport_pixel_rect);
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   viz::LocalSurfaceIdAllocation local_surface_id_allocation =
@@ -287,7 +287,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
 
   FrameVisualProperties visual_properties;
   visual_properties.screen_space_rect = screen_space_rect;
-  visual_properties.local_frame_size = compositor_viewport_pixel_size;
+  visual_properties.compositor_viewport = compositor_viewport_pixel_rect;
+  visual_properties.local_frame_size = compositor_viewport_pixel_rect.size();
   visual_properties.capture_sequence_number = 123u;
   visual_properties.local_surface_id_allocation = local_surface_id_allocation;
   test_frame_connector_->SynchronizeVisualProperties(frame_sink_id,
@@ -300,8 +301,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
   ASSERT_NE(nullptr, resize_msg);
   WidgetMsg_SynchronizeVisualProperties::Param params;
   WidgetMsg_SynchronizeVisualProperties::Read(resize_msg, &params);
-  EXPECT_EQ(compositor_viewport_pixel_size,
-            std::get<0>(params).compositor_viewport_pixel_size);
+  EXPECT_EQ(compositor_viewport_pixel_rect,
+            std::get<0>(params).compositor_viewport_pixel_rect);
   EXPECT_EQ(screen_space_rect.size(), std::get<0>(params).new_size);
   EXPECT_EQ(local_surface_id_allocation,
             std::get<0>(params).local_surface_id_allocation);

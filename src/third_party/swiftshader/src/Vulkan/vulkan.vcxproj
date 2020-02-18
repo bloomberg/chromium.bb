@@ -62,7 +62,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)third_party\SPIRV-Headers\include;$(SolutionDir)third_party\SPIRV-Tools\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VK_EXPORT=;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_EXPORT=;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
       <TreatSpecificWarningsAsErrors>4018;5038;4838</TreatSpecificWarningsAsErrors>
@@ -72,7 +72,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>libvk_swiftshader.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>vk_swiftshader.def</ModuleDefinitionFile>
       <AdditionalDependencies>dxguid.lib;WS2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -80,7 +80,8 @@
 mkdir "$(SolutionDir)build\$(Configuration)_$(Platform)\"
 copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)out\$(Configuration)_$(Platform)\"
 copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)build\$(Configuration)_$(Platform)\"
-IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\vulkan-1.dll")</Command>
+IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Debug" (copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Debug\vulkan-1.dll")
+IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release" (copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release\vulkan-1.dll")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -89,7 +90,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)third_party\SPIRV-Headers\include;$(SolutionDir)third_party\SPIRV-Tools\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VK_EXPORT=;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;DEBUGGER_WAIT_DIALOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_EXPORT=;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;DEBUGGER_WAIT_DIALOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
       <TreatSpecificWarningsAsErrors>4018;5038;4838</TreatSpecificWarningsAsErrors>
@@ -97,7 +98,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
       <DisableSpecificWarnings>4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <ModuleDefinitionFile>libvk_swiftshader.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>vk_swiftshader.def</ModuleDefinitionFile>
       <AdditionalDependencies>dxguid.lib;WS2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -105,10 +106,12 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
 mkdir "$(SolutionDir)build\$(Configuration)_$(Platform)\"
 copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)out\$(Configuration)_$(Platform)\"
 copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)build\$(Configuration)_$(Platform)\"
-IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\vulkan-1.dll")</Command>
+IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Debug" (copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Debug\vulkan-1.dll")
+IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release" (copy "$(OutDir)vk_swiftshader.dll" "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release\vulkan-1.dll")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\WSI\Win32SurfaceKHR.cpp" />
     <ClCompile Include="libVulkan.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="VkBuffer.cpp" />
@@ -189,6 +192,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\WSI\Win32SurfaceKHR.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="VkBuffer.hpp" />
@@ -232,6 +236,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClInclude Include="..\Device\ETC_Decoder.hpp" />
     <ClInclude Include="..\Device\LRUCache.hpp" />
     <ClInclude Include="..\Device\Matrix.hpp" />
+    <ClInclude Include="..\Device\Memset.hpp" />
     <ClInclude Include="..\Device\PixelProcessor.hpp" />
     <ClInclude Include="..\Device\Plane.hpp" />
     <ClInclude Include="..\Device\Point.hpp" />
@@ -259,6 +264,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClInclude Include="..\Pipeline\VertexPipeline.hpp" />
     <ClInclude Include="..\Pipeline\VertexProgram.hpp" />
     <ClInclude Include="..\Pipeline\VertexRoutine.hpp" />
+    <ClInclude Include="..\System\Build.hpp" />
     <ClInclude Include="..\System\Configurator.hpp" />
     <ClInclude Include="..\System\CPUID.hpp" />
     <ClInclude Include="..\System\Debug.hpp" />
@@ -286,17 +292,17 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="libvk_swiftshader.def" />
+    <None Include="vk_swiftshader.def" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Vulkan.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\build\Visual Studio 15 2017 Win64\third_party\SPIRV-Tools\source\opt\SPIRV-Tools-opt.vcxproj">
-      <Project>{ce414127-5528-30f5-9f5f-5af9d2b8c04c}</Project>
+      <Project>{eff5de98-2741-3bd8-b049-d5647a223b5e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\build\Visual Studio 15 2017 Win64\third_party\SPIRV-Tools\source\SPIRV-Tools.vcxproj">
-      <Project>{83d86993-70d0-336a-84f1-8b952b8079dd}</Project>
+      <Project>{59349deb-ac96-335c-acc6-8a92f774538a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Reactor\Reactor.vcxproj">
       <Project>{28fd076d-10b5-4bd8-a4cf-f44c7002a803}</Project>

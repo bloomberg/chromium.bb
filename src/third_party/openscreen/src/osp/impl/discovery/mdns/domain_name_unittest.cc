@@ -162,7 +162,7 @@ TEST(DomainNameTest, GetLabels) {
   DomainName domain_name = UnpackErrorOr(FromLabels(labels));
 
   const auto actual_labels = domain_name.GetLabels();
-  for (auto i = 0; i < labels.size(); ++i) {
+  for (size_t i = 0; i < labels.size(); ++i) {
     EXPECT_EQ(labels[i], actual_labels[i]);
   }
 }

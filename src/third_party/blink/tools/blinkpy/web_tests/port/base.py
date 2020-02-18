@@ -134,6 +134,9 @@ class Port(object):
         ('trusty', 'x86_64'),
 
         ('fuchsia', 'x86_64'),
+
+        ('ios12.2', 'x86_64'),
+        ('ios13.0', 'x86_64'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
@@ -141,6 +144,7 @@ class Port(object):
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
         'fuschia': ['fuchsia'],
+        'ios': ['ios12.2', 'ios13.0'],
     }
 
     # List of ports open on the host that the tests will connect to. When tests
@@ -1318,9 +1322,10 @@ class Port(object):
         # updated to know about the ordered dict.
         expectations = collections.OrderedDict()
 
-        for path in self.expectations_files():
-            if self._filesystem.exists(path):
-                expectations[path] = self._filesystem.read_text_file(path)
+        if not self.get_option('ignore_default_expectations', False):
+            for path in self.expectations_files():
+                if self._filesystem.exists(path):
+                    expectations[path] = self._filesystem.read_text_file(path)
 
         for path in self.get_option('additional_expectations', []):
             expanded_path = self._filesystem.expanduser(path)
@@ -1775,22 +1780,32 @@ class Port(object):
                 raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS, message)
         return result
 
-    def split_webdriver_test_name(self, test_name):
+    @staticmethod
+    def split_webdriver_test_name(test_name):
         """Splits a WebDriver test name into a filename and a subtest name and
         returns both of them. E.g.
 
-        abd::foo.html -> (abd, foo.html)
+        test.py>>foo.html -> (test.py, foo.html)
+        test.py           -> (test.py, None)
         """
-        separator_index = test_name.find(self.WEBDRIVER_SUBTEST_SEPARATOR)
+        separator_index = test_name.find(Port.WEBDRIVER_SUBTEST_SEPARATOR)
         if separator_index == -1:
-            return test_name
+            return (test_name, None)
         webdriver_test_name = test_name[:separator_index]
-        separator_len = len(self.WEBDRIVER_SUBTEST_SEPARATOR)
+        separator_len = len(Port.WEBDRIVER_SUBTEST_SEPARATOR)
         subtest_suffix = test_name[separator_index + separator_len:]
         return (webdriver_test_name, subtest_suffix)
 
-    def add_webdriver_subtest_suffix(self, test_name, subtest_name):
-        return test_name + self.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name
+    @staticmethod
+    def add_webdriver_subtest_suffix(test_name, subtest_name):
+        """Appends a subtest name to a WebDriver test name. E.g.
+
+        (test.py, foo.html) -> test.py>>foo.html
+        (test.py, None)     -> test.py
+        """
+        if subtest_name:
+            return test_name + Port.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name
+        return test_name
 
 
 class VirtualTestSuite(object):

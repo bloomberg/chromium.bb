@@ -54,7 +54,7 @@
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace media {
 class AudioSystem;
@@ -176,16 +176,18 @@ class CONTENT_EXPORT MediaStreamManager
   // to determine where the infobar will appear to the user. |device_stopped_cb|
   // is set to receive device stopped notifications. |device_change_cb| is set
   // to receive device changed notifications.
-  void GenerateStream(int render_process_id,
-                      int render_frame_id,
-                      int requester_id,
-                      int page_request_id,
-                      const blink::StreamControls& controls,
-                      MediaDeviceSaltAndOrigin salt_and_origin,
-                      bool user_gesture,
-                      GenerateStreamCallback generate_stream_cb,
-                      DeviceStoppedCallback device_stopped_cb,
-                      DeviceChangedCallback device_changed_cb);
+  void GenerateStream(
+      int render_process_id,
+      int render_frame_id,
+      int requester_id,
+      int page_request_id,
+      const blink::StreamControls& controls,
+      MediaDeviceSaltAndOrigin salt_and_origin,
+      bool user_gesture,
+      blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback generate_stream_cb,
+      DeviceStoppedCallback device_stopped_cb,
+      DeviceChangedCallback device_changed_cb);
 
   // Cancel an open request identified by |page_request_id| for the given frame.
   // Must be called on the IO thread.
@@ -210,7 +212,7 @@ class CONTENT_EXPORT MediaStreamManager
                         int render_frame_id,
                         int requester_id,
                         const std::string& device_id,
-                        int session_id);
+                        const base::UnguessableToken& session_id);
 
   // Open a device identified by |device_id|. |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
@@ -238,8 +240,10 @@ class CONTENT_EXPORT MediaStreamManager
                                    std::string* device_id) const;
 
   // Find |device_id| in the list of |requests_|, and returns its session id,
-  // or MediaStreamDevice::kNoId if not found. Must be called on the IO thread.
-  int VideoDeviceIdToSessionId(const std::string& device_id) const;
+  // or an empty base::UnguessableToken if not found. Must be called on the IO
+  // thread.
+  base::UnguessableToken VideoDeviceIdToSessionId(
+      const std::string& device_id) const;
 
   // Called by UI to make sure the device monitor is started so that UI receive
   // notifications about device changes.
@@ -247,11 +251,11 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Implements MediaStreamProviderListener.
   void Opened(blink::mojom::MediaStreamType stream_type,
-              int capture_session_id) override;
+              const base::UnguessableToken& capture_session_id) override;
   void Closed(blink::mojom::MediaStreamType stream_type,
-              int capture_session_id) override;
+              const base::UnguessableToken& capture_session_id) override;
   void Aborted(blink::mojom::MediaStreamType stream_type,
-               int capture_session_id) override;
+               const base::UnguessableToken& capture_session_id) override;
 
   // Returns all devices currently opened by a request with label |label|.
   // If no request with |label| exist, an empty array is returned.
@@ -262,7 +266,7 @@ class CONTENT_EXPORT MediaStreamManager
   // destroyed. So we need to know when IO thread is being destroyed so that
   // we can delete VideoCaptureManager and AudioInputDeviceManager.
   // Note: In tests it is sometimes necessary to invoke this explicitly when
-  // using TestBrowserThreadBundle because the notification happens too late.
+  // using BrowserTaskEnvironment because the notification happens too late.
   // (see http://crbug.com/247525#c14).
   void WillDestroyCurrentMessageLoop() override;
 
@@ -322,7 +326,7 @@ class CONTENT_EXPORT MediaStreamManager
   // |session_id|, |render_process_id|, and the MediaStreamType |type|.
   // Must be called on the IO thread.
   void SetCapturingLinkSecured(int render_process_id,
-                               int session_id,
+                               const base::UnguessableToken& session_id,
                                blink::mojom::MediaStreamType type,
                                bool is_secure);
 
@@ -381,10 +385,12 @@ class CONTENT_EXPORT MediaStreamManager
   // Stop the use of the device associated with |session_id| of type |type| in
   // all |requests_|. The device is removed from the request. If a request
   /// doesn't use any devices as a consequence, the request is deleted.
-  void StopDevice(blink::mojom::MediaStreamType type, int session_id);
+  void StopDevice(blink::mojom::MediaStreamType type,
+                  const base::UnguessableToken& session_id);
   // Calls the correct capture manager and close the device with |session_id|.
   // All requests that uses the device are updated.
-  void CloseDevice(blink::mojom::MediaStreamType type, int session_id);
+  void CloseDevice(blink::mojom::MediaStreamType type,
+                   const base::UnguessableToken& session_id);
   // Returns true if a request for devices has been completed and the devices
   // has either been opened or an error has occurred.
   bool RequestDone(const DeviceRequest& request) const;

@@ -19,7 +19,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/token.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -339,7 +339,7 @@ class ConnectTest : public testing::Test,
     connection_state_ = std::move(state);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
   ServiceBinding service_binding_{this};
   mojo::BindingSet<test::mojom::ExposedInterface> bindings_;

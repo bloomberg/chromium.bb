@@ -24,13 +24,13 @@ import android.widget.ProgressBar;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.content_public.browser.bluetooth_scanning.Event;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
@@ -150,7 +150,7 @@ public class BluetoothScanningPermissionDialog {
         blockButton.setText(blockButtonText);
         blockButton.setEnabled(true);
         blockButton.setOnClickListener(v -> {
-            finishDialog(BluetoothScanningPermissionEvent.BLOCK);
+            finishDialog(Event.BLOCK);
             mDialog.setOnDismissListener(null);
             mDialog.dismiss();
         });
@@ -159,7 +159,7 @@ public class BluetoothScanningPermissionDialog {
         allowButton.setText(allowButtonText);
         allowButton.setEnabled(true);
         allowButton.setOnClickListener(v -> {
-            finishDialog(BluetoothScanningPermissionEvent.ALLOW);
+            finishDialog(Event.ALLOW);
             mDialog.setOnDismissListener(null);
             mDialog.dismiss();
         });
@@ -230,8 +230,7 @@ public class BluetoothScanningPermissionDialog {
         mDialog.addContentView(view,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.MATCH_PARENT));
-        mDialog.setOnCancelListener(
-                dialog -> finishDialog(BluetoothScanningPermissionEvent.CANCELED));
+        mDialog.setOnCancelListener(dialog -> finishDialog(Event.CANCELED));
 
         Window window = mDialog.getWindow();
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
@@ -250,7 +249,7 @@ public class BluetoothScanningPermissionDialog {
     private void finishDialog(int resultCode) {
         if (mNativeBluetoothScanningPermissionDialogPtr == 0) return;
         Natives jni = BluetoothScanningPermissionDialogJni.get();
-        jni.onDialogFinished(this, mNativeBluetoothScanningPermissionDialogPtr, resultCode);
+        jni.onDialogFinished(mNativeBluetoothScanningPermissionDialogPtr, resultCode);
     }
 
     /**
@@ -271,7 +270,6 @@ public class BluetoothScanningPermissionDialog {
 
     @NativeMethods
     interface Natives {
-        void onDialogFinished(@JCaller BluetoothScanningPermissionDialog self,
-                long nativeBluetoothScanningPromptAndroid, int eventType);
+        void onDialogFinished(long nativeBluetoothScanningPromptAndroid, int eventType);
     }
 }

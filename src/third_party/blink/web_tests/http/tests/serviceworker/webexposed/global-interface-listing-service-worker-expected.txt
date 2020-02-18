@@ -124,6 +124,7 @@ interface Client
     attribute @@toStringTag
     getter frameType
     getter id
+    getter lifecycleState
     getter type
     getter url
     method constructor
@@ -523,6 +524,33 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemDirectoryHandle : FileSystemHandle
+    static method getSystemDirectory
+    attribute @@toStringTag
+    method constructor
+    method getDirectory
+    method getEntries
+    method getFile
+    method removeEntry
+interface FileSystemFileHandle : FileSystemHandle
+    attribute @@toStringTag
+    method constructor
+    method createWriter
+    method getFile
+interface FileSystemHandle
+    attribute @@toStringTag
+    getter isDirectory
+    getter isFile
+    getter name
+    method constructor
+    method queryPermission
+    method requestPermission
+interface FileSystemWriter
+    attribute @@toStringTag
+    method close
+    method constructor
+    method truncate
+    method write
 interface FontFace
     attribute @@toStringTag
     getter display
@@ -1231,6 +1259,10 @@ interface Response
     method formData
     method json
     method text
+interface ScreenManager
+    attribute @@toStringTag
+    method constructor
+    method requestDisplays
 interface SecurityPolicyViolationEvent : Event
     attribute @@toStringTag
     getter blockedURI
@@ -1246,6 +1278,16 @@ interface SecurityPolicyViolationEvent : Event
     getter statusCode
     getter violatedDirective
     method constructor
+interface ServiceWorker : EventTarget
+    attribute @@toStringTag
+    getter onerror
+    getter onstatechange
+    getter scriptURL
+    getter state
+    method constructor
+    method postMessage
+    setter onerror
+    setter onstatechange
 interface ServiceWorkerGlobalScope : WorkerGlobalScope
     attribute @@toStringTag
     method constructor
@@ -1357,6 +1399,9 @@ interface TransformStream
 interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
 interface URL
     attribute @@toStringTag
     getter hash
@@ -1541,6 +1586,8 @@ interface WebGL2ComputeRenderingContext
     attribute DRAW_BUFFER9
     attribute DRAW_FRAMEBUFFER
     attribute DRAW_FRAMEBUFFER_BINDING
+    attribute DRAW_INDIRECT_BUFFER
+    attribute DRAW_INDIRECT_BUFFER_BINDING
     attribute DST_ALPHA
     attribute DST_COLOR
     attribute DYNAMIC_COPY
@@ -3593,6 +3640,13 @@ interface WebSocket : EventTarget
     setter onerror
     setter onmessage
     setter onopen
+interface WebSocketStream
+    attribute @@toStringTag
+    getter closed
+    getter connection
+    getter url
+    method close
+    method constructor
 interface WindowClient : Client
     attribute @@toStringTag
     getter focused
@@ -3602,6 +3656,7 @@ interface WindowClient : Client
     method navigate
 interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
+    getter addressSpace
     getter caches
     getter crypto
     getter fonts
@@ -3664,6 +3719,7 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
+    getter screen
     getter serial
     getter storage
     getter usb
@@ -3712,7 +3768,6 @@ interface WritableStreamDefaultWriter
     getter onpushsubscriptionchange
     getter onsync
     getter registration
-    method fetch
     method gc
     method skipWaiting
     setter cookieStore

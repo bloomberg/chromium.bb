@@ -9,7 +9,6 @@
 #define SkottieTextAnimator_DEFINED
 
 #include "include/core/SkRefCnt.h"
-#include "modules/skottie/src/SkottieAdapter.h"
 #include "modules/skottie/src/SkottiePriv.h"
 #include "modules/sksg/include/SkSGScene.h"
 
@@ -21,13 +20,11 @@ namespace internal {
 
 class AnimationBuilder;
 class RangeSelector;
-class TextAdapter;
 
 class TextAnimator final : public SkNVRefCnt<TextAnimator> {
 public:
     static sk_sp<TextAnimator> Make(const skjson::ObjectValue*,
-                                    const AnimationBuilder*,
-                                    AnimatorScope*);
+                                    const AnimationBuilder*);
 
     struct AnimatedProps {
         SkPoint   position = { 0, 0 };
@@ -66,8 +63,7 @@ public:
 private:
     TextAnimator(std::vector<sk_sp<RangeSelector>>&& selectors,
                  const skjson::ObjectValue& jprops,
-                 const AnimationBuilder* abuilder,
-                 AnimatorScope* ascope);
+                 const AnimationBuilder* abuilder);
 
     AnimatedProps modulateProps(const AnimatedProps&, float amount) const;
 
@@ -76,25 +72,6 @@ private:
     AnimatedProps fTextProps;
     bool          fHasFillColor   : 1,
                   fHasStrokeColor : 1;
-};
-
-class TextAnimatorList final : public sksg::GroupAnimator {
-public:
-    static sk_sp<TextAnimatorList> Make(const skjson::ArrayValue&,
-                                        const AnimationBuilder*,
-                                        sk_sp<TextAdapter>);
-    ~TextAnimatorList() override;
-
-protected:
-    void onTick(float) override;
-
-private:
-    TextAnimatorList(sk_sp<TextAdapter>, sksg::AnimatorList&&, std::vector<sk_sp<TextAnimator>>&&);
-
-    const std::vector<sk_sp<TextAnimator>> fAnimators;
-    const sk_sp<TextAdapter>               fAdapter;
-
-    using INHERITED = sksg::GroupAnimator;
 };
 
 } // namespace internal

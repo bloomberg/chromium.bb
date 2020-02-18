@@ -68,25 +68,25 @@ FakeChromeUserManager::~FakeChromeUserManager() {
   ProfileHelper::SetProfileToUserForTestingEnabled(false);
 }
 
-const user_manager::User* FakeChromeUserManager::AddUser(
+user_manager::User* FakeChromeUserManager::AddUser(
     const AccountId& account_id) {
   return AddUserWithAffiliation(account_id, false);
 }
 
-const user_manager::User* FakeChromeUserManager::AddChildUser(
+user_manager::User* FakeChromeUserManager::AddChildUser(
     const AccountId& account_id) {
   return AddUserWithAffiliationAndTypeAndProfile(
       account_id, false, user_manager::USER_TYPE_CHILD, nullptr);
 }
 
-const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
+user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
   return AddUserWithAffiliationAndTypeAndProfile(
       account_id, is_affiliated, user_manager::USER_TYPE_REGULAR, nullptr);
 }
 
-const user_manager::User*
+user_manager::User*
 FakeChromeUserManager::AddUserWithAffiliationAndTypeAndProfile(
     const AccountId& account_id,
     bool is_affiliated,
@@ -149,7 +149,7 @@ user_manager::User* FakeChromeUserManager::AddGuestUser() {
   return user;
 }
 
-const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
+user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
     const AccountId& account_id) {
   user_manager::User* user =
       user_manager::User::CreatePublicAccountUser(account_id);
@@ -484,11 +484,6 @@ void FakeChromeUserManager::SaveUserDisplayEmail(
     const AccountId& account_id,
     const std::string& display_email) {
   NOTREACHED();
-}
-
-std::string FakeChromeUserManager::GetUserDisplayEmail(
-    const AccountId& account_id) const {
-  return account_id.GetUserEmail();
 }
 
 void FakeChromeUserManager::SaveUserType(const user_manager::User* user) {

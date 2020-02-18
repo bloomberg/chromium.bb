@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -371,7 +372,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                       layout_object->IsLayoutEmbeddedContent() ||
                       (html_element &&
                        (IsHTMLFormControlElement(html_element) ||
-                        IsHTMLLegendElement(html_element) ||
+                        IsA<HTMLLegendElement>(html_element) ||
                         IsHTMLImageElement(html_element) ||
                         IsHTMLMeterElement(html_element) ||
                         IsHTMLProgressElement(html_element))))) {
@@ -572,9 +573,10 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(
     return false;
 
   // Want a tab before every cell other than the first one
-  LayoutTableCell* rc = ToLayoutTableCell(r);
-  LayoutTable* t = rc->Table();
-  return t && (t->CellPreceding(*rc) || t->CellAbove(*rc));
+  const LayoutNGTableCellInterface* rc =
+      ToInterface<LayoutNGTableCellInterface>(r);
+  const LayoutNGTableInterface* t = rc->TableInterface();
+  return t && (t->CellInterfacePreceding(*rc) || t->CellInterfaceAbove(*rc));
 }
 
 template <typename Strategy>
@@ -583,7 +585,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
     bool emits_original_text) {
   LayoutObject* layout_object = node.GetLayoutObject();
 
-  if (layout_object ? !layout_object->IsBR() : !IsHTMLBRElement(node))
+  if (layout_object ? !layout_object->IsBR() : !IsA<HTMLBRElement>(node))
     return false;
   return emits_original_text || !(node.IsInShadowTree() &&
                                   IsHTMLInputElement(*node.OwnerShadowHost()));
@@ -621,8 +623,9 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   // Need to make an exception for table row elements, because they are neither
   // "inline" or "LayoutBlock", but we want newlines for them.
   if (r->IsTableRow()) {
-    LayoutTable* t = ToLayoutTableRow(r)->Table();
-    if (t && !t->IsInline())
+    const LayoutNGTableInterface* t =
+        ToInterface<LayoutNGTableRowInterface>(r)->TableInterface();
+    if (t && !t->ToLayoutObject()->IsInline())
       return true;
   }
 
@@ -719,7 +722,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
           EVisibility::kVisible ||
       (node_->GetLayoutObject()->IsLayoutBlockFlow() &&
        !To<LayoutBlock>(node_->GetLayoutObject())->Size().Height() &&
-       !IsHTMLBodyElement(*node_)))
+       !IsA<HTMLBodyElement>(*node_)))
     return false;
 
   // The startPos.isNotNull() check is needed because the start could be before

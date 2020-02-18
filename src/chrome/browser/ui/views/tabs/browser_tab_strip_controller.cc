@@ -96,12 +96,12 @@ class BrowserTabStripController::TabContextMenuContents
  public:
   TabContextMenuContents(Tab* tab, BrowserTabStripController* controller)
       : tab_(tab), controller_(controller) {
-    model_.reset(new TabMenuModel(
+    model_ = std::make_unique<TabMenuModel>(
         this, controller->model_,
-        controller->tabstrip_->GetModelIndexOfTab(tab)));
-    menu_runner_.reset(new views::MenuRunner(
+        controller->tabstrip_->GetModelIndexOfTab(tab));
+    menu_runner_ = std::make_unique<views::MenuRunner>(
         model_.get(),
-        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
   }
 
   void Cancel() { controller_ = nullptr; }
@@ -297,7 +297,7 @@ void BrowserTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  context_menu_contents_.reset(new TabContextMenuContents(tab, this));
+  context_menu_contents_ = std::make_unique<TabContextMenuContents>(tab, this);
   context_menu_contents_->RunMenuAt(p, source_type);
 }
 
@@ -325,8 +325,7 @@ void BrowserTabStripController::CreateNewTab() {
       browser_view_->browser()->profile());
   reopen_tab_iph->NewTabOpened();
 
-  const auto group_id = model_->GetTabGroupForTab(model_->active_index());
-  model_->delegate()->AddTabAt(GURL(), -1, true, group_id);
+  model_->delegate()->AddTabAt(GURL(), -1, true);
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   auto* new_tab_tracker =
@@ -391,9 +390,15 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
 }
 
-const TabGroupData* BrowserTabStripController::GetDataForGroup(
+const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(
     TabGroupId group) const {
-  return model_->GetDataForGroup(group);
+  return model_->GetVisualDataForGroup(group);
+}
+
+void BrowserTabStripController::SetVisualDataForGroup(
+    TabGroupId group,
+    TabGroupVisualData visual_data) {
+  model_->SetVisualDataForGroup(group, visual_data);
 }
 
 std::vector<int> BrowserTabStripController::ListTabsInGroup(
@@ -431,11 +436,9 @@ SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
   return GetFrameView()->GetToolbarTopSeparatorColor();
 }
 
-int BrowserTabStripController::GetTabBackgroundResourceId(
-    BrowserNonClientFrameView::ActiveState active_state,
-    bool* has_custom_image) const {
-  return GetFrameView()->GetTabBackgroundResourceId(active_state,
-                                                    has_custom_image);
+base::Optional<int> BrowserTabStripController::GetCustomBackgroundId(
+    BrowserNonClientFrameView::ActiveState active_state) const {
+  return GetFrameView()->GetCustomBackgroundId(active_state);
 }
 
 base::string16 BrowserTabStripController::GetAccessibleTabName(
@@ -516,6 +519,13 @@ void BrowserTabStripController::OnTabStripModelChanged(
 
   if (selection.selection_changed())
     tabstrip_->SetSelection(selection.new_model);
+}
+
+void BrowserTabStripController::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {
+  tabstrip_->GroupVisualsChanged(group);
 }
 
 void BrowserTabStripController::TabChangedAt(WebContents* contents,

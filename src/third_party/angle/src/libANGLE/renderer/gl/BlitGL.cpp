@@ -517,7 +517,8 @@ angle::Result BlitGL::copySubTexture(const gl::Context *context,
                                      bool *copySucceededOut)
 {
     ASSERT(source->getType() == gl::TextureType::_2D ||
-           source->getType() == gl::TextureType::External);
+           source->getType() == gl::TextureType::External ||
+           source->getType() == gl::TextureType::Rectangle);
     ANGLE_TRY(initializeResources());
 
     // Make sure the destination texture can be rendered to before setting anything else up.  Some
@@ -557,10 +558,10 @@ angle::Result BlitGL::copySubTexture(const gl::Context *context,
         }
 
         GLint swizzle[4] = {luminance, luminance, luminance, alpha};
-        source->setSwizzle(context, swizzle);
+        ANGLE_TRY(source->setSwizzle(context, swizzle));
     }
-    source->setMinFilter(context, GL_NEAREST);
-    source->setMagFilter(context, GL_NEAREST);
+    ANGLE_TRY(source->setMinFilter(context, GL_NEAREST));
+    ANGLE_TRY(source->setMagFilter(context, GL_NEAREST));
     ANGLE_TRY(source->setBaseLevel(context, static_cast<GLuint>(sourceLevel)));
 
     // Render to the destination texture, sampling from the source texture
@@ -572,10 +573,15 @@ angle::Result BlitGL::copySubTexture(const gl::Context *context,
     mStateManager->activeTexture(0);
     mStateManager->bindTexture(source->getType(), source->getTextureID());
 
-    Vector2 scale(sourceArea.width / static_cast<float>(sourceSize.width),
-                  sourceArea.height / static_cast<float>(sourceSize.height));
-    Vector2 offset(sourceArea.x / static_cast<float>(sourceSize.width),
-                   sourceArea.y / static_cast<float>(sourceSize.height));
+    Vector2 scale(sourceArea.width, sourceArea.height);
+    Vector2 offset(sourceArea.x, sourceArea.y);
+    if (source->getType() != gl::TextureType::Rectangle)
+    {
+        scale.x() /= static_cast<float>(sourceSize.width);
+        scale.y() /= static_cast<float>(sourceSize.height);
+        offset.x() /= static_cast<float>(sourceSize.width);
+        offset.y() /= static_cast<float>(sourceSize.height);
+    }
     if (unpackFlipY)
     {
         offset.y() += scale.y();
@@ -628,7 +634,8 @@ angle::Result BlitGL::copySubTextureCPUReadback(const gl::Context *context,
     ContextGL *contextGL = GetImplAs<ContextGL>(context);
 
     ASSERT(source->getType() == gl::TextureType::_2D ||
-           source->getType() == gl::TextureType::External);
+           source->getType() == gl::TextureType::External ||
+           source->getType() == gl::TextureType::Rectangle);
     const auto &destInternalFormatInfo = gl::GetInternalFormatInfo(destFormat, destType);
     const gl::InternalFormat &sourceInternalFormatInfo =
         gl::GetSizedInternalFormatInfo(sourceSizedInternalFormat);
@@ -915,6 +922,30 @@ angle::Result BlitGL::clearFramebuffer(FramebufferGL *source)
 
     mStateManager->bindFramebuffer(GL_FRAMEBUFFER, source->getFramebufferID());
     mFunctions->clear(clearMask);
+
+    return angle::Result::Continue;
+}
+
+angle::Result BlitGL::clearRenderableTextureAlphaToOne(GLuint texture,
+                                                       gl::TextureTarget target,
+                                                       size_t level)
+{
+    // Clearing the alpha of 3D textures is not supported/needed yet.
+    ASSERT(nativegl::UseTexImage2D(TextureTargetToType(target)));
+
+    ANGLE_TRY(initializeResources());
+
+    mStateManager->setClearColor(gl::ColorF(0.0f, 0.0f, 0.0f, 1.0f));
+    mStateManager->setColorMask(false, false, false, true);
+    mStateManager->setScissorTestEnabled(false);
+
+    mStateManager->bindFramebuffer(GL_FRAMEBUFFER, mScratchFBO);
+    mFunctions->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ToGLenum(target),
+                                     texture, static_cast<GLint>(level));
+    mFunctions->clear(GL_COLOR_BUFFER_BIT);
+
+    // Unbind the texture from the the scratch framebuffer
+    mFunctions->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 0);
 
     return angle::Result::Continue;
 }

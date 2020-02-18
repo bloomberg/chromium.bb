@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/sequenced_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -50,7 +50,7 @@ class EncodedFormDataTest : public testing::Test {
 
 class EncodedFormDataMojomTraitsTest : public testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(EncodedFormDataTest, DeepCopy) {

@@ -15,6 +15,7 @@ import re
 from collections import OrderedDict
 from collections import defaultdict
 
+from typ import python_2_3_compat
 from typ.json_results import ResultType
 
 _EXPECTATION_MAP = {
@@ -57,8 +58,8 @@ class Expectation(object):
               set; just 'Mac', or 'Mac' and 'Release', would not qualify.
           results: List of outcomes for test. Example: ['Skip', 'Pass']
         """
-        assert isinstance(reason, basestring) or reason is None
-        assert isinstance(test, basestring)
+        assert python_2_3_compat.is_str(reason) or reason is None
+        assert python_2_3_compat.is_str(test)
         self._reason = reason
         self._test = test
         self._tags = frozenset(tags)
@@ -153,7 +154,8 @@ class TaggedTestListParser(object):
                 right_bracket = line.find(']')
                 if right_bracket == -1:
                     # multi-line tag set
-                    tag_set = set(line[len(token):].split())
+                    tag_set = set(
+                        [t.lower() for t in line[len(token):].split()])
                     lineno += 1
                     while lineno <= num_lines and right_bracket == -1:
                         line = lines[lineno - 1].strip()
@@ -163,10 +165,13 @@ class TaggedTestListParser(object):
                                 'Multi-line tag set missing leading "#"')
                         right_bracket = line.find(']')
                         if right_bracket == -1:
-                            tag_set.update(line[1:].split())
+                            tag_set.update(
+                                [t.lower() for t in line[1:].split()])
                             lineno += 1
                         else:
-                            tag_set.update(line[1:right_bracket].split())
+                            tag_set.update(
+                                [t.lower()
+                                 for t in line[1:right_bracket].split()])
                             if line[right_bracket+1:]:
                                 raise ParseError(
                                     lineno,
@@ -179,15 +184,16 @@ class TaggedTestListParser(object):
                             'Nothing is allowed after a closing tag '
                             'bracket')
                     tag_set = set(
-                        line[len(token):right_bracket].split())
+                        [t.lower()
+                         for t in line[len(token):right_bracket].split()])
                 if token == self.TAG_TOKEN:
                     tag_sets_intersection.update(
-                        (t for t in tag_set if t.lower() in self._tag_to_tag_set))
+                        (t for t in tag_set if t in self._tag_to_tag_set))
                     self.tag_sets.append(tag_set)
                     self._tag_to_tag_set.update(
-                        {tg.lower(): id(tag_set) for tg in tag_set})
+                        {tg: id(tag_set) for tg in tag_set})
                 else:
-                    self._allowed_results.update({t.lower() for t in tag_set})
+                    self._allowed_results.update(tag_set)
             elif line.startswith(self.CONFLICTS_ALLOWED):
                 bool_value = line[len(self.CONFLICTS_ALLOWED):].lower()
                 if bool_value not in ('true', 'false'):
@@ -287,8 +293,13 @@ class TestExpectations(object):
     def set_tags(self, tags):
         self.tags = [tag.lower() for tag in tags]
 
+    def add_tags(self, new_tags):
+        self.tags = list(
+            set(self.tags) | set([tag.lower() for tag in new_tags]))
+
     def parse_tagged_list(self, raw_data, file_name='',
                           tags_conflict=_default_tags_conflict):
+        ret = 0
         # TODO(rmhasan): If we decide to support multiple test expectations in
         # one TestExpectations instance, then we should make the file_name field
         # mandatory.
@@ -299,7 +310,7 @@ class TestExpectations(object):
         try:
             parser = TaggedTestListParser(raw_data)
         except ParseError as e:
-            return 1, e.message
+            return 1, str(e)
         self.tag_sets = parser.tag_sets
         self._tags_conflict = tags_conflict
         # TODO(crbug.com/83560) - Add support for multiple policies
@@ -322,7 +333,8 @@ class TestExpectations(object):
         errors = ''
         if not parser.conflicts_allowed:
             errors = self.check_test_expectations_patterns_for_conflicts()
-        return 0, errors
+            ret = 1 if errors else 0
+        return ret, errors
 
     def expectations_for(self, test):
         # Returns a tuple of (expectations, should_retry_on_failure)
@@ -397,13 +409,15 @@ class TestExpectations(object):
         # which might look like [ win linux]. A test expectation that has the
         # linux tag will not conflict with an expectation that has the win tag.
         error_msg = ''
-        for pattern, exps in self.individual_exps.items():
+        patterns_to_exps = dict(self.individual_exps)
+        patterns_to_exps.update(self.glob_exps)
+        for pattern, exps in patterns_to_exps.items():
             conflicts_exist = False
             for e1, e2 in itertools.combinations(exps, 2):
                 if self.tag_sets_conflict(e1.tags, e2.tags):
                     if not conflicts_exist:
                         error_msg += (
-                            '\nFound conflicts for test %s%s:\n' %
+                            '\nFound conflicts for pattern %s%s:\n' %
                             (pattern,
                              (' in %s' %
                               self.file_name if self.file_name else '')))
@@ -412,6 +426,35 @@ class TestExpectations(object):
                                   (e1.lineno, e2.lineno))
         return error_msg
 
+    @staticmethod
+    def get_broken_expectations(patterns_to_exps, test_names):
+        trie = {}
+        exps_dont_apply = []
+        # create trie of test names
+        for test in test_names:
+            _trie = trie.setdefault(test[0], {})
+            for l in test[1:]:
+                _trie = _trie.setdefault(l, {})
+            _trie.setdefault('$', {})
+        # look for patterns that do not match any test names and append their
+        # expectations to exps_dont_apply
+        for pattern, exps in patterns_to_exps.items():
+            _trie = trie
+            is_glob = False
+            broken_exp = False
+            for l in pattern:
+                if l == '*':
+                    is_glob = True
+                    break
+                if l not in _trie:
+                    exps_dont_apply.extend(exps)
+                    broken_exp = True
+                    break
+                _trie = _trie[l]
+            if not broken_exp and not is_glob and '$' not in _trie:
+                exps_dont_apply.extend(exps)
+        return exps_dont_apply
+
     def check_for_broken_expectations(self, test_names):
         # It returns a list expectations that do not apply to any test names in
         # the test_names list.
@@ -419,35 +462,6 @@ class TestExpectations(object):
         # args:
         # test_names: list of test names that are used to find test expectations
         # that do not apply to any of test names in the list.
-        trie = {}
-        for test in test_names:
-            _trie = trie.setdefault(test[0], {})
-            for l in test[1:]:
-                _trie = _trie.setdefault(l, {})
-            _trie.setdefault('$', {})
-
-        broken_expectations = []
-
-        def _get_broken_expectations(patterns_to_exps):
-            exps_dont_apply = []
-            for pattern, exps in patterns_to_exps.items():
-                _trie = trie
-                is_glob = False
-                broken_exp = False
-                for l in pattern:
-                    if l == '*':
-                        is_glob = True
-                        break
-                    if l not in _trie:
-                        exps_dont_apply.extend(exps)
-                        broken_exp = True
-                        break
-                    _trie = _trie[l]
-                if not broken_exp and not is_glob and '$' not in _trie:
-                    exps_dont_apply.extend(exps)
-            return exps_dont_apply
-
-        broken_expectations.extend(_get_broken_expectations(self.glob_exps))
-        broken_expectations.extend(
-            _get_broken_expectations(self.individual_exps))
-        return broken_expectations
+        patterns_to_exps = self.individual_exps.copy()
+        patterns_to_exps.update(self.glob_exps)
+        return self.get_broken_expectations(patterns_to_exps, test_names)

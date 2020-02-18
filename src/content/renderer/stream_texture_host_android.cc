@@ -15,10 +15,7 @@ namespace content {
 
 StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel,
                                      int32_t route_id)
-    : route_id_(route_id),
-      listener_(nullptr),
-      channel_(std::move(channel)),
-      weak_ptr_factory_(this) {
+    : route_id_(route_id), listener_(nullptr), channel_(std::move(channel)) {
   DCHECK(channel_);
   DCHECK(route_id_);
 }
@@ -89,7 +86,7 @@ gpu::SyncToken StreamTextureHost::GenUnverifiedSyncToken() {
   // StreamTextureHost could still be alive when |channel_| is gone.
   if (!channel_)
     return gpu::SyncToken();
-  
+
   return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferIdFromChannelAndRoute(
                             channel_->channel_id(), route_id_),

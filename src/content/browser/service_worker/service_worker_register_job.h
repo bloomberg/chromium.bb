@@ -117,7 +117,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   // Trigger the UpdateCheckType::kAllScriptsBeforeStartWorker type check if
   // ServiceWorkerImportedScriptUpdateCheck is enabled.
   void TriggerUpdateCheckInBrowser(
-      ServiceWorkerUpdateChecker::UpdateStatusCallback callback);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   // When ServiceWorkerImportedScriptUpdateCheck is enabled, returns
   // UpdateCheckType::kAllScriptsBeforeStartWorker, otherwise, returns
@@ -189,7 +189,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   std::vector<RegistrationCallback> callbacks_;
   Phase phase_;
   Internal internal_;
-  bool doom_installing_worker_;
   bool is_promise_resolved_;
   bool should_uninstall_on_failure_;
   bool force_bypass_cache_;

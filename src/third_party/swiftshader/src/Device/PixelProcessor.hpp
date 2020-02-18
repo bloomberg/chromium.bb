@@ -17,6 +17,7 @@
 
 #include "Color.hpp"
 #include "Context.hpp"
+#include "Memset.hpp"
 #include "RoutineCache.hpp"
 
 namespace sw
@@ -51,13 +52,7 @@ namespace sw
 			bool perspective;
 			bool depthClamp;
 
-			bool alphaBlendActive;
-			VkBlendFactor sourceBlendFactor;
-			VkBlendFactor destBlendFactor;
-			VkBlendOp blendOperation;
-			VkBlendFactor sourceBlendFactorAlpha;
-			VkBlendFactor destBlendFactorAlpha;
-			VkBlendOp blendOperationAlpha;
+			BlendState blendState[RENDERTARGETS];
 
 			unsigned int colorWriteMask;
 			VkFormat targetFormat[RENDERTARGETS];
@@ -119,7 +114,7 @@ namespace sw
 		};
 
 	public:
-		typedef void (*RoutinePointer)(const Primitive *primitive, int count, int thread, DrawData *draw);
+		typedef void (*RoutinePointer)(const Primitive *primitive, int count, int cluster, int clusterCount, DrawData *draw);
 
 		PixelProcessor();
 
@@ -129,8 +124,8 @@ namespace sw
 
 	protected:
 		const State update(const Context* context) const;
-		Routine *routine(const State &state, vk::PipelineLayout const *pipelineLayout,
-		                 SpirvShader const *pixelShader, const vk::DescriptorSet::Bindings &descriptorSets);
+		std::shared_ptr<Routine> routine(const State &state, vk::PipelineLayout const *pipelineLayout,
+		                                 SpirvShader const *pixelShader, const vk::DescriptorSet::Bindings &descriptorSets);
 		void setRoutineCacheSize(int routineCacheSize);
 
 		// Other semi-constants

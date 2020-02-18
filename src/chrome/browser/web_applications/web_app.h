@@ -17,6 +17,8 @@
 
 namespace web_app {
 
+enum class LaunchContainer;
+
 class WebApp {
  public:
   explicit WebApp(const AppId& app_id);
@@ -29,6 +31,8 @@ class WebApp {
   const GURL& launch_url() const { return launch_url_; }
   const GURL& scope() const { return scope_; }
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
+  LaunchContainer launch_container() const { return launch_container_; }
+  bool is_locally_installed() const { return is_locally_installed_; }
 
   struct IconInfo {
     GURL url;
@@ -42,6 +46,8 @@ class WebApp {
   void SetLaunchUrl(const GURL& launch_url);
   void SetScope(const GURL& scope);
   void SetThemeColor(base::Optional<SkColor> theme_color);
+  void SetLaunchContainer(LaunchContainer launch_container);
+  void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIcons(Icons icons);
 
  private:
@@ -54,6 +60,8 @@ class WebApp {
   // is within the scope.
   GURL scope_;
   base::Optional<SkColor> theme_color_;
+  LaunchContainer launch_container_;
+  bool is_locally_installed_ = true;
   Icons icons_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApp);

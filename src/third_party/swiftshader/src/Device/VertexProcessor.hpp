@@ -15,8 +15,9 @@
 #ifndef sw_VertexProcessor_hpp
 #define sw_VertexProcessor_hpp
 
-#include "Matrix.hpp"
 #include "Context.hpp"
+#include "Matrix.hpp"
+#include "Memset.hpp"
 #include "RoutineCache.hpp"
 #include "Vertex.hpp"
 #include "Pipeline/SpirvShader.hpp"
@@ -36,7 +37,10 @@ namespace sw
 		Vertex vertex[SIZE];
 		uint32_t tag[SIZE];
 
-		int drawCall;
+		// Identifier of the draw call for the cache data. If this cache is
+		// used with a different draw call, then the cache should be invalidated
+		// before use.
+		int drawCall = -1;
 	};
 
 	struct VertexTask
@@ -88,8 +92,8 @@ namespace sw
 
 	protected:
 		const State update(const sw::Context* context);
-		Routine *routine(const State &state, vk::PipelineLayout const *pipelineLayout,
-		                 SpirvShader const *vertexShader, const vk::DescriptorSet::Bindings &descriptorSets);
+		std::shared_ptr<Routine> routine(const State &state, vk::PipelineLayout const *pipelineLayout,
+		                                 SpirvShader const *vertexShader, const vk::DescriptorSet::Bindings &descriptorSets);
 
 		void setRoutineCacheSize(int cacheSize);
 

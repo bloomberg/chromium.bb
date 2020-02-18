@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -24,7 +27,7 @@ class DistillabilityDriver
   ~DistillabilityDriver() override;
   void CreateDistillabilityService(mojom::DistillabilityServiceRequest request);
 
-  void SetDelegate(const DistillabilityDelegate& delegate);
+  void AddObserver(DistillabilityObserver* observer);
 
   // content::WebContentsObserver implementation.
   void OnInterfaceRequestFromFrame(
@@ -37,11 +40,9 @@ class DistillabilityDriver
   friend class content::WebContentsUserData<DistillabilityDriver>;
   friend class DistillabilityServiceImpl;
 
-  void OnDistillability(bool distillable,
-                        bool is_last,
-                        bool is_mobile_friendly);
+  void OnDistillability(const DistillabilityResult& result);
 
-  DistillabilityDelegate m_delegate_;
+  base::ObserverList<DistillabilityObserver> observers_;
 
   service_manager::BinderRegistry frame_interfaces_;
 

@@ -30,6 +30,10 @@ class SuggestionChipContainerView;
 // active folder.
 class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
  public:
+  // Returns the expected container size with apps grid bounds excluded.
+  // In other words: apps container view size - apps grid size.
+  static gfx::Size GetNonAppsGridSize();
+
   AppsContainerView(ContentsView* contents_view, AppListModel* model);
   ~AppsContainerView() override;
 
@@ -84,6 +88,8 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   views::View* GetFirstFocusableView() override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
 
+  gfx::Rect GetSearchBoxTargetBounds() const;
+
   // Returns the expected search box bounds based on the current height of app
   // list.
   gfx::Rect GetSearchBoxExpectedBounds() const;
@@ -96,6 +102,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
     return folder_background_view_;
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
+  PageSwitcher* page_switcher() { return page_switcher_; }
 
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
@@ -107,6 +114,9 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
     SHOW_ACTIVE_FOLDER,
     SHOW_ITEM_REPARENT,
   };
+
+  // Gets the suggestion chips container fullscreen Y coordinate.
+  int GetSuggestionChipContainerFullscreenY() const;
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 

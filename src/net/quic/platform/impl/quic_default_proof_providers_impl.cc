@@ -19,6 +19,12 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
+DEFINE_QUIC_COMMAND_LINE_FLAG(
+    bool,
+    allow_unknown_root_cert,
+    false,
+    "If true, don't restrict cert verification to known roots");
+
 DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
                               certificate_file,
                               "",
@@ -36,14 +42,27 @@ using net::ProofVerifierChromium;
 
 namespace quic {
 
+namespace {
+
+std::set<std::string> UnknownRootAllowlistForHost(std::string host) {
+  if (!GetQuicFlag(FLAGS_allow_unknown_root_cert)) {
+    return std::set<std::string>();
+  }
+  return {host};
+}
+
+}  // namespace
+
 class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
  public:
   ProofVerifierChromiumWithOwnership(
-      std::unique_ptr<net::CertVerifier> cert_verifier)
+      std::unique_ptr<net::CertVerifier> cert_verifier,
+      std::string host)
       : net::ProofVerifierChromium(cert_verifier.get(),
                                    &ct_policy_enforcer_,
                                    &transport_security_state_,
-                                   &ct_verifier_),
+                                   &ct_verifier_,
+                                   UnknownRootAllowlistForHost(host)),
         cert_verifier_(std::move(cert_verifier)) {}
 
  private:
@@ -53,19 +72,20 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
   net::MultiLogCTVerifier ct_verifier_;
 };
 
-std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl() {
+std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl(
+    const std::string& host) {
   std::unique_ptr<net::CertVerifier> cert_verifier =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   return QuicMakeUnique<ProofVerifierChromiumWithOwnership>(
-      std::move(cert_verifier));
+      std::move(cert_verifier), host);
 }
 
 std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl() {
   auto proof_source = std::make_unique<net::ProofSourceChromium>();
   CHECK(proof_source->Initialize(
 #if defined(OS_WIN)
-      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_certificate_file))),
-      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_key_file))),
+      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_certificate_file))),
+      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_key_file))),
       base::FilePath()));
 #else
       base::FilePath(GetQuicFlag(FLAGS_certificate_file)),

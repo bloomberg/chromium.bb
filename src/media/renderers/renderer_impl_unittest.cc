@@ -13,8 +13,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -82,7 +82,7 @@ class RendererImplTest : public ::testing::Test {
         video_renderer_(new StrictMock<MockVideoRenderer>()),
         audio_renderer_(new StrictMock<MockAudioRenderer>()),
         renderer_impl_(
-            new RendererImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
+            new RendererImpl(task_environment_.GetMainThreadTaskRunner(),
                              std::unique_ptr<AudioRenderer>(audio_renderer_),
                              std::unique_ptr<VideoRenderer>(video_renderer_))),
         cdm_context_(new StrictMock<MockCdmContext>()),
@@ -346,7 +346,7 @@ class RendererImplTest : public ::testing::Test {
   }
 
   // Fixture members.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
 

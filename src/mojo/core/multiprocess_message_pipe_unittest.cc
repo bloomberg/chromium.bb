@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/core/handle_signals_state.h"
 #include "mojo/core/test/mojo_test_base.h"
@@ -422,10 +422,11 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
   CHECK_GT(num_handles, 0);
 
   for (int i = 0; i < num_handles; ++i) {
-    PlatformHandle h = UnwrapPlatformHandle(ScopedHandle(Handle(handles[i])));
-    CHECK(h.is_valid());
+    PlatformHandle handle =
+        UnwrapPlatformHandle(ScopedHandle(Handle(handles[i])));
+    CHECK(handle.is_valid());
 
-    base::ScopedFILE fp = test::FILEFromPlatformHandle(std::move(h), "r");
+    base::ScopedFILE fp = test::FILEFromPlatformHandle(std::move(handle), "r");
     CHECK(fp);
     std::string fread_buffer(100, '\0');
     size_t bytes_read =
@@ -1274,7 +1275,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
   EXPECT_EQ(MOJO_RESULT_OK,
             WaitForSignals(handles[0], MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Wait on handle 1 using a SimpleWatcher.
   {

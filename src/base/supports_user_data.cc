@@ -16,6 +16,9 @@ SupportsUserData::SupportsUserData() {
   sequence_checker_.DetachFromSequence();
 }
 
+SupportsUserData::SupportsUserData(SupportsUserData&&) = default;
+SupportsUserData& SupportsUserData::operator=(SupportsUserData&&) = default;
+
 SupportsUserData::Data* SupportsUserData::GetUserData(const void* key) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // Avoid null keys; they are too vulnerable to collision.
@@ -61,6 +64,11 @@ SupportsUserData::~SupportsUserData() {
   // Now this->user_data_ is empty, and any destructors called transitively from
   // the destruction of |local_user_data| will see it that way instead of
   // examining a being-destroyed object.
+}
+
+void SupportsUserData::ClearAllUserData() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  user_data_.clear();
 }
 
 }  // namespace base

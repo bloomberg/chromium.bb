@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/common/app.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/test_utils.h"
@@ -53,7 +53,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
     arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
     run_loop.Run();
 
-    app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
+    app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
     arc_app_list_pref_->app_connection_holder()->SetInstance(
         app_instance_.get());
     WaitForInstanceReady(arc_app_list_pref_->app_connection_holder());
@@ -109,7 +109,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
 class ArcAppPermissionDialogViewBrowserTest
     : public ArcAppUninstallDialogViewBrowserTest {
  public:
-  ArcAppPermissionDialogViewBrowserTest() : weak_ptr_factory_(this) {}
+  ArcAppPermissionDialogViewBrowserTest() {}
   // InProcessBrowserTest:
   ~ArcAppPermissionDialogViewBrowserTest() override = default;
 
@@ -172,7 +172,8 @@ class ArcAppPermissionDialogViewBrowserTest
   uint16_t vendor_id_ = 123;
   uint16_t product_id_ = 456;
 
-  base::WeakPtrFactory<ArcAppPermissionDialogViewBrowserTest> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppPermissionDialogViewBrowserTest> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppPermissionDialogViewBrowserTest);
 };

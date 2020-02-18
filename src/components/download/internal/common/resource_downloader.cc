@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
-#include "components/download/public/common/url_download_request_handle.h"
+#include "components/download/public/common/url_loader_factory_provider.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -31,9 +31,9 @@ class URLLoaderStatusMonitor : public network::mojom::URLLoaderClient {
   ~URLLoaderStatusMonitor() override = default;
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override {}
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {}
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override {}
+                         network::mojom::URLResponseHeadPtr head) override {}
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override {}
@@ -62,8 +62,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
     const GURL& site_url,
     const GURL& tab_url,
@@ -77,8 +76,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       delegate, std::move(request), params->render_process_host_id(),
       params->render_frame_host_routing_id(), site_url, tab_url,
       tab_referrer_url, is_new_download, task_runner,
-      std::move(url_loader_factory_getter), url_security_policy,
-      std::move(connector));
+      std::move(url_loader_factory), url_security_policy, std::move(connector));
 
   downloader->Start(std::move(params), is_parallel_request, is_background_mode);
   return downloader;
@@ -99,16 +97,14 @@ ResourceDownloader::InterceptNavigationResponse(
     const scoped_refptr<network::ResourceResponse>& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
     std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), render_process_id, render_frame_id,
       site_url, tab_url, tab_referrer_url, true, task_runner,
-      std::move(url_loader_factory_getter), url_security_policy,
-      std::move(connector));
+      std::move(url_loader_factory), url_security_policy, std::move(connector));
   downloader->InterceptResponse(
       std::move(url_chain), cert_status, std::move(response_head),
       std::move(response_body), std::move(url_loader_client_endpoints));
@@ -125,8 +121,7 @@ ResourceDownloader::ResourceDownloader(
     const GURL& tab_referrer_url,
     bool is_new_download,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
     std::unique_ptr<service_manager::Connector> connector)
     : delegate_(delegate),
@@ -138,7 +133,7 @@ ResourceDownloader::ResourceDownloader(
       tab_url_(tab_url),
       tab_referrer_url_(tab_referrer_url),
       delegate_task_runner_(task_runner),
-      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
+      url_loader_factory_(url_loader_factory),
       url_security_policy_(url_security_policy),
       is_content_initiated_(false) {
   RequestWakeLock(connector.get());
@@ -166,8 +161,8 @@ void ResourceDownloader::Start(
       download_url_parameters->request_headers(),
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
-      download_url_parameters->ignore_content_length_mismatch(),
       std::vector<GURL>(1, resource_request_->url), is_background_mode);
+
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   url_loader_client_binding_ =
       std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
@@ -176,7 +171,7 @@ void ResourceDownloader::Start(
   // Set up the URLLoader
   network::mojom::URLLoaderRequest url_loader_request =
       mojo::MakeRequest(&url_loader_);
-  url_loader_factory_getter_->GetURLLoaderFactory()->CreateLoaderAndStart(
+  url_loader_factory_->CreateLoaderAndStart(
       std::move(url_loader_request),
       0,  // routing_id
       0,  // request_id
@@ -206,8 +201,7 @@ void ResourceDownloader::InterceptResponse(
       true,  /* follow_cross_origin_redirects */
       download::DownloadUrlParameters::RequestHeadersType(),
       std::string(), /* request_origin */
-      download::DownloadSource::NAVIGATION,
-      false /* ignore_content_length_mismatch */, std::move(url_chain),
+      download::DownloadSource::NAVIGATION, std::move(url_chain),
       false /* is_background_mode */);
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
@@ -227,8 +221,6 @@ void ResourceDownloader::InterceptResponse(
 void ResourceDownloader::OnResponseStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
     mojom::DownloadStreamHandlePtr stream_handle) {
-  download_create_info->request_handle.reset(new UrlDownloadRequestHandle(
-      weak_ptr_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
   download_create_info->is_new_download = is_new_download_;
   download_create_info->guid = guid_;
   download_create_info->site_url = site_url_;
@@ -245,7 +237,10 @@ void ResourceDownloader::OnResponseStarted(
           &UrlDownloadHandler::Delegate::OnUrlDownloadStarted, delegate_,
           std::move(download_create_info),
           std::make_unique<StreamHandleInputStream>(std::move(stream_handle)),
-          std::move(url_loader_factory_getter_), callback_));
+          URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr(
+              new URLLoaderFactoryProvider(url_loader_factory_),
+              base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get())),
+          this, callback_));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
@@ -289,13 +284,13 @@ void ResourceDownloader::RequestWakeLock(
     service_manager::Connector* connector) {
   if (!connector)
     return;
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+  connector->Connect(device::mojom::kServiceName,
+                     wake_lock_provider.BindNewPipeAndPassReceiver());
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther, "Download in progress",
-      mojo::MakeRequest(&wake_lock_));
+      wake_lock_.BindNewPipeAndPassReceiver());
 
   wake_lock_->RequestWakeLock();
 }

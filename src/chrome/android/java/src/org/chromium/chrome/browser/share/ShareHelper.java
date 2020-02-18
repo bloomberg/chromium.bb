@@ -105,9 +105,18 @@ public class ShareHelper {
 
     private ShareHelper() {}
 
-    private static void fireIntent(Activity activity, Intent intent) {
+    /**
+     * Fire the intent to share content with the target app.
+     *
+     * @param activity The current activity.
+     * @param intent The intent to fire.
+     * @param allowIdentification Allow the target app to identify Chrome as the source.
+     */
+    private static void fireIntent(Activity activity, Intent intent, boolean allowIdentification) {
         if (sFakeIntentReceiverForTesting != null) {
             sFakeIntentReceiverForTesting.fireIntent(ContextUtils.getApplicationContext(), intent);
+        } else if (allowIdentification) {
+            activity.startActivityForResult(intent, 0);
         } else {
             activity.startActivity(intent);
         }
@@ -224,7 +233,7 @@ public class ShareHelper {
             if (sFakeIntentReceiverForTesting != null) {
                 sFakeIntentReceiverForTesting.setIntentToSendBack(intent);
             }
-            fireIntent(activity, chooserIntent);
+            fireIntent(activity, chooserIntent, false);
         }
 
         @Override
@@ -306,14 +315,16 @@ public class ShareHelper {
     }
 
     /**
-     * Trigger the share action for the given image data.
+     * Generate a temporary URI for a set of JPEG bytes and provide that URI to a callback for
+     * sharing.
      * @param activity The activity used to trigger the share action.
      * @param jpegImageData The image data to be shared in jpeg format.
      * @param name When this is not null, it will share the image directly with the
      *             {@link ComponentName}
+     * @param callback A provided callback function which will act on the generated URI.
      */
-    public static void shareImage(
-            final Activity activity, final byte[] jpegImageData, final ComponentName name) {
+    public static void generateUriFromData(
+            final Activity activity, final byte[] jpegImageData, Callback<Uri> callback) {
         if (jpegImageData.length == 0) {
             Log.w(TAG, "Share failed -- Received image contains no data.");
             return;
@@ -348,28 +359,51 @@ public class ShareHelper {
 
             @Override
             protected void onPostExecute(Uri imageUri) {
-                if (imageUri == null) return;
-
-                if (ApplicationStatus.getStateForApplication()
-                        != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
-                    Intent shareIntent = getShareImageIntent(imageUri);
-                    if (name == null) {
-                        if (TargetChosenReceiver.isSupported()) {
-                            TargetChosenReceiver.sendChooserIntent(
-                                    true, activity, shareIntent, null, null);
-                        } else {
-                            Intent chooserIntent = Intent.createChooser(shareIntent,
-                                    activity.getString(R.string.share_link_chooser_title));
-                            fireIntent(activity, chooserIntent);
-                        }
-                    } else {
-                        shareIntent.setComponent(name);
-                        fireIntent(activity, shareIntent);
-                    }
+                if (imageUri == null) {
+                    return;
                 }
+                if (ApplicationStatus.getStateForApplication()
+                        == ApplicationState.HAS_DESTROYED_ACTIVITIES) {
+                    return;
+                }
+
+                callback.onResult(imageUri);
             }
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    /**
+     * Share an image URI with an activity identified by the provided Component Name.
+     * @param activity The current activity
+     * @param name The component name of the activity to share the image with.
+     * @param imageUri The url to share with the external activity.
+     */
+    public static void shareImage(final Activity activity, final ComponentName name, Uri imageUri) {
+        Intent shareIntent = getShareImageIntent(imageUri);
+        if (name == null) {
+            if (TargetChosenReceiver.isSupported()) {
+                TargetChosenReceiver.sendChooserIntent(true, activity, shareIntent, null, null);
+            } else {
+                Intent chooserIntent = Intent.createChooser(
+                        shareIntent, activity.getString(R.string.share_link_chooser_title));
+                fireIntent(activity, chooserIntent, false);
+            }
+        } else {
+            shareIntent.setComponent(name);
+            fireIntent(activity, shareIntent, false);
         }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    /**
+     * Share an image URI with Google Lens.
+     * @param activity The current activity
+     * @param imageUri The url to share with the app.
+     * @param isIncognito Whether the current tab is in incognito mode.
+     */
+    public static void shareImageWithGoogleLens(
+            final Activity activity, Uri imageUri, boolean isIncognito) {
+        Intent shareIntent = LensUtils.getShareWithGoogleLensIntent(imageUri, isIncognito);
+        fireIntent(activity, shareIntent, /* allowIdentification= */ true);
     }
 
     private static class ExternallyVisibleUriCallback implements Callback<String> {
@@ -503,7 +537,7 @@ public class ShareHelper {
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);
         if (intent.getComponent() != null) {
-            fireIntent(params.getActivity(), intent);
+            fireIntent(params.getActivity(), intent, false);
         } else {
             assert TargetChosenReceiver.isSupported();
             TargetChosenReceiver.sendChooserIntent(params.saveLastUsed(), params.getActivity(),

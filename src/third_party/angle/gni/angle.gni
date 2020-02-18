@@ -88,6 +88,9 @@ declare_args() {
     # Enable custom (cpu-side) secondary command buffers
     angle_enable_custom_vulkan_cmd_buffers = true
   }
+
+  # Disable overlay by default
+  angle_enable_overlay = false
 }
 
 if (is_win) {
@@ -237,6 +240,7 @@ template("angle_test") {
 
     configs += invoker.configs
     configs -= invoker.suppressed_configs
+    configs -= [ angle_root + ":extra_warnings" ]
 
     if (is_linux && !is_component_build) {
       # Set rpath to find shared libs in a non-component build.

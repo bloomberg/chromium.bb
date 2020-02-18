@@ -24,12 +24,10 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
   BlinkTransferableMessage();
   ~BlinkTransferableMessage();
 
-  BlinkTransferableMessage(BlinkTransferableMessage&&);
-  BlinkTransferableMessage& operator=(BlinkTransferableMessage&&);
+  BlinkTransferableMessage(BlinkTransferableMessage&&) noexcept;
+  BlinkTransferableMessage& operator=(BlinkTransferableMessage&&) noexcept;
 
   Vector<MessagePortChannel> ports;
-
-  bool has_user_gesture = false;
 
   mojom::blink::UserActivationSnapshotPtr user_activation;
 

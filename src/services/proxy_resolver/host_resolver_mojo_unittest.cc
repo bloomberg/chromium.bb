@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -162,7 +162,7 @@ class HostResolverMojoTest : public testing::Test {
     return result;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   Waiter waiter_;
   MockMojoHostResolver mock_resolver_;
   HostResolverMojo resolver_;

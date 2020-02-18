@@ -8,8 +8,6 @@ import("../../testing/test.gni")
 
 jumbo_source_set("pwl") {
   sources = [
-    "cpwl_appstream.cpp",
-    "cpwl_appstream.h",
     "cpwl_button.cpp",
     "cpwl_button.h",
     "cpwl_caret.cpp",
@@ -32,12 +30,9 @@ jumbo_source_set("pwl") {
     "cpwl_scroll_bar.h",
     "cpwl_special_button.cpp",
     "cpwl_special_button.h",
-    "cpwl_timer.cpp",
-    "cpwl_timer.h",
-    "cpwl_timer_handler.cpp",
-    "cpwl_timer_handler.h",
     "cpwl_wnd.cpp",
     "cpwl_wnd.h",
+    "ipwl_systemhandler.h",
   ]
   configs += [ "../../:pdfium_core_config" ]
   deps = [

@@ -162,7 +162,7 @@ GbmSurfaceFactory::~GbmSurfaceFactory() {
 void GbmSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
                                         GbmSurfaceless* surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  widget_to_surface_map_.insert(std::make_pair(widget, surface));
+  widget_to_surface_map_.emplace(widget, surface);
 }
 
 void GbmSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {
@@ -197,7 +197,8 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
-GbmSurfaceFactory::CreateVulkanImplementation() {
+GbmSurfaceFactory::CreateVulkanImplementation(bool allow_protected_memory,
+                                              bool enforce_protected_memory) {
   return std::make_unique<ui::VulkanImplementationGbm>();
 }
 

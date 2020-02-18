@@ -31,9 +31,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -69,7 +69,7 @@
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
@@ -104,10 +104,11 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
+#include "net/ssl/test_ssl_config_service.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -348,31 +349,10 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   }
 };
 
-class TestSSLConfigService : public SSLConfigService {
- public:
-  explicit TestSSLConfigService(const SSLConfig& config) : config_(config) {}
-  ~TestSSLConfigService() override = default;
-
-  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
-
-  bool CanShareConnectionWithClientCerts(
-      const std::string& hostname) const override {
-    return false;
-  }
-
-  void UpdateSSLConfigAndNotify(const SSLConfig& config) {
-    config_ = config;
-    NotifySSLConfigChange();
-  }
-
- private:
-  SSLConfig config_;
-};
-
 }  // namespace
 
 class HttpNetworkTransactionTest : public PlatformTest,
-                                   public WithScopedTaskEnvironment {
+                                   public WithTaskEnvironment {
  public:
   ~HttpNetworkTransactionTest() override {
     // Important to restore the per-pool limit first, since the pool limit must
@@ -385,8 +365,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
 
  protected:
   HttpNetworkTransactionTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         dummy_connect_job_params_(
             nullptr /* client_socket_factory */,
             nullptr /* host_resolver */,
@@ -523,14 +502,6 @@ class HttpNetworkTransactionTest : public PlatformTest,
 
     EXPECT_EQ("GET / HTTP/1.1\r\n",
               GetStringValueFromParams(entries[pos], "line"));
-
-    HttpRequestHeaders request_headers;
-    EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-    std::string value;
-    EXPECT_TRUE(request_headers.GetHeader("Host", &value));
-    EXPECT_EQ("www.example.org", value);
-    EXPECT_TRUE(request_headers.GetHeader("Connection", &value));
-    EXPECT_EQ("keep-alive", value);
 
     EXPECT_EQ("['Host: www.example.org','Connection: keep-alive']",
               GetHeaders(entries[pos].params));
@@ -673,8 +644,7 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
                                   base::TimeDelta(),
                                   ProxyServer::Direct(),
                                   false /* is_for_websockets */,
-                                  common_connect_job_params,
-                                  nullptr /* ssl_config_service */) {}
+                                  common_connect_job_params) {}
 
   const ClientSocketPool::GroupId& last_group_id_received() const {
     return last_group_id_;
@@ -7595,18 +7565,9 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
               ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)),
       &authenticate_msg);
 
-  // Retry with authorization header.
-  spdy::SpdyHeaderBlock request_headers1(
-      spdy_util_.ConstructGetHeaderBlock(kUrl));
-  request_headers1["authorization"] = std::string("NTLM ") + negotiate_msg;
-  spdy::SpdySerializedFrame request1(spdy_util_.ConstructSpdyHeaders(
-      3, std::move(request_headers1), LOWEST, true));
-
-  spdy::SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(3, spdy::ERROR_CODE_HTTP_1_1_REQUIRED));
-
   MockWrite writes0[] = {CreateMockWrite(request0, 0)};
-  MockRead reads0[] = {CreateMockRead(resp, 1), MockRead(ASYNC, 0, 2)};
+  MockRead reads0[] = {CreateMockRead(resp, 1),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
 
   // Retry yet again using HTTP/1.1.
   MockWrite writes1[] = {
@@ -7649,7 +7610,11 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
 
   SSLSocketDataProvider ssl0(ASYNC, OK);
   ssl0.next_proto = kProtoHTTP2;
+  ssl0.next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
   SSLSocketDataProvider ssl1(ASYNC, OK);
+  // When creating the second connection, only HTTP/1.1 should be allowed.
+  ssl1.next_protos_expected_in_ssl_config = NextProtoVector{kProtoHTTP11};
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl0);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
 
@@ -7709,6 +7674,225 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
   EXPECT_TRUE(data1.AllWriteDataConsumed());
 }
 
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+
+// Variant of above test using WebSockets.
+TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2WithWebsockets) {
+  const GURL kInitialUrl("https://server/");
+  const GURL kWebSocketUrl("wss://server/");
+  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(
+      MockGetMSTime, MockGenerateRandom, MockGetHostName);
+
+  // Initial request establishes an H2 connection, which will then be reused for
+  // WebSockets. This is needed since WebSockets will reuse H2 connections, but
+  // it won't create a new one.
+  spdy::SpdyHeaderBlock initial_request_headers(
+      spdy_util_.ConstructGetHeaderBlock(kInitialUrl.spec()));
+  spdy::SpdySerializedFrame initial_request(spdy_util_.ConstructSpdyHeaders(
+      1, std::move(initial_request_headers), DEFAULT_PRIORITY, true));
+  spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+
+  // Settings frame, indicating WebSockets is supported.
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+
+  // Response headers for first request. Body is never received, but that
+  // shouldn't matter for the purposes of this test.
+  spdy::SpdySerializedFrame initial_response(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+
+  // First WebSocket request, which has no credentials.
+  spdy::SpdyHeaderBlock websocket_request_headers;
+  websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
+  websocket_request_headers[spdy::kHttp2AuthorityHeader] = "server";
+  websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
+  websocket_request_headers[spdy::kHttp2PathHeader] = "/";
+  websocket_request_headers[spdy::kHttp2ProtocolHeader] = "websocket";
+  websocket_request_headers["origin"] = "http://server";
+  websocket_request_headers["sec-websocket-version"] = "13";
+  websocket_request_headers["sec-websocket-extensions"] =
+      "permessage-deflate; client_max_window_bits";
+  spdy::SpdySerializedFrame websocket_request(spdy_util_.ConstructSpdyHeaders(
+      3, std::move(websocket_request_headers), MEDIUM, false));
+
+  // Auth challenge to WebSocket request.
+  spdy::SpdyHeaderBlock auth_challenge_headers;
+  auth_challenge_headers[spdy::kHttp2StatusHeader] = "401";
+  auth_challenge_headers["www-authenticate"] = "NTLM";
+  spdy::SpdySerializedFrame websocket_auth_challenge(
+      spdy_util_.ConstructSpdyResponseHeaders(
+          3, std::move(auth_challenge_headers), true));
+
+  MockWrite writes0[] = {CreateMockWrite(initial_request, 0),
+                         CreateMockWrite(settings_ack, 2),
+                         CreateMockWrite(websocket_request, 4),
+                         MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 7)};
+  MockRead reads0[] = {CreateMockRead(settings_frame, 1),
+                       CreateMockRead(initial_response, 3),
+                       CreateMockRead(websocket_auth_challenge, 5),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6)};
+
+  // Generate the NTLM messages based on known test data.
+  std::string negotiate_msg;
+  std::string challenge_msg;
+  std::string authenticate_msg;
+  base::Base64Encode(
+      base::StringPiece(
+          reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
+          base::size(ntlm::test::kExpectedNegotiateMsg)),
+      &negotiate_msg);
+  base::Base64Encode(
+      base::StringPiece(
+          reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
+          base::size(ntlm::test::kChallengeMsgFromSpecV2)),
+      &challenge_msg);
+  base::Base64Encode(
+      base::StringPiece(
+          reinterpret_cast<const char*>(
+              ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
+          base::size(
+              ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)),
+      &authenticate_msg);
+
+  // Retry yet again using HTTP/1.1.
+  MockWrite writes1[] = {
+      // After restarting with a null identity, this is the
+      // request we should be issuing -- the final header line contains a Type
+      // 1 message.
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: server\r\n"
+                "Connection: Upgrade\r\n"
+                "Authorization: NTLM "),
+      MockWrite(negotiate_msg.c_str()),
+      MockWrite("\r\n"),
+      MockWrite("Origin: http://server\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Upgrade: websocket\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n"),
+
+      // After calling trans.RestartWithAuth(), we should send a Type 3 message
+      // (the credentials for the origin server).  The second request continues
+      // on the same connection.
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: server\r\n"
+                "Connection: Upgrade\r\n"
+                "Authorization: NTLM "),
+      MockWrite(authenticate_msg.c_str()),
+      MockWrite("\r\n"),
+      MockWrite("Origin: http://server\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Upgrade: websocket\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n"),
+  };
+
+  MockRead reads1[] = {
+      // The origin server responds with a Type 2 message.
+      MockRead("HTTP/1.1 401 Access Denied\r\n"),
+      MockRead("WWW-Authenticate: NTLM "),
+      MockRead(challenge_msg.c_str()),
+      MockRead("\r\n"),
+      MockRead("Content-Length: 42\r\n"),
+      MockRead("Content-Type: text/html\r\n\r\n"),
+      MockRead("You are not authorized to view this page\r\n"),
+
+      // Lastly we get the desired content.
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"),
+  };
+  SequencedSocketData data0(reads0, writes0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data0);
+  SSLSocketDataProvider ssl0(ASYNC, OK);
+  ssl0.next_proto = kProtoHTTP2;
+  ssl0.next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl0);
+
+  StaticSocketDataProvider data1(reads1, writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  // When creating the second connection, only HTTP/1.1 should be allowed.
+  ssl1.next_protos_expected_in_ssl_config = NextProtoVector{};
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+
+  session_deps_.enable_websocket_over_http2 = true;
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpRequestInfo initial_request_info;
+  initial_request_info.method = "GET";
+  initial_request_info.url = kInitialUrl;
+  initial_request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction initial_trans(DEFAULT_PRIORITY, session.get());
+  TestCompletionCallback initial_callback;
+  int rv = initial_trans.Start(&initial_request_info,
+                               initial_callback.callback(), NetLogWithSource());
+  EXPECT_THAT(initial_callback.GetResult(rv), IsOk());
+
+  EXPECT_FALSE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(kInitialUrl), NetworkIsolationKey()));
+
+  HttpRequestInfo websocket_request_info;
+  websocket_request_info.method = "GET";
+  websocket_request_info.url = kWebSocketUrl;
+  websocket_request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(HostPortPair::FromURL(initial_request_info.url)
+                  .Equals(HostPortPair::FromURL(websocket_request_info.url)));
+  websocket_request_info.extra_headers.SetHeader("Origin", "http://server");
+  websocket_request_info.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+  // The following two headers must be removed by WebSocketHttp2HandshakeStream.
+  websocket_request_info.extra_headers.SetHeader("Connection", "Upgrade");
+  websocket_request_info.extra_headers.SetHeader("Upgrade", "websocket");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction websocket_trans(MEDIUM, session.get());
+  websocket_trans.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback websocket_callback;
+  rv = websocket_trans.Start(&websocket_request_info,
+                             websocket_callback.callback(), NetLogWithSource());
+  EXPECT_THAT(websocket_callback.GetResult(rv), IsOk());
+
+  EXPECT_FALSE(websocket_trans.IsReadyToRestartForAuth());
+
+  const HttpResponseInfo* response = websocket_trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
+
+  rv = websocket_trans.RestartWithAuth(
+      AuthCredentials(ntlm::test::kDomainUserCombined, ntlm::test::kPassword),
+      websocket_callback.callback());
+  EXPECT_THAT(websocket_callback.GetResult(rv), IsOk());
+
+  EXPECT_TRUE(websocket_trans.IsReadyToRestartForAuth());
+
+  response = websocket_trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  rv = websocket_trans.RestartWithAuth(AuthCredentials(),
+                                       websocket_callback.callback());
+  EXPECT_THAT(websocket_callback.GetResult(rv), IsOk());
+
+  // The server should have been marked as requiring HTTP/1.1. The important
+  // part here is that the scheme that requires HTTP/1.1 should be HTTPS, not
+  // WSS.
+  EXPECT_TRUE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(kInitialUrl), NetworkIsolationKey()));
+}
+
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
+
 // Test that, if we have an NTLM proxy and the origin resets the connection, we
 // do no retry forever checking for TLS version interference. This is a
 // regression test for https://crbug.com/823387. The version interference probe
@@ -7721,7 +7905,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
       ProxyResolutionService::CreateFixedFromPacResult(
           "PROXY server", TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  SSLConfig config;
+  SSLContextConfig config;
   session_deps_.ssl_config_service =
       std::make_unique<TestSSLConfigService>(config);
 
@@ -11153,7 +11337,7 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupIdTests(
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort("https", "host.with.alternate", 443),
-      alternative_service, expiration);
+      NetworkIsolationKey(), alternative_service, expiration);
 
   return session;
 }
@@ -11960,7 +12144,9 @@ TEST_F(HttpNetworkTransactionTest, IgnoreAltSvcWithInvalidCert) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -11976,7 +12162,9 @@ TEST_F(HttpNetworkTransactionTest, IgnoreAltSvcWithInvalidCert) {
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 }
 
 TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
@@ -12015,7 +12203,9 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -12031,11 +12221,106 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties->GetAlternativeServiceInfos(test_server);
+      http_server_properties->GetAlternativeServiceInfos(test_server,
+                                                         NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   AlternativeService alternative_service(kProtoHTTP2, "mail.example.org", 443);
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
+}
+
+TEST_F(HttpNetworkTransactionTest,
+       HonorAlternativeServiceHeaderWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // SpdySessionKeys to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  session_deps_.http_server_properties =
+      std::make_unique<HttpServerProperties>();
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kAlternativeServiceHttpHeader),
+      MockRead("\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request.network_isolation_key = kNetworkIsolationKey1;
+
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ASSERT_TRUE(ssl.ssl_info.cert);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  url::SchemeHostPort test_server(request.url);
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
+  EXPECT_TRUE(
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1)
+          .empty());
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_FALSE(response->was_alpn_negotiated);
+
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
+  EXPECT_EQ("hello world", response_data);
+
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_properties->GetAlternativeServiceInfos(test_server,
+                                                         kNetworkIsolationKey1);
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+  AlternativeService alternative_service(kProtoHTTP2, "mail.example.org", 443);
+  EXPECT_EQ(alternative_service,
+            alternative_service_info_vector[0].alternative_service());
+
+  // Make sure the alternative service information is only associated with
+  // kNetworkIsolationKey1.
+  EXPECT_TRUE(
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
+  EXPECT_TRUE(
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
+          .empty());
 }
 
 // Regression test for https://crbug.com/615497.
@@ -12068,7 +12353,9 @@ TEST_F(HttpNetworkTransactionTest,
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -12086,7 +12373,9 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 }
 
 // HTTP/2 Alternative Services should be disabled by default.
@@ -12125,7 +12414,8 @@ TEST_F(HttpNetworkTransactionTest,
                                          444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(request.url), alternative_service, expiration);
+      url::SchemeHostPort(request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12165,7 +12455,8 @@ TEST_F(HttpNetworkTransactionTest,
   AlternativeService alternative_service(kProtoHTTP2, "", 444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(request.url), alternative_service, expiration);
+      url::SchemeHostPort(request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12184,11 +12475,12 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   AlternativeService alternative_service(kProtoQUIC, "", 80);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetQuicAlternativeService(
-      test_server, alternative_service, expiration,
+      test_server, NetworkIsolationKey(), alternative_service, expiration,
       session->params().quic_params.supported_versions);
-  EXPECT_EQ(
-      1u,
-      http_server_properties->GetAlternativeServiceInfos(test_server).size());
+  EXPECT_EQ(1u,
+            http_server_properties
+                ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+                .size());
 
   // Send a clear header.
   MockRead data_reads[] = {
@@ -12232,7 +12524,9 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 }
 
 TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
@@ -12271,7 +12565,9 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -12287,7 +12583,8 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   EXPECT_EQ("hello world", response_data);
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties->GetAlternativeServiceInfos(test_server);
+      http_server_properties->GetAlternativeServiceInfos(test_server,
+                                                         NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector.size());
 
   AlternativeService alternative_service(kProtoHTTP2, "www.example.com", 443);
@@ -12337,7 +12634,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   AlternativeService alternative_service(kProtoQUIC, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetQuicAlternativeService(
-      server, alternative_service, expiration,
+      server, NetworkIsolationKey(), alternative_service, expiration,
       HttpNetworkSession::Params().quic_params.supported_versions);
   // Mark the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service);
@@ -12411,12 +12708,13 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
           session->params().quic_params.supported_versions));
 
   http_server_properties->SetAlternativeServices(
-      server, alternative_service_info_vector);
+      server, NetworkIsolationKey(), alternative_service_info_vector);
 
   // Mark one of the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service1);
-  EXPECT_EQ(2u,
-            http_server_properties->GetAlternativeServiceInfos(server).size());
+  EXPECT_EQ(2u, http_server_properties
+                    ->GetAlternativeServiceInfos(server, NetworkIsolationKey())
+                    .size());
 
   HttpRequestInfo request;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12469,7 +12767,7 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
                                                666);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      server, alternative_service, expiration);
+      server, NetworkIsolationKey(), alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12488,7 +12786,8 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   EXPECT_EQ("hello world", response_data);
 
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties->GetAlternativeServiceInfos(server);
+      http_server_properties->GetAlternativeServiceInfos(server,
+                                                         NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -12533,8 +12832,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedBlocked) {
                                          kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(restricted_port_request.url), alternative_service,
-      expiration);
+      url::SchemeHostPort(restricted_port_request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12584,8 +12883,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedPermitted) {
                                          kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(restricted_port_request.url), alternative_service,
-      expiration);
+      url::SchemeHostPort(restricted_port_request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12634,8 +12933,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedAllowed) {
                                          kRestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(restricted_port_request.url), alternative_service,
-      expiration);
+      url::SchemeHostPort(restricted_port_request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12684,8 +12983,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed1) {
                                          kRestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(unrestricted_port_request.url), alternative_service,
-      expiration);
+      url::SchemeHostPort(unrestricted_port_request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12734,8 +13033,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed2) {
                                          kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(unrestricted_port_request.url), alternative_service,
-      expiration);
+      url::SchemeHostPort(unrestricted_port_request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -12776,7 +13075,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
                                          kUnsafePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      url::SchemeHostPort(request.url), alternative_service, expiration);
+      url::SchemeHostPort(request.url), NetworkIsolationKey(),
+      alternative_service, expiration);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback;
@@ -13106,7 +13406,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   AlternativeService alternative_service(kProtoHTTP2, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      server, alternative_service, expiration);
+      server, NetworkIsolationKey(), alternative_service, expiration);
 
   // Non-alternative job should hang.
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
@@ -14344,7 +14644,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       1,                                 // Max sockets per group
       base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
       ProxyServer::Direct(), false,      // is_for_websockets
-      &common_connect_job_params, session_deps_.ssl_config_service.get());
+      &common_connect_job_params);
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                    base::WrapUnique(transport_pool));
@@ -15163,7 +15463,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   ASSERT_FALSE(client_cert);
 
@@ -15175,7 +15475,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
-  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
 }
 
@@ -15281,7 +15581,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   ASSERT_FALSE(client_cert);
 
@@ -15293,7 +15593,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
-  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
 }
 
@@ -15418,12 +15718,12 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
         // allowing the connection to continue restarting.
         scoped_refptr<X509Certificate> client_cert;
         scoped_refptr<SSLPrivateKey> client_private_key;
-        ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("proxy", 70), &client_cert, &client_private_key));
         ASSERT_FALSE(client_cert);
         // Ensure the certificate was NOT cached for the endpoint. This only
         // applies to HTTPS requests, but is fine to check for HTTP requests.
-        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("www.example.com", 443), &client_cert,
             &client_private_key));
 
@@ -15435,9 +15735,9 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 
         // Now that the new handshake has failed, ensure that the client
         // certificate was removed from the client auth cache.
-        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("proxy", 70), &client_cert, &client_private_key));
-        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("www.example.com", 443), &client_cert,
             &client_private_key));
       }
@@ -15514,7 +15814,7 @@ TEST_F(HttpNetworkTransactionTest, CertificateRequestInRenego) {
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   EXPECT_TRUE(client_cert->EqualsIncludingChain(identity->certificate()));
 
@@ -15524,7 +15824,7 @@ TEST_F(HttpNetworkTransactionTest, CertificateRequestInRenego) {
   EXPECT_EQ(200, trans.GetResponseInfo()->headers->response_code());
 
   // The client certificate remains in the cache.
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   EXPECT_TRUE(client_cert->EqualsIncludingChain(identity->certificate()));
 }
@@ -16132,7 +16432,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   AlternativeService alternative_service(kProtoHTTP2, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      server, alternative_service, expiration);
+      server, NetworkIsolationKey(), alternative_service, expiration);
 
   HttpRequestInfo request;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -16200,7 +16500,7 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   AlternativeService alternative_service(kProtoHTTP2, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      server, alternative_service, expiration);
+      server, NetworkIsolationKey(), alternative_service, expiration);
 
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
   HttpRequestInfo request1;
@@ -16310,7 +16610,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   AlternativeService alternative_service(kProtoHTTP2, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetHttp2AlternativeService(
-      server, alternative_service, expiration);
+      server, NetworkIsolationKey(), alternative_service, expiration);
 
   // First transaction to alternative to open an HTTP/1.1 socket.
   HttpRequestInfo request1;
@@ -16891,10 +17191,6 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncConnectError) {
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
-  // We don't care whether this succeeds or fails, but it shouldn't crash.
-  HttpRequestHeaders request_headers;
-  trans.GetFullRequestHeaders(&request_headers);
-
   ConnectionAttempts attempts;
   trans.GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
@@ -16927,10 +17223,6 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncConnectError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
-
-  // We don't care whether this succeeds or fails, but it shouldn't crash.
-  HttpRequestHeaders request_headers;
-  trans.GetFullRequestHeaders(&request_headers);
 
   ConnectionAttempts attempts;
   trans.GetConnectionAttempts(&attempts);
@@ -16969,10 +17261,6 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncWriteError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
 }
 
 TEST_F(HttpNetworkTransactionTest, HttpAsyncWriteError) {
@@ -17002,10 +17290,6 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncWriteError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
 }
 
 TEST_F(HttpNetworkTransactionTest, HttpSyncReadError) {
@@ -17038,10 +17322,6 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncReadError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
 }
 
 TEST_F(HttpNetworkTransactionTest, HttpAsyncReadError) {
@@ -17074,53 +17354,6 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncReadError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
-}
-
-TEST_F(HttpNetworkTransactionTest, GetFullRequestHeadersIncludesExtraHeader) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("http://www.example.org/");
-  request.extra_headers.SetHeader("X-Foo", "bar");
-  request.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
-
-  MockWrite data_writes[] = {
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n"
-          "X-Foo: bar\r\n\r\n"),
-  };
-  MockRead data_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n"
-             "Content-Length: 5\r\n\r\n"
-             "hello"),
-    MockRead(ASYNC, ERR_UNEXPECTED),
-  };
-
-  StaticSocketDataProvider data(data_reads, data_writes);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  TestCompletionCallback callback;
-
-  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsOk());
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  std::string foo;
-  EXPECT_TRUE(request_headers.GetHeader("X-Foo", &foo));
-  EXPECT_EQ("bar", foo);
 }
 
 // Tests that when a used socket is returned to the SSL socket pool, it's closed
@@ -20261,6 +20494,17 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   mock_reads3.emplace_back(
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 0\r\n\r\n");
+  // The client makes another request. This should reuse the socket with all
+  // credentials cached.
+  mock_writes3.emplace_back(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: keep-alive\r\n"
+      // Authenticate as user:pass.
+      "Authorization: Basic dXNlcjpwYXNz\r\n\r\n");
+  mock_reads3.emplace_back(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 0\r\n\r\n");
   StaticSocketDataProvider data3(mock_reads3, mock_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy3);
@@ -20318,6 +20562,14 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+
+  // Make a second request. This time all credentials are cached.
+  trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  ASSERT_THAT(callback.GetResult(trans->Start(&request, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
@@ -20468,6 +20720,38 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy5);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin5);
 
+  // The client makes a second request. This needs yet another connection, but
+  // all credentials are cached.
+  SSLSocketDataProvider ssl_proxy6(ASYNC, OK);
+  ssl_proxy6.expected_send_client_cert = true;
+  ssl_proxy6.expected_client_cert = identity_proxy->certificate();
+  std::vector<MockWrite> mock_writes6;
+  std::vector<MockRead> mock_reads6;
+  mock_writes6.emplace_back(
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org:443\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      // Authenticate as proxyuser:proxypass.
+      "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
+  mock_reads6.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
+  SSLSocketDataProvider ssl_origin6(ASYNC, OK);
+  ssl_origin6.expected_send_client_cert = true;
+  ssl_origin6.expected_client_cert = identity_origin->certificate();
+  mock_writes6.emplace_back(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: keep-alive\r\n"
+      // Authenticate as user:pass.
+      "Authorization: Basic dXNlcjpwYXNz\r\n\r\n");
+  mock_reads6.emplace_back(
+      "HTTP/1.1 200 OK\r\n"
+      "Connection: close\r\n"
+      "Content-Length: 0\r\n\r\n");
+  StaticSocketDataProvider data6(mock_reads6, mock_writes6);
+  session_deps_.socket_factory->AddSocketDataProvider(&data6);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy6);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin6);
+
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Start the request.
@@ -20520,6 +20804,14 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+
+  // Make a second request. This time all credentials are cached.
+  trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  ASSERT_THAT(callback.GetResult(trans->Start(&request, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
@@ -21433,9 +21725,10 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSLProxy) {
 // Test that SSLConfig changes from SSLConfigService are picked up even when
 // there are live sockets.
 TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
-  SSLConfig ssl_config;
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  SSLContextConfig ssl_context_config;
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service =
+      std::make_unique<TestSSLConfigService>(ssl_context_config);
   TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
 
   session_deps_.ssl_config_service = std::move(ssl_config_service);
@@ -21526,8 +21819,8 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
   EXPECT_EQ("2", response_data2);
   trans2.reset();
 
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_context_config);
 
   auto trans3 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
@@ -21540,9 +21833,10 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
 }
 
 TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
-  SSLConfig ssl_config;
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  SSLContextConfig ssl_context_config;
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service =
+      std::make_unique<TestSSLConfigService>(ssl_context_config);
   TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
 
   session_deps_.ssl_config_service = std::move(ssl_config_service);
@@ -21568,10 +21862,301 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
   int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_context_config);
 
   EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NETWORK_CHANGED));
+}
+
+// Test that HttpNetworkTransaction correctly handles existing sockets when the
+// server requests a client certificate post-handshake (via a TLS
+// renegotiation). This is a regression test for https://crbug.com/829184.
+TEST_F(HttpNetworkTransactionTest, PostHandshakeClientCertWithSockets) {
+  const MutableNetworkTrafficAnnotationTag kTrafficAnnotation(
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  auto cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
+  cert_request_info->host_and_port = HostPortPair("foo.test", 443);
+
+  std::unique_ptr<FakeClientCertIdentity> identity =
+      FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+
+  // This test will make several requests so that, when the client certificate
+  // request comes in, we have a socket in use, an idle socket, and a socket for
+  // an unrelated host.
+  //
+  // First, two long-lived requests which do not complete until after the client
+  // certificate request. This arranges for sockets to be in use during the
+  // request. They should not be interrupted.
+  HttpRequestInfo request_long_lived;
+  request_long_lived.method = "GET";
+  request_long_lived.url = GURL("https://foo.test/long-lived");
+  request_long_lived.traffic_annotation = kTrafficAnnotation;
+
+  HttpRequestInfo request_long_lived_bar;
+  request_long_lived_bar.method = "GET";
+  request_long_lived_bar.url = GURL("https://bar.test/long-lived");
+  request_long_lived_bar.traffic_annotation = kTrafficAnnotation;
+
+  // Next, make a request that needs client certificates.
+  HttpRequestInfo request_auth;
+  request_auth.method = "GET";
+  request_auth.url = GURL("https://foo.test/auth");
+  request_auth.traffic_annotation = kTrafficAnnotation;
+
+  // Before responding to the challenge, make a request to an unauthenticated
+  // endpoint. This will result in an idle socket when the client certificate
+  // challenge is resolved.
+  HttpRequestInfo request_unauth;
+  request_unauth.method = "GET";
+  request_unauth.url = GURL("https://foo.test/unauth");
+  request_unauth.traffic_annotation = kTrafficAnnotation;
+
+  // After all the preceding requests complete, end with two additional requests
+  // to ensure pre-authentication foo.test sockets are not used and bar.test
+  // sockets are unaffected.
+  HttpRequestInfo request_post_auth;
+  request_post_auth.method = "GET";
+  request_post_auth.url = GURL("https://foo.test/post-auth");
+  request_post_auth.traffic_annotation = kTrafficAnnotation;
+
+  HttpRequestInfo request_post_auth_bar;
+  request_post_auth_bar.method = "GET";
+  request_post_auth_bar.url = GURL("https://bar.test/post-auth");
+  request_post_auth_bar.traffic_annotation = kTrafficAnnotation;
+
+  // The sockets for /long-lived and /unauth complete their request but are
+  // not allocated for /post-auth or /retry because SSL state has since changed.
+  const MockWrite kLongLivedWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /long-lived HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kLongLivedReads[] = {
+      // Pause so /long-lived completes after the client presents client
+      // certificates.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 10\r\n\r\n"
+               "long-lived"),
+  };
+  SequencedSocketData data_long_lived(kLongLivedReads, kLongLivedWrites);
+  SSLSocketDataProvider ssl_long_lived(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&data_long_lived);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_long_lived);
+
+  // Requests for bar.test should be unaffected by foo.test and get allocated
+  // a single socket.
+  const MockWrite kBarWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /long-lived HTTP/1.1\r\n"
+                "Host: bar.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 3,
+                "GET /post-auth HTTP/1.1\r\n"
+                "Host: bar.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kBarReads[] = {
+      // Pause on /long-lived so it completes after foo.test's authentication.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 10\r\n\r\n"
+               "long-lived"),
+      MockRead(ASYNC, 4,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 9\r\n\r\n"
+               "post-auth"),
+  };
+  SequencedSocketData data_bar(kBarReads, kBarWrites);
+  SSLSocketDataProvider ssl_bar(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&data_bar);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_bar);
+
+  // Requesting /auth results in a post-handshake client certificate challenge.
+  const MockWrite kAuthWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /auth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kAuthReads[] = {
+      MockRead(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED, 1),
+  };
+  SequencedSocketData data_auth(kAuthReads, kAuthWrites);
+  SSLSocketDataProvider ssl_auth(ASYNC, OK);
+  ssl_auth.cert_request_info = cert_request_info.get();
+  session_deps_.socket_factory->AddSocketDataProvider(&data_auth);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_auth);
+
+  // Requesting /unauth completes.
+  const MockWrite kUnauthWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /unauth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kUnauthReads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 6\r\n\r\n"
+               "unauth"),
+  };
+  SequencedSocketData data_unauth(kUnauthReads, kUnauthWrites);
+  SSLSocketDataProvider ssl_unauth(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&data_unauth);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_unauth);
+
+  // When the client certificate is selected, /auth is retried on a new
+  // connection. In particular, it should not be retried on |data_unauth|,
+  // which would not honor the new client certificate configuration.
+  const MockWrite kRetryWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /auth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kRetryReads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 200 OK\r\n"
+               // Close the connection so we test that /post-auth is not
+               // allocated to |data_unauth| or |data_long_lived|.
+               "Connection: close\r\n"
+               "Content-Length: 4\r\n\r\n"
+               "auth"),
+  };
+  SequencedSocketData data_retry(kRetryReads, kRetryWrites);
+  SSLSocketDataProvider ssl_retry(ASYNC, OK);
+  ssl_retry.expected_send_client_cert = true;
+  ssl_retry.expected_client_cert = identity->certificate();
+  session_deps_.socket_factory->AddSocketDataProvider(&data_retry);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_retry);
+
+  // /post-auth gets its own socket.
+  const MockWrite kPostAuthWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /post-auth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kPostAuthReads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 9\r\n\r\n"
+               "post-auth"),
+  };
+  SequencedSocketData data_post_auth(kPostAuthReads, kPostAuthWrites);
+  SSLSocketDataProvider ssl_post_auth(ASYNC, OK);
+  ssl_post_auth.expected_send_client_cert = true;
+  ssl_post_auth.expected_client_cert = identity->certificate();
+  session_deps_.socket_factory->AddSocketDataProvider(&data_post_auth);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_post_auth);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  // Start the two long-lived requests.
+  TestCompletionCallback callback_long_lived;
+  auto trans_long_lived =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans_long_lived->Start(
+      &request_long_lived, callback_long_lived.callback(), NetLogWithSource());
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  data_long_lived.RunUntilPaused();
+
+  TestCompletionCallback callback_long_lived_bar;
+  auto trans_long_lived_bar =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_long_lived_bar->Start(&request_long_lived_bar,
+                                   callback_long_lived_bar.callback(),
+                                   NetLogWithSource());
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  data_bar.RunUntilPaused();
+
+  // Request /auth. This gives a client certificate challenge.
+  TestCompletionCallback callback_auth;
+  auto trans_auth =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_auth->Start(&request_auth, callback_auth.callback(),
+                         NetLogWithSource());
+  EXPECT_THAT(callback_auth.GetResult(rv),
+              IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+
+  // Make an unauthenticated request. This completes.
+  TestCompletionCallback callback_unauth;
+  auto trans_unauth =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_unauth->Start(&request_unauth, callback_unauth.callback(),
+                           NetLogWithSource());
+  EXPECT_THAT(callback_unauth.GetResult(rv), IsOk());
+  std::string response_unauth;
+  EXPECT_THAT(ReadTransaction(trans_unauth.get(), &response_unauth), IsOk());
+  EXPECT_EQ("unauth", response_unauth);
+  trans_unauth.reset();
+
+  // Complete the authenticated request.
+  rv = trans_auth->RestartWithCertificate(identity->certificate(),
+                                          identity->ssl_private_key(),
+                                          callback_auth.callback());
+  EXPECT_THAT(callback_auth.GetResult(rv), IsOk());
+  std::string response_auth;
+  EXPECT_THAT(ReadTransaction(trans_auth.get(), &response_auth), IsOk());
+  EXPECT_EQ("auth", response_auth);
+  trans_auth.reset();
+
+  // Complete the long-lived requests.
+  data_long_lived.Resume();
+  EXPECT_THAT(callback_long_lived.GetResult(ERR_IO_PENDING), IsOk());
+  std::string response_long_lived;
+  EXPECT_THAT(ReadTransaction(trans_long_lived.get(), &response_long_lived),
+              IsOk());
+  EXPECT_EQ("long-lived", response_long_lived);
+  trans_long_lived.reset();
+
+  data_bar.Resume();
+  EXPECT_THAT(callback_long_lived_bar.GetResult(ERR_IO_PENDING), IsOk());
+  std::string response_long_lived_bar;
+  EXPECT_THAT(
+      ReadTransaction(trans_long_lived_bar.get(), &response_long_lived_bar),
+      IsOk());
+  EXPECT_EQ("long-lived", response_long_lived_bar);
+  trans_long_lived_bar.reset();
+
+  // Run the post-authentication requests.
+  TestCompletionCallback callback_post_auth;
+  auto trans_post_auth =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_post_auth->Start(&request_post_auth, callback_post_auth.callback(),
+                              NetLogWithSource());
+  EXPECT_THAT(callback_post_auth.GetResult(rv), IsOk());
+  std::string response_post_auth;
+  EXPECT_THAT(ReadTransaction(trans_post_auth.get(), &response_post_auth),
+              IsOk());
+  EXPECT_EQ("post-auth", response_post_auth);
+  trans_post_auth.reset();
+
+  TestCompletionCallback callback_post_auth_bar;
+  auto trans_post_auth_bar =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_post_auth_bar->Start(&request_post_auth_bar,
+                                  callback_post_auth_bar.callback(),
+                                  NetLogWithSource());
+  EXPECT_THAT(callback_post_auth_bar.GetResult(rv), IsOk());
+  std::string response_post_auth_bar;
+  EXPECT_THAT(
+      ReadTransaction(trans_post_auth_bar.get(), &response_post_auth_bar),
+      IsOk());
+  EXPECT_EQ("post-auth", response_post_auth_bar);
+  trans_post_auth_bar.reset();
 }
 
 }  // namespace net

@@ -7,14 +7,14 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/fake_recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
@@ -23,7 +23,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_features_parser.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -346,7 +346,7 @@ class RecommendAppsFetcherImplTest : public testing::Test {
     arc_features_callback_ = std::move(callback);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
 

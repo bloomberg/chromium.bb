@@ -26,6 +26,7 @@
 
 namespace es2
 {
+std::mutex Shader::mutex;
 bool Shader::compilerInitialized = false;
 
 Shader::Shader(ResourceManager *manager, GLuint handle) : mHandle(handle), mResourceManager(manager)
@@ -158,8 +159,14 @@ TranslatorASM *Shader::createCompiler(GLenum shaderType)
 {
 	if(!compilerInitialized)
 	{
-		InitCompilerGlobals();
-		compilerInitialized = true;
+		compilerInitialized = InitCompilerGlobals();
+
+		if(!compilerInitialized)
+		{
+			infoLog += "GLSL compiler failed to initialize.\n";
+
+			return nullptr;
+		}
 	}
 
 	TranslatorASM *assembler = new TranslatorASM(this, shaderType);
@@ -200,10 +207,20 @@ void Shader::clear()
 
 void Shader::compile()
 {
+	// Our version of glslang is not thread safe.
+	std::lock_guard<std::mutex> lock(mutex);
+
 	clear();
 
 	createShader();
 	TranslatorASM *compiler = createCompiler(getType());
+
+	if(!compiler)
+	{
+		deleteShader();
+
+		return;
+	}
 
 	// Ensure we don't pass a nullptr source to the compiler
 	const char *source = "\0";
@@ -282,6 +299,9 @@ void Shader::flagForDeletion()
 
 void Shader::releaseCompiler()
 {
+	// Our version of glslang is not thread safe.
+	std::lock_guard<std::mutex> lock(mutex);
+
 	FreeCompilerGlobals();
 	compilerInitialized = false;
 }

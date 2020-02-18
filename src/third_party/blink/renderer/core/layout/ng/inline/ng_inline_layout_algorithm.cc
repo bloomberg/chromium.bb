@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
@@ -295,7 +294,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
   if (UNLIKELY(Node().IsBidiEnabled())) {
     box_states_->PrepareForReorder(&line_box_);
-    BidiReorder();
+    BidiReorder(line_info->BaseDirection());
     box_states_->UpdateAfterReorder(&line_box_);
   }
   LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
@@ -366,7 +365,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
     container_builder_.SetIsSelfCollapsing();
     container_builder_.SetIsEmptyLineBox();
     container_builder_.SetBaseDirection(line_info->BaseDirection());
-    container_builder_.AddChildren(line_box_);
     return;
   }
 
@@ -380,7 +378,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
   container_builder_.SetBaseDirection(line_info->BaseDirection());
-  container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
   container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset);
@@ -763,7 +760,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
     NGBfcOffset bfc_offset = {ContainerBfcOffset().line_offset,
                               ContainerBfcOffset().block_offset + content_size};
     AdjustToClearance(
-        exclusion_space.ClearanceOffset(ResolvedClear(*item.Style(), Style())),
+        exclusion_space.ClearanceOffset(item.Style()->Clear(Style())),
         &bfc_offset);
     content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
   }
@@ -958,6 +955,22 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   CHECK(is_line_created);
   container_builder_.SetExclusionSpace(std::move(exclusion_space));
+
+  if (NGFragmentItemsBuilder* items_builder = context_->ItemsBuilder()) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+    container_builder_.AddOutOfFlowChildren(line_box_);
+    scoped_refptr<const NGLayoutResult> layout_result =
+        container_builder_.ToLineBoxFragment();
+    if (items_builder->TextContent(false).IsNull())
+      items_builder->SetTextContent(Node());
+    items_builder->SetCurrentLine(
+        To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment()),
+        std::move(line_box_));
+    return layout_result;
+  }
+
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  container_builder_.AddChildren(line_box_);
   container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
   return container_builder_.ToLineBoxFragment();
 }
@@ -968,7 +981,6 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     NGExclusionSpace* exclusion_space,
     NGPositionedFloatVector* positioned_floats) {
   bool is_empty_inline = Node().IsEmptyInline();
-  bool should_ignore_floats = BreakToken() && BreakToken()->IgnoreFloats();
 
   const Vector<NGInlineItem>& items =
       Node().ItemsData(/* is_first_line */ false).items;
@@ -983,12 +995,12 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
       break;
     }
 
-    if (item.Type() != NGInlineItem::kFloating || should_ignore_floats)
+    if (item.Type() != NGInlineItem::kFloating)
       continue;
 
     container_builder_.AddAdjoiningObjectTypes(
-        ResolvedFloating(item.GetLayoutObject()->StyleRef().Floating(),
-                         ConstraintSpace().Direction()) == EFloat::kLeft
+        item.GetLayoutObject()->StyleRef().Floating(
+            ConstraintSpace().Direction()) == EFloat::kLeft
             ? kAdjoiningFloatLeft
             : kAdjoiningFloatRight);
 
@@ -1022,37 +1034,75 @@ NGPositionedFloat NGInlineLayoutAlgorithm::PositionFloat(
       &unpositioned_float, ConstraintSpace(), Style(), exclusion_space);
 }
 
-void NGInlineLayoutAlgorithm::BidiReorder() {
+void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
+  if (line_box_.IsEmpty())
+    return;
+
   // TODO(kojii): UAX#9 L1 is not supported yet. Supporting L1 may change
   // embedding levels of parts of runs, which requires to split items.
   // http://unicode.org/reports/tr9/#L1
   // BidiResolver does not support L1 crbug.com/316409.
 
+  // A sentinel value for items that are opaque to bidi reordering. Should be
+  // larger than the maximum resolved level.
+  constexpr UBiDiLevel kOpaqueBidiLevel = 0xff;
+  DCHECK_GT(kOpaqueBidiLevel, UBIDI_MAX_EXPLICIT_LEVEL + 1);
+
   // Create a list of chunk indices in the visual order.
   // ICU |ubidi_getVisualMap()| works for a run of characters. Since we can
   // handle the direction of each run, we use |ubidi_reorderVisual()| to reorder
   // runs instead of characters.
-  NGLineBoxFragmentBuilder::ChildList logical_items;
   Vector<UBiDiLevel, 32> levels;
-  logical_items.ReserveInitialCapacity(line_box_.size());
   levels.ReserveInitialCapacity(line_box_.size());
+  bool has_opaque_items = false;
   for (NGLineBoxFragmentBuilder::Child& item : line_box_) {
-    if (item.IsPlaceholder())
+    if (item.IsOpaqueToBidiReordering()) {
+      levels.push_back(kOpaqueBidiLevel);
+      has_opaque_items = true;
       continue;
+    }
+    DCHECK_NE(item.bidi_level, kOpaqueBidiLevel);
     levels.push_back(item.bidi_level);
-    logical_items.AddChild(std::move(item));
-    DCHECK(!item.HasInFlowFragment());
   }
 
+  // For opaque items, copy bidi levels from adjacent items.
+  if (has_opaque_items) {
+    UBiDiLevel last_level = levels.front();
+    if (last_level == kOpaqueBidiLevel) {
+      for (const UBiDiLevel level : levels) {
+        if (level != kOpaqueBidiLevel) {
+          last_level = level;
+          break;
+        }
+      }
+    }
+    // If all items are opaque, use the base direction.
+    if (last_level == kOpaqueBidiLevel) {
+      if (IsLtr(base_direction))
+        return;
+      last_level = 1;
+    }
+    for (UBiDiLevel& level : levels) {
+      if (level == kOpaqueBidiLevel)
+        level = last_level;
+      else
+        last_level = level;
+    }
+  }
+
+  // Compute visual indices from resolved levels.
   Vector<int32_t, 32> indices_in_visual_order(levels.size());
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
   // Reorder to the visual order.
-  line_box_.resize(0);
+  NGLineBoxFragmentBuilder::ChildList visual_items;
+  visual_items.ReserveInitialCapacity(line_box_.size());
   for (unsigned logical_index : indices_in_visual_order) {
-    line_box_.AddChild(std::move(logical_items[logical_index]));
-    DCHECK(!logical_items[logical_index].HasInFlowFragment());
+    visual_items.AddChild(std::move(line_box_[logical_index]));
+    DCHECK(!line_box_[logical_index].HasInFlowFragment());
   }
+  DCHECK_EQ(line_box_.size(), visual_items.size());
+  line_box_ = std::move(visual_items);
 }
 
 }  // namespace blink

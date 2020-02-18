@@ -246,9 +246,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  // Minor errors don't lower the security style to WebSecurityStyleInsecure.
-  if (net::IsCertStatusError(info.cert_status) &&
-      !net::IsCertStatusMinorError(info.cert_status)) {
+  if (net::IsCertStatusError(info.cert_status)) {
     response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
   } else {
     response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
@@ -348,29 +346,16 @@ WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
     base::WeakPtr<ResourceDispatcher> resource_dispatcher,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : resource_dispatcher_(std::move(resource_dispatcher)),
-      loader_factory_(std::move(loader_factory)) {}
+      loader_factory_(std::move(loader_factory)) {
+  DCHECK(resource_dispatcher_);
+  DCHECK(loader_factory_);
+}
 
 WebURLLoaderFactoryImpl::~WebURLLoaderFactoryImpl() = default;
 
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle) {
-  if (!loader_factory_) {
-    // In some tests like RenderViewTests loader_factory_ is not available.
-    // These tests can still use data URLs to bypass the ResourceDispatcher.
-    if (!task_runner_handle) {
-      // TODO(altimin): base::ThreadTaskRunnerHandle::Get is deprecated in
-      // the renderer. Fix this for frame and non-frame clients.
-      task_runner_handle =
-          WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-              base::ThreadTaskRunnerHandle::Get());
-    }
-
-    return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                              std::move(task_runner_handle),
-                                              nullptr /* factory */);
-  }
-
   DCHECK(task_runner_handle);
   DCHECK(resource_dispatcher_);
   return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
@@ -411,7 +396,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnReceivedResponse(const network::ResourceResponseInfo& info);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnTransferSizeUpdated(int transfer_size_diff);
-  void OnReceivedCachedMetadata(const char* data, int len);
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer data);
   void OnCompletedRequest(const network::URLLoaderCompletionStatus& status);
 
  private:
@@ -482,7 +467,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
-  void OnReceivedCachedMetadata(const char* data, int len) override;
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer data) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
   scoped_refptr<base::TaskRunner> GetTaskRunner() override {
@@ -522,7 +507,7 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
                             base::Unretained(this)));
   }
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
-  void OnReceivedCachedMetadata(const char* data, int len) override {}
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer) override {}
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override {
     body_handle_.reset();
@@ -583,14 +568,14 @@ WebURLLoaderImpl::Context::Context(
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(std::move(url_loader_factory)) {
-  DCHECK(url_loader_factory_ || !resource_dispatcher);
+  DCHECK(resource_dispatcher_);
+  DCHECK(url_loader_factory_);
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Cancel", this,
                          TRACE_EVENT_FLAG_FLOW_IN);
-  if (resource_dispatcher_ && // NULL in unittest.
-      request_id_ != -1) {
+  if (request_id_ != -1) {
     resource_dispatcher_->Cancel(request_id_, task_runner_);
     request_id_ = -1;
   }
@@ -745,16 +730,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
   }
 
-  // |plugin_child_id| only needs to be non-zero if the request originates
-  // outside the render process, so we can use requestorProcessID even
-  // for requests from in-process plugins.
-  resource_request->plugin_child_id = request.GetPluginChildID();
   resource_request->priority =
       ConvertWebKitPriorityToNetPriority(request.GetPriority());
-  resource_request->appcache_host_id =
-      request.AppCacheHostID().is_empty()
-          ? base::nullopt
-          : base::make_optional(request.AppCacheHostID());
   resource_request->should_reset_appcache = request.ShouldResetAppCache();
   resource_request->is_external_request = request.IsExternalRequest();
   resource_request->cors_preflight_policy = request.GetCorsPreflightPolicy();
@@ -842,10 +819,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
 
-    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry;
+    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry;
     if (request.PassResponsePipeToClient()) {
       blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
-          MakeRequest(&download_to_blob_registry));
+          download_to_blob_registry.InitWithNewPipeAndPassReceiver());
     }
     TimeTicks start_time = TimeTicks::Now();
     resource_dispatcher_->StartSync(
@@ -931,13 +908,14 @@ void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
 }
 
 void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
-    const char* data, int len) {
+    mojo_base::BigBuffer data) {
   if (!client_)
     return;
   TRACE_EVENT_WITH_FLOW1(
       "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata", this,
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "length", len);
-  client_->DidReceiveCachedMetadata(data, len);
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "length",
+      data.size());
+  client_->DidReceiveCachedMetadata(std::move(data));
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
@@ -956,8 +934,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
-                                status.should_report_corb_blocking,
-                                status.cors_preflight_timing_info);
+                                status.should_report_corb_blocking);
     }
   }
 }
@@ -1013,11 +990,10 @@ void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(
-    const char* data,
-    int len) {
+    mojo_base::BigBuffer data) {
   if (discard_body_)
     return;
-  context_->OnReceivedCachedMetadata(data, len);
+  context_->OnReceivedCachedMetadata(std::move(data));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
@@ -1063,8 +1039,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
   response->SetHasMajorCertificateErrors(
-      net::IsCertStatusError(info.cert_status) &&
-      !net::IsCertStatusMinorError(info.cert_status));
+      net::IsCertStatusError(info.cert_status));
   response->SetCTPolicyCompliance(info.ct_policy_compliance);
   response->SetIsLegacyTLSVersion(info.is_legacy_tls_version);
   response->SetAppCacheID(info.appcache_id);

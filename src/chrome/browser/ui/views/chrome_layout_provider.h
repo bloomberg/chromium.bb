@@ -51,6 +51,9 @@ enum ChromeDistanceMetric {
   // Horizontal indent of a subsection relative to related items above, e.g.
   // checkboxes below explanatory text/headings.
   DISTANCE_SUBSECTION_HORIZONTAL_INDENT,
+  // The horizontal padding on each side of a tab group header's title chip that
+  // creates visual space between it and the adjacent tabs.
+  DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN,
   // Vertical margin for controls in a toast.
   DISTANCE_TOAST_CONTROL_VERTICAL,
   // Vertical margin for labels in a toast.
@@ -86,6 +89,12 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   int GetDistanceMetric(int metric) const override;
   int GetSnappedDialogWidth(int min_width) const override;
   const views::TypographyProvider& GetTypographyProvider() const override;
+  int GetCornerRadiusMetric(views::EmphasisMetric emphasis_metric,
+                            const gfx::Size& size = gfx::Size()) const override;
+  int GetShadowElevationMetric(
+      views::EmphasisMetric emphasis_metric) const override;
+  gfx::ShadowValues MakeShadowValues(int elevation,
+                                     SkColor color) const override;
 
   // Returns the alignment used for control labels in a GridLayout; for example,
   // in this GridLayout:

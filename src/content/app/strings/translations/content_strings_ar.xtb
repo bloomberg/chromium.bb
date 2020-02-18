@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">يجب أن تكون القيمة <ph name="MINIMUM_DATE_OR_TIME" /> أو بعد ذلك.</translation>
 <translation id="2759744352195237655">زر بقائمة منبثقة</translation>
 <translation id="2761667185364618470">يُرجى تحديد هذا المربع إذا أردت المتابعة.</translation>
+<translation id="2844350028562914727">التفاصيل</translation>
 <translation id="2896972712917208084">مجموعة أزرار الاختيار</translation>
 <translation id="2908441821576996758">يُرجى إدخال قائمة مفصولة بفواصل لعناوين البريد الإلكتروني.</translation>
 <translation id="2940813599313844715">كائن</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">يجب أن تكون القيمة أقل من أو تساوي <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">تعريف</translation>
 <translation id="3557673793733683882">عنوان <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">منتقي الأسبوع</translation>
 <translation id="3685101356851116974">صورة غير مُصنَّفة</translation>
 <translation id="3706100364254443312">تبديل</translation>
 <translation id="3732799496749320381">شهر</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">شريط التمرير</translation>
 <translation id="4103419683916926126">مللي ثانية</translation>
 <translation id="4151657705144244502">الرسم</translation>
+<translation id="4160057747563657758">هاتف</translation>
 <translation id="4193965531860883258">مقدمة</translation>
 <translation id="4201051445878709314">عرض الشهر السابق</translation>
 <translation id="421884353938374759">علبة الألوان</translation>
 <translation id="4248100235867064564">شريط قوائم</translation>
-<translation id="4254339807215791271">معلومات المحتوى</translation>
 <translation id="4360991593054037559">يُرجى إدخال قيمة صالحة. علمًا بأن القيم الصالحة تتراوح بين <ph name="VALID_VALUE_LOW" /> و<ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">سين وجيم</translation>
 <translation id="4413860115965805769">زر القائمة</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="588258955323874662">ملء الشاشة</translation>
 <translation id="5888666972993069672">يتم الإرسال الآن إلى <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">مربع البحث</translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
 <translation id="5966707198760109579">الأسبوع</translation>
 <translation id="5987525920412732405">زر الدوران</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">كلمة ختامية</translation>
 <translation id="6209276755895393898">يبدو أن: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">مسرد مصطلحات</translation>
+<translation id="6281763101136022427">‏عنوان URL</translation>
 <translation id="6310801910862476708">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="6398862346408813489">عرض لوحة تحديد الشهر</translation>
 <translation id="6404546809543547843">شريط تمرير وقت الصوت</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">يُرجى مطابقة التنسيق المطلوب.</translation>
 <translation id="7118469954320184356">لا يتوفر أي وصف.</translation>
 <translation id="7139483182332611405">تمهيد</translation>
+<translation id="7214187073215825913">معلومات المحتوى</translation>
 <translation id="7263440858009898357">يُرجى تحديد عنصر من القائمة.</translation>
 <translation id="727747134524199931">عنوان العمود</translation>
 <translation id="7320576522385648310">التخزين مؤقتًا</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">جارٍ الحصول على وصف...</translation>
 <translation id="8117451130807776954">هذا الأسبوع</translation>
 <translation id="8199524924445686405">سنة</translation>
+<translation id="8208673686607688524">منتقي الوقت والتاريخ المحليان</translation>
 <translation id="8261464734335370856">تدقيق إملائي غير صالح</translation>
 <translation id="8284326494547611709">الترجمة والشرح</translation>
 <translation id="835897206747267392">قيمة غير صحيحة</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">جدول المحتويات</translation>
 <translation id="8613126697340063924">التحكم في التشغيل عن بعد</translation>
 <translation id="862370744433916922">ترجمة مصاحِبة</translation>
+<translation id="8711688047404765493">الإخراج</translation>
 <translation id="8750798805984357768">يُرجى اختيار أحد هذه الخيارات.</translation>
 <translation id="8808573423886751634">فصل</translation>
 <translation id="8845239796550121995">يتم الآن الإرسال إلى جهاز التلفزيون</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>
 <translation id="8987927404178983737">شهر</translation>
 <translation id="901493112792887934">المدة الحالية بالثواني</translation>
+<translation id="901834265349196618">بريد إلكتروني</translation>
 <translation id="9048119486235211610">تنقل</translation>
 <translation id="9062295712474918030">المستند</translation>
 <translation id="9062307380734144336">اختيار للتبديل بين تشغيل وإيقاف مؤقت</translation>

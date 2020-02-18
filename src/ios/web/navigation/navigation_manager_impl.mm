@@ -131,6 +131,11 @@ void NavigationManagerImpl::ApplyWKWebViewForwardHistoryClobberWorkaround() {
   NOTREACHED();
 }
 
+void NavigationManagerImpl::SetWKWebViewNextPendingUrlNotSerializable(
+    const GURL& url) {
+  NOTREACHED();
+}
+
 void NavigationManagerImpl::RemoveTransientURLRewriters() {
   transient_url_rewriters_.clear();
 }
@@ -422,6 +427,7 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
         wk_navigation_util::ExtractTargetURL(reload_url, &target_url)) {
       reload_url = target_url;
     }
+    DCHECK(!wk_navigation_util::IsRestoreSessionUrl(reload_url));
     reload_url = wk_navigation_util::CreateRedirectUrl(reload_url);
   }
 

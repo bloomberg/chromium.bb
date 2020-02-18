@@ -39,6 +39,7 @@ class TimeTicks;
 namespace autofill {
 
 class LogBuffer;
+class LogManager;
 
 // Password attributes (whether a password has special symbols, numeric, etc.)
 enum class PasswordAttribute {
@@ -63,7 +64,7 @@ class FormStructure {
 
   // Runs several heuristics against the form fields to determine their possible
   // types.
-  void DetermineHeuristicTypes();
+  void DetermineHeuristicTypes(LogManager* log_manager = nullptr);
 
   // Encodes the proto |upload| request from this FormStructure.
   // In some cases, a |login_form_signature| is included as part of the upload.
@@ -282,12 +283,11 @@ class FormStructure {
       const std::pair<PasswordAttribute, bool>& vote) {
     password_attributes_vote_ = vote;
   }
-#if defined(UNIT_TEST)
+
   base::Optional<std::pair<PasswordAttribute, bool>>
-  get_password_attributes_vote_for_testing() const {
+  get_password_attributes_vote() const {
     return password_attributes_vote_;
   }
-#endif
 
   void set_password_length_vote(const size_t noisified_password_length) {
     DCHECK(password_attributes_vote_.has_value())
@@ -295,14 +295,15 @@ class FormStructure {
            "|password_attributes_vote_| has no value.";
     password_length_vote_ = noisified_password_length;
   }
-#if defined(UNIT_TEST)
-  size_t get_password_length_vote_for_testing() const {
+
+  size_t get_password_length_vote() const {
     DCHECK(password_attributes_vote_.has_value())
         << "|password_length_vote_| doesn't make sense if "
            "|password_attributes_vote_| has no value.";
     return password_length_vote_;
   }
 
+#if defined(UNIT_TEST)
   mojom::SubmissionIndicatorEvent get_submission_event_for_testing() const {
     return submission_event_;
   }
@@ -315,14 +316,12 @@ class FormStructure {
     password_symbol_vote_ = noisified_symbol;
   }
 
-#if defined(UNIT_TEST)
-  int get_password_symbol_vote_for_testing() {
+  int get_password_symbol_vote() const {
     DCHECK(password_attributes_vote_.has_value())
         << "|password_symbol_vote_| doesn't make sense if "
            "|password_attributes_vote_| has no value";
     return password_symbol_vote_;
   }
-#endif
 
   mojom::SubmissionSource submission_source() const {
     return submission_source_;
@@ -358,6 +357,8 @@ class FormStructure {
   void set_value_from_dynamic_change_form(bool v) {
     value_from_dynamic_change_form_ = v;
   }
+
+  uint32_t unique_renderer_id() const { return unique_renderer_id_; }
 
  private:
   friend class AutofillMergeTest;
@@ -454,13 +455,13 @@ class FormStructure {
   // Two or three fields predicted as the whole address should be address lines
   // 1, 2 and 3 instead.
   void RationalizeAddressLineFields(
-      SectionedFieldsIndexes& sections_of_address_indexes,
+      SectionedFieldsIndexes* sections_of_address_indexes,
       AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Rationalize state and country interdependently.
   void RationalizeAddressStateCountry(
-      SectionedFieldsIndexes& sections_of_state_indexes,
-      SectionedFieldsIndexes& sections_of_country_indexes,
+      SectionedFieldsIndexes* sections_of_state_indexes,
+      SectionedFieldsIndexes* sections_of_country_indexes,
       AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Tunes the fields with identical predictions.
@@ -626,6 +627,8 @@ class FormStructure {
   bool is_rich_query_enabled_ = false;
 
   bool value_from_dynamic_change_form_ = false;
+
+  uint32_t unique_renderer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

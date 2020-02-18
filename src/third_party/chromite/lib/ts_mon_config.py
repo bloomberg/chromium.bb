@@ -14,7 +14,10 @@ import os
 import socket
 import signal
 import time
-import Queue
+
+from six.moves import queue as Queue
+
+import six
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
@@ -59,7 +62,7 @@ def GetMetricFieldSpec(fields=None):
         field_spec.append(BooleanField(key))
       elif isinstance(val, int):
         field_spec.append(IntegerField(key))
-      elif isinstance(val, basestring):
+      elif isinstance(val, six.string_types):
         field_spec.append(StringField(key))
       else:
         logging.error("Couldn't classify the metric field %s:%s",
@@ -260,13 +263,13 @@ def _CleanupMetricsFlushingProcess():
     if not flushing_process.is_alive():
       return
 
-  logging.info("Waiting for ts_mon flushing process to finish...")
+  logging.info('Waiting for ts_mon flushing process to finish...')
   flushing_process.join(timeout=FLUSH_INTERVAL*2)
   if flushing_process.is_alive():
     flushing_process.terminate()
   if flushing_process.exitcode:
-    logging.warning("ts_mon_config flushing process did not exit cleanly.")
-  logging.info("Finished waiting for ts_mon process.")
+    logging.warning('ts_mon_config flushing process did not exit cleanly.')
+  logging.info('Finished waiting for ts_mon process.')
 
 
 def _SetupAndConsumeMessages(message_q, options):
@@ -383,9 +386,9 @@ def _MethodCallRepr(message):
   """
   if not message:
     return repr(message)
-  obj = message.metric_name,
-  method = message.method,
-  args = message.method_args,
+  obj = message.metric_name
+  method = message.method
+  args = message.method_args
   kwargs = message.method_kwargs
 
   args_strings = ([repr(x) for x in args] +

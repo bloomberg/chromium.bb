@@ -14,7 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/url_constants.h"
@@ -54,9 +54,9 @@ void VideoLoaded(
 
 }  // namespace
 
-VideoSource::VideoSource() : weak_factory_(this) {
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+VideoSource::VideoSource() {
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -68,7 +68,7 @@ std::string VideoSource::GetSource() {
 
 void VideoSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& got_data_callback) {
   if (!IsWhitelisted(path)) {
     got_data_callback.Run(nullptr);
@@ -77,8 +77,9 @@ void VideoSource::StartDataRequest(
 
   const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
   const base::FilePath video_path = asset_dir.AppendASCII(path);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::PathExists, video_path),
       base::BindOnce(&VideoSource::StartDataRequestAfterPathExists,
                      weak_factory_.GetWeakPtr(), video_path,

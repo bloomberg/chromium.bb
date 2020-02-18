@@ -24,16 +24,19 @@ namespace {
 
 // Length of the trailing button side.
 const CGFloat kButtonSize = 24;
-
 // Space between the location icon and the location label.
 const CGFloat kLocationImageToLabelSpacing = -4.0;
 // Minimal horizontal padding between the leading edge of the location bar and
 // the content of the location bar.
 const CGFloat kLocationBarLeadingPadding = 5.0;
+// Minimal horizontal padding between the leading edge of the location bar and
+// the BadgeView.
+const CGFloat kBadgeViewLeadingSpacing = 3.0;
 // Trailing space between the trailing button and the trailing edge of the
 // location bar.
 const CGFloat kButtonTrailingSpacing = 10;
-
+// Duration of display and hide animation of the badge view, in seconds.
+const CGFloat kbadgeViewAnimationDuration = 0.2;
 }  // namespace
 
 @interface LocationBarSteadyView ()
@@ -44,6 +47,20 @@ const CGFloat kButtonTrailingSpacing = 10;
 // The view containing the location label, and (sometimes) the location image
 // view.
 @property(nonatomic, strong) UIView* locationContainerView;
+
+// Leading constraint for locationContainerView when there is no BadgeView to
+// its left.
+@property(nonatomic, strong)
+    NSLayoutConstraint* locationContainerViewLeadingAnchorConstraint;
+
+// Constraints to pin the badge view to the right next to the
+// |locationContainerView|.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* badgeViewFullScreenEnabledConstraints;
+
+// Constraints to pin the badge view to the left side of the LocationBar.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* badgeViewFullScreenDisabledConstraints;
 
 // Constraints to hide the location image view.
 @property(nonatomic, strong)
@@ -68,7 +85,7 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   scheme.fontColor = [UIColor colorNamed:kTextPrimaryColor];
   scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
-  scheme.trailingButtonColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
+  scheme.trailingButtonColor = [UIColor colorNamed:kToolbarButtonColor];
 
   return scheme;
 }
@@ -82,8 +99,7 @@ const CGFloat kButtonTrailingSpacing = 10;
   // TODO(crbug.com/981889): Clean up after iOS 12 support is dropped.
   scheme.fontColor = [UIColor colorNamed:kTextPrimaryDarkColor];
   scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderDarkColor];
-  scheme.trailingButtonColor =
-      [UIColor colorNamed:@"tab_toolbar_button_color_incognito"];
+  scheme.trailingButtonColor = [UIColor colorNamed:kToolbarButtonDarkColor];
 
   return scheme;
 }
@@ -198,6 +214,11 @@ const CGFloat kButtonTrailingSpacing = 10;
         constraintEqualToAnchor:self.centerXAnchor];
     centerX.priority = UILayoutPriorityDefaultHigh;
 
+    _locationContainerViewLeadingAnchorConstraint =
+        [_locationContainerView.leadingAnchor
+            constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
+                                        constant:kLocationBarLeadingPadding];
+
     // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
       [_trailingButton.centerYAnchor
@@ -213,46 +234,12 @@ const CGFloat kButtonTrailingSpacing = 10;
           constraintEqualToAnchor:self.trailingAnchor
                          constant:-kButtonTrailingSpacing],
       centerX,
+      _locationContainerViewLeadingAnchorConstraint,
     ]];
-
-    if (IsInfobarUIRebootEnabled()) {
-      // Setup leading button.
-      _leadingButton = [InfobarBadgeButton buttonWithType:UIButtonTypeSystem];
-      _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-      [_locationButton addSubview:_leadingButton];
-
-      // Setup and activate the leading button constraints.
-      [NSLayoutConstraint activateConstraints:@[
-        [_leadingButton.widthAnchor
-            constraintEqualToAnchor:_leadingButton.heightAnchor],
-        [_leadingButton.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [_leadingButton.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [_leadingButton.leadingAnchor
-            constraintEqualToAnchor:self.leadingAnchor],
-        [_leadingButton.trailingAnchor
-            constraintLessThanOrEqualToAnchor:_locationContainerView
-                                                  .leadingAnchor],
-        [_leadingButton.centerYAnchor
-            constraintEqualToAnchor:self.centerYAnchor],
-      ]];
-    } else {
-      // Since there is no leading button, |locationContainerView|'s
-      // leadingAnchor will be pinned to |self|.
-      [NSLayoutConstraint activateConstraints:@[
-        [_locationContainerView.leadingAnchor
-            constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
-                                        constant:kLocationBarLeadingPadding],
-      ]];
-    }
   }
 
   // Setup accessibility.
   _trailingButton.isAccessibilityElement = YES;
-  if (IsInfobarUIRebootEnabled()) {
-    _leadingButton.isAccessibilityElement = YES;
-    _leadingButton.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
-  }
   _locationButton.isAccessibilityElement = YES;
   _locationButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
@@ -325,17 +312,88 @@ const CGFloat kButtonTrailingSpacing = 10;
   [self updateAccessibility];
 }
 
-- (void)displayBadge:(BOOL)display animated:(BOOL)animated {
+- (void)setBadgeView:(UIView*)badgeView {
+  BOOL hadBadgeView = _badgeView != nil;
+  _badgeView = badgeView;
+  if (!hadBadgeView && badgeView) {
+    _badgeView.translatesAutoresizingMaskIntoConstraints = NO;
+    _badgeView.isAccessibilityElement = NO;
+    [self.locationButton addSubview:_badgeView];
+    // Adding InfobarBadge button as an accessibility element behind location
+    // label. Thus, there should be at least one object already in
+    // |accessibleElements|.
+    DCHECK_GT([self.accessibleElements count], 0U);
+    [self.accessibleElements insertObject:_badgeView atIndex:1];
+
+    // Lazy init.
+    self.badgeViewFullScreenEnabledConstraints = @[
+      [self.badgeView.leadingAnchor
+          constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
+      [self.badgeView.trailingAnchor
+          constraintEqualToAnchor:self.locationContainerView.leadingAnchor],
+    ];
+
+    self.badgeViewFullScreenDisabledConstraints = @[
+      [self.badgeView.leadingAnchor
+          constraintEqualToAnchor:self.leadingAnchor
+                         constant:kBadgeViewLeadingSpacing],
+      [self.badgeView.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.locationContainerView
+                                                .leadingAnchor],
+    ];
+
+    [NSLayoutConstraint deactivateConstraints:@[
+      self.locationContainerViewLeadingAnchorConstraint
+    ]];
+
+    [NSLayoutConstraint
+        activateConstraints:
+            [self.badgeViewFullScreenDisabledConstraints
+                arrayByAddingObjectsFromArray:@[
+                  [self.badgeView.topAnchor
+                      constraintEqualToAnchor:self.topAnchor],
+                  [self.badgeView.bottomAnchor
+                      constraintEqualToAnchor:self.bottomAnchor],
+                ]]];
+  }
+}
+
+- (void)setFullScreenCollapsedMode:(BOOL)isFullScreenCollapsed {
+  if (!self.badgeView) {
+    return;
+  }
+  if (isFullScreenCollapsed) {
+    [NSLayoutConstraint
+        activateConstraints:self.badgeViewFullScreenEnabledConstraints];
+    [NSLayoutConstraint
+        deactivateConstraints:self.badgeViewFullScreenDisabledConstraints];
+  } else {
+    [NSLayoutConstraint
+        deactivateConstraints:self.badgeViewFullScreenEnabledConstraints];
+    [NSLayoutConstraint
+        activateConstraints:self.badgeViewFullScreenDisabledConstraints];
+  }
+}
+
+- (void)displayBadgeView:(BOOL)display animated:(BOOL)animated {
   if (display) {
     // Adding InfobarBadge button as an accessibility element behind location
     // label. Thus, there should be at least one object alreading in
     // |accessibleElements|.
     DCHECK([self.accessibleElements count] > 0);
-    [self.accessibleElements insertObject:self.leadingButton atIndex:1];
+    [self.accessibleElements insertObject:self.badgeView atIndex:1];
   } else {
-    [self.accessibleElements removeObject:self.leadingButton];
+    [self.accessibleElements removeObject:self.badgeView];
   }
-  [self.leadingButton displayBadge:display animated:animated];
+  void (^changeHiddenState)() = ^{
+    self.badgeView.hidden = !display;
+  };
+  if (animated) {
+    [UIView animateWithDuration:kbadgeViewAnimationDuration
+                     animations:changeHiddenState];
+  } else {
+    changeHiddenState();
+  }
 }
 
 - (void)enableTrailingButton:(BOOL)enabled {

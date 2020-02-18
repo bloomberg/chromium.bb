@@ -254,7 +254,7 @@ class CommandVMTest(object):
     self.TestShell()
     # TestDebug broken (crbug.com/863122)
     self.TestFlash()
-    # TestDeploy broken (crbug.com/987298)
+    self.TestDeploy()
 
   def Run(self):
     """Runs the tests."""

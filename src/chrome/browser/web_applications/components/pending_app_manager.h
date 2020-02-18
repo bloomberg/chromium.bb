@@ -27,6 +27,8 @@ class AppRegistrar;
 class InstallFinalizer;
 class WebAppUiManager;
 
+enum class RegistrationResultCode { kSuccess, kAlreadyRegistered, kTimeout };
+
 // PendingAppManager installs, uninstalls, and updates apps.
 //
 // Implementations of this class should perform each set of operations serially
@@ -40,6 +42,9 @@ class PendingAppManager {
   using RepeatingInstallCallback =
       base::RepeatingCallback<void(const GURL& app_url,
                                    InstallResultCode code)>;
+  using RegistrationCallback =
+      base::RepeatingCallback<void(const GURL& launch_url,
+                                   RegistrationResultCode code)>;
   using UninstallCallback =
       base::RepeatingCallback<void(const GURL& app_url, bool succeeded)>;
   using SynchronizeCallback =
@@ -52,8 +57,6 @@ class PendingAppManager {
   void SetSubsystems(AppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
                      InstallFinalizer* finalizer);
-
-  virtual void Shutdown() = 0;
 
   // Queues an installation operation with the highest priority. Essentially
   // installing the app immediately if there are no ongoing operations or
@@ -102,10 +105,18 @@ class PendingAppManager {
       ExternalInstallSource install_source,
       SynchronizeCallback callback);
 
+  void SetRegistrationCallbackForTesting(RegistrationCallback callback);
+  void ClearRegistrationCallbackForTesting();
+
+  virtual void Shutdown() = 0;
+
  protected:
   AppRegistrar* registrar() { return registrar_; }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
+
+  virtual void OnRegistrationFinished(const GURL& launch_url,
+                                      RegistrationResultCode result);
 
  private:
   struct SynchronizeRequest {
@@ -138,6 +149,8 @@ class PendingAppManager {
 
   base::flat_map<ExternalInstallSource, SynchronizeRequest>
       synchronize_requests_;
+
+  RegistrationCallback registration_callback_;
 
   base::WeakPtrFactory<PendingAppManager> weak_ptr_factory_{this};
 

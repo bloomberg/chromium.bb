@@ -46,6 +46,7 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     // Automatically grant device permission.
     AppendUseFakeUIForMediaStreamFlag();
   }
@@ -107,6 +108,8 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
   DISABLED_EnsureRemoteVideoMuteDoesntMuteAudio
 #define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks \
   DISABLED_EstablishAudioVideoCallAndVerifyUnmutingWorks
+#define MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks \
+  DISABLED_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
 
 #else
 
@@ -124,6 +127,8 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
   EnsureRemoteVideoMuteDoesntMuteAudio
 #define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks \
   EstablishAudioVideoCallAndVerifyUnmutingWorks
+#define MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks \
+  EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
 
 #endif  // defined(OS_MACOSX)
 
@@ -201,19 +206,26 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                                        constraints + ");");
 }
 
+// TODO(crbug.com/988432): This test is a temporary replacement for:
+// external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html
+IN_PROC_BROWSER_TEST_P(
+    WebRtcAudioBrowserTest,
+    MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks) {
+  MakeAudioDetectingPeerConnectionCall(
+      "testEstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks();");
+}
+
 // We run these tests with the audio service both in and out of the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Platforms launched on.
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// Platforms where the out of process audio service is supported.
 INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Values(true));
-#elif defined(OS_MACOSX) || defined(OS_WIN)
-// Supported platforms but not launched on.
-INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Bool());
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #else
-// Platforms where the out of process audio service isn't supported.
+// Platforms where the out of process audio service is not supported.
 INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Values(false));
 #endif
 

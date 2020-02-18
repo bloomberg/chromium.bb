@@ -24,8 +24,7 @@ QuicSpdyClientSessionBase::QuicSpdyClientSessionBase(
     : QuicSpdySession(connection, nullptr, config, supported_versions),
       push_promise_index_(push_promise_index),
       largest_promised_stream_id_(
-          QuicUtils::GetInvalidStreamId(connection->transport_version())),
-      max_allowed_push_id_(0) {}
+          QuicUtils::GetInvalidStreamId(connection->transport_version())) {}
 
 QuicSpdyClientSessionBase::~QuicSpdyClientSessionBase() {
   //  all promised streams for this session
@@ -43,6 +42,10 @@ void QuicSpdyClientSessionBase::OnConfigNegotiated() {
 void QuicSpdyClientSessionBase::OnCryptoHandshakeEvent(
     CryptoHandshakeEvent event) {
   QuicSpdySession::OnCryptoHandshakeEvent(event);
+  if (event == HANDSHAKE_CONFIRMED && max_allowed_push_id() > 0 &&
+      VersionHasIetfQuicFrames(connection()->transport_version())) {
+    SendMaxPushId(max_allowed_push_id());
+  }
 }
 
 void QuicSpdyClientSessionBase::OnInitialHeadersComplete(
@@ -96,6 +99,7 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
         QUIC_INVALID_STREAM_ID,
         "Received push stream id higher than MAX_PUSH_ID.",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
   }
   largest_promised_stream_id_ = promised_stream_id;
 
@@ -192,8 +196,12 @@ void QuicSpdyClientSessionBase::DeletePromised(
   push_promise_index_->promised_by_url()->erase(promised->url());
   // Since promised_by_id_ contains the unique_ptr, this will destroy
   // promised.
+  // ToDo: Consider implementing logic to send a new MAX_PUSH_ID frame to allow
+  // another stream to be promised.
   promised_by_id_.erase(promised->id());
-  headers_stream()->MaybeReleaseSequencerBuffer();
+  if (!VersionUsesQpack(connection()->transport_version())) {
+    headers_stream()->MaybeReleaseSequencerBuffer();
+  }
 }
 
 void QuicSpdyClientSessionBase::OnPushStreamTimedOut(
@@ -211,16 +219,13 @@ void QuicSpdyClientSessionBase::ResetPromised(
 void QuicSpdyClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
                                                  bool locally_reset) {
   QuicSpdySession::CloseStreamInner(stream_id, locally_reset);
-  headers_stream()->MaybeReleaseSequencerBuffer();
+  if (!VersionUsesQpack(connection()->transport_version())) {
+    headers_stream()->MaybeReleaseSequencerBuffer();
+  }
 }
 
 bool QuicSpdyClientSessionBase::ShouldReleaseHeadersStreamSequencerBuffer() {
   return !HasActiveRequestStreams() && promised_by_id_.empty();
-}
-
-void QuicSpdyClientSessionBase::set_max_allowed_push_id(
-    QuicStreamId max_allowed_push_id) {
-  max_allowed_push_id_ = max_allowed_push_id;
 }
 
 }  // namespace quic

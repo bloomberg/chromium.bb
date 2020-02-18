@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -319,8 +319,9 @@ class ArcAppListPrefs::ResizeRequest : public ImageDecoder::ImageRequest {
   void OnImageDecoded(const SkBitmap& bitmap) override {
     // See host_ comments.
     DCHECK(host_);
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&ResizeRequest::ResizeAndEncodeIconAsyncronously, bitmap,
                        descriptor_.GetSizeInPixels()),
         base::BindOnce(&ArcAppListPrefs::OnIconResized, host_, app_id_,
@@ -373,10 +374,10 @@ ArcAppListPrefs::ArcAppListPrefs(
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       app_connection_holder_for_testing_(app_connection_holder_for_testing),
-      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {
+      file_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   VLOG(1) << "ARC app list prefs created";
   DCHECK(profile);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -1097,7 +1098,7 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
   if (app_id == arc::kPlayStoreAppId &&
       arc::IsRobotOrOfflineDemoAccountMode() &&
       !(chromeos::DemoSession::IsDeviceInDemoMode() &&
-        chromeos::switches::ShouldShowPlayStoreInDemoMode())) {
+        chromeos::features::ShouldShowPlayStoreInDemoMode())) {
     return;
   }
 

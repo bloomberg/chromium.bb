@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
@@ -144,7 +143,7 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
 }
 
 TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
-  return execution_context->GetTrustedTypes()->getExposedPolicy("default");
+  return execution_context->GetTrustedTypes()->defaultPolicy();
 }
 
 }  // namespace
@@ -287,7 +286,10 @@ String GetStringFromTrustedHTML(const String& string,
   TrustedHTML* result = default_policy->CreateHTML(
       execution_context->GetIsolate(), string, exception_state);
   if (exception_state.HadException()) {
-    exception_state.ClearException();
+    return g_empty_string;
+  }
+
+  if (result->toString().IsNull()) {
     TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed,
                     execution_context, exception_state, string);
     return g_empty_string;
@@ -340,7 +342,10 @@ String GetStringFromTrustedScript(const String& potential_script,
       execution_context->GetIsolate(), potential_script, exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {
-    exception_state.ClearException();
+    return g_empty_string;
+  }
+
+  if (result->toString().IsNull()) {
     TrustedTypeFail(kTrustedScriptAssignmentAndDefaultPolicyFailed,
                     execution_context, exception_state, potential_script);
     return g_empty_string;
@@ -381,7 +386,10 @@ String GetStringFromTrustedScriptURL(
       execution_context->GetIsolate(), string, exception_state);
 
   if (exception_state.HadException()) {
-    exception_state.ClearException();
+    return g_empty_string;
+  }
+
+  if (result->toString().IsNull()) {
     TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
                     execution_context, exception_state, string);
     return g_empty_string;
@@ -418,7 +426,10 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
   TrustedURL* result = default_policy->CreateURL(
       execution_context->GetIsolate(), string, exception_state);
   if (exception_state.HadException()) {
-    exception_state.ClearException();
+    return g_empty_string;
+  }
+
+  if (result->toString().IsNull()) {
     TrustedTypeFail(kTrustedURLAssignmentAndDefaultPolicyFailed,
                     execution_context, exception_state, string);
     return g_empty_string;
@@ -445,7 +456,10 @@ Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
   TrustedScript* result = default_policy->CreateScript(
       doc->GetIsolate(), child->textContent(), exception_state);
   if (exception_state.HadException()) {
-    exception_state.ClearException();
+    return nullptr;
+  }
+
+  if (result->toString().IsNull()) {
     return TrustedTypeFail(kTextNodeScriptAssignmentAndDefaultPolicyFailed, doc,
                            exception_state, child->textContent())
                ? nullptr

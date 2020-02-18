@@ -61,11 +61,11 @@ class Type:
         self.name = Name(name, native=native)
         self.category = json_data['category']
 
-EnumValue = namedtuple('EnumValue', ['name', 'value'])
+EnumValue = namedtuple('EnumValue', ['name', 'value', 'valid'])
 class EnumType(Type):
     def __init__(self, name, json_data):
         Type.__init__(self, name, json_data)
-        self.values = [EnumValue(Name(m['name']), m['value']) for m in self.json_data['values']]
+        self.values = [EnumValue(Name(m['name']), m['value'], m.get('valid', True)) for m in self.json_data['values']]
 
         # Assert that all values are unique in enums
         all_values = set()
@@ -430,6 +430,14 @@ def as_frontendType(typ):
     else:
         return as_cType(typ.name)
 
+def as_wireType(typ):
+    if typ.category == 'object':
+        return typ.name.CamelCase() + '*'
+    elif typ.category in ['bitmask', 'enum']:
+        return 'Dawn' + typ.name.CamelCase()
+    else:
+        return as_cppType(typ.name)
+
 def cpp_native_methods(types, typ):
     return typ.methods + typ.native_methods
 
@@ -522,7 +530,8 @@ class MultiGeneratorFromDawnJSON(Generator):
                 api_params,
                 c_params,
                 {
-                    'as_wireType': lambda typ: typ.name.CamelCase() + '*' if typ.category == 'object' else as_cppType(typ.name)
+                    'as_wireType': as_wireType,
+                    'as_annotated_wireType': lambda arg: annotated(as_wireType(arg.type), arg),
                 },
                 additional_params
             ]

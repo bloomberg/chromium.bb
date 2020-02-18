@@ -7,9 +7,12 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "base/token.h"
-#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
+#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
+#include "chromeos/constants/security_token_pin_types.h"
+#include "components/account_id/account_id.h"
 
 namespace ash {
 
@@ -207,6 +210,9 @@ struct ASH_PUBLIC_EXPORT PublicAccountInfo {
 
   // A list of available keyboard layouts.
   std::vector<InputMethodItem> keyboard_layouts;
+
+  // Whether public account uses SAML authentication.
+  bool using_saml = false;
 };
 
 // Info about a user in login/lock screen.
@@ -223,8 +229,8 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
   UserInfo basic_user_info;
 
   // What method the user can use to sign in.
-  proximity_auth::mojom::AuthType auth_type =
-      proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
+  // Initialized in .cc file because the mojom header is huge.
+  proximity_auth::mojom::AuthType auth_type;
 
   // True if this user has already signed in.
   bool is_signed_in = false;
@@ -296,6 +302,42 @@ enum class ParentAccessRequestReason {
   kChangeTime,
   // Update values on the timezone settings page.
   kChangeTimezone,
+};
+
+// Parameters and callbacks for a security token PIN request that is to be shown
+// to the user.
+struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
+  SecurityTokenPinRequest();
+  SecurityTokenPinRequest(SecurityTokenPinRequest&&);
+  SecurityTokenPinRequest& operator=(SecurityTokenPinRequest&&);
+  ~SecurityTokenPinRequest();
+
+  // The user whose authentication triggered this PIN request.
+  AccountId account_id;
+
+  // Type of the code requested from the user.
+  chromeos::SecurityTokenPinCodeType code_type =
+      chromeos::SecurityTokenPinCodeType::kPin;
+
+  // Whether the UI controls that allow user to enter the value should be
+  // enabled. MUST be |false| when |attempts_left| is zero.
+  bool enable_user_input = true;
+
+  // An optional error to be displayed to the user.
+  chromeos::SecurityTokenPinErrorLabel error_label =
+      chromeos::SecurityTokenPinErrorLabel::kNone;
+
+  // When non-negative, the UI should indicate this number to the user;
+  // otherwise must be equal to -1.
+  int attempts_left = -1;
+
+  // Called when the user submits the input. Will not be called if the UI is
+  // closed before that happens.
+  base::OnceCallback<void(const std::string& user_input)> pin_entered_callback;
+
+  // Called when the PIN request UI gets closed. Will not be called when the
+  // browser itself requests the UI to be closed.
+  base::OnceClosure pin_ui_closed_callback;
 };
 
 }  // namespace ash

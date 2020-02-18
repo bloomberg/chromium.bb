@@ -63,7 +63,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
+#include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"
 #endif  // BUILDFLAG(USE_VAAPI)
 
 #if defined(OS_ANDROID)
@@ -188,11 +188,8 @@ GpuServiceImpl::GpuServiceImpl(
 #endif
 
 #if BUILDFLAG(USE_VAAPI)
-  if (base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration)) {
-    jpeg_decode_accelerator_worker_ =
-        media::VaapiJpegDecodeAcceleratorWorker::Create();
-  }
+  image_decode_accelerator_worker_ =
+      media::VaapiImageDecodeAcceleratorWorker::Create();
 #endif
 
 #if defined(OS_MACOSX)
@@ -223,6 +220,9 @@ GpuServiceImpl::~GpuServiceImpl() {
     wait.Wait();
   }
 
+  if (watchdog_thread_)
+    watchdog_thread_->OnGpuProcessTearDown();
+
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
 
@@ -234,7 +234,7 @@ GpuServiceImpl::~GpuServiceImpl() {
   // The image decode accelerator worker must outlive the GPU channel manager so
   // that it doesn't get any decode requests during/after destruction.
   DCHECK(!gpu_channel_manager_);
-  jpeg_decode_accelerator_worker_.reset();
+  image_decode_accelerator_worker_.reset();
 
   // Signal this event before destroying the child process. That way all
   // background threads can cleanup. For example, in the renderer the
@@ -259,9 +259,9 @@ void GpuServiceImpl::UpdateGPUInfo() {
   gpu_info_.jpeg_decode_accelerator_supported =
       IsAcceleratedJpegDecodeSupported();
 
-  if (jpeg_decode_accelerator_worker_) {
+  if (image_decode_accelerator_worker_) {
     gpu_info_.image_decode_accelerator_supported_profiles =
-        jpeg_decode_accelerator_worker_->GetSupportedProfiles();
+        image_decode_accelerator_worker_->GetSupportedProfiles();
   }
 
   // Record initialization only after collecting the GPU info because that can
@@ -324,7 +324,7 @@ void GpuServiceImpl::InitializeWithHost(
       scheduler_.get(), sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
-      jpeg_decode_accelerator_worker_.get(), vulkan_context_provider(),
+      image_decode_accelerator_worker_.get(), vulkan_context_provider(),
       metal_context_provider_.get());
 
   media_gpu_channel_manager_.reset(
@@ -592,8 +592,8 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE,
+      base::CreateCOMSTATaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindOnce([]() {

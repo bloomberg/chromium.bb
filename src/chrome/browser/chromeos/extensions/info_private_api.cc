@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
@@ -193,10 +193,6 @@ const char kStylusStatusSeen[] = "seen";
 
 // Key which corresponds to the assistantStatus property in JS.
 const char kPropertyAssistantStatus[] = "assistantStatus";
-
-// Value to which assistantStatus property is set when the device does not
-// support Assistant.
-const char kAssistantStatusUnsupported[] = "unsupported";
 
 // Value to which assistantStatus property is set when the device supports
 // Assistant.
@@ -389,9 +385,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
   }
 
   if (property_name == kPropertyAssistantStatus) {
-    return std::make_unique<base::Value>(
-        chromeos::switches::IsAssistantEnabled() ? kAssistantStatusSupported
-                                                 : kAssistantStatusUnsupported);
+    return std::make_unique<base::Value>(kAssistantStatusSupported);
   }
 
   if (property_name == kPropertyClientId) {

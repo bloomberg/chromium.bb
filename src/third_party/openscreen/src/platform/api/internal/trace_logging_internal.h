@@ -10,6 +10,7 @@
 #include <stack>
 #include <vector>
 
+#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/api/trace_logging_platform.h"
 #include "platform/api/trace_logging_types.h"
@@ -58,12 +59,10 @@ class ScopedTraceOperation : public TraceBase {
 
   static TraceIdHierarchy hierarchy() {
     if (traces_ == nullptr) {
-      return {kEmptyTraceId, kEmptyTraceId, kEmptyTraceId};
+      return TraceIdHierarchy::Empty();
     }
 
-    auto* top_of_stack = traces_->top();
-    return {top_of_stack->trace_id_, top_of_stack->parent_id_,
-            top_of_stack->root_id_};
+    return traces_->top()->to_hierarchy();
   }
 
   // Static method to set the result of the most recent trace.
@@ -91,6 +90,8 @@ class ScopedTraceOperation : public TraceBase {
   TraceId trace_id_;
   TraceId parent_id_;
   TraceId root_id_;
+
+  TraceIdHierarchy to_hierarchy() { return {trace_id_, parent_id_, root_id_}; }
 
  private:
   // NOTE: A std::vector is used for backing the stack because it provides the
@@ -131,7 +132,7 @@ class TraceLoggerBase : public ScopedTraceOperation {
 
  protected:
   // Set the result.
-  void SetTraceResult(Error::Code error) { result_ = error; }
+  void SetTraceResult(Error::Code error) override { result_ = error; }
 
   // Timestamp for when the object was created.
   Clock::time_point start_time_;

@@ -7,7 +7,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/system_connector.h"

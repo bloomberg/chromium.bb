@@ -135,7 +135,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
                                                  ui::AXMode mode)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
-      pref_watcher_binding_(this),
       tree_source_(render_frame, mode),
       serializer_(&tree_source_),
       plugin_tree_source_(nullptr),
@@ -175,12 +174,10 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
 
-  blink::mojom::RendererPreferenceWatcherPtr pref_watcher_ptr;
-  pref_watcher_binding_.Bind(mojo::MakeRequest(&pref_watcher_ptr));
-
-  if (render_frame->render_view())
+  if (render_frame->render_view()) {
     render_frame_->render_view()->RegisterRendererPreferenceWatcher(
-        std::move(pref_watcher_ptr));
+        pref_watcher_receiver_.BindNewPipeAndPassRemote());
+  }
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;
@@ -194,7 +191,6 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
-  is_initial_load_processed_ = false;
   has_injected_stylesheet_ = false;
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
@@ -307,6 +303,10 @@ void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
   params.end_id = end_object.AxID();
   params.end_offset = end_offset;
   Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
+}
+
+void RenderAccessibilityImpl::HandleAccessibilityFindInPageTermination() {
+  Send(new AccessibilityHostMsg_FindInPageTermination(routing_id()));
 }
 
 void RenderAccessibilityImpl::AccessibilityFocusedElementChanged(
@@ -423,7 +423,7 @@ int RenderAccessibilityImpl::GenerateAXID() {
 }
 
 void RenderAccessibilityImpl::SetPluginTreeSource(
-    RenderAccessibilityImpl::PluginAXTreeSource* plugin_tree_source) {
+    PluginAXTreeSource* plugin_tree_source) {
   plugin_tree_source_ = plugin_tree_source;
   plugin_serializer_.reset(new PluginAXTreeSerializer(plugin_tree_source_));
 
@@ -642,8 +642,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     // ids to locations.
     for (size_t j = 0; j < update.nodes.size(); ++j) {
       ui::AXNodeData& src = update.nodes[j];
-      // TODO(accessibility) What if location hasn't been set yet?
-      // Get cached location for this node or create a new entry if none exists.
       ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
       dst = src.relative_bounds;
     }
@@ -663,13 +661,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
                                             ack_token_));
   reset_token_ = 0;
 
-  if (had_layout_complete_messages && is_initial_load_processed_)
+  if (had_layout_complete_messages)
     SendLocationChanges();
 
-  if (had_load_complete_messages) {
+  if (had_load_complete_messages)
     has_injected_stylesheet_ = false;
-    is_initial_load_processed_ = true;
-  }
 
   if (image_annotation_debugging_)
     AddImageAnnotationDebuggingAttributes(bundle.updates);
@@ -744,11 +740,14 @@ void RenderAccessibilityImpl::OnPerformAction(
     return;
 
   std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, data.target_node_id);
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.target_node_id);
   std::unique_ptr<ui::AXActionTarget> anchor =
-      AXActionTargetFactory::CreateFromNodeId(document, data.anchor_node_id);
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.anchor_node_id);
   std::unique_ptr<ui::AXActionTarget> focus =
-      AXActionTargetFactory::CreateFromNodeId(document, data.focus_node_id);
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.focus_node_id);
 
   switch (data.action) {
     case ax::mojom::Action::kBlur:
@@ -1022,10 +1021,9 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
 void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   if (!render_frame_)
     return;
-
-  image_annotation::mojom::AnnotatorPtr annotator_ptr;
-  render_frame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&annotator_ptr));
+  mojo::PendingRemote<image_annotation::mojom::Annotator> annotator;
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+      annotator.InitWithNewPipeAndPassReceiver());
 
   const std::string preferred_language =
       render_frame()->render_view()
@@ -1033,7 +1031,7 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
                 render_frame()->render_view()->GetAcceptLanguages())
           : std::string();
   ax_image_annotator_ = std::make_unique<AXImageAnnotator>(
-      this, preferred_language, std::move(annotator_ptr));
+      this, preferred_language, std::move(annotator));
   tree_source_.AddImageAnnotator(ax_image_annotator_.get());
 }
 
@@ -1124,34 +1122,6 @@ void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
   }
 
   target->SetScrollOffset(gfx::Point(x, y));
-}
-
-void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {
-  // Plugin content doesn't scroll itself, so when we're requested to
-  // scroll to make a particular plugin node visible, get the
-  // coordinates of the target plugin node and then tell the document
-  // node to scroll to those coordinates.
-  //
-  // Note that calling scrollToMakeVisibleWithSubFocus() is preferable to
-  // telling the document to scroll to a specific coordinate because it will
-  // first compute whether that rectangle is visible and do nothing if it is.
-  // If it's not visible, it will automatically center it.
-
-  DCHECK(plugin_tree_source_);
-  ui::AXNodeData root_data = plugin_tree_source_->GetRoot()->data();
-  ui::AXNodeData target_data =
-      plugin_tree_source_->GetFromId(id_to_make_visible)->data();
-
-  gfx::RectF bounds = target_data.relative_bounds.bounds;
-  if (root_data.relative_bounds.transform)
-    root_data.relative_bounds.transform->TransformRect(&bounds);
-
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  WebAXObject::FromWebDocument(document).ScrollToMakeVisibleWithSubFocus(
-      WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
 }
 
 void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {

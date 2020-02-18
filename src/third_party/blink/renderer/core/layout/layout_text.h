@@ -187,12 +187,12 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   PhysicalOffset FirstLineBoxTopLeft() const;
 
-  virtual void SetText(scoped_refptr<StringImpl>,
-                       bool force = false,
-                       bool avoid_layout_and_only_paint = false);
+  void SetTextIfNeeded(scoped_refptr<StringImpl>);
+  void ForceSetText(scoped_refptr<StringImpl>);
   void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
                          unsigned len);
+  void SetTextInternal(scoped_refptr<StringImpl>);
 
   virtual void TransformText();
 
@@ -323,11 +323,12 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void SetHasBidiControlInlineItems() { has_bidi_control_items_ = true; }
   void ClearHasBidiControlInlineItems() { has_bidi_control_items_ = false; }
 
- protected:
   virtual const base::span<NGInlineItem>* GetNGInlineItems() const {
     return nullptr;
   }
   virtual base::span<NGInlineItem>* GetNGInlineItems() { return nullptr; }
+
+ protected:
   void WillBeDestroyed() override;
 
   void StyleWillChange(StyleDifference, const ComputedStyle&) final {}
@@ -335,7 +336,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void InLayoutNGInlineFormattingContextWillChange(bool) final;
 
-  virtual void SetTextInternal(scoped_refptr<StringImpl>);
+  virtual void TextDidChange();
 
   virtual InlineTextBox* CreateTextBox(int start,
                                        uint16_t length);  // Subclassed by SVG.
@@ -346,6 +347,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
  private:
   InlineTextBoxList& MutableTextBoxes();
+
+  void TextDidChangeWithoutInvalidation();
 
   // PhysicalRectCollector should be like a function:
   // void (const PhysicalRect&).
@@ -386,6 +389,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                       FloatRect* glyph_bounds_accumulation,
                       float expansion = 0) const;
 
+  void ApplyTextTransform();
   void SecureText(UChar mask);
 
   bool IsText() const =

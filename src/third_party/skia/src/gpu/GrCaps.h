@@ -11,9 +11,9 @@
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkString.h"
-#include "include/gpu/GrBlend.h"
 #include "include/gpu/GrDriverBugWorkarounds.h"
 #include "include/private/GrTypesPriv.h"
+#include "src/gpu/GrBlend.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrSurfaceProxy.h"
 
@@ -57,6 +57,10 @@ public:
     bool multisampleDisableSupport() const { return fMultisampleDisableSupport; }
     bool instanceAttribSupport() const { return fInstanceAttribSupport; }
     bool mixedSamplesSupport() const { return fMixedSamplesSupport; }
+    // This flag indicates that we never have to resolve MSAA. In practice, it means that we have
+    // an MSAA-render-to-texture extension: Any render target we create internally will use the
+    // extension, and any wrapped render target is the client's responsibility.
+    bool msaaResolvesAutomatically() const { return fMSAAResolvesAutomatically; }
     bool halfFloatVertexAttributeSupport() const { return fHalfFloatVertexAttributeSupport; }
 
     // Primitive restart functionality is core in ES 3.0, but using it will cause slowdowns on some
@@ -117,7 +121,7 @@ public:
         kCanMap_MapFlag     = 0x1,   //<! The resource can be mapped. Must be set for any of
                                      //   the other flags to have meaning.
         kSubset_MapFlag     = 0x2,   //<! The resource can be partially mapped.
-        kAsyncRead_MapFlag  = 0x4,   //<! Are maps for reading asynchronous WRT GrGpuCommandBuffers
+        kAsyncRead_MapFlag  = 0x4,   //<! Are maps for reading asynchronous WRT GrOpsRenderPass
                                      //   submitted to GrGpu.
     };
 
@@ -156,40 +160,39 @@ public:
     }
 
     virtual bool isFormatSRGB(const GrBackendFormat&) const = 0;
+    virtual bool isFormatCompressed(const GrBackendFormat&) const = 0;
 
-    virtual bool isFormatTexturable(GrColorType, const GrBackendFormat&) const = 0;
-    virtual bool isConfigTexturable(GrPixelConfig) const = 0;
+    // TODO: Once we use the supportWritePixels call for uploads, we can remove this function and
+    // instead only have the version that takes a GrBackendFormat.
+    virtual bool isFormatTexturableAndUploadable(GrColorType, const GrBackendFormat&) const = 0;
+    // Can a texture be made with the GrBackendFormat, and then be bound and sampled in a shader.
+    virtual bool isFormatTexturable(const GrBackendFormat&) const = 0;
 
-    // Returns whether a texture of the given config can be copied to a texture of the same config.
-    virtual bool isFormatCopyable(GrColorType, const GrBackendFormat&) const = 0;
-    virtual bool isConfigCopyable(GrPixelConfig) const = 0;
+    // Returns whether a texture of the given format can be copied to a texture of the same format.
+    virtual bool isFormatCopyable(const GrBackendFormat&) const = 0;
 
-    // Returns the maximum supported sample count for a config. 0 means the config is not renderable
-    // 1 means the config is renderable but doesn't support MSAA.
-    virtual int maxRenderTargetSampleCount(GrColorType, const GrBackendFormat&) const = 0;
-    virtual int maxRenderTargetSampleCount(GrPixelConfig) const = 0;
+    // Returns the maximum supported sample count for a format. 0 means the format is not renderable
+    // 1 means the format is renderable but doesn't support MSAA. This call only refers to the
+    // format itself. A caller should also confirm if the format is renderable with a given
+    // GrColorType by calling isFormatRenderable.
+    virtual int maxRenderTargetSampleCount(const GrBackendFormat&) const = 0;
 
     // Returns the number of samples to use when performing internal draws to the given config with
     // MSAA or mixed samples. If 0, Ganesh should not attempt to use internal multisampling.
-    int internalMultisampleCount(GrPixelConfig config) const {
-        return SkTMin(fInternalMultisampleCount, this->maxRenderTargetSampleCount(config));
+    int internalMultisampleCount(const GrBackendFormat& format) const {
+        return SkTMin(fInternalMultisampleCount, this->maxRenderTargetSampleCount(format));
     }
 
-    bool isConfigRenderable(GrPixelConfig config) const {
-        return this->maxRenderTargetSampleCount(config) > 0;
-    }
+    virtual bool isFormatAsColorTypeRenderable(GrColorType ct, const GrBackendFormat& format,
+                                               int sampleCount = 1) const = 0;
 
-    bool isFormatRenderable(GrColorType ct, const GrBackendFormat& format) const {
-        return this->maxRenderTargetSampleCount(ct, format) > 0;
-    }
+    virtual bool isFormatRenderable(const GrBackendFormat& format, int sampleCount) const = 0;
 
     // Find a sample count greater than or equal to the requested count which is supported for a
-    // color buffer of the given config or 0 if no such sample count is supported. If the requested
+    // render target of the given format or 0 if no such sample count is supported. If the requested
     // sample count is 1 then 1 will be returned if non-MSAA rendering is supported, otherwise 0.
     // For historical reasons requestedCount==0 is handled identically to requestedCount==1.
-    virtual int getRenderTargetSampleCount(int requestedCount,
-                                           GrColorType, const GrBackendFormat&) const = 0;
-    virtual int getRenderTargetSampleCount(int requestedCount, GrPixelConfig) const = 0;
+    virtual int getRenderTargetSampleCount(int requestedCount, const GrBackendFormat&) const = 0;
 
     /**
      * Backends may have restrictions on what types of surfaces support GrGpu::writePixels().
@@ -222,18 +225,26 @@ public:
      */
     virtual SurfaceReadPixelsSupport surfaceSupportsReadPixels(const GrSurface*) const = 0;
 
+    struct SupportedWrite {
+        GrColorType fColorType;
+        // If the write is occurring using GrGpu::transferPixelsTo then this provides the
+        // minimum alignment of the offset into the transfer buffer.
+        size_t fOffsetAlignmentForTransferBuffer;
+    };
+
     /**
      * Given a dst pixel config and a src color type what color type must the caller coax the
      * the data into in order to use GrGpu::writePixels().
      */
-    virtual GrColorType supportedWritePixelsColorType(GrPixelConfig config,
-                                                      GrColorType srcColorType) const {
-        return GrPixelConfigToColorType(config);
-    }
+    virtual SupportedWrite supportedWritePixelsColorType(GrColorType surfaceColorType,
+                                                         const GrBackendFormat& surfaceFormat,
+                                                         GrColorType srcColorType) const = 0;
 
     struct SupportedRead {
-        GrSwizzle fSwizzle;
         GrColorType fColorType;
+        // If the read is occurring using GrGpu::transferPixelsFrom then this provides the
+        // minimum alignment of the offset into the transfer buffer.
+        size_t fOffsetAlignmentForTransferBuffer;
     };
 
     /**
@@ -244,9 +255,9 @@ public:
      * to dstColorType the swizzle in the returned struct should be applied. The caller must check
      * the returned color type for kUnknown.
      */
-    virtual SupportedRead supportedReadPixelsColorType(GrColorType srcColorType,
-                                                       const GrBackendFormat& srcFormat,
-                                                       GrColorType dstColorType) const;
+    SupportedRead supportedReadPixelsColorType(GrColorType srcColorType,
+                                               const GrBackendFormat& srcFormat,
+                                               GrColorType dstColorType) const;
 
     /**
      * Do GrGpu::writePixels() and GrGpu::transferPixelsTo() support a src buffer where the row
@@ -260,18 +271,6 @@ public:
 
     /** Are transfer buffers (to textures and from surfaces) supported? */
     bool transferBufferSupport() const { return fTransferBufferSupport; }
-
-    /**
-     * Gets the alignment requirement for the buffer offset used with GrGpu::transferPixelsFrom for
-     * a given GrColorType. To check whether a pixels as GrColorType can be read for a given surface
-     * see supportedReadPixelsColorType() and surfaceSupportsReadPixels().
-     *
-     * @param bufferColorType The color type of the pixel data that will be stored in the transfer
-     *                        buffer.
-     * @return minimum required alignment for the buffer offset or zero if reading to the color type
-     *         is not supported.
-     */
-    size_t transferFromOffsetAlignment(GrColorType bufferColorType) const;
 
     bool suppressPrints() const { return fSuppressPrints; }
 
@@ -363,20 +362,14 @@ public:
         GrSurfaceProxy::RectsMustMatch fRectsMustMatch = GrSurfaceProxy::RectsMustMatch::kNo;
         bool fMustCopyWholeSrc = false;
     };
-    virtual DstCopyRestrictions getDstCopyRestrictions(const GrRenderTargetProxy* src) const {
+    virtual DstCopyRestrictions getDstCopyRestrictions(const GrRenderTargetProxy* src,
+                                                       GrColorType ct) const {
         return {};
     }
 
-    bool validateSurfaceDesc(const GrSurfaceDesc&, GrRenderable renderable,
-                             int renderTargetSampleCnt, GrMipMapped) const;
-
-    /**
-     * If the GrBackendRenderTarget can be used with the supplied SkColorType the return will be
-     * the config that matches the backend format and requested SkColorType. Otherwise, kUnknown is
-     * returned.
-     */
-    virtual GrPixelConfig validateBackendRenderTarget(const GrBackendRenderTarget&,
-                                                      GrColorType) const = 0;
+    bool validateSurfaceParams(const SkISize&, const GrBackendFormat&, GrPixelConfig,
+                               GrRenderable renderable, int renderTargetSampleCnt,
+                               GrMipMapped) const;
 
     bool areColorTypeAndFormatCompatible(GrColorType grCT,
                                          const GrBackendFormat& format) const {
@@ -387,7 +380,6 @@ public:
         return this->onAreColorTypeAndFormatCompatible(grCT, format);
     }
 
-    // TODO: replace validateBackendRenderTarget with calls to getConfigFromBackendFormat?
     // TODO: it seems like we could pass the full SkImageInfo and validate its colorSpace too
     // Returns kUnknown if a valid config could not be determined.
     GrPixelConfig getConfigFromBackendFormat(const GrBackendFormat& format,
@@ -400,14 +392,14 @@ public:
     }
 
     /**
-     * Special method only for YUVA images. Returns a config that matches the backend format or
-     * kUnknown if a config could not be determined.
+     * Special method only for YUVA images. Returns a colortype that matches the backend format or
+     * kUnknown if a colortype could not be determined.
      */
-    virtual GrPixelConfig getYUVAConfigFromBackendFormat(const GrBackendFormat&) const = 0;
-    virtual GrColorType getYUVAColorTypeFromBackendFormat(const GrBackendFormat&) const = 0;
+    virtual GrColorType getYUVAColorTypeFromBackendFormat(const GrBackendFormat&,
+                                                          bool isAlphaChannel) const = 0;
 
     /** These are used when creating a new texture internally. */
-    virtual GrBackendFormat getBackendFormatFromColorType(GrColorType ct) const = 0;
+    GrBackendFormat getDefaultBackendFormat(GrColorType, GrRenderable) const;
 
     virtual GrBackendFormat getBackendFormatFromCompressionType(SkImage::CompressionType) const = 0;
 
@@ -460,6 +452,15 @@ public:
     static bool AreConfigsCompatible(GrPixelConfig genericConfig, GrPixelConfig specificConfig);
 #endif
 
+#if GR_TEST_UTILS
+    struct TestFormatColorTypeCombination {
+        GrColorType fColorType;
+        GrBackendFormat fFormat;
+    };
+
+    virtual std::vector<TestFormatColorTypeCombination> getTestingCombinations() const = 0;
+#endif
+
 protected:
     /** Subclasses must call this at the end of their constructors in order to apply caps
         overrides requested by the client. Note that overrides will only reduce the caps never
@@ -481,6 +482,7 @@ protected:
     bool fMultisampleDisableSupport                  : 1;
     bool fInstanceAttribSupport                      : 1;
     bool fMixedSamplesSupport                        : 1;
+    bool fMSAAResolvesAutomatically                  : 1;
     bool fUsePrimitiveRestart                        : 1;
     bool fPreferClientSideDynamicBuffers             : 1;
     bool fPreferFullscreenClears                     : 1;
@@ -541,7 +543,7 @@ private:
     virtual bool onSurfaceSupportsWritePixels(const GrSurface*) const = 0;
     virtual bool onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
                                   const SkIRect& srcRect, const SkIPoint& dstPoint) const = 0;
-    virtual size_t onTransferFromOffsetAlignment(GrColorType bufferColorType) const = 0;
+    virtual GrBackendFormat onGetDefaultBackendFormat(GrColorType, GrRenderable) const = 0;
 
     // Backends should implement this if they have any extra requirements for use of window
     // rectangles for a specific GrBackendRenderTarget outside of basic support.
@@ -553,6 +555,10 @@ private:
                                                        GrColorType ct) const = 0;
 
     virtual bool onAreColorTypeAndFormatCompatible(GrColorType, const GrBackendFormat&) const = 0;
+
+    virtual SupportedRead onSupportedReadPixelsColorType(GrColorType srcColorType,
+                                                         const GrBackendFormat& srcFormat,
+                                                         GrColorType dstColorType) const = 0;
 
 
     bool fSuppressPrints : 1;

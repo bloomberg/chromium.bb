@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -49,10 +50,12 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   const NGPhysicalBoxStrut padding =
       builder->initial_fragment_geometry_->padding.ConvertToPhysical(
           builder->GetWritingMode(), builder->Direction());
-  const size_t byte_size = sizeof(NGPhysicalBoxFragment) +
-                           sizeof(NGLink) * builder->children_.size() +
-                           (borders.IsZero() ? 0 : sizeof(borders)) +
-                           (padding.IsZero() ? 0 : sizeof(padding));
+  size_t byte_size = sizeof(NGPhysicalBoxFragment) +
+                     sizeof(NGLink) * builder->children_.size() +
+                     (borders.IsZero() ? 0 : sizeof(borders)) +
+                     (padding.IsZero() ? 0 : sizeof(padding));
+  if (builder->ItemsBuilder())
+    byte_size += sizeof(NGFragmentItems);
   // We store the children list inline in the fragment as a flexible
   // array. Therefore, we need to make sure to allocate enough space for
   // that array here, which requires a manual allocation + placement new.
@@ -80,12 +83,25 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
           builder->BoxType()),
       baselines_(builder->baselines_) {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+  if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
+    has_fragment_items_ = true;
+    NGFragmentItems* items =
+        const_cast<NGFragmentItems*>(ComputeItemsAddress());
+    items_builder->ToFragmentItems(block_or_line_writing_mode,
+                                   builder->Direction(), Size(), items);
+  } else {
+    has_fragment_items_ = false;
+  }
   has_borders_ = !borders.IsZero();
   if (has_borders_)
     *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) = borders;
   has_padding_ = !padding.IsZero();
   if (has_padding_)
     *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
+  // consumed_block_size_ is only updated if we're in block
+  // fragmentation. Otherwise it will always be 0.
+  is_first_for_node_ =
+      builder->consumed_block_size_ <= builder->size_.block_size;
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());

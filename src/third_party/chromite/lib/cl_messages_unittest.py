@@ -20,9 +20,16 @@ class TestCreateValidationFailureMessage(cros_test_lib.MockTestCase):
     self._patch_factory = patch_unittest.MockPatchFactory()
     self.GetPatches = self._patch_factory.GetPatches
 
-  def _AssertMessage(self, change, suspects, messages, sanity=True,
-                     infra_fail=False, lab_fail=False, no_stat=None,
-                     xretry=False, pre_cq_trybot=False, cl_status_url=None):
+  def _AssertMessage(self,
+                     change,
+                     suspects,
+                     messages,
+                     sanity=True,
+                     infra_fail=False,
+                     lab_fail=False,
+                     no_stat=None,
+                     xretry=False,
+                     pre_cq_trybot=False):
     """Call the CreateValidationFailureMessage method.
 
     Args:
@@ -35,14 +42,18 @@ class TestCreateValidationFailureMessage(cros_test_lib.MockTestCase):
       no_stat: List of builders that did not start.
       xretry: Whether we expect the change to be retried.
       pre_cq_trybot: Whether the builder is a Pre-CQ trybot.
-      cl_status_url: URL of the CL status viewer for the change.
     """
     suspects = triage_lib.SuspectChanges({
         x: constants.SUSPECT_REASON_UNKNOWN for x in suspects})
     msg = cl_messages.CreateValidationFailureMessage(
-        pre_cq_trybot, change, suspects, [], sanity=sanity,
-        infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat,
-        retry=xretry, cl_status_url=cl_status_url)
+        pre_cq_trybot,
+        change,
+        suspects, [],
+        sanity=sanity,
+        infra_fail=infra_fail,
+        lab_fail=lab_fail,
+        no_stat=no_stat,
+        retry=xretry)
     for x in messages:
       self.assertTrue(x in msg)
     self.assertEqual(xretry, 'retry your change automatically' in msg)
@@ -112,8 +123,8 @@ class TestCreateValidationFailureMessage(cros_test_lib.MockTestCase):
     """Test case where the build failed in pre-CQ."""
     patches = self.GetPatches(3)
     self._AssertMessage(
-        patches[0], patches,
-        ['We notify the first failure only',
-         'Please find the full status at http://example.com/.'],
-        pre_cq_trybot=True,
-        cl_status_url='http://example.com/')
+        patches[0],
+        patches, [
+            'Your change may have caused',
+        ],
+        pre_cq_trybot=True)

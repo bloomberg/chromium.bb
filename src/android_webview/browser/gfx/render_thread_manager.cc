@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "android_webview/browser/gfx/compositor_frame_producer.h"
-#include "android_webview/browser/gfx/compositor_id.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
 #include "android_webview/public/browser/draw_gl.h"
@@ -26,9 +25,7 @@ namespace android_webview {
 
 RenderThreadManager::RenderThreadManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop)
-    : ui_loop_(ui_loop),
-      mark_hardware_release_(false),
-      weak_factory_on_ui_thread_(this) {
+    : ui_loop_(ui_loop), mark_hardware_release_(false) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ui_thread_weak_ptr_ = weak_factory_on_ui_thread_.GetWeakPtr();
 }
@@ -110,7 +107,7 @@ ChildFrameQueue RenderThreadManager::PassUncommittedFrameOnUI() {
 
 void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
     const ParentCompositorDrawConstraints& parent_draw_constraints,
-    const CompositorID& compositor_id,
+    const viz::FrameSinkId& frame_sink_id,
     viz::FrameTimingDetailsMap timing_details,
     uint32_t frame_token) {
   {
@@ -121,7 +118,7 @@ void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
     // from early returned frames from WaitAndPruneFrameQueue as well.
     timing_details_ = std::move(timing_details);
     presented_frame_token_ = frame_token;
-    compositor_id_for_presentation_feedbacks_ = compositor_id;
+    frame_sink_id_for_presentation_feedbacks_ = frame_sink_id;
   }
 
   // No need to hold the lock_ during the post task.
@@ -133,7 +130,7 @@ void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
 
 void RenderThreadManager::TakeParentDrawDataOnUI(
     ParentCompositorDrawConstraints* constraints,
-    CompositorID* compositor_id,
+    viz::FrameSinkId* frame_sink_id,
     viz::FrameTimingDetailsMap* timing_details,
     uint32_t* frame_token) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
@@ -141,7 +138,7 @@ void RenderThreadManager::TakeParentDrawDataOnUI(
   CheckUiCallsAllowed();
   base::AutoLock lock(lock_);
   *constraints = parent_draw_constraints_;
-  *compositor_id = compositor_id_for_presentation_feedbacks_;
+  *frame_sink_id = frame_sink_id_for_presentation_feedbacks_;
   timing_details_.swap(*timing_details);
   *frame_token = presented_frame_token_;
 }
@@ -158,13 +155,13 @@ bool RenderThreadManager::IsInsideHardwareRelease() const {
 
 void RenderThreadManager::InsertReturnedResourcesOnRT(
     const std::vector<viz::ReturnedResource>& resources,
-    const CompositorID& compositor_id,
+    const viz::FrameSinkId& frame_sink_id,
     uint32_t layer_tree_frame_sink_id) {
   if (resources.empty())
     return;
   ui_loop_->PostTask(
       FROM_HERE, base::BindOnce(&CompositorFrameProducer::ReturnUsedResources,
-                                producer_weak_ptr_, resources, compositor_id,
+                                producer_weak_ptr_, resources, frame_sink_id,
                                 layer_tree_frame_sink_id));
 }
 
@@ -187,8 +184,7 @@ void RenderThreadManager::UpdateViewTreeForceDarkStateOnRT(
 void RenderThreadManager::DrawOnRT(bool save_restore,
                                    HardwareRendererDrawParams* params) {
   // Force GL binding init if it's not yet initialized.
-  // TODO(crbug.com/987265): Clean up usage of DeferredGpuCommandService.
-  DeferredGpuCommandService::GetInstance();
+  GpuServiceWebView::GetInstance();
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW,
                                         save_restore);
   UMA_HISTOGRAM_BOOLEAN(
@@ -197,7 +193,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && !IsInsideHardwareRelease() &&
       HasFrameForHardwareRendererOnRT()) {
-    hardware_renderer_.reset(new HardwareRenderer(this));
+    hardware_renderer_.reset(new HardwareRendererSingleThread(this));
     hardware_renderer_->CommitFrame();
   }
 
@@ -206,7 +202,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
 }
 
 void RenderThreadManager::DestroyHardwareRendererOnRT(bool save_restore) {
-  DeferredGpuCommandService::GetInstance();
+  GpuServiceWebView::GetInstance();
   ScopedAppGLStateRestore state_restore(
       ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT, save_restore);
   ScopedAllowGL allow_gl;

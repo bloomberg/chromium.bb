@@ -21,9 +21,7 @@
 
 #include "third_party/blink/renderer/core/page/page.h"
 
-#include "base/debug/stack_trace.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -756,6 +754,22 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         GetSpatialNavigationController().OnSpatialNavigationSettingChanged();
       }
       break;
+    case SettingsDelegate::kUniversalAccessChange: {
+      if (!GetSettings().GetAllowUniversalAccessFromFileURLs())
+        break;
+      for (Frame* frame = MainFrame(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        // If we got granted universal access from file urls we need to grant
+        // any outstanding security origin cross agent cluster access since
+        // newly allocated agent clusters will be the universal agent.
+        if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+          local_frame->GetDocument()
+              ->GetMutableSecurityOrigin()
+              ->GrantCrossAgentClusterAccess();
+        }
+      }
+      break;
+    }
   }
 }
 
@@ -841,21 +855,18 @@ void Page::Trace(blink::Visitor* visitor) {
   PageVisibilityNotifier::Trace(visitor);
 }
 
-void Page::LayerTreeViewInitialized(WebLayerTreeView& layer_tree_view,
-                                    cc::AnimationHost& animation_host,
+void Page::AnimationHostInitialized(cc::AnimationHost& animation_host,
                                     LocalFrameView* view) {
   if (GetScrollingCoordinator()) {
-    GetScrollingCoordinator()->LayerTreeViewInitialized(layer_tree_view,
-                                                        animation_host, view);
+    GetScrollingCoordinator()->AnimationHostInitialized(animation_host, view);
   }
-  GetLinkHighlights().LayerTreeViewInitialized(layer_tree_view, animation_host);
+  GetLinkHighlights().AnimationHostInitialized(animation_host);
 }
 
-void Page::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view,
-                                  LocalFrameView* view) {
+void Page::WillCloseAnimationHost(LocalFrameView* view) {
   if (scrolling_coordinator_)
-    scrolling_coordinator_->WillCloseLayerTreeView(layer_tree_view, view);
-  GetLinkHighlights().WillCloseLayerTreeView(layer_tree_view);
+    scrolling_coordinator_->WillCloseAnimationHost(view);
+  GetLinkHighlights().WillCloseAnimationHost();
 }
 
 void Page::WillBeDestroyed() {
@@ -934,21 +945,9 @@ bool Page::RequestBeginMainFrameNotExpected(bool new_state) {
   if (!main_frame_ || !main_frame_->IsLocalFrame())
     return false;
 
-  base::debug::StackTrace main_frame_created_trace =
-      main_frame_->CreateStackForDebugging();
-  base::debug::Alias(&main_frame_created_trace);
-  base::debug::StackTrace main_frame_detached_trace =
-      main_frame_->DetachStackForDebugging();
-  base::debug::Alias(&main_frame_detached_trace);
-  CHECK(main_frame_->IsAttached());
-  if (LocalFrame* main_frame = DeprecatedLocalMainFrame()) {
-    if (WebLayerTreeView* layer_tree_view =
-            chrome_client_->GetWebLayerTreeView(main_frame)) {
-      layer_tree_view->RequestBeginMainFrameNotExpected(new_state);
-      return true;
-    }
-  }
-  return false;
+  chrome_client_->RequestBeginMainFrameNotExpected(*DeprecatedLocalMainFrame(),
+                                                   new_state);
+  return true;
 }
 
 bool Page::LocalMainFrameNetworkIsAlmostIdle() const {

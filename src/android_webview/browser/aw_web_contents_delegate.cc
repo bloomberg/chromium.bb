@@ -278,12 +278,12 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
     std::move(callback).Run(
         blink::MediaStreamDevices(),
         blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
-        std::unique_ptr<content::MediaStreamUI>());
+        nullptr);
     return;
   }
   aw_contents->GetPermissionRequestHandler()->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(
-          new MediaAccessPermissionRequest(request, std::move(callback))));
+      std::make_unique<MediaAccessPermissionRequest>(request,
+                                                     std::move(callback)));
 }
 
 void AwWebContentsDelegate::EnterFullscreenModeForTab(

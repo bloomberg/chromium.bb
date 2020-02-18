@@ -26,6 +26,9 @@ _DEV_ID = common_pb2.DEV
 _TEST_ID = common_pb2.TEST
 _BASE_VM_ID = common_pb2.BASE_VM
 _TEST_VM_ID = common_pb2.TEST_VM
+_RECOVERY_ID = common_pb2.RECOVERY
+_FACTORY_ID = common_pb2.FACTORY
+_FIRMWARE_ID = common_pb2.FIRMWARE
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
@@ -35,6 +38,12 @@ _IMAGE_MAPPING = {
     constants.IMAGE_TYPE_DEV: _DEV_ID,
     _TEST_ID: constants.IMAGE_TYPE_TEST,
     constants.IMAGE_TYPE_TEST: _TEST_ID,
+    _RECOVERY_ID: constants.IMAGE_TYPE_RECOVERY,
+    constants.IMAGE_TYPE_RECOVERY: _RECOVERY_ID,
+    _FACTORY_ID: constants.IMAGE_TYPE_FACTORY,
+    constants.IMAGE_TYPE_FACTORY: _FACTORY_ID,
+    _FIRMWARE_ID: constants.IMAGE_TYPE_FIRMWARE,
+    constants.IMAGE_TYPE_FIRMWARE: _FIRMWARE_ID,
 }
 
 _VM_IMAGE_MAPPING = {
@@ -44,12 +53,14 @@ _VM_IMAGE_MAPPING = {
 
 
 @validate.require('build_target.name')
-def Create(input_proto, output_proto):
+@validate.validation_complete
+def Create(input_proto, output_proto, _config):
   """Build an image.
 
   Args:
     input_proto (image_pb2.CreateImageRequest): The input message.
     output_proto (image_pb2.CreateImageResult): The output message.
+    _config (api_config.ApiConfig): The API call config.
   """
   board = input_proto.build_target.name
 
@@ -83,7 +94,7 @@ def Create(input_proto, output_proto):
 
   if not vm_types:
     # No VMs to build, we can exit now.
-    return 0
+    return controller.RETURN_CODE_SUCCESS
 
   # There can be only one.
   vm_type = vm_types.pop()
@@ -161,14 +172,34 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
-@validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
-def Test(input_proto, output_proto):
+@validate.validation_complete
+def SignerTest(input_proto, output_proto, _config):
   """Run image tests.
 
   Args:
     input_proto (image_pb2.ImageTestRequest): The input message.
     output_proto (image_pb2.ImageTestResult): The output message.
+    _config (api_config.ApiConfig): The API call config.
+  """
+  image_path = input_proto.image.path
+
+  result = image_lib.SecurityTest(image=image_path)
+  output_proto.success = result
+  if result:
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
+@validate.require('build_target.name', 'result.directory')
+@validate.exists('image.path')
+def Test(input_proto, output_proto, config):
+  """Run image tests.
+
+  Args:
+    input_proto (image_pb2.ImageTestRequest): The input message.
+    output_proto (image_pb2.ImageTestResult): The output message.
+    config (api_config.ApiConfig): The API call config.
   """
   image_path = input_proto.image.path
   board = input_proto.build_target.name
@@ -177,6 +208,9 @@ def Test(input_proto, output_proto):
   if not os.path.isfile(image_path) or not image_path.endswith('.bin'):
     cros_build_lib.Die(
         'The image.path must be an existing image file with a .bin extension.')
+
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
 
   success = image.Test(board, result_directory, image_dir=image_path)
   output_proto.success = success

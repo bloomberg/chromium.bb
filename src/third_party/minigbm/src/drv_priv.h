@@ -73,7 +73,7 @@ struct backend {
 	int (*bo_unmap)(struct bo *bo, struct vma *vma);
 	int (*bo_invalidate)(struct bo *bo, struct mapping *mapping);
 	int (*bo_flush)(struct bo *bo, struct mapping *mapping);
-	uint32_t (*resolve_format)(uint32_t format, uint64_t use_flags);
+	uint32_t (*resolve_format)(struct driver *drv, uint32_t format, uint64_t use_flags);
 };
 
 // clang-format off

@@ -13,9 +13,11 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/render_pass.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
@@ -43,8 +45,10 @@ class LayerImpl;
 class LayerTreeFrameSink;
 class RenderSurfaceImpl;
 
-// Returns the RenderSurfaceImpl into which the given layer draws.
-RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl);
+class LayerListSettings : public LayerTreeSettings {
+ public:
+  LayerListSettings() { use_layer_lists = true; }
+};
 
 class LayerTestCommon {
  public:
@@ -75,19 +79,34 @@ class LayerTestCommon {
                   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);
     ~LayerImplTest();
 
-    template <typename T>
-    T* AddChildToRoot() {
-      std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
+    template <typename T, typename... Args>
+    T* AddLayer(Args&&... args) {
+      return AddLayerInternal<T>(host_impl()->active_tree(),
+                                 std::forward<Args>(args)...);
     }
 
-    template <typename T>
-    T* AddChild(LayerImpl* parent) {
+    LayerImpl* EnsureRootLayerInPendingTree();
+
+    template <typename T, typename... Args>
+    T* AddLayerInPendingTree(Args&&... args) {
+      return AddLayerInternal<T>(host_impl()->pending_tree(),
+                                 std::forward<Args>(args)...);
+    }
+
+    // TODO(crbug.com/994361): Remove this function when all impl-side tests are
+    // converted into layer list mode.
+    template <typename T, typename... Args>
+    T* AddChildToRoot(Args&&... args) {
+      return AddLayer<T>(std::forward<Args>(args)...);
+    }
+
+    // TODO(crbug.com/994361): Remove this function when all impl-side tests are
+    // converted into layer list mode.
+    template <typename T, typename... Args>
+    T* AddChild(LayerImpl* parent, Args&&... args) {
       std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
+          T::Create(host_impl()->active_tree(), layer_impl_id_++,
+                    std::forward<Args>(args)...);
       T* ptr = layer.get();
       parent->test_properties()->AddChild(std::move(layer));
       return ptr;
@@ -96,82 +115,9 @@ class LayerTestCommon {
     template <typename T>
     T* AddMaskLayer(LayerImpl* origin) {
       std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
+          T::Create(host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
       origin->test_properties()->SetMaskLayer(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A>
-    T* AddChildToRoot(const A& a) {
-      std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A, typename B>
-    T* AddChildToRoot(const A& a, const B& b) {
-      std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a, b);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A, typename B, typename C>
-    T* AddChildToRoot(const A& a, const B& b, const C& c) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A, typename B, typename C, typename D>
-    T* AddChildToRoot(const A& a, const B& b, const C& c, const D& d) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c, d);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T,
-              typename A,
-              typename B,
-              typename C,
-              typename D,
-              typename E>
-    T* AddChildToRoot(const A& a,
-                      const B& b,
-                      const C& c,
-                      const D& d,
-                      const E& e) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c, d, e);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T,
-              typename A,
-              typename B,
-              typename C,
-              typename D,
-              typename E>
-    T* AddChild(LayerImpl* parent,
-                const A& a,
-                const B& b,
-                const C& c,
-                const D& d,
-                const E& e) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c, d, e);
-      T* ptr = layer.get();
-      parent->test_properties()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -187,10 +133,10 @@ class LayerTestCommon {
     void RequestCopyOfOutput();
 
     LayerTreeFrameSink* layer_tree_frame_sink() const {
-      return host_->host_impl()->layer_tree_frame_sink();
+      return host_impl()->layer_tree_frame_sink();
     }
     viz::ClientResourceProvider* resource_provider() const {
-      return host_->host_impl()->resource_provider();
+      return host_impl()->resource_provider();
     }
     LayerImpl* root_layer_for_testing() const {
       return host_impl()->active_tree()->root_layer_for_testing();
@@ -198,7 +144,7 @@ class LayerTestCommon {
     FakeLayerTreeHost* host() { return host_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     TaskRunnerProvider* task_runner_provider() const {
-      return host_->host_impl()->task_runner_provider();
+      return host_impl()->task_runner_provider();
     }
     const viz::QuadList& quad_list() const { return render_pass_->quad_list; }
     scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
@@ -207,11 +153,56 @@ class LayerTestCommon {
     void BuildPropertyTreesForTesting() {
       host_impl()->active_tree()->BuildPropertyTreesForTesting();
     }
+
     void SetElementIdsForTesting() {
       host_impl()->active_tree()->SetElementIdsForTesting();
     }
 
+    // These two functions calculates draw properties by directly calling
+    // LayerTreeHostCommon, not through LayerTreeImpl API, thus they don't
+    // update LayerTreeImpl's needs_update_draw_properties flag.
+    // TODO(wangxianzhu): Remove this version after cleaning up
+    // LayerTreeHostCommon API.
+    void ExecuteCalculateDrawProperties(
+        LayerImpl* root_layer,
+        float device_scale_factor = 1.0f,
+        const gfx::Transform& device_transform = gfx::Transform(),
+        float page_scale_factor = 1.0f,
+        LayerImpl* page_scale_layer = nullptr);
+
+    void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
+        LayerImpl* root_layer);
+
+    // This function updates draw properties through LayerTreeImpl API.
+    void UpdateDrawProperties(LayerTreeImpl*);
+
+    const RenderSurfaceList* render_surface_list_impl() const {
+      return render_surface_list_impl_.get();
+    }
+
+    bool UpdateLayerImplListContains(int id) const {
+      for (const auto* layer : update_layer_impl_list_) {
+        if (layer->id() == id)
+          return true;
+      }
+      return false;
+    }
+
+    const LayerImplList& update_layer_impl_list() const {
+      return update_layer_impl_list_;
+    }
+
    private:
+    template <typename T, typename... Args>
+    T* AddLayerInternal(LayerTreeImpl* tree, Args&&... args) {
+      std::unique_ptr<T> layer =
+          T::Create(tree, layer_impl_id_++, std::forward<Args>(args)...);
+      T* ptr = layer.get();
+      tree->root_layer_for_testing()->test_properties()->AddChild(
+          std::move(layer));
+      return ptr;
+    }
+
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;
     std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;
@@ -221,6 +212,8 @@ class LayerTestCommon {
     scoped_refptr<AnimationTimeline> timeline_;
     scoped_refptr<AnimationTimeline> timeline_impl_;
     int layer_impl_id_;
+    std::unique_ptr<RenderSurfaceList> render_surface_list_impl_;
+    LayerImplList update_layer_impl_list_;
   };
 };
 

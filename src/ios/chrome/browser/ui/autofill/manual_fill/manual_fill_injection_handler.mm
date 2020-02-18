@@ -26,7 +26,7 @@
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -93,7 +93,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   return self;
 }
 
-#pragma mark - ManualFillContentDelegate
+#pragma mark - ManualFillContentInjector
 
 - (BOOL)canUserInjectInPasswordField:(BOOL)passwordField
                        requiresHTTPS:(BOOL)requiresHTTPS {

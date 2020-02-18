@@ -13,7 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -53,8 +53,8 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
  protected:
   void SetUp() override {
     main_thread_ = base::SequencedTaskRunnerHandle::Get();
-    loader_thread_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::WithBaseSyncPrimitives()});
+    loader_thread_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()});
 
     test_url_loader_factory_ =
         std::make_unique<CloneCheckingURLLoaderFactory>(loader_thread_);
@@ -77,7 +77,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Release |shared_factory_| on |loader_thread_|
     base::RunLoop run_loop;
@@ -145,7 +145,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<CloneCheckingURLLoaderFactory> test_url_loader_factory_;
   scoped_refptr<SharedURLLoaderFactory> shared_factory_;
@@ -180,8 +180,8 @@ TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, FurtherClone) {
 TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, CloneThirdThread) {
   // Clone to a third thread.
   scoped_refptr<base::SequencedTaskRunner> third_thread =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::WithBaseSyncPrimitives()});
 
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
       SharedURLLoaderFactory::Create(std::move(factory_info_));

@@ -11,10 +11,11 @@
 #import <Metal/Metal.h>
 
 #include "include/core/SkRefCnt.h"
+#include "src/gpu/mtl/GrMtlUtil.h"
 
 class GrMtlGpu;
 class GrMtlPipelineState;
-class GrMtlGpuRTCommandBuffer;
+class GrMtlOpsRenderPass;
 
 class GrMtlCommandBuffer {
 public:
@@ -26,11 +27,16 @@ public:
     id<MTLBlitCommandEncoder> getBlitCommandEncoder();
     id<MTLRenderCommandEncoder> getRenderCommandEncoder(MTLRenderPassDescriptor*,
                                                         const GrMtlPipelineState*,
-                                                        GrMtlGpuRTCommandBuffer* gpuCommandBuffer);
+                                                        GrMtlOpsRenderPass* opsRenderPass);
 
     void addCompletedHandler(MTLCommandBufferHandler block) {
         [fCmdBuffer addCompletedHandler:block];
     }
+
+#ifdef GR_METAL_SDK_SUPPORTS_EVENTS
+    void encodeSignalEvent(id<MTLEvent> event, uint64_t value);
+    void encodeWaitForEvent(id<MTLEvent> event, uint64_t value);
+#endif
 
 private:
     GrMtlCommandBuffer(id<MTLCommandBuffer> cmdBuffer)

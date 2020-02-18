@@ -11,9 +11,9 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
-#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
@@ -40,6 +40,7 @@ class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTexturePassthrough;
 class SharedImageRepresentationSkia;
 class SharedImageRepresentationDawn;
+class SharedImageRepresentationOverlay;
 class MemoryTypeTracker;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
@@ -70,6 +71,11 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   void ReleaseRef(SharedImageRepresentation* representation);
   bool HasAnyRefs() const;
 
+  // Notify backing a read access is succeeded
+  void OnReadSucceeded();
+  // Notify backing a write access is succeeded.
+  void OnWriteSucceeded();
+
   // Tracks whether the backing has ever been cleared, or whether it may contain
   // uninitialized pixels.
   virtual bool IsCleared() const = 0;
@@ -83,11 +89,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Destroys the underlying backing. Must be called before destruction.
   virtual void Destroy() = 0;
 
-#if defined(OS_WIN)
-  // Swaps buffers of the swap chain associated with this backing. Returns true
-  // on success.
   virtual bool PresentSwapChain();
-#endif  // OS_WIN
 
   // Allows the backing to attach additional data to the dump or dump
   // additional sub paths.
@@ -124,6 +126,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       DawnDevice device);
+  virtual std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker);
 
   // Used by subclasses in Destroy.
   bool have_context() const;
@@ -146,6 +151,22 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   };
 
  private:
+  class ScopedWriteUMA {
+   public:
+    ScopedWriteUMA() = default;
+    ~ScopedWriteUMA() {
+      UMA_HISTOGRAM_BOOLEAN("GPU.SharedImage.ContentConsumed",
+                            content_consumed_);
+    }
+
+    bool content_consumed() const { return content_consumed_; }
+    void SetConsumed() { content_consumed_ = true; }
+
+   private:
+    bool content_consumed_ = false;
+    DISALLOW_COPY_AND_ASSIGN(ScopedWriteUMA);
+  };
+
   const Mailbox mailbox_;
   const viz::ResourceFormat format_;
   const gfx::Size size_;
@@ -157,6 +178,10 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   mutable base::Optional<base::Lock> lock_;
 
   bool have_context_ = true;
+
+  // A scoped object for recording write UMA.
+  base::Optional<ScopedWriteUMA> scoped_write_uma_;
+
   // A vector of SharedImageRepresentations which hold references to this
   // backing. The first reference is considered the owner, and the vector is
   // ordered by the order in which references were taken.

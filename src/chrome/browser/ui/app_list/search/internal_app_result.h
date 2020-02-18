@@ -45,6 +45,7 @@ class InternalAppResult : public AppResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  void OnVisibilityChanged(bool visibility) override;
   SearchResultType GetSearchResultType() const override;
 
   // AppContextMenuDelegate overrides:
@@ -76,7 +77,7 @@ class InternalAppResult : public AppResult {
   // Used to fetch the favicon of the website |url_for_continuous_reading_|.
   favicon::LargeIconService* large_icon_service_ = nullptr;
 
-  base::WeakPtrFactory<InternalAppResult> weak_factory_;
+  base::WeakPtrFactory<InternalAppResult> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InternalAppResult);
 };

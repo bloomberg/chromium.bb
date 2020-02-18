@@ -59,12 +59,12 @@ ByteString GetPDFWordString(IPVT_FontMap* pFontMap,
   if (!pFontMap)
     return ByteString();
 
-  CPDF_Font* pPDFFont = pFontMap->GetPDFFont(nFontIndex);
+  RetainPtr<CPDF_Font> pPDFFont = pFontMap->GetPDFFont(nFontIndex);
   if (!pPDFFont)
     return ByteString();
 
-  if (pPDFFont->GetBaseFont().Compare("Symbol") == 0 ||
-      pPDFFont->GetBaseFont().Compare("ZapfDingbats") == 0) {
+  if (pPDFFont->GetBaseFontName().Compare("Symbol") == 0 ||
+      pPDFFont->GetBaseFontName().Compare("ZapfDingbats") == 0) {
     return ByteString::Format("%c", Word);
   }
 
@@ -72,6 +72,7 @@ ByteString GetPDFWordString(IPVT_FontMap* pFontMap,
   uint32_t dwCharCode = pPDFFont->CharCodeFromUnicode(Word);
   if (dwCharCode != CPDF_Font::kInvalidCharCode)
     pPDFFont->AppendChar(&sWord, dwCharCode);
+
   return sWord;
 }
 
@@ -367,7 +368,7 @@ ByteString GetDashPatternString(const CPDF_Dictionary& pAnnotDict) {
 
 ByteString GetPopupContentsString(CPDF_Document* pDoc,
                                   const CPDF_Dictionary& pAnnotDict,
-                                  CPDF_Font* pDefFont,
+                                  const RetainPtr<CPDF_Font>& pDefFont,
                                   const ByteString& sFontName) {
   WideString swValue(pAnnotDict.GetUnicodeTextFor(pdfium::form_fields::kT));
   swValue += L'\n';
@@ -761,16 +762,18 @@ bool GeneratePopupAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
              << rect.Height() << " re b\n";
 
   ByteString sFontName = "FONT";
-  auto pResourceFontDict = GenerateResourceFontDict(pDoc, sFontName);
+  RetainPtr<CPDF_Dictionary> pResourceFontDict =
+      GenerateResourceFontDict(pDoc, sFontName);
+
   auto* pData = CPDF_DocPageData::FromDocument(pDoc);
-  CPDF_Font* pDefFont = pData->GetFont(pResourceFontDict.Get());
+  RetainPtr<CPDF_Font> pDefFont = pData->GetFont(pResourceFontDict.Get());
   if (!pDefFont)
     return false;
 
-  auto pExtGStateDict =
+  RetainPtr<CPDF_Dictionary> pExtGStateDict =
       GenerateExtGStateDict(*pAnnotDict, sExtGSDictName, "Normal");
-  auto pResourceDict = GenerateResourceDict(pDoc, std::move(pExtGStateDict),
-                                            std::move(pResourceFontDict));
+  RetainPtr<CPDF_Dictionary> pResourceDict = GenerateResourceDict(
+      pDoc, std::move(pExtGStateDict), std::move(pResourceFontDict));
 
   sAppStream << GetPopupContentsString(pDoc, *pAnnotDict, pDefFont, sFontName);
   GenerateAndSetAPDict(pDoc, pAnnotDict, &sAppStream, std::move(pResourceDict),
@@ -942,7 +945,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
     return;
 
   CPDF_Dictionary* pDRFontDict = pDRDict->GetDictFor("Font");
-  if (!pDRFontDict)
+  if (!ValidateFontResourceDict(pDRFontDict))
     return;
 
   CPDF_Dictionary* pFontDict = pDRFontDict->GetDictFor(font_name);
@@ -956,14 +959,13 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
                                            pFontDict->GetObjNum());
   }
   auto* pData = CPDF_DocPageData::FromDocument(pDoc);
-  CPDF_Font* pDefFont = pData->GetFont(pFontDict);
+  RetainPtr<CPDF_Font> pDefFont = pData->GetFont(pFontDict);
   if (!pDefFont)
     return;
 
   CFX_FloatRect rcAnnot = pAnnotDict->GetRectFor(pdfium::annotation::kRect);
-  int32_t nRotate = 0;
-  if (CPDF_Dictionary* pMKDict = pAnnotDict->GetDictFor("MK"))
-    nRotate = pMKDict->GetIntegerFor("R");
+  CPDF_Dictionary* pMKDict = pAnnotDict->GetDictFor("MK");
+  int32_t nRotate = pMKDict ? pMKDict->GetIntegerFor("R") : 0;
 
   CFX_FloatRect rcBBox;
   CFX_Matrix matrix;
@@ -1031,7 +1033,7 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
   }
   CFX_Color crBorder;
   CFX_Color crBG;
-  if (CPDF_Dictionary* pMKDict = pAnnotDict->GetDictFor("MK")) {
+  if (pMKDict) {
     if (CPDF_Array* pArray = pMKDict->GetArrayFor("BC"))
       crBorder = fpdfdoc::CFXColorFromArray(*pArray);
     if (CPDF_Array* pArray = pMKDict->GetArrayFor("BG"))
@@ -1067,13 +1069,15 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
   }
   CPDF_Dictionary* pStreamDict = pNormalStream->GetDict();
   if (pStreamDict) {
-    pStreamDict->SetMatrixFor("Matrix", matrix);
-    pStreamDict->SetRectFor("BBox", rcBBox);
     CPDF_Dictionary* pStreamResList = pStreamDict->GetDictFor("Resources");
     if (pStreamResList) {
       CPDF_Dictionary* pStreamResFontList = pStreamResList->GetDictFor("Font");
-      if (!pStreamResFontList)
+      if (pStreamResFontList) {
+        if (!ValidateFontResourceDict(pStreamResFontList))
+          return;
+      } else {
         pStreamResFontList = pStreamResList->SetNewFor<CPDF_Dictionary>("Font");
+      }
       if (!pStreamResFontList->KeyExist(font_name)) {
         pStreamResFontList->SetNewFor<CPDF_Reference>(font_name, pDoc,
                                                       pFontDict->GetObjNum());
@@ -1081,6 +1085,8 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
     } else {
       pStreamDict->SetFor("Resources", pFormDict->GetDictFor("DR")->Clone());
     }
+    pStreamDict->SetMatrixFor("Matrix", matrix);
+    pStreamDict->SetRectFor("BBox", rcBBox);
   }
   switch (type) {
     case CPVT_GenerateAP::kTextField: {
@@ -1304,28 +1310,33 @@ void CPVT_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
     }
   }
 
-  if (pNormalStream) {
-    pNormalStream->SetDataFromStringstreamAndRemoveFilter(&sAppStream);
-    pStreamDict = pNormalStream->GetDict();
-    if (pStreamDict) {
-      pStreamDict->SetMatrixFor("Matrix", matrix);
-      pStreamDict->SetRectFor("BBox", rcBBox);
-      CPDF_Dictionary* pStreamResList = pStreamDict->GetDictFor("Resources");
-      if (pStreamResList) {
-        CPDF_Dictionary* pStreamResFontList =
-            pStreamResList->GetDictFor("Font");
-        if (!pStreamResFontList) {
-          pStreamResFontList =
-              pStreamResList->SetNewFor<CPDF_Dictionary>("Font");
-        }
-        if (!pStreamResFontList->KeyExist(font_name)) {
-          pStreamResFontList->SetNewFor<CPDF_Reference>(font_name, pDoc,
-                                                        pFontDict->GetObjNum());
-        }
-      } else {
-        pStreamDict->SetFor("Resources", pFormDict->GetDictFor("DR")->Clone());
-      }
-    }
+  if (!pNormalStream)
+    return;
+
+  pNormalStream->SetDataFromStringstreamAndRemoveFilter(&sAppStream);
+  pStreamDict = pNormalStream->GetDict();
+  if (!pStreamDict)
+    return;
+
+  pStreamDict->SetMatrixFor("Matrix", matrix);
+  pStreamDict->SetRectFor("BBox", rcBBox);
+  CPDF_Dictionary* pStreamResList = pStreamDict->GetDictFor("Resources");
+  if (!pStreamResList) {
+    pStreamDict->SetFor("Resources", pFormDict->GetDictFor("DR")->Clone());
+    return;
+  }
+
+  CPDF_Dictionary* pStreamResFontList = pStreamResList->GetDictFor("Font");
+  if (pStreamResFontList) {
+    if (!ValidateFontResourceDict(pStreamResFontList))
+      return;
+  } else {
+    pStreamResFontList = pStreamResList->SetNewFor<CPDF_Dictionary>("Font");
+  }
+
+  if (!pStreamResFontList->KeyExist(font_name)) {
+    pStreamResFontList->SetNewFor<CPDF_Reference>(font_name, pDoc,
+                                                  pFontDict->GetObjNum());
   }
 }
 

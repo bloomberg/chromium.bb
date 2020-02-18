@@ -91,21 +91,26 @@ public class BackgroundTaskGcmTaskService extends GcmTaskService {
 
     @Override
     public int onRunTask(TaskParams params) {
-        final BackgroundTask backgroundTask =
-                BackgroundTaskSchedulerGcmNetworkManager.getBackgroundTaskFromTaskParams(params);
-        if (backgroundTask == null) {
-            Log.w(TAG, "Failed to start task. Could not instantiate class.");
-            return GcmNetworkManager.RESULT_FAILURE;
-        }
-
-        Long deadlineTime =
-                BackgroundTaskSchedulerGcmNetworkManager.getDeadlineTimeFromTaskParams(params);
-        if (deadlineTime != null && mClock.currentTimeMillis() >= deadlineTime) {
-            return GcmNetworkManager.RESULT_FAILURE;
-        }
-
         final TaskParameters taskParams =
                 BackgroundTaskSchedulerGcmNetworkManager.getTaskParametersFromTaskParams(params);
+
+        final BackgroundTask backgroundTask =
+                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(taskParams.getTaskId());
+        if (backgroundTask == null) {
+            Log.w(TAG, "Failed to start task. Could not instantiate BackgroundTask class.");
+            // Cancel task if the BackgroundTask class is not found anymore. We assume this means
+            // that the task has been deprecated.
+            BackgroundTaskSchedulerFactory.getScheduler().cancel(
+                    ContextUtils.getApplicationContext(), taskParams.getTaskId());
+            return GcmNetworkManager.RESULT_FAILURE;
+        }
+
+        if (BackgroundTaskSchedulerGcmNetworkManager.didTaskExpire(
+                    params, mClock.currentTimeMillis())) {
+            BackgroundTaskSchedulerUma.getInstance().reportTaskExpired(taskParams.getTaskId());
+            return GcmNetworkManager.RESULT_FAILURE;
+        }
+
         final Waiter waiter = new Waiter(Waiter.MAX_TIMEOUT_SECONDS);
 
         final AtomicBoolean taskNeedsBackgroundProcessing = new AtomicBoolean();

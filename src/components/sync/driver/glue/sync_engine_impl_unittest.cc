@@ -14,8 +14,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -228,7 +227,6 @@ class SyncEngineImplTest : public testing::Test {
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.authenticated_account_id = "user@example.com";
     params.sync_manager_factory = std::move(fake_manager_factory_);
-    params.delete_sync_data_folder = true;
     params.unrecoverable_error_handler =
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
     sync_prefs_->GetInvalidationVersions(&params.invalidation_versions);
@@ -291,7 +289,7 @@ class SyncEngineImplTest : public testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::Thread sync_thread_;
@@ -688,21 +686,6 @@ TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
             fake_manager_->GetAndResetConfigureReason());
 }
 
-// It is SyncEngineBackend's responsibility to cleanup Sync Data folder if sync
-// setup hasn't been completed. This test ensures that cleanup happens.
-TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
-  const char* nonsense = "slon";
-  base::FilePath temp_directory =
-      temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
-  base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
-  ASSERT_TRUE(base::CreateDirectory(temp_directory));
-  ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));
-
-  InitializeBackend(true);
-
-  EXPECT_FALSE(base::PathExists(sync_file));
-}
-
 // If bookmarks encounter an error that results in disabling without purging
 // (such as when the type is unready), and then is explicitly disabled, the
 // SyncEngine needs to tell the manager to purge the type, even though
@@ -744,34 +727,8 @@ TEST_F(SyncEngineImplTest, ModelTypeConnectorValidDuringShutdown) {
   backend_.reset();
 }
 
-TEST_F(SyncEngineImplTest, EnabledTypesStayUnchangedWhenFCMIsDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      invalidation::switches::kFCMInvalidations);
-
-  // Making sure that the noisy types we're interested in are in the
-  // |enabled_types_|.
-  enabled_types_.Put(SESSIONS);
-  enabled_types_.Put(FAVICON_IMAGES);
-  enabled_types_.Put(FAVICON_TRACKING);
-
-  InitializeBackend(true);
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
-  ConfigureDataTypes();
-
-  // At shutdown, we clear the registered invalidation ids.
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
-}
-
-TEST_F(
-    SyncEngineImplTest,
-    NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroidWhenFCMIsEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      invalidation::switches::kFCMInvalidations);
+TEST_F(SyncEngineImplTest,
+       NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroid) {
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);
@@ -800,10 +757,7 @@ TEST_F(
               UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
 }
 
-TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      invalidation::switches::kFCMInvalidations);
+TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
   // Testing that noisy types doesn't used for registration, when
   // they're disabled in Sync, hence removing noisy datatypes from
   // |enabled_types_|.
@@ -824,7 +778,6 @@ TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
 
 TEST_F(SyncEngineImplTest,
        EnabledTypesChangesWhenSetInvalidationsForSessionsCalled) {
-  base::test::ScopedFeatureList scoped_feature_list;
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);

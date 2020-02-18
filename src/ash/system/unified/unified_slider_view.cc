@@ -4,7 +4,8 @@
 
 #include "ash/system/unified/unified_slider_view.h"
 
-#include "ash/system/tray/tray_constants.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -75,10 +76,13 @@ const char* UnifiedSliderButton::GetClassName() const {
 }
 
 void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kDark);
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+           gfx::CreateVectorIcon(icon, icon_color));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+           gfx::CreateVectorIcon(icon, icon_color));
 }
 
 void UnifiedSliderButton::SetToggled(bool toggled) {
@@ -90,8 +94,14 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(toggled_ ? kUnifiedMenuButtonColorActive
-                          : kUnifiedMenuButtonColor);
+  flags.setColor(
+      toggled_
+          ? AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+                AshColorProvider::ControlsLayerType::kActiveControlBackground,
+                kUnifiedMenuButtonColorActive)
+          : AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+                AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+                kUnifiedMenuButtonColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kTrayItemSize / 2, flags);
 

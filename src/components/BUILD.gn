@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
+import("//components/safe_browsing/buildflags.gni")
 import("//components/ui_devtools/devtools.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -97,9 +98,8 @@ test("components_unittests") {
     "//components/flags_ui:unit_tests",
     "//components/gcm_driver:unit_tests",
     "//components/gcm_driver/crypto:unit_tests",
-    "//components/google/core/browser:unit_tests",
+    "//components/google/core/common:unit_tests",
     "//components/grpc_support/test:unit_tests",
-    "//components/gwp_asan:unit_tests",
     "//components/history/core/browser:unit_tests",
     "//components/history/core/common:unit_tests",
     "//components/image_fetcher/core:unit_tests",
@@ -136,6 +136,7 @@ test("components_unittests") {
     "//components/security_state/core:unit_tests",
     "//components/send_tab_to_self:unit_tests",
     "//components/services/heap_profiling/public/cpp:unit_tests",
+    "//components/services/storage:tests",
     "//components/services/unzip:unit_tests",
     "//components/sessions:unit_tests",
     "//components/signin/core/browser:unit_tests",
@@ -148,7 +149,6 @@ test("components_unittests") {
     "//components/subresource_filter/core/common:unit_tests",
     "//components/subresource_filter/tools:unit_tests",
     "//components/suggestions:unit_tests",
-    "//components/supervised_user_error_page:unit_tests",
     "//components/sync:unit_tests",
     "//components/sync_bookmarks:unit_tests",
     "//components/sync_device_info:unit_tests",
@@ -166,7 +166,7 @@ test("components_unittests") {
     "//components/update_client:unit_tests",
     "//components/upload_list:unit_tests",
     "//components/url_formatter:unit_tests",
-    "//components/url_formatter/top_domains:unit_tests",
+    "//components/url_formatter/spoof_checks/top_domains:unit_tests",
     "//components/url_matcher:unit_tests",
     "//components/url_pattern_index:unit_tests",
     "//components/variations:unit_tests",
@@ -239,6 +239,7 @@ test("components_unittests") {
       "//components/optimization_guide:unit_tests",
       "//components/page_image_annotation/content/renderer:unit_tests",
       "//components/page_image_annotation/core:unit_tests",
+      "//components/page_load_metrics/renderer:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
       "//components/payments/content:unit_tests",
       "//components/payments/content/utility:unit_tests",
@@ -298,6 +299,7 @@ test("components_unittests") {
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
       "//components/signin/core/browser/android:java",
+      "//components/signin/public/identity_manager/android:java",
       "//components/spellcheck/browser/android:java",
       "//components/variations/android:variations_java",
       "//content/public/android:content_java",
@@ -341,7 +343,8 @@ test("components_unittests") {
   if (is_chromeos) {
     deps += [
       "//components/arc:unit_tests",
-      "//components/arc/common:unit_tests",
+      "//components/arc/mojom:unit_tests",
+      "//components/guest_os:unit_tests",
       "//components/ownership:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
@@ -369,6 +372,7 @@ test("components_unittests") {
     deps += [
       "//components/safe_browsing:verdict_cache_manager_unittest",
       "//components/safe_browsing/db:unit_tests_desktop",
+      "//components/safe_browsing/realtime:unit_tests",
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
@@ -385,6 +389,10 @@ test("components_unittests") {
 
   if (use_dbus) {
     deps += [ "//components/dbus/menu:unit_tests" ]
+  }
+
+  if (enable_plugins) {
+    deps += [ "//components/pdf/renderer:unit_tests" ]
   }
 
   # No components should depend on Chrome.
@@ -552,7 +560,7 @@ if (!is_ios) {
 
     if (is_android) {
       sources += [
-        "autofill_assistant/browser/web_controller_browsertest.cc",
+        "autofill_assistant/browser/web/web_controller_browsertest.cc",
         "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
       ]
       sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
@@ -579,7 +587,6 @@ if (!is_ios) {
       sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
       deps += [
         "//components/leveldb_proto",
-        "//components/leveldb_proto/content:factory",
         "//components/prefs:test_support",
         "//components/sync_preferences:test_support",
       ]

@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_hints.h"
 
 #include <unordered_set>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -122,30 +123,6 @@ bool IsEnabledOptimizationType(
   }
 }
 
-net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
-    optimization_guide::proto::EffectiveConnectionType proto_ect) {
-  switch (proto_ect) {
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_2G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_3G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_4G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
-  }
-}
-
 }  // namespace
 
 PreviewsHints::PreviewsHints(
@@ -241,8 +218,7 @@ void PreviewsHints::ParseOptimizationFilters(
         ConvertProtoOptimizationTypeToPreviewsType(
             blacklist.optimization_type());
     if (previews_type == PreviewsType::LITE_PAGE_REDIRECT &&
-        previews::params::IsLitePageServerPreviewsEnabled() &&
-        blacklist.has_bloom_filter()) {
+        previews::params::IsLitePageServerPreviewsEnabled()) {
       RecordOptimizationFilterStatus(
           blacklist.optimization_type(),
           optimization_guide::OptimizationFilterStatus::
@@ -256,46 +232,11 @@ void PreviewsHints::ParseOptimizationFilters(
                 kFailedServerBlacklistDuplicateConfig);
         continue;
       }
-      const auto& bloom_filter_proto = blacklist.bloom_filter();
-      DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
-      DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
-      DCHECK(bloom_filter_proto.has_data());
-      if (!bloom_filter_proto.has_data() ||
-          bloom_filter_proto.num_bits() <= 0 ||
-          bloom_filter_proto.num_bits() >
-              bloom_filter_proto.data().size() * 8) {
-        DLOG(ERROR) << "Bloom filter config issue";
-        RecordOptimizationFilterStatus(
-            blacklist.optimization_type(),
-            optimization_guide::OptimizationFilterStatus::
-                kFailedServerBlacklistBadConfig);
-        continue;
-      }
-      if (static_cast<int>(bloom_filter_proto.num_bits()) >
-          previews::params::
-                  LitePageRedirectPreviewMaxServerBlacklistByteSize() *
-              8) {
-        DLOG(ERROR) << "Bloom filter data exceeds maximum size of "
-                    << previews::params::
-                           LitePageRedirectPreviewMaxServerBlacklistByteSize()
-                    << " bytes";
-        RecordOptimizationFilterStatus(
-            blacklist.optimization_type(),
-            optimization_guide::OptimizationFilterStatus::
-                kFailedServerBlacklistTooBig);
-        continue;
-      }
-      std::unique_ptr<optimization_guide::BloomFilter> bloom_filter =
-          std::make_unique<optimization_guide::BloomFilter>(
-              bloom_filter_proto.num_hash_functions(),
-              bloom_filter_proto.num_bits(), bloom_filter_proto.data());
+
+      optimization_guide::OptimizationFilterStatus status;
       lite_page_redirect_blacklist_ =
-          std::make_unique<optimization_guide::HostFilter>(
-              std::move(bloom_filter));
-      RecordOptimizationFilterStatus(
-          blacklist.optimization_type(),
-          optimization_guide::OptimizationFilterStatus::
-              kCreatedServerBlacklist);
+          optimization_guide::ProcessOptimizationFilter(blacklist, &status);
+      RecordOptimizationFilterStatus(blacklist.optimization_type(), status);
     }
   }
 }
@@ -353,13 +294,17 @@ bool PreviewsHints::IsWhitelisted(
     if (optimization.has_previews_metadata()) {
       *out_inflation_percent =
           optimization.previews_metadata().inflation_percent();
-      *out_ect_threshold = ConvertProtoEffectiveConnectionType(
-          optimization.previews_metadata().max_ect_trigger());
+      if (out_ect_threshold) {
+        *out_ect_threshold =
+            optimization_guide::ConvertProtoEffectiveConnectionType(
+                optimization.previews_metadata().max_ect_trigger());
+      }
     } else {
       *out_inflation_percent = optimization.inflation_percent();
-      if (matched_page_hint->has_max_ect_trigger()) {
-        *out_ect_threshold = ConvertProtoEffectiveConnectionType(
-            matched_page_hint->max_ect_trigger());
+      if (out_ect_threshold && matched_page_hint->has_max_ect_trigger()) {
+        *out_ect_threshold =
+            optimization_guide::ConvertProtoEffectiveConnectionType(
+                matched_page_hint->max_ect_trigger());
       }
     }
 
@@ -387,7 +332,7 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
       return true;
     }
 
-    return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
+    return lite_page_redirect_blacklist_->Matches(url);
   }
 
   return false;
@@ -460,31 +405,26 @@ bool PreviewsHints::GetResourceLoadingHints(
 }
 
 void PreviewsHints::LogHintCacheMatch(const GURL& url,
-                                      bool is_committed,
-                                      net::EffectiveConnectionType ect) const {
+                                      bool is_committed) const {
   DCHECK(hint_cache_);
 
-  if (hint_cache_->HasHint(url.host())) {
-    if (!is_committed) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit", ect,
-          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", ect,
-          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-      const optimization_guide::proto::Hint* hint =
-          hint_cache_->GetHintIfLoaded(url.host());
-      if (hint) {
-        UMA_HISTOGRAM_ENUMERATION(
-            "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit", ect,
-            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-        if (optimization_guide::FindPageHintForURL(url, hint)) {
-          UMA_HISTOGRAM_ENUMERATION(
-              "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", ect,
-              net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-        }
-      }
+  bool has_hint = hint_cache_->HasHint(url.host());
+  if (!is_committed) {
+    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.BeforeCommit",
+                          has_hint);
+    return;
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.AtCommit",
+                        has_hint);
+  if (has_hint) {
+    const optimization_guide::proto::Hint* hint =
+        hint_cache_->GetHintIfLoaded(url.host());
+    UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HostMatch.AtCommit",
+                          hint);
+    if (hint) {
+      UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.PageMatch.AtCommit",
+                            optimization_guide::FindPageHintForURL(url, hint));
     }
   }
 }

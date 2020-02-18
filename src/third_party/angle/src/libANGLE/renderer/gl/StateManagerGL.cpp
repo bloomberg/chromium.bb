@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015 The ANGLE Project Authors. All rights reserved.
+// Copyright 2015 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1192,144 +1192,115 @@ void StateManagerGL::setSampleMaski(GLuint maskNumber, GLbitfield mask)
     }
 }
 
+// Depth and stencil redundant state changes are guarded in the
+// frontend so for related cases here just set the dirty bit
+// and update backend states.
 void StateManagerGL::setDepthTestEnabled(bool enabled)
 {
-    if (mDepthTestEnabled != enabled)
+    mDepthTestEnabled = enabled;
+    if (mDepthTestEnabled)
     {
-        mDepthTestEnabled = enabled;
-        if (mDepthTestEnabled)
-        {
-            mFunctions->enable(GL_DEPTH_TEST);
-        }
-        else
-        {
-            mFunctions->disable(GL_DEPTH_TEST);
-        }
-
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_TEST_ENABLED);
+        mFunctions->enable(GL_DEPTH_TEST);
     }
+    else
+    {
+        mFunctions->disable(GL_DEPTH_TEST);
+    }
+
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_TEST_ENABLED);
 }
 
 void StateManagerGL::setDepthFunc(GLenum depthFunc)
 {
-    if (mDepthFunc != depthFunc)
-    {
-        mDepthFunc = depthFunc;
-        mFunctions->depthFunc(mDepthFunc);
+    mDepthFunc = depthFunc;
+    mFunctions->depthFunc(mDepthFunc);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_FUNC);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_FUNC);
 }
 
 void StateManagerGL::setDepthMask(bool mask)
 {
-    if (mDepthMask != mask)
-    {
-        mDepthMask = mask;
-        mFunctions->depthMask(mDepthMask);
+    mDepthMask = mask;
+    mFunctions->depthMask(mDepthMask);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_MASK);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_MASK);
 }
 
 void StateManagerGL::setStencilTestEnabled(bool enabled)
 {
-    if (mStencilTestEnabled != enabled)
+    mStencilTestEnabled = enabled;
+    if (mStencilTestEnabled)
     {
-        mStencilTestEnabled = enabled;
-        if (mStencilTestEnabled)
-        {
-            mFunctions->enable(GL_STENCIL_TEST);
-        }
-        else
-        {
-            mFunctions->disable(GL_STENCIL_TEST);
-        }
-
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_TEST_ENABLED);
+        mFunctions->enable(GL_STENCIL_TEST);
     }
+    else
+    {
+        mFunctions->disable(GL_STENCIL_TEST);
+    }
+
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_TEST_ENABLED);
 }
 
 void StateManagerGL::setStencilFrontWritemask(GLuint mask)
 {
-    if (mStencilFrontWritemask != mask)
-    {
-        mStencilFrontWritemask = mask;
-        mFunctions->stencilMaskSeparate(GL_FRONT, mStencilFrontWritemask);
+    mStencilFrontWritemask = mask;
+    mFunctions->stencilMaskSeparate(GL_FRONT, mStencilFrontWritemask);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_WRITEMASK_FRONT);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_WRITEMASK_FRONT);
 }
 
 void StateManagerGL::setStencilBackWritemask(GLuint mask)
 {
-    if (mStencilBackWritemask != mask)
-    {
-        mStencilBackWritemask = mask;
-        mFunctions->stencilMaskSeparate(GL_BACK, mStencilBackWritemask);
+    mStencilBackWritemask = mask;
+    mFunctions->stencilMaskSeparate(GL_BACK, mStencilBackWritemask);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_WRITEMASK_BACK);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_WRITEMASK_BACK);
 }
 
 void StateManagerGL::setStencilFrontFuncs(GLenum func, GLint ref, GLuint mask)
 {
-    if (mStencilFrontFunc != func || mStencilFrontRef != ref || mStencilFrontValueMask != mask)
-    {
-        mStencilFrontFunc      = func;
-        mStencilFrontRef       = ref;
-        mStencilFrontValueMask = mask;
-        mFunctions->stencilFuncSeparate(GL_FRONT, mStencilFrontFunc, mStencilFrontRef,
-                                        mStencilFrontValueMask);
+    mStencilFrontFunc      = func;
+    mStencilFrontRef       = ref;
+    mStencilFrontValueMask = mask;
+    mFunctions->stencilFuncSeparate(GL_FRONT, mStencilFrontFunc, mStencilFrontRef,
+                                    mStencilFrontValueMask);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_FUNCS_FRONT);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_FUNCS_FRONT);
 }
 
 void StateManagerGL::setStencilBackFuncs(GLenum func, GLint ref, GLuint mask)
 {
-    if (mStencilBackFunc != func || mStencilBackRef != ref || mStencilBackValueMask != mask)
-    {
-        mStencilBackFunc      = func;
-        mStencilBackRef       = ref;
-        mStencilBackValueMask = mask;
-        mFunctions->stencilFuncSeparate(GL_BACK, mStencilBackFunc, mStencilBackRef,
-                                        mStencilBackValueMask);
+    mStencilBackFunc      = func;
+    mStencilBackRef       = ref;
+    mStencilBackValueMask = mask;
+    mFunctions->stencilFuncSeparate(GL_BACK, mStencilBackFunc, mStencilBackRef,
+                                    mStencilBackValueMask);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_FUNCS_BACK);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_FUNCS_BACK);
 }
 
 void StateManagerGL::setStencilFrontOps(GLenum sfail, GLenum dpfail, GLenum dppass)
 {
-    if (mStencilFrontStencilFailOp != sfail || mStencilFrontStencilPassDepthFailOp != dpfail ||
-        mStencilFrontStencilPassDepthPassOp != dppass)
-    {
-        mStencilFrontStencilFailOp          = sfail;
-        mStencilFrontStencilPassDepthFailOp = dpfail;
-        mStencilFrontStencilPassDepthPassOp = dppass;
-        mFunctions->stencilOpSeparate(GL_FRONT, mStencilFrontStencilFailOp,
-                                      mStencilFrontStencilPassDepthFailOp,
-                                      mStencilFrontStencilPassDepthPassOp);
+    mStencilFrontStencilFailOp          = sfail;
+    mStencilFrontStencilPassDepthFailOp = dpfail;
+    mStencilFrontStencilPassDepthPassOp = dppass;
+    mFunctions->stencilOpSeparate(GL_FRONT, mStencilFrontStencilFailOp,
+                                  mStencilFrontStencilPassDepthFailOp,
+                                  mStencilFrontStencilPassDepthPassOp);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_OPS_FRONT);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_OPS_FRONT);
 }
 
 void StateManagerGL::setStencilBackOps(GLenum sfail, GLenum dpfail, GLenum dppass)
 {
-    if (mStencilBackStencilFailOp != sfail || mStencilBackStencilPassDepthFailOp != dpfail ||
-        mStencilBackStencilPassDepthPassOp != dppass)
-    {
-        mStencilBackStencilFailOp          = sfail;
-        mStencilBackStencilPassDepthFailOp = dpfail;
-        mStencilBackStencilPassDepthPassOp = dppass;
-        mFunctions->stencilOpSeparate(GL_BACK, mStencilBackStencilFailOp,
-                                      mStencilBackStencilPassDepthFailOp,
-                                      mStencilBackStencilPassDepthPassOp);
+    mStencilBackStencilFailOp          = sfail;
+    mStencilBackStencilPassDepthFailOp = dpfail;
+    mStencilBackStencilPassDepthPassOp = dppass;
+    mFunctions->stencilOpSeparate(GL_BACK, mStencilBackStencilFailOp,
+                                  mStencilBackStencilPassDepthFailOp,
+                                  mStencilBackStencilPassDepthPassOp);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_OPS_BACK);
-    }
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_STENCIL_OPS_BACK);
 }
 
 void StateManagerGL::setCullFaceEnabled(bool enabled)
@@ -1518,15 +1489,6 @@ void StateManagerGL::syncState(const gl::Context *context,
 {
     const gl::State &state = context->getState();
 
-    // Changing the draw framebuffer binding sometimes requires resetting srgb blending.
-    if (glDirtyBits[gl::State::DIRTY_BIT_DRAW_FRAMEBUFFER_BINDING])
-    {
-        if (mFunctions->standard == STANDARD_GL_DESKTOP)
-        {
-            mLocalDirtyBits.set(gl::State::DIRTY_BIT_FRAMEBUFFER_SRGB);
-        }
-    }
-
     const gl::State::DirtyBits glAndLocalDirtyBits = (glDirtyBits | mLocalDirtyBits) & bitMask;
     if (!glAndLocalDirtyBits.any())
     {
@@ -1578,9 +1540,13 @@ void StateManagerGL::syncState(const gl::Context *context,
             }
             case gl::State::DIRTY_BIT_COLOR_MASK:
             {
+                gl::Framebuffer *framebuffer = state.getDrawFramebuffer();
+                FramebufferGL *framebufferGL = GetImplAs<FramebufferGL>(framebuffer);
+
                 const auto &blendState = state.getBlendState();
-                setColorMask(blendState.colorMaskRed, blendState.colorMaskGreen,
-                             blendState.colorMaskBlue, blendState.colorMaskAlpha);
+                setColorMaskForFramebuffer(blendState.colorMaskRed, blendState.colorMaskGreen,
+                                           blendState.colorMaskBlue, blendState.colorMaskAlpha,
+                                           framebufferGL);
                 break;
             }
             case gl::State::DIRTY_BIT_SAMPLE_ALPHA_TO_COVERAGE_ENABLED:
@@ -1726,6 +1692,16 @@ void StateManagerGL::syncState(const gl::Context *context,
                 {
                     updateMultiviewBaseViewLayerIndexUniform(program, framebufferGL->getState());
                 }
+
+                // Changing the draw framebuffer binding sometimes requires resetting srgb blending.
+                if (mFunctions->standard == STANDARD_GL_DESKTOP)
+                {
+                    iter.setLaterBit(gl::State::DIRTY_BIT_FRAMEBUFFER_SRGB);
+                }
+
+                // If the framebuffer is emulating RGB on top of RGBA, the color mask has to be
+                // updated
+                iter.setLaterBit(gl::State::DIRTY_BIT_COLOR_MASK);
                 break;
             }
             case gl::State::DIRTY_BIT_RENDERBUFFER_BINDING:
@@ -1915,6 +1891,20 @@ void StateManagerGL::setFramebufferSRGBEnabledForFramebuffer(const gl::Context *
     {
         setFramebufferSRGBEnabled(context, enabled);
     }
+}
+
+void StateManagerGL::setColorMaskForFramebuffer(bool red,
+                                                bool green,
+                                                bool blue,
+                                                bool alpha,
+                                                const FramebufferGL *framebuffer)
+{
+    bool modifiedAlphaMask = alpha;
+    if (framebuffer->hasEmulatedAlphaChannelTextureAttachment())
+    {
+        modifiedAlphaMask = false;
+    }
+    setColorMask(red, green, blue, modifiedAlphaMask);
 }
 
 void StateManagerGL::setDitherEnabled(bool enabled)

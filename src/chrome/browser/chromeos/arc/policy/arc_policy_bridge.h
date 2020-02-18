@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/arc/common/policy.mojom.h"
+#include "components/arc/mojom/policy.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -189,7 +189,7 @@ class ArcPolicyBridge : public KeyedService,
   std::string update_notification_policies_hash_;
   // The time of the policy update notification sent when the policy with hash
   // equal to |update_notification_policy_hash_| was active.
-  base::Time update_notification_time_;
+  base::TimeTicks update_notification_time_;
   // Whether the UMA metric for the successfully obtained compliance report
   // since the most recent policy update notificaton was already reported.
   bool compliance_since_update_timing_reported_ = false;
@@ -200,7 +200,7 @@ class ArcPolicyBridge : public KeyedService,
   base::OnceClosure on_arc_instance_ready_callback_;
 
   // Must be the last member.
-  base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyBridge);
 };

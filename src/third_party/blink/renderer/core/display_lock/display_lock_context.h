@@ -21,6 +21,9 @@ class Element;
 class DisplayLockOptions;
 class DisplayLockScopedLogger;
 class TaskHandle;
+
+enum class DisplayLockLifecycleTarget { kSelf, kChildren };
+
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
@@ -72,7 +75,7 @@ class CORE_EXPORT DisplayLockContext final
     DISALLOW_NEW();
 
    public:
-    ScopedForcedUpdate(ScopedForcedUpdate&&);
+    ScopedForcedUpdate(ScopedForcedUpdate&&) noexcept;
     ~ScopedForcedUpdate();
 
    private:
@@ -103,17 +106,22 @@ class CORE_EXPORT DisplayLockContext final
   ScriptPromise commit(ScriptState*);
   ScriptPromise updateAndCommit(ScriptState*);
 
-  enum LifecycleTarget { kSelf, kChildren };
+  void SetActivatable(bool activatable);
+
+  // Acquire the lock, should only be called when unlocked.
+  void StartAcquire();
+  // Initiate a commit.
+  void StartCommit();
 
   // Lifecycle observation / state functions.
-  bool ShouldStyle(LifecycleTarget) const;
-  void DidStyle(LifecycleTarget);
-  bool ShouldLayout(LifecycleTarget) const;
-  void DidLayout(LifecycleTarget);
-  bool ShouldPrePaint(LifecycleTarget) const;
-  void DidPrePaint(LifecycleTarget);
-  bool ShouldPaint(LifecycleTarget) const;
-  void DidPaint(LifecycleTarget);
+  bool ShouldStyle(DisplayLockLifecycleTarget) const;
+  void DidStyle(DisplayLockLifecycleTarget);
+  bool ShouldLayout(DisplayLockLifecycleTarget) const;
+  void DidLayout(DisplayLockLifecycleTarget);
+  bool ShouldPrePaint(DisplayLockLifecycleTarget) const;
+  void DidPrePaint(DisplayLockLifecycleTarget);
+  bool ShouldPaint(DisplayLockLifecycleTarget) const;
+  void DidPaint(DisplayLockLifecycleTarget);
 
   // Returns true if the last style recalc traversal was blocked at this
   // element, either for itself, its children or its descendants.
@@ -145,6 +153,8 @@ class CORE_EXPORT DisplayLockContext final
   // acquired. Only one ScopedForcedUpdate can be retrieved from the same
   // context at a time.
   ScopedForcedUpdate GetScopedForcedUpdate();
+
+  bool UpdateForced() const { return update_forced_; }
 
   // This is called when the element with which this context is associated is
   // moved to a new document. Used to listen to the lifecycle update from the
@@ -217,8 +227,6 @@ class CORE_EXPORT DisplayLockContext final
     UntracedMember<DisplayLockContext> context_;
   };
 
-  // Initiate a commit.
-  void StartCommit();
   // Initiate an update.
   void StartUpdateIfNeeded();
 

@@ -103,7 +103,7 @@ class APIPermission {
     kEnterprisePlatformKeysPrivate = 59,
     kDeleted_ExperienceSamplingPrivate = 60,
     kExperimental = 61,
-    kExtensionView = 62,
+    kDeleted_ExtensionView = 62,  // crbug.com/982858
     kExternallyConnectableAllUrls = 63,
     kFeedbackPrivate = 64,
     kFileBrowserHandler = 65,
@@ -262,6 +262,8 @@ class APIPermission {
     kDeclarativeNetRequestFeedback = 218,
     kTransientBackground = 219,
     kLogin = 220,
+    kLoginScreenStorage = 221,
+    kLoginState = 222,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml
     // (by running update_extension_permission.py).

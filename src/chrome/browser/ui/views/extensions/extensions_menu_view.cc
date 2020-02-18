@@ -11,7 +11,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -29,14 +31,6 @@ namespace {
 ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
-
-gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
-  return gfx::CreateVectorIcon(
-      icon, 16,
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey);
-}
 
 }  // namespace
 
@@ -63,6 +57,7 @@ ExtensionsMenuView::ExtensionsMenuView(
 ExtensionsMenuView::~ExtensionsMenuView() {
   DCHECK_EQ(g_extensions_dialog, this);
   g_extensions_dialog = nullptr;
+  extensions_menu_items_.clear();
 }
 
 void ExtensionsMenuView::ButtonPressed(views::Button* sender,
@@ -102,7 +97,10 @@ void ExtensionsMenuView::Repopulate() {
 
   AddChildView(std::make_unique<views::Separator>());
   auto icon_view = CreateFixedSizeIconView();
-  icon_view->SetImage(CreateVectorIcon(vector_icons::kSettingsIcon));
+  icon_view->SetImage(
+      gfx::CreateVectorIcon(vector_icons::kSettingsIcon, 16,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
   auto footer = std::make_unique<HoverButton>(
       this, std::move(icon_view),
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
@@ -113,6 +111,7 @@ void ExtensionsMenuView::Repopulate() {
 
 std::unique_ptr<views::View>
 ExtensionsMenuView::CreateExtensionButtonsContainer() {
+  extensions_menu_items_.clear();
   content::WebContents* const web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
@@ -139,7 +138,6 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
   }
 
   auto extension_buttons = std::make_unique<views::View>();
-  extension_menu_button_container_for_testing_ = extension_buttons.get();
   extension_buttons->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
@@ -155,7 +153,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(label_string_id),
             ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-            ChromeTextStyle::STYLE_SECONDARY);
+            views::style::STYLE_SECONDARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         const int horizontal_spacing =
             ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -179,9 +177,12 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             });
 
         for (auto& controller : *controller_group) {
-          extension_buttons->AddChildView(
-              std::make_unique<ExtensionsMenuButton>(browser_,
-                                                     std::move(controller)));
+          std::unique_ptr<ExtensionsMenuItemView> extensions_menu_item =
+              std::make_unique<ExtensionsMenuItemView>(browser_,
+                                                       std::move(controller));
+
+          extensions_menu_items_.push_back(extensions_menu_item.get());
+          extension_buttons->AddChildView(std::move(extensions_menu_item));
         }
         controller_group->clear();
       };
@@ -233,7 +234,9 @@ void ExtensionsMenuView::OnToolbarModelInitialized() {
 }
 
 void ExtensionsMenuView::OnToolbarPinnedActionsChanged() {
-  Repopulate();
+  for (auto* menu_item : extensions_menu_items_) {
+    menu_item->UpdatePinButton();
+  }
 }
 
 // static

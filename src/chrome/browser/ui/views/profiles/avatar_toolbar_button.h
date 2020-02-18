@@ -63,6 +63,8 @@ class AvatarToolbarButton : public ToolbarButton,
 
   // IdentityManager::Observer:
   // Needed if the first sync promo account should be displayed.
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
@@ -72,15 +74,21 @@ class AvatarToolbarButton : public ToolbarButton,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
+  void ExpandToShowEmail();
+  void ResetUserEmail();
+
   bool IsIncognito() const;
   bool IsIncognitoCounterActive() const;
   bool ShouldShowGenericIcon() const;
   base::string16 GetAvatarTooltipText() const;
-  gfx::ImageSkia GetAvatarIcon() const;
-  gfx::Image GetIconImageFromProfile() const;
+  gfx::ImageSkia GetAvatarIcon(const gfx::Image& gaia_image) const;
+  gfx::Image GetGaiaImage() const;
   SyncState GetSyncState() const;
 
   void SetInsets();
+
+  // Sets |user_email_| and initiates showing the email (if non-empty).
+  void SetUserEmail(const std::string& user_email);
 
   Browser* const browser_;
   Profile* const profile_;
@@ -88,6 +96,12 @@ class AvatarToolbarButton : public ToolbarButton,
   // Indicates if the avatar icon should show text and update highlight color
   // when sync state is not normal.
   bool suppress_avatar_button_state_ = false;
+
+  // The user email that we're currently showing in an animation or empty if no
+  // animation is in progress.
+  base::Optional<std::string> user_email_;
+  // We cannot show the animation before we fetch the new avatar.
+  bool waiting_for_image_to_show_user_email_ = false;
 
 #if !defined(OS_CHROMEOS)
   AvatarButtonErrorController error_controller_;
@@ -100,6 +114,7 @@ class AvatarToolbarButton : public ToolbarButton,
   ScopedObserver<ui::MaterialDesignController, AvatarToolbarButton>
       md_observer_{this};
 
+  base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AvatarToolbarButton);
 };
 

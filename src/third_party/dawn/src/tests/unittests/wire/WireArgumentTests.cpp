@@ -162,11 +162,9 @@ TEST_F(WireArgumentTests, CStringArgument) {
     DawnRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.nextInChain = nullptr;
 
-    DawnPipelineStageDescriptor vertexStage;
-    vertexStage.nextInChain = nullptr;
-    vertexStage.module = vsModule;
-    vertexStage.entryPoint = "main";
-    pipelineDescriptor.vertexStage = &vertexStage;
+    pipelineDescriptor.vertexStage.nextInChain = nullptr;
+    pipelineDescriptor.vertexStage.module = vsModule;
+    pipelineDescriptor.vertexStage.entryPoint = "main";
 
     DawnPipelineStageDescriptor fragmentStage;
     fragmentStage.nextInChain = nullptr;
@@ -193,7 +191,7 @@ TEST_F(WireArgumentTests, CStringArgument) {
     EXPECT_CALL(api,
                 DeviceCreateRenderPipeline(
                     apiDevice, MatchesLambda([](const DawnRenderPipelineDescriptor* desc) -> bool {
-                        return desc->vertexStage->entryPoint == std::string("main");
+                        return desc->vertexStage.entryPoint == std::string("main");
                     })))
         .WillOnce(Return(apiDummyPipeline));
 
@@ -210,8 +208,8 @@ TEST_F(WireArgumentTests, ObjectAsValueArgument) {
     DawnBufferDescriptor descriptor;
     descriptor.nextInChain = nullptr;
     descriptor.size = 8;
-    descriptor.usage = static_cast<DawnBufferUsageBit>(DAWN_BUFFER_USAGE_BIT_COPY_SRC |
-                                                       DAWN_BUFFER_USAGE_BIT_COPY_DST);
+    descriptor.usage =
+        static_cast<DawnBufferUsage>(DAWN_BUFFER_USAGE_COPY_SRC | DAWN_BUFFER_USAGE_COPY_DST);
 
     DawnBuffer buffer = dawnDeviceCreateBuffer(device, &descriptor);
     DawnBuffer apiBuffer = api.GetNewBuffer();
@@ -332,12 +330,12 @@ TEST_F(WireArgumentTests, StructureOfObjectArrayArgument) {
 TEST_F(WireArgumentTests, StructureOfStructureArrayArgument) {
     static constexpr int NUM_BINDINGS = 3;
     DawnBindGroupLayoutBinding bindings[NUM_BINDINGS]{
-        {0, DAWN_SHADER_STAGE_BIT_VERTEX, DAWN_BINDING_TYPE_SAMPLER, false, false},
-        {1, DAWN_SHADER_STAGE_BIT_VERTEX, DAWN_BINDING_TYPE_SAMPLED_TEXTURE, false, false},
-        {2,
-         static_cast<DawnShaderStageBit>(DAWN_SHADER_STAGE_BIT_VERTEX |
-                                         DAWN_SHADER_STAGE_BIT_FRAGMENT),
-         DAWN_BINDING_TYPE_UNIFORM_BUFFER, false, false},
+        {0, DAWN_SHADER_STAGE_VERTEX, DAWN_BINDING_TYPE_SAMPLER, false, false,
+         DAWN_TEXTURE_COMPONENT_TYPE_FLOAT},
+        {1, DAWN_SHADER_STAGE_VERTEX, DAWN_BINDING_TYPE_SAMPLED_TEXTURE, false, false,
+         DAWN_TEXTURE_COMPONENT_TYPE_FLOAT},
+        {2, static_cast<DawnShaderStage>(DAWN_SHADER_STAGE_VERTEX | DAWN_SHADER_STAGE_FRAGMENT),
+         DAWN_BINDING_TYPE_UNIFORM_BUFFER, false, false, DAWN_TEXTURE_COMPONENT_TYPE_FLOAT},
     };
     DawnBindGroupLayoutDescriptor bglDescriptor;
     bglDescriptor.bindingCount = NUM_BINDINGS;

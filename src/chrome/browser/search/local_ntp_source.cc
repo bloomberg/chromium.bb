@@ -76,6 +76,7 @@
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "url/gurl.h"
 
 using search_provider_logos::EncodedLogo;
@@ -113,6 +114,7 @@ const struct Resource{
 } kResources[] = {
     {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
+    {"assert.js", IDR_WEBUI_JS_ASSERT, "application/javascript"},
     {"local-ntp-common.css", IDR_LOCAL_NTP_COMMON_CSS, "text/css"},
     {"customize.css", IDR_LOCAL_NTP_CUSTOMIZE_CSS, "text/css"},
     {"customize.js", IDR_LOCAL_NTP_CUSTOMIZE_JS, "application/javascript"},
@@ -295,10 +297,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NEW_TAB_VOICE_OTHER_ERROR);
     AddString(translated_strings.get(), "voiceCloseTooltip",
               IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP);
-
-    // Colors menu
-    AddString(translated_strings.get(), "colorLabelPrefix",
-              IDS_NTP_CUSTOMIZE_COLOR_LABEL_PREFIX);
   }
 
   return translated_strings;
@@ -309,10 +307,13 @@ std::string GetThemeCSS(Profile* profile) {
       ThemeService::GetThemeProviderForProfile(profile)
           .GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
 
-  return base::StringPrintf("html { background-color: #%02X%02X%02X; }",
-                            SkColorGetR(background_color),
-                            SkColorGetG(background_color),
-                            SkColorGetB(background_color));
+  // Required to prevent the default background color from flashing before the
+  // page is initialized (the body, which contains theme color, is hidden until
+  // initialization finishes). Removed after initialization.
+  return base::StringPrintf(
+      "html:not(.inited) { background-color: #%02X%02X%02X; }",
+      SkColorGetR(background_color), SkColorGetG(background_color),
+      SkColorGetB(background_color));
 }
 
 std::string ReadBackgroundImageData(const base::FilePath& profile_path) {
@@ -609,9 +610,6 @@ class LocalNtpSource::SearchConfigurationProvider
           "enableShortcutsGrid",
           base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
       config_data.SetBoolean(
-          "hideShortcuts",
-          base::FeatureList::IsEnabled(features::kHideShortcutsOnNtp));
-      config_data.SetBoolean(
           "showFakeboxPlaceholderOnFocus",
           base::FeatureList::IsEnabled(
               omnibox::kUIExperimentShowPlaceholderWhenCaretShowing));
@@ -824,7 +822,7 @@ std::string LocalNtpSource::GetSource() {
 
 void LocalNtpSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -841,8 +839,10 @@ void LocalNtpSource::StartDataRequest(
   }
 
   if (stripped_path == chrome::kChromeSearchLocalNtpBackgroundFilename) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
         base::BindOnce(&ReadBackgroundImageData, profile_->GetPath()),
         base::BindOnce(&ServeBackgroundImageData, callback));
     return;
@@ -963,6 +963,8 @@ void LocalNtpSource::StartDataRequest(
 
     replacements["animationsIntegrity"] =
         base::StrCat({kSha256, ANIMATIONS_JS_INTEGRITY});
+    replacements["assertIntegrity"] =
+        base::StrCat({kSha256, ASSERT_JS_INTEGRITY});
     replacements["configDataIntegrity"] = base::StrCat(
         {kSha256, search_config_provider_->config_data_integrity()});
     replacements["localNtpCustomizeIntegrity"] =
@@ -1103,9 +1105,10 @@ std::string LocalNtpSource::GetContentSecurityPolicy() {
   // 'strict-dynamic' allows those scripts to load dependencies not listed here.
   std::string script_src_csp = base::StringPrintf(
       "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
-      "'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
-      ANIMATIONS_JS_INTEGRITY, CUSTOMIZE_JS_INTEGRITY, DOODLES_JS_INTEGRITY,
-      LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY, VOICE_JS_INTEGRITY,
+      "'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
+      ANIMATIONS_JS_INTEGRITY, ASSERT_JS_INTEGRITY, CUSTOMIZE_JS_INTEGRITY,
+      DOODLES_JS_INTEGRITY, LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY,
+      VOICE_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
   return GetContentSecurityPolicyObjectSrc() +

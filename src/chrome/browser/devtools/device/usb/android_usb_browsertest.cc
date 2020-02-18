@@ -27,6 +27,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/cpp/test/fake_usb_device.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -204,20 +207,22 @@ class MockLocalSocket : public MockAndroidConnection::Delegate {
 
 class FakeAndroidUsbDevice : public FakeUsbDevice {
  public:
-  static void Create(scoped_refptr<FakeUsbDeviceInfo> device_info,
-                     device::mojom::UsbDeviceRequest request,
-                     device::mojom::UsbDeviceClientPtr client) {
+  static void Create(
+      scoped_refptr<FakeUsbDeviceInfo> device_info,
+      mojo::PendingReceiver<device::mojom::UsbDevice> receiver,
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> client) {
     auto* device_object =
         new FakeAndroidUsbDevice(device_info, std::move(client));
-    device_object->binding_ = mojo::MakeStrongBinding(
-        base::WrapUnique(device_object), std::move(request));
+    device_object->receiver_ = mojo::MakeSelfOwnedReceiver(
+        base::WrapUnique(device_object), std::move(receiver));
   }
 
   ~FakeAndroidUsbDevice() override = default;
 
  protected:
-  FakeAndroidUsbDevice(scoped_refptr<FakeUsbDeviceInfo> device,
-                       device::mojom::UsbDeviceClientPtr client)
+  FakeAndroidUsbDevice(
+      scoped_refptr<FakeUsbDeviceInfo> device,
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> client)
       : FakeUsbDevice(device, std::move(client)) {
     broken_traits_ =
         static_cast<FakeAndroidUsbDeviceInfo*>(device.get())->broken_traits();
@@ -420,11 +425,13 @@ class FakeAndroidUsbManager : public FakeUsbDeviceManager {
   FakeAndroidUsbManager() = default;
   ~FakeAndroidUsbManager() override = default;
 
-  void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request,
-                 device::mojom::UsbDeviceClientPtr device_client) override {
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> device_client)
+      override {
     DCHECK(base::Contains(devices(), guid));
-    FakeAndroidUsbDevice::Create(devices()[guid], std::move(device_request),
+    FakeAndroidUsbDevice::Create(devices()[guid], std::move(device_receiver),
                                  std::move(device_client));
   }
 };
@@ -510,15 +517,15 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     // Set a fake USB device manager for AndroidUsbDevice.
     usb_manager_ = CreateFakeUsbManager();
     DCHECK(usb_manager_);
-    device::mojom::UsbDeviceManagerPtrInfo manager_ptr_info;
-    usb_manager_->AddBinding(mojo::MakeRequest(&manager_ptr_info));
-    adb_bridge_->set_usb_device_manager_for_test(std::move(manager_ptr_info));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> manager;
+    usb_manager_->AddReceiver(manager.InitWithNewPipeAndPassReceiver());
+    adb_bridge_->set_usb_device_manager_for_test(std::move(manager));
   }
 
   void ScheduleDeviceCountRequest(const base::Closure& request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     scheduler_invoked_++;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, request);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, request);
   }
 
   virtual std::unique_ptr<FakeUsbDeviceManager> CreateFakeUsbManager() {

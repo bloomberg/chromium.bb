@@ -19,6 +19,7 @@ pushd $BASE_DIR/../..
 source $EMSDK/emsdk_env.sh
 EMCC=`which emcc`
 EMCXX=`which em++`
+EMAR=`which emar`
 
 RELEASE_CONF="-Oz --closure 1 --llvm-lto 3 -DSK_RELEASE --pre-js $BASE_DIR/release.js \
               -DGR_GL_CHECK_ALLOC_WITH_GET_ERROR=0"
@@ -72,11 +73,13 @@ if [[ $@ == *no_managed_skottie* ]]; then
   MANAGED_SKOTTIE_BINDINGS="-DSK_INCLUDE_MANAGED_SKOTTIE=0"
 fi
 
+GN_PARTICLES="skia_enable_sksl_interpreter=true"
 PARTICLES_BINDINGS="$BASE_DIR/particles_bindings.cpp"
 PARTICLES_LIB="$BUILD_DIR/libparticles.a"
 
 if [[ $@ == *no_particles* ]]; then
   echo "Omitting Particles"
+  GN_PARTICLES="skia_enable_sksl_interpreter=false"
   PARTICLES_BINDINGS=""
   PARTICLES_LIB=""
 fi
@@ -101,9 +104,13 @@ fi
 GN_FONT="skia_enable_fontmgr_empty=false"
 BUILTIN_FONT="$BASE_DIR/fonts/NotoMono-Regular.ttf.cpp"
 if [[ $@ == *no_font* ]]; then
-  echo "Omitting the built-in font(s)"
+  echo "Omitting the built-in font(s) and font manager"
   BUILTIN_FONT=""
   GN_FONT="skia_enable_fontmgr_empty=true"
+elif [[ $@ == *no_embedded_font* ]]; then
+  echo "Omitting the built-in font(s)"
+  BUILTIN_FONT=""
+  GN_FONT="skia_enable_fontmgr_custom_empty=true skia_enable_fontmgr_empty=false"
 else
   # Generate the font's binary file (which is covered by .gitignore)
   python tools/embed_resources.py \
@@ -142,6 +149,7 @@ echo "Compiling bitcode"
 ./bin/gn gen ${BUILD_DIR} \
   --args="cc=\"${EMCC}\" \
   cxx=\"${EMCXX}\" \
+  ar=\"${EMAR}\" \
   extra_cflags_cc=[\"-frtti\"] \
   extra_cflags=[\"-s\",\"USE_FREETYPE=1\",\"-s\",\"USE_LIBPNG=1\", \"-s\", \"WARN_UNALIGNED=1\",
     \"-DSKNX_NO_SIMD\", \"-DSK_DISABLE_AAA\", \"-DSK_DISABLE_READBUFFER\",
@@ -177,11 +185,11 @@ echo "Compiling bitcode"
   ${GN_SHAPER} \
   ${GN_GPU} \
   ${GN_FONT} \
+  ${GN_PARTICLES} \
   \
   skia_enable_skshaper=true \
   skia_enable_ccpr=false \
   skia_enable_nvpr=false \
-  skia_enable_skpicture=true \
   skia_enable_pdf=false"
 
 # Build all the libs, we'll link the appropriate ones down below

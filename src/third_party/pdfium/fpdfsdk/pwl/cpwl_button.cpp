@@ -8,10 +8,9 @@
 
 #include <utility>
 
-#include "fpdfsdk/pwl/cpwl_wnd.h"
-
-CPWL_Button::CPWL_Button(const CreateParams& cp,
-                         std::unique_ptr<PrivateData> pAttachedData)
+CPWL_Button::CPWL_Button(
+    const CreateParams& cp,
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
     : CPWL_Wnd(cp, std::move(pAttachedData)) {
   GetCreationParams()->eCursorType = FXCT_HAND;
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1036550831858290950">Zapisz bieżącą kartę jako zakładkę</translation>
 <translation id="104962181688258143">Otwórz aplikację Pliki</translation>
-<translation id="1098295134904615027">Aktywuj wirtualne biurko po prawej</translation>
 <translation id="1122869341872663659">Wyświetlam wyniki wyszukiwania (<ph name="N" />) dla: <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Przeciągnij link na pasek adresu na karcie</translation>
 <translation id="1204450209689312104">Otwórz nowe okno w trybie incognito</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Dodaj www. i .com do ciągu wpisanego w pasku adresu i otwórz stronę</translation>
+<translation id="1872219238824176091">Usuń bieżące biurko</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> lub <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Aktywuj wirtualne biurko po lewej</translation>
 <translation id="1996162290124031907">Przejdź do następnej karty</translation>
 <translation id="2010818616644390445">Przejdź do ostatniej karty w oknie</translation>
 <translation id="2040706009561734834">Otwórz/zamknij menu z aplikacjami</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">Przejdź szybko do innego okna</translation>
 <translation id="2454251766545114447">Pomniejsz obraz na ekranie</translation>
 <translation id="2478303094958140141">Włącz lub wyłącz ChromeVox (komunikaty głosowe)</translation>
+<translation id="2488661730534396940">Aktywuj biurko po lewej</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Przewiń stronę internetową w dół</translation>
 <translation id="2574014812750545982">Zresetuj poziom powiększenia na stronie</translation>
 <translation id="2596078834055697711">Zrób zrzut ekranu okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="TAB" /> lub <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">Zapisz bieżącą stronę internetową jako zakładkę</translation>
 <translation id="2750942583782703988">Ponownie załaduj bieżącą stronę</translation>
 <translation id="2764005613199379871">Ustaw zaznaczenie na pasku adresu i wyszukiwania</translation>
+<translation id="2774822903829597107">Utwórz nowe biurko</translation>
 <translation id="2789868185375229787">Pomniejsz widok strony</translation>
 <translation id="2804480015716812239">Naciśnij <ph name="ALT" /> i kliknij link</translation>
 <translation id="2830827904629746450">Zadokuj okno po prawej stronie</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">Zapisz zrzut ekranu</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Zaznacz pasek adresu</translation>
-<translation id="3165428420335997629">Utwórz nowe wirtualne biurko</translation>
 <translation id="3256109297135787951">Anuluj zaznaczenia elementu na półce</translation>
 <translation id="3288816184963444640">Zamknij bieżące okno</translation>
 <translation id="3407560819924487926">Otwórz menedżera zadań</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">Zrób zrzut części ekranu</translation>
 <translation id="4698850295812410683">Pokaż narzędzia rysika</translation>
 <translation id="4801989101741319327">Przejdź na koniec następnego słowa</translation>
+<translation id="4866066940972151697">Aktywuj biurko po prawej</translation>
 <translation id="4916163929714267752">Otwórz link w nowym oknie</translation>
 <translation id="5030659775136592441">Pokaż menedżera zakładek</translation>
 <translation id="5034421018520995080">Przejdź na górę strony</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">Obróć ekran o 90 stopni</translation>
 <translation id="8241665785394195545">prawy nawias</translation>
 <translation id="8264941229485248811">Pokaż lub ukryj inspektora z Narzędzi dla deweloperów</translation>
-<translation id="8355937569537581904">Usuń bieżące wirtualne biurko</translation>
 <translation id="836869401750819675">Otwórz stronę Pobrane pliki</translation>
 <translation id="8388247778047144397">Przeciągnij link na pusty obszar na pasku kart</translation>
 <translation id="8389638407792712197">Otwórz nowe okno</translation>

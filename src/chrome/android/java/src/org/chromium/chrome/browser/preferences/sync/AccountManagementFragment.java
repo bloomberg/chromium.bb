@@ -9,6 +9,7 @@ import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,12 +30,11 @@ import android.support.v7.preference.PreferenceScreen;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
-import org.chromium.chrome.browser.signin.AccountAdder;
 import org.chromium.chrome.browser.signin.ConfirmManagedSyncDataDialog;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -133,6 +133,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         super.onActivityCreated(savedInstanceState);
 
         setDivider(null);
+
+        // Disable animations of preference changes (crbug.com/986401).
+        getListView().setItemAnimator(null);
     }
 
     @Override
@@ -310,9 +313,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         }
     }
 
-    private ChromeBasePreferenceCompat createAddAccountPreference() {
-        ChromeBasePreferenceCompat addAccountPreference =
-                new ChromeBasePreferenceCompat(getStyledContext());
+    private ChromeBasePreference createAddAccountPreference() {
+        ChromeBasePreference addAccountPreference = new ChromeBasePreference(getStyledContext());
         addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
         addAccountPreference.setIcon(
                 AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_circle_40dp));
@@ -322,7 +324,16 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
             SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
-            AccountAdder.getInstance().addAccount(getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
+            AccountManagerFacade.get().createAddAccountIntent((@Nullable Intent intent) -> {
+                if (intent != null) {
+                    startActivity(intent);
+                    return;
+                }
+
+                // AccountManagerFacade couldn't create intent, use SigninUtils to open settings
+                // instead.
+                SigninUtils.openSettingsForAllAccounts(getActivity());
+            });
 
             // Return to the last opened tab if triggered from the content area.
             if (mGaiaServiceType != GAIAServiceType.GAIA_SERVICE_TYPE_NONE) {
@@ -433,7 +444,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public static void openAccountManagementScreen(@GAIAServiceType int serviceType) {
         Bundle arguments = new Bundle();
         arguments.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, serviceType);
-        PreferencesLauncher.launchSettingsPageCompat(
+        PreferencesLauncher.launchSettingsPage(
                 ContextUtils.getApplicationContext(), AccountManagementFragment.class, arguments);
     }
 

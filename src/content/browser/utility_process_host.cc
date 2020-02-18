@@ -55,6 +55,11 @@
 #include "services/network/network_sandbox_win.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
+#include "content/browser/font_service.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
@@ -225,7 +230,7 @@ UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
 
 UtilityProcessHost::~UtilityProcessHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (client_ && !in_process_thread_)
+  if (client_ && launch_state_ == LaunchState::kLaunchComplete)
     client_->OnProcessTerminatedNormally();
 }
 
@@ -298,6 +303,11 @@ void UtilityProcessHost::SetServiceIdentity(
   service_identity_ = identity;
 }
 
+void UtilityProcessHost::SetExtraCommandLineSwitches(
+    std::vector<std::string> switches) {
+  extra_switches_ = std::move(switches);
+}
+
 mojom::ChildProcess* UtilityProcessHost::GetChildProcess() {
   return static_cast<ChildProcessHostImpl*>(process_->GetHost())
       ->child_process();
@@ -318,7 +328,7 @@ bool UtilityProcessHost::StartProcess() {
     // support single process mode this way.
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
             process_->GetInProcessMojoInvitation(),
             process_->child_connection()->service_token())));
     in_process_thread_->Start();
@@ -411,6 +421,7 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_ANDROID)
       switches::kEnableReachedCodeProfiler,
 #endif
+      switches::kEnableExperimentalWebPlatformFeatures,
       // These flags are used by the audio service:
       switches::kAudioBufferSize,
       switches::kAudioServiceQuitTimeoutMs,
@@ -424,6 +435,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kAlsaOutputDevice,
 #endif
 #if defined(OS_WIN)
+      switches::kDisableHighResTimer,
       switches::kEnableExclusiveAudio,
       switches::kForceWaveAudio,
       switches::kTrySupportedChannelLayouts,
@@ -449,6 +461,9 @@ bool UtilityProcessHost::StartProcess() {
       GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
           *service_identity_, cmd_line.get());
     }
+
+    for (const auto& extra_switch : extra_switches_)
+      cmd_line->AppendSwitch(extra_switch);
 
     std::unique_ptr<UtilitySandboxedProcessLauncherDelegate> delegate =
         std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
@@ -496,6 +511,16 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   }
 #endif
   client->OnProcessCrashed();
+}
+
+void UtilityProcessHost::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+#if defined(OS_LINUX)
+  if (auto font_receiver = receiver.As<font_service::mojom::FontService>()) {
+    ConnectToFontService(std::move(font_receiver));
+    return;
+  }
+#endif
 }
 
 }  // namespace content

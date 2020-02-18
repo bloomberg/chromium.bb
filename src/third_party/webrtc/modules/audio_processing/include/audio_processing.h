@@ -370,6 +370,8 @@ class AudioProcessing : public rtc::RefCountInterface {
       }
       return *this;
     }
+
+    std::string ToString() const;
   };
 
   // TODO(mgraczyk): Remove once all methods that use ChannelLayout are gone.
@@ -696,6 +698,7 @@ class AudioProcessing : public rtc::RefCountInterface {
     kBadStreamParameterWarning = -13
   };
 
+  // Native rates supported by the AudioFrame interfaces.
   enum NativeRate {
     kSampleRate8kHz = 8000,
     kSampleRate16kHz = 16000,

@@ -41,7 +41,7 @@ CPWL_Wnd::CreateParams CFFL_ListBox::GetCreateParam() {
 
 std::unique_ptr<CPWL_Wnd> CFFL_ListBox::NewPWLWindow(
     const CPWL_Wnd::CreateParams& cp,
-    std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) {
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData) {
   auto pWnd = pdfium::MakeUnique<CPWL_ListBox>(cp, std::move(pAttachedData));
   pWnd->AttachFFLData(this);
   pWnd->Realize();
@@ -84,7 +84,7 @@ bool CFFL_ListBox::OnChar(CPDFSDK_Annot* pAnnot,
 }
 
 bool CFFL_ListBox::IsDataChanged(CPDFSDK_PageView* pPageView) {
-  auto* pListBox = static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+  auto* pListBox = static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
   if (!pListBox)
     return false;
 
@@ -106,7 +106,7 @@ bool CFFL_ListBox::IsDataChanged(CPDFSDK_PageView* pPageView) {
 
 void CFFL_ListBox::SaveData(CPDFSDK_PageView* pPageView) {
   CPWL_ListBox* pListBox =
-      static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+      static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
   if (!pListBox)
     return;
 
@@ -129,7 +129,7 @@ void CFFL_ListBox::SaveData(CPDFSDK_PageView* pPageView) {
   if (!observed_widget)
     return;
 
-  m_pWidget->ResetFieldAppearance(true);
+  m_pWidget->ResetFieldAppearance();
   if (!observed_widget)
     return;
 
@@ -149,7 +149,7 @@ void CFFL_ListBox::GetActionData(CPDFSDK_PageView* pPageView,
         fa.sValue.clear();
       } else {
         auto* pListBox =
-            static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+            static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
         if (pListBox) {
           int32_t nCurSel = pListBox->GetCurSel();
           if (nCurSel >= 0)
@@ -176,7 +176,7 @@ void CFFL_ListBox::SaveState(CPDFSDK_PageView* pPageView) {
   ASSERT(pPageView);
 
   CPWL_ListBox* pListBox =
-      static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+      static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
   if (!pListBox)
     return;
 
@@ -188,7 +188,7 @@ void CFFL_ListBox::SaveState(CPDFSDK_PageView* pPageView) {
 
 void CFFL_ListBox::RestoreState(CPDFSDK_PageView* pPageView) {
   CPWL_ListBox* pListBox =
-      static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+      static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
   if (!pListBox)
     return;
 
@@ -207,7 +207,7 @@ bool CFFL_ListBox::SetIndexSelected(int index, bool selected) {
   ASSERT(pPageView);
 
   CPWL_ListBox* pListBox =
-      static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+      static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
   if (!pListBox)
     return false;
 
@@ -233,7 +233,7 @@ bool CFFL_ListBox::IsIndexSelected(int index) {
   ASSERT(pPageView);
 
   CPWL_ListBox* pListBox =
-      static_cast<CPWL_ListBox*>(GetPDFWindow(pPageView, false));
+      static_cast<CPWL_ListBox*>(GetPWLWindow(pPageView, false));
   if (!pListBox)
     return false;
 

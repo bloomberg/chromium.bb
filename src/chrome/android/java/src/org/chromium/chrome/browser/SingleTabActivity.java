@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -39,24 +38,17 @@ public abstract class SingleTabActivity extends ChromeActivity {
 
     @Override
     protected TabModelSelector createTabModelSelector() {
-        return new SingleTabModelSelector(this, false, false) {
-            @Override
-            public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
-                    boolean incognito) {
-                getTabCreator(incognito).createNewTab(loadUrlParams, type, parent);
-                return null;
-            }
-        };
+        return new SingleTabModelSelector(this, this, false);
     }
 
     @Override
     protected Pair<? extends TabCreator, ? extends TabCreator> createTabCreators() {
-        return Pair.create(createTabCreator(false), createTabCreator(true));
+        return Pair.create(createNormalTabCreator(), null);
     }
 
     /** Creates TabDelegates for opening new Tabs. */
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new TabDelegate(incognito);
+    protected TabCreator createNormalTabCreator() {
+        return new TabDelegate(false /* incognito */);
     }
 
     @Override

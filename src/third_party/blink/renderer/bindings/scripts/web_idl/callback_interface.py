@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 import exceptions
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithExtendedAttributes
-from .identifier_ir_map import IdentifierIRMap
+
+from .code_generator_info import CodeGeneratorInfo
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExtendedAttributes
+from .ir_map import IRMap
+from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
 
@@ -15,7 +18,7 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
                         WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -23,22 +26,25 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
-            IdentifierIRMap.IR.__init__(
+            IRMap.IR.__init__(
                 self,
                 identifier=identifier,
-                kind=IdentifierIRMap.IR.Kind.CALLBACK_INTERFACE)
+                kind=IRMap.IR.Kind.CALLBACK_INTERFACE)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
-    @property
-    def inherited_callback_interface(self):
-        """
-        Returns an CallbackInterface which this interface is inherited from.
-        @return CallbackInterface?
-        """
-        raise exceptions.NotImplementedError()
+    def __init__(self, ir):
+        assert isinstance(ir, CallbackInterface.IR)
+
+        ir = make_copy(ir)
+        UserDefinedType.__init__(self, ir.identifier)
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info)
 
     @property
     def operation_groups(self):

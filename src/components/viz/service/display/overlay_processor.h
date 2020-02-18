@@ -37,9 +37,31 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       bool zero_damage_rect,
       bool occluding_damage_equal_to_damage_rect);
 
+  // Data needed to represent |OutputSurface| as an overlay plane. Due to the
+  // default values for the primary plane, this is a partial list of
+  // OverlayCandidate.
+  struct VIZ_SERVICE_EXPORT OutputSurfaceOverlayPlane {
+    // Display's rotation information.
+    gfx::OverlayTransform transform;
+    // Rect on the display to position to. This takes in account of Display's
+    // rotation.
+    gfx::RectF display_rect;
+    // Size of output surface in pixels.
+    gfx::Size resource_size;
+    // Format of the buffer to scanout.
+    gfx::BufferFormat format;
+    // ColorSpace of the buffer for scanout.
+    gfx::ColorSpace color_space;
+    // Enable blending when we have underlay.
+    bool enable_blending;
+    // Gpu fence to wait for before overlay is ready for display.
+    unsigned gpu_fence_id;
+  };
+
   class VIZ_SERVICE_EXPORT Strategy {
    public:
     virtual ~Strategy() {}
+    using PrimaryPlane = OverlayProcessor::OutputSurfaceOverlayPlane;
     // Returns false if the strategy cannot be made to work with the
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
@@ -50,8 +72,20 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
         const FilterOperationsMap& render_pass_backdrop_filters,
         DisplayResourceProvider* resource_provider,
         RenderPassList* render_pass_list,
+        const PrimaryPlane* primary_plane,
         OverlayCandidateList* candidates,
         std::vector<gfx::Rect>* content_bounds) = 0;
+
+    // Currently this is only overridden by the Underlay strategy: the underlay
+    // strategy needs to enable blending for the primary plane in order to show
+    // content underneath.
+    virtual void AdjustOutputSurfaceOverlay(
+        OutputSurfaceOverlayPlane* output_surface_plane) {}
+
+    // Currently this is only overridden by the Fullscreen strategy: the
+    // fullscreen strategy covers the entire screen and there is no need to use
+    // the primary plane.
+    virtual bool RemoveOutputSurfaceAsOverlay();
 
     virtual OverlayStrategy GetUMAEnum() const;
   };
@@ -71,7 +105,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     return overlay_validator_.get();
   }
 
+  // Returns true if the platform supports hw overlays and surface occluding
+  // damage rect needs to be computed since it will be used by overlay
+  // processor (currently Windows only).
   bool NeedsSurfaceOccludingDamageRect() const;
+
   void SetDisplayTransformHint(gfx::OverlayTransform transform);
   void SetValidatorViewportSize(const gfx::Size& size);
 
@@ -83,34 +121,51 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
+      OutputSurfaceOverlayPlane* output_surface_plane,
       OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds);
 
-  void SetDCHasHwOverlaySupportForTesting() {
-    dc_processor_->SetHasHwOverlaySupport();
-  }
+  // TODO(weiliangc): Eventually the asymmetry between primary plane and
+  // non-primary places should be internalized and should not have a special
+  // API.
+  OutputSurfaceOverlayPlane ProcessOutputSurfaceAsOverlay(
+      const gfx::Size& viewport_size,
+      const gfx::BufferFormat& buffer_format,
+      const gfx::ColorSpace& color_space) const;
+
+  // For Mac, if we successfully generated a candidate list for CALayerOverlay,
+  // we no longer need the |output_surface_plane|. This function takes a pointer
+  // to the base::Optional instance so the instance can be reset.
+  // TODO(weiliangc): Internalize the |output_surface_plane| inside the overlay
+  // processor.
+  void AdjustOutputSurfaceOverlay(
+      base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane);
 
  protected:
-  explicit OverlayProcessor(const ContextProvider* context_provider);
-  void SetOverlayCandidateValidator(
+  // For testing.
+  explicit OverlayProcessor(
       std::unique_ptr<OverlayCandidateValidator> overlay_validator);
 
   StrategyList strategies_;
   std::unique_ptr<OverlayCandidateValidator> overlay_validator_;
+
   gfx::Rect overlay_damage_rect_;
   gfx::Rect previous_frame_underlay_rect_;
   bool previous_frame_underlay_was_unoccluded_ = false;
 
  private:
+  OverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator,
+      std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor);
+
   bool ProcessForCALayers(
       DisplayResourceProvider* resource_provider,
       RenderPass* render_pass,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
-      OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
@@ -118,7 +173,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
-      OverlayCandidateList* overlay_candidates,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect);
   // Update |damage_rect| by removing damage casued by |candidates|.
@@ -128,8 +182,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
                         const QuadList* quad_list,
                         gfx::Rect* damage_rect);
 
-  std::unique_ptr<DCLayerOverlayProcessor> dc_processor_;
+  std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor_;
 
+  bool output_surface_already_handled_;
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };
 

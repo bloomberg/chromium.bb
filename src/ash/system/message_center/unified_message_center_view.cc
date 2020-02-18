@@ -11,6 +11,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_list_view.h"
@@ -25,7 +27,6 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -51,9 +52,13 @@ class ScrollerContentsView : public views::View {
  public:
   ScrollerContentsView(UnifiedMessageListView* message_list_view,
                        views::ButtonListener* listener) {
+    int bottom_padding = features::IsUnifiedMessageCenterRefactorEnabled()
+                             ? 0
+                             : kUnifiedNotificationCenterSpacing;
+
     auto* contents_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
-        gfx::Insets(0, 0, kUnifiedNotificationCenterSpacing, 0)));
+        gfx::Insets(0, 0, bottom_padding, 0)));
     contents_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStretch);
     AddChildView(message_list_view);
@@ -85,6 +90,10 @@ class StackingBarClearAllButton : public views::LabelButton {
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+    background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        kNotificationBackgroundColor);
   }
 
   ~StackingBarClearAllButton() override = default;
@@ -120,13 +129,13 @@ class StackingBarClearAllButton : public views::LabelButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return TrayPopupUtils::CreateInkDropRipple(
         TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent(), SK_ColorBLACK);
+        GetInkDropCenterBasedOnLastEvent(), background_color_);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this, SK_ColorBLACK);
+        TrayPopupInkDropStyle::FILL_BOUNDS, this, background_color_);
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
@@ -146,6 +155,8 @@ class StackingBarClearAllButton : public views::LabelButton {
   }
 
  private:
+  SkColor background_color_ = gfx::kPlaceholderColor;
+
   DISALLOW_COPY_AND_ASSIGN(StackingBarClearAllButton);
 };
 
@@ -167,7 +178,9 @@ StackingNotificationCounterView::StackingNotificationCounterView(
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  count_label_->SetEnabledColor(kStackingNotificationCounterLabelColor);
+  count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::AshColorMode::kLight));
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   AddChildView(count_label_);
@@ -221,7 +234,9 @@ void StackingNotificationCounterView::SetAnimationState(
 
 void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
-  flags.setColor(message_center::kNotificationBackgroundColor);
+  flags.setColor(AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+      kNotificationBackgroundColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
@@ -239,7 +254,9 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawSharpLine(
       gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
       gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-      kStackingNotificationCounterBorderColor);
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kSeparator,
+          AshColorProvider::AshColorMode::kLight));
 }
 
 const char* StackingNotificationCounterView::GetClassName() const {
@@ -293,7 +310,10 @@ UnifiedMessageCenterView::~UnifiedMessageCenterView() {
 }
 
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
-  scroller_->ClipHeightTo(0, max_height);
+  int max_scroller_height = max_height;
+  if (stacking_counter_->GetVisible())
+    max_scroller_height -= kStackingNotificationCounterHeight;
+  scroller_->ClipHeightTo(0, max_scroller_height);
 }
 
 void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
@@ -313,6 +333,10 @@ void UnifiedMessageCenterView::OnNotificationSlidOut() {
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
+
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    SetMaxHeight(available_height_);
+
   Layout();
 
   if (GetWidget() && !GetWidget()->IsClosed())
@@ -487,13 +511,22 @@ double UnifiedMessageCenterView::GetAnimationValue() const {
 void UnifiedMessageCenterView::UpdateVisibility() {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-  SetVisible(
-      available_height_ >= kUnifiedNotificationMinimumHeight &&
-      (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE ||
-       message_list_view_->GetPreferredSize().height() > 0) &&
-      session_controller->ShouldShowNotificationTray() &&
-      (!session_controller->IsScreenLocked() ||
-       AshMessageCenterLockScreenController::IsEnabled()));
+
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+    SetVisible(message_list_view_->GetTotalNotificationCount() &&
+               (available_height_ >= kUnifiedNotificationMinimumHeight &&
+                session_controller->ShouldShowNotificationTray() &&
+                (!session_controller->IsScreenLocked() ||
+                 AshMessageCenterLockScreenController::IsEnabled())));
+  } else {
+    SetVisible(
+        available_height_ >= kUnifiedNotificationMinimumHeight &&
+        (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE ||
+         message_list_view_->GetPreferredSize().height() > 0) &&
+        session_controller->ShouldShowNotificationTray() &&
+        (!session_controller->IsScreenLocked() ||
+         AshMessageCenterLockScreenController::IsEnabled()));
+  }
 
   // When notification list went invisible, the last notification should be
   // targeted next time.
@@ -574,6 +607,8 @@ int UnifiedMessageCenterView::GetStackedNotificationCount() const {
 }
 
 void UnifiedMessageCenterView::NotifyRectBelowScroll() {
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
   // If the message center is hidden, make sure rounded corners are not drawn.
   if (!GetVisible()) {
     SetNotificationRectBelowScroll(gfx::Rect());

@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -98,6 +99,16 @@ ScrollableArea* AssociatedScrollableArea(const PaintLayer* layer) {
   }
 
   return nullptr;
+}
+
+ContainerNode* ParentForClickEventInteractiveElementSensitive(
+    const Node& node) {
+  // IE doesn't dispatch click events for mousedown/mouseup events across form
+  // controls.
+  if (node.IsHTMLElement() && ToHTMLElement(node).IsInteractiveContent())
+    return nullptr;
+
+  return FlatTreeTraversal::Parent(node);
 }
 
 ContainerNode* ParentForClickEvent(const Node& node) {

@@ -46,8 +46,16 @@
 #include "WSI/MacOSSurfaceMVK.h"
 #endif
 
+#ifdef VK_USE_PLATFORM_XCB_KHR
+#include "WSI/XcbSurfaceKHR.hpp"
+#endif
+
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 #include "WSI/XlibSurfaceKHR.hpp"
+#endif
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+#include "WSI/Win32SurfaceKHR.hpp"
 #endif
 
 #ifdef __ANDROID__
@@ -59,6 +67,11 @@
 #include "WSI/VkSwapchainKHR.hpp"
 
 #include "Reactor/Nucleus.hpp"
+
+#include "Yarn/Scheduler.hpp"
+#include "Yarn/Thread.hpp"
+
+#include "System/CPUID.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -98,12 +111,33 @@ void setReactorDefaultConfig()
 	rr::Nucleus::adjustDefaultConfig(cfg);
 }
 
+void setCPUDefaults()
+{
+	sw::CPUID::setEnableSSE4_1(true);
+	sw::CPUID::setEnableSSSE3(true);
+	sw::CPUID::setEnableSSE3(true);
+	sw::CPUID::setEnableSSE2(true);
+	sw::CPUID::setEnableSSE(true);
+}
+
+yarn::Scheduler* getOrCreateScheduler()
+{
+	static auto scheduler = std::unique_ptr<yarn::Scheduler>(new yarn::Scheduler());
+	scheduler->setThreadInitializer([] {
+		sw::CPUID::setFlushToZero(true);
+		sw::CPUID::setDenormalsAreZero(true);
+	});
+	scheduler->setWorkerThreadCount(std::min<size_t>(yarn::Thread::numLogicalCPUs(), 16));
+	return scheduler.get();
+}
+
 // initializeLibrary() is called by vkCreateInstance() to perform one-off global
 // initialization of the swiftshader driver.
 void initializeLibrary()
 {
 	static bool doOnce = [] {
 		setReactorDefaultConfig();
+		setCPUDefaults();
 		return true;
 	}();
 	(void)doOnce;
@@ -113,14 +147,14 @@ void initializeLibrary()
 
 extern "C"
 {
-VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance instance, const char* pName)
+VK_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance instance, const char* pName)
 {
 	TRACE("(VkInstance instance = %p, const char* pName = %p)", instance, pName);
 
 	return vk::GetInstanceProcAddr(vk::Cast(instance), pName);
 }
 
-VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t* pSupportedVersion)
+VK_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t* pSupportedVersion)
 {
 	*pSupportedVersion = 3;
 	return VK_SUCCESS;
@@ -136,11 +170,17 @@ static const VkExtensionProperties instanceExtensionProperties[] =
 #ifndef __ANDROID__
 	{ VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_SURFACE_SPEC_VERSION },
 #endif
+#ifdef VK_USE_PLATFORM_XCB_KHR
+	{ VK_KHR_XCB_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_SPEC_VERSION },
+#endif
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 	{ VK_KHR_XLIB_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_SPEC_VERSION },
 #endif
 #ifdef VK_USE_PLATFORM_MACOS_MVK
     { VK_MVK_MACOS_SURFACE_EXTENSION_NAME, VK_MVK_MACOS_SURFACE_SPEC_VERSION },
+#endif
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+	{ VK_KHR_WIN32_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_SPEC_VERSION },
 #endif
 };
 
@@ -161,13 +201,21 @@ static const VkExtensionProperties deviceExtensionProperties[] =
 	{ VK_KHR_MULTIVIEW_EXTENSION_NAME, VK_KHR_MULTIVIEW_SPEC_VERSION },
 	{ VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME, VK_KHR_RELAXED_BLOCK_LAYOUT_SPEC_VERSION },
 	{ VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, VK_KHR_SAMPLER_YCBCR_CONVERSION_SPEC_VERSION },
-	{ VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_SPEC_VERSION },
+	// Only 1.1 core version of this is supported. The extension has additional requirements
+	//{ VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_SPEC_VERSION },
 	{ VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_SPEC_VERSION },
-	{ VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME, VK_KHR_VARIABLE_POINTERS_SPEC_VERSION },
+	// Only 1.1 core version of this is supported. The extension has additional requirements
+	//{ VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME, VK_KHR_VARIABLE_POINTERS_SPEC_VERSION },
 #ifndef __ANDROID__
+	// We fully support the KHR_swapchain v70 additions, so just track the spec version.
 	{ VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SWAPCHAIN_SPEC_VERSION },
 #else
-	{ VK_ANDROID_NATIVE_BUFFER_EXTENSION_NAME, VK_ANDROID_NATIVE_BUFFER_SPEC_VERSION },
+	// We only support V7 of this extension. Missing functionality: in V8,
+	// it becomes possible to pass a VkNativeBufferANDROID structure to
+	// vkBindImageMemory2. Android's swapchain implementation does this in
+	// order to support passing VkBindImageMemorySwapchainInfoKHR
+	// (from KHR_swapchain v70) to vkBindImageMemory2.
+	{ VK_ANDROID_NATIVE_BUFFER_EXTENSION_NAME, 7 },
 #endif
 };
 
@@ -500,6 +548,27 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 				}
 			}
 			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES:
+			{
+				const VkPhysicalDeviceMultiviewFeatures* multiviewFeatures = reinterpret_cast<const VkPhysicalDeviceMultiviewFeatures*>(extensionCreateInfo);
+
+				if (multiviewFeatures->multiviewGeometryShader ||
+				    multiviewFeatures->multiviewTessellationShader)
+				{
+					return VK_ERROR_FEATURE_NOT_PRESENT;
+				}
+			}
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES:
+			{
+				const VkPhysicalDeviceShaderDrawParametersFeatures* shaderDrawParametersFeatures = reinterpret_cast<const VkPhysicalDeviceShaderDrawParametersFeatures*>(extensionCreateInfo);
+
+				if (shaderDrawParametersFeatures->shaderDrawParameters)
+				{
+					return VK_ERROR_FEATURE_NOT_PRESENT;
+				}
+			}
+			break;
 		default:
 			// "the [driver] must skip over, without processing (other than reading the sType and pNext members) any structures in the chain with sType values not defined by [supported extenions]"
 			UNIMPLEMENTED("extensionCreateInfo->sType %d", int(extensionCreateInfo->sType));   // TODO(b/119321052): UNIMPLEMENTED() should be used only for features that must still be implemented. Use a more informational macro here.
@@ -533,7 +602,8 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 		(void)queueFamilyPropertyCount; // Silence unused variable warning
 	}
 
-	return vk::DispatchableDevice::Create(pAllocator, pCreateInfo, pDevice, vk::Cast(physicalDevice), enabledFeatures);
+	auto scheduler = getOrCreateScheduler();
+	return vk::DispatchableDevice::Create(pAllocator, pCreateInfo, pDevice, vk::Cast(physicalDevice), enabledFeatures, scheduler);
 }
 
 VKAPI_ATTR void VKAPI_CALL vkDestroyDevice(VkDevice device, const VkAllocationCallbacks* pAllocator)
@@ -1040,6 +1110,9 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateImage(VkDevice device, const VkImageCreat
 		}
 		break;
 #endif
+		case VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR:
+			/* Do nothing. We don't actually need the swapchain handle yet; we'll do all the work in vkBindImageMemory2. */
+			break;
 		default:
 			// "the [driver] must skip over, without processing (other than reading the sType and pNext members) any structures in the chain with sType values not defined by [supported extenions]"
 			UNIMPLEMENTED("extensionCreateInfo->sType");   // TODO(b/119321052): UNIMPLEMENTED() should be used only for features that must still be implemented. Use a more informational macro here.
@@ -2073,12 +2146,35 @@ VKAPI_ATTR VkResult VKAPI_CALL vkBindImageMemory2(VkDevice device, uint32_t bind
 
 	for(uint32_t i = 0; i < bindInfoCount; i++)
 	{
-		if(pBindInfos[i].pNext)
+		vk::DeviceMemory *memory = vk::Cast(pBindInfos[i].memory);
+		VkDeviceSize offset = pBindInfos[i].memoryOffset;
+
+		auto extInfo = reinterpret_cast<VkBaseInStructure const *>(pBindInfos[i].pNext);
+		while (extInfo)
 		{
-			UNIMPLEMENTED("pBindInfos[%d].pNext", i);
+			switch (extInfo->sType)
+			{
+			case VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO:
+				/* Do nothing */
+				break;
+
+#ifndef __ANDROID__
+			case VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR:
+				{
+					auto swapchainInfo = reinterpret_cast<VkBindImageMemorySwapchainInfoKHR const *>(extInfo);
+					memory = vk::Cast(swapchainInfo->swapchain)->getImage(swapchainInfo->imageIndex).getImageMemory();
+					offset = 0;
+				}
+				break;
+#endif
+
+			default:
+				break;
+			}
+			extInfo = extInfo->pNext;
 		}
 
-		vk::Cast(pBindInfos[i].image)->bind(vk::Cast(pBindInfos[i].memory), pBindInfos[i].memoryOffset);
+		vk::Cast(pBindInfos[i].image)->bind(memory, offset);
 	}
 
 	return VK_SUCCESS;
@@ -2600,6 +2696,24 @@ VKAPI_ATTR void VKAPI_CALL vkGetDescriptorSetLayoutSupport(VkDevice device, cons
 	vk::Cast(device)->getDescriptorSetLayoutSupport(pCreateInfo, pSupport);
 }
 
+#ifdef VK_USE_PLATFORM_XCB_KHR
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateXcbSurfaceKHR(VkInstance instance, const VkXcbSurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface)
+{
+	TRACE("(VkInstance instance = %p, VkXcbSurfaceCreateInfoKHR* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
+			instance, pCreateInfo, pAllocator, pSurface);
+
+	return vk::XcbSurfaceKHR::Create(pAllocator, pCreateInfo, pSurface);
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceXcbPresentationSupportKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, xcb_connection_t* connection, xcb_visualid_t visual_id)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, uint32_t queueFamilyIndex = %d, xcb_connection_t* connection = %p, xcb_visualid_t visual_id = %d)",
+		physicalDevice, int(queueFamilyIndex), connection, int(visual_id));
+
+	return VK_TRUE;
+}
+#endif
+
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateXlibSurfaceKHR(VkInstance instance, const VkXlibSurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface)
 {
@@ -2625,6 +2739,16 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateMacOSSurfaceMVK(VkInstance instance, cons
           instance, pCreateInfo, pAllocator, pSurface);
 
     return vk::MacOSSurfaceMVK::Create(pAllocator, pCreateInfo, pSurface);
+}
+#endif
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateWin32SurfaceKHR(VkInstance instance, const VkWin32SurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface)
+{
+	TRACE("(VkInstance instance = %p, VkWin32SurfaceCreateInfoKHR* pCreateInfo = %p, VkAllocationCallbacks* pAllocator = %p, VkSurface* pSurface = %p)",
+			instance, pCreateInfo, pAllocator, pSurface);
+
+	return vk::Win32SurfaceKHR::Create(pAllocator, pCreateInfo, pSurface);
 }
 #endif
 
@@ -2759,6 +2883,14 @@ VKAPI_ATTR VkResult VKAPI_CALL vkQueuePresentKHR(VkQueue queue, const VkPresentI
 	return VK_SUCCESS;
 }
 
+VKAPI_ATTR VkResult VKAPI_CALL vkAcquireNextImage2KHR(VkDevice device, const VkAcquireNextImageInfoKHR *pAcquireInfo, uint32_t *pImageIndex)
+{
+	TRACE("(VkDevice device = %p, const VkAcquireNextImageInfoKHR *pAcquireInfo = %p, uint32_t *pImageIndex = %p",
+			device, pAcquireInfo, pImageIndex);
+
+	return vk::Cast(pAcquireInfo->swapchain)->getNextImage(pAcquireInfo->timeout, vk::Cast(pAcquireInfo->semaphore), vk::Cast(pAcquireInfo->fence), pImageIndex);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL vkGetDeviceGroupPresentCapabilitiesKHR(VkDevice device, VkDeviceGroupPresentCapabilitiesKHR *pDeviceGroupPresentCapabilities)
 {
 	TRACE("(VkDevice device = %p, VkDeviceGroupPresentCapabilitiesKHR* pDeviceGroupPresentCapabilities = %p)",
@@ -2784,6 +2916,15 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetDeviceGroupSurfacePresentModesKHR(VkDevice d
 	*pModes = VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR;
 	return VK_SUCCESS;
 }
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDevicePresentRectanglesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pRectCount, VkRect2D* pRects)
+{
+	TRACE("(VkPhysicalDevice physicalDevice = %p, VkSurfaceKHR surface = %p, uint32_t* pRectCount = %p, VkRect2D* pRects = %p)",
+			physicalDevice, static_cast<void*>(surface), pRectCount, pRects);
+
+	return vk::Cast(surface)->getPresentRectangles(pRectCount, pRects);
+}
+
 
 #endif    // ! __ANDROID__
 

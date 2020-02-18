@@ -14,6 +14,8 @@ import random
 import re
 import time
 
+import six
+
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -441,7 +443,7 @@ class PatchCache(object):
   def _GetAliases(self, value):
     if hasattr(value, 'LookupAliases'):
       return value.LookupAliases()
-    elif not isinstance(value, basestring):
+    elif not isinstance(value, six.string_types):
       # This isn't needed in production code; it however is
       # rather useful to flush out bugs in test code.
       raise ValueError("Value %r isn't a string" % (value,))
@@ -625,9 +627,9 @@ def GetPaladinDeps(commit_message):
   for prefix, match in matches:
     if prefix == EXPECTED_PREFIX or prefix == WARNING_PREFIX:
       if prefix == WARNING_PREFIX:
-        logging.warning("You are using deprecated CQ-DEPEND syntax that is not"
-                        " supported in Parallel CQ. Please migrate to the new"
-                        " syntax: Cq-Depend: chromium:123,chrome-internal:456")
+        logging.warning('You are using deprecated CQ-DEPEND syntax that is not'
+                        ' supported in Parallel CQ. Please migrate to the new'
+                        ' syntax: Cq-Depend: chromium:123,chrome-internal:456')
       for chunk in PATCH_RE.findall(match):
         chunk = ParsePatchDep(chunk, no_sha1=True)
         if chunk not in dependencies:
@@ -767,7 +769,7 @@ class PatchQuery(object):
   def __eq__(self, other):
     """Defines when two PatchQuery objects are considered equal."""
     # We allow comparing against a string to make testing easier.
-    if isinstance(other, basestring):
+    if isinstance(other, six.string_types):
       return self.id == other
 
     if self.id is not None:
@@ -915,7 +917,7 @@ class GitRepoPatch(PatchQuery):
     output = ret.output.split('\0')
     if len(output) != 6:
       return None, None, None, None, None, None
-    return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
+    return [x.strip().decode('utf-8', 'replace') for x in output]
 
   def UpdateMetadataFromRepo(self, git_repo, sha1):
     """Update this this object's metadata given a sha1.
@@ -1035,7 +1037,7 @@ class GitRepoPatch(PatchQuery):
     return dict(line.split('\t', 1)[::-1] for line in lines)
 
   def _AmendCommitMessage(self, git_repo):
-    """"Amend the commit and update our sha1 with the new commit."""
+    """Amend the commit and update our sha1 with the new commit."""
     git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message])
     self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
 

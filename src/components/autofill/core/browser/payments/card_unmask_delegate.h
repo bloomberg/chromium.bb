@@ -13,10 +13,10 @@ namespace autofill {
 
 class CardUnmaskDelegate {
  public:
-  struct UnmaskResponse {
-    UnmaskResponse();
-    UnmaskResponse(const UnmaskResponse& other);
-    ~UnmaskResponse();
+  struct UserProvidedUnmaskDetails {
+    UserProvidedUnmaskDetails();
+    UserProvidedUnmaskDetails(const UserProvidedUnmaskDetails& other);
+    ~UserProvidedUnmaskDetails();
 
     // User input data.
     base::string16 cvc;
@@ -29,11 +29,15 @@ class CardUnmaskDelegate {
 
     // State of "copy to this device" checkbox.
     bool should_store_pan;
+
+    // User is opting-in for FIDO Authentication for future card unmasking.
+    bool enable_fido_auth = false;
   };
 
   // Called when the user has attempted a verification. Prompt is still
   // open at this point.
-  virtual void OnUnmaskResponse(const UnmaskResponse& response) = 0;
+  virtual void OnUnmaskPromptAccepted(
+      const UserProvidedUnmaskDetails& details) = 0;
 
   // Called when the unmask prompt is closed (e.g., cancelled).
   virtual void OnUnmaskPromptClosed() = 0;

@@ -44,8 +44,8 @@ class ViewportTest : public DawnTest {
                     color = vec4(0.0, 1.0, 0.0, 1.0);
                 }
             })";
-        pipelineDescriptor.cVertexStage.module =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs);
+        pipelineDescriptor.vertexStage.module =
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs);
 
         const char* fs =
             R"(#version 450
@@ -55,7 +55,7 @@ class ViewportTest : public DawnTest {
                fragColor = color;
             })";
         pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fs);
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
 
         pipelineDescriptor.cDepthStencilState.depthCompare = depthCompare;
         pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
@@ -68,7 +68,7 @@ class ViewportTest : public DawnTest {
         textureDescriptor.dimension = dawn::TextureDimension::e2D;
         textureDescriptor.format = format;
         textureDescriptor.usage =
-            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+            dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
         textureDescriptor.arrayLayerCount = 1;
         textureDescriptor.mipLevelCount = 1;
         textureDescriptor.sampleCount = 1;
@@ -112,7 +112,7 @@ class ViewportTest : public DawnTest {
         // Note that we may explicitly call SetViewport() in this pass
         {
             utils::ComboRenderPassDescriptor renderPassDescriptor1(
-                {colorTexture1.CreateDefaultView()}, depthStencilTexture1.CreateDefaultView());
+                {colorTexture1.CreateView()}, depthStencilTexture1.CreateView());
             renderPassDescriptor1.cColorAttachmentsInfoPtr[0]->clearColor = {0.0, 0.0, 1.0, 1.0};
             renderPassDescriptor1.cColorAttachmentsInfoPtr[0]->loadOp = dawn::LoadOp::Clear;
 
@@ -137,7 +137,7 @@ class ViewportTest : public DawnTest {
         // (0, 0, rendertarget's width, rendertarget's height, 0.0, 1.0) by default.
         {
             utils::ComboRenderPassDescriptor renderPassDescriptor2(
-                {colorTexture2.CreateDefaultView()}, depthStencilTexture2.CreateDefaultView());
+                {colorTexture2.CreateView()}, depthStencilTexture2.CreateView());
             renderPassDescriptor2.cColorAttachmentsInfoPtr[0]->clearColor = {0.0, 0.0, 1.0, 1.0};
             renderPassDescriptor2.cColorAttachmentsInfoPtr[0]->loadOp = dawn::LoadOp::Clear;
 
@@ -361,6 +361,41 @@ TEST_P(ViewportTest, ShrinkViewportAndShiftToTopLeftAndApplyDepth) {
 TEST_P(ViewportTest, ShrinkViewportAndShiftToBottomRightAndApplyDepth) {
     ViewportParams viewport = {3.0, 3.0, 2.0, 2.0, 0.0, 0.5};
     TestInfo info = {viewport, BackgroundColor, BackgroundColor, 0.25};
+    DoTest(info);
+}
+
+// X and y have fractions and they are smaller than 0.5, which is the center of point(0, 0). So
+// point(0, 0) is covered by the top left triangle as usual.
+TEST_P(ViewportTest, DoNotTruncateXAndY) {
+    ViewportParams viewport = {0.49, 0.49, 4.0, 4.0, 0.0, 1.0};
+    TestInfo info = {viewport, TopLeftTriangleColor, BottomRightTriangleColor};
+    DoTest(info);
+}
+
+// X and y have fractions and they are not smaller than 0.5, which is the center of point(0, 0). So
+// point(0, 0) is not covered by any trinagle.
+TEST_P(ViewportTest, DoNotTruncateXAndY2) {
+    ViewportParams viewport = {0.5, 0.5, 4.0, 4.0, 0.0, 1.0};
+    TestInfo info = {viewport, BackgroundColor, BottomRightTriangleColor};
+    DoTest(info);
+}
+
+// Width and height have fractions and they are greater than 3.5, which is the center of
+// point(3, 3). So point(3, 3) is covered by the bottom right triangle as usual.
+TEST_P(ViewportTest, DoNotTruncateWidthAndHeight) {
+    // Test failing on Intel devices (D3D, Vulkan and Metal) and D3D12.
+    // See https://bugs.chromium.org/p/dawn/issues/detail?id=205
+    DAWN_SKIP_TEST_IF(IsIntel() || IsD3D12());
+    ViewportParams viewport = {0.0, 0.0, 3.51, 3.51, 0.0, 1.0};
+    TestInfo info = {viewport, TopLeftTriangleColor, BottomRightTriangleColor};
+    DoTest(info);
+}
+
+// Width and height have fractions and they are not greater than 3.5, which is the center of
+// point(3, 3). So point(3, 3) is not covered by any triangle.
+TEST_P(ViewportTest, DoNotTruncateWidthAndHeight2) {
+    ViewportParams viewport = {0.0, 0.0, 3.5, 3.5, 0.0, 1.0};
+    TestInfo info = {viewport, TopLeftTriangleColor, BackgroundColor};
     DoTest(info);
 }
 

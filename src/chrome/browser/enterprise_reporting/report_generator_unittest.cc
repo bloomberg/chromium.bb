@@ -17,7 +17,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/common/webplugininfo.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +30,11 @@ namespace {
 
 #if !defined(OS_CHROMEOS)
 constexpr char kProfile[] = "Profile";
+
+const char kPluginName[] = "plugin";
+const char kPluginVersion[] = "1.0";
+const char kPluginDescription[] = "This is a plugin.";
+const char kPluginFileName[] = "file_name";
 
 // We only upload serial number on Windows.
 void VerifySerialNumber(const std::string& serial_number) {
@@ -121,15 +127,29 @@ class ReportGeneratorTest : public ::testing::Test {
     return profile_names;
   }
 
+  void CreatePlugin() {
+    content::WebPluginInfo info;
+    info.name = base::ASCIIToUTF16(kPluginName);
+    info.version = base::ASCIIToUTF16(kPluginVersion);
+    info.desc = base::ASCIIToUTF16(kPluginDescription);
+    info.path =
+        base::FilePath().AppendASCII("path").AppendASCII(kPluginFileName);
+    content::PluginService* plugin_service =
+        content::PluginService::GetInstance();
+    plugin_service->RegisterInternalPlugin(info, true);
+    plugin_service->RefreshPlugins();
+  }
+
   std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>
   GenerateRequests() {
     base::RunLoop run_loop;
     std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> rets;
     generator_.Generate(base::BindLambdaForTesting(
-        [&run_loop,
-         &rets](std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>
-                    requests) {
-          rets = std::move(requests);
+        [&run_loop, &rets](ReportGenerator::Requests requests) {
+          while (!requests.empty()) {
+            rets.push_back(std::move(requests.front()));
+            requests.pop();
+          }
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -176,7 +196,7 @@ class ReportGeneratorTest : public ::testing::Test {
  private:
   ReportGenerator generator_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportGeneratorTest);
@@ -184,6 +204,7 @@ class ReportGeneratorTest : public ::testing::Test {
 
 TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   auto profile_names = CreateProfiles(/*number*/ 2, kIdle);
+  CreatePlugin();
 
   auto requests = GenerateRequests();
   EXPECT_EQ(1u, requests.size());
@@ -204,6 +225,13 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_NE(std::string(), browser_report.browser_version());
   EXPECT_NE(std::string(), browser_report.executable_path());
   EXPECT_TRUE(browser_report.has_channel());
+  // There might be other plugins like PDF plugin, however, our fake plugin
+  // should be the first one in the report.
+  EXPECT_LE(1, browser_report.plugins_size());
+  EXPECT_EQ(kPluginName, browser_report.plugins(0).name());
+  EXPECT_EQ(kPluginVersion, browser_report.plugins(0).version());
+  EXPECT_EQ(kPluginDescription, browser_report.plugins(0).description());
+  EXPECT_EQ(kPluginFileName, browser_report.plugins(0).filename());
 
   VerifyProfileReport(/*active_profile_names*/ std::set<std::string>(),
                       profile_names, browser_report);

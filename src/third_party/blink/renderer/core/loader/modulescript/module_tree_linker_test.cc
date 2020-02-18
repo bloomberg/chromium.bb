@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -71,27 +72,20 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     ScriptState::Scope scope(script_state_);
 
     StringBuilder source_text;
-    Vector<ModuleRequest> dependency_module_requests;
-    dependency_module_requests.ReserveInitialCapacity(
-        dependency_module_specifiers.size());
     for (const auto& specifier : dependency_module_specifiers) {
-      dependency_module_requests.emplace_back(specifier,
-                                              TextPosition::MinimumPosition());
       source_text.Append("import '");
       source_text.Append(specifier);
       source_text.Append("';\n");
     }
     source_text.Append("export default 'grapes';");
 
-    ModuleRecord module_record = ModuleRecord::Compile(
+    v8::Local<v8::Module> module_record = ModuleRecord::Compile(
         script_state_->GetIsolate(), source_text.ToString(), url, url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
     auto* module_script =
         JSModuleScript::CreateForTest(this, module_record, url);
-    auto result_request = dependency_module_requests_map_.insert(
-        module_record, dependency_module_requests);
-    EXPECT_TRUE(result_request.is_new_entry);
+
     auto result_map = module_map_.insert(url, module_script);
     EXPECT_TRUE(result_map.is_new_entry);
 
@@ -116,7 +110,11 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   void SetInstantiateShouldFail(bool b) { instantiate_should_fail_ = b; }
 
   bool HasInstantiated(ModuleScript* module_script) const {
-    return instantiated_records_.Contains(module_script->Record());
+    v8::Isolate* isolate = script_state_->GetIsolate();
+    v8::HandleScope scope(isolate);
+
+    return instantiated_records_.Contains(MakeGarbageCollected<BoxedV8Module>(
+        isolate, module_script->V8Module()));
   }
 
  private:
@@ -148,34 +146,39 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     return it->value;
   }
 
-  ScriptValue InstantiateModule(ModuleRecord record) override {
+  ScriptValue InstantiateModule(v8::Local<v8::Module> record,
+                                const KURL& source_url) override {
     if (instantiate_should_fail_) {
       ScriptState::Scope scope(script_state_);
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
       return ScriptValue(script_state_, error);
     }
-    instantiated_records_.insert(record);
+    instantiated_records_.insert(MakeGarbageCollected<BoxedV8Module>(
+        script_state_->GetIsolate(), record));
     return ScriptValue();
   }
 
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
-      ModuleRecord module_record) override {
-    if (module_record.IsNull())
-      return Vector<ModuleRequest>();
-
-    const auto& it = dependency_module_requests_map_.find(module_record);
-    if (it == dependency_module_requests_map_.end())
-      return Vector<ModuleRequest>();
-
-    return it->value;
+      v8::Local<v8::Module> module_record) override {
+    ScriptState::Scope scope(script_state_);
+    Vector<String> specifiers =
+        ModuleRecord::ModuleRequests(script_state_, module_record);
+    Vector<TextPosition> positions =
+        ModuleRecord::ModuleRequestPositions(script_state_, module_record);
+    DCHECK_EQ(specifiers.size(), positions.size());
+    Vector<ModuleRequest> requests;
+    requests.ReserveInitialCapacity(specifiers.size());
+    for (wtf_size_t i = 0; i < specifiers.size(); ++i) {
+      requests.emplace_back(specifiers[i], positions[i]);
+    }
+    return requests;
   }
 
   Member<ScriptState> script_state_;
   HeapHashMap<KURL, Member<SingleModuleClient>> pending_clients_;
-  HashMap<ModuleRecord, Vector<ModuleRequest>> dependency_module_requests_map_;
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
-  HashSet<ModuleRecord> instantiated_records_;
+  HeapHashSet<Member<BoxedV8Module>> instantiated_records_;
   bool instantiate_should_fail_ = false;
 };
 
@@ -183,6 +186,7 @@ void ModuleTreeLinkerTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(pending_clients_);
   visitor->Trace(module_map_);
+  visitor->Trace(instantiated_records_);
   DummyModulator::Trace(visitor);
 }
 

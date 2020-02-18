@@ -207,6 +207,13 @@ StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
 }
 
 // static
+DnsConfigOverrides::Tristate
+StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
+    allow_dns_over_https_upgrade(const net::DnsConfigOverrides& overrides) {
+  return ToTristate(overrides.allow_dns_over_https_upgrade);
+}
+
+// static
 bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
     DnsConfigOverridesDataView data,
     net::DnsConfigOverrides* out) {
@@ -250,6 +257,11 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
   }
 
   out->secure_dns_mode = FromOptionalSecureDnsMode(data.secure_dns_mode());
+
+  out->allow_dns_over_https_upgrade =
+      FromTristate(data.allow_dns_over_https_upgrade());
+  if (!data.ReadDisabledUpgradeProviders(&out->disabled_upgrade_providers))
+    return false;
 
   return true;
 }
@@ -371,6 +383,40 @@ bool EnumTraits<MdnsListenClient::UpdateType,
       *output = net::HostResolver::MdnsListener::Delegate::UpdateType::REMOVED;
       return true;
   }
+}
+
+// static
+network::mojom::SecureDnsMode
+EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
+    ToMojom(net::DnsConfig::SecureDnsMode secure_dns_mode) {
+  switch (secure_dns_mode) {
+    case net::DnsConfig::SecureDnsMode::OFF:
+      return network::mojom::SecureDnsMode::OFF;
+    case net::DnsConfig::SecureDnsMode::AUTOMATIC:
+      return network::mojom::SecureDnsMode::AUTOMATIC;
+    case net::DnsConfig::SecureDnsMode::SECURE:
+      return network::mojom::SecureDnsMode::SECURE;
+  }
+  NOTREACHED();
+  return network::mojom::SecureDnsMode::OFF;
+}
+
+// static
+bool EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
+    FromMojom(network::mojom::SecureDnsMode in,
+              net::DnsConfig::SecureDnsMode* out) {
+  switch (in) {
+    case network::mojom::SecureDnsMode::OFF:
+      *out = net::DnsConfig::SecureDnsMode::OFF;
+      return true;
+    case network::mojom::SecureDnsMode::AUTOMATIC:
+      *out = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+      return true;
+    case network::mojom::SecureDnsMode::SECURE:
+      *out = net::DnsConfig::SecureDnsMode::SECURE;
+      return true;
+  }
+  return false;
 }
 
 }  // namespace mojo

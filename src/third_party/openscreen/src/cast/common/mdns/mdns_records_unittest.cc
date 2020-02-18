@@ -33,25 +33,25 @@ TEST(MdnsDomainNameTest, Construct) {
   DomainName name1;
   EXPECT_TRUE(name1.empty());
   EXPECT_EQ(name1.MaxWireSize(), UINT64_C(1));
-  EXPECT_EQ(name1.label_count(), UINT64_C(0));
+  EXPECT_EQ(name1.labels().size(), UINT64_C(0));
 
   DomainName name2{"MyDevice", "_mYSERvice", "local"};
   EXPECT_FALSE(name2.empty());
   EXPECT_EQ(name2.MaxWireSize(), UINT64_C(27));
-  ASSERT_EQ(name2.label_count(), UINT64_C(3));
-  EXPECT_EQ(name2.Label(0), "MyDevice");
-  EXPECT_EQ(name2.Label(1), "_mYSERvice");
-  EXPECT_EQ(name2.Label(2), "local");
+  ASSERT_EQ(name2.labels().size(), UINT64_C(3));
+  EXPECT_EQ(name2.labels()[0], "MyDevice");
+  EXPECT_EQ(name2.labels()[1], "_mYSERvice");
+  EXPECT_EQ(name2.labels()[2], "local");
   EXPECT_EQ(name2.ToString(), "MyDevice._mYSERvice.local");
 
   std::vector<absl::string_view> labels{"OtherDevice", "_MYservice", "LOcal"};
   DomainName name3(labels);
   EXPECT_FALSE(name3.empty());
   EXPECT_EQ(name3.MaxWireSize(), UINT64_C(30));
-  ASSERT_EQ(name3.label_count(), UINT64_C(3));
-  EXPECT_EQ(name3.Label(0), "OtherDevice");
-  EXPECT_EQ(name3.Label(1), "_MYservice");
-  EXPECT_EQ(name3.Label(2), "LOcal");
+  ASSERT_EQ(name3.labels().size(), UINT64_C(3));
+  EXPECT_EQ(name3.labels()[0], "OtherDevice");
+  EXPECT_EQ(name3.labels()[1], "_MYservice");
+  EXPECT_EQ(name3.labels()[2], "LOcal");
   EXPECT_EQ(name3.ToString(), "OtherDevice._MYservice.LOcal");
 }
 
@@ -283,48 +283,48 @@ TEST(MdnsTxtRecordRdataTest, CopyAndMove) {
 
 TEST(MdnsRecordTest, Construct) {
   MdnsRecord record1;
-  EXPECT_EQ(record1.MaxWireSize(), 11);
+  EXPECT_EQ(record1.MaxWireSize(), UINT64_C(11));
   EXPECT_EQ(record1.name(), DomainName());
-  EXPECT_EQ(record1.type(), static_cast<DnsType>(0));
+  EXPECT_EQ(record1.dns_type(), static_cast<DnsType>(0));
   EXPECT_EQ(record1.record_class(), static_cast<DnsClass>(0));
-  EXPECT_EQ(record1.cache_flush(), false);
+  EXPECT_EQ(record1.record_type(), RecordType::kShared);
   EXPECT_EQ(record1.ttl(), UINT32_C(255));  // 255 is kDefaultRecordTTL
   EXPECT_EQ(record1.rdata(), Rdata(RawRecordRdata()));
 
   MdnsRecord record2(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, true, 120,
+                     DnsClass::kIN, RecordType::kUnique, 120,
                      PtrRecordRdata(DomainName{"testing", "local"}));
   EXPECT_EQ(record2.MaxWireSize(), UINT64_C(41));
   EXPECT_EQ(record2.name(), (DomainName{"hostname", "local"}));
-  EXPECT_EQ(record2.type(), DnsType::kPTR);
+  EXPECT_EQ(record2.dns_type(), DnsType::kPTR);
   EXPECT_EQ(record2.record_class(), DnsClass::kIN);
-  EXPECT_EQ(record2.cache_flush(), true);
-  EXPECT_EQ(record2.ttl(), 120);
+  EXPECT_EQ(record2.record_type(), RecordType::kUnique);
+  EXPECT_EQ(record2.ttl(), UINT32_C(120));
   EXPECT_EQ(record2.rdata(),
             Rdata(PtrRecordRdata(DomainName{"testing", "local"})));
 }
 
 TEST(MdnsRecordTest, Compare) {
   MdnsRecord record1(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, false, 120,
+                     DnsClass::kIN, RecordType::kShared, 120,
                      PtrRecordRdata(DomainName{"testing", "local"}));
   MdnsRecord record2(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, false, 120,
+                     DnsClass::kIN, RecordType::kShared, 120,
                      PtrRecordRdata(DomainName{"testing", "local"}));
   MdnsRecord record3(DomainName{"othername", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, false, 120,
+                     DnsClass::kIN, RecordType::kShared, 120,
                      PtrRecordRdata(DomainName{"testing", "local"}));
   MdnsRecord record4(DomainName{"hostname", "local"}, DnsType::kA,
-                     DnsClass::kIN, false, 120,
+                     DnsClass::kIN, RecordType::kShared, 120,
                      ARecordRdata(IPAddress{8, 8, 8, 8}));
   MdnsRecord record5(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, true, 120,
+                     DnsClass::kIN, RecordType::kUnique, 120,
                      PtrRecordRdata(DomainName{"testing", "local"}));
   MdnsRecord record6(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, false, 200,
+                     DnsClass::kIN, RecordType::kShared, 200,
                      PtrRecordRdata(DomainName{"testing", "local"}));
   MdnsRecord record7(DomainName{"hostname", "local"}, DnsType::kPTR,
-                     DnsClass::kIN, false, 120,
+                     DnsClass::kIN, RecordType::kShared, 120,
                      PtrRecordRdata(DomainName{"device", "local"}));
 
   EXPECT_EQ(record1, record2);
@@ -337,39 +337,39 @@ TEST(MdnsRecordTest, Compare) {
 
 TEST(MdnsRecordTest, CopyAndMove) {
   MdnsRecord record(DomainName{"hostname", "local"}, DnsType::kPTR,
-                    DnsClass::kIN, true, 120,
+                    DnsClass::kIN, RecordType::kUnique, 120,
                     PtrRecordRdata(DomainName{"testing", "local"}));
   TestCopyAndMove(record);
 }
 
 TEST(MdnsQuestionTest, Construct) {
   MdnsQuestion question1;
-  EXPECT_EQ(question1.MaxWireSize(), 5);
+  EXPECT_EQ(question1.MaxWireSize(), UINT64_C(5));
   EXPECT_EQ(question1.name(), DomainName());
-  EXPECT_EQ(question1.type(), static_cast<DnsType>(0));
+  EXPECT_EQ(question1.dns_type(), static_cast<DnsType>(0));
   EXPECT_EQ(question1.record_class(), static_cast<DnsClass>(0));
-  EXPECT_EQ(question1.unicast_response(), false);
+  EXPECT_EQ(question1.response_type(), ResponseType::kMulticast);
 
   MdnsQuestion question2(DomainName{"testing", "local"}, DnsType::kPTR,
-                         DnsClass::kIN, true);
+                         DnsClass::kIN, ResponseType::kUnicast);
   EXPECT_EQ(question2.MaxWireSize(), UINT64_C(19));
   EXPECT_EQ(question2.name(), (DomainName{"testing", "local"}));
-  EXPECT_EQ(question2.type(), DnsType::kPTR);
+  EXPECT_EQ(question2.dns_type(), DnsType::kPTR);
   EXPECT_EQ(question2.record_class(), DnsClass::kIN);
-  EXPECT_EQ(question2.unicast_response(), true);
+  EXPECT_EQ(question2.response_type(), ResponseType::kUnicast);
 }
 
 TEST(MdnsQuestionTest, Compare) {
   MdnsQuestion question1(DomainName{"testing", "local"}, DnsType::kPTR,
-                         DnsClass::kIN, false);
+                         DnsClass::kIN, ResponseType::kMulticast);
   MdnsQuestion question2(DomainName{"testing", "local"}, DnsType::kPTR,
-                         DnsClass::kIN, false);
+                         DnsClass::kIN, ResponseType::kMulticast);
   MdnsQuestion question3(DomainName{"hostname", "local"}, DnsType::kPTR,
-                         DnsClass::kIN, false);
+                         DnsClass::kIN, ResponseType::kMulticast);
   MdnsQuestion question4(DomainName{"testing", "local"}, DnsType::kA,
-                         DnsClass::kIN, false);
+                         DnsClass::kIN, ResponseType::kMulticast);
   MdnsQuestion question5(DomainName{"hostname", "local"}, DnsType::kPTR,
-                         DnsClass::kIN, true);
+                         DnsClass::kIN, ResponseType::kUnicast);
 
   EXPECT_EQ(question1, question2);
   EXPECT_NE(question1, question3);
@@ -379,7 +379,7 @@ TEST(MdnsQuestionTest, Compare) {
 
 TEST(MdnsQuestionTest, CopyAndMove) {
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kPTR,
-                        DnsClass::kIN, true);
+                        DnsClass::kIN, ResponseType::kUnicast);
   TestCopyAndMove(question);
 }
 
@@ -387,25 +387,28 @@ TEST(MdnsMessageTest, Construct) {
   MdnsMessage message1;
   EXPECT_EQ(message1.MaxWireSize(), UINT64_C(12));
   EXPECT_EQ(message1.id(), UINT16_C(0));
-  EXPECT_EQ(message1.flags(), UINT16_C(0));
+  EXPECT_EQ(message1.type(), MessageType::Query);
   EXPECT_EQ(message1.questions().size(), UINT64_C(0));
   EXPECT_EQ(message1.answers().size(), UINT64_C(0));
   EXPECT_EQ(message1.authority_records().size(), UINT64_C(0));
   EXPECT_EQ(message1.additional_records().size(), UINT64_C(0));
 
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kPTR,
-                        DnsClass::kIN, true);
-  MdnsRecord record1(DomainName{"record1"}, DnsType::kA, DnsClass::kIN, false,
-                     120, ARecordRdata(IPAddress{172, 0, 0, 1}));
-  MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN, false,
-                     120, TxtRecordRdata{"foo=1", "bar=2"});
-  MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN, false,
-                     120, PtrRecordRdata(DomainName{"device", "local"}));
+                        DnsClass::kIN, ResponseType::kUnicast);
+  MdnsRecord record1(DomainName{"record1"}, DnsType::kA, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     ARecordRdata(IPAddress{172, 0, 0, 1}));
+  MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     TxtRecordRdata{"foo=1", "bar=2"});
+  MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     PtrRecordRdata(DomainName{"device", "local"}));
 
-  MdnsMessage message2(123, 0x8400);
+  MdnsMessage message2(123, MessageType::Response);
   EXPECT_EQ(message2.MaxWireSize(), UINT64_C(12));
   EXPECT_EQ(message2.id(), UINT16_C(123));
-  EXPECT_EQ(message2.flags(), UINT16_C(0x8400));
+  EXPECT_EQ(message2.type(), MessageType::Response);
   EXPECT_EQ(message2.questions().size(), UINT64_C(0));
   EXPECT_EQ(message2.answers().size(), UINT64_C(0));
   EXPECT_EQ(message2.authority_records().size(), UINT64_C(0));
@@ -427,10 +430,10 @@ TEST(MdnsMessageTest, Construct) {
   EXPECT_EQ(message2.authority_records()[0], record2);
   EXPECT_EQ(message2.additional_records()[0], record3);
 
-  MdnsMessage message3(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
+  MdnsMessage message3(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
 
   EXPECT_EQ(message3.MaxWireSize(), UINT64_C(118));
   ASSERT_EQ(message3.questions().size(), UINT64_C(1));
@@ -446,46 +449,49 @@ TEST(MdnsMessageTest, Construct) {
 
 TEST(MdnsMessageTest, Compare) {
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kPTR,
-                        DnsClass::kIN, true);
-  MdnsRecord record1(DomainName{"record1"}, DnsType::kA, DnsClass::kIN, false,
-                     120, ARecordRdata(IPAddress{172, 0, 0, 1}));
-  MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN, false,
-                     120, TxtRecordRdata{"foo=1", "bar=2"});
-  MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN, false,
-                     120, PtrRecordRdata(DomainName{"device", "local"}));
+                        DnsClass::kIN, ResponseType::kUnicast);
+  MdnsRecord record1(DomainName{"record1"}, DnsType::kA, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     ARecordRdata(IPAddress{172, 0, 0, 1}));
+  MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     TxtRecordRdata{"foo=1", "bar=2"});
+  MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     PtrRecordRdata(DomainName{"device", "local"}));
 
-  MdnsMessage message1(123, 0x8400, std::vector<MdnsQuestion>{question},
+  MdnsMessage message1(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message2(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message3(
+      456, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message4(
+      123, MessageType::Query, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message5(123, MessageType::Response, std::vector<MdnsQuestion>{},
                        std::vector<MdnsRecord>{record1},
                        std::vector<MdnsRecord>{record2},
                        std::vector<MdnsRecord>{record3});
-  MdnsMessage message2(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message3(456, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message4(123, 0x400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message5(123, 0x8400, std::vector<MdnsQuestion>{},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message6(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message7(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message8(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{});
+  MdnsMessage message6(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message7(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message8(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{});
 
   EXPECT_EQ(message1, message2);
   EXPECT_NE(message1, message3);
@@ -498,17 +504,20 @@ TEST(MdnsMessageTest, Compare) {
 
 TEST(MdnsMessageTest, CopyAndMove) {
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kPTR,
-                        DnsClass::kIN, true);
-  MdnsRecord record1(DomainName{"record1"}, DnsType::kA, DnsClass::kIN, false,
-                     120, ARecordRdata(IPAddress{172, 0, 0, 1}));
-  MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN, false,
-                     120, TxtRecordRdata{"foo=1", "bar=2"});
-  MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN, false,
-                     120, PtrRecordRdata(DomainName{"device", "local"}));
-  MdnsMessage message(123, 0x8400, std::vector<MdnsQuestion>{question},
-                      std::vector<MdnsRecord>{record1},
-                      std::vector<MdnsRecord>{record2},
-                      std::vector<MdnsRecord>{record3});
+                        DnsClass::kIN, ResponseType::kUnicast);
+  MdnsRecord record1(DomainName{"record1"}, DnsType::kA, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     ARecordRdata(IPAddress{172, 0, 0, 1}));
+  MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     TxtRecordRdata{"foo=1", "bar=2"});
+  MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN,
+                     RecordType::kShared, 120,
+                     PtrRecordRdata(DomainName{"device", "local"}));
+  MdnsMessage message(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
   TestCopyAndMove(message);
 }
 

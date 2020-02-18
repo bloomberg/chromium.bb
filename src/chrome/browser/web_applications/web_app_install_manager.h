@@ -35,7 +35,6 @@ class WebAppInstallManager final : public InstallManager {
   ~WebAppInstallManager() override;
 
   // InstallManager:
-  void Shutdown() override;
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebAppFromManifest(content::WebContents* contents,
                                  WebappInstallSource install_source,
@@ -49,19 +48,21 @@ class WebAppInstallManager final : public InstallManager {
       OnceInstallCallback callback) override;
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
-      bool no_network_install,
+      ForInstallableSite for_installable_site,
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
-  void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                const ExternalInstallOptions& install_options,
-                                OnceInstallCallback callback) override;
+  void InstallWebAppWithParams(content::WebContents* web_contents,
+                               const InstallParams& install_params,
+                               WebappInstallSource install_source,
+                               OnceInstallCallback callback) override;
   void InstallOrUpdateWebAppFromSync(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
-  void InstallWebAppForTesting(
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      OnceInstallCallback callback) override;
+  void UpdateWebAppFromManifest(const AppId& app_id,
+                                blink::Manifest manifest,
+                                OnceInstallCallback callback) override;
+  void Shutdown() override;
 
   using DataRetrieverFactory =
       base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
@@ -103,8 +104,6 @@ class WebAppInstallManager final : public InstallManager {
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
   bool web_contents_ready_ = false;
-
-  bool is_shutting_down_ = false;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 

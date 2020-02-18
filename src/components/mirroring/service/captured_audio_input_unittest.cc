@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/audio_parameters.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -51,9 +51,7 @@ class CapturedAudioInputTest : public ::testing::Test {
  public:
   CapturedAudioInputTest() {}
 
-  ~CapturedAudioInputTest() override {
-    scoped_task_environment_.RunUntilIdle();
-  }
+  ~CapturedAudioInputTest() override { task_environment_.RunUntilIdle(); }
 
   void CreateMockStream(bool initially_muted,
                         mojom::AudioStreamCreatorClientPtr client,
@@ -91,7 +89,7 @@ class CapturedAudioInputTest : public ::testing::Test {
   void CloseStream() {
     EXPECT_TRUE(audio_input_);
     audio_input_->CloseStream();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     socket_.Close();
     audio_input_.reset();
     stream_ = nullptr;
@@ -134,7 +132,7 @@ class CapturedAudioInputTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<media::AudioInputIPC> audio_input_;
   MockDelegate delegate_;
   MockStream* stream_ = nullptr;

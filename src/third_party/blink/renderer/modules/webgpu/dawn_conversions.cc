@@ -17,20 +17,39 @@ namespace blink {
 
 template <>
 DawnBindingType AsDawnEnum<DawnBindingType>(const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "uniform-buffer") {
+    return DAWN_BINDING_TYPE_UNIFORM_BUFFER;
+  }
+  if (webgpu_enum == "storage-buffer") {
+    return DAWN_BINDING_TYPE_STORAGE_BUFFER;
+  }
+  if (webgpu_enum == "readonly-storage-buffer") {
+    return DAWN_BINDING_TYPE_READONLY_STORAGE_BUFFER;
+  }
   if (webgpu_enum == "sampler") {
     return DAWN_BINDING_TYPE_SAMPLER;
   }
   if (webgpu_enum == "sampled-texture") {
     return DAWN_BINDING_TYPE_SAMPLED_TEXTURE;
   }
-  if (webgpu_enum == "storage-buffer") {
-    return DAWN_BINDING_TYPE_STORAGE_BUFFER;
-  }
-  if (webgpu_enum == "uniform-buffer") {
-    return DAWN_BINDING_TYPE_UNIFORM_BUFFER;
-  }
   NOTREACHED();
   return DAWN_BINDING_TYPE_FORCE32;
+}
+
+template <>
+DawnTextureComponentType AsDawnEnum<DawnTextureComponentType>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "float") {
+    return DAWN_TEXTURE_COMPONENT_TYPE_FLOAT;
+  }
+  if (webgpu_enum == "uint") {
+    return DAWN_TEXTURE_COMPONENT_TYPE_UINT;
+  }
+  if (webgpu_enum == "sint") {
+    return DAWN_TEXTURE_COMPONENT_TYPE_SINT;
+  }
+  NOTREACHED();
+  return DAWN_TEXTURE_COMPONENT_TYPE_FORCE32;
 }
 
 template <>
@@ -67,6 +86,10 @@ DawnCompareFunction AsDawnEnum<DawnCompareFunction>(
 template <>
 DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
     const WTF::String& webgpu_enum) {
+  if (webgpu_enum.IsNull()) {
+    return DAWN_TEXTURE_FORMAT_UNDEFINED;
+  }
+
   // Normal 8 bit formats
   if (webgpu_enum == "r8unorm") {
     return DAWN_TEXTURE_FORMAT_R8_UNORM;
@@ -82,12 +105,6 @@ DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
   }
 
   // Normal 16 bit formats
-  if (webgpu_enum == "r16unorm") {
-    return DAWN_TEXTURE_FORMAT_R16_UNORM;
-  }
-  if (webgpu_enum == "r16snorm") {
-    return DAWN_TEXTURE_FORMAT_R16_SNORM;
-  }
   if (webgpu_enum == "r16uint") {
     return DAWN_TEXTURE_FORMAT_R16_UINT;
   }
@@ -119,12 +136,6 @@ DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
   }
   if (webgpu_enum == "r32float") {
     return DAWN_TEXTURE_FORMAT_R32_FLOAT;
-  }
-  if (webgpu_enum == "rg16unorm") {
-    return DAWN_TEXTURE_FORMAT_RG16_UNORM;
-  }
-  if (webgpu_enum == "rg16snorm") {
-    return DAWN_TEXTURE_FORMAT_RG16_SNORM;
   }
   if (webgpu_enum == "rg16uint") {
     return DAWN_TEXTURE_FORMAT_RG16_UINT;
@@ -175,12 +186,6 @@ DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
   if (webgpu_enum == "rg32float") {
     return DAWN_TEXTURE_FORMAT_RG32_FLOAT;
   }
-  if (webgpu_enum == "rgba16unorm") {
-    return DAWN_TEXTURE_FORMAT_RGBA16_UNORM;
-  }
-  if (webgpu_enum == "rgba16snorm") {
-    return DAWN_TEXTURE_FORMAT_RGBA16_SNORM;
-  }
   if (webgpu_enum == "rgba16uint") {
     return DAWN_TEXTURE_FORMAT_RGBA16_UINT;
   }
@@ -230,6 +235,9 @@ DawnTextureDimension AsDawnEnum<DawnTextureDimension>(
 template <>
 DawnTextureViewDimension AsDawnEnum<DawnTextureViewDimension>(
     const WTF::String& webgpu_enum) {
+  if (webgpu_enum.IsNull()) {
+    return DAWN_TEXTURE_VIEW_DIMENSION_UNDEFINED;
+  }
   if (webgpu_enum == "2d") {
     return DAWN_TEXTURE_VIEW_DIMENSION_2D;
   }

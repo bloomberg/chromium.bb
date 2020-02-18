@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import six
+
 
 def ImportModule(target):
   """Import |target| and return a reference to it.
@@ -33,7 +35,7 @@ def ImportModule(target):
     A reference to the module.
   """
   # Normalize |target| into a dotted string and |parts| into a list.
-  if isinstance(target, basestring):
+  if isinstance(target, six.string_types):
     parts = target.split('.')
   else:
     parts = list(target)

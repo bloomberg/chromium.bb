@@ -38,19 +38,45 @@ enum UMAExitStatus {
 
 const double kDefaultVolume = 1.0;
 
+const char kWatchTimeHistogram[] = "Media.Android.MediaPlayerWatchTime";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class WatchTimeType {
+  kNonHls = 0,
+  kHlsAudioOnly = 1,
+  kHlsVideo = 2,
+  kMaxValue = kHlsVideo,
+};
+
+void RecordWatchTimeUMA(bool is_hls, bool has_video) {
+  WatchTimeType type = WatchTimeType::kNonHls;
+  if (is_hls) {
+    if (!has_video) {
+      type = WatchTimeType::kHlsAudioOnly;
+    } else {
+      type = WatchTimeType::kHlsVideo;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION(kWatchTimeHistogram, type);
+}
+
 }  // namespace
 
 MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
                                      const GURL& site_for_cookies,
+                                     const url::Origin& top_frame_origin,
                                      const std::string& user_agent,
                                      bool hide_url_log,
                                      Client* client,
-                                     bool allow_credentials)
+                                     bool allow_credentials,
+                                     bool is_hls)
     : prepared_(false),
       pending_play_(false),
       should_seek_on_prepare_(false),
       url_(url),
       site_for_cookies_(site_for_cookies),
+      top_frame_origin_(top_frame_origin),
       user_agent_(user_agent),
       hide_url_log_(hide_url_log),
       width_(0),
@@ -62,8 +88,12 @@ MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
       is_active_(false),
       has_error_(false),
       has_ever_started_(false),
-      client_(client),
-      weak_factory_(this) {
+      is_hls_(is_hls),
+      watch_timer_(base::BindRepeating(&MediaPlayerBridge::OnWatchTimerTick,
+                                       base::Unretained(this)),
+                   base::BindRepeating(&MediaPlayerBridge::GetCurrentTime,
+                                       base::Unretained(this))),
+      client_(client) {
   listener_ = std::make_unique<MediaPlayerListener>(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 }
@@ -95,7 +125,7 @@ void MediaPlayerBridge::Initialize() {
         client_->GetMediaResourceGetter();
 
     resource_getter->GetCookies(
-        url_, site_for_cookies_,
+        url_, site_for_cookies_, top_frame_origin_,
         base::BindOnce(&MediaPlayerBridge::OnCookiesRetrieved,
                        weak_factory_.GetWeakPtr()));
   }
@@ -324,6 +354,7 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
 }
 
 void MediaPlayerBridge::Release() {
+  watch_timer_.Stop();
   is_active_ = false;
 
   if (j_media_player_bridge_.is_null())
@@ -446,9 +477,11 @@ void MediaPlayerBridge::UpdateAllowedOperations() {
 void MediaPlayerBridge::StartInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_start(env, j_media_player_bridge_);
+  watch_timer_.Start();
 }
 
 void MediaPlayerBridge::PauseInternal() {
+  watch_timer_.Stop();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_pause(env, j_media_player_bridge_);
 }
@@ -474,6 +507,10 @@ void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
     return;
   }
 
+  // Note: we do not want to count changes in media time due to seeks as watch
+  // time, but tracking pending seeks is not completely trivial. Instead seeks
+  // larger than kWatchTimeReportingInterval * 2 will be discarded by the sanity
+  // checks and shorter seeks will be counted.
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   int time_msec = static_cast<int>(time.InMilliseconds());
@@ -486,6 +523,10 @@ GURL MediaPlayerBridge::GetUrl() {
 
 GURL MediaPlayerBridge::GetSiteForCookies() {
   return site_for_cookies_;
+}
+
+void MediaPlayerBridge::OnWatchTimerTick() {
+  RecordWatchTimeUMA(is_hls_, height_ > 0);
 }
 
 }  // namespace media

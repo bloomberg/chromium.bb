@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "osp/impl/quic/quic_connection_factory.h"
-#include "platform/api/event_waiter.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/ip_address.h"
 #include "third_party/chromium_quic/src/base/at_exit.h"
@@ -22,13 +21,22 @@ class QuicTaskRunner;
 
 class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
  public:
-  QuicConnectionFactoryImpl();
+  QuicConnectionFactoryImpl(platform::NetworkRunner* network_runner);
   ~QuicConnectionFactoryImpl() override;
+
+  // UdpReadCallback overrides.
+  void OnRead(platform::UdpPacket data,
+              platform::NetworkRunner* network_runner) override;
+
+  // UdpSocket::Client overrides.
+  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
 
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,
                          const std::vector<IPEndpoint>& endpoints) override;
-  void RunTasks() override;
   std::unique_ptr<QuicConnection> Connect(
       const IPEndpoint& endpoint,
       QuicConnection::Delegate* connection_delegate) override;
@@ -45,13 +53,17 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
 
   std::vector<platform::UdpSocketUniquePtr> sockets_;
 
-  platform::EventWaiterPtr waiter_;
-
   struct OpenConnection {
     QuicConnection* connection;
     platform::UdpSocket* socket;  // References one of the owned |sockets_|.
   };
   std::map<IPEndpoint, OpenConnection, IPEndpointComparator> connections_;
+
+  // Network runner to use for network operations.
+  // NOTE: Must be provided in constructor and stored as an instance variable
+  // rather than using the static accessor method to allow for UTs to mock this
+  // layer.
+  platform::NetworkRunner* const network_runner_;
 };
 
 }  // namespace openscreen

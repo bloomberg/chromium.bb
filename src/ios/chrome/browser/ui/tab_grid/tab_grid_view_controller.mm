@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -159,7 +160,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
+  self.view.backgroundColor = [UIColor colorNamed:kGridBackgroundColor];
   [self setupScrollView];
   [self setupIncognitoTabsViewController];
   [self setupRegularTabsViewController];
@@ -659,9 +660,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // TODO(crbug.com/804589) : Dark style on remote tabs.
   // The styler must be set before the view controller is loaded.
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-  styler.tableViewBackgroundColor = UIColorFromRGB(kGridBackgroundColor);
-  styler.cellHighlightColor =
-      [UIColor colorWithWhite:0 alpha:kGridDarkThemeCellHighlightColorAlpha];
+  styler.tableViewBackgroundColor = [UIColor colorNamed:kGridBackgroundColor];
   // To make using the compile guards easier, use a separate method.
   [self setupRemoteTabsViewControllerForDarkModeWithStyler:styler];
   self.remoteTabsViewController.styler = styler;
@@ -696,13 +695,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // of dark mode colors for all the colors in this view. However, this
   // override is not available on pre-iOS 13 devices, so the dark mode colors
   // must be provided manually.
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
+    styler.cellHighlightColor = [UIColor colorNamed:kTableViewRowHighlightColor];
     self.remoteTabsViewController.overrideUserInterfaceStyle =
         UIUserInterfaceStyleDark;
     return;
   }
-#endif
+  styler.cellHighlightColor =
+      [UIColor colorNamed:kTableViewRowHighlightDarkColor];
   styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.headerFooterTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.cellDetailColor = UIColorFromRGB(kGridDarkThemeCellDetailColor,
@@ -1125,7 +1125,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         // Visibly scroll to the regular tabs panel after a slight delay when
         // the user is already in the tab switcher.
         __weak TabGridViewController* weakSelf = self;
-        base::PostDelayedTaskWithTraits(
+        base::PostDelayedTask(
             FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
               [weakSelf setCurrentPageAndPageControlSelectedPage:
                             TabGridPageRegularTabs

@@ -201,7 +201,6 @@ void SkTextBlob::operator delete(void* p) {
 
 void* SkTextBlob::operator new(size_t) {
     SK_ABORT("All blobs are created by placement new.");
-    return sk_malloc_throw(0);
 }
 
 void* SkTextBlob::operator new(size_t, void* p) {
@@ -707,7 +706,7 @@ sk_sp<SkTextBlob> SkTextBlobPriv::MakeFromBuffer(SkReadBuffer& reader) {
         SkPoint offset;
         reader.readPoint(&offset);
         SkFont font;
-        if (reader.isVersionLT(SkReadBuffer::kSerializeFonts_Version)) {
+        if (reader.isVersionLT(SkPicturePriv::kSerializeFonts_Version)) {
             SkPaint paint;
             reader.readPaint(&paint, &font);
         } else {

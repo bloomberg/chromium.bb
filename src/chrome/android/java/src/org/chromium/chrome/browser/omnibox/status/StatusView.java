@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHA
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -18,6 +19,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.ImageView;
@@ -26,6 +28,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.UiUtils;
 
@@ -36,6 +39,8 @@ public class StatusView extends LinearLayout {
     private @Nullable View mIncognitoBadge;
     private int mIncognitoBadgeEndPaddingWithIcon;
     private int mIncognitoBadgeEndPaddingWithoutIcon;
+    private int mTouchDelegateStartOffset;
+    private int mTouchDelegateEndOffset;
 
     private ImageView mIconView;
     private TextView mVerboseStatusTextView;
@@ -52,6 +57,12 @@ public class StatusView extends LinearLayout {
 
     private Bitmap mIconBitmap;
 
+    private TouchDelegate mTouchDelegate;
+    private CompositeTouchDelegate mCompositeTouchDelegate;
+
+    private boolean mLastTouchDelegateRtlness;
+    private Rect mLastTouchDelegateRect;
+
     public StatusView(Context context, AttributeSet attributes) {
         super(context, attributes);
     }
@@ -66,6 +77,16 @@ public class StatusView extends LinearLayout {
         mStatusExtraSpace = findViewById(R.id.location_bar_verbose_status_extra_space);
 
         configureAccessibilityDescriptions();
+    }
+
+    /**
+     * Set the composite touch delegate here to which this view's touch delegate will be added.
+     * @param compositeTouchDelegate The parent's CompositeTouchDelegate to be used.
+     */
+    public void setCompositeTouchDelegate(CompositeTouchDelegate compositeTouchDelegate) {
+        mCompositeTouchDelegate = compositeTouchDelegate;
+        mIconView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight,
+                                                    oldBottom) -> updateTouchDelegate());
     }
 
     /**
@@ -121,7 +142,11 @@ public class StatusView extends LinearLayout {
             mIconView.animate()
                     .alpha(1.0f)
                     .setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
-                    .withEndAction(() -> { mAnimatingStatusIconShow = false; })
+                    .withEndAction(() -> {
+                        mAnimatingStatusIconShow = false;
+                        // Wait until the icon is visible so the bounds will be properly set.
+                        updateTouchDelegate();
+                    })
                     .start();
         } else if (wantIconHidden && (!isIconHidden || mAnimatingStatusIconShow)) {
             // Action 2: animate hiding, if icon was either shown or showing.
@@ -143,8 +168,11 @@ public class StatusView extends LinearLayout {
                         // Update incognito badge padding after the animation to avoid a glitch on
                         // focusing location bar.
                         updateIncognitoBadgeEndPadding();
+                        updateTouchDelegate();
                     })
                     .start();
+        } else {
+            updateTouchDelegate();
         }
 
         // Action 3: Specify icon content. Use TransitionDrawable whenever object is visible.
@@ -164,6 +192,10 @@ public class StatusView extends LinearLayout {
                 newImage.setCrossFadeEnabled(true);
                 newImage.startTransition(
                         mAnimationsEnabled ? URL_FOCUS_CHANGE_ANIMATION_DURATION_MS : 0);
+
+                // Update the touch delegate only if the icons are swapped without animating the
+                // image view.
+                if (!mAnimatingStatusIconShow) updateTouchDelegate();
             } else {
                 mIconView.setImageDrawable(targetIcon);
             }
@@ -305,6 +337,7 @@ public class StatusView extends LinearLayout {
         if (mIncognitoBadge == null) initializeIncognitoBadge();
 
         mIncognitoBadge.setVisibility(incognitoBadgeVisible ? View.VISIBLE : View.GONE);
+        updateTouchDelegate();
     }
 
     private void initializeIncognitoBadge() {
@@ -327,10 +360,75 @@ public class StatusView extends LinearLayout {
                 mIncognitoBadge.getPaddingBottom());
     }
 
+    /**
+     * Create a touch delegate to expand the clickable area for the padlock icon (see
+     * crbug.com/970031 for motivation/info). This method will be called when the icon is animating
+     * in and when layout changes. It's called on these intervals because (1) the layout could
+     * change and (2) the Rtl-ness of the view could change. There are checks in place to avoid
+     * doing unnecessary work, so if the rect is empty or equivalent to the one already in place,
+     * no work will be done.
+     */
+    private void updateTouchDelegate() {
+        if (!isIconVisible()) {
+            // Tear down the existing delegate if it exists.
+            if (mTouchDelegate != null) {
+                mCompositeTouchDelegate.removeDelegateForDescendantView(mTouchDelegate);
+                mTouchDelegate = null;
+                mLastTouchDelegateRect = new Rect();
+            }
+            return;
+        }
+        // Setup a touch delegate to increase the clickable area for the padlock.
+        // See for more information.
+        Rect touchDelegateBounds = new Rect();
+        mIconView.getHitRect(touchDelegateBounds);
+        if (touchDelegateBounds.equals(new Rect())) return;
+
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
+        if (mTouchDelegateStartOffset == 0) {
+            mTouchDelegateStartOffset =
+                    getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding);
+        }
+        if (mTouchDelegateEndOffset == 0) {
+            mTouchDelegateEndOffset = getResources().getDimensionPixelSize(
+                    R.dimen.location_bar_start_icon_margin_end);
+        }
+        touchDelegateBounds.left -= isRtl ? mTouchDelegateEndOffset : mTouchDelegateStartOffset;
+        touchDelegateBounds.right += isRtl ? mTouchDelegateStartOffset : mTouchDelegateEndOffset;
+
+        // If our rect and rtl-ness hasn't changed, there's no need to recreate the TouchDelegate.
+        if (mTouchDelegate != null && touchDelegateBounds.equals(mLastTouchDelegateRect)
+                && mLastTouchDelegateRtlness == isRtl) {
+            return;
+        }
+        mLastTouchDelegateRect = touchDelegateBounds;
+
+        // Remove the existing delegate when we recreate a new one.
+        if (mTouchDelegate != null) {
+            mCompositeTouchDelegate.removeDelegateForDescendantView(mTouchDelegate);
+        }
+
+        // Set the delegate on LocationBarLayout because it has available space. Setting on
+        // status view itself will clip the rect.
+        mTouchDelegate = new TouchDelegate(touchDelegateBounds, mIconView);
+        mCompositeTouchDelegate.addDelegateForDescendantView(mTouchDelegate);
+        mLastTouchDelegateRtlness = isRtl;
+    }
+
     // TODO(ender): The final last purpose of this method is to allow
     // ToolbarButtonInProductHelpController set up help bubbles. This dependency is about to
     // change. Do not depend on this method when creating new code.
     View getSecurityButton() {
         return mIconView;
+    }
+
+    /** @return True if the status icon is currently visible. */
+    private boolean isIconVisible() {
+        return (mIconRes != 0 || mIconBitmap != null) && mIconView.getVisibility() != GONE
+                && mIconView.getAlpha() != 0;
+    }
+
+    TouchDelegate getTouchDelegateForTesting() {
+        return mTouchDelegate;
     }
 }

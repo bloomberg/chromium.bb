@@ -233,13 +233,15 @@ check_base(const char *tableList, const char *input, const char *expected,
 			int error_printed = 0;
 			for (i = 0; i < outlen; i++) {
 				if (expected_inputPos[i] != inputPos[i]) {
-					if (!error_printed) {  // Print only once
-						fprintf(stderr, "Input position failure:\n");
-						error_printed = 1;
-					}
-					fprintf(stderr, "Expected %d, received %d in index %d\n",
-							expected_inputPos[i], inputPos[i], i);
 					retval = 1;
+					if (in.diagnostics) {
+						if (!error_printed) {  // Print only once
+							fprintf(stderr, "Input position failure:\n");
+							error_printed = 1;
+						}
+						fprintf(stderr, "Expected %d, received %d in index %d\n",
+								expected_inputPos[i], inputPos[i], i);
+					}
 				}
 			}
 		}
@@ -247,38 +249,50 @@ check_base(const char *tableList, const char *input, const char *expected,
 			int error_printed = 0;
 			for (i = 0; i < inlen; i++) {
 				if (expected_outputPos[i] != outputPos[i]) {
-					if (!error_printed) {  // Print only once
-						fprintf(stderr, "Output position failure:\n");
-						error_printed = 1;
-					}
-					fprintf(stderr, "Expected %d, received %d in index %d\n",
-							expected_outputPos[i], outputPos[i], i);
 					retval = 1;
+					if (in.diagnostics) {
+						if (!error_printed) {  // Print only once
+							fprintf(stderr, "Output position failure:\n");
+							error_printed = 1;
+						}
+						fprintf(stderr, "Expected %d, received %d in index %d\n",
+								expected_outputPos[i], outputPos[i], i);
+					}
 				}
 			}
 		}
 		if ((in.expected_cursorPos >= 0) && (cursorPos != in.expected_cursorPos)) {
-			fprintf(stderr, "Cursor position failure:\n");
-			fprintf(stderr, "Initial:%d Expected:%d Actual:%d \n", in.cursorPos,
-					in.expected_cursorPos, cursorPos);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr, "Cursor position failure:\n");
+				fprintf(stderr, "Initial:%d Expected:%d Actual:%d \n", in.cursorPos,
+						in.expected_cursorPos, cursorPos);
+			}
 		}
 		if (in.max_outlen < 0 && inlen != actualInlen) {
-			fprintf(stderr,
-					"Unexpected error happened: input length is not the same before as "
-					"after the translation:\n");
-			fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr,
+						"Unexpected error happened: input length is not the same before "
+						"as "
+						"after the translation:\n");
+				fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
+			}
 		} else if (actualInlen > inlen) {
-			fprintf(stderr,
-					"Unexpected error happened: returned input length (%d) exceeds "
-					"total input length (%d)\n",
-					actualInlen, inlen);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr,
+						"Unexpected error happened: returned input length (%d) exceeds "
+						"total input length (%d)\n",
+						actualInlen, inlen);
+			}
 		} else if (in.real_inlen >= 0 && in.real_inlen != actualInlen) {
-			fprintf(stderr, "Real input length failure:\n");
-			fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen, actualInlen);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr, "Real input length failure:\n");
+				fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen,
+						actualInlen);
+			}
 		}
 
 	fail:
@@ -410,10 +424,13 @@ fail:
 
 /** Check if a string is hyphenated as expected.
  *
+ * mode is '0' when input is text and '1' when input is braille
+ *
  * @return 0 if the hyphenation is as expected and 1 otherwise.
  */
 int
-check_hyphenation(const char *tableList, const char *str, const char *expected) {
+check_hyphenation(
+		const char *tableList, const char *str, const char *expected, int mode) {
 	widechar *inbuf;
 	widechar *hyphenatedbuf = NULL;
 	uint8_t *hyphenated = NULL;
@@ -431,7 +448,7 @@ check_hyphenation(const char *tableList, const char *str, const char *expected) 
 	}
 	hyphens = calloc(inlen + 1, sizeof(char));
 
-	if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, 0)) {
+	if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, mode)) {
 		fprintf(stderr, "Hyphenation failed.\n");
 		retval = 1;
 		goto fail;
@@ -447,7 +464,10 @@ check_hyphenation(const char *tableList, const char *str, const char *expected) 
 	int j = 0;
 	hyphenatedbuf[i++] = inbuf[j++];
 	for (; j < inlen; j++) {
-		if (hyphens[j] != '0') hyphenatedbuf[i++] = (widechar)'-';
+		if (hyphens[j] == '2')
+			hyphenatedbuf[i++] = (widechar)'|';
+		else if (hyphens[j] != '0')
+			hyphenatedbuf[i++] = (widechar)'-';
 		hyphenatedbuf[i++] = inbuf[j];
 	}
 

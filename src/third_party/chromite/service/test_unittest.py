@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import contextlib
-import mock
 import os
+
+import mock
 
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
@@ -78,7 +79,7 @@ class BuildTargetUnitTestTest(cros_test_lib.RunCommandTempDirTestCase):
     """Test non-zero return code and failed package handling."""
     packages = ['foo/bar', 'cat/pkg']
     cpvs = [portage_util.SplitCPV(p, strict=False) for p in packages]
-    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
+    self.PatchObject(portage_util, 'ParseDieHookStatusFile',
                      return_value=cpvs)
     expected_rc = 1
     self.rc.SetDefaultCmdResult(returncode=expected_rc)

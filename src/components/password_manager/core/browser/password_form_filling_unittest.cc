@@ -63,7 +63,9 @@ class PasswordFormFillingTest : public testing::Test {
     observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("http://accounts.google.com/a/Login");
     observed_form_.username_element = ASCIIToUTF16("Email");
+    observed_form_.username_element_renderer_id = 100;
     observed_form_.password_element = ASCIIToUTF16("Passwd");
+    observed_form_.password_element_renderer_id = 101;
     observed_form_.submit_element = ASCIIToUTF16("signIn");
     observed_form_.signon_realm = "http://accounts.google.com";
     observed_form_.form_data.name = ASCIIToUTF16("the-form-name");
@@ -104,49 +106,47 @@ TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-      &client_, &driver_, false /* is_blacklisted */, observed_form_,
-      best_matches, federated_matches_, nullptr, metrics_recorder_.get());
+      &client_, &driver_, observed_form_, best_matches, federated_matches_,
+      nullptr, metrics_recorder_.get());
   EXPECT_EQ(LikelyFormFilling::kNoFilling, likely_form_filling);
 }
 
 TEST_F(PasswordFormFillingTest, Autofill) {
-  for (bool is_blacklisted : {false, true}) {
-    std::map<base::string16, const autofill::PasswordForm*> best_matches;
-    best_matches[saved_match_.username_value] = &saved_match_;
-    PasswordForm another_saved_match = saved_match_;
-    another_saved_match.username_value += ASCIIToUTF16("1");
-    another_saved_match.password_value += ASCIIToUTF16("1");
-    best_matches[another_saved_match.username_value] = &another_saved_match;
+  std::map<base::string16, const autofill::PasswordForm*> best_matches;
+  best_matches[saved_match_.username_value] = &saved_match_;
+  PasswordForm another_saved_match = saved_match_;
+  another_saved_match.username_value += ASCIIToUTF16("1");
+  another_saved_match.password_value += ASCIIToUTF16("1");
+  best_matches[another_saved_match.username_value] = &another_saved_match;
 
-    EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
-    PasswordFormFillData fill_data;
-    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
-    EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
-    EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
+  EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
+  PasswordFormFillData fill_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
+  EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
-    LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        &client_, &driver_, is_blacklisted, observed_form_, best_matches,
-        federated_matches_, &saved_match_, metrics_recorder_.get());
-    EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
+  LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
+      &client_, &driver_, observed_form_, best_matches, federated_matches_,
+      &saved_match_, metrics_recorder_.get());
+  EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
 
-    // Check that the message to the renderer (i.e. |fill_data|) is filled
-    // correctly.
-    EXPECT_EQ(observed_form_.origin, fill_data.origin);
-    EXPECT_FALSE(fill_data.wait_for_username);
-    EXPECT_EQ(observed_form_.username_element, fill_data.username_field.name);
-    EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
-    EXPECT_EQ(observed_form_.password_element, fill_data.password_field.name);
-    EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+  // Check that the message to the renderer (i.e. |fill_data|) is filled
+  // correctly.
+  EXPECT_EQ(observed_form_.origin, fill_data.origin);
+  EXPECT_FALSE(fill_data.wait_for_username);
+  EXPECT_EQ(observed_form_.username_element, fill_data.username_field.name);
+  EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
+  EXPECT_EQ(observed_form_.password_element, fill_data.password_field.name);
+  EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 
-    // Check that information about non-preferred best matches is filled.
-    ASSERT_EQ(1u, fill_data.additional_logins.size());
-    EXPECT_EQ(another_saved_match.username_value,
-              fill_data.additional_logins.begin()->first);
-    EXPECT_EQ(another_saved_match.password_value,
-              fill_data.additional_logins.begin()->second.password);
-    // Realm is empty for non-psl match.
-    EXPECT_TRUE(fill_data.additional_logins.begin()->second.realm.empty());
-  }
+  // Check that information about non-preferred best matches is filled.
+  ASSERT_EQ(1u, fill_data.additional_logins.size());
+  EXPECT_EQ(another_saved_match.username_value,
+            fill_data.additional_logins.begin()->first);
+  EXPECT_EQ(another_saved_match.password_value,
+            fill_data.additional_logins.begin()->second.password);
+  // Realm is empty for non-psl match.
+  EXPECT_TRUE(fill_data.additional_logins.begin()->second.realm.empty());
 }
 
 TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
@@ -171,18 +171,16 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
           .current_password_present = true,
       },
   };
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
-
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.description);
     std::map<base::string16, const PasswordForm*> best_matches;
     best_matches[saved_match_.username_value] = &saved_match_;
 
     PasswordForm observed_form = observed_form_;
-    observed_form.password_element_renderer_id = 123;
-    if (!test_case.new_password_present)
+    if (test_case.new_password_present) {
       observed_form.new_password_element = ASCIIToUTF16("New Passwd");
+      observed_form.new_password_element_renderer_id = 125;
+    }
     if (!test_case.current_password_present) {
       observed_form.password_element.clear();
       observed_form.password_element_renderer_id =
@@ -194,8 +192,8 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        &client_, &driver_, false, observed_form, best_matches,
-        federated_matches_, &saved_match_, metrics_recorder_.get());
+        &client_, &driver_, observed_form, best_matches, federated_matches_,
+        &saved_match_, metrics_recorder_.get());
 
     // In all cases where a current password exists, fill on load should be
     // permitted. Otherwise, the renderer will not fill anyway and return
@@ -218,9 +216,8 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-      &client_, &driver_, false /* is_blacklisted */, observed_form_,
-      best_matches, federated_matches_, &psl_saved_match_,
-      metrics_recorder_.get());
+      &client_, &driver_, observed_form_, best_matches, federated_matches_,
+      &psl_saved_match_, metrics_recorder_.get());
   EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
 
   // Check that the message to the renderer (i.e. |fill_data|) is filled
@@ -247,9 +244,8 @@ TEST_F(PasswordFormFillingTest, FillingOnHttp) {
                                   enable_foas_http);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        &client_, &driver_, false /* is_blacklisted */, observed_form_,
-        best_matches, federated_matches_, &saved_match_,
-        metrics_recorder_.get());
+        &client_, &driver_, observed_form_, best_matches, federated_matches_,
+        &saved_match_, metrics_recorder_.get());
     EXPECT_EQ(enable_foas_http ? LikelyFormFilling::kFillOnAccountSelect
                                : LikelyFormFilling::kFillOnPageLoad,
               likely_form_filling);
@@ -269,9 +265,8 @@ TEST_F(PasswordFormFillingTest, TouchToFill) {
                                   enable_touch_to_fill);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        &client_, &driver_, false /* is_blacklisted */, observed_form_,
-        best_matches, federated_matches_, &saved_match_,
-        metrics_recorder_.get());
+        &client_, &driver_, observed_form_, best_matches, federated_matches_,
+        &saved_match_, metrics_recorder_.get());
     EXPECT_EQ(enable_touch_to_fill ? LikelyFormFilling::kFillOnAccountSelect
                                    : LikelyFormFilling::kFillOnPageLoad,
               likely_form_filling);

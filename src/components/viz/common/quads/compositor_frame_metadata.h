@@ -17,7 +17,6 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/latency/latency_info.h"
@@ -144,27 +143,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   base::TimeTicks local_surface_id_allocation_time;
 
   base::Optional<base::TimeDelta> preferred_frame_interval;
-
-  // Union of visible rects of MirrorLayers in the frame, used to force damage
-  // on the surface.
-  // TODO(crbug/987725): This is a workaround and should be removed when proper
-  // damage calculation is implemented in SurfaceAggregator.
-  gfx::Rect mirror_rect;
-
-#if defined(OS_ANDROID)
-  float max_page_scale_factor = 0.f;
-  gfx::SizeF root_layer_size;
-  bool root_overflow_y_hidden = false;
-
-  // Used to position Android bottom bar, whose position is computed by the
-  // renderer compositor.
-  float bottom_controls_height = 0.f;
-  float bottom_controls_shown_ratio = 0.f;
-
-  // Provides selection region updates relative to the current viewport. If the
-  // selection is empty or otherwise unused, the bound types will indicate such.
-  Selection<gfx::SelectionBound> selection;
-#endif  // defined(OS_ANDROID)
 
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);

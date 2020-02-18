@@ -4,8 +4,8 @@
 
 package org.chromium.base.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import java.util.concurrent.TimeUnit;
@@ -126,11 +126,12 @@ import java.util.concurrent.TimeoutException;
  */
 public class CallbackHelper {
     /** The default timeout (in seconds) for a callback to wait. */
-    public static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(5);
+    public static final long WAIT_TIMEOUT_SECONDS = 5L;
 
     private final Object mLock = new Object();
     private int mCallCount;
     private String mFailureString;
+    private boolean mSingleShotMode;
 
     /**
      * Gets the number of times the callback has been called.
@@ -163,7 +164,7 @@ public class CallbackHelper {
      * block until the specified call count is reached.
      *
      * @param msg The error message to use if the callback times out.
-     * @param currentCallCount the value obtained by calling getCallCount().
+     * @param currentCallCount Wait until |notifyCalled| has been called this many times in total.
      * @param numberOfCallsToWaitFor number of calls (counting since
      *                               currentCallCount was obtained) that we will wait for.
      * @param timeout timeout value for all callbacks to occur.
@@ -175,11 +176,11 @@ public class CallbackHelper {
             long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
         assert mCallCount >= currentCallCount;
         assert numberOfCallsToWaitFor > 0;
+        TimeoutTimer timer = new TimeoutTimer(unit.toMillis(timeout));
         synchronized (mLock) {
             int callCountWhenDoneWaiting = currentCallCount + numberOfCallsToWaitFor;
-            long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
-            while (callCountWhenDoneWaiting > mCallCount && System.currentTimeMillis() < deadline) {
-                mLock.wait(deadline - System.currentTimeMillis());
+            while (callCountWhenDoneWaiting > mCallCount && !timer.isTimedOut()) {
+                mLock.wait(timer.getRemainingMs());
                 if (mFailureString != null) {
                     String s = mFailureString;
                     mFailureString = null;
@@ -226,27 +227,59 @@ public class CallbackHelper {
     }
 
     /**
-     * @see #waitForCallback(String, int, int, long, TimeUnit)
+     * @deprecated Use waitForAnyCallback() instead.
      */
     public void waitForCallback(String msg) throws InterruptedException, TimeoutException {
         waitForCallback(msg, getCallCount());
     }
 
     /**
-     * @see #waitForCallback(String, int, int, long, TimeUnit)
+     * @deprecated Use waitForAnyCallback() instead.
      */
     public void waitForCallback() throws InterruptedException, TimeoutException {
         waitForCallback(getCallCount());
     }
 
     /**
+     * Wait until the callback has been called once.
+     */
+    public void waitForFirst(String msg, long timeout, TimeUnit unit)
+            throws InterruptedException, TimeoutException {
+        MatcherAssert.assertThat(
+                "Use waitForCallback(currentCallCount) for callbacks that are called multiple "
+                        + "times.",
+                mCallCount, Matchers.lessThanOrEqualTo(1));
+        mSingleShotMode = true;
+        waitForCallback(msg, 0, 1, timeout, unit);
+    }
+
+    /**
+     * Wait until the callback has been called once.
+     */
+    public void waitForFirst(long timeout, TimeUnit unit)
+            throws InterruptedException, TimeoutException {
+        waitForFirst(null, timeout, unit);
+    }
+
+    /**
+     * Wait until the callback has been called once.
+     */
+    public void waitForFirst(String msg) throws InterruptedException, TimeoutException {
+        waitForFirst(msg, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Wait until the callback has been called at least once.
+     */
+    public void waitForFirst() throws InterruptedException, TimeoutException {
+        waitForFirst(null);
+    }
+
+    /**
      * Should be called when the callback associated with this helper object is called.
      */
     public void notifyCalled() {
-        synchronized (mLock) {
-            mCallCount++;
-            mLock.notifyAll();
-        }
+        notifyInternal(null);
     }
 
     /**
@@ -256,8 +289,16 @@ public class CallbackHelper {
      * @param s The failure message.
      */
     public void notifyFailed(String s) {
+        notifyInternal(s);
+    }
+
+    private void notifyInternal(String failureString) {
         synchronized (mLock) {
-            mFailureString = s;
+            mCallCount++;
+            mFailureString = failureString;
+            if (mSingleShotMode && mCallCount > 1) {
+                Assert.fail("Single-use callback called multiple times.");
+            }
             mLock.notifyAll();
         }
     }

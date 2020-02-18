@@ -93,8 +93,6 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_39;
     case quic::QUIC_VERSION_43:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_43;
-    case quic::QUIC_VERSION_44:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_44;
     case quic::QUIC_VERSION_46:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_46;
     case quic::QUIC_VERSION_47:
@@ -165,8 +163,8 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 int QuicHttpStream::DoHandlePromise() {
   next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
   return quic_session()->RendezvousWithPromised(
-      request_headers_,
-      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
+      request_headers_, base::BindOnce(&QuicHttpStream::OnIOComplete,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 int QuicHttpStream::DoHandlePromiseComplete(int rv) {
@@ -182,7 +180,8 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
 
   spdy::SpdyPriority spdy_priority =
       ConvertRequestPriorityToQuicPriority(priority_);
-  stream_->SetPriority(spdy_priority);
+  const spdy::SpdyStreamPrecedence precedence(spdy_priority);
+  stream_->SetPriority(precedence);
 
   next_state_ = STATE_OPEN;
   NetLogQuicPushStream(stream_net_log_, quic_session()->net_log(),
@@ -270,8 +269,8 @@ int QuicHttpStream::ReadResponseHeaders(CompletionOnceCallback callback) {
 
   int rv = stream_->ReadInitialHeaders(
       &response_header_block_,
-      base::Bind(&QuicHttpStream::OnReadResponseHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicHttpStream::OnReadResponseHeadersComplete,
+                     weak_factory_.GetWeakPtr()));
 
   if (rv == ERR_IO_PENDING) {
     // Still waiting for the response, return IO_PENDING.
@@ -312,8 +311,8 @@ int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
     return HandleReadComplete(OK);
 
   int rv = stream_->ReadBody(buf, buf_len,
-                             base::Bind(&QuicHttpStream::OnReadBodyComplete,
-                                        weak_factory_.GetWeakPtr()));
+                             base::BindOnce(&QuicHttpStream::OnReadBodyComplete,
+                                            weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {
     callback_ = std::move(callback);
     user_buffer_ = buf;
@@ -427,8 +426,8 @@ void QuicHttpStream::OnReadResponseHeadersComplete(int rv) {
 void QuicHttpStream::ReadTrailingHeaders() {
   int rv = stream_->ReadTrailingHeaders(
       &trailing_header_block_,
-      base::Bind(&QuicHttpStream::OnReadTrailingHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicHttpStream::OnReadTrailingHeadersComplete,
+                     weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING)
     OnReadTrailingHeadersComplete(rv);
@@ -532,7 +531,7 @@ int QuicHttpStream::DoRequestStream() {
 
   return quic_session()->RequestStream(
       !can_send_early_,
-      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()),
       NetworkTrafficAnnotationTag(request_info_->traffic_annotation));
 }
 
@@ -572,7 +571,8 @@ int QuicHttpStream::DoSetRequestPriority() {
   DCHECK(response_info_);
 
   spdy::SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
-  stream_->SetPriority(priority);
+  spdy::SpdyStreamPrecedence precedence(priority);
+  stream_->SetPriority(precedence);
   next_state_ = STATE_SEND_HEADERS;
   return OK;
 }
@@ -644,7 +644,8 @@ int QuicHttpStream::DoSendBody() {
     quic::QuicStringPiece data(request_body_buf_->data(), len);
     return stream_->WriteStreamData(
         data, eof,
-        base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&QuicHttpStream::OnIOComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   next_state_ = STATE_OPEN;

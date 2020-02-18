@@ -17,6 +17,7 @@
 #include "components/signin/public/identity_manager/load_credentials_state.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "net/base/backoff_entry.h"
 
 namespace network {
@@ -25,7 +26,7 @@ class SharedURLLoaderFactory;
 
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
-class OAuth2TokenServiceObserver;
+class ProfileOAuth2TokenServiceObserver;
 class ProfileOAuth2TokenService;
 
 // Abstract base class to fetch and maintain refresh tokens from various
@@ -60,10 +61,11 @@ class ProfileOAuth2TokenServiceDelegate {
   virtual std::vector<CoreAccountId> GetAccounts() const;
   virtual void RevokeAllCredentials() {}
 
-  virtual void OnAccessTokenInvalidated(const CoreAccountId& account_id,
-                                        const std::string& client_id,
-                                        const std::set<std::string>& scopes,
-                                        const std::string& access_token) {}
+  virtual void OnAccessTokenInvalidated(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) {}
 
   // If refresh token is accessible (on Desktop) sets error for it to
   // INVALID_GAIA_CREDENTIALS and notifies the observers. Otherwise
@@ -87,8 +89,8 @@ class ProfileOAuth2TokenServiceDelegate {
   bool ValidateAccountId(const CoreAccountId& account_id) const;
 
   // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenServiceObserver* observer);
-  void RemoveObserver(OAuth2TokenServiceObserver* observer);
+  void AddObserver(ProfileOAuth2TokenServiceObserver* observer);
+  void RemoveObserver(ProfileOAuth2TokenServiceObserver* observer);
 
   // Returns a pointer to its instance of net::BackoffEntry if it has one, or
   // a nullptr otherwise.
@@ -169,7 +171,7 @@ class ProfileOAuth2TokenServiceDelegate {
  private:
   // List of observers to notify when refresh token availability changes.
   // Makes sure list is empty on destruction.
-  base::ObserverList<OAuth2TokenServiceObserver, true>::Unchecked
+  base::ObserverList<ProfileOAuth2TokenServiceObserver, true>::Unchecked
       observer_list_;
 
   // The state of the load credentials operation.

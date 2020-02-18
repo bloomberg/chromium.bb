@@ -89,8 +89,14 @@ class FullCardRequest final : public CardUnmaskDelegate {
   bool IsGettingFullCard() const;
 
   // Called by the payments client when a card has been unmasked.
-  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan);
+  void OnDidGetRealPan(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::UnmaskResponseDetails& response_details);
+
+  payments::PaymentsClient::UnmaskResponseDetails unmask_response_details()
+      const {
+    return unmask_response_details_;
+  }
 
   base::TimeTicks form_parsed_timestamp() const {
     return form_parsed_timestamp_;
@@ -115,7 +121,8 @@ class FullCardRequest final : public CardUnmaskDelegate {
                    base::Value fido_assertion_info);
 
   // CardUnmaskDelegate:
-  void OnUnmaskResponse(const UnmaskResponse& response) override;
+  void OnUnmaskPromptAccepted(
+      const UserProvidedUnmaskDetails& user_response) override;
   void OnUnmaskPromptClosed() override;
 
   // Called by autofill client when the risk data has been loaded.
@@ -155,6 +162,9 @@ class FullCardRequest final : public CardUnmaskDelegate {
 
   // The timestamp when the form is parsed. For histograms.
   base::TimeTicks form_parsed_timestamp_;
+
+  // Includes all details from GetRealPan response.
+  payments::PaymentsClient::UnmaskResponseDetails unmask_response_details_;
 
   // Enables destroying FullCardRequest while CVC prompt is showing or a server
   // communication is pending.

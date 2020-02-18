@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/scoped_hglobal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -34,8 +34,7 @@ const std::vector<DWORD> kStorageMediaTypesForVirtualFiles = {
 class OSExchangeDataWinTest : public ::testing::Test {
  public:
   OSExchangeDataWinTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void OnGotVirtualFilesAsTempFiles(
       const std::vector<std::pair<base::FilePath, base::FilePath>>&
@@ -52,7 +51,7 @@ class OSExchangeDataWinTest : public ::testing::Test {
 
  protected:
   std::vector<FileInfo> retrieved_virtual_files_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Test getting using the IDataObject COM API
@@ -313,8 +312,9 @@ TEST_F(OSExchangeDataWinTest, TestURLExchangeFormatsViaCOM) {
   {
     CLIPFORMAT cfstr_file_contents =
         RegisterClipboardFormat(CFSTR_FILECONTENTS);
-    FORMATETC format_etc =
-        { cfstr_file_contents, NULL, DVASPECT_CONTENT, 0, TYMED_HGLOBAL };
+    // format_etc.lindex value 0 used for file drop.
+    FORMATETC format_etc = {cfstr_file_contents, nullptr, DVASPECT_CONTENT, 0,
+                            TYMED_HGLOBAL};
     EXPECT_EQ(S_OK, com_data->QueryGetData(&format_etc));
 
     STGMEDIUM medium;
@@ -381,7 +381,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
     EXPECT_TRUE(copy.GetVirtualFilesAsTempFiles(std::move(callback)));
 
     // RunUntilIdle assures all async tasks are run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(kTestFilenamesAndContents.size(),
               retrieved_virtual_files_.size());
@@ -457,7 +457,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesRealFilesPreferred) {
     EXPECT_FALSE(copy.GetVirtualFilesAsTempFiles(std::move(callback)));
 
     // RunUntilIdle assures all async tasks are run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(static_cast<size_t>(0), retrieved_virtual_files_.size());
   }
@@ -506,7 +506,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
     EXPECT_TRUE(copy.GetVirtualFilesAsTempFiles(std::move(callback)));
 
     // RunUntilIdle assures all async tasks are run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
@@ -589,7 +589,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
     EXPECT_TRUE(copy.GetVirtualFilesAsTempFiles(std::move(callback)));
 
     // RunUntilIdle assures all async tasks are run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
@@ -700,7 +700,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
     EXPECT_TRUE(copy.GetVirtualFilesAsTempFiles(std::move(callback)));
 
     // RunUntilIdle assures all async tasks are run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
@@ -785,7 +785,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
     EXPECT_TRUE(copy.GetVirtualFilesAsTempFiles(std::move(callback)));
 
     // RunUntilIdle assures all async tasks are run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(kTestFilenamesAndContents.size(),
               retrieved_virtual_files_.size());

@@ -5,6 +5,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -97,9 +98,17 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     return result;
   }
 
+  std::string RunScriptExtractString(const std::string& script) {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(), script, &result));
+    return result;
+  }
+
   GURL http_url() const { return http_url_; }
   GURL https_url() const { return https_url_; }
   GURL compression_url() const { return compression_url_; }
+  GURL request_url() const { return request_url_; }
 
   GURL HttpURLWithPath(const std::string& path) {
     return http_server_->GetURL("insecure.com", path);
@@ -107,6 +116,8 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   GURL HttpsURLWithPath(const std::string& path) {
     return https_server_->GetURL("secure.com", path);
   }
+
+  void SetCompressionServerToFail() { compression_server_fail_ = true; }
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
@@ -122,6 +133,12 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   HandleCompressionServerRequest(const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
         std::make_unique<net::test_server::BasicHttpResponse>();
+    request_url_ = request.GetURL();
+
+    // If |compression_server_fail_| is set to true, return a hung response.
+    if (compression_server_fail_ == true) {
+      return std::make_unique<net::test_server::RawHttpResponse>("", "");
+    }
 
     // For the purpose of this browsertest, a redirect to the compression server
     // that is looking to access image.png will be treated as though it is
@@ -131,6 +148,11 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
             net::EscapeQueryParamValue("/image.png", true /* use_plus */), 0) !=
         std::string::npos) {
       response->set_code(net::HTTP_OK);
+    } else if (request.GetURL().query().find(
+                   net::EscapeQueryParamValue("/fail_image.png",
+                                              true /* use_plus */),
+                   0) != std::string::npos) {
+      response->set_code(net::HTTP_NOT_FOUND);
     } else {
       response->set_code(net::HTTP_TEMPORARY_REDIRECT);
       response->AddCustomHeader(
@@ -143,6 +165,7 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   GURL compression_url_;
   GURL http_url_;
   GURL https_url_;
+  GURL request_url_;
 
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -150,7 +173,23 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
 
   base::HistogramTester histogram_tester_;
 
+  bool compression_server_fail_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectBrowserTest);
+};
+
+class DifferentMediaInclusionSubresourceRedirectBrowserTest
+    : public SubresourceRedirectBrowserTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kSubresourceRedirectIncludedMediaSuffixes,
+        {{"included_path_suffixes", ".svg"}});
+    SubresourceRedirectBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 //  NOTE: It is indirectly verified that correct requests are being sent to
@@ -167,16 +206,19 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                                HttpsURLWithPath("/load_image/image.html"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester(), "SubresourceRedirect.CompressionAttempt.Status", 2);
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
 
   histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.Status", net::HTTP_OK, 1);
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
 
   histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.Status",
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
       net::HTTP_TEMPORARY_REDIRECT, 1);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(request_url().port(), compression_url().port());
 }
 
 //  This test loads private_url_image.html, which triggers a subresource
@@ -189,13 +231,17 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
       browser(), HttpsURLWithPath("/load_image/private_url_image.html"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester(), "SubresourceRedirect.CompressionAttempt.Status", 2);
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
 
   histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.Status",
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
       net::HTTP_TEMPORARY_REDIRECT, 2);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
 }
 
 //  This test loads image_js.html, which triggers a javascript request
@@ -207,16 +253,20 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                                HttpsURLWithPath("/load_image/image_js.html"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester(), "SubresourceRedirect.CompressionAttempt.Status", 2);
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
 
   histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.Status", net::HTTP_OK, 1);
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
 
   histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.Status",
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
       net::HTTP_TEMPORARY_REDIRECT, 1);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
 }
 
 //  This test loads private_url_image.html, which triggers a javascript
@@ -229,13 +279,17 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
       browser(), HttpsURLWithPath("/load_image/private_url_image_js.html"));
 
   RetryForHistogramUntilCountReached(
-      histogram_tester(), "SubresourceRedirect.CompressionAttempt.Status", 2);
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
 
   histogram_tester()->ExpectBucketCount(
-      "SubresourceRedirect.CompressionAttempt.Status",
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
       net::HTTP_TEMPORARY_REDIRECT, 2);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
 }
 
 //  This test loads image.html, from a non secure site. This triggers a
@@ -250,7 +304,12 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   histogram_tester()->ExpectTotalCount(
-      "SubresourceRedirect.CompressionAttempt.Status", 0);
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            http_url().port());
 }
 
 //  This test loads page_with_favicon.html, which creates a subresource
@@ -264,7 +323,80 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerOnNonImage) {
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   histogram_tester()->ExpectTotalCount(
-      "SubresourceRedirect.CompressionAttempt.Status", 0);
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
 }
 
 }  // namespace
+
+// This test loads a resource that will return a 404 from the server, this
+// should trigger the fallback logic back to the original resource. In total
+// This results in 2 redirects (to the compression server, and back to the
+// original resource), 1 404 not-found from the compression server, and 1
+// 200 ok from the original resource.
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
+                       FallbackOnServerNotFound) {
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsURLWithPath("/load_image/fail_image.html"));
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 3);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      net::HTTP_TEMPORARY_REDIRECT, 2);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      net::HTTP_NOT_FOUND, 1);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+}
+
+//  This test verifies that the client will utilize the fallback logic if the
+//  server/network fails and returns nothing.
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
+                       FallbackOnServerFailure) {
+  SetCompressionServerToFail();
+
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsURLWithPath("/load_image/image.html"));
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester(),
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", 1);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", false, 1);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+}
+
+//  This test loads image.html, but with
+//  SubresourceRedirectIncludedMediaSuffixes set to only allow .svg, so no
+//  internal redirect should occur.
+IN_PROC_BROWSER_TEST_F(DifferentMediaInclusionSubresourceRedirectBrowserTest,
+                       NoTriggerWhenNotIncludedInMeidaSuffixes) {
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsURLWithPath("/load_image/image.html"));
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+}

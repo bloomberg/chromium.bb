@@ -8,6 +8,9 @@ entry so that it only runs when .gclient's target_os includes 'fuchsia'."""
 
 from __future__ import print_function
 
+import argparse
+import itertools
+import logging
 import os
 import re
 import shutil
@@ -16,12 +19,10 @@ import sys
 import tarfile
 import tempfile
 
-from common import GetHostOsFromPlatform, GetHostArchFromPlatform, SDK_ROOT, \
-                   IMAGES_ROOT
+from common import GetHostOsFromPlatform, GetHostArchFromPlatform, \
+                   DIR_SOURCE_ROOT, SDK_ROOT, IMAGES_ROOT
 
-REPOSITORY_ROOT = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..'))
-sys.path.append(os.path.join(REPOSITORY_ROOT, 'build'))
+sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build'))
 
 import find_depot_tools
 
@@ -36,6 +37,7 @@ def GetSdkGeneration(hash):
 
   cmd = [os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py'), 'ls',
          '-L', GetSdkBucketForPlatform() + hash]
+  logging.debug("Running '%s'", " ".join(cmd))
   sdk_details = subprocess.check_output(cmd)
   m = re.search('Generation:\s*(\d*)', sdk_details)
   if not m:
@@ -85,13 +87,14 @@ def EnsureDirExists(path):
     os.makedirs(path)
 
 
-# Removes previous SDK from the specified path if it's detected there.
-def Cleanup():
-  hash_file = os.path.join(SDK_ROOT, '.hash')
+# Removes legacy SDK if it's detected.
+def CleanupLegacySDK():
+  legacy_sdk_root = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk')
+  hash_file = os.path.join(legacy_sdk_root, '.hash')
   if os.path.exists(hash_file):
-    print('Removing old SDK from %s.' % SDK_ROOT)
+    print('Removing legacy SDK.')
     for d in SDK_SUBDIRS:
-      to_remove = os.path.join(SDK_ROOT, d)
+      to_remove = os.path.join(legacy_sdk_root, d)
       if os.path.isdir(to_remove):
         shutil.rmtree(to_remove)
     os.remove(hash_file)
@@ -113,33 +116,68 @@ def DownloadAndUnpackFromCloudStorage(url, output_dir):
   # to disk first.
   cmd = [os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py'),
          'cp', url, '-']
-  task = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-  tarfile.open(mode='r|gz', fileobj=task.stdout).extractall(path=output_dir)
+  logging.debug('Running "%s"', ' '.join(cmd))
+  task = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+  try:
+    tarfile.open(mode='r|gz', fileobj=task.stdout).extractall(path=output_dir)
+  except tarfile.ReadError:
+    task.wait()
+    stderr = task.stderr.read()
+    raise subprocess.CalledProcessError(task.returncode, cmd,
+      "Failed to read a tarfile from gsutil.py.{}".format(
+        stderr if stderr else ""))
   task.wait()
-  assert task.returncode == 0
+  if task.returncode:
+    raise subprocess.CalledProcessError(task.returncode, cmd,
+                                        task.stderr.read())
 
 
-def DownloadSdkBootImages(sdk_hash):
-  print('Downloading Fuchsia boot images...')
+def DownloadSdkBootImages(sdk_hash, boot_image_names):
+  if not boot_image_names:
+    return
 
-  if (os.path.exists(IMAGES_ROOT)):
-    shutil.rmtree(IMAGES_ROOT)
-  os.mkdir(IMAGES_ROOT)
+  all_device_types = ['generic', 'qemu']
+  all_archs = ['x64', 'arm64']
 
-  for device_type in ['generic', 'qemu']:
-    for arch in ['arm64', 'x64']:
-      images_tarball_url = \
-          'gs://fuchsia/development/{sdk_hash}/images/'\
-          '{device_type}-{arch}.tgz'.format(
-              sdk_hash=sdk_hash, device_type=device_type, arch=arch)
-      image_output_dir = os.path.join(IMAGES_ROOT, arch, device_type)
-      DownloadAndUnpackFromCloudStorage(images_tarball_url, image_output_dir)
+  images_to_download = set()
+  for boot_image in boot_image_names.split(','):
+    components = boot_image.split('.')
+    if len(components) != 2:
+      continue
+
+    device_type, arch = components
+    device_images = all_device_types if device_type=='*' else [device_type]
+    arch_images = all_archs if arch=='*' else [arch]
+    images_to_download.update(itertools.product(device_images, arch_images))
+
+  for image_to_download in images_to_download:
+    device_type = image_to_download[0]
+    arch = image_to_download[1]
+    image_output_dir = os.path.join(IMAGES_ROOT, arch, device_type)
+    if os.path.exists(image_output_dir):
+      continue
+
+    print('Downloading Fuchsia boot images for %s.%s...' % (device_type, arch))
+    images_tarball_url = \
+        'gs://fuchsia/development/{sdk_hash}/images/'\
+        '{device_type}-{arch}.tgz'.format(
+            sdk_hash=sdk_hash, device_type=device_type, arch=arch)
+    DownloadAndUnpackFromCloudStorage(images_tarball_url, image_output_dir)
 
 
 def main():
-  if len(sys.argv) != 1:
-    print('usage: %s' % sys.argv[0], file=sys.stderr)
-    return 1
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--verbose', '-v',
+    action='store_true',
+    help='Enable debug-level logging.')
+  parser.add_argument('--boot-images',
+    type=str, nargs='?',
+    help='List of boot images to download, represented as a comma separated '
+         'list. Wildcards are allowed. '
+         'If omitted, no boot images will be downloaded.')
+  args = parser.parse_args()
+
+  logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
 
   # Quietly exit if there's no SDK support for this platform.
   try:
@@ -150,7 +188,7 @@ def main():
   # Previously SDK was unpacked in //third_party/fuchsia-sdk instead of
   # //third_party/fuchsia-sdk/sdk . Remove the old files if they are still
   # there.
-  Cleanup()
+  CleanupLegacySDK()
 
   sdk_hash = GetSdkHashForPlatform()
   if not sdk_hash:
@@ -160,16 +198,17 @@ def main():
   if os.path.exists(hash_filename):
     with open(hash_filename, 'r') as f:
       if f.read().strip() == sdk_hash:
-        # Used to download boot images if "gclient runhooks" is called on a
-        # output directory which had previously built Fuchsia on the same SDK
-        # hash, but did not use separate boot images.
-        if not os.path.exists(IMAGES_ROOT):
-          DownloadSdkBootImages(sdk_hash)
+        # Ensure that the boot images are downloaded for this SDK.
+        # If the developer opted into downloading hardware boot images in their
+        # .gclient file, then only the hardware boot images will be downloaded.
+        DownloadSdkBootImages(sdk_hash, args.boot_images)
 
         # Nothing to do. Generate sdk/BUILD.gn anyway, in case the conversion
         # script changed.
-        subprocess.check_call([os.path.join(SDK_ROOT, '..',
-                                            'gen_build_defs.py')])
+        logging.info("Generating sdk/BUILD.gn")
+        cmd = [os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')]
+        logging.debug("Running '%s'", " ".join(cmd))
+        subprocess.check_call(cmd)
         return 0
 
   print('Downloading SDK %s...' % sdk_hash)
@@ -185,9 +224,23 @@ def main():
                                    SDK_ROOT)
 
   # Generate sdk/BUILD.gn.
-  subprocess.check_call([os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')])
+  cmd = [os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')]
+  logging.debug("Running '%s'", " ".join(cmd))
+  subprocess.check_call(cmd)
 
-  DownloadSdkBootImages(sdk_hash)
+  # Clean out the boot images directory.
+  if (os.path.exists(IMAGES_ROOT)):
+    shutil.rmtree(IMAGES_ROOT)
+  os.mkdir(IMAGES_ROOT)
+
+  try:
+    DownloadSdkBootImages(sdk_hash, args.boot_images)
+  except subprocess.CalledProcessError as e:
+    logging.error((
+      "command '%s' failed with status %d.%s"),
+      " ".join(e.cmd), e.returncode,
+      " Details: " + e.output if e.output else "")
+    return 1
 
   with open(hash_filename, 'w') as f:
     f.write(sdk_hash)

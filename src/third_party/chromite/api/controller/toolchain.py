@@ -7,45 +7,50 @@
 
 from __future__ import print_function
 
-import os
-
-from chromite.lib import cros_logging as logging
-from chromite.lib import gs
+from chromite.api import validate
+from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.lib import toolchain_util
 
+_VALID_ARTIFACT_TYPES = [toolchain_pb2.ORDERFILE, toolchain_pb2.KERNEL_AFDO]
 
-def UpdateChromeEbuildWithOrderfile(input_proto, _output_proto):
-  """Update Chrome ebuild with most recent unvetted orderfile.
+
+@validate.require('build_target.name')
+@validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
+@validate.validation_complete
+def UpdateEbuildWithAFDOArtifacts(input_proto, output_proto, _config):
+  """Update Chrome or kernel ebuild with most recent unvetted artifacts.
 
   Args:
-    input_proto (UpdateChromeEbuildRequest): The input proto
-    output_proto (UpdateChromeEbuildResponse): Empty output proto
+    input_proto (VerifyAFDOArtifactsRequest): The input proto
+    output_proto (VerifyAFDOArtifactsResponse): The output proto
+    _config (api_config.ApiConfig): The API call config.
   """
 
   board = input_proto.build_target.name
-  toolchain_util.OrderfileUpdateChromeEbuild(board)
+  artifact_type = input_proto.artifact_type
+  if artifact_type is toolchain_pb2.ORDERFILE:
+    status = toolchain_util.OrderfileUpdateChromeEbuild(board)
+  else:
+    status = toolchain_util.AFDOUpdateKernelEbuild(board)
+  output_proto.status = status
 
 
-def UploadVettedOrderfile(_input_proto, output_proto):
+@validate.require('build_target.name')
+@validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
+@validate.validation_complete
+def UploadVettedAFDOArtifacts(input_proto, output_proto, _config):
   """Upload a vetted orderfile to GS bucket.
 
   Args:
-    input_proto (UploadVettedOrderfileRequest): Empty input proto
-    output_proto (UploadVettedOrderfileResponse): The output proto
+    input_proto (VerifyAFDOArtifactsRequest): The input proto
+    output_proto (VerifyAFDOArtifactsResponse): The output proto
+    _config (api_config.ApiConfig): The API call config.
   """
+  board = input_proto.build_target.name
+  if input_proto.artifact_type is toolchain_pb2.ORDERFILE:
+    artifact_type = 'orderfile'
+  else:
+    artifact_type = 'kernel_afdo'
 
-  gs_context = gs.GSContext()
-  orderfile = toolchain_util.FindLatestChromeOrderfile(
-      toolchain_util.ORDERFILE_GS_URL_UNVETTED)
-
-  if gs_context.Exists(
-      os.path.join(toolchain_util.ORDERFILE_GS_URL_VETTED, orderfile)):
-    output_proto.status = False
-    return
-
-  source_url = os.path.join(toolchain_util.ORDERFILE_GS_URL_UNVETTED, orderfile)
-  dest_url = os.path.join(toolchain_util.ORDERFILE_GS_URL_VETTED, orderfile)
-
-  logging.info('Copying tarball from %s to %s', source_url, dest_url)
-  gs_context.Copy(source_url, dest_url, acl='public-read')
-  output_proto.status = True
+  output_proto.status = toolchain_util.UploadAndPublishVettedAFDOArtifacts(
+      artifact_type, board)

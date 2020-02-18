@@ -13,7 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -287,7 +287,7 @@ class BluetoothGattBlueZTest : public testing::Test {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   bluez::FakeBluetoothGattServiceClient* fake_bluetooth_gatt_service_client_;

@@ -6,11 +6,14 @@
 
 #include <string>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom-shared.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom-shared.h"
+#include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
@@ -24,9 +27,6 @@ namespace assistant {
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
-  if (!chromeos::switches::IsAssistantEnabled())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG;
-
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
 
@@ -95,7 +95,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // tests, or the account is logged in a device with a physical Assistant key
   // on keyboard.
   if (!chromeos::switches::IsGaiaServicesDisabled() &&
-      !ui::DeviceKeyboardHasAssistantKey()) {
+      !(ui::DeviceKeyboardHasAssistantKey() ||
+        base::EqualsCaseInsensitiveASCII(base::SysInfo::GetLsbReleaseBoard(),
+                                         "nocturne"))) {
     // Only enable non-dasher accounts for devices without physical key.
     bool account_supported = false;
     auto* identity_manager =

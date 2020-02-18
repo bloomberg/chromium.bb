@@ -5,13 +5,14 @@
 #ifndef MEDIA_MOJO_CLIENTS_MOJO_VIDEO_DECODER_H_
 #define MEDIA_MOJO_CLIENTS_MOJO_VIDEO_DECODER_H_
 
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/clients/mojo_media_log_service.h"
-#include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/gfx/color_space.h"
@@ -74,7 +75,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   void OnInitializeDone(bool status,
                         bool needs_bitstream_conversion,
                         int32_t max_decode_requests);
-  void OnDecodeDone(uint64_t decode_id, int64_t timestamp, DecodeStatus status);
+  void OnDecodeDone(uint64_t decode_id, DecodeStatus status);
   void OnResetDone();
 
   void BindRemoteDecoder();
@@ -103,6 +104,10 @@ class MojoVideoDecoder final : public VideoDecoder,
   uint64_t decode_counter_ = 0;
   std::map<uint64_t, DecodeCB> pending_decodes_;
   base::OnceClosure reset_cb_;
+
+  // DecodeBuffer/VideoFrame timestamps for histogram/tracing purposes. Must be
+  // large enough to account for any amount of frame reordering.
+  base::MRUCache<int64_t, base::TimeTicks> timestamps_;
 
   mojom::VideoDecoderPtr remote_decoder_;
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;

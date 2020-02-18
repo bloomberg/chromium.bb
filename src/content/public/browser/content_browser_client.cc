@@ -22,7 +22,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
@@ -31,11 +30,11 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -44,13 +43,6 @@
 #include "url/origin.h"
 
 namespace content {
-
-void OverrideOnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                             const std::string& name,
-                             mojo::ScopedMessagePipeHandle* handle) {
-  GetContentClient()->browser()->OverrideOnBindInterface(remote_info, name,
-                                                         handle);
-}
 
 std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
@@ -116,9 +108,9 @@ bool ContentBrowserClient::ShouldUseSpareRenderProcessHost(
 }
 
 bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserOrResourceContext browser_or_resource_context,
+    BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  DCHECK(browser_or_resource_context);
+  DCHECK(browser_context);
   return false;
 }
 
@@ -142,7 +134,8 @@ network::mojom::URLLoaderFactoryPtrInfo
 ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     const url::Origin& request_initiator) {
   return network::mojom::URLLoaderFactoryPtrInfo();
 }
@@ -271,6 +264,10 @@ bool ContentBrowserClient::ForceSniffingFileUrlsForHtml() {
   return false;
 }
 
+std::string ContentBrowserClient::GetApplicationClientGUIDForQuarantineCheck() {
+  return std::string();
+}
+
 std::string ContentBrowserClient::GetApplicationLocale() {
   return "en-US";
 }
@@ -289,23 +286,26 @@ base::FilePath ContentBrowserClient::GetLoggingFileName(
   return base::FilePath();
 }
 
-bool ContentBrowserClient::AllowAppCacheOnIO(const GURL& manifest_url,
-                                             const GURL& first_party,
-                                             ResourceContext* context) {
-  return true;
-}
-
 bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
                                          const GURL& first_party,
                                          BrowserContext* context) {
   return true;
 }
 
-bool ContentBrowserClient::AllowServiceWorker(
+bool ContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
     const GURL& first_party,
     const GURL& script_url,
     ResourceContext* context,
+    base::RepeatingCallback<WebContents*()> wc_getter) {
+  return true;
+}
+
+bool ContentBrowserClient::AllowServiceWorkerOnUI(
+    const GURL& scope,
+    const GURL& first_party,
+    const GURL& script_url,
+    BrowserContext* context,
     base::RepeatingCallback<WebContents*()> wc_getter) {
   return true;
 }
@@ -319,10 +319,6 @@ bool ContentBrowserClient::AllowSharedWorker(
     int render_process_id,
     int render_frame_id) {
   DCHECK(context);
-  return true;
-}
-
-bool ContentBrowserClient::AllowSignedExchangeOnIO(ResourceContext* context) {
   return true;
 }
 
@@ -343,22 +339,22 @@ void ContentBrowserClient::UpdateRendererPreferencesForWorker(
 
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
-    ResourceContext* context,
+    BrowserContext* browser_context,
     const std::vector<GlobalFrameRoutingId>& render_frames,
-    base::Callback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
 
 bool ContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    ResourceContext* context,
+    BrowserContext* browser_context,
     const std::vector<GlobalFrameRoutingId>& render_frames) {
   return true;
 }
 
 bool ContentBrowserClient::AllowWorkerCacheStorage(
     const GURL& url,
-    ResourceContext* context,
+    BrowserContext* browser_context,
     const std::vector<GlobalFrameRoutingId>& render_frames) {
   return true;
 }
@@ -404,7 +400,6 @@ void ContentBrowserClient::AllowCertificateError(
     const GURL& request_url,
     bool is_main_frame_request,
     bool strict_enforcement,
-    bool expired_previous_decision,
     const base::Callback<void(CertificateRequestResultType)>& callback) {
   callback.Run(CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
@@ -644,7 +639,8 @@ std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(
 }
 
 #if defined(OS_WIN)
-bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy) {
+bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                            RendererSpawnFlags flags) {
   return true;
 }
 
@@ -657,13 +653,14 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
       L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
       L"924012148-129201922");
 }
+
+bool ContentBrowserClient::IsRendererCodeIntegrityEnabled() {
+  return false;
+}
+
 #endif  // defined(OS_WIN)
 
 void ContentBrowserClient::RunServiceInstance(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
-
-void ContentBrowserClient::RunServiceInstanceOnIOThread(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
 
@@ -690,24 +687,14 @@ std::vector<std::string> ContentBrowserClient::GetStartupServices() {
   return nullptr;
 }
 
-std::vector<std::unique_ptr<URLLoaderThrottle>>
-ContentBrowserClient::CreateURLLoaderThrottlesOnIO(
-    const network::ResourceRequest& request,
-    ResourceContext* resource_context,
-    const base::RepeatingCallback<WebContents*()>& wc_getter,
-    NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
-  return std::vector<std::unique_ptr<URLLoaderThrottle>>();
-}
-
-std::vector<std::unique_ptr<URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     BrowserContext* browser_context,
     const base::RepeatingCallback<WebContents*()>& wc_getter,
     NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
-  return std::vector<std::unique_ptr<URLLoaderThrottle>>();
+  return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
 }
 
 void ContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
@@ -728,11 +715,11 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     BrowserContext* browser_context,
     RenderFrameHost* frame,
     int render_process_id,
-    bool is_navigation,
-    bool is_download,
+    URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     bool* bypass_redirect_checks) {
   DCHECK(browser_context);
   return false;
@@ -758,7 +745,8 @@ void ContentBrowserClient::CreateWebSocket(
     const GURL& url,
     const GURL& site_for_cookies,
     const base::Optional<std::string>& user_agent,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client) {
   // NOTREACHED because WillInterceptWebSocket returns false.
   NOTREACHED();
 }
@@ -770,7 +758,7 @@ bool ContentBrowserClient::WillCreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int frame_id,
-    network::mojom::RestrictedCookieManagerRequest* request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver) {
   return false;
 }
 
@@ -791,9 +779,6 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   DCHECK(context);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
-
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
@@ -837,7 +822,7 @@ bool ContentBrowserClient::ShouldForceDownloadResource(
 
 void ContentBrowserClient::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {}
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {}
 
 #if !defined(OS_ANDROID)
 SerialDelegate* ContentBrowserClient::GetSerialDelegate() {
@@ -887,7 +872,7 @@ std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
 
 bool ContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    WebContents::Getter web_contents_getter,
     int child_id,
     NavigationUIData* navigation_data,
     bool is_main_frame,
@@ -903,11 +888,6 @@ ContentBrowserClient::CreateWindowForPictureInPicture(
   return nullptr;
 }
 
-bool ContentBrowserClient::IsSafeRedirectTargetOnIO(const GURL& url,
-                                                    ResourceContext* context) {
-  return true;
-}
-
 bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
                                                 BrowserContext* context) {
   return true;
@@ -915,7 +895,7 @@ bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
 
 void ContentBrowserClient::RegisterRendererPreferenceWatcher(
     BrowserContext* browser_context,
-    blink::mojom::RendererPreferenceWatcherPtr watcher) {
+    mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
   // |browser_context| may be null (e.g. during shutdown of a service worker).
 }
 
@@ -989,7 +969,7 @@ ContentBrowserClient::GetWideColorGamutHeuristic() {
 
 base::flat_set<std::string>
 ContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
-    ResourceContext* resource_context) {
+    BrowserContext* browser_context) {
   return base::flat_set<std::string>();
 }
 

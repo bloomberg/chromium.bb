@@ -34,7 +34,8 @@
 #include "version-etc.h"
 
 static const struct option longopts[] = {
-	{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
+	{ "help", no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'v' },
 	{ NULL, 0, NULL, 0 },
 };
 
@@ -145,15 +146,19 @@ getCommands(void) {
 			printf("Reset mode");
 			if (getYN()) mode = 0;
 			printf("No contractions");
-			mode |= getYN();
-			printf("Computer braille at cursor");
-			mode |= 2 * getYN();
+			mode |= noContractions * getYN();
+			printf("Computer Braille at cursor");
+			mode |= compbrlAtCursor * getYN();
 			printf("Dots input and output");
-			mode |= 4 * getYN();
-			printf("8-dot computer braille");
-			mode |= 8 * getYN();
-			printf("Pass1 only");
-			mode |= 16 * getYN();
+			mode |= dotsIO * getYN();
+			printf("Computer Braille left of cursor");
+			mode |= compbrlLeftCursor * getYN();
+			printf("Unicode Braille");
+			mode |= ucBrl * getYN();
+			printf("No undefined dots");
+			mode |= noUndefined * getYN();
+			printf("Partial back-translation");
+			mode |= partialTrans * getYN();
 			break;
 		case 'l':
 			printf("Do you want to test input and output lengths");

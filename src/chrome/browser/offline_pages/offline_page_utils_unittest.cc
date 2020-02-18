@@ -38,7 +38,7 @@
 #include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -126,7 +126,7 @@ class OfflinePageUtilsTest
       const base::FilePath& file_name);
 
   TestScopedOfflineClock clock_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   int64_t offline_id_;
   GURL url_;
   TestingProfile profile_;
@@ -139,7 +139,7 @@ class OfflinePageUtilsTest
   // fresh GCM token automatically. These two lines mock out InstanceID (the
   // component which actually requests the token from play services). Without
   // this, each test takes an extra 30s waiting on the token (because
-  // content::TestBrowserThreadBundle tries to finish all pending tasks before
+  // content::BrowserTaskEnvironment tries to finish all pending tasks before
   // ending the test).
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;

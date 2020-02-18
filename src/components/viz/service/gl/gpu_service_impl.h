@@ -32,8 +32,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -259,7 +259,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   void UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated);
 
-
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAcceleratorOnMainThread(
       arc::mojom::VideoDecodeAcceleratorRequest vda_request);
@@ -282,6 +281,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
+  // Do not change the class member order here. watchdog_thread_ should be the
+  // last one to be destroyed before main_runner_ and io_runner_.
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
   const gpu::GpuPreferences gpu_preferences_;
@@ -329,10 +330,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   base::OnceClosure exit_callback_;
   base::AtomicFlag is_exiting_;
 
-  // Used for performing hardware decode acceleration of JPEG images. This is
-  // shared by all the GPU channels.
+  // Used for performing hardware decode acceleration of images. This is shared
+  // by all the GPU channels.
   std::unique_ptr<gpu::ImageDecodeAcceleratorWorker>
-      jpeg_decode_accelerator_worker_;
+      image_decode_accelerator_worker_;
 
   base::Time start_time_;
 

@@ -24,7 +24,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
@@ -86,7 +86,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   };
 
   ServiceWorkerControlleeRequestHandlerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -105,9 +105,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
                                         blink::mojom::ScriptType::kClassic, 1L,
                                         context()->AsWeakPtr());
-
-    context()->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    context()->storage()->LazyInitializeForTest();
 
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
@@ -139,7 +137,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -154,11 +152,20 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
-  bool AllowServiceWorker(
+  bool AllowServiceWorkerOnIO(
       const GURL& scope,
       const GURL& first_party,
       const GURL& script_url,
       content::ResourceContext* context,
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
+    return false;
+  }
+
+  bool AllowServiceWorkerOnUI(
+      const GURL& scope,
+      const GURL& first_party,
+      const GURL& script_url,
+      content::BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
   }

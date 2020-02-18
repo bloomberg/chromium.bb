@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_finder.h"
@@ -18,6 +19,24 @@ namespace blink {
 
 class LocalFrame;
 class KURL;
+
+constexpr char kFragmentDirectivePrefix[] = "##";
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kFragmentDirectivePrefixStringLength =
+    base::size(kFragmentDirectivePrefix) - 1;
+// TODO(crbug/1007016): Remove support for the old prefix once we confirm the
+// new prefix choice.
+constexpr char kFragmentDirectiveNewPrefix[] = ":~:";
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kFragmentDirectiveNewPrefixStringLength =
+    base::size(kFragmentDirectiveNewPrefix) - 1;
+
+constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kTextFragmentIdentifierPrefixStringLength =
+    base::size(kTextFragmentIdentifierPrefix) - 1;
+
+enum class TextFragmentFormat { PlainFragment, FragmentDirective };
 
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                              public TextFragmentFinder::Client {
@@ -33,7 +52,8 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   TextFragmentAnchor(
       const Vector<TextFragmentSelector>& text_fragment_selectors,
-      LocalFrame& frame);
+      LocalFrame& frame,
+      const TextFragmentFormat fragment_format);
   ~TextFragmentAnchor() override = default;
 
   bool Invoke() override;
@@ -46,6 +66,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   void DidCompleteLoad() override;
 
+  // Removes text match highlights if any highlight is in view.
+  bool Dismiss() override;
+
   void Trace(blink::Visitor*) override;
 
   // TextFragmentFinder::Client interface
@@ -53,6 +76,10 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   void DidFindAmbiguousMatch() override;
 
  private:
+  // Called when the search is finished. Reports metrics and activates the
+  // element fragment anchor if we didn't find a match.
+  void DidFinishSearch();
+
   Vector<TextFragmentFinder> text_fragment_finders_;
 
   Member<LocalFrame> frame_;
@@ -66,6 +93,19 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // Whether we successfully scrolled into view a match at least once, used for
   // metrics reporting.
   bool did_scroll_into_view_ = false;
+  // Whether we found a match. Used to determine if we should activate the
+  // element fragment anchor at the end of searching.
+  bool did_find_match_ = false;
+  // Whether the text fragment anchor is specified as a regular URL fragment or
+  // a fragment directive. Used to determine if we should activate the element
+  // fragment anchor in the case where we don't find a match.
+  const TextFragmentFormat fragment_format_;
+  // If the text fragment anchor is defined as a fragment directive and we don't
+  // find a match, we fall back to the element anchor if it is present.
+  Member<ElementFragmentAnchor> element_fragment_anchor_;
+  // Whether the text fragment anchor has been dismissed yet. This should be
+  // kept alive until dismissed so we can remove text highlighting.
+  bool dismissed_ = false;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

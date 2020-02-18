@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"
@@ -48,7 +48,7 @@ std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
 class SSLPlatformKeyMacTest : public testing::TestWithParam<TestKey> {};
 
 TEST_P(SSLPlatformKeyMacTest, KeyMatches) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const TestKey& test_key = GetParam();
 

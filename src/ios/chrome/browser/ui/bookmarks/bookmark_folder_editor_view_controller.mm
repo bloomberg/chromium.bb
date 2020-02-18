@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -70,6 +71,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, weak) UIBarButtonItem* doneItem;
 @property(nonatomic, strong) BookmarkTextFieldItem* titleItem;
 @property(nonatomic, strong) BookmarkParentFolderItem* parentFolderItem;
+// The action sheet coordinator, if one is currently being shown.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
 // |bookmarkModel| must not be NULL and must be loaded.
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
@@ -191,7 +194,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     UIBarButtonItem* cancelItem = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                              target:self
-                             action:@selector(cancel)];
+                             action:@selector(dismiss)];
     cancelItem.accessibilityIdentifier = @"Cancel";
     self.navigationItem.leftBarButtonItem = cancelItem;
 
@@ -201,7 +204,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     UIBarButtonItem* backItem =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:self
-                                            action:@selector(back)];
+                                            action:@selector(dismiss)];
     backItem.accessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BACK_LABEL);
     backItem.accessibilityIdentifier = @"Back";
@@ -230,17 +233,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
-  [self.delegate bookmarkFolderEditorDidCancel:self];
+  [self dismiss];
   return YES;
 }
 
 #pragma mark - Actions
 
-- (void)back {
-  [self.delegate bookmarkFolderEditorDidCancel:self];
-}
-
-- (void)cancel {
+- (void)dismiss {
+  [self.view endEditing:YES];
   [self.delegate bookmarkFolderEditorDidCancel:self];
 }
 
@@ -285,6 +285,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.folder = self.bookmarkModel->AddFolder(
         self.parentFolder, self.parentFolder->children().size(), folderTitle);
   }
+  [self.view endEditing:YES];
   [self.delegate bookmarkFolderEditor:self didFinishEditingFolder:self.folder];
 }
 
@@ -322,6 +323,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.navigationController popViewControllerAnimated:YES];
   self.folderViewController.delegate = nil;
   self.folderViewController = nil;
+}
+
+- (void)folderPickerDidDismiss:(BookmarkFolderViewController*)folderPicker {
+  self.folderViewController.delegate = nil;
+  self.folderViewController = nil;
+  [self dismiss];
 }
 
 #pragma mark - BookmarkModelBridgeObserver
@@ -378,6 +385,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - BookmarkTextFieldItemDelegate
 
 - (void)textDidChangeForItem:(BookmarkTextFieldItem*)item {
+  if (@available(iOS 13, *)) {
+    self.modalInPresentation = YES;
+  }
   [self updateSaveButtonState];
 }
 
@@ -403,6 +413,58 @@ typedef NS_ENUM(NSInteger, ItemType) {
       ItemTypeParentFolder) {
     [self changeParentFolder];
   }
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidAttemptToDismiss:
+    (UIPresentationController*)presentationController {
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self
+                           title:nil
+                         message:nil
+                   barButtonItem:self.navigationItem.leftBarButtonItem];
+
+  __weak __typeof(self) weakSelf = self;
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_VIEW_CONTROLLER_DISMISS_SAVE_CHANGES)
+                action:^{
+                  [weakSelf saveFolder];
+                }
+                 style:UIAlertActionStyleDefault];
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_VIEW_CONTROLLER_DISMISS_DISCARD_CHANGES)
+                action:^{
+                  [weakSelf dismiss];
+                }
+                 style:UIAlertActionStyleDestructive];
+  // IDS_IOS_NAVIGATION_BAR_CANCEL_BUTTON
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES)
+                action:^{
+                  weakSelf.navigationItem.leftBarButtonItem.enabled = YES;
+                  weakSelf.navigationItem.rightBarButtonItem.enabled = YES;
+                }
+                 style:UIAlertActionStyleCancel];
+
+  self.navigationItem.leftBarButtonItem.enabled = NO;
+  self.navigationItem.rightBarButtonItem.enabled = NO;
+  [self.actionSheetCoordinator start];
+}
+
+- (void)presentationControllerWillDismiss:
+    (UIPresentationController*)presentationController {
+  // Resign first responder if trying to dismiss the VC so the keyboard doesn't
+  // linger until the VC dismissal has completed.
+  [self.view endEditing:YES];
+}
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  [self dismiss];
 }
 
 #pragma mark - Private
@@ -487,7 +549,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
+  deleteButton.tintColor = [UIColor colorNamed:kRedColor];
   [self.navigationController.toolbar setShadowImage:[UIImage new]
                                  forToolbarPosition:UIBarPositionAny];
   [self setToolbarItems:@[ spaceButton, deleteButton, spaceButton ]

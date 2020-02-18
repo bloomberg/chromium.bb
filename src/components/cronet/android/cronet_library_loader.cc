@@ -19,9 +19,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "components/cronet/android/buildflags.h"
 #include "components/cronet/android/cronet_jni_headers/CronetLibraryLoader_jni.h"
@@ -33,7 +34,6 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "third_party/zlib/zlib.h"
 #include "url/buildflags.h"
-#include "url/url_util.h"
 
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "base/i18n/icu_util.h"  // nogncheck
@@ -73,7 +73,6 @@ void NativeInit() {
 
   if (!base::ThreadPoolInstance::Get())
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Cronet");
-  url::Initialize();
 }
 
 }  // namespace
@@ -112,7 +111,7 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(JNIEnv* env) {
   DCHECK(!base::MessageLoopCurrent::IsSet());
   DCHECK(!g_init_task_executor);
   g_init_task_executor =
-      new base::SingleThreadTaskExecutor(base::MessageLoop::Type::JAVA);
+      new base::SingleThreadTaskExecutor(base::MessagePumpType::JAVA);
 
 // In integrated mode, NetworkChangeNotifier has been initialized by the host.
 #if BUILDFLAG(INTEGRATED_MODE)

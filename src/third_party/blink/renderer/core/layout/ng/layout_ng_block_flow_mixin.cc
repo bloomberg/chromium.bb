@@ -132,6 +132,9 @@ void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
       if (child->IsFloatingOrOutOfFlowPositioned()) {
         child_scrollable_overflow =
             child->ScrollableOverflowForPropagation(this);
+        child_scrollable_overflow.offset += ComputeRelativeOffset(
+            child->Style(), Base::StyleRef().GetWritingMode(),
+            Base::StyleRef().Direction(), physical_fragment->Size());
       } else if (children_inline && child->IsLineBox()) {
         DCHECK(child->IsLineBox());
         child_scrollable_overflow =
@@ -232,6 +235,9 @@ void LayoutNGBlockFlowMixin<Base>::SetPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment) {
   DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
 
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()))
+    return;
+
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
@@ -251,6 +257,15 @@ void LayoutNGBlockFlowMixin<Base>::SetPaintFragment(
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      if (fragment->HasItems()) {
+        NGBoxFragmentPainter(*fragment).Paint(paint_info);
+        return;
+      }
+    }
+  }
+
   if (const NGPaintFragment* paint_fragment = PaintFragment())
     NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
   else
@@ -304,8 +319,12 @@ PositionWithAffinity LayoutNGBlockFlowMixin<Base>::PositionForPoint(
   if (!PaintFragment())
     return Base::CreatePositionWithAffinity(0);
 
+  // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+  // contents offset.
+  PhysicalOffset point_in_contents = point;
+  Base::OffsetForContents(point_in_contents);
   const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(point);
+      PaintFragment()->PositionForPoint(point_in_contents);
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);

@@ -23,10 +23,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/process/process.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequence_bound.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -48,9 +51,12 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
@@ -58,8 +64,8 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
@@ -99,7 +105,6 @@ class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostFactory;
 class RenderWidgetHelper;
-class ResourceMessageFilter;
 class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
@@ -206,6 +211,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -219,9 +225,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -232,8 +240,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool HostHasNotBeenUsed() override;
   void LockToOrigin(const IsolationContext& isolation_context,
                     const GURL& lock_url) override;
-  void BindCacheStorage(blink::mojom::CacheStorageRequest request,
-                        const url::Origin& origin) override;
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const url::Origin& origin) override;
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
                      const url::Origin& origin) override;
   void ForceCrash() override;
@@ -256,6 +265,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
+
+  // Similar to the CreateURLLoaderFactory RenderProcessHost override, but this
+  // creates a trusted URLLoaderFactory with no default NetworkIsolationKey.
+  void CreateTrustedURLLoaderFactory(
+      const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
+      network::mojom::URLLoaderFactoryRequest request);
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
@@ -380,18 +399,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // service.
   using StoragePartitionServiceRequestHandler = base::RepeatingCallback<void(
       RenderProcessHostImpl* rph,
-      blink::mojom::StoragePartitionServiceRequest request)>;
+      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver)>;
   static void SetStoragePartitionServiceRequestHandlerForTesting(
       StoragePartitionServiceRequestHandler handler);
 
   // Allows external code to supply a callback which handles a
-  // BroadcastChannelProviderRequest. Used for supplying test versions of the
-  // service.
-  using BroadcastChannelProviderRequestHandler = base::RepeatingCallback<void(
+  // mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider>. Used for
+  // supplying test versions of the service.
+  using BroadcastChannelProviderReceiverHandler = base::RepeatingCallback<void(
       RenderProcessHostImpl* rph,
-      blink::mojom::BroadcastChannelProviderRequest request)>;
-  static void SetBroadcastChannelProviderRequestHandlerForTesting(
-      BroadcastChannelProviderRequestHandler handler);
+      mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver)>;
+  static void SetBroadcastChannelProviderReceiverHandlerForTesting(
+      BroadcastChannelProviderReceiverHandler handler);
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();
@@ -474,9 +493,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // before the process shuts down.
   void DelayProcessShutdownForUnload(const base::TimeDelta& timeout);
 
-  // Binds request to the FileSystemManager instance owned by the render process
-  // host, and is used by workers via RendererInterfaceBinders.
-  void BindFileSystemManager(blink::mojom::FileSystemManagerRequest request);
+  // Binds |receiver| to the FileSystemManager instance owned by the render
+  // process host, and is used by workers via RendererInterfaceBinders.
+  void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) override;
+
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }
@@ -515,8 +537,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
   friend class StoragePartitonInterceptor;
-  class ConnectionFilterController;
-  class ConnectionFilterImpl;
 
   // Use CreateRenderProcessHost() instead of calling this constructor
   // directly.
@@ -555,20 +575,22 @@ class CONTENT_EXPORT RenderProcessHostImpl
                            BrowserHistogramCallback callback) override;
   void SuddenTerminationChanged(bool enabled) override;
 
-  void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
+  void BindRouteProvider(
+      mojo::PendingAssociatedReceiver<mojom::RouteProvider> receiver);
 
   void CreateEmbeddedFrameSinkProvider(
-      blink::mojom::EmbeddedFrameSinkProviderRequest request);
+      mojo::PendingReceiver<blink::mojom::EmbeddedFrameSinkProvider> receiver);
   void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void BindCompositingModeReporter(
       viz::mojom::CompositingModeReporterRequest request);
   void CreateStoragePartitionService(
-      blink::mojom::StoragePartitionServiceRequest request);
+      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
   void CreateBroadcastChannelProvider(
-      blink::mojom::BroadcastChannelProviderRequest request);
+      mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
-  void BindWebDatabaseHostImpl(blink::mojom::WebDatabaseHostRequest request);
+  void BindWebDatabaseHostImpl(
+      mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);
@@ -644,6 +666,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   using AddInterfaceCallback =
       base::Callback<void(mojo::InterfaceRequest<InterfaceType>)>;
 
+  template <typename InterfaceType>
+  using AddReceiverCallback =
+      base::Callback<void(mojo::PendingReceiver<InterfaceType>)>;
+
   template <typename CallbackType>
   struct InterfaceGetter;
 
@@ -659,6 +685,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
     }
   };
 
+  template <typename InterfaceType>
+  struct InterfaceGetter<AddReceiverCallback<InterfaceType>> {
+    static void GetInterfaceOnUIThread(
+        base::WeakPtr<RenderProcessHostImpl> weak_host,
+        const AddReceiverCallback<InterfaceType>& callback,
+        mojo::PendingReceiver<InterfaceType> receiver) {
+      if (!weak_host)
+        return;
+      callback.Run(std::move(receiver));
+    }
+  };
+
   // Helper to bind an interface callback whose lifetime is limited to that of
   // the render process currently hosted by the RPHI. Callbacks added by this
   // method will never run beyond the next invocation of Cleanup().
@@ -668,7 +706,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
     registry->AddInterface(
         base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
                    instance_weak_factory_->GetWeakPtr(), callback),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
   }
 
   // Callback to unblock process shutdown after waiting for unload handlers to
@@ -684,12 +722,28 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateURLLoaderFactoryForRendererProcess(
       network::mojom::URLLoaderFactoryRequest request);
 
+  // Creates a URLLoaderFactory whose NetworkIsolationKey is set if
+  // |network_isoation_key| has a value, and whose trust is given by
+  // |is_trusted|. Only called by CreateURLLoaderFactory and
+  // CreateTrustedURLLoaderFactory.
+  void CreateURLLoaderFactoryInternal(
+      const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
+      network::mojom::URLLoaderFactoryRequest request,
+      bool is_trusted);
+
+  // Handles incoming requests to bind a process-scoped receiver from the
+  // renderer process. This is posted to the main thread by IOThreadHostImpl
+  // if the request isn't handled on the IO thread.
+  void OnBindHostReceiver(mojo::GenericPendingReceiver receiver);
+
   mojo::OutgoingInvitation mojo_invitation_;
 
   std::unique_ptr<ChildConnection> child_connection_;
-  int connection_filter_id_ =
-      ServiceManagerConnection::kInvalidConnectionFilterId;
-  scoped_refptr<ConnectionFilterController> connection_filter_controller_;
 
   size_t keep_alive_ref_count_;
 
@@ -710,7 +764,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // nature (e.g. metrics, memory usage).
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_interfaces_;
 
-  mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
+  mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
   mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
 
@@ -756,7 +810,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // True after ProcessDied(), until the next call to Init().
   bool is_dead_ = false;
 
-  // PlzNavigate
   // Stores the time at which the first call to Init happened.
   base::TimeTicks init_time_;
 
@@ -851,19 +904,17 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool channel_connected_;
   bool sent_render_process_ready_;
 
-  scoped_refptr<ResourceMessageFilter> resource_message_filter_;
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_impl_;
   std::unique_ptr<viz::GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;
-  std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<PushMessagingManager, base::OnTaskRunnerDeleter>
       push_messaging_manager_;
 
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> embedded_frame_sink_provider_;
-  std::unique_ptr<PluginRegistryImpl, BrowserThread::DeleteOnIOThread>
-      plugin_registry_;
+  std::unique_ptr<PluginRegistryImpl> plugin_registry_;
 
   mojo::Remote<mojom::ChildProcess> child_process_;
-  mojom::RouteProviderAssociatedPtr remote_route_provider_;
+  mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;
 
@@ -878,7 +929,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.
-  std::unique_ptr<base::WeakPtrFactory<RenderProcessHostImpl>>
+  base::Optional<base::WeakPtrFactory<RenderProcessHostImpl>>
       instance_weak_factory_;
 
   FrameSinkProviderImpl frame_sink_provider_;
@@ -895,6 +946,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int shutdown_exit_code_;
 
   IpcSendWatcher ipc_send_watcher_for_testing_;
+
+  // IOThreadHostImpl owns some IO-thread state associated with this
+  // RenderProcessHostImpl. This is mainly to allow various IPCs from the
+  // renderer to be handled on the IO thread without a hop to the UI thread.
+  class IOThreadHostImpl;
+  friend class IOThreadHostImpl;
+  base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_{this};
 

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
@@ -76,6 +77,12 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
     DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
+  }
+
+  if (file_system_type == mojom::blink::FileSystemType::kTemporary) {
+    UseCounter::Count(document, WebFeature::kRequestedFileSystemTemporary);
+  } else if (file_system_type == mojom::blink::FileSystemType::kPersistent) {
+    UseCounter::Count(document, WebFeature::kRequestedFileSystemPersistent);
   }
 
   auto success_callback_wrapper =

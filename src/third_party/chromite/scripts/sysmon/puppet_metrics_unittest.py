@@ -19,7 +19,7 @@ from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import puppet_metrics
 
 
-_SUMMARY = '''\
+_SUMMARY = """\
 ---
   version:
     config: 1499979608
@@ -56,7 +56,7 @@ _SUMMARY = '''\
     failure: 0
     success: 7
     total: 7%
-'''
+"""
 
 
 class TestPuppetRunSummary(cros_test_lib.TestCase):

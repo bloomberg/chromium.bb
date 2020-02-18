@@ -24,11 +24,12 @@ classifications keep in the same set.
 from __future__ import print_function
 
 import itertools
-import magic
 import mmap
 import os
 import re
 import stat
+
+import magic  # pylint: disable=import-error
 
 from chromite.lib import parseelf
 

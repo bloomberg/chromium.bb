@@ -15,7 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -90,7 +90,7 @@ class PaymentsClientTest : public testing::Test {
 
     result_ = AutofillClient::NONE;
     server_id_.clear();
-    real_pan_.clear();
+    unmask_response_details_ = nullptr;
     legal_message_.reset();
     has_variations_header_ = false;
 
@@ -112,19 +112,9 @@ class PaymentsClientTest : public testing::Test {
 
   void TearDown() override { client_.reset(); }
 
-  void EnableAutofillSendExperimentIdsInPaymentsRPCs() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillSendExperimentIdsInPaymentsRPCs);
-  }
-
   void EnableAutofillGetPaymentsIdentityFromSync() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillGetPaymentsIdentityFromSync);
-  }
-
-  void DisableAutofillSendExperimentIdsInPaymentsRPCs() {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kAutofillSendExperimentIdsInPaymentsRPCs);
   }
 
   // Registers a field trial with the specified name and group and an associated
@@ -145,9 +135,18 @@ class PaymentsClientTest : public testing::Test {
   }
 
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan) {
+                       PaymentsClient::UnmaskResponseDetails& response) {
     result_ = result;
-    real_pan_ = real_pan;
+    unmask_response_details_ = &response;
+  }
+
+  void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
+                               bool user_is_opted_in,
+                               base::Value fido_creation_options) {
+    result_ = result;
+    user_is_opted_in_ = user_is_opted_in;
+    if (fido_creation_options.is_dict())
+      fido_creation_options_ = fido_creation_options.Clone();
   }
 
   void OnDidGetUploadDetails(
@@ -168,10 +167,11 @@ class PaymentsClientTest : public testing::Test {
 
   void OnDidMigrateLocalCards(
       AutofillClient::PaymentsRpcResult result,
-      std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
+      std::unique_ptr<std::unordered_map<std::string, std::string>>
+          migration_save_results,
       const std::string& display_text) {
     result_ = result;
-    save_result_ = std::move(save_result);
+    migration_save_results_ = std::move(migration_save_results);
     display_text_ = display_text;
   }
 
@@ -205,6 +205,17 @@ class PaymentsClientTest : public testing::Test {
     client_->UnmaskCard(request_details,
                         base::BindOnce(&PaymentsClientTest::OnDidGetRealPan,
                                        weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // If |opt_in| is set to true, then opts the user in to use FIDO
+  // authentication for card unmasking. Otherwise opts the user out.
+  void StartOptChangeRequest(bool opt_in) {
+    PaymentsClient::OptChangeRequestDetails request_details;
+    request_details.opt_in = opt_in;
+    client_->OptChange(
+        request_details,
+        base::BindOnce(&PaymentsClientTest::OnDidGetOptChangeResult,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Issue a GetUploadDetails request.
@@ -286,15 +297,28 @@ class PaymentsClientTest : public testing::Test {
   AutofillClient::PaymentsRpcResult result_;
   AutofillClient::UnmaskDetails* unmask_details_;
 
+  // Server ID of a saved card via credit card upload save.
   std::string server_id_;
-  std::string real_pan_;
+  // Status of the user's FIDO auth opt-in; returned from an OptChange call.
+  base::Optional<bool> user_is_opted_in_;
+  // FIDO auth enrollment creation options; returned from an OptChange call.
+  base::Value fido_creation_options_;
+  // The UnmaskResponseDetails retrieved from an UnmaskRequest.  Includes PAN.
+  PaymentsClient::UnmaskResponseDetails* unmask_response_details_ = nullptr;
+  // The legal message returned from a GetDetails upload save preflight call.
   std::unique_ptr<base::Value> legal_message_;
+  // A list of card BIN ranges supported by Google Payments, returned from a
+  // GetDetails upload save preflight call.
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
+  // Credit cards to be upload saved during a local credit card migration call.
   std::vector<MigratableCreditCard> migratable_credit_cards_;
-  std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
+  // A mapping of results from a local credit card migration call.
+  std::unique_ptr<std::unordered_map<std::string, std::string>>
+      migration_save_results_;
+  // A tip message to be displayed during local card migration.
   std::string display_text_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestPersonalDataManager test_personal_data_;
@@ -371,7 +395,7 @@ TEST_F(PaymentsClientTest, OAuthError) {
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_TRUE(real_pan_.empty());
+  EXPECT_TRUE(unmask_response_details_->real_pan.empty());
 }
 
 TEST_F(PaymentsClientTest,
@@ -390,7 +414,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaCVC) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ("1234", real_pan_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
@@ -398,7 +422,20 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ("1234", real_pan_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
+}
+
+TEST_F(PaymentsClientTest, UnmaskSuccessViaCVCWithCreationOptions) {
+  StartUnmasking(CardUnmaskOptions().with_use_fido(false));
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"pan\": \"1234\", \"fido_creation_options\": "
+                 "{\"relying_party_id\": \"google.com\"}}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
+  EXPECT_EQ("google.com",
+            *unmask_response_details_->fido_creation_options->FindStringKey(
+                "relying_party_id"));
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
@@ -407,7 +444,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ("1234", real_pan_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
@@ -486,6 +523,42 @@ TEST_F(PaymentsClientTest, UnmaskLogsBlankCvcLength) {
 
   histogram_tester.ExpectBucketCount(
       "Autofill.CardUnmask.CvcLength.ForAutofill", 0, 1);
+}
+
+TEST_F(PaymentsClientTest, OptInSuccess) {
+  StartOptChangeRequest(/*opt_in=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": true }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_TRUE(user_is_opted_in_.value());
+}
+
+TEST_F(PaymentsClientTest, OptInServerUnresponsive) {
+  StartOptChangeRequest(/*opt_in=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_REQUEST_TIMEOUT, "");
+  EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
+  EXPECT_FALSE(user_is_opted_in_.value());
+}
+
+TEST_F(PaymentsClientTest, OptOutSuccess) {
+  StartOptChangeRequest(/*opt_in=*/false);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": false }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_FALSE(user_is_opted_in_.value());
+}
+
+TEST_F(PaymentsClientTest, EnrollAttemptReturnsCreationOptions) {
+  StartOptChangeRequest(/*opt_in=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"user_is_opted_in\": false, \"fido_creation_options\": { "
+                 "\"relying_party_id\": \"google.com\"} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_FALSE(user_is_opted_in_.value());
+  EXPECT_EQ("google.com",
+            *fido_creation_options_.FindStringKey("relying_party_id"));
 }
 
 TEST_F(PaymentsClientTest, GetDetailsSuccess) {
@@ -635,29 +708,13 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do via
-  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTestExperimentFlagOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartGettingUploadDetails();
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
@@ -765,8 +822,7 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do via
-  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
@@ -774,21 +830,6 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, UploadCardVariationsTestExperimentFlagOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartUploading(/*include_cvc=*/true);
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
@@ -799,8 +840,7 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do via
-  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
@@ -812,48 +852,20 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
-TEST_F(PaymentsClientTest, UnmaskCardVariationsTestExperimentOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartUnmasking(CardUnmaskOptions());
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
 TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  EnableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  // Note: This needs a base::FieldTrialList instance because it does not use
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
+  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, MigrateCardsVariationsTestExperimentFlagOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartMigrating(/*has_cardholder_name=*/true);
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
@@ -1074,11 +1086,13 @@ TEST_F(PaymentsClientTest, MigrationSuccessWithSaveResult) {
                  "FAILURE\"}],\"value_prop_display_text\":\"display text\"}");
 
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_TRUE(save_result_.get());
-  EXPECT_TRUE(save_result_->find("0") != save_result_->end());
-  EXPECT_TRUE(save_result_->at("0") == "SUCCESS");
-  EXPECT_TRUE(save_result_->find("1") != save_result_->end());
-  EXPECT_TRUE(save_result_->at("1") == "TEMPORARY_FAILURE");
+  EXPECT_TRUE(migration_save_results_.get());
+  EXPECT_TRUE(migration_save_results_->find("0") !=
+              migration_save_results_->end());
+  EXPECT_TRUE(migration_save_results_->at("0") == "SUCCESS");
+  EXPECT_TRUE(migration_save_results_->find("1") !=
+              migration_save_results_->end());
+  EXPECT_TRUE(migration_save_results_->at("1") == "TEMPORARY_FAILURE");
 }
 
 TEST_F(PaymentsClientTest, MigrationMissingSaveResult) {
@@ -1087,7 +1101,7 @@ TEST_F(PaymentsClientTest, MigrationMissingSaveResult) {
   ReturnResponse(net::HTTP_OK,
                  "{\"value_prop_display_text\":\"display text\"}");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ(nullptr, save_result_.get());
+  EXPECT_EQ(nullptr, migration_save_results_.get());
 }
 
 TEST_F(PaymentsClientTest, MigrationSuccessWithDisplayText) {
@@ -1111,7 +1125,7 @@ TEST_F(PaymentsClientTest, RetryFailure) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error\": { \"code\": \"INTERNAL\" } }");
   EXPECT_EQ(AutofillClient::TRY_AGAIN_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, PermanentFailure) {
@@ -1120,7 +1134,7 @@ TEST_F(PaymentsClientTest, PermanentFailure) {
   ReturnResponse(net::HTTP_OK,
                  "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, MalformedResponse) {
@@ -1128,7 +1142,7 @@ TEST_F(PaymentsClientTest, MalformedResponse) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, ReauthNeeded) {
@@ -1138,17 +1152,17 @@ TEST_F(PaymentsClientTest, ReauthNeeded) {
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
     EXPECT_EQ(AutofillClient::NONE, result_);
-    EXPECT_EQ("", real_pan_);
+    EXPECT_EQ(nullptr, unmask_response_details_);
 
     // Second HTTP_UNAUTHORIZED causes permanent failure.
     IssueOAuthToken();
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-    EXPECT_EQ("", real_pan_);
+    EXPECT_EQ("", unmask_response_details_->real_pan);
   }
 
   result_ = AutofillClient::NONE;
-  real_pan_.clear();
+  unmask_response_details_ = nullptr;
 
   {
     StartUnmasking(CardUnmaskOptions());
@@ -1159,13 +1173,13 @@ TEST_F(PaymentsClientTest, ReauthNeeded) {
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
     EXPECT_EQ(AutofillClient::NONE, result_);
-    EXPECT_EQ("", real_pan_);
+    EXPECT_EQ(nullptr, unmask_response_details_);
 
     // HTTP_OK after first HTTP_UNAUTHORIZED results in success.
     IssueOAuthToken();
     ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
     EXPECT_EQ(AutofillClient::SUCCESS, result_);
-    EXPECT_EQ("1234", real_pan_);
+    EXPECT_EQ("1234", unmask_response_details_->real_pan);
   }
 }
 
@@ -1174,7 +1188,7 @@ TEST_F(PaymentsClientTest, NetworkError) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_REQUEST_TIMEOUT, std::string());
   EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, OtherError) {
@@ -1182,7 +1196,7 @@ TEST_F(PaymentsClientTest, OtherError) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_FORBIDDEN, std::string());
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 }  // namespace payments

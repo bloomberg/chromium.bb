@@ -160,111 +160,113 @@ static_library("protobuf_full") {
   ]
 }
 
-# protoc compiler is separated into protoc library and executable targets to
-# support protoc plugins that need to link libprotoc, but not the main()
-# itself. See src/google/protobuf/compiler/plugin.h
-static_library("protoc_lib") {
-  sources = [
-    "src/src/google/protobuf/compiler/code_generator.cc",
-    "src/src/google/protobuf/compiler/command_line_interface.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_enum.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_extension.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_field.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_file.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_generator.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_helpers.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_map_field.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_message.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_message_field.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_service.cc",
-    "src/src/google/protobuf/compiler/cpp/cpp_string_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_enum.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_field_base.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_generator.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_helpers.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_map_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_message.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_message_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
-    "src/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
-    "src/src/google/protobuf/compiler/java/java_context.cc",
-    "src/src/google/protobuf/compiler/java/java_doc_comment.cc",
-    "src/src/google/protobuf/compiler/java/java_enum.cc",
-    "src/src/google/protobuf/compiler/java/java_enum_field.cc",
-    "src/src/google/protobuf/compiler/java/java_enum_field_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_enum_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_extension.cc",
-    "src/src/google/protobuf/compiler/java/java_extension_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_field.cc",
-    "src/src/google/protobuf/compiler/java/java_file.cc",
-    "src/src/google/protobuf/compiler/java/java_generator.cc",
-    "src/src/google/protobuf/compiler/java/java_generator_factory.cc",
-    "src/src/google/protobuf/compiler/java/java_helpers.cc",
-    "src/src/google/protobuf/compiler/java/java_map_field.cc",
-    "src/src/google/protobuf/compiler/java/java_map_field_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_message.cc",
-    "src/src/google/protobuf/compiler/java/java_message_builder.cc",
-    "src/src/google/protobuf/compiler/java/java_message_builder_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_message_field.cc",
-    "src/src/google/protobuf/compiler/java/java_message_field_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_message_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_name_resolver.cc",
-    "src/src/google/protobuf/compiler/java/java_primitive_field.cc",
-    "src/src/google/protobuf/compiler/java/java_primitive_field_lite.cc",
-    "src/src/google/protobuf/compiler/java/java_service.cc",
-    "src/src/google/protobuf/compiler/java/java_shared_code_generator.cc",
-    "src/src/google/protobuf/compiler/java/java_string_field.cc",
-    "src/src/google/protobuf/compiler/java/java_string_field_lite.cc",
-    "src/src/google/protobuf/compiler/js/js_generator.cc",
-    "src/src/google/protobuf/compiler/js/well_known_types_embed.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_field.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_file.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_generator.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_helpers.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_map_field.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_message.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
-    "src/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
-    "src/src/google/protobuf/compiler/php/php_generator.cc",
-    "src/src/google/protobuf/compiler/plugin.cc",
-    "src/src/google/protobuf/compiler/plugin.pb.cc",
-    "src/src/google/protobuf/compiler/python/python_generator.cc",
-    "src/src/google/protobuf/compiler/ruby/ruby_generator.cc",
-    "src/src/google/protobuf/compiler/subprocess.cc",
-    "src/src/google/protobuf/compiler/zip_writer.cc",
-  ]
+if (current_toolchain == host_toolchain) {
+  # protoc compiler is separated into protoc library and executable targets to
+  # support protoc plugins that need to link libprotoc, but not the main()
+  # itself. See src/google/protobuf/compiler/plugin.h
+  static_library("protoc_lib") {
+    sources = [
+      "src/src/google/protobuf/compiler/code_generator.cc",
+      "src/src/google/protobuf/compiler/command_line_interface.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_enum.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_extension.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_field.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_file.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_generator.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_helpers.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_map_field.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_message.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_message_field.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_service.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_string_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_enum.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_field_base.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_generator.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_helpers.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_map_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_message.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_message_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
+      "src/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
+      "src/src/google/protobuf/compiler/java/java_context.cc",
+      "src/src/google/protobuf/compiler/java/java_doc_comment.cc",
+      "src/src/google/protobuf/compiler/java/java_enum.cc",
+      "src/src/google/protobuf/compiler/java/java_enum_field.cc",
+      "src/src/google/protobuf/compiler/java/java_enum_field_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_enum_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_extension.cc",
+      "src/src/google/protobuf/compiler/java/java_extension_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_field.cc",
+      "src/src/google/protobuf/compiler/java/java_file.cc",
+      "src/src/google/protobuf/compiler/java/java_generator.cc",
+      "src/src/google/protobuf/compiler/java/java_generator_factory.cc",
+      "src/src/google/protobuf/compiler/java/java_helpers.cc",
+      "src/src/google/protobuf/compiler/java/java_map_field.cc",
+      "src/src/google/protobuf/compiler/java/java_map_field_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_message.cc",
+      "src/src/google/protobuf/compiler/java/java_message_builder.cc",
+      "src/src/google/protobuf/compiler/java/java_message_builder_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_message_field.cc",
+      "src/src/google/protobuf/compiler/java/java_message_field_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_message_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_name_resolver.cc",
+      "src/src/google/protobuf/compiler/java/java_primitive_field.cc",
+      "src/src/google/protobuf/compiler/java/java_primitive_field_lite.cc",
+      "src/src/google/protobuf/compiler/java/java_service.cc",
+      "src/src/google/protobuf/compiler/java/java_shared_code_generator.cc",
+      "src/src/google/protobuf/compiler/java/java_string_field.cc",
+      "src/src/google/protobuf/compiler/java/java_string_field_lite.cc",
+      "src/src/google/protobuf/compiler/js/js_generator.cc",
+      "src/src/google/protobuf/compiler/js/well_known_types_embed.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_field.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_file.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_generator.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_helpers.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_map_field.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_message.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
+      "src/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
+      "src/src/google/protobuf/compiler/php/php_generator.cc",
+      "src/src/google/protobuf/compiler/plugin.cc",
+      "src/src/google/protobuf/compiler/plugin.pb.cc",
+      "src/src/google/protobuf/compiler/python/python_generator.cc",
+      "src/src/google/protobuf/compiler/ruby/ruby_generator.cc",
+      "src/src/google/protobuf/compiler/subprocess.cc",
+      "src/src/google/protobuf/compiler/zip_writer.cc",
+    ]
 
-  configs += [ ":protobuf_warnings" ]
-  public_configs = [ ":protobuf_config" ]
+    configs += [ ":protobuf_warnings" ]
+    public_configs = [ ":protobuf_config" ]
 
-  public_deps = [
-    ":protobuf_full",
-  ]
-}
+    public_deps = [
+      ":protobuf_full",
+    ]
+  }
 
-executable("protoc") {
-  sources = [
-    "src/src/google/protobuf/compiler/main.cc",
-  ]
+  executable("protoc") {
+    sources = [
+      "src/src/google/protobuf/compiler/main.cc",
+    ]
 
-  deps = [
-    ":protoc_lib",
-  ]
+    deps = [
+      ":protoc_lib",
+    ]
 
-  configs += [ ":protobuf_warnings" ]
-  public_configs = [ ":protobuf_config" ]
+    configs += [ ":protobuf_warnings" ]
+    public_configs = [ ":protobuf_config" ]
+  }
 }

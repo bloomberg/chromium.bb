@@ -18,7 +18,7 @@
 #include "dawn_native/metal/DeviceMTL.h"
 #include "dawn_native/metal/PipelineLayoutMTL.h"
 
-#include <spirv-cross/spirv_msl.hpp>
+#include <spirv_msl.hpp>
 
 #include <sstream>
 
@@ -26,13 +26,13 @@ namespace dawn_native { namespace metal {
 
     namespace {
 
-        spv::ExecutionModel SpirvExecutionModelForStage(ShaderStage stage) {
+        spv::ExecutionModel SpirvExecutionModelForStage(SingleShaderStage stage) {
             switch (stage) {
-                case ShaderStage::Vertex:
+                case SingleShaderStage::Vertex:
                     return spv::ExecutionModelVertex;
-                case ShaderStage::Fragment:
+                case SingleShaderStage::Fragment:
                     return spv::ExecutionModelFragment;
-                case ShaderStage::Compute:
+                case SingleShaderStage::Compute:
                     return spv::ExecutionModelGLCompute;
                 default:
                     UNREACHABLE();
@@ -48,7 +48,7 @@ namespace dawn_native { namespace metal {
     }
 
     ShaderModule::MetalFunctionData ShaderModule::GetFunction(const char* functionName,
-                                                              ShaderStage functionStage,
+                                                              SingleShaderStage functionStage,
                                                               const PipelineLayout* layout) const {
         spirv_cross::CompilerMSL compiler(mSpirv);
 
@@ -58,13 +58,19 @@ namespace dawn_native { namespace metal {
         options_glsl.vertex.flip_vert_y = true;
         compiler.spirv_cross::CompilerGLSL::set_common_options(options_glsl);
 
+        spirv_cross::CompilerMSL::Options options_msl;
+
         // Disable PointSize builtin for https://bugs.chromium.org/p/dawn/issues/detail?id=146
-        // Becuase Metal will reject PointSize builtin if the shader is compiled into a render
+        // Because Metal will reject PointSize builtin if the shader is compiled into a render
         // pipeline that uses a non-point topology.
         // TODO (hao.x.li@intel.com): Remove this once WebGPU requires there is no
         // gl_PointSize builtin (https://github.com/gpuweb/gpuweb/issues/332).
-        spirv_cross::CompilerMSL::Options options_msl;
         options_msl.enable_point_size_builtin = false;
+
+        // Always use vertex buffer 30 (the last one in the vertex buffer table) to contain
+        // the shader storage buffer lengths.
+        options_msl.buffer_size_buffer_index = kBufferLengthBufferSlot;
+
         compiler.set_msl_options(options_msl);
 
         // By default SPIRV-Cross will give MSL resources indices in increasing order.
@@ -134,6 +140,8 @@ namespace dawn_native { namespace metal {
             result.function = [library newFunctionWithName:name];
             [library release];
         }
+
+        result.needsStorageBufferLength = compiler.needs_buffer_size_buffer();
 
         return result;
     }

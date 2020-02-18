@@ -10,11 +10,13 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/profiler.h"
+#include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -84,6 +86,14 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mach_port_rendezvous.h"
+#endif
+
+#if BUILDFLAG(CLANG_COVERAGE)
+#include <stdio.h>
+#include <unistd.h>
+// Function provided by libclang_rt.profile-*.a, declared and documented at:
+// https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/profile/InstrProfiling.h
+extern "C" void __llvm_profile_set_file_object(FILE* File, int EnableMerge);
 #endif
 
 namespace content {
@@ -275,15 +285,25 @@ class ChildProcessImpl : public mojom::ChildProcess {
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       base::WeakPtr<ChildThreadImpl> weak_main_thread,
       base::RepeatingClosure quit_closure,
-      ChildThreadImpl::Options::ServiceBinder service_binder)
+      ChildThreadImpl::Options::ServiceBinder service_binder,
+      mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver)
       : main_thread_task_runner_(std::move(main_thread_task_runner)),
         weak_main_thread_(std::move(weak_main_thread)),
         quit_closure_(std::move(quit_closure)),
-        service_binder_(std::move(service_binder)) {}
+        service_binder_(std::move(service_binder)),
+        host_receiver_(std::move(host_receiver)) {}
   ~ChildProcessImpl() override = default;
 
  private:
   // mojom::ChildProcess:
+  void Initialize(mojo::PendingRemote<mojom::ChildProcessHostBootstrap>
+                      bootstrap) override {
+    // The browser only calls this method once.
+    DCHECK(host_receiver_);
+    mojo::Remote<mojom::ChildProcessHostBootstrap>(std::move(bootstrap))
+        ->BindProcessHost(std::move(host_receiver_));
+  }
+
   void ProcessShutdown() override {
     main_thread_task_runner_->PostTask(FROM_HERE,
                                        base::BindOnce(quit_closure_));
@@ -338,14 +358,53 @@ class ChildProcessImpl : public mojom::ChildProcess {
 
   void BindServiceInterface(mojo::GenericPendingReceiver receiver) override {
     if (service_binder_)
-      service_binder_.Run(std::move(receiver));
+      service_binder_.Run(&receiver);
+
+    if (receiver) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&ChildThreadImpl::BindServiceInterface,
+                                    weak_main_thread_, std::move(receiver)));
+    }
   }
+
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override {
+    std::string interface_name = *receiver.interface_name();
+    mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
+    // TODO(crbug.com/977637): Update BindChildProcessInterface to take a
+    // GenericPendingReceiver* so we don't have to unpack and re-pack |receiver|
+    // to call this.
+    GetContentClient()->BindChildProcessInterface(interface_name, &pipe);
+    if (!pipe)
+      return;
+    receiver = mojo::GenericPendingReceiver(interface_name, std::move(pipe));
+
+    // TODO(crbug.com/977637): Support something like ServiceBinder for general
+    // interface receiver binding on the IO thread by different ChildThreadImpl
+    // subclasses.
+
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&ChildThreadImpl::OnBindReceiver,
+                                  weak_main_thread_, std::move(receiver)));
+  }
+
+#if BUILDFLAG(CLANG_COVERAGE)
+  void SetCoverageFile(base::File file) override {
+    // TODO(crbug.com/988816) Fix this when we support coverage on Windows.
+#if defined(OS_POSIX)
+    // Take the file descriptor so that |file| does not close it.
+    int fd = file.TakePlatformFile();
+    FILE* f = fdopen(fd, "r+b");
+    __llvm_profile_set_file_object(f, 1);
+#endif
+  }
+#endif
 
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   const base::WeakPtr<ChildThreadImpl> weak_main_thread_;
   const base::RepeatingClosure quit_closure_;
 
   ChildThreadImpl::Options::ServiceBinder service_binder_;
+  mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessImpl);
 };
@@ -355,11 +414,13 @@ void BindChildProcessImpl(
     base::WeakPtr<ChildThreadImpl> weak_main_thread,
     base::RepeatingClosure quit_closure,
     ChildThreadImpl::Options::ServiceBinder service_binder,
+    mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver,
     mojom::ChildProcessRequest request) {
   mojo::MakeSelfOwnedReceiver<mojom::ChildProcess>(
       std::make_unique<ChildProcessImpl>(
           std::move(main_thread_task_runner), std::move(weak_main_thread),
-          std::move(quit_closure), std::move(service_binder)),
+          std::move(quit_closure), std::move(service_binder),
+          std::move(host_receiver)),
       std::move(request));
 }
 
@@ -454,8 +515,7 @@ ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure)
 
 ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure,
                                  const Options& options)
-    : route_provider_binding_(this),
-      router_(this),
+    : router_(this),
       quit_closure_(std::move(quit_closure)),
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
@@ -480,8 +540,7 @@ void ChildThreadImpl::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
   mojom::FieldTrialRecorderPtr field_trial_recorder;
-  GetConnector()->BindInterface(mojom::kSystemServiceName,
-                                &field_trial_recorder);
+  BindHostReceiver(mojo::MakeRequest(&field_trial_recorder));
   field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
@@ -557,10 +616,15 @@ void ChildThreadImpl::Init(const Options& options) {
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
                          GetIOTaskRunner());
 
+  mojo::PendingRemote<mojom::ChildProcessHost> remote_host;
+  auto host_receiver = remote_host.InitWithNewPipeAndPassReceiver();
+  child_process_host_ = mojo::SharedRemote<mojom::ChildProcessHost>(
+      std::move(remote_host), GetIOTaskRunner());
   registry->AddInterface(
-      base::BindRepeating(
-          &BindChildProcessImpl, base::ThreadTaskRunnerHandle::Get(),
-          weak_factory_.GetWeakPtr(), quit_closure_, options.service_binder),
+      base::BindRepeating(&BindChildProcessImpl,
+                          base::ThreadTaskRunnerHandle::Get(),
+                          weak_factory_.GetWeakPtr(), quit_closure_,
+                          options.service_binder, base::Passed(&host_receiver)),
       GetIOTaskRunner());
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
@@ -733,6 +797,10 @@ service_manager::Connector* ChildThreadImpl::GetConnector() {
   return service_manager_connection_->GetConnector();
 }
 
+void ChildThreadImpl::BindHostReceiver(mojo::GenericPendingReceiver receiver) {
+  child_process_host_->BindHostReceiver(std::move(receiver));
+}
+
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   return &router_;
@@ -777,13 +845,14 @@ void ChildThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (interface_name == mojom::RouteProvider::Name_) {
-    DCHECK(!route_provider_binding_.is_bound());
-    route_provider_binding_.Bind(
-        mojom::RouteProviderAssociatedRequest(std::move(handle)),
+    DCHECK(!route_provider_receiver_.is_bound());
+    route_provider_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<mojom::RouteProvider>(
+            std::move(handle)),
         ipc_task_runner_ ? ipc_task_runner_
                          : base::ThreadTaskRunnerHandle::Get());
   } else {
-    LOG(ERROR) << "Request for unknown Channel-associated interface: "
+    LOG(ERROR) << "Receiver for unknown Channel-associated interface: "
                << interface_name;
   }
 }
@@ -816,6 +885,14 @@ void ChildThreadImpl::RunService(
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
 }
+
+void ChildThreadImpl::BindServiceInterface(
+    mojo::GenericPendingReceiver receiver) {
+  DLOG(ERROR) << "Ignoring unhandled request to bind service interface: "
+              << *receiver.interface_name();
+}
+
+void ChildThreadImpl::OnBindReceiver(mojo::GenericPendingReceiver receiver) {}
 
 ChildThreadImpl* ChildThreadImpl::current() {
   return g_lazy_child_thread_impl_tls.Pointer()->Get();

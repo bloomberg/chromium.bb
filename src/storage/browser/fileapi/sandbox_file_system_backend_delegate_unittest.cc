@@ -10,7 +10,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -59,7 +59,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
             &SandboxFileSystemBackendDelegateTest::OpenFileSystemCallback,
             base::Unretained(this)),
         GURL());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   int callback_count() const { return callback_count_; }
@@ -79,7 +79,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
 

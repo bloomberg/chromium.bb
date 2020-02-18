@@ -24,7 +24,7 @@ namespace gfx {
 class Point;
 }
 
-// Class to enable quick tab switching via horizontal 3 finger swipes.
+// Class to enable quick tab switching via horizontal 4 finger swipes.
 class TabScrubber : public ui::EventHandler,
                     public BrowserListObserver,
                     public TabStripObserver {
@@ -76,6 +76,9 @@ class TabScrubber : public ui::EventHandler,
 
   void UpdateHighlightedTab(Tab* new_tab, int new_index);
 
+  // The required number of fingers to perform tab scrubbing, which can be
+  // affected by some Virtual Desks flags.
+  const int required_finger_count_;
   // Are we currently scrubbing?.
   bool scrubbing_ = false;
   // The last browser we used for scrubbing, NULL if |scrubbing_| is false and

@@ -62,6 +62,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_profile_key.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -128,7 +129,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/event_router_factory.h"
@@ -205,10 +206,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
       new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
           BookmarkSyncServiceFactory::GetForProfile(profile))));
-  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
-                       profile->GetIOTaskRunner(),
-                       base::CreateSingleThreadTaskRunnerWithTraits(
-                           {content::BrowserThread::UI}));
+  bookmark_model->Load(
+      profile->GetPrefs(), profile->GetPath(), profile->GetIOTaskRunner(),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
   return std::move(bookmark_model);
 }
 
@@ -223,7 +223,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   const base::FilePath& context_path = context->GetPath();
   return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
       base::BindRepeating(&TestProfileErrorCallback));
 }
 
@@ -399,10 +399,10 @@ void TestingProfile::Init() {
   }
 
   if (IsOffTheRecord()) {
-    key_ = std::make_unique<ProfileKey>(original_profile_->GetPath(),
-                                        original_profile_->GetProfileKey());
+    key_ = std::make_unique<TestingProfileKey>(
+        this, original_profile_->GetPath(), original_profile_->GetProfileKey());
   } else {
-    key_ = std::make_unique<ProfileKey>(profile_path_);
+    key_ = std::make_unique<TestingProfileKey>(this, profile_path_);
   }
 
   BrowserContext::Initialize(this, profile_path_);
@@ -460,8 +460,8 @@ void TestingProfile::Init() {
       profile_path_, GetURLLoaderFactory(),
       base::BindRepeating(&chromeos::DelayNetworkCall,
                           base::TimeDelta::FromMilliseconds(
-                              chromeos::kDefaultNetworkRetryDelayMS)),
-      GetPrefs());
+                              chromeos::kDefaultNetworkRetryDelayMS)));
+  account_manager->SetPrefService(GetPrefs());
   if (!chromeos::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(
         new chromeos::ScopedCrosSettingsTestHelper);
@@ -690,6 +690,10 @@ base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
 
+base::Time TestingProfile::GetCreationTime() const {
+  return start_time_;
+}
+
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
@@ -892,10 +896,6 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 TestingProfile::GetURLLoaderFactory() {
   return nullptr;
@@ -997,6 +997,10 @@ GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
 }
 
+void TestingProfile::SetCreationTimeForTesting(base::Time creation_time) {
+  start_time_ = creation_time;
+}
+
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return nullptr;
 }
@@ -1043,17 +1047,6 @@ TestingProfile::GetBrowsingDataRemoverDelegate() {
   // data backends, which are already mocked if considered too heavy-weight
   // for TestingProfile.
   return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
-}
-
-net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return new net::TestURLRequestContextGetter(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-}
-
-net::URLRequestContextGetter* TestingProfile::CreateMediaRequestContext() {
-  return nullptr;
 }
 
 void TestingProfile::SetCorsOriginAccessListForOrigin(

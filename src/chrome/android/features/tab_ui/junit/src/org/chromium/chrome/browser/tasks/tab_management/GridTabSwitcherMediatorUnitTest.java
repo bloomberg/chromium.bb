@@ -118,7 +118,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Mock
     Layout mLayout;
     @Mock
-    TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
+    TabGridDialogMediator.DialogController mTabGridDialogController;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -183,7 +183,8 @@ public class GridTabSwitcherMediatorUnitTest {
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null);
+                mFullscreenManager, mCompositorViewHolder, null,
+                TabListCoordinator.TabListMode.GRID);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
     }
@@ -267,7 +268,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Test
     public void hidesWithAnimation() {
         initAndAssertAllProperties();
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        mMediator.setTabGridDialogController(mTabGridDialogController);
         mMediator.showOverview(true);
 
         assertThat(
@@ -280,13 +281,13 @@ public class GridTabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
         assertThat(mMediator.overviewVisible(), equalTo(false));
-        verify(mTabGridDialogResetHandler).hideDialog(eq(false));
+        verify(mTabGridDialogController).hideDialog(eq(false));
     }
 
     @Test
     public void hidesWithoutAnimation() {
         initAndAssertAllProperties();
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        mMediator.setTabGridDialogController(mTabGridDialogController);
         mMediator.showOverview(true);
 
         assertThat(
@@ -307,7 +308,7 @@ public class GridTabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
         assertThat(mMediator.overviewVisible(), equalTo(false));
-        verify(mTabGridDialogResetHandler).hideDialog(eq(false));
+        verify(mTabGridDialogController).hideDialog(eq(false));
     }
 
     @Test
@@ -345,19 +346,19 @@ public class GridTabSwitcherMediatorUnitTest {
         mMediator.setCleanupDelayForTesting(0);
         mMediator.postHiding();
         verify(mResetHandler).softCleanup();
-        verify(mResetHandler).resetWithTabList(eq(null), eq(false));
+        verify(mResetHandler).resetWithTabList(eq(null), eq(false), eq(false));
     }
 
     @Test
     public void resetsAfterNewTabModelSelected_DialogEnabled() {
         initAndAssertAllProperties();
         // Setup dialog reset handler. Default setup is that dialog handler is null.
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        mMediator.setTabGridDialogController(mTabGridDialogController);
 
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
-        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
-        verify(mTabGridDialogResetHandler).hideDialog(eq(false));
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false), eq(false));
+        verify(mTabGridDialogController).hideDialog(eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
         // Switching TabModels by itself shouldn't cause visibility changes.
@@ -370,8 +371,8 @@ public class GridTabSwitcherMediatorUnitTest {
 
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
-        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
-        verify(mTabGridDialogResetHandler, never()).hideDialog(eq(false));
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false), eq(false));
+        verify(mTabGridDialogController, never()).hideDialog(eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
         // Switching TabModels by itself shouldn't cause visibility changes.
@@ -431,6 +432,60 @@ public class GridTabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void updatesResetHandlerOnRestoreCompleted() {
+        initAndAssertAllProperties();
+        mMediator.showOverview(true);
+        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+
+        mTabModelObserverCaptor.getValue().restoreCompleted();
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
+    public void showOverviewDoesNotUpdateResetHandlerBeforeRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(false).when(mTabModelFilter).isTabModelRestored();
+        mMediator.showOverview(true);
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler, never()).resetWithTabList(mTabModelFilter, true, false);
+    }
+
+    @Test
+    public void prepareOverviewDoesNotUpdateResetHandlerBeforeRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(false).when(mTabModelFilter).isTabModelRestored();
+        mMediator.prepareOverview();
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler, never()).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
+    public void showOverviewUpdatesResetHandlerAfterRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+
+        mMediator.showOverview(true);
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, true, false);
+    }
+
+    @Test
+    public void prepareOverviewUpdatesResetHandlerAfterRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+
+        mMediator.prepareOverview();
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
     @DisableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_FlagDisabled() {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
@@ -447,7 +502,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_SingleTab() {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        mMediator.setTabGridDialogController(mTabGridDialogController);
         // Mock that tab 1 is a single tab.
         doReturn(new ArrayList<>(Arrays.asList(mTab1)))
                 .when(mTabModelFilter)
@@ -459,7 +514,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_TabGroup_NotEmpty() {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        mMediator.setTabGridDialogController(mTabGridDialogController);
         // Set up a tab group.
         Tab newTab = prepareTab(TAB4_ID, TAB4_TITLE);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, newTab));
@@ -469,14 +524,14 @@ public class GridTabSwitcherMediatorUnitTest {
         assertThat(listener, notNullValue());
 
         listener.run(TAB1_ID);
-        verify(mTabGridDialogResetHandler).resetWithListOfTabs(eq(tabs));
+        verify(mTabGridDialogController).resetWithListOfTabs(eq(tabs));
     }
 
     @Test
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_TabGroup_Empty() {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        mMediator.setTabGridDialogController(mTabGridDialogController);
         // Assume that due to tab model change, current group becomes empty in current model.
         doReturn(new ArrayList<>()).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
 
@@ -484,7 +539,7 @@ public class GridTabSwitcherMediatorUnitTest {
         assertThat(listener, notNullValue());
 
         listener.run(TAB1_ID);
-        verify(mTabGridDialogResetHandler).resetWithListOfTabs(eq(null));
+        verify(mTabGridDialogController).resetWithListOfTabs(eq(null));
     }
 
     private void initAndAssertAllProperties() {

@@ -35,7 +35,7 @@ void TestInstallFinalizer::FinalizeInstall(
     next_app_id_.reset();
   }
 
-  InstallResultCode code = InstallResultCode::kSuccess;
+  InstallResultCode code = InstallResultCode::kSuccessNewInstall;
   if (next_result_code_.has_value()) {
     code = next_result_code_.value();
     next_result_code_.reset();
@@ -51,7 +51,7 @@ void TestInstallFinalizer::FinalizeInstall(
 
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
-    UninstallExternalWebAppCallback callback) {
+    UninstallWebAppCallback callback) {
   DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);
 
@@ -64,6 +64,9 @@ void TestInstallFinalizer::UninstallExternalWebApp(
                        std::move(callback).Run(result);
                      }));
 }
+
+void TestInstallFinalizer::UninstallWebApp(const AppId& app_url,
+                                           UninstallWebAppCallback callback) {}
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {
   return true;
@@ -79,12 +82,12 @@ void TestInstallFinalizer::CreateOsShortcuts(
       base::BindOnce(std::move(callback), true /* shortcuts_created */));
 }
 
-bool TestInstallFinalizer::CanPinAppToShelf() const {
+bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
   return true;
 }
 
-void TestInstallFinalizer::PinAppToShelf(const AppId& app_id) {
-  ++num_pin_app_to_shelf_calls_;
+void TestInstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
+  ++num_add_app_to_quick_launch_bar_calls_;
 }
 
 bool TestInstallFinalizer::CanReparentTab(const AppId& app_id,
@@ -93,6 +96,7 @@ bool TestInstallFinalizer::CanReparentTab(const AppId& app_id,
 }
 
 void TestInstallFinalizer::ReparentTab(const AppId& app_id,
+                                       bool shortcut_created,
                                        content::WebContents* web_contents) {
   ++num_reparent_tab_calls_;
 }
@@ -109,6 +113,11 @@ bool TestInstallFinalizer::CanSkipAppUpdateForSync(
     const AppId& app_id,
     const WebApplicationInfo& web_app_info) const {
   return next_can_skip_app_update_for_sync_;
+}
+
+bool TestInstallFinalizer::CanUserUninstallFromSync(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void TestInstallFinalizer::SetNextFinalizeInstallResult(

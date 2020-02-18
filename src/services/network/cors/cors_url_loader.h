@@ -11,7 +11,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -60,16 +59,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
   // mojom::URLLoaderClient overrides:
-  void OnReceiveResponse(const ResourceResponseHead& head) override;
+  void OnReceiveResponse(mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override;
+                         mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
@@ -95,10 +93,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
  private:
   void StartRequest();
-  void StartNetworkRequest(
-      int net_error,
-      base::Optional<CorsErrorStatus> status,
-      base::Optional<PreflightTimingInfo> preflight_timing_info);
+  void StartNetworkRequest(int net_error,
+                           base::Optional<CorsErrorStatus> status);
 
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
@@ -112,7 +108,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void SetCorsFlagIfNeeded();
 
   static base::Optional<std::string> GetHeaderString(
-      const ResourceResponseHead& response,
+      const mojom::URLResponseHead& response,
       const std::string& header_name);
 
   mojo::Binding<mojom::URLLoader> binding_;
@@ -163,9 +159,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // We need to save this for redirect.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
-
-  // Holds timing info if a preflight was made.
-  std::vector<PreflightTimingInfo> preflight_timing_info_;
 
   const base::Optional<url::Origin> factory_bound_origin_;
 

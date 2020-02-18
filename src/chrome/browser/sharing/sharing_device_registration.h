@@ -47,6 +47,9 @@ class SharingDeviceRegistration {
   // Un-registers device with sharing sync preferences.
   virtual void UnregisterDevice(RegistrationCallback callback);
 
+  // For testing
+  void SetDeviceCapabilityForTesting(int device_capabilities);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
                            RegisterDeviceTest_Success);
@@ -74,6 +77,7 @@ class SharingDeviceRegistration {
   // Callback function responsible for saving device registration information in
   // SharingSyncPreference.
   void OnEncryptionInfoReceived(RegistrationCallback callback,
+                                const std::string& authorized_entity,
                                 const std::string& fcm_registration_token,
                                 std::string p256dh,
                                 std::string auth_secret);
@@ -84,13 +88,17 @@ class SharingDeviceRegistration {
   // Computes and returns a bitmask of all capabilities supported by the device.
   int GetDeviceCapabilities() const;
 
-  // Returns if device supports telephony capability.
-  bool IsTelephonySupported() const;
+  // Returns if device can handle receiving phone numbers for calling.
+  bool IsClickToCallSupported() const;
+
+  // Returns if device can handle receiving of shared clipboard contents.
+  bool IsSharedClipboardSupported() const;
 
   SharingSyncPreference* sharing_sync_preference_;
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
+  base::Optional<int> device_capabilities_testing_value_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 

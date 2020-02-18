@@ -17,7 +17,7 @@
 #include "media/capabilities/video_decode_stats_db.h"
 #include "media/capabilities/video_decode_stats_db_provider.h"
 #include "media/learning/impl/feature_provider.h"
-#include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -53,6 +53,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
       public base::SupportsUserData::Data {
  public:
   static const char kMaxSmoothDroppedFramesPercentParamName[];
+  static const char kEmeMaxSmoothDroppedFramesPercentParamName[];
 
   explicit VideoDecodePerfHistory(
       std::unique_ptr<VideoDecodeStatsDB> db,
@@ -95,7 +96,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
 
   // Decode capabilities will be described as "smooth" whenever the percentage
   // of dropped frames is less-than-or-equal-to this value.
-  static double GetMaxSmoothDroppedFramesPercent();
+  static double GetMaxSmoothDroppedFramesPercent(bool is_eme);
 
   // Track the status of database lazy initialization.
   enum InitStatus {
@@ -162,7 +163,8 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
                         const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
                         VideoDecodeStatsDB::DecodeStatsEntry* past_stats);
 
-  void AssessStats(const VideoDecodeStatsDB::DecodeStatsEntry* stats,
+  void AssessStats(const VideoDecodeStatsDB::VideoDescKey& key,
+                   const VideoDecodeStatsDB::DecodeStatsEntry* stats,
                    bool* is_smooth,
                    bool* is_power_efficient);
 

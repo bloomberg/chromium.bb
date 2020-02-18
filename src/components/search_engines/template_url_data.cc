@@ -40,6 +40,7 @@ TemplateURLData::TemplateURLData()
       last_modified(base::Time::Now()),
       last_visited(base::Time()),
       created_by_policy(false),
+      created_from_play_api(false),
       usage_count(0),
       prepopulate_id(0),
       sync_guid(base::GenerateGUID()),
@@ -47,6 +48,9 @@ TemplateURLData::TemplateURLData()
       url_("x") {}
 
 TemplateURLData::TemplateURLData(const TemplateURLData& other) = default;
+
+TemplateURLData& TemplateURLData::operator=(const TemplateURLData& other) =
+    default;
 
 TemplateURLData::TemplateURLData(const base::string16& name,
                                  const base::string16& keyword,
@@ -79,6 +83,7 @@ TemplateURLData::TemplateURLData(const base::string16& name,
       date_created(base::Time()),
       last_modified(base::Time()),
       created_by_policy(false),
+      created_from_play_api(false),
       usage_count(0),
       prepopulate_id(prepopulate_id),
       sync_guid(GenerateGUID(prepopulate_id)) {
@@ -94,8 +99,7 @@ TemplateURLData::TemplateURLData(const base::string16& name,
   }
 }
 
-TemplateURLData::~TemplateURLData() {
-}
+TemplateURLData::~TemplateURLData() = default;
 
 void TemplateURLData::SetShortName(const base::string16& short_name) {
   // Remove tabs, carriage returns, and the like, as they can corrupt

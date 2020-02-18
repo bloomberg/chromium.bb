@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace url_formatter {
 
@@ -562,6 +563,8 @@ const IDNTestCase kIdnCases[] = {
     // ӏԍԃ.com
     {"xn--s5a8h3a.com", L"\x04cf\x050d\x0503.com", false},
 
+    // 1շ34567890.com
+    {"xn--134567890-gnk.com", L"1շ34567890.com", false},
     // ꓲ2345б7890.com
     {"xn--23457890-e7g93622b.com",
      L"\xa4f2"
@@ -619,6 +622,8 @@ const IDNTestCase kIdnCases[] = {
      L"12\x10DE"
      L"4567890.com",
      false},
+    // 123ㄐ567890.com
+    {"xn--123567890-dr5h.com", L"123ㄐ567890.com", false},
     // 123Ꮞ567890.com
     {"xn--123567890-dm4b.com",
      L"123\x13ce"
@@ -629,6 +634,8 @@ const IDNTestCase kIdnCases[] = {
      L"12345\x0431"
      L"7890.com",
      false},
+    // 12345ճ7890.com
+    {"xn--123457890-fmk.com", L"12345ճ7890.com", false},
     // 1234567ȣ90.com
     {"xn--123456790-6od.com",
      L"1234567\x0223"
@@ -1063,21 +1070,42 @@ const IDNTestCase kIdnCases[] = {
     // Kana voiced sound marks are not allowed.
     {"xn--google-1m4e.com", L"google\x3099.com", false},
     {"xn--google-8m4e.com", L"google\x309A.com", false},
-};
+
+    // Small letter theta looks like a zero.
+    {"xn--123456789-yzg.com", L"123456789θ.com", false},
+
+    {"xn--est-118d.net", L"七est.net", false},
+    {"xn--est-918d.net", L"丅est.net", false},
+    {"xn--est-e28d.net", L"丆est.net", false},
+    {"xn--3-cq6a.com", L"丩3.com", false},
+    {"xn--cxe-n68d.com", L"c丫xe.com", false},
+    {"xn--cye-b98d.com", L"cy乂e.com", false},
+
+    // U+05D7 can look like Latin n in many fonts.
+    {"xn--ceba.com", L"חח.com", false},
+
+};  // namespace
 
 namespace test {
-#include "components/url_formatter/top_domains/test_domains-trie-inc.cc"
+#include "components/url_formatter/spoof_checks/top_domains/test_domains-trie-inc.cc"
 }
 
 }  // namespace
 
-TEST(IDNSpoofCheckerTest, IDNToUnicode) {
-  IDNSpoofChecker::HuffmanTrieParams trie_params{
-      test::kTopDomainsHuffmanTree, sizeof(test::kTopDomainsHuffmanTree),
-      test::kTopDomainsTrie, test::kTopDomainsTrieBits,
-      test::kTopDomainsRootPosition};
-  IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
+class IDNSpoofCheckerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    IDNSpoofChecker::HuffmanTrieParams trie_params{
+        test::kTopDomainsHuffmanTree, sizeof(test::kTopDomainsHuffmanTree),
+        test::kTopDomainsTrie, test::kTopDomainsTrieBits,
+        test::kTopDomainsRootPosition};
+    IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
+  }
 
+  void TearDown() override { IDNSpoofChecker::RestoreTrieParamsForTesting(); }
+};
+
+TEST_F(IDNSpoofCheckerTest, IDNToUnicode) {
   for (size_t i = 0; i < base::size(kIdnCases); i++) {
     base::string16 output(IDNToUnicode(kIdnCases[i].input));
     base::string16 expected(kIdnCases[i].unicode_allowed
@@ -1086,12 +1114,44 @@ TEST(IDNSpoofCheckerTest, IDNToUnicode) {
     EXPECT_EQ(expected, output)
         << "input # " << i << ": \"" << kIdnCases[i].input << "\"";
   }
-  IDNSpoofChecker::RestoreTrieParamsForTesting();
+}
+
+TEST_F(IDNSpoofCheckerTest, LookupSkeletonInTopDomains) {
+  {
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("d4OOO.corn");
+    EXPECT_EQ("d4000.com", entry.domain);
+    EXPECT_TRUE(entry.is_top_500);
+  }
+  {
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("digklrno68.corn");
+    EXPECT_EQ("digklmo68.com", entry.domain);
+    EXPECT_FALSE(entry.is_top_500);
+  }
+}
+
+// Same test as LookupSkeletonInTopDomains but using the real top domain list.
+TEST(IDNSpoofCheckerNoFixtureTest, LookupSkeletonInTopDomains) {
+  {
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("google.corn");
+    EXPECT_EQ("google.com", entry.domain);
+    EXPECT_TRUE(entry.is_top_500);
+  }
+  {
+    // This is data dependent, must be updated when the top domain list
+    // is updated.
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("google.sk");
+    EXPECT_EQ("google.sk", entry.domain);
+    EXPECT_FALSE(entry.is_top_500);
+  }
 }
 
 // Check the unsafe version of IDNToUnicode. Even though the input domain
 // matches a top domain, it should still be converted to unicode.
-TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
+TEST(IDNSpoofCheckerNoFixtureTest, UnsafeIDNToUnicodeWithDetails) {
   const struct TestCase {
     // The IDNA/Punycode version of the domain (plain ASCII).
     const char* const punycode;
@@ -1101,25 +1161,30 @@ TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
     const bool expected_has_idn;
     // The top domain that |punycode| matched to, if any.
     const char* const expected_matching_domain;
+    // If true, the matching top domain is expected to be in top 500.
+    const bool expected_is_top_500;
   } kTestCases[] = {
       {// An ASCII, top domain.
        "google.com", L"google.com", false,
        // Since it's not unicode, we won't attempt to match it to a top domain.
-       ""},
+       "",
+       // ...And since we don't match it to a top domain, we don't know if it's
+       // a top 500 domain.
+       false},
       {// An ASCII domain that's not a top domain.
-       "not-top-domain.com", L"not-top-domain.com", false, ""},
+       "not-top-domain.com", L"not-top-domain.com", false, "", false},
       {// A unicode domain that's valid according to all of the rules in IDN
        // spoof checker except that it matches a top domain. Should be
        // converted to punycode.
-       "xn--googl-fsa.com", L"googlé.com", true, "google.com"},
+       "xn--googl-fsa.com", L"googlé.com", true, "google.com", true},
       {// A unicode domain that's not valid according to the rules in IDN spoof
        // checker (mixed script) and it matches a top domain. Should be
        // converted to punycode.
-       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com"},
+       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com", true},
       {// A unicode domain that's not valid according to the rules in IDN spoof
        // checker (mixed script) but it doesn't match a top domain.
-       "xn--o-o-oai-26a223aia177a7ab7649d.com", L"ɴoτ-τoρ-ďoᛖaiɴ.com", true,
-       ""},
+       "xn--o-o-oai-26a223aia177a7ab7649d.com", L"ɴoτ-τoρ-ďoᛖaiɴ.com", true, "",
+       false},
   };
 
   for (const TestCase& test_case : kTestCases) {
@@ -1127,7 +1192,47 @@ TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
         UnsafeIDNToUnicodeWithDetails(test_case.punycode);
     EXPECT_EQ(base::WideToUTF16(test_case.expected_unicode), result.result);
     EXPECT_EQ(test_case.expected_has_idn, result.has_idn_component);
-    EXPECT_EQ(test_case.expected_matching_domain, result.matching_top_domain);
+    EXPECT_EQ(test_case.expected_matching_domain,
+              result.matching_top_domain.domain);
+    EXPECT_EQ(test_case.expected_is_top_500,
+              result.matching_top_domain.is_top_500);
+  }
+}
+
+// Checks that skeletons are properly generated for domains with blocked
+// characters after using UnsafeIDNToUnicodeWithDetails.
+TEST(IDNSpoofCheckerNoFixtureTest, Skeletons) {
+  // All of these should produce the same skeleton. Not all of these are
+  // explicitly mapped in idn_spoof_checker.cc, ICU already handles some.
+  const char kDashSite[] = "test-site";
+  const struct TestCase {
+    const GURL url;
+    const char* const expected_skeleton;
+  } kTestCases[] = {
+      {GURL("http://test‐site"), kDashSite},   // U+2010 (Hyphen)
+      {GURL("http://test‑site"), kDashSite},   // U+2011 (Non breaking hyphen)
+      {GURL("http://test‒site"), kDashSite},   // U+2012 (Figure dash)
+      {GURL("http://test–site"), kDashSite},   // U+2013 (En dash)
+      {GURL("http://test—site"), kDashSite},   // U+2014 (Em dash)
+      {GURL("http://test―site"), kDashSite},   // U+2015 (Horizontal bar)
+      {GURL("http://test一site"), kDashSite},  // U+4E00 (一)
+      {GURL("http://test−site"), kDashSite},   // U+2212 (minus sign)
+      {GURL("http://test⸺site"), kDashSite},   // U+2E3A (two-em dash)
+      {GURL("http://test⸻site"), kDashSite},   // U+2E3B (three-em dash)
+      {GURL("http://七est.net"), "test.net"},
+      {GURL("http://丅est.net"), "test.net"},
+      {GURL("http://丆est.net"), "test.net"},
+      {GURL("http://c丫xe.com"), "cyxe.corn"},
+      {GURL("http://cy乂e.com"), "cyxe.corn"},
+      {GURL("http://丩3.com"), "43.corn"}};
+
+  IDNSpoofChecker checker;
+  for (const TestCase& test_case : kTestCases) {
+    const url_formatter::IDNConversionResult result =
+        UnsafeIDNToUnicodeWithDetails(test_case.url.host());
+    Skeletons skeletons = checker.GetSkeletons(result.result);
+    EXPECT_EQ(1u, skeletons.size());
+    EXPECT_EQ(test_case.expected_skeleton, *skeletons.begin());
   }
 }
 

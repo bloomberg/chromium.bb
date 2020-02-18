@@ -12,11 +12,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -125,7 +125,7 @@ class SessionStorageMetadataTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string test_namespace1_id_;
   std::string test_namespace2_id_;
   std::string test_namespace3_id_;
@@ -388,7 +388,7 @@ class SessionStorageMetadataMigrationTest : public testing::Test {
   leveldb::DB* db() { return old_ss_database_->db(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
   std::string test_namespace1_id_;
   std::string test_namespace2_id_;

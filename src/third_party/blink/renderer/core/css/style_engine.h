@@ -302,6 +302,9 @@ class CORE_EXPORT StyleEngine final
 
   void NodeWillBeRemoved(Node&);
   void ChildrenRemoved(ContainerNode& parent);
+  void PseudoElementRemoved(Element& originating_element) {
+    layout_tree_rebuild_root_.ChildrenRemoved(originating_element);
+  }
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }
@@ -327,8 +330,14 @@ class CORE_EXPORT StyleEngine final
   bool NeedsWhitespaceReattachment(Element* element) const {
     return whitespace_reattach_set_.Contains(element);
   }
+  void ClearNeedsWhitespaceReattachmentFor(Element* element) {
+    whitespace_reattach_set_.erase(element);
+  }
   void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
   void MarkForWhitespaceReattachment();
+  void MarkAllElementsForStyleRecalc(const StyleChangeReasonForTracing& reason);
+  void MarkViewportStyleDirty();
+  bool IsViewportStyleDirty() const { return viewport_style_dirty_; }
 
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
@@ -339,7 +348,8 @@ class CORE_EXPORT StyleEngine final
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
-  void RecalcStyle(const StyleRecalcChange change);
+  void UpdateViewportStyle();
+  void RecalcStyle();
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
@@ -499,6 +509,7 @@ class CORE_EXPORT StyleEngine final
   bool uses_rem_units_ = false;
   bool in_layout_tree_rebuild_ = false;
   bool in_dom_removal_ = false;
+  bool viewport_style_dirty_ = false;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;

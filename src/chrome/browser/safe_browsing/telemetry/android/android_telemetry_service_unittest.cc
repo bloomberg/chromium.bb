@@ -21,7 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,7 +95,7 @@ class AndroidTelemetryServiceTest : public testing::Test {
   void ResetProfile() { telemetry_service_->profile_ = profile(); }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingBrowserProcess* browser_process_;
   std::unique_ptr<download::MockDownloadItem> download_item_;
   base::HistogramTester histograms_;

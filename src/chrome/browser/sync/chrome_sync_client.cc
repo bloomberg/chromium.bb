@@ -14,14 +14,13 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,7 +50,6 @@
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -60,7 +58,6 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -71,6 +68,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -123,8 +121,10 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_model_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
+#include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -184,14 +184,17 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
   DCHECK(!account_web_data_service_ ||
          web_data_service_thread_ ==
              account_web_data_service_->GetDBTaskRunner());
-  password_store_ = PasswordStoreFactory::GetForProfile(
+  profile_password_store_ = PasswordStoreFactory::GetForProfile(
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
+  account_password_store_ = AccountPasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
       this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSequencedTaskRunnerWithTraits({content::BrowserThread::UI}),
+      base::CreateSequencedTaskRunner({content::BrowserThread::UI}),
       web_data_service_thread_, profile_web_data_service_,
-      account_web_data_service_, password_store_,
+      account_web_data_service_, profile_password_store_,
+      account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
 }
 
@@ -268,11 +271,6 @@ sync_sessions::SessionSyncService* ChromeSyncClient::GetSessionSyncService() {
   return SessionSyncServiceFactory::GetForProfile(profile_);
 }
 
-autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return autofill::PersonalDataManagerFactory::GetForProfile(profile_);
-}
-
 base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
   return base::Bind(
       &PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged,
@@ -291,12 +289,20 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
 
   if (!disabled_types.Has(syncer::SECURITY_EVENTS)) {
+    syncer::ModelTypeControllerDelegate* delegate =
+        SecurityEventRecorderFactory::GetForProfile(profile_)
+            ->GetControllerDelegate()
+            .get();
+    // Forward both on-disk and in-memory storage modes to the same delegate,
+    // since behavior for SECURITY_EVENTS does not differ.
     controllers.push_back(std::make_unique<syncer::ModelTypeController>(
         syncer::SECURITY_EVENTS,
+        /*delegate_on_disk=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            SecurityEventRecorderFactory::GetForProfile(profile_)
-                ->GetControllerDelegate()
-                .get())));
+            delegate),
+        /*delegate_in_memory=*/
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            delegate)));
   }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -411,14 +417,9 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
 }
 
 invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider;
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    provider = invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-        profile_);
-  } else {
-    provider = invalidation::DeprecatedProfileInvalidationProviderFactory::
-        GetForProfile(profile_);
-  }
+  invalidation::ProfileInvalidationProvider* provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+
   if (provider)
     return provider->GetInvalidationService();
   return nullptr;
@@ -440,13 +441,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return PrefServiceSyncableFromProfile(profile_)
           ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
           ->AsWeakPtr();
-    case syncer::AUTOFILL_WALLET_METADATA:
-      if (profile_web_data_service_) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(profile_web_data_service_.get())
-                ->AsWeakPtr();
-      }
-      return nullptr;
     case syncer::SEARCH_ENGINES:
       return GetWeakPtrOrNull(
           TemplateURLServiceFactory::GetForProfile(profile_));
@@ -480,8 +474,13 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING:
-      return GetWeakPtrOrNull(SessionSyncServiceFactory::GetForProfile(profile_)
-                                  ->GetFaviconCache());
+      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+        return GetWeakPtrOrNull(
+            SessionSyncServiceFactory::GetForProfile(profile_)
+                ->GetFaviconCache());
+      }
+      NOTREACHED();
+      return nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForKey(
@@ -493,8 +492,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           ->AsWeakPtr();
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::PASSWORDS: {
-      return password_store_.get()
-                 ? password_store_->GetPasswordSyncableService()
+      return profile_password_store_.get()
+                 ? profile_password_store_->GetPasswordSyncableService()
                  : nullptr;
     }
 #if defined(OS_CHROMEOS)
@@ -523,6 +522,9 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
                  profile_)
           ->GetSyncBridge()
           ->change_processor()
+          ->GetControllerDelegate();
+    case syncer::WIFI_CONFIGURATIONS:
+      return WifiConfigurationSyncServiceFactory::GetForProfile(profile_)
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
     case syncer::USER_CONSENTS:
@@ -571,35 +573,18 @@ scoped_refptr<syncer::ModelSafeWorker>
 ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (group) {
-    case syncer::GROUP_DB:
-      return new syncer::SequencedModelWorker(web_data_service_thread_,
-                                              syncer::GROUP_DB);
-    // TODO(stanisc): crbug.com/731903: Rename GROUP_FILE to reflect that it is
-    // used only for app and extension settings.
-    case syncer::GROUP_FILE:
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      return new syncer::SequencedModelWorker(
-          extensions::GetBackendTaskRunner(), syncer::GROUP_FILE);
-#else
-      return nullptr;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
-    case syncer::GROUP_HISTORY: {
-      history::HistoryService* history_service = GetHistoryService();
-      if (!history_service)
-        return nullptr;
-      return new HistoryModelWorker(
-          history_service->AsWeakPtr(),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
-    }
     case syncer::GROUP_PASSWORD: {
-      if (!password_store_.get())
+      // Note: This is only used for the directory implementation of passwords,
+      // not for USS, but only USS supports the account password store. So we
+      // can safely ignore the account store here.
+      if (!profile_password_store_.get())
         return nullptr;
-      return new PasswordModelWorker(password_store_);
+      return new PasswordModelWorker(profile_password_store_);
     }
     default:
       return nullptr;

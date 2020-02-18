@@ -41,9 +41,9 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -103,7 +103,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
-            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE, SyncError.OTHER_ERRORS})
+            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
+            SyncError.SYNC_SETUP_INCOMPLETE, SyncError.OTHER_ERRORS})
     @Retention(RetentionPolicy.SOURCE)
     private @interface SyncError {
         int NO_ERROR = -1;
@@ -111,6 +112,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         int AUTH_ERROR = 1;
         int PASSPHRASE_REQUIRED = 2;
         int CLIENT_OUT_OF_DATE = 3;
+        int SYNC_SETUP_INCOMPLETE = 4;
         int OTHER_ERRORS = 128;
     }
 
@@ -118,7 +120,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private final PrefServiceBridge mPrefServiceBridge = PrefServiceBridge.getInstance();
     private final PrivacyPreferencesManager mPrivacyPrefManager =
             PrivacyPreferencesManager.getInstance();
-    private final ManagedPreferenceDelegateCompat mManagedPreferenceDelegate =
+    private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
 
     private boolean mIsFromSigninScreen;
@@ -129,15 +131,15 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private PreferenceCategory mSyncCategory;
     private Preference mSyncErrorCard;
     private Preference mSyncDisabledByAdministrator;
-    private ChromeBasePreferenceCompat mManageSync;
-    private ChromeSwitchPreferenceCompat mSyncRequested;
+    private ChromeBasePreference mManageSync;
+    private ChromeSwitchPreference mSyncRequested;
 
-    private ChromeSwitchPreferenceCompat mSearchSuggestions;
-    private ChromeSwitchPreferenceCompat mNavigationError;
-    private ChromeSwitchPreferenceCompat mSafeBrowsing;
-    private ChromeSwitchPreferenceCompat mSafeBrowsingReporting;
-    private ChromeSwitchPreferenceCompat mUsageAndCrashReporting;
-    private ChromeSwitchPreferenceCompat mUrlKeyedAnonymizedData;
+    private ChromeSwitchPreference mSearchSuggestions;
+    private ChromeSwitchPreference mNavigationError;
+    private ChromeSwitchPreference mSafeBrowsing;
+    private ChromeSwitchPreference mSafeBrowsingReporting;
+    private ChromeSwitchPreference mUsageAndCrashReporting;
+    private ChromeSwitchPreference mUrlKeyedAnonymizedData;
     private @Nullable Preference mContextualSearch;
 
     private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
@@ -190,34 +192,34 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         mSyncDisabledByAdministrator = findPreference(PREF_SYNC_DISABLED_BY_ADMINISTRATOR);
         mSyncDisabledByAdministrator.setIcon(
                 ManagedPreferencesUtils.getManagedByEnterpriseIconId());
-        mSyncRequested = (ChromeSwitchPreferenceCompat) findPreference(PREF_SYNC_REQUESTED);
+        mSyncRequested = (ChromeSwitchPreference) findPreference(PREF_SYNC_REQUESTED);
         mSyncRequested.setOnPreferenceChangeListener(this);
-        mManageSync = (ChromeBasePreferenceCompat) findPreference(PREF_MANAGE_SYNC);
+        mManageSync = (ChromeBasePreference) findPreference(PREF_MANAGE_SYNC);
 
-        mSearchSuggestions = (ChromeSwitchPreferenceCompat) findPreference(PREF_SEARCH_SUGGESTIONS);
+        mSearchSuggestions = (ChromeSwitchPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
         mSearchSuggestions.setOnPreferenceChangeListener(this);
         mSearchSuggestions.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mNavigationError = (ChromeSwitchPreferenceCompat) findPreference(PREF_NAVIGATION_ERROR);
+        mNavigationError = (ChromeSwitchPreference) findPreference(PREF_NAVIGATION_ERROR);
         mNavigationError.setOnPreferenceChangeListener(this);
         mNavigationError.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mSafeBrowsing = (ChromeSwitchPreferenceCompat) findPreference(PREF_SAFE_BROWSING);
+        mSafeBrowsing = (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING);
         mSafeBrowsing.setOnPreferenceChangeListener(this);
         mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mSafeBrowsingReporting =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
+                (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
         mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
         mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mUsageAndCrashReporting =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+                (ChromeSwitchPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
         mUsageAndCrashReporting.setOnPreferenceChangeListener(this);
         mUsageAndCrashReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mUrlKeyedAnonymizedData =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
+                (ChromeSwitchPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
         mUrlKeyedAnonymizedData.setOnPreferenceChangeListener(this);
         mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -326,6 +328,12 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         if (PREF_SYNC_REQUESTED.equals(key)) {
             assert canDisableSync();
             SyncPreferenceUtils.enableSync((boolean) newValue);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                    && wasSigninFlowInterrupted()) {
+                // This flow should only be reached when user toggles sync on.
+                assert (boolean) newValue;
+                mProfileSyncService.setFirstSetupComplete();
+            }
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updatePreferences);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
@@ -358,6 +366,11 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     /** Returns whether Sync can be disabled. */
     private boolean canDisableSync() {
         return !Profile.getLastUsedProfile().isChild();
+    }
+
+    /** Returns whether user did not complete the sign in flow. */
+    private boolean wasSigninFlowInterrupted() {
+        return !mIsFromSigninScreen && !mProfileSyncService.isFirstSetupComplete();
     }
 
     private void displayPassphraseDialog() {
@@ -431,7 +444,27 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             return SyncError.PASSPHRASE_REQUIRED;
         }
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            return SyncError.SYNC_SETUP_INCOMPLETE;
+        }
+
         return SyncError.NO_ERROR;
+    }
+
+    /**
+     * Gets title message for sync error.
+     * @param error The sync error.
+     */
+    private String getSyncErrorTitle(@SyncError int error) {
+        Resources res = getActivity().getResources();
+        switch (error) {
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
+                return res.getString(R.string.sync_settings_not_confirmed_title);
+            default:
+                return res.getString(R.string.sync_error_card_title);
+        }
     }
 
     /**
@@ -452,6 +485,9 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 return res.getString(R.string.hint_other_sync_errors);
             case SyncError.PASSPHRASE_REQUIRED:
                 return res.getString(R.string.hint_passphrase_required);
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
+                return res.getString(R.string.hint_sync_settings_not_confirmed_description);
             case SyncError.NO_ERROR:
             default:
                 return null;
@@ -552,16 +588,22 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         if (mCurrentSyncError == SyncError.NO_ERROR) {
             mSyncCategory.removePreference(mSyncErrorCard);
         } else {
-            String summary = getSyncErrorHint(mCurrentSyncError);
-            mSyncErrorCard.setSummary(summary);
+            mSyncErrorCard.setTitle(getSyncErrorTitle(mCurrentSyncError));
+            mSyncErrorCard.setSummary(getSyncErrorHint(mCurrentSyncError));
             mSyncCategory.addPreference(mSyncErrorCard);
         }
 
         mSyncRequested.setChecked(AndroidSyncSettings.get().isChromeSyncEnabled());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            // If sync setup was not completed the sync request toggle should be off.
+            // In this situation, switching it on will trigger a call to setFirstSetupComplete.
+            mSyncRequested.setChecked(false);
+        }
         mSyncRequested.setEnabled(canDisableSync());
     }
 
-    private ManagedPreferenceDelegateCompat createManagedPreferenceDelegate() {
+    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
         return preference -> {
             String key = preference.getKey();
             if (PREF_NAVIGATION_ERROR.equals(key)) {
@@ -588,6 +630,15 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     @Override
     public boolean onBackPressed() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            // If the setup flow was previously interrupted, and now the user dismissed the page
+            // without turning sync on, then mark first setup as complete (so that we won't show the
+            // error again), but turn sync off.
+            assert !mSyncRequested.isChecked();
+            SyncPreferenceUtils.enableSync(false);
+            mProfileSyncService.setFirstSetupComplete();
+        }
         if (!mIsFromSigninScreen) return false; // Let parent activity handle it.
         showCancelSyncDialog();
         return true;
@@ -602,6 +653,9 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     private void confirmSettings() {
         RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+            ProfileSyncService.get().setFirstSetupComplete();
+        }
         UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram();
         // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
         getActivity().finish();

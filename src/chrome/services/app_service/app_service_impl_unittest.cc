@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,7 +119,7 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 
 class AppServiceImplTest : public testing::Test {
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(AppServiceImplTest, PubSub) {

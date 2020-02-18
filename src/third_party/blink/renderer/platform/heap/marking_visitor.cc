@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
@@ -18,17 +19,20 @@ ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
 }  // namespace
 
 MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
-                                       MarkingMode marking_mode)
+                                       MarkingMode marking_mode,
+                                       int task_id)
     : Visitor(state),
-      marking_worklist_(Heap().GetMarkingWorklist(),
-                        WorklistTaskId::MainThread),
+      marking_worklist_(Heap().GetMarkingWorklist(), task_id),
       not_fully_constructed_worklist_(Heap().GetNotFullyConstructedWorklist(),
-                                      WorklistTaskId::MainThread),
-      weak_callback_worklist_(Heap().GetWeakCallbackWorklist(),
-                              WorklistTaskId::MainThread),
+                                      task_id),
+      weak_callback_worklist_(Heap().GetWeakCallbackWorklist(), task_id),
       movable_reference_worklist_(Heap().GetMovableReferenceWorklist(),
-                                  WorklistTaskId::MainThread),
-      marking_mode_(marking_mode) {
+                                  task_id),
+      weak_table_worklist_(Heap().GetWeakTableWorklist(), task_id),
+      backing_store_callback_worklist_(Heap().GetBackingStoreCallbackWorklist(),
+                                       task_id),
+      marking_mode_(marking_mode),
+      task_id_(task_id) {
   DCHECK(state->InAtomicMarkingPause());
 #if DCHECK_IS_ON()
   DCHECK(state->CheckThread());
@@ -37,6 +41,7 @@ MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
 
 void MarkingVisitorBase::FlushCompactionWorklists() {
   movable_reference_worklist_.FlushToGlobal();
+  backing_store_callback_worklist_.FlushToGlobal();
 }
 
 void MarkingVisitorBase::RegisterWeakCallback(void* object,
@@ -52,58 +57,69 @@ void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
     return;
   MovableReference* movable_reference =
       reinterpret_cast<MovableReference*>(slot);
-  if (Heap().ShouldRegisterMovingObjectReference(movable_reference)) {
+  if (Heap().ShouldRegisterMovingAddress(
+          reinterpret_cast<Address>(movable_reference))) {
     movable_reference_worklist_.Push(movable_reference);
   }
 }
 
 void MarkingVisitorBase::RegisterBackingStoreCallback(
-    void** slot,
-    MovingObjectCallback callback,
-    void* callback_data) {
+    void* backing,
+    MovingObjectCallback callback) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
-  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
-  // as temporary storage.
-  Heap().RegisterMovingObjectCallback(reinterpret_cast<MovableReference*>(slot),
-                                      callback, callback_data);
+  if (Heap().ShouldRegisterMovingAddress(reinterpret_cast<Address>(backing))) {
+    backing_store_callback_worklist_.Push({backing, callback});
+  }
 }
 
 bool MarkingVisitorBase::RegisterWeakTable(
     const void* closure,
     EphemeronCallback iteration_callback) {
-  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
-  // as temporary storage.
-  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback);
+  weak_table_worklist_.Push({const_cast<void*>(closure), iteration_callback});
   return true;
 }
 
-void MarkingVisitor::WriteBarrierSlow(void* value) {
+void MarkingVisitorBase::FlushWeakTableCallbacks() {
+  weak_table_worklist_.FlushToGlobal();
+}
+
+void MarkingVisitorBase::AdjustMarkedBytes(HeapObjectHeader* header,
+                                           size_t old_size) {
+  DCHECK(header->IsMarked());
+  // Currently, only expansion of an object is supported during marking.
+  DCHECK_GE(header->size(), old_size);
+  marked_bytes_ += header->size() - old_size;
+}
+
+bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!value || IsHashTableDeleteValue(value))
-    return;
+    return false;
 
   ThreadState* const thread_state = ThreadState::Current();
   if (!thread_state->IsIncrementalMarking())
-    return;
+    return false;
 
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
       reinterpret_cast<Address>(const_cast<void*>(value)));
   if (header->IsMarked())
-    return;
+    return false;
 
   if (header->IsInConstruction()) {
     thread_state->CurrentVisitor()->not_fully_constructed_worklist_.Push(
         header->Payload());
-    return;
+    return true;
   }
 
   // Mark and push trace callback.
-  header->Mark();
+  if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
+    return false;
   MarkingVisitor* visitor = thread_state->CurrentVisitor();
   visitor->AccountMarkedBytes(header);
   visitor->marking_worklist_.Push(
       {header->Payload(),
        GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
+  return true;
 }
 
 void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
@@ -126,11 +142,9 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
 }
 
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
-    : MarkingVisitorBase(state, marking_mode) {
+    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MainThread) {
   DCHECK(state->InAtomicMarkingPause());
-#if DCHECK_IS_ON()
   DCHECK(state->CheckThread());
-#endif  // DCHECK_IS_ON()
 }
 
 void MarkingVisitor::DynamicallyMarkAddress(Address address) {
@@ -191,12 +205,13 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   }
 }
 
-void MarkingVisitor::AdjustMarkedBytes(HeapObjectHeader* header,
-                                       size_t old_size) {
-  DCHECK(header->IsMarked());
-  // Currently, only expansion of an object is supported during marking.
-  DCHECK_GE(header->size(), old_size);
-  marked_bytes_ += header->size() - old_size;
+ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,
+                                                   MarkingMode marking_mode,
+                                                   int task_id)
+    : MarkingVisitorBase(state, marking_mode, task_id) {
+  DCHECK(state->InAtomicMarkingPause());
+  DCHECK(state->CheckThread());
+  DCHECK_NE(WorklistTaskId::MainThread, task_id);
 }
 
 }  // namespace blink

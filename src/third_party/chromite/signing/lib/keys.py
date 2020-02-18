@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import collections
-import ConfigParser
 import os
 import re
+
+from six.moves import configparser
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -86,6 +87,8 @@ class KeyPair(object):
     """
     self.name = name
     self.keydir = keydir
+    if version is None:
+      version = 1
     self.version = int(version)
     # Use the correct version for pub_ext if they did not specify.
     self._pub_ext = (pub_ext if pub_ext else
@@ -181,40 +184,58 @@ class KeyVersions(object):
     self._path = filename
     if os.path.exists(filename):
       self.saved = True
-      for line in open(filename, "r").readlines():
+      for line in open(filename, 'r').readlines():
         if line.find('=') > 0:
           k, v = line.strip().split('=')
-          self._versions[k] = int(v)
+          try:
+            v = int(v)
+          except ValueError:
+            # Keys that end with "_version" must be ints.
+            if k.endswith('_version'):
+              raise
+          self._versions[k] = v
+      # Make sure that 'name' is in the version dictionary.
+      if 'name' not in self._versions:
+        logging.warning('%s lacks a name.  Using "unknown".', filename)
+        self._versions['name'] = 'unknown'
     else:
       self.saved = False
       self._versions = {
+          'name': 'unknown',
           'firmware_key_version': 1,
           'firmware_version': 1,
           'kernel_key_version': 1,
-          'kernel_version': 1,
-      }
+          'kernel_version': 1}
     # Caller is resonsible for calling Save()
 
   def _KeyName(self, key):
     """return the correct name to use when looking up version."""
+    # If an entry exists with the given name, then return that.
+    if key in self._versions:
+      return key
     # We want to be idempotent.
     if key.endswith('_version'):
       key = key[:-8]
     # Strip anything after a '.', since those are root-of-trust names.
     key = key.split('.')[0]
+    # Strip off any _data_key ending.
     if key.endswith('_data_key'):
       key = key[:-9]
     return key + '_version'
 
-  def Get(self, key):
-    """Get a key's version.  Caller is responsible for calling Save()."""
-    key = self._KeyName(key)
-    return self._versions.get(key, 1)
+  def Get(self, key, default=None):
+    """Get a key's version, return default if unknown."""
+    return self._versions.get(self._KeyName(key), default)
 
   def Set(self, key, version):
     """Set a key's version.  Caller is responsible for calling Save()."""
     key = self._KeyName(key)
-    self._versions[key] = int(version)
+    # If it converts to an int, we want the int.
+    try:
+      version = int(version)
+    except ValueError:
+      pass
+    self._versions[key] = version
     self.saved = False
     # Caller is resonsible for calling Save()
 
@@ -240,8 +261,14 @@ class KeyVersions(object):
     # Caller is resonsible for calling Save()
 
   def Save(self):
-    """Save KeyVersions to disk."""
-    lines = ['%s=%d' % (k, v) for k, v in sorted(self._versions.items())]
+    """Save KeyVersions to disk if needed."""
+    if self.saved:
+      return
+    keys = sorted(self._versions.keys())
+    if 'name' in keys:
+      keys.remove('name')
+      keys.insert(0, 'name')
+    lines = ['%s=%s' % (k, str(self._versions[k])) for k in keys]
     contents = '\n'.join(lines) + '\n'
     osutils.WriteFile(self._path, contents)
     self.saved = True
@@ -289,14 +316,15 @@ class Keyset(object):
     self.root_of_trust_map = {}
     self._root_of_trust_key_prefixes = set()
     self._root_of_trust_keys = collections.defaultdict(dict)
+    self.name = 'unknown'
     if key_dir and os.path.exists(key_dir):
       # Get all root_of_trust aliases.  The legacy code base refers to
       # 'root_of_trust' as 'loem'. We need to support the on-disk structures
       # which have a table of 'XX = ALIAS', with the implied name 'loemXX'.
       loem_config_filename = os.path.join(key_dir, 'loem.ini')
       if os.path.exists(loem_config_filename):
-        logging.info("Reading loem.ini file")
-        loem_config = ConfigParser.ConfigParser()
+        logging.debug('Reading loem.ini file')
+        loem_config = configparser.ConfigParser()
         if loem_config.read(loem_config_filename):
           if loem_config.has_section('loem'):
             self._root_of_trust_key_prefixes = self._root_of_trust_key_names
@@ -310,10 +338,13 @@ class Keyset(object):
               # be indexed by only name, instead of both.
               self.root_of_trust_map[alias] = alias
         else:
-          logging.warning("Error reading loem.ini file")
+          logging.warning('Error reading loem.ini file')
 
       versions_filename = os.path.join(key_dir, 'key.versions')
       self._versions = KeyVersions(versions_filename)
+      self.name = self._versions.Get('name')
+      if self.name is None:
+        logging.warning('key.versions does not set name.')
 
       # Match any private key file name
       # Ex: firmware_data_key.loem4.vbprivk, kernel_subkey.vbprivk
@@ -326,7 +357,7 @@ class Keyset(object):
             key = KeyPair(
                 key_name,
                 key_dir,
-                version=self._versions.Get(key_name),
+                version=self._versions.Get(key_name, 1),
                 priv_ext=match.group('ext'))
             # AddKey will detect whether or not this is a root_of_trust-specific
             # key and do the right thing.
@@ -441,6 +472,6 @@ class Keyset(object):
 
     if not found:
       raise SignerRootOfTrustKeyMissingError(
-          "Unable to find %s", root_of_trust_name)
+          'Unable to find %s', root_of_trust_name)
 
     return ks

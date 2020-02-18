@@ -18,7 +18,9 @@
 #include "dawn_native/BackendConnection.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/DynamicUploader.h"
+#include "dawn_native/Error.h"
 #include "dawn_native/ErrorData.h"
+#include "dawn_native/VulkanBackend.h"
 #include "dawn_native/vulkan/AdapterVk.h"
 #include "dawn_native/vulkan/BackendVk.h"
 #include "dawn_native/vulkan/BindGroupLayoutVk.h"
@@ -42,6 +44,7 @@ namespace dawn_native { namespace vulkan {
 
     Device::Device(Adapter* adapter, const DeviceDescriptor* descriptor)
         : DeviceBase(adapter, descriptor) {
+        InitTogglesFromDriver();
         if (descriptor != nullptr) {
             ApplyToggleOverrides(descriptor);
         }
@@ -67,6 +70,9 @@ namespace dawn_native { namespace vulkan {
         mMapRequestTracker = std::make_unique<MapRequestTracker>(this);
         mMemoryAllocator = std::make_unique<MemoryAllocator>(this);
         mRenderPassCache = std::make_unique<RenderPassCache>(this);
+
+        mExternalMemoryService = std::make_unique<external_memory::Service>(this);
+        mExternalSemaphoreService = std::make_unique<external_semaphore::Service>(this);
 
         return {};
     }
@@ -108,7 +114,8 @@ namespace dawn_native { namespace vulkan {
         }
         mUnusedCommands.clear();
 
-        ASSERT(mWaitSemaphores.empty());
+        ASSERT(mRecordingContext.waitSemaphores.empty());
+        ASSERT(mRecordingContext.signalSemaphores.empty());
 
         for (VkFence fence : mUnusedFences) {
             fn.DestroyFence(mVkDevice, fence, nullptr);
@@ -276,6 +283,14 @@ namespace dawn_native { namespace vulkan {
         return mPendingCommands.commandBuffer;
     }
 
+    CommandRecordingContext* Device::GetPendingRecordingContext() {
+        if (mRecordingContext.commandBuffer == VK_NULL_HANDLE) {
+            mRecordingContext.commandBuffer = GetPendingCommandBuffer();
+        }
+
+        return &mRecordingContext;
+    }
+
     void Device::SubmitPendingCommands() {
         if (mPendingCommands.pool == VK_NULL_HANDLE) {
             return;
@@ -285,19 +300,21 @@ namespace dawn_native { namespace vulkan {
             ASSERT(false);
         }
 
-        std::vector<VkPipelineStageFlags> dstStageMasks(mWaitSemaphores.size(),
+        std::vector<VkPipelineStageFlags> dstStageMasks(mRecordingContext.waitSemaphores.size(),
                                                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
         VkSubmitInfo submitInfo;
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.pNext = nullptr;
-        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(mWaitSemaphores.size());
-        submitInfo.pWaitSemaphores = mWaitSemaphores.data();
+        submitInfo.waitSemaphoreCount =
+            static_cast<uint32_t>(mRecordingContext.waitSemaphores.size());
+        submitInfo.pWaitSemaphores = mRecordingContext.waitSemaphores.data();
         submitInfo.pWaitDstStageMask = dstStageMasks.data();
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &mPendingCommands.commandBuffer;
-        submitInfo.signalSemaphoreCount = 0;
-        submitInfo.pSignalSemaphores = 0;
+        submitInfo.signalSemaphoreCount =
+            static_cast<uint32_t>(mRecordingContext.signalSemaphores.size());
+        submitInfo.pSignalSemaphores = mRecordingContext.signalSemaphores.data();
 
         VkFence fence = GetUnusedFence();
         if (fn.QueueSubmit(mQueue, 1, &submitInfo, fence) != VK_SUCCESS) {
@@ -309,14 +326,15 @@ namespace dawn_native { namespace vulkan {
         mPendingCommands = CommandPoolAndBuffer();
         mFencesInFlight.emplace(fence, mLastSubmittedSerial);
 
-        for (VkSemaphore semaphore : mWaitSemaphores) {
+        for (VkSemaphore semaphore : mRecordingContext.waitSemaphores) {
             mDeleter->DeleteWhenUnused(semaphore);
         }
-        mWaitSemaphores.clear();
-    }
 
-    void Device::AddWaitSemaphore(VkSemaphore semaphore) {
-        mWaitSemaphores.push_back(semaphore);
+        for (VkSemaphore semaphore : mRecordingContext.signalSemaphores) {
+            mDeleter->DeleteWhenUnused(semaphore);
+        }
+
+        mRecordingContext = CommandRecordingContext();
     }
 
     ResultOrError<VulkanDeviceKnobs> Device::CreateDevice(VkPhysicalDevice physicalDevice) {
@@ -331,7 +349,22 @@ namespace dawn_native { namespace vulkan {
             extensionsToRequest.push_back(kExtensionNameExtDebugMarker);
             usedKnobs.debugMarker = true;
         }
-
+        if (mDeviceInfo.externalMemory) {
+            extensionsToRequest.push_back(kExtensionNameKhrExternalMemory);
+            usedKnobs.externalMemory = true;
+        }
+        if (mDeviceInfo.externalMemoryFD) {
+            extensionsToRequest.push_back(kExtensionNameKhrExternalMemoryFD);
+            usedKnobs.externalMemoryFD = true;
+        }
+        if (mDeviceInfo.externalSemaphore) {
+            extensionsToRequest.push_back(kExtensionNameKhrExternalSemaphore);
+            usedKnobs.externalSemaphore = true;
+        }
+        if (mDeviceInfo.externalSemaphoreFD) {
+            extensionsToRequest.push_back(kExtensionNameKhrExternalSemaphoreFD);
+            usedKnobs.externalSemaphoreFD = true;
+        }
         if (mDeviceInfo.swapchain) {
             extensionsToRequest.push_back(kExtensionNameKhrSwapchain);
             usedKnobs.swapchain = true;
@@ -344,8 +377,11 @@ namespace dawn_native { namespace vulkan {
         // Always require fragmentStoresAndAtomics because it is required by end2end tests.
         usedKnobs.features.fragmentStoresAndAtomics = VK_TRUE;
 
-        // TODO(jiawei.shao@intel.com): support BC formats as extension
-        usedKnobs.features.textureCompressionBC = VK_TRUE;
+        if (IsExtensionEnabled(Extension::TextureCompressionBC)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionBC ==
+                   VK_TRUE);
+            usedKnobs.features.textureCompressionBC = VK_TRUE;
+        }
 
         // Find a universal queue family
         {
@@ -361,7 +397,7 @@ namespace dawn_native { namespace vulkan {
             }
 
             if (universalQueueFamily == -1) {
-                return DAWN_CONTEXT_LOST_ERROR("No universal queue family");
+                return DAWN_DEVICE_LOST_ERROR("No universal queue family");
             }
             mQueueFamily = static_cast<uint32_t>(universalQueueFamily);
         }
@@ -399,6 +435,12 @@ namespace dawn_native { namespace vulkan {
 
     void Device::GatherQueueFromDevice() {
         fn.GetDeviceQueue(mVkDevice, mQueueFamily, 0, &mQueue);
+    }
+
+    void Device::InitTogglesFromDriver() {
+        // TODO(jiawei.shao@intel.com): tighten this workaround when this issue is fixed in both
+        // Vulkan SPEC and drivers.
+        SetToggle(Toggle::UseTemporaryBufferInCompressedTextureToTextureCopy, true);
     }
 
     VulkanFunctions* Device::GetMutableFunctions() {
@@ -526,7 +568,7 @@ namespace dawn_native { namespace vulkan {
         // Insert pipeline barrier to ensure correct ordering with previous memory operations on the
         // buffer.
         ToBackend(destination)
-            ->TransitionUsageNow(GetPendingCommandBuffer(), dawn::BufferUsageBit::CopyDst);
+            ->TransitionUsageNow(GetPendingRecordingContext(), dawn::BufferUsage::CopyDst);
 
         VkBufferCopy copy;
         copy.srcOffset = sourceOffset;
@@ -537,5 +579,100 @@ namespace dawn_native { namespace vulkan {
                                ToBackend(destination)->GetHandle(), 1, &copy);
 
         return {};
+    }
+
+    MaybeError Device::ImportExternalImage(const ExternalImageDescriptor* descriptor,
+                                           ExternalMemoryHandle memoryHandle,
+                                           const std::vector<ExternalSemaphoreHandle>& waitHandles,
+                                           VkSemaphore* outSignalSemaphore,
+                                           VkDeviceMemory* outAllocation,
+                                           std::vector<VkSemaphore>* outWaitSemaphores) {
+        const TextureDescriptor* textureDescriptor =
+            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+
+        // Check services support this combination of handle type / image info
+        if (!mExternalSemaphoreService->Supported()) {
+            return DAWN_VALIDATION_ERROR("External semaphore usage not supported");
+        }
+        if (!mExternalMemoryService->Supported(
+                VulkanImageFormat(textureDescriptor->format), VK_IMAGE_TYPE_2D,
+                VK_IMAGE_TILING_OPTIMAL,
+                VulkanImageUsage(textureDescriptor->usage,
+                                 GetValidInternalFormat(textureDescriptor->format)),
+                VK_IMAGE_CREATE_ALIAS_BIT_KHR)) {
+            return DAWN_VALIDATION_ERROR("External memory usage not supported");
+        }
+
+        // Create an external semaphore to signal when the texture is done being used
+        DAWN_TRY_ASSIGN(*outSignalSemaphore,
+                        mExternalSemaphoreService->CreateExportableSemaphore());
+
+        // Import the external image's memory
+        DAWN_TRY_ASSIGN(*outAllocation,
+                        mExternalMemoryService->ImportMemory(
+                            memoryHandle, descriptor->allocationSize, descriptor->memoryTypeIndex));
+
+        // Import semaphores we have to wait on before using the texture
+        for (const ExternalSemaphoreHandle& handle : waitHandles) {
+            VkSemaphore semaphore = VK_NULL_HANDLE;
+            DAWN_TRY_ASSIGN(semaphore, mExternalSemaphoreService->ImportSemaphore(handle));
+            outWaitSemaphores->push_back(semaphore);
+        }
+
+        return {};
+    }
+
+    MaybeError Device::SignalAndExportExternalTexture(Texture* texture,
+                                                      ExternalSemaphoreHandle* outHandle) {
+        DAWN_TRY(ValidateObject(texture));
+
+        VkSemaphore outSignalSemaphore;
+        DAWN_TRY(texture->SignalAndDestroy(&outSignalSemaphore));
+
+        // This has to happen right after SignalAndDestroy, since the semaphore will be
+        // deleted when the fenced deleter runs after the queue submission
+        DAWN_TRY_ASSIGN(*outHandle, mExternalSemaphoreService->ExportSemaphore(outSignalSemaphore));
+
+        return {};
+    }
+
+    TextureBase* Device::CreateTextureWrappingVulkanImage(
+        const ExternalImageDescriptor* descriptor,
+        ExternalMemoryHandle memoryHandle,
+        const std::vector<ExternalSemaphoreHandle>& waitHandles) {
+        const TextureDescriptor* textureDescriptor =
+            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+
+        // Initial validation
+        if (ConsumedError(ValidateTextureDescriptor(this, textureDescriptor))) {
+            return nullptr;
+        }
+        if (ConsumedError(ValidateVulkanImageCanBeWrapped(this, textureDescriptor))) {
+            return nullptr;
+        }
+
+        VkSemaphore signalSemaphore = VK_NULL_HANDLE;
+        VkDeviceMemory allocation = VK_NULL_HANDLE;
+        std::vector<VkSemaphore> waitSemaphores;
+        waitSemaphores.reserve(waitHandles.size());
+
+        // If failed, cleanup
+        if (ConsumedError(ImportExternalImage(descriptor, memoryHandle, waitHandles,
+                                              &signalSemaphore, &allocation, &waitSemaphores))) {
+            // Clear the signal semaphore
+            fn.DestroySemaphore(GetVkDevice(), signalSemaphore, nullptr);
+
+            // Clear image memory
+            fn.FreeMemory(GetVkDevice(), allocation, nullptr);
+
+            // Clear any wait semaphores we were able to import
+            for (VkSemaphore semaphore : waitSemaphores) {
+                fn.DestroySemaphore(GetVkDevice(), semaphore, nullptr);
+            }
+            return nullptr;
+        }
+
+        return new Texture(this, descriptor, textureDescriptor, signalSemaphore, allocation,
+                           waitSemaphores);
     }
 }}  // namespace dawn_native::vulkan

@@ -15,7 +15,7 @@
  */
 
 #include "src/trace_processor/metadata_table.h"
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 #include "src/trace_processor/storage_columns.h"
 #include "src/trace_processor/storage_schema.h"
 
@@ -26,7 +26,7 @@ MetadataTable::MetadataTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {}
 
 void MetadataTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
-  Table::Register<MetadataTable>(db, storage, "metadata");
+  SqliteTable::Register<MetadataTable>(db, storage, "metadata");
 }
 
 StorageSchema MetadataTable::CreateStorageSchema() {

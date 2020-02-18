@@ -24,10 +24,15 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -323,8 +328,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
   // Binds interfaces exposed to the browser process from the renderer.
+  //
+  // DEPRECATED: Use |BindReceiver()| instead.
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+
+  // Asks the renderer process to bind |receiver|. |receiver| arrives in the
+  // renderer process and is carried through the following flow, stopping if any
+  // step decides to bind it:
+  //
+  //   1. IO thread, |ChildProcessImpl::BindReceiver()| (child_thread_impl.cc)
+  //   2. IO thread ,|ContentClient::BindChildProcessInterface()|
+  //   3. Main thread, |ChildThreadImpl::OnBindReceiver()| (virtual)
+  //   4. Possibly more stpes, depending on the ChildThreadImpl subclass.
+  virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
   virtual const service_manager::Identity& GetChildIdentity() = 0;
 
@@ -336,7 +353,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual std::unique_ptr<base::PersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
-  // PlzNavigate
   // Returns the time the first call to Init completed successfully (after a new
   // renderer process was created); further calls to Init won't change this
   // value.
@@ -417,9 +433,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // TODO(lukasza, nasko): https://crbug.com/888079: Make |origin| mandatory.
   virtual void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;
 
   // Whether this process is locked out from ever being reused for sites other
@@ -457,11 +475,19 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void LockToOrigin(const IsolationContext& isolation_context,
                             const GURL& lock_url) = 0;
 
-  // Binds |request| to the CacheStorageDispatcherHost instance. The binding is
+  // Binds |receiver| to the CacheStorageDispatcherHost instance. The binding is
   // sent to the IO thread. This is for internal use only, and is only exposed
   // here to support MockRenderProcessHost usage in tests.
-  virtual void BindCacheStorage(blink::mojom::CacheStorageRequest request,
-                                const url::Origin& origin) = 0;
+  virtual void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const url::Origin& origin) = 0;
+
+  // Binds |receiver| to the FileSystemManager instance. The receiver is sent to
+  // the IO thread. This is for internal use only, and is only exposed here to
+  // support MockRenderProcessHost usage in tests.
+  virtual void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
 
   // Binds |request| to the IndexedDBDispatcherHost instance. The binding is
   // sent to the IO thread. This is for internal use only, and is only exposed

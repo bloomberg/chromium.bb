@@ -31,9 +31,11 @@
 
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
@@ -80,7 +82,7 @@ LinkLoader* LinkLoader::Create(LinkLoaderClient* client) {
 }
 
 class LinkLoader::FinishObserver final
-    : public GarbageCollectedFinalized<ResourceFinishObserver>,
+    : public GarbageCollectedFinalized<LinkLoader::FinishObserver>,
       public ResourceFinishObserver {
   USING_GARBAGE_COLLECTED_MIXIN(FinishObserver);
   USING_PRE_FINALIZER(FinishObserver, ClearResource);
@@ -225,10 +227,20 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
                                 FetchParameters::DeferOption defer_option,
                                 Document& document,
                                 ResourceClient* link_client) {
+  Document* document_for_origin = &document;
+  if (base::FeatureList::IsEnabled(
+          features::kHtmlImportsRequestInitiatorLock)) {
+    // For stylesheets loaded from HTML imported Documents, we use
+    // context document for getting origin and ResourceFetcher to use the main
+    // Document's origin, while using element document for CompleteURL() to use
+    // imported Documents' base URLs.
+    document_for_origin = document.ContextDocument();
+  }
+  if (!document_for_origin)
+    return;
+
   ResourceRequest resource_request(document.CompleteURL(params.href));
-  resource_request.SetReferrerPolicy(
-      params.referrer_policy,
-      ResourceRequest::SetReferrerPolicyLocation::kLoadStylesheet);
+  resource_request.SetReferrerPolicy(params.referrer_policy);
 
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);
@@ -247,8 +259,8 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
 
   CrossOriginAttributeValue cross_origin = params.cross_origin;
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                                  cross_origin);
+    link_fetch_params.SetCrossOriginAccessControl(
+        document_for_origin->GetSecurityOrigin(), cross_origin);
   }
 
   String integrity_attr = params.integrity;
@@ -262,8 +274,8 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
         integrity_attr);
   }
 
-  CSSStyleSheetResource::Fetch(link_fetch_params, document.Fetcher(),
-                               link_client);
+  CSSStyleSheetResource::Fetch(link_fetch_params,
+                               document_for_origin->Fetcher(), link_client);
 }
 
 void LinkLoader::Abort() {

@@ -162,7 +162,7 @@ void WilcoDtcSupportdWebRequestService::PerformRequest(
   request->request = std::make_unique<network::ResourceRequest>();
   request->request->method = http_method_str;
   request->request->url = std::move(url);
-  request->request->allow_credentials = false;
+  request->request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->request->load_flags = net::LOAD_DISABLE_CACHE;
   for (auto header : headers) {
     request->request->headers.AddHeaderFromString(header);
@@ -190,9 +190,9 @@ void WilcoDtcSupportdWebRequestService::MaybeStartNextRequest() {
             sender: "WilcoDtcSupportd"
             description: "Perform a web request."
             trigger:
-                "diagnostics_processor performs a web request to their server."
+                "wilco_dtc_supportd performs a web request to their server."
             data:
-                "diagnostics_processor's proprietary data."
+                "wilco_dtc_supportd's proprietary data."
             destination: OTHER
           }
           policy {

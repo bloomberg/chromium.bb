@@ -4,9 +4,18 @@
 
 #include "chrome/browser/sharing/sharing_metrics.h"
 
+#include <string.h>
+
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
+#include "components/cast_channel/enum_table.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace {
 
@@ -17,7 +26,8 @@ enum class SharingMessageType {
   kPingMessage = 1,
   kAckMessage = 2,
   kClickToCallMessage = 3,
-  kMaxValue = kClickToCallMessage,
+  kSharedClipboardMessage = 4,
+  kMaxValue = kSharedClipboardMessage,
 };
 
 SharingMessageType PayloadCaseToMessageType(
@@ -31,9 +41,24 @@ SharingMessageType PayloadCaseToMessageType(
       return SharingMessageType::kAckMessage;
     case chrome_browser_sharing::SharingMessage::kClickToCallMessage:
       return SharingMessageType::kClickToCallMessage;
+    case chrome_browser_sharing::SharingMessage::kSharedClipboardMessage:
+      return SharingMessageType::kSharedClipboardMessage;
   }
 }
 
+const char* GetEnumStringValue(SharingFeatureName feature) {
+  DCHECK(feature != SharingFeatureName::kUnknown)
+      << "Feature needs to be specified for metrics logging.";
+
+  switch (feature) {
+    case SharingFeatureName::kUnknown:
+      return "Unknown";
+    case SharingFeatureName::kClickToCall:
+      return "ClickToCall";
+    case SharingFeatureName::kSharedClipboard:
+      return "SharedClipboard";
+  }
+}
 }  // namespace
 
 void LogSharingMessageReceived(
@@ -54,47 +79,73 @@ void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result) {
   base::UmaHistogramEnumeration("Sharing.VapidKeyCreationResult", result);
 }
 
-void LogClickToCallDevicesToShow(const char* histogram_suffix, int count) {
+void LogSharingDevicesToShow(SharingFeatureName feature,
+                             const char* histogram_suffix,
+                             int count) {
+  auto* feature_str = GetEnumStringValue(feature);
   // Explicitly log both the base and the suffixed histogram because the base
   // aggregation is not automatically generated.
-  base::UmaHistogramExactLinear("Sharing.ClickToCallDevicesToShow", count,
-                                /*value_max=*/20);
   base::UmaHistogramExactLinear(
-      base::StrCat({"Sharing.ClickToCallDevicesToShow.", histogram_suffix}),
+      base::StrCat({"Sharing.", feature_str, "DevicesToShow"}), count,
+      /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
+  base::UmaHistogramExactLinear(
+      base::StrCat(
+          {"Sharing.", feature_str, "DevicesToShow.", histogram_suffix}),
       count,
       /*value_max=*/20);
 }
 
-void LogClickToCallAppsToShow(const char* histogram_suffix, int count) {
+void LogSharingAppsToShow(SharingFeatureName feature,
+                          const char* histogram_suffix,
+                          int count) {
+  auto* feature_str = GetEnumStringValue(feature);
   // Explicitly log both the base and the suffixed histogram because the base
   // aggregation is not automatically generated.
-  base::UmaHistogramExactLinear("Sharing.ClickToCallAppsToShow", count,
-                                /*value_max=*/20);
   base::UmaHistogramExactLinear(
-      base::StrCat({"Sharing.ClickToCallAppsToShow.", histogram_suffix}), count,
+      base::StrCat({"Sharing.", feature_str, "AppsToShow"}), count,
+      /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
+  base::UmaHistogramExactLinear(
+      base::StrCat({"Sharing.", feature_str, "AppsToShow.", histogram_suffix}),
+      count,
       /*value_max=*/20);
 }
 
-void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix,
-                                       int index) {
+void LogSharingSelectedDeviceIndex(SharingFeatureName feature,
+                                   const char* histogram_suffix,
+                                   int index) {
+  auto* feature_str = GetEnumStringValue(feature);
   // Explicitly log both the base and the suffixed histogram because the base
   // aggregation is not automatically generated.
-  base::UmaHistogramExactLinear("Sharing.ClickToCallSelectedDeviceIndex", index,
-                                /*value_max=*/20);
+  base::UmaHistogramExactLinear(
+      base::StrCat({"Sharing.", feature_str, "SelectedDeviceIndex"}), index,
+      /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
   base::UmaHistogramExactLinear(
       base::StrCat(
-          {"Sharing.ClickToCallSelectedDeviceIndex.", histogram_suffix}),
+          {"Sharing.", feature_str, "SelectedDeviceIndex.", histogram_suffix}),
       index,
       /*value_max=*/20);
 }
 
-void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index) {
+void LogSharingSelectedAppIndex(SharingFeatureName feature,
+                                const char* histogram_suffix,
+                                int index) {
+  auto* feature_str = GetEnumStringValue(feature);
   // Explicitly log both the base and the suffixed histogram because the base
   // aggregation is not automatically generated.
-  base::UmaHistogramExactLinear("Sharing.ClickToCallSelectedAppIndex", index,
-                                /*value_max=*/20);
   base::UmaHistogramExactLinear(
-      base::StrCat({"Sharing.ClickToCallSelectedAppIndex.", histogram_suffix}),
+      base::StrCat({"Sharing.", feature_str, "SelectedAppIndex"}), index,
+      /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
+  base::UmaHistogramExactLinear(
+      base::StrCat(
+          {"Sharing.", feature_str, "SelectedAppIndex.", histogram_suffix}),
       index,
       /*value_max=*/20);
 }
@@ -103,14 +154,47 @@ void LogSharingMessageAckTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
 }
 
-void LogClickToCallDialogShown(SharingClickToCallDialogType type) {
-  base::UmaHistogramEnumeration("Sharing.ClickToCallDialogShown", type);
+void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
+  base::UmaHistogramEnumeration(
+      base::StrCat({"Sharing.", GetEnumStringValue(feature), "DialogShown"}),
+      type);
 }
 
-void LogSendSharingMessageSuccess(bool success) {
-  base::UmaHistogramBoolean("Sharing.SendMessageSuccess", success);
+void LogClickToCallHelpTextClicked(SharingDialogType type) {
+  base::UmaHistogramEnumeration("Sharing.ClickToCallHelpTextClicked", type);
 }
 
-void LogSendSharingAckMessageSuccess(bool success) {
-  base::UmaHistogramBoolean("Sharing.SendAckMessageSuccess", success);
+void LogSendSharingMessageResult(SharingSendMessageResult result) {
+  base::UmaHistogramEnumeration("Sharing.SendMessageResult", result);
+}
+
+void LogSendSharingAckMessageResult(SharingSendMessageResult result) {
+  base::UmaHistogramEnumeration("Sharing.SendAckMessageResult", result);
+}
+
+void LogClickToCallUKM(content::WebContents* web_contents,
+                       SharingClickToCallEntryPoint entry_point,
+                       bool has_devices,
+                       bool has_apps,
+                       SharingClickToCallSelection selection) {
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  if (!ukm_recorder)
+    return;
+
+  ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents);
+  if (source_id == ukm::kInvalidSourceId)
+    return;
+
+  ukm::builders::Sharing_ClickToCall(source_id)
+      .SetEntryPoint(static_cast<int64_t>(entry_point))
+      .SetHasDevices(has_devices)
+      .SetHasApps(has_apps)
+      .SetSelection(static_cast<int64_t>(selection))
+      .Record(ukm_recorder);
+}
+
+void LogSharedClipboardSelectedTextSize(int text_size) {
+  UMA_HISTOGRAM_COUNTS_100000("Sharing.SharedClipboardSelectedTextSize",
+                              text_size);
 }

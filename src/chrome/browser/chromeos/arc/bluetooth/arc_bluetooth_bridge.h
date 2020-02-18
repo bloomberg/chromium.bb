@@ -18,8 +18,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_task_queue.h"
-#include "components/arc/common/bluetooth.mojom.h"
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/mojom/bluetooth.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -576,7 +576,7 @@ class ArcBluetoothBridge
   THREAD_CHECKER(thread_checker_);
 
   // WeakPtrFactory to use for callbacks.
-  base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_;
+  base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcBluetoothBridge);
 };

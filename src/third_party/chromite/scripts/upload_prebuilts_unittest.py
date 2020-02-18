@@ -8,10 +8,11 @@
 from __future__ import print_function
 
 import copy
-import mock
 import os
 import multiprocessing
 import tempfile
+
+import mock
 
 from chromite.scripts import upload_prebuilts as prebuilt
 from chromite.lib import cros_test_lib

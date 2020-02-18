@@ -397,7 +397,7 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
   }
 
   const base::string16 tree_for_move_full_text =
-      L"First line of text\n\nStandalone line\n"
+      L"First line of text\nStandalone line\n"
       L"bold text\nParagraph 1\nParagraph 2";
 
   ui::AXTreeUpdate BuildAXTreeForMove() {
@@ -666,6 +666,67 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     update.nodes.push_back(paragraph3_text_data);
     update.nodes.push_back(paragraph4_data);
     update.nodes.push_back(paragraph4_text_data);
+
+    return update;
+  }
+
+  ui::AXTreeUpdate BuildAXTreeForMoveByPage() {
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kDocument;
+
+    ui::AXNodeData page_1_data;
+    page_1_data.id = 2;
+    page_1_data.role = ax::mojom::Role::kRegion;
+    page_1_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    ui::AXNodeData page_1_text_data;
+    page_1_text_data.id = 3;
+    page_1_text_data.role = ax::mojom::Role::kStaticText;
+    page_1_text_data.SetName("some text on page 1");
+    page_1_text_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+    page_1_data.child_ids = {3};
+
+    ui::AXNodeData page_2_data;
+    page_2_data.id = 4;
+    page_2_data.role = ax::mojom::Role::kRegion;
+    page_2_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    ui::AXNodeData page_2_text_data;
+    page_2_text_data.id = 5;
+    page_2_text_data.role = ax::mojom::Role::kStaticText;
+    page_2_text_data.SetName("some text on page 2");
+    page_2_text_data.AddIntAttribute(
+        ax::mojom::IntAttribute::kTextStyle,
+        static_cast<int32_t>(ax::mojom::TextStyle::kBold));
+    page_2_data.child_ids = {5};
+
+    ui::AXNodeData page_3_data;
+    page_3_data.id = 6;
+    page_3_data.role = ax::mojom::Role::kRegion;
+    page_3_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    ui::AXNodeData page_3_text_data;
+    page_3_text_data.id = 7;
+    page_3_text_data.role = ax::mojom::Role::kStaticText;
+    page_3_text_data.SetName("some more text on page 3");
+    page_3_data.child_ids = {7};
+
+    root_data.child_ids = {2, 4, 6};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data,       page_1_data,      page_1_text_data,
+                    page_2_data,     page_2_text_data, page_3_data,
+                    page_3_text_data};
 
     return update;
   }
@@ -976,7 +1037,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   // Start endpoint is already on a word's start boundary.
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"definitely");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"definitely ");
 
   // Start endpoint is between a word's start and end boundaries.
   int count;
@@ -984,11 +1045,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ -2,
       &count));
   ASSERT_EQ(-2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely ");
 
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 5, &count));
-  ASSERT_EQ(5, count);
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
+  ASSERT_EQ(4, count);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely not ");
 
   ASSERT_HRESULT_SUCCEEDED(
@@ -1009,7 +1070,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not ");
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1077,7 +1138,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   int count;
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Paragraph, /*count*/ -6, &count));
-  EXPECT_EQ(-6, count);
+  EXPECT_EQ(-5, count);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
 
   ASSERT_HRESULT_SUCCEEDED(
@@ -1560,6 +1621,85 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
   AXNodePosition::SetTree(nullptr);
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMovePage) {
+  Init(BuildAXTreeForMoveByPage());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTree(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // Moving by 0 should have no effect.
+  EXPECT_UIA_MOVE(
+      text_range_provider, TextUnit_Page,
+      /*count*/ 0,
+      /*expected_text*/
+      L"some text on page 1\nsome text on page 2some more text on page 3",
+      /*expected_count*/ 0);
+
+  // Backwards endpoint moves
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Page,
+      /*count*/ -1,
+      /*expected_text*/ L"some text on page 1\nsome text on page 2",
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Page,
+                                   /*count*/ -5,
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -2);
+
+  // Forwards endpoint move
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Page,
+      /*count*/ 5,
+      /*expected_text*/
+      L"some text on page 1\nsome text on page 2some more text on page 3",
+      /*expected_count*/ 4);
+
+  // Range moves
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ 1,
+                  /*expected_text*/ L"some text on page 2",
+                  /*expected_count*/ 1);
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ 1,
+                  /*expected_text*/ L"some more text on page 3",
+                  /*expected_count*/ 1);
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ -1,
+                  /*expected_text*/ L"some text on page 2",
+                  /*expected_count*/ -1);
+
+  // ExpandToEnclosingUnit - first move by character so it's not on a
+  // page boundary before calling ExpandToEnclosingUnit
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ -2,
+      /*expected_text*/ L"some text on page",
+      /*expected_count*/ -2);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 2,
+      /*expected_text*/ L"me text on page",
+      /*expected_count*/ 2);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Page));
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ 0,
+                  /*expected_text*/
+                  L"some text on page 2",
+                  /*expected_count*/ 0);
+
+  AXNodePosition::SetTree(nullptr);
+}
+
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
   Init(BuildAXTreeForMove());
   AXNode* root_node = GetRootNode();
@@ -1576,19 +1716,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 1,
-                  /*expected_text*/ L"line",
+                  /*expected_text*/ L"line ",
                   /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 2,
-                  /*expected_text*/ L"text",
+                  /*expected_text*/ L"text\n",
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 2,
-                  /*expected_text*/ L"line",
+                  /*expected_text*/ L"line\n",
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 3,
-                  /*expected_text*/ L"Paragraph",
+                  /*expected_text*/ L"Paragraph ",
                   /*expected_count*/ 3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 6,
@@ -1604,26 +1744,26 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
   // Move backward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -3,
-                  /*expected_text*/ L"Paragraph",
+                  /*expected_text*/ L"Paragraph ",
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -3,
-                  /*expected_text*/ L"line",
+                  /*expected_text*/ L"line\n",
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -2,
-                  /*expected_text*/ L"text",
+                  /*expected_text*/ L"text\n",
                   /*expected_count*/ -2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -6,
-                  /*expected_text*/ L"First",
+                  /*expected_text*/ L"First ",
                   /*expected_count*/ -3);
 
   // Moving backward by any number of words at the start of document
   // should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -20,
-                  /*expected_text*/ L"First",
+                  /*expected_text*/ L"First ",
                   /*expected_count*/ 0);
 
   // Degenerate range moves.
@@ -1749,18 +1889,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ -4,
-      /*expected_text*/ L"First line of text\n\n",
+      /*expected_text*/ L"First line of text\n",
       /*expected_count*/ -4);
 
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 1,
-                  /*expected_text*/ L"\n",
+                  /*expected_text*/ L"Standalone line\n",
                   /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
-                  /*count*/ 2,
+                  /*count*/ 1,
                   /*expected_text*/ L"bold text",
-                  /*expected_count*/ 2);
+                  /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 1,
                   /*expected_text*/ L"Paragraph 1",
@@ -1783,7 +1923,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ -2,
-                  /*expected_text*/ L"First line of text",
+                  /*expected_text*/ L"First line of text\n",
                   /*expected_count*/ -2);
 
   // Moving backward by any number of paragraphs at the start of document
@@ -1791,7 +1931,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ -1,
                   /*expected_text*/
-                  L"First line of text",
+                  L"First line of text\n",
                   /*expected_count*/ 0);
 
   // Test degenerate range creation at the beginning of the document.
@@ -1803,14 +1943,14 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ 1,
-      /*expected_text*/ L"First line of text",
+      /*expected_text*/ L"First line of text\n",
       /*expected_count*/ 1);
 
   // Test degenerate range creation at the end of the document.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 6,
                   /*expected_text*/ L"Paragraph 2",
-                  /*expected_count*/ 5);
+                  /*expected_count*/ 4);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Paragraph,
       /*count*/ 1,
@@ -1835,8 +1975,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   // Degenerate range moves.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ -7,
-                  /*expected_text*/ L"First line of text",
-                  /*expected_count*/ -6);
+                  /*expected_text*/ L"First line of text\n",
+                  /*expected_count*/ -5);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ -1,
@@ -1849,7 +1989,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
                   /*count*/ 70,
                   /*expected_text*/ L"",
-                  /*expected_count*/ 3);
+                  /*expected_count*/ 2);
 
   // Trying to move past the last paragraph should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph,
@@ -2137,7 +2277,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ -1,
-                                   /*expected_text*/ L"more",
+                                   /*expected_text*/ L"more ",
                                    /*expected_count*/ -1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
@@ -2158,9 +2298,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       /*expected_count*/ -3);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
-                                   /*count*/ -2,
+                                   /*count*/ -1,
                                    /*expected_text*/ L"more text",
-                                   /*expected_count*/ -2);
+                                   /*expected_count*/ -1);
 
   // Moving the end past the start, then reverting.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
@@ -2171,13 +2311,13 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ 3,
-                                   /*expected_text*/ L" textmore text",
+                                   /*expected_text*/ L"textmore text",
                                    /*expected_count*/ 3);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
-      /*count*/ 2,
+      /*count*/ 1,
       /*expected_text*/ L"more text",
-      /*expected_count*/ 2);
+      /*expected_count*/ 1);
 
   // Moving the endpoints further than both ends of the document.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
@@ -2386,7 +2526,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ 1, &count));
   ASSERT_EQ(1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some textmore");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some textmore ");
 
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -1, &count));
@@ -2585,8 +2725,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   // <button>Button</button><input type="checkbox">Line 1<br>Line 2
   // |---------------------||---------------------|
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -1, &count));
-  ASSERT_EQ(-1, count);
+      TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -2, &count));
+  ASSERT_EQ(-2, count);
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetBoundingRectangles(rectangles.Receive()));
   expected_values = {20, 20, 200, 30, /* button */
@@ -4048,7 +4188,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, ElementNotAvailable) {
       text_provider->get_DocumentRange(&text_range_provider));
   ASSERT_NE(nullptr, text_range_provider.Get());
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
 
   BOOL bool_arg = FALSE;
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),

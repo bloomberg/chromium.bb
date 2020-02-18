@@ -34,7 +34,10 @@ using net::test::IsOk;
 
 DiskCacheTest::DiskCacheTest() {
   CHECK(temp_dir_.CreateUniqueTempDir());
-  cache_path_ = temp_dir_.GetPath();
+  // Put the cache into a subdir of |temp_dir_|, to permit tests to safely
+  // remove the cache directory without risking collisions with other tests.
+  cache_path_ = temp_dir_.GetPath().AppendASCII("cache");
+  CHECK(base::CreateDirectory(cache_path_));
 }
 
 DiskCacheTest::~DiskCacheTest() = default;
@@ -68,9 +71,12 @@ DiskCacheTestWithCache::TestIterator::~TestIterator() = default;
 
 int DiskCacheTestWithCache::TestIterator::OpenNextEntry(
     disk_cache::Entry** next_entry) {
-  net::TestCompletionCallback cb;
-  int rv = iterator_->OpenNextEntry(next_entry, cb.callback());
-  return cb.GetResult(rv);
+  TestEntryResultCompletionCallback cb;
+  disk_cache::EntryResult result =
+      cb.GetResult(iterator_->OpenNextEntry(cb.callback()));
+  int rv = result.net_error();
+  *next_entry = result.ReleaseEntry();
+  return rv;
 }
 
 DiskCacheTestWithCache::DiskCacheTestWithCache()
@@ -133,20 +139,18 @@ void DiskCacheTestWithCache::SetMaxSize(int64_t size, bool should_succeed) {
     EXPECT_EQ(should_succeed, mem_cache_->SetMaxSize(size));
 }
 
-int DiskCacheTestWithCache::OpenOrCreateEntry(
-    const std::string& key,
-    disk_cache::EntryWithOpened* entry_struct) {
-  return OpenOrCreateEntryWithPriority(key, net::HIGHEST, entry_struct);
+disk_cache::EntryResult DiskCacheTestWithCache::OpenOrCreateEntry(
+    const std::string& key) {
+  return OpenOrCreateEntryWithPriority(key, net::HIGHEST);
 }
 
-int DiskCacheTestWithCache::OpenOrCreateEntryWithPriority(
+disk_cache::EntryResult DiskCacheTestWithCache::OpenOrCreateEntryWithPriority(
     const std::string& key,
-    net::RequestPriority request_priority,
-    disk_cache::EntryWithOpened* entry_struct) {
-  net::TestCompletionCallback cb;
-  int rv = cache_->OpenOrCreateEntry(key, request_priority, entry_struct,
-                                     cb.callback());
-  return cb.GetResult(rv);
+    net::RequestPriority request_priority) {
+  TestEntryResultCompletionCallback cb;
+  disk_cache::EntryResult result =
+      cache_->OpenOrCreateEntry(key, request_priority, cb.callback());
+  return cb.GetResult(std::move(result));
 }
 
 int DiskCacheTestWithCache::OpenEntry(const std::string& key,
@@ -158,9 +162,12 @@ int DiskCacheTestWithCache::OpenEntryWithPriority(
     const std::string& key,
     net::RequestPriority request_priority,
     disk_cache::Entry** entry) {
-  net::TestCompletionCallback cb;
-  int rv = cache_->OpenEntry(key, request_priority, entry, cb.callback());
-  return cb.GetResult(rv);
+  TestEntryResultCompletionCallback cb;
+  disk_cache::EntryResult result =
+      cb.GetResult(cache_->OpenEntry(key, request_priority, cb.callback()));
+  int rv = result.net_error();
+  *entry = result.ReleaseEntry();
+  return rv;
 }
 
 int DiskCacheTestWithCache::CreateEntry(const std::string& key,
@@ -172,9 +179,12 @@ int DiskCacheTestWithCache::CreateEntryWithPriority(
     const std::string& key,
     net::RequestPriority request_priority,
     disk_cache::Entry** entry) {
-  net::TestCompletionCallback cb;
-  int rv = cache_->CreateEntry(key, request_priority, entry, cb.callback());
-  return cb.GetResult(rv);
+  TestEntryResultCompletionCallback cb;
+  disk_cache::EntryResult result =
+      cb.GetResult(cache_->CreateEntry(key, request_priority, cb.callback()));
+  int rv = result.net_error();
+  *entry = result.ReleaseEntry();
+  return rv;
 }
 
 int DiskCacheTestWithCache::DoomEntry(const std::string& key) {
@@ -387,9 +397,10 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
     cache_ = std::move(simple_backend);
     if (simple_cache_wait_for_index_) {
       net::TestCompletionCallback wait_for_index_cb;
-      rv = simple_cache_impl_->index()->ExecuteWhenReady(
+      simple_cache_impl_->index()->ExecuteWhenReady(
           wait_for_index_cb.callback());
-      ASSERT_THAT(wait_for_index_cb.GetResult(rv), IsOk());
+      rv = wait_for_index_cb.WaitForResult();
+      ASSERT_THAT(rv, IsOk());
     }
     return;
   }

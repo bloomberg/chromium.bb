@@ -8,12 +8,12 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -181,7 +181,6 @@ UIImage* DefaultFaviconImage() {
   }
   _incognitoStyle = incognitoStyle;
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // When iOS 12 is dropped, only the next line is needed for styling.
     // Every other check for |incognitoStyle| can be removed, as well as the
@@ -191,7 +190,6 @@ UIImage* DefaultFaviconImage() {
                                           : UIUserInterfaceStyleUnspecified;
     return;
   }
-#endif
   [self updateStyleForSelected:self.selected];
 }
 
@@ -246,7 +244,6 @@ UIImage* DefaultFaviconImage() {
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
     // This triggers the styling again, where the image is resolved instead of
@@ -258,7 +255,6 @@ UIImage* DefaultFaviconImage() {
       [self updateStyleForSelected:self.selected];
     }
   }
-#endif
 }
 
 #pragma mark - Private
@@ -328,8 +324,7 @@ UIImage* DefaultFaviconImage() {
   _activityIndicator =
       [[MDCActivityIndicator alloc] initWithFrame:faviconFrame];
   [_activityIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_activityIndicator
-      setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
+  [_activityIndicator setCycleColors:@[ [UIColor colorNamed:kBlueColor] ]];
   [_activityIndicator setRadius:ui::AlignValueToUpperPixel(kFaviconSize / 2)];
   [self addSubview:_activityIndicator];
 }
@@ -372,9 +367,14 @@ UIImage* DefaultFaviconImage() {
 // Updates this tab's style based on the value of |selected| and the current
 // incognito style.
 - (void)updateStyleForSelected:(BOOL)selected {
+  // On iOS 13 there is no need to pick custom incognito assets because
+  // |overrideUserInterfaceStyle| is set to dark mode when in incognito.
+  using base::ios::IsRunningOnIOS13OrLater;
+  BOOL useIncognitoFallback = self.incognitoStyle && !IsRunningOnIOS13OrLater();
+
   // Style the background image first.
   NSString* state = (selected ? @"foreground" : @"background");
-  NSString* incognito = self.incognitoStyle ? @"incognito_" : @"";
+  NSString* incognito = useIncognitoFallback ? @"incognito_" : @"";
   NSString* imageName =
       [NSString stringWithFormat:@"tabstrip_%@%@_tab", incognito, state];
   CGFloat leftInset = kTabBackgroundLeftCapInset;
@@ -390,10 +390,8 @@ UIImage* DefaultFaviconImage() {
   // Style the close button tint color.
   NSString* closeButtonColorName;
   if (selected) {
-    closeButtonColorName =
-        self.incognitoStyle
-            ? @"tabstrip_active_tab_incognito_close_button_color"
-            : @"tabstrip_active_tab_close_button_color";
+    closeButtonColorName = useIncognitoFallback ? @"close_button_dark_color"
+                                                : @"close_button_color";
   } else {
     closeButtonColorName = @"tabstrip_inactive_tab_close_button_color";
   }
@@ -402,13 +400,12 @@ UIImage* DefaultFaviconImage() {
   // Style the favicon tint color and the title label.
   NSString* faviconColorName;
   if (selected) {
-    faviconColorName = kTextPrimaryColor;
+    faviconColorName =
+        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
   } else {
     faviconColorName = @"tabstrip_inactive_tab_text_color";
   }
-  _faviconView.tintColor = self.incognitoStyle && selected
-                               ? [UIColor whiteColor]
-                               : [UIColor colorNamed:faviconColorName];
+  _faviconView.tintColor = [UIColor colorNamed:faviconColorName];
   self.titleLabel.textColor = _faviconView.tintColor;
 
   // Update font weight and accessibility label.

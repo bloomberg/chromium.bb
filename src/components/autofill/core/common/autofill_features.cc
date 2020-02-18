@@ -34,11 +34,6 @@ const base::Feature kAutofillAllowNonHttpActivation{
 const base::Feature kAutofillAlwaysFillAddresses{
     "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the server cards are always shown when the user is in sync
-// transport mode, or if an explicit opt-in is required.
-const base::Feature kAutofillAlwaysShowServerCardsInSyncTransport{
-    "AlwaysShowServerCardsInSyncTransport", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the use of GET (instead of POST) to fetch cacheable autofill query
 // responses.
 const base::Feature kAutofillCacheQueryResponses{
@@ -54,12 +49,6 @@ const base::Feature kAutofillCreditCardAssist{
 // account-based storage when sync the transport is enabled.
 const base::Feature kAutofillEnableAccountWalletStorage{
     "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether we show also upload prompts when we are using the
-// account-based storage for server cards.
-const base::Feature kAutofillEnableAccountWalletStorageUpload{
-    "AutofillEnableAccountWalletStorageUpload",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we use COMPANY as part of Autofill
 const base::Feature kAutofillEnableCompanyName{
@@ -86,7 +75,7 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
 // When enabled, gets payment identity from sync service instead of
 // identity manager.
 const base::Feature kAutofillGetPaymentsIdentityFromSync{
-    "AutofillGetPaymentsIdentityFromSync", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillGetPaymentsIdentityFromSync", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
@@ -149,11 +138,6 @@ const base::Feature kAutofillSaveOnProbablySubmitted{
 const base::Feature kAutofillServerCommunication{
     "AutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the payments settings page should list the credit cards
-// split by type: Local of from Account.
-const base::Feature kAutofillSettingsCardTypeSplit{
-    "AutofillSettingsCardTypeSplit", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether autofill suggestions are filtered by field values previously
 // filled by website.
 const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms{
@@ -193,11 +177,6 @@ const base::Feature kAutofillUseApi{"AutofillUseApi",
 const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether password generation is offered automatically on fields
-// perceived as eligible for generation.
-const base::Feature kAutomaticPasswordGeneration = {
-    "AutomaticPasswordGeneration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is

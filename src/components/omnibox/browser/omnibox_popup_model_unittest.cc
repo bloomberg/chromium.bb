@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -59,7 +59,7 @@ class OmniboxPopupModelTest : public ::testing::Test {
   OmniboxPopupModel* popup_model() { return &popup_model_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestOmniboxEditController controller_;
   TestOmniboxView view_;
   TestOmniboxEditModel model_;

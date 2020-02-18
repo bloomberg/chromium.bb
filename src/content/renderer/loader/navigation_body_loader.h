@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/resource_load_info.mojom.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -49,8 +50,8 @@ class CONTENT_EXPORT NavigationBodyLoader
   // This method fills navigation params related to the navigation request,
   // redirects and response, and also creates a body loader if needed.
   static void FillNavigationParamsResponseAndBodyLoader(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      const mojom::CommonNavigationParams& common_params,
+      const mojom::CommitNavigationParams& commit_params,
       int request_id,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
@@ -106,10 +107,10 @@ class CONTENT_EXPORT NavigationBodyLoader
 
   // network::mojom::URLLoaderClient
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -119,8 +120,7 @@ class CONTENT_EXPORT NavigationBodyLoader
       mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  void CodeCacheReceived(base::Time response_time,
-                         base::span<const uint8_t> data);
+  void CodeCacheReceived(base::Time response_time, mojo_base::BigBuffer data);
   void BindURLLoaderAndContinue();
   void OnConnectionClosed();
   void OnReadable(MojoResult unused);

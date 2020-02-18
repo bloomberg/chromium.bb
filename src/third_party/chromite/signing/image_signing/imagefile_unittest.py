@@ -12,6 +12,7 @@ import re
 import tempfile
 
 import mock
+import six
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -114,7 +115,7 @@ class TestGetKernelConfig(cros_test_lib.RunCommandTestCase):
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
                   capture_output=True, print_cmd=False, error_code_ok=False)]
     self.assertEqual(expected_rc, self.rc.call_args_list)
-    self.assertTrue(isinstance(ret, basestring))
+    self.assertTrue(isinstance(ret, six.string_types))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret)
 
   def testCallsPassesErrorCodeOk(self):
@@ -124,7 +125,7 @@ class TestGetKernelConfig(cros_test_lib.RunCommandTestCase):
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
                   capture_output=True, print_cmd=False, error_code_ok=555)]
     self.assertEqual(expected_rc, self.rc.call_args_list)
-    self.assertTrue(isinstance(ret, basestring))
+    self.assertTrue(isinstance(ret, six.string_types))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret)
 
   def testCallsHandlesErrorCode(self):

@@ -54,7 +54,7 @@ class StructureNode(base.Node):
   # VALUE must escape all commas: ',' -> ',,'.  Each variable definition
   # should be separated by a comma with no extra whitespace.
   # Example: THING1=foo,THING2=bar
-  variable_pattern = re.compile('([^,=\s]+)=((?:,,|[^,])*)')
+  variable_pattern = re.compile(r'([^,=\s]+)=((?:,,|[^,])*)')
 
   def __init__(self):
     super(StructureNode, self).__init__()
@@ -139,12 +139,6 @@ class StructureNode(base.Node):
              'preprocess': 'false',
              'flattenhtml': 'false',
              'fallback_to_low_resolution': 'default',
-             # TODO(joi) this is a hack - should output all generated files
-             # as SCons dependencies; however, for now there is a bug I can't
-             # find where GRIT doesn't build the matching fileset, therefore
-             # this hack so that only the files you really need are marked as
-             # dependencies.
-             'sconsdep' : 'false',
              'variables': '',
              'compress': 'false',
              'use_base_dir': 'true',
@@ -168,10 +162,10 @@ class StructureNode(base.Node):
     with open(flat_filename, 'wb') as outfile:
       if self.ExpandVariables():
         text = self.gatherer.GetText()
-        file_contents = self._Substitute(text).encode('utf-8')
+        file_contents = self._Substitute(text)
       else:
         file_contents = self.gatherer.GetData('', 'utf-8')
-      outfile.write(file_contents)
+      outfile.write(file_contents.encode('utf-8'))
 
     self._last_flat_filename = flat_filename
     return os.path.basename(flat_filename)

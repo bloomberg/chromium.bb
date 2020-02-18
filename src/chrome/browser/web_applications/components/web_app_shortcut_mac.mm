@@ -100,13 +100,12 @@
   if (newValue) {
     base::scoped_nsobject<TerminationObserver> scoped_self(
         self, base::scoped_policy::RETAIN);
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(
-            [](base::scoped_nsobject<TerminationObserver> observer) {
-              [observer onTerminated];
-            },
-            scoped_self));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(
+                       [](base::scoped_nsobject<TerminationObserver> observer) {
+                         [observer onTerminated];
+                       },
+                       scoped_self));
   }
 }
 
@@ -155,9 +154,6 @@ void RunAppLaunchCallbacks(
 bool g_app_shims_allow_update_and_launch_in_tests = false;
 
 namespace {
-
-// Launch Services Key to run as an agent app, which doesn't launch in the dock.
-NSString* const kLSUIElement = @"LSUIElement";
 
 // The maximum number to append to to an app name before giving up and using the
 // extension id.
@@ -415,17 +411,16 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
             NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
         base::scoped_policy::RETAIN);
     if (app) {
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&RunAppLaunchCallbacks, app,
-                                              std::move(launched_callback),
-                                              std::move(terminated_callback)));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&RunAppLaunchCallbacks, app,
+                                    std::move(launched_callback),
+                                    std::move(terminated_callback)));
       return;
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(launched_callback), base::Process()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(launched_callback), base::Process()));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -522,9 +517,9 @@ void GetImageResourcesOnUIThread(
     (*result)[id] = ImageRepForGFXImage(image);
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(std::move(io_task), std::move(result)));
 }
@@ -592,11 +587,10 @@ bool UpdateAppShortcutsSubdirLocalizedName(
       base::mac::FilePathToNSString(localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path atomically:YES];
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(
-          &GetImageResourcesOnUIThread,
-          base::BindOnce(&SetWorkspaceIconOnWorkerThread, apps_directory)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&GetImageResourcesOnUIThread,
+                                base::BindOnce(&SetWorkspaceIconOnWorkerThread,
+                                               apps_directory)));
   return true;
 }
 
@@ -946,10 +940,6 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kLSHasLocalizedDisplayNameKey];
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kNSHighResolutionCapableKey];
-  if (info_->extension_id == app_mode::kAppListModeId) {
-    // Prevent the app list from bouncing in the dock, and getting a run light.
-    [plist setObject:[NSNumber numberWithBool:YES] forKey:kLSUIElement];
-  }
 
   base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
   [plist setObject:base::mac::FilePathToNSString(app_name)
@@ -1131,7 +1121,7 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                 ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   if (web_app::AppShimLaunchDisabled()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(launched_callback), base::Process()));
     return;

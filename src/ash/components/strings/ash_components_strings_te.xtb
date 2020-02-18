@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="1036550831858290950">మీ ప్రస్తుత ట్యాబ్‌ను బుక్‌మార్క్‌గా సేవ్ చేయండి</translation>
 <translation id="104962181688258143">ఫైల్స్ యాప్‌ను తెరవండి</translation>
-<translation id="1098295134904615027">కుడివైపు గల వర్చువల్ డెస్క్‌ను యాక్టివేట్ చేస్తుంది</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> కోసం <ph name="N" /> ఫలితాలను చూపుతోంది</translation>
 <translation id="1195667586424773550">ట్యాబ్ యొక్క చిరునామా బార్‌లోకి లింక్‌ను లాగండి</translation>
 <translation id="1204450209689312104">కొత్త విండోను అజ్ఞాత మోడ్‌లో తెరవండి</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">చిరునామా బార్‌లో మీరు నమోదు చేసే దానికి www. మరియు .com జోడించి, ఆపై పేజీని తెరవండి</translation>
+<translation id="1872219238824176091">ప్రస్తుతం ఉన్న డెస్క్‌ను తీసివేస్తుంది</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> లేదా <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">ఎడమవైపు గల వర్చువల్ డెస్క్‌ను యాక్టివేట్ చేస్తుంది</translation>
 <translation id="1996162290124031907">తదుపరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2010818616644390445">విండోలో చివరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2040706009561734834">లాంచర్‌ని తెరవండి/మూసివేయండి</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">విండోల మధ్య త్వరగా మారండి</translation>
 <translation id="2454251766545114447">డిస్‌ప్లేని దూరంగా జూమ్ చేస్తుంది</translation>
 <translation id="2478303094958140141">ChromeVox (ప్రసంగ రూప అభిప్రాయం) ఆన్ లేదా ఆఫ్ చేయండి</translation>
+<translation id="2488661730534396940">ఎడమవైపు గల డెస్క్‌ను యాక్టివేట్ చేస్తుంది</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">వెబ్ పేజీని దిగువకు స్క్రోల్ చేయండి</translation>
 <translation id="2574014812750545982">పేజీలోని జూమ్ స్థాయిని రీసెట్ చేస్తుంది</translation>
 <translation id="2596078834055697711">విండో స్క్రీన్‌షాట్ తీయండి</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="TAB" /> లేదా <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">మీ ప్రస్తుత వెబ్‌పేజీని బుక్‌మార్క్‌గా సేవ్ చేయండి</translation>
 <translation id="2750942583782703988">మీ ప్రస్తుత పేజీని మళ్లీ లోడ్ చేయండి</translation>
 <translation id="2764005613199379871">శోధన చిరునామా బార్‌పై దృష్టి ఉంచండి</translation>
+<translation id="2774822903829597107">కొత్త డెస్క్‌ను సృష్టిస్తుంది</translation>
 <translation id="2789868185375229787">పేజీలో దూరంగా జూమ్ చేయండి</translation>
 <translation id="2804480015716812239"><ph name="ALT" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="2830827904629746450">కుడి వైపున విండోను డాక్ చేయండి</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">స్క్రీన్‌షాట్ తీయండి</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ఫోకస్ చిరునామా బార్</translation>
-<translation id="3165428420335997629">కొత్త వర్చువల్ డెస్క్‌ను సృష్టిస్తుంది</translation>
 <translation id="3256109297135787951">మీ అరలోని ఒక అంశానికి ఉన్న హైలైట్‌ను తీసివేయండి</translation>
 <translation id="3288816184963444640">ప్రస్తుత విండోను మూసివేయండి</translation>
 <translation id="3407560819924487926">కార్య నిర్వాహకుడిని తెరవండి</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">పాక్షిక స్క్రీన్‌షాట్ తీయండి</translation>
 <translation id="4698850295812410683">స్టైలస్ సాధనాలను చూపండి</translation>
 <translation id="4801989101741319327">తర్వాత పదం యొక్క ముగింపునకు వెళ్లండి</translation>
+<translation id="4866066940972151697">కుడివైపు గల డెస్క్‌ను యాక్టివేట్ చేస్తుంది</translation>
 <translation id="4916163929714267752">లింక్‌ను కొత్త విండోలో తెరవండి</translation>
 <translation id="5030659775136592441">బుక్‌మార్క్ మేనేజర్‌ను చూపండి</translation>
 <translation id="5034421018520995080">పేజీ ఎగువకు వెళ్లండి</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">స్క్రీన్‌ని 90 డిగ్రీలు తిప్పండి</translation>
 <translation id="8241665785394195545">కుడి బ్రాకెట్</translation>
 <translation id="8264941229485248811">డెవలపర్ సాధనాల ఇన్‌స్పెక్టర్‌ను చూపండి లేదా దాచండి</translation>
-<translation id="8355937569537581904">ప్రస్తుత వర్చువల్ డెస్క్‌ను తీసివేస్తుంది</translation>
 <translation id="836869401750819675">డౌన్‌లోడ్‌ల పేజీని తెరవండి</translation>
 <translation id="8388247778047144397">లింక్‌ను ట్యాబ్ స్ట్రిప్‌లోని ఖాళీ ప్రాంతంలోకి లాగండి</translation>
 <translation id="8389638407792712197">కొత్త విండోను తెరవండి</translation>

@@ -240,13 +240,20 @@ void PasswordStore::GetLogins(const FormDigest& form,
         form, base::BindOnce(
                   &PasswordStore::ScheduleGetFilteredLoginsWithAffiliations,
                   this, consumer->GetWeakPtr(), form, cutoff));
-  }
-
-  else {
+  } else {
     PostLoginsTaskAndReplyToConsumerWithProcessedResult(
         consumer, base::BindOnce(&PasswordStore::GetLoginsImpl, this, form),
         base::BindOnce(FilterLogins, cutoff));
   }
+}
+
+void PasswordStore::GetLoginsByPassword(
+    const base::string16& plain_text_password,
+    PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  PostLoginsTaskAndReplyToConsumerWithResult(
+      consumer, base::BindOnce(&PasswordStore::GetLoginsByPasswordImpl, this,
+                               plain_text_password));
 }
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
@@ -400,10 +407,9 @@ void PasswordStore::PreparePasswordHashData(const std::string& sync_username) {
   ScheduleEnterprisePasswordURLUpdate();
 }
 
-void PasswordStore::SaveGaiaPasswordHash(
-    const std::string& username,
-    const base::string16& password,
-    metrics_util::SyncPasswordHashChange event) {
+void PasswordStore::SaveGaiaPasswordHash(const std::string& username,
+                                         const base::string16& password,
+                                         GaiaPasswordHashChange event) {
   SaveProtectedPasswordHash(username, password, /*is_gaia_password=*/true,
                             event);
 }
@@ -412,20 +418,20 @@ void PasswordStore::SaveEnterprisePasswordHash(const std::string& username,
                                                const base::string16& password) {
   SaveProtectedPasswordHash(
       username, password, /*is_gaia_password=*/false,
-      metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+      GaiaPasswordHashChange::NON_GAIA_ENTERPRISE_PASSWORD_CHANGE);
 }
 
-void PasswordStore::SaveProtectedPasswordHash(
-    const std::string& username,
-    const base::string16& password,
-    bool is_gaia_password,
-    metrics_util::SyncPasswordHashChange event) {
+void PasswordStore::SaveProtectedPasswordHash(const std::string& username,
+                                              const base::string16& password,
+                                              bool is_gaia_password,
+                                              GaiaPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(username, password,
                                               is_gaia_password)) {
-    if (is_gaia_password &&
-        event !=
-            metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE) {
-      metrics_util::LogSyncPasswordHashChange(event);
+    bool is_syncing =
+        event != GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE &&
+        event != GaiaPasswordHashChange::NON_GAIA_ENTERPRISE_PASSWORD_CHANGE;
+    if (is_gaia_password) {
+      metrics_util::LogGaiaPasswordHashChange(event, is_syncing);
     }
     SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
   }
@@ -433,9 +439,10 @@ void PasswordStore::SaveProtectedPasswordHash(
 
 void PasswordStore::SaveSyncPasswordHash(
     const PasswordHashData& sync_password_data,
-    metrics_util::SyncPasswordHashChange event) {
+    GaiaPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(sync_password_data)) {
-    metrics_util::LogSyncPasswordHashChange(event);
+    metrics_util::LogGaiaPasswordHashChange(event,
+                                            /*is_sync_password=*/true);
     SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
   }
 }
@@ -457,6 +464,18 @@ void PasswordStore::ClearAllEnterprisePasswordHash() {
   hash_password_manager_.ClearAllPasswordHash(/* is_gaia_password= */ false);
   ScheduleTask(base::BindRepeating(
       &PasswordStore::ClearAllEnterprisePasswordHashImpl, this));
+}
+
+void PasswordStore::ClearAllNonGmailPasswordHash() {
+  hash_password_manager_.ClearAllNonGmailPasswordHash();
+  ScheduleTask(base::BindRepeating(
+      &PasswordStore::ClearAllNonGmailPasswordHashImpl, this));
+}
+
+std::unique_ptr<StateSubscription>
+PasswordStore::RegisterStateCallbackOnHashPasswordManager(
+    const base::Callback<void(const std::string& username)>& callback) {
+  return hash_password_manager_.RegisterStateCallback(callback);
 }
 
 void PasswordStore::SetPasswordStoreSigninNotifier(
@@ -494,8 +513,8 @@ PasswordStore::~PasswordStore() {
 
 scoped_refptr<base::SequencedTaskRunner>
 PasswordStore::CreateBackgroundTaskRunner() const {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  return base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
 bool PasswordStore::InitOnBackgroundSequence(
@@ -632,6 +651,12 @@ void PasswordStore::ClearAllEnterprisePasswordHashImpl() {
   if (reuse_detector_)
     reuse_detector_->ClearAllEnterprisePasswordHash();
 }
+
+void PasswordStore::ClearAllNonGmailPasswordHashImpl() {
+  if (reuse_detector_)
+    reuse_detector_->ClearAllNonGmailPasswordHash();
+}
+
 #endif
 
 void PasswordStore::OnInitCompleted(bool success) {
@@ -788,6 +813,13 @@ PasswordStore::GetLoginsImpl(const FormDigest& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogins");
   return FillMatchingLogins(form);
+}
+
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStore::GetLoginsByPasswordImpl(
+    const base::string16& plain_text_password) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  return FillMatchingLoginsByPassword(plain_text_password);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>

@@ -49,9 +49,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"               // nogncheck
 #include "ash/public/cpp/window_state_type.h"               // nogncheck
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif
 
@@ -118,7 +118,7 @@ gfx::Rect GetDraggedBrowserBoundsInTabletMode(aura::Window* window) {
 void StoreCurrentDraggedBrowserBoundsInTabletMode(
     aura::Window* window,
     const gfx::Rect& bounds_in_screen) {
-  if (TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (ash::TabletMode::Get()->InTabletMode()) {
     // The bounds that is stored in ash::kRestoreBoundsOverrideKey will be used
     // by DragDetails to calculate the window bounds during dragging in tablet
     // mode.
@@ -242,27 +242,26 @@ class TabDragController::SourceTabStripEmptinessTracker
  public:
   explicit SourceTabStripEmptinessTracker(TabStripModel* tabstrip,
                                           TabDragController* parent)
-      : tab_strip_(tabstrip), parent_(parent), observer_(this) {
-    observer_.Add(tab_strip_);
+      : tab_strip_(tabstrip), parent_(parent) {
+    tab_strip_->AddObserver(this);
   }
 
  private:
   void TabStripEmpty() override {
-    observer_.Remove(tab_strip_);
+    tab_strip_->RemoveObserver(this);
     parent_->OnSourceTabStripEmpty();
   }
 
   TabStripModel* const tab_strip_;
   TabDragController* const parent_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
 };
 
 class TabDragController::DraggedTabsClosedTracker
     : public TabStripModelObserver {
  public:
   DraggedTabsClosedTracker(TabStripModel* tabstrip, TabDragController* parent)
-      : parent_(parent), observer_(this) {
-    observer_.Add(tabstrip);
+      : parent_(parent) {
+    tabstrip->AddObserver(this);
   }
 
   void OnTabStripModelChanged(
@@ -277,7 +276,6 @@ class TabDragController::DraggedTabsClosedTracker
 
  private:
   TabDragController* const parent_;
-  ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
 };
 
 TabDragController::TabDragData::TabDragData()
@@ -1845,7 +1843,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
   }
 
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (ash::TabletMode::Get()->InTabletMode()) {
     new_bounds = GetDraggedBrowserBoundsInTabletMode(
         source->AsView()->GetWidget()->GetNativeWindow());
   }
@@ -1885,7 +1883,7 @@ gfx::Rect TabDragController::CalculateNonMaximizedDraggedBrowserBounds(
     const gfx::Point& point_in_screen) {
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled())
+  if (ash::TabletMode::Get()->InTabletMode())
     bounds = GetDraggedBrowserBoundsInTabletMode(widget->GetNativeWindow());
 #endif
 
@@ -1947,7 +1945,7 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   Profile* profile =
       Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());
-  Browser::CreateParams create_params(Browser::TYPE_TABBED, profile,
+  Browser::CreateParams create_params(Browser::TYPE_NORMAL, profile,
                                       /*user_gesture=*/true,
                                       /*in_tab_dragging=*/true);
   create_params.initial_bounds = new_bounds;
@@ -2075,7 +2073,22 @@ void TabDragController::UpdateGroupForDraggedTabs(int to_index) {
   // If the tab hasn't moved, there is no need to update tab group membership.
   if (current_index == to_index)
     return;
-  if (!GetTabGroupForTargetIndex(current_index, to_index).has_value()) {
+  base::Optional<TabGroupId> updated_group =
+      GetTabGroupForTargetIndex(current_index, to_index);
+  base::Optional<TabGroupId> current_selected_group =
+      attached_model->GetTabGroupForTab(current_index);
+
+  // If the dragging all tabs in the group, we will not do anything since the
+  // group membership will not change.
+  // TODO(crbug.com/978609): Support multi-select drag case.
+  if (current_selected_group.has_value() && updated_group.has_value() &&
+      current_selected_group.value() == updated_group.value()) {
+    return;
+  }
+  if (updated_group.has_value()) {
+    attached_model->MoveTabsIntoGroup({current_index}, to_index,
+                                      updated_group.value());
+  } else {
     attached_model->RemoveFromGroup({current_index});
   }
 }
@@ -2086,13 +2099,6 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   TabStripModel* attached_model = attached_context_->GetTabStripModel();
   base::Optional<TabGroupId> current_group =
       attached_model->GetTabGroupForTab(current_index);
-
-  // Keep tab in tab group if dragging all tabs in the tab group.
-  // TODO(crbug.com/978609): Handle multi-select drag case.
-  if ((current_group.has_value() &&
-       attached_model->ListTabsInGroup(current_group.value()).size() == 1)) {
-    return attached_model->GetTabGroupForTab(current_index);
-  }
 
   // For the currently dragged tab, find the tab index of the tab to the left
   // (|left_tab_index|) and right (|right_tab_index|)) after this current move
@@ -2109,11 +2115,26 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   base::Optional<TabGroupId> right_group = attached_model->GetTabGroupForTab(
       right_tab_index(current_index, to_index));
 
-  // If the currently dragged tab will end up without either adjacent tab
-  // sharing its group, ungroup it.
-  return (left_group != current_group && right_group != current_group)
-             ? base::nullopt
-             : current_group;
+  // First check if the tab bring dragged should join another group to ensure
+  // tab contiguity. This should happen if tabs to the immediate left and right
+  // of the tab are the same, the tab being dragged should match that. Next
+  // check if the tab being dragged contains all tabs of a particular group. If
+  // so, those tabs should remain in their tab group. If exactly one of the
+  // neighboring tabs is in the same group as the tab being dragged, the tab
+  // will remain in the group. Otherwise, the dragged tab will be ungrouped.
+  base::Optional<TabGroupId> updated_group = base::nullopt;
+  if (left_group == right_group && left_group.has_value()) {
+    updated_group = left_group;
+  } else if (current_group.has_value() &&
+             attached_model->ListTabsInGroup(current_group.value()).size() ==
+                 1) {
+    // Keep tab in tab group if dragging all tabs in the tab group.
+    // TODO(crbug.com/978609): Handle multi-select drag case.
+    return attached_model->GetTabGroupForTab(current_index);
+  } else if (left_group == current_group || right_group == current_group) {
+    updated_group = current_group;
+  }
+  return updated_group;
 }
 
 bool TabDragController::ShouldDisallowDrag(gfx::NativeWindow window) {

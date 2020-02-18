@@ -204,7 +204,6 @@ jumbo_component("views") {
     "layout/flex_layout.h",
     "layout/flex_layout_types.h",
     "layout/grid_layout.h",
-    "layout/interpolating_layout_manager.h",
     "layout/layout_manager.h",
     "layout/layout_manager_base.h",
     "layout/layout_provider.h",
@@ -413,7 +412,6 @@ jumbo_component("views") {
     "layout/flex_layout_types.cc",
     "layout/flex_layout_types_internal.cc",
     "layout/grid_layout.cc",
-    "layout/interpolating_layout_manager.cc",
     "layout/layout_manager.cc",
     "layout/layout_manager_base.cc",
     "layout/layout_provider.cc",
@@ -572,6 +570,7 @@ jumbo_component("views") {
       "win/hwnd_message_handler_delegate.h",
       "win/hwnd_util.h",
       "win/pen_event_processor.h",
+      "win/scoped_enable_unadjusted_mouse_events_win.h",
       "win/scoped_fullscreen_visibility.h",
     ]
     sources += [
@@ -580,6 +579,7 @@ jumbo_component("views") {
       "win/hwnd_message_handler.cc",
       "win/hwnd_util_aurawin.cc",
       "win/pen_event_processor.cc",
+      "win/scoped_enable_unadjusted_mouse_events_win.cc",
       "win/scoped_fullscreen_visibility.cc",
     ]
     libs = [
@@ -598,10 +598,6 @@ jumbo_component("views") {
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
-  }
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
   }
 
   if (use_x11) {
@@ -709,6 +705,7 @@ jumbo_component("views") {
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
       if (use_x11) {
+        deps += [ "//ui/platform_window/x11" ]
         public += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
           "widget/desktop_aura/desktop_screen_x11.h",
@@ -721,7 +718,6 @@ jumbo_component("views") {
           "widget/desktop_aura/x11_move_loop_delegate.h",
           "widget/desktop_aura/x11_topmost_window_finder.h",
           "widget/desktop_aura/x11_whole_screen_move_loop.h",
-          "widget/desktop_aura/x11_window_event_filter.h",
         ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
@@ -731,7 +727,6 @@ jumbo_component("views") {
           "widget/desktop_aura/x11_desktop_window_move_client.cc",
           "widget/desktop_aura/x11_topmost_window_finder.cc",
           "widget/desktop_aura/x11_whole_screen_move_loop.cc",
-          "widget/desktop_aura/x11_window_event_filter.cc",
         ]
         if (use_atk) {
           sources += [
@@ -755,17 +750,19 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
           "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
           "widget/desktop_aura/desktop_screen_ozone.cc",
-          "widget/desktop_aura/desktop_screen_ozone.h",
         ]
       }
       if (is_linux) {
+        public += [ "widget/desktop_aura/desktop_window_tree_host_linux.h" ]
         sources += [
           "style/platform_style_linux.cc",
+          "widget/desktop_aura/desktop_window_tree_host_linux.cc",
           "widget/desktop_aura/window_event_filter.cc",
           "widget/desktop_aura/window_event_filter.h",
         ]
+        deps += [ "//ui/base:hit_test" ]
       }
-      if ((is_linux && !use_x11) || is_fuchsia) {
+      if (is_linux || is_fuchsia) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_platform.h" ]
         sources +=
             [ "widget/desktop_aura/desktop_window_tree_host_platform.cc" ]
@@ -944,6 +941,7 @@ jumbo_source_set("test_support") {
       "test/widget_test_aura.cc",
     ]
     deps += [
+      "//ui/accessibility",
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/wm",
@@ -1049,7 +1047,6 @@ test("views_unittests") {
     "layout/flex_layout_types_internal_unittest.cc",
     "layout/flex_layout_unittest.cc",
     "layout/grid_layout_unittest.cc",
-    "layout/interpolating_layout_manager_unittest.cc",
     "layout/layout_manager_base_unittest.cc",
     "metadata/metadata_unittest.cc",
     "metadata/type_conversion_unittest.cc",
@@ -1229,6 +1226,12 @@ test("views_unittests") {
 
   if (!is_chromeos) {
     sources += [ "widget/desktop_widget_unittest.cc" ]
+  }
+
+  if (use_atk) {
+    sources +=
+        [ "accessibility/view_ax_platform_node_delegate_auralinux_unittest.cc" ]
+    configs += [ "//build/config/linux/atk" ]
   }
 }
 

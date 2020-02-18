@@ -38,7 +38,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
-#include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -71,7 +70,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
@@ -221,8 +220,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
       scoped_refptr<viz::ContextProviderCommandBuffer> context_provider,
       base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
-        swap_buffers_callback_(std::move(swap_buffers_callback)),
-        weak_ptr_factory_(this) {
+        swap_buffers_callback_(std::move(swap_buffers_callback)) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
 
@@ -328,7 +326,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
   base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback_;
   ui::LatencyTracker latency_tracker_;
 
-  base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_{this};
 };
 
 static bool g_initialized = false;
@@ -412,10 +410,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       client_(client),
       needs_animate_(false),
       pending_frames_(0U),
-      layer_tree_frame_sink_request_pending_(false),
-      weak_factory_(this) {
+      layer_tree_frame_sink_request_pending_(false) {
   CHECK(features::IsVizDisplayCompositorEnabled());
-  CHECK(features::IsSurfaceSynchronizationEnabled());
   DCHECK(client);
 
   SetRootWindow(root_window);
@@ -478,7 +474,7 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
     resource_manager_.Init(host_->GetUIResourceManager());
   }
   host_->SetRootLayer(root_window_->GetLayer());
-  host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+  host_->SetViewportRectAndScale(gfx::Rect(size_), root_window_->GetDipScale(),
                                  GenerateLocalSurfaceId());
 }
 
@@ -550,13 +546,9 @@ void CompositorImpl::CreateLayerTreeHost() {
     settings.initial_debug_state.show_debug_borders.set();
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
-
-  if (features::IsSurfaceSynchronizationEnabled()) {
-    // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
-    // Disable in viz mode for now, with plan to disable more widely once
-    // viz launches.
-    settings.enable_latency_recovery = false;
-  }
+  // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android. Disable
+  // for now, with a plan to disable more widely once viz launches.
+  settings.enable_latency_recovery = false;
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
@@ -569,7 +561,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
   DCHECK(!host_->IsVisible());
-  host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+  host_->SetViewportRectAndScale(gfx::Rect(size_), root_window_->GetDipScale(),
                                  GenerateLocalSurfaceId());
 
   if (needs_animate_)
@@ -641,7 +633,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   size_ = size;
   if (host_) {
     // TODO(ccameron): Ensure a valid LocalSurfaceId here.
-    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+    host_->SetViewportRectAndScale(gfx::Rect(size_),
+                                   root_window_->GetDipScale(),
                                    GenerateLocalSurfaceId());
   }
 
@@ -880,7 +873,8 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
                             DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
     // TODO(ccameron): This is transiently incorrect -- |size_| must be
     // recalculated here as well. Is the call in SetWindowBounds sufficient?
-    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+    host_->SetViewportRectAndScale(gfx::Rect(size_),
+                                   root_window_->GetDipScale(),
                                    GenerateLocalSurfaceId());
   }
 
@@ -973,7 +967,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
                                          ->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.enable_surface_synchronization = true;
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
           false /* should_ask_for_child_region */,

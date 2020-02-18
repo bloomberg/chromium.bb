@@ -113,10 +113,6 @@ class CORE_EXPORT PaintLayerCompositor {
   // frame that gets drawn.
   void SetNeedsCompositingUpdate(CompositingUpdateType);
 
-  // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip
-  // z-order children of the given Layer.
-  bool ClipsCompositingDescendants(const PaintLayer*) const;
-
   // Whether the given layer needs an extra 'contents' layer.
   bool NeedsContentsCompositingLayer(const PaintLayer*) const;
 
@@ -135,9 +131,6 @@ class CORE_EXPORT PaintLayerCompositor {
   // from above in some cases, e.g.  when the RootGraphicsLayer is detached and
   // swapped out for an overlay video layer.
   GraphicsLayer* PaintRootGraphicsLayer() const;
-
-  // The LayoutView's scroll layer.
-  GraphicsLayer* ScrollLayer() const;
 
   static PaintLayerCompositor* FrameContentsCompositor(LayoutEmbeddedContent&);
   // Return true if the layers changed.
@@ -158,8 +151,6 @@ class CORE_EXPORT PaintLayerCompositor {
   bool AllocateOrClearCompositedLayerMapping(
       PaintLayer*,
       CompositingStateTransitionType composited_layer_update);
-
-  bool IsRootScrollerAncestor() const;
 
   void AttachRootLayerViaChromeClient();
 

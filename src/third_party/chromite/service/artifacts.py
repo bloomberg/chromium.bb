@@ -11,9 +11,11 @@ This service houses the high level business logic for all created artifacts.
 from __future__ import print_function
 
 import collections
+import fnmatch
 import glob
 import json
 import os
+import shutil
 
 from chromite.lib import autotest_util
 from chromite.lib import constants
@@ -32,11 +34,17 @@ ARCHIVE_PACKAGES = 'packages'
 ARCHIVE_SERVER_PACKAGES = 'server_packages'
 ARCHIVE_TEST_SUITES = 'test_suites'
 
+CPE_WARNINGS_FILE_TEMPLATE = 'cpe-warnings-chromeos-%s.txt'
+CPE_RESULT_FILE_TEMPLATE = 'cpe-chromeos-%s.txt'
+
 TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
 TAST_COMPRESSOR = cros_build_lib.COMP_BZIP2
 
+CpeResult = collections.namedtuple('CpeResult', ['report', 'warnings'])
+
 PinnedGuestImage = collections.namedtuple('PinnedGuestImage',
                                           ['filename', 'uri'])
+
 
 class Error(Exception):
   """Base module error."""
@@ -84,10 +92,11 @@ def BuildFirmwareArchive(chroot, sysroot, output_directory):
   return archive_file
 
 
-def BundleAutotestFiles(sysroot, output_directory):
+def BundleAutotestFiles(chroot, sysroot, output_directory):
   """Create the Autotest Hardware Test archives.
 
   Args:
+    chroot (chroot_lib.Chroot): The chroot containing the sysroot.
     sysroot (sysroot_lib.Sysroot): The sysroot whose artifacts are being
       archived.
     output_directory (str): The path were the completed archives should be put.
@@ -95,12 +104,13 @@ def BundleAutotestFiles(sysroot, output_directory):
   Returns:
     dict - The paths of the files created in |output_directory| by their type.
   """
-  assert sysroot.Exists()
+  assert sysroot.Exists(chroot=chroot)
   assert output_directory
 
   # archive_basedir is the base directory where the archive commands are run.
   # We want the folder containing the board's autotest folder.
-  archive_basedir = os.path.join(sysroot.path, constants.AUTOTEST_BUILD_PATH)
+  archive_basedir = chroot.full_path(sysroot.path,
+                                     constants.AUTOTEST_BUILD_PATH)
   archive_basedir = os.path.dirname(archive_basedir)
 
   if not os.path.exists(archive_basedir):
@@ -117,6 +127,60 @@ def BundleAutotestFiles(sysroot, output_directory):
   }
 
 
+def BundleEBuildLogsTarball(chroot, sysroot, archive_dir):
+  """Builds a tarball containing ebuild logs.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    sysroot (sysroot_lib.Sysroot): Sysroot whose images are being fetched.
+    archive_dir: The directory to drop the tarball in.
+
+  Returns:
+    The file name of the output tarball, None if no package found.
+  """
+  tarball_paths = []
+  logs_path = chroot.full_path(sysroot.path, 'tmp/portage')
+
+  if not os.path.isdir(logs_path):
+    return None
+
+  if not os.path.exists(os.path.join(logs_path, 'logs')):
+    return None
+
+  tarball_paths.append('logs')
+  tarball_output = os.path.join(archive_dir, 'ebuild_logs.tar.xz')
+  try:
+    cros_build_lib.CreateTarball(
+        tarball_output, cwd=logs_path, chroot=chroot.path, inputs=tarball_paths)
+  except cros_build_lib.CreateTarballError:
+    logging.warning('Unable to create logs tarball; ignoring until '
+                    'https://crbug.com/999933 is sorted out.')
+    return None
+  return os.path.basename(tarball_output)
+
+
+def BundleChromeOSConfig(chroot, sysroot, archive_dir):
+  """Outputs the ChromeOS Config payload.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    sysroot (sysroot_lib.Sysroot): Sysroot whose config is being fetched.
+    archive_dir: The directory to drop the config in.
+
+  Returns:
+    The file name of the output config, None if no config found.
+  """
+  config_path = chroot.full_path(sysroot.path,
+                                 'usr/share/chromeos-config/yaml/config.yaml')
+
+  if not os.path.exists(config_path):
+    return None
+
+  config_output = os.path.join(archive_dir, 'config.yaml')
+  shutil.copy(config_path, config_output)
+  return os.path.basename(config_output)
+
+
 def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):
   """Gather all of the simple chrome artifacts.
 
@@ -131,6 +195,61 @@ def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):
   files.append(ArchiveChromeEbuildEnv(sysroot, output_dir))
 
   return files
+
+
+def BundleVmFiles(chroot, test_results_dir, output_dir):
+  """Gather all of the VM files.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    test_results_dir (str): Test directory relative to chroot.
+    output_dir (str): Where all result files should be stored.
+  """
+  image_dir = chroot.full_path(test_results_dir)
+  archives = ArchiveFilesFromImageDir(image_dir, output_dir)
+  return archives
+
+
+# TODO(mmortensen): Refactor ArchiveFilesFromImageDir to be part of a library
+# module. I tried moving it to lib/vm.py but this causes a circular dependency.
+def ArchiveFilesFromImageDir(images_dir, archive_path):
+  """Archives the files into tarballs if they match a prefix from prefix_list.
+
+  Create and return a list of tarballs from the images_dir of files that match
+  VM disk and memory prefixes.
+
+  Args:
+    images_dir (str): The directory containing the images to archive.
+    archive_path (str): The directory where the archives should be created.
+
+  Returns:
+    list[str] - The paths to the tarballs.
+  """
+  images = []
+  for prefix in [constants.VM_DISK_PREFIX, constants.VM_MEM_PREFIX]:
+    for path, _, filenames in os.walk(images_dir):
+      images.extend([
+          os.path.join(path, filename)
+          for filename in fnmatch.filter(filenames, prefix + '*')
+      ])
+
+  tar_files = []
+  for image_path in images:
+    image_rel_path = os.path.relpath(image_path, images_dir)
+    image_parent_dir = os.path.dirname(image_path)
+    image_file = os.path.basename(image_path)
+    tarball_path = os.path.join(archive_path,
+                                '%s.tar' % image_rel_path.replace('/', '_'))
+    # Note that tar will chdir to |image_parent_dir|, so that |image_file|
+    # is at the top-level of the tar file.
+    cros_build_lib.CreateTarball(
+        tarball_path,
+        image_parent_dir,
+        compression=cros_build_lib.COMP_BZIP2,
+        inputs=[image_file])
+    tar_files.append(tarball_path)
+
+  return tar_files
 
 
 def ArchiveChromeEbuildEnv(sysroot, output_dir):
@@ -169,6 +288,23 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
     cros_build_lib.CreateTarball(result_path, tempdir)
 
   return result_path
+
+
+def BundleImageZip(output_dir, image_dir):
+  """Bundle image.zip.
+
+  Args:
+    output_dir (str): The location outside the chroot where the files should be
+      stored.
+    image_dir (str): The directory containing the image.
+  """
+
+  filename = 'image.zip'
+  zipfile = os.path.join(output_dir, filename)
+  cros_build_lib.RunCommand(['zip', zipfile, '-r', '.'],
+                            cwd=image_dir,
+                            capture_output=True)
+  return filename
 
 
 def CreateChromeRoot(chroot, build_target, output_dir):
@@ -305,15 +441,15 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
   return payloads
 
 
-def BundleOrderfileGenerationArtifacts(chroot, build_target,
-                                       chrome_version, output_dir):
-  """Generate artifacts for Chrome orderfile.
+def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
+                                  build_target, output_dir):
+  """Generate artifacts for toolchain-related AFDO artifacts.
 
   Args:
+    is_orderfile (boolean): The generation is for orderfile (True) or
+    for AFDO (False).
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
     build_target (build_target_util.BuildTarget): The build target.
-    chrome_version (str): The chrome version used to generate the orderfile.
-      Example: chromeos-chrome-77.0.3823.0_rc-r1
     output_dir (str): The location outside the chroot where the files should be
       stored.
 
@@ -322,14 +458,22 @@ def BundleOrderfileGenerationArtifacts(chroot, build_target,
   """
   chroot_args = chroot.GetEnterArgs()
   with chroot.tempdir() as tempdir:
-    generate_orderfile = toolchain_util.GenerateChromeOrderfile(
-        build_target.name,
-        tempdir,
-        chrome_version,
-        chroot.path,
-        chroot_args)
+    if is_orderfile:
+      generate_orderfile = toolchain_util.GenerateChromeOrderfile(
+          board=build_target.name,
+          output_dir=tempdir,
+          chroot_path=chroot.path,
+          chroot_args=chroot_args)
 
-    generate_orderfile.Perform()
+      generate_orderfile.Perform()
+    else:
+      generate_afdo = toolchain_util.GenerateBenchmarkAFDOProfile(
+          board=build_target.name,
+          output_dir=tempdir,
+          chroot_path=chroot.path,
+          chroot_args=chroot_args)
+
+      generate_afdo.Perform()
 
     files = []
     for path in osutils.DirectoryIterator(tempdir):
@@ -398,3 +542,46 @@ def FetchPinnedGuestImages(chroot, sysroot):
       pins.append(PinnedGuestImage(filename=filename, uri=uri))
 
   return pins
+
+
+def GenerateCpeReport(chroot, sysroot, output_dir):
+  """Generate CPE export.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot where the command is being run.
+    sysroot (sysroot_lib.Sysroot): The sysroot whose dependencies are being
+        reported.
+    output_dir (str): The path where the output files should be written.
+
+  Returns:
+    CpeResult: The CPE result instance with the full paths to the report and
+      warnings files.
+  """
+  # Build the command and its args.
+  cmd = [
+      'cros_extract_deps', '--sysroot', sysroot.path, '--format', 'cpe',
+      'virtual/target-os'
+  ]
+
+  logging.info('Beginning CPE Export.')
+  result = cros_build_lib.RunCommand(
+      cmd,
+      capture_output=True,
+      enter_chroot=True,
+      chroot_args=chroot.get_enter_args())
+  logging.info('CPE Export Complete.')
+
+  # Write out the report and warnings the export produced.
+  # We'll assume the basename for the board name to match how these were built
+  # out in the old system.
+  # TODO(saklein): Can we remove the board name from the report file names?
+  build_target = os.path.basename(sysroot.path)
+  report_path = os.path.join(output_dir,
+                             CPE_RESULT_FILE_TEMPLATE % build_target)
+  warnings_path = os.path.join(output_dir,
+                               CPE_WARNINGS_FILE_TEMPLATE % build_target)
+
+  osutils.WriteFile(report_path, result.output)
+  osutils.WriteFile(warnings_path, result.error)
+
+  return CpeResult(report=report_path, warnings=warnings_path)

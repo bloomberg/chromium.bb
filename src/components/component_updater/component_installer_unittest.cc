@@ -19,7 +19,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/component_updater/component_installer.h"
@@ -200,7 +200,7 @@ class ComponentInstallerTest : public testing::Test {
   void Unpack(const base::FilePath& crx_path);
   ComponentUnpacker::Result result() const { return result_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void UnpackComplete(const ComponentUnpacker::Result& result);
@@ -246,8 +246,7 @@ void ComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
       crx_path, nullptr, config->GetUnzipperFactory()->Create(),
-      config->GetPatcherFactory()->Create(),
-      crx_file::VerifierFormat::CRX2_OR_CRX3);
+      config->GetPatcherFactory()->Create(), crx_file::VerifierFormat::CRX3);
   component_unpacker->Unpack(base::BindOnce(
       &ComponentInstallerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();
@@ -357,7 +356,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
         EXPECT_EQ(0, result.error);
       }));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);
@@ -388,7 +387,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
                   result.error);
       }));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);

@@ -43,6 +43,7 @@
 #include "media/mojo/services/watch_time_recorder.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,8 +100,9 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
 
 // returns a valid handle that can be passed to WebLocalFrame constructor
 mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
-  blink::mojom::DocumentInterfaceBrokerPtrInfo info;
-  return mojo::MakeRequest(&info).PassMessagePipe();
+  return mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+      .InitWithNewPipeAndPassReceiver()
+      .PassPipe();
 }
 
 class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
@@ -349,7 +351,9 @@ class WebMediaPlayerImplTest : public testing::Test {
         MediaMetricsProvider::FrameStatus::kNotTopFrame,
         base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
-        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
+        VideoDecodePerfHistory::SaveCallback(),
+        MediaMetricsProvider::GetLearningSessionCallback(),
+        mojo::MakeRequest(&provider));
 
     // Initialize provider since none of the tests below actually go through the
     // full loading/pipeline initialize phase. If this ever changes the provider
@@ -400,7 +404,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     CycleThreads();
 
-    web_view_->MainFrameWidget()->Close();
+    web_view_->Close();
   }
 
  protected:
@@ -659,7 +663,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   // This runs until we reach the |ready_state_|. Attempting to wait for ready
   // states < kReadyStateHaveCurrentData in non-startup-suspend test cases is
   // unreliable due to asynchronous execution of tasks on the
-  // base::test:ScopedTaskEnvironment.
+  // base::test:TaskEnvironment.
   void LoadAndWaitForReadyState(std::string data_file,
                                 blink::WebMediaPlayer::ReadyState ready_state) {
     Load(data_file);
@@ -839,7 +843,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroyDataUrl) {
 
   // This runs until we reach the have current data state. Attempting to wait
   // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
-  // execution of tasks on the base::test:ScopedTaskEnvironment.
+  // execution of tasks on the base::test:TaskEnvironment.
   while (wmpi_->GetReadyState() <
          blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
     base::RunLoop loop;

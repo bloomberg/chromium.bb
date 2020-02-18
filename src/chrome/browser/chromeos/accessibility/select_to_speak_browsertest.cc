@@ -8,9 +8,9 @@
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/status_area_widget_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/status_area_widget_test_api.test-mojom-test-utils.h"
+#include "ash/public/mojom/status_area_widget_test_api.test-mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -56,7 +56,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   }
 
  protected:
-  SelectToSpeakTest() : weak_ptr_factory_(this) {}
+  SelectToSpeakTest() {}
   ~SelectToSpeakTest() override {}
 
   void SetUpOnMainThread() override {
@@ -154,7 +154,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   ash::mojom::StatusAreaWidgetTestApiPtr status_area_widget_test_api_;
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   scoped_refptr<content::MessageLoopRunner> tray_loop_runner_;
-  base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_;
+  base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTest);
 };
 

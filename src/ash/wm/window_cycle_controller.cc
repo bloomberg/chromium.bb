@@ -57,7 +57,8 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 
 void WindowCycleController::StartCycling() {
   WindowCycleList::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
+          kAllDesks);
   // Window cycle list windows will handle showing their transient related
   // windows, so if a window in |window_list| has a transient root also in
   // |window_list|, we can remove it as the transient root will handle showing
@@ -68,7 +69,6 @@ void WindowCycleController::StartCycling() {
 
   window_cycle_list_ = std::make_unique<WindowCycleList>(window_list);
   event_filter_ = std::make_unique<WindowCycleEventFilter>();
-  cycle_start_time_ = base::Time::Now();
   base::RecordAction(base::UserMetricsAction("WindowCycleController_Cycle"));
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.Items",
                            window_list.size());
@@ -92,8 +92,6 @@ void WindowCycleController::Step(Direction direction) {
 }
 
 void WindowCycleController::StopCycling() {
-  UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.SelectionDepth",
-                           window_cycle_list_->current_index() + 1);
   window_cycle_list_.reset();
 
   aura::Window* active_window_after_window_cycle = GetActiveWindow(
@@ -101,8 +99,6 @@ void WindowCycleController::StopCycling() {
 
   // Remove our key event filter.
   event_filter_.reset();
-  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowCycleController.CycleTime",
-                             base::Time::Now() - cycle_start_time_);
 
   if (active_window_after_window_cycle != nullptr &&
       active_window_before_window_cycle_ != active_window_after_window_cycle) {

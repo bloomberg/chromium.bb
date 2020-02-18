@@ -93,6 +93,8 @@ public:
 			walk_from(seen_blocks, b, op);
 	}
 
+	uint32_t find_loop_dominator(uint32_t block) const;
+
 private:
 	struct VisitOrder
 	{
@@ -125,6 +127,7 @@ private:
 	uint32_t visit_count = 0;
 
 	bool is_back_edge(uint32_t to) const;
+	bool has_visited_forward_edge(uint32_t to) const;
 };
 
 class DominatorBuilder

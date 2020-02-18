@@ -14,7 +14,7 @@
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/google/core/browser/google_url_tracker.h"
+#include "components/google/core/common/google_util.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -62,7 +62,6 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override {
     ASSERT_TRUE(browser_);
@@ -83,7 +82,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
   DiceSigninUiUtilTest()
       : BrowserWithTestWindowTest(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+            content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~DiceSigninUiUtilTest() override = default;
 
   struct CreateDiceTurnSyncOnHelperParams {
@@ -278,7 +277,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
     EnableSync(
         GetIdentityManager()
-            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                account_id)
             .value(),
         is_default_promo_account);
     signin_metrics::PromoAction expected_promo_action =
@@ -337,7 +337,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
 
     EnableSync(
         GetIdentityManager()
-            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                account_id)
             .value(),
         is_default_promo_account);
     ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);
@@ -362,8 +363,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     TabStripModel* tab_strip = browser()->tab_strip_model();
     content::WebContents* active_contents = tab_strip->GetActiveWebContents();
     ASSERT_TRUE(active_contents);
-    EXPECT_EQ(signin::GetChromeSyncURLForDice(
-                  kMainEmail, GoogleURLTracker::kDefaultGoogleHomepage),
+    EXPECT_EQ(signin::GetChromeSyncURLForDice(kMainEmail,
+                                              google_util::kGoogleHomepageURL),
               active_contents->GetVisibleURL());
     tab_strip->CloseWebContentsAt(
         tab_strip->GetIndexOfWebContents(active_contents),
@@ -395,9 +396,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetChromeSyncURLForDice(
-                "", GoogleURLTracker::kDefaultGoogleHomepage),
-            active_contents->GetVisibleURL());
+  EXPECT_EQ(
+      signin::GetChromeSyncURLForDice("", google_util::kGoogleHomepageURL),
+      active_contents->GetVisibleURL());
 }
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
@@ -450,9 +451,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetChromeSyncURLForDice(
-                "", GoogleURLTracker::kDefaultGoogleHomepage),
-            active_contents->GetVisibleURL());
+  EXPECT_EQ(
+      signin::GetChromeSyncURLForDice("", google_util::kGoogleHomepageURL),
+      active_contents->GetVisibleURL());
 }
 
 TEST_F(DiceSigninUiUtilTest, GetAccountsForDicePromos) {

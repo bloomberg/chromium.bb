@@ -30,7 +30,8 @@ bool ShouldShowBlePairingUI(
 base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     const device::FidoRequestHandlerBase::TransportAvailabilityInfo&
         transport_availability,
-    base::Optional<device::FidoTransportProtocol> last_used_transport) {
+    base::Optional<device::FidoTransportProtocol> last_used_transport,
+    bool cable_extension_provided) {
   base::flat_set<AuthenticatorTransport> candidate_transports(
       transport_availability.available_transports);
 
@@ -44,11 +45,11 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     return device::FidoTransportProtocol::kInternal;
   }
 
-  // If caBLE is listed as one of the allowed transports, it indicates that the
-  // RP has bothered to supply the |cable_extension|. Respect that and always
-  // select caBLE in that case for GetAssertion operations.
+  // If the RP supplied the caBLE extension then respect that and always
+  // select caBLE for GetAssertion operations.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
+      cable_extension_provided &&
       base::Contains(
           candidate_transports,
           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {
@@ -158,8 +159,8 @@ void AuthenticatorRequestDialogModel::
     return;
   }
 
-  auto most_likely_transport =
-      SelectMostLikelyTransport(transport_availability_, last_used_transport_);
+  auto most_likely_transport = SelectMostLikelyTransport(
+      transport_availability_, last_used_transport_, cable_extension_provided_);
   if (most_likely_transport) {
     StartGuidedFlowForTransport(*most_likely_transport);
   } else if (!transport_availability_.available_transports.empty()) {
@@ -199,7 +200,9 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       break;
     }
     case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step::kCableActivate);
+      DCHECK(cable_extension_provided_ || qr_generator_key_.has_value());
+      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(
+          cable_extension_provided_ ? Step::kCableActivate : Step::kQRCode);
       break;
     default:
       break;
@@ -643,4 +646,11 @@ void AuthenticatorRequestDialogModel::RequestAttestationPermission(
   DCHECK(current_step_ != Step::kClosed);
   attestation_callback_ = std::move(callback);
   SetCurrentStep(Step::kAttestationPermissionRequest);
+}
+
+void AuthenticatorRequestDialogModel::set_cable_transport_info(
+    bool cable_extension_provided,
+    base::Optional<device::QRGeneratorKey> qr_generator_key) {
+  cable_extension_provided_ = cable_extension_provided;
+  qr_generator_key_ = std::move(qr_generator_key);
 }

@@ -7,6 +7,7 @@
 #include "public/fpdf_formfill.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_occontext.h"
@@ -19,19 +20,19 @@
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "fpdfsdk/cpdfsdk_actionhandler.h"
+#include "fpdfsdk/cpdfsdk_baannothandler.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
+#include "fpdfsdk/cpdfsdk_widgethandler.h"
 #include "public/fpdfview.h"
 #include "third_party/base/ptr_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
-#include "xfa/fxfa/cxfa_ffdocview.h"
-#include "xfa/fxfa/cxfa_ffpageview.h"
-#include "xfa/fxfa/cxfa_ffwidget.h"
+#include "fpdfsdk/fpdfxfa/cpdfxfa_widgethandler.h"
 
 static_assert(static_cast<int>(AlertButton::kDefault) ==
                   JSPLATFORM_ALERT_BUTTON_DEFAULT,
@@ -249,45 +250,14 @@ FPDFPage_HasFormFieldAtPoint(FPDF_FORMHANDLE hHandle,
     return pFormField ? static_cast<int>(pFormField->GetFieldType()) : -1;
   }
 
-  if (!hHandle)
-    return -1;
-
 #ifdef PDF_ENABLE_XFA
   CPDFXFA_Page* pXFAPage = ToXFAPage(IPDFPageFromFPDFPage(page));
-  if (!pXFAPage)
-    return -1;
-
-  CXFA_FFPageView* pPageView = pXFAPage->GetXFAPageView();
-  if (!pPageView)
-    return -1;
-
-  CXFA_FFDocView* pDocView = pPageView->GetDocView();
-  if (!pDocView)
-    return -1;
-
-  CXFA_FFWidgetHandler* pWidgetHandler = pDocView->GetWidgetHandler();
-  if (!pWidgetHandler)
-    return -1;
-
-  std::unique_ptr<IXFA_WidgetIterator> pWidgetIterator(
-      pPageView->CreateWidgetIterator(XFA_TRAVERSEWAY_Form,
-                                      XFA_WidgetStatus_Viewable));
-  if (!pWidgetIterator)
-    return -1;
-
-  CXFA_FFWidget* pXFAAnnot;
-  while ((pXFAAnnot = pWidgetIterator->MoveToNext()) != nullptr) {
-    if (pXFAAnnot->GetFormFieldType() == FormFieldType::kXFA)
-      continue;
-
-    CFX_FloatRect rcWidget = pXFAAnnot->GetWidgetRect().ToFloatRect();
-    rcWidget.Inflate(1.0f, 1.0f);
-    if (rcWidget.Contains(CFX_PointF(static_cast<float>(page_x),
-                                     static_cast<float>(page_y)))) {
-      return static_cast<int>(pXFAAnnot->GetFormFieldType());
-    }
+  if (pXFAPage) {
+    return pXFAPage->HasFormFieldAtPoint(
+        CFX_PointF(static_cast<float>(page_x), static_cast<float>(page_y)));
   }
 #endif  // PDF_ENABLE_XFA
+
   return -1;
 }
 
@@ -316,9 +286,9 @@ FPDF_EXPORT FPDF_FORMHANDLE FPDF_CALLCONV
 FPDFDOC_InitFormFillEnvironment(FPDF_DOCUMENT document,
                                 FPDF_FORMFILLINFO* formInfo) {
 #ifdef PDF_ENABLE_XFA
-  const int kRequiredVersion = 2;
+  constexpr int kRequiredVersion = 2;
 #else   // PDF_ENABLE_XFA
-  const int kRequiredVersion = 1;
+  constexpr int kRequiredVersion = 1;
 #endif  // PDF_ENABLE_XFA
   if (!formInfo || formInfo->version != kRequiredVersion)
     return nullptr;
@@ -338,8 +308,16 @@ FPDFDOC_InitFormFillEnvironment(FPDF_DOCUMENT document,
   }
 #endif
 
+  std::unique_ptr<IPDFSDK_AnnotHandler> pXFAHandler;
+#ifdef PDF_ENABLE_XFA
+  pXFAHandler = pdfium::MakeUnique<CPDFXFA_WidgetHandler>();
+#endif  // PDF_ENABLE_XFA
+
   auto pFormFillEnv = pdfium::MakeUnique<CPDFSDK_FormFillEnvironment>(
-      CPDFDocumentFromFPDFDocument(document), formInfo);
+      pDocument, formInfo,
+      pdfium::MakeUnique<CPDFSDK_AnnotHandlerMgr>(
+          pdfium::MakeUnique<CPDFSDK_BAAnnotHandler>(),
+          pdfium::MakeUnique<CPDFSDK_WidgetHandler>(), std::move(pXFAHandler)));
 
 #ifdef PDF_ENABLE_XFA
   if (pContext)
@@ -363,8 +341,10 @@ FPDFDOC_ExitFormFillEnvironment(FPDF_FORMHANDLE hHandle) {
   pFormFillEnv->ClearAllFocusedAnnots();
   // If the document was closed first, it's possible the XFA document
   // is now a nullptr.
-  if (pFormFillEnv->GetXFAContext())
-    pFormFillEnv->GetXFAContext()->SetFormFillEnv(nullptr);
+  auto* pContext =
+      static_cast<CPDFXFA_Context*>(pFormFillEnv->GetDocExtension());
+  if (pContext)
+    pContext->SetFormFillEnv(nullptr);
 #endif  // PDF_ENABLE_XFA
   delete pFormFillEnv;
 }

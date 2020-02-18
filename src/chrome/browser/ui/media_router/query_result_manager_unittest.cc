@@ -10,7 +10,7 @@
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/common/media_router/media_source.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -66,7 +66,7 @@ class QueryResultManagerTest : public ::testing::Test {
            (default_source && source && *default_source.get() == *source);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockMediaRouter mock_router_;
   QueryResultManager query_result_manager_;
   MockObserver mock_observer_;

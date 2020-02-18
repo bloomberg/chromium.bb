@@ -15,9 +15,9 @@ import * as reflection from '../internal/reflection.mjs';
 const DEFAULT_DURATION = 3000;
 const TYPES = new Set(['success', 'warning', 'error']);
 
-function stylesheetFactory() {
+function styleSheetFactory() {
   let stylesheet;
-  return function generate() {
+  return () => {
     if (!stylesheet) {
       stylesheet = new CSSStyleSheet();
       stylesheet.replaceSync(`
@@ -52,14 +52,14 @@ function stylesheetFactory() {
           border-color: red;
         }
       `);
-      // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over bottom: / right:
-      // when implemented https://bugs.chromium.org/p/chromium/issues/detail?id=538475
+      // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over
+      // bottom: / right: when implemented http://crbug.com/538475.
     }
     return stylesheet;
   };
 }
 
-const generateStylesheet = stylesheetFactory();
+const generateStyleSheet = styleSheetFactory();
 
 export class StdToastElement extends HTMLElement {
   static observedAttributes = ['open', 'closebutton'];
@@ -82,7 +82,7 @@ export class StdToastElement extends HTMLElement {
   constructor(message) {
     super();
 
-    this.#shadow.adoptedStyleSheets = [generateStylesheet()];
+    this.#shadow.adoptedStyleSheets = [generateStyleSheet()];
 
     this.#shadow.appendChild(document.createElement('slot'));
 
@@ -108,13 +108,14 @@ export class StdToastElement extends HTMLElement {
     if (!this.hasAttribute('role')) {
       this.setAttribute('role', 'status');
     }
-    // TODO(jacksteinberg): use https://github.com/whatwg/html/pull/4658 when implemented
+    // TODO(jacksteinberg): use https://github.com/whatwg/html/pull/4658
+    // when implemented
   }
 
   get action() {
     return this.#actionSlot.assignedNodes().length !== 0 ?
-      this.#actionSlot.assignedNodes()[0] :
-      null;
+        this.#actionSlot.assignedNodes()[0] :
+        null;
   }
 
   set action(val) {
@@ -172,7 +173,9 @@ export class StdToastElement extends HTMLElement {
 
   show({duration = DEFAULT_DURATION} = {}) {
     if (duration <= 0) {
-      throw new RangeError(`Invalid Argument: duration must be greater than 0 [${duration} given]`);
+      throw new RangeError(
+          `Invalid Argument: duration must be greater ` +
+          `than 0 [${duration} given]`);
     }
 
     this.setAttribute('open', '');
@@ -222,12 +225,7 @@ delete StdToastElement.prototype.connectedCallback;
 export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
 
-  const {
-    action,
-    closeButton,
-    type,
-    ...showOptions
-  } = options;
+  const {action, closeButton, type, ...showOptions} = options;
 
   if (isElement(action)) {
     toast.action = action;
@@ -256,8 +254,7 @@ export function showToast(message, options = {}) {
   return toast;
 }
 
-const idGetter =
-  Object.getOwnPropertyDescriptor(Element.prototype, 'id').get;
+const idGetter = Object.getOwnPropertyDescriptor(Element.prototype, 'id').get;
 function isElement(value) {
   try {
     idGetter.call(value);

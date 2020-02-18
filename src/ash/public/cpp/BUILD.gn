@@ -24,6 +24,8 @@ component("cpp") {
     "app_list/app_list_client.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",
+    "app_list/app_list_config_provider.cc",
+    "app_list/app_list_config_provider.h",
     "app_list/app_list_controller.cc",
     "app_list/app_list_controller.h",
     "app_list/app_list_features.cc",
@@ -62,13 +64,20 @@ component("cpp") {
     "ash_view_ids.h",
     "assistant/assistant_image_downloader.cc",
     "assistant/assistant_image_downloader.h",
+    "assistant/assistant_interface_binder.cc",
+    "assistant/assistant_interface_binder.h",
     "assistant/assistant_setup.cc",
     "assistant/assistant_setup.h",
+    "assistant/assistant_state.cc",
+    "assistant/assistant_state.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
-    "assistant/assistant_state_proxy.cc",
-    "assistant/assistant_state_proxy.h",
-    "assistant/default_voice_interaction_observer.h",
+    "assistant/proactive_suggestions.cc",
+    "assistant/proactive_suggestions.h",
+    "assistant/proactive_suggestions_client.cc",
+    "assistant/proactive_suggestions_client.h",
+    "assistant/util/histogram_util.cc",
+    "assistant/util/histogram_util.h",
     "caption_buttons/caption_button_model.h",
     "caption_buttons/frame_back_button.cc",
     "caption_buttons/frame_back_button.h",
@@ -127,6 +136,8 @@ component("cpp") {
     "media_client.h",
     "media_controller.cc",
     "media_controller.h",
+    "network_config_service.cc",
+    "network_config_service.h",
     "network_icon_image_source.cc",
     "network_icon_image_source.h",
     "new_window_delegate.cc",
@@ -202,8 +213,6 @@ component("cpp") {
     "update_types.h",
     "view_shadow.cc",
     "view_shadow.h",
-    "voice_interaction_controller.cc",
-    "voice_interaction_controller.h",
     "wallpaper_controller.cc",
     "wallpaper_controller.h",
     "wallpaper_controller_client.h",
@@ -226,11 +235,13 @@ component("cpp") {
     "//ash/public/cpp/vector_icons",
     "//chromeos/constants",
     "//chromeos/dbus/power:power_manager_proto",
+    "//chromeos/services/assistant/public/cpp:prefs",
+    "//chromeos/services/network_config:in_process_instance",
     "//components/prefs",
     "//components/sync:rest_of_sync",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//ui/aura",
     "//ui/chromeos/strings",
     "//ui/compositor_extra",
@@ -244,9 +255,11 @@ component("cpp") {
   ]
 
   public_deps = [
-    "//ash/public/interfaces",
+    "//ash/public/mojom",
     "//base",
-    "//components/arc/common:notifications",
+    "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/network_config/public/mojom",
+    "//components/arc/mojom:notifications",
     "//components/session_manager:base",
     "//components/user_manager",
     "//ui/gfx",
@@ -262,7 +275,7 @@ source_set("manifest") {
   ]
 
   deps = [
-    "//ash/public/interfaces",
+    "//ash/public/mojom",
     "//base",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/mojom",
@@ -272,7 +285,7 @@ source_set("manifest") {
     "//services/preferences/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
   ]
 }
 
@@ -286,7 +299,7 @@ source_set("manifest_for_tests") {
 
   deps = [
     ":manifest",
-    "//ash/public/interfaces:test_interfaces",
+    "//ash/public/mojom:test_interfaces",
     "//base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
@@ -296,13 +309,13 @@ source_set("manifest_for_tests") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "app_list/app_list_config_provider_unittest.cc",
     "default_scale_factor_retriever_unittest.cc",
     "pagination/pagination_model_unittest.cc",
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
     "view_shadow_unittest.cc",
-    "voice_interaction_controller_unittest.cc",
   ]
 
   deps = [

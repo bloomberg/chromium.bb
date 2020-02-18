@@ -9,7 +9,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
@@ -202,7 +202,7 @@ class PersistentPrefStoreConsistencyTest : public testing::Test {
  private:
   scoped_refptr<PersistentPrefStore> pref_store_;
   std::unique_ptr<PersistentPrefStoreImpl> pref_store_impl_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(PersistentPrefStoreConsistencyTest, TwoPrefs) {

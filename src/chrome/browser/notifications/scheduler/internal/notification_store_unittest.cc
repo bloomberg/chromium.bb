@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/proto_conversion.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "components/leveldb_proto/public/proto_database.h"
@@ -87,7 +87,7 @@ class NotificationStoreTest : public testing::Test {
     loaded_entries_ = std::move(entries);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Database test objects.
   FakeDB<proto::NotificationEntry, NotificationEntry>* db_;

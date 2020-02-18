@@ -92,8 +92,7 @@ std::unique_ptr<AppLaunchPredictor> LoadPredictorFromDiskOnWorkerThread(
 AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
                                              bool is_ephemeral_user)
     : predictor_filename_(
-          profile_path.AppendASCII(kAppLaunchPredictorFilename)),
-      weak_factory_(this) {
+          profile_path.AppendASCII(kAppLaunchPredictorFilename)) {
   if (!app_list_features::IsZeroStateAppsRankerEnabled()) {
     LOG(ERROR) << "AppSearchResultRanker: ZeroStateAppsRanker is not enabled.";
     return;
@@ -117,8 +116,8 @@ AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
   if (is_ephemeral_user)
     return;
 
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Loads the predictor from disk asynchronously.

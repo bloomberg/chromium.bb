@@ -7,8 +7,10 @@
 
 from __future__ import print_function
 
+import functools
 import re
-import types
+
+import six
 
 from grit import exception
 from grit import lazy_re
@@ -52,8 +54,10 @@ class BaseMessage(object):
         # substrings of the longer tag.
         # E.g. "EXAMPLE_FOO_NAME" must be matched before "EXAMPLE_FOO",
         # otherwise "EXAMPLE_FOO" splits "EXAMPLE_FOO_NAME" too.
-        tags = tag_map.keys()
-        tags.sort(cmp=lambda x,y: len(x) - len(y) or cmp(x, y), reverse=True)
+        tags = sorted(tag_map.keys(),
+                      key=functools.cmp_to_key(
+                          lambda x, y: len(x) - len(y) or ((x > y) - (x < y))),
+                      reverse=True)
         tag_re = '(' + '|'.join(tags) + ')'
 
         # This caching improves the time to build
@@ -72,7 +76,7 @@ class BaseMessage(object):
               tag_map[chunk][1] += 1 # increase placeholder use count
             else:
               self.AppendText(chunk)
-        for key in tag_map.keys():
+        for key in tag_map:
           assert tag_map[key][1] != 0
 
   def GetRealContent(self, escaping_function=Identity):
@@ -83,7 +87,7 @@ class BaseMessage(object):
     '''
     bits = []
     for item in self.parts:
-      if isinstance(item, types.StringTypes):
+      if isinstance(item, six.string_types):
         bits.append(escaping_function(item))
       else:
         bits.append(item.GetOriginal())
@@ -112,7 +116,7 @@ class BaseMessage(object):
     self.dirty = True
 
   def AppendText(self, text):
-    assert isinstance(text, types.StringTypes)
+    assert isinstance(text, six.string_types)
     assert text != ''
 
     self.parts.append(text)

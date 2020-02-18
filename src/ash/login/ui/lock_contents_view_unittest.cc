@@ -26,13 +26,19 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_user_view.h"
+#include "ash/login/ui/parent_access_view.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/cpp/login_screen_test_api.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
@@ -1945,7 +1951,7 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
-// Tests parent access dialog showing and hiding.
+// Tests parent access dialog showing/hiding and focus behavior.
 TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -1960,29 +1966,78 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
       LoginAuthUserView::TestApi(primary_view->auth_user());
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_FALSE(primary_view->parent_access());
+  EXPECT_FALSE(ParentAccessWidget::Get());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
 
-  contents->ShowParentAccessDialog(true);
+  contents->ShowParentAccessDialog();
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_TRUE(primary_view->parent_access());
+  ASSERT_TRUE(ParentAccessWidget::Get());
+  ParentAccessWidget::TestApi widget =
+      ParentAccessWidget::TestApi(ParentAccessWidget::Get());
   EXPECT_FALSE(LoginPasswordView::TestApi(auth_user.password_view())
                    .textfield()
                    ->HasFocus());
   EXPECT_TRUE(HasFocusInAnyChildView(
-      ParentAccessView::TestApi(primary_view->parent_access())
+      ParentAccessView::TestApi(widget.parent_access_view())
           .access_code_view()));
 
-  contents->ShowParentAccessDialog(false);
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(false);
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_FALSE(primary_view->parent_access());
+  EXPECT_FALSE(ParentAccessWidget::Get());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
+}
+
+// Tests parent access shelf button is showing and hiding.
+TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  AddChildUsers(1);
+  const AccountId child_id = users()[0].basic_user_info.account_id;
+  SetWidget(CreateWidgetWithContent(contents));
+
+  // Simulate initial state - user auth disabled and button shown.
+  DataDispatcher()->DisableAuthForUser(
+      child_id,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+
+  // Validation failed - show the button.
+  contents->ShowParentAccessDialog();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(false);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+
+  // Validation succeeded - hide the button.
+  contents->ShowParentAccessDialog();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(true);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+
+  // Validation failed but user auth got enabled - hide button.
+  // (Device got unlocked when parent access dialog was shown)
+  contents->ShowParentAccessDialog();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  DataDispatcher()->EnableAuthForUser(child_id);
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(false);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
 }
 
 using LockContentsViewPowerManagerUnitTest = LockContentsViewUnitTest;
@@ -2019,9 +2074,9 @@ TEST_F(LockContentsViewUnitTest, PasswordClearedOnSuspend) {
 
   textfield->SetText(base::ASCIIToUTF16("some_password"));
   // Suspend clears password.
-  EXPECT_FALSE(textfield->text().empty());
+  EXPECT_FALSE(textfield->GetText().empty());
   contents->SuspendImminent(power_manager::SuspendImminent_Reason_LID_CLOSED);
-  EXPECT_TRUE(textfield->text().empty());
+  EXPECT_TRUE(textfield->GetText().empty());
 }
 
 TEST_F(LockContentsViewUnitTest, ArrowNavSingleUser) {
@@ -2414,8 +2469,7 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
 TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsShownIfMediaPlaying) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2438,8 +2492,7 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsShownIfMediaPlaying) {
 TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenAfterDelay) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2479,8 +2532,7 @@ TEST_F(LockContentsViewUnitTest,
        MediaControlsHiddenIfScreenLockedWhileMediaPaused) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2503,8 +2555,7 @@ TEST_F(LockContentsViewUnitTest,
 TEST_F(LockContentsViewUnitTest, KeepMediaControlsShownWithinDelay) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2535,8 +2586,7 @@ TEST_F(LockContentsViewUnitTest, KeepMediaControlsShownWithinDelay) {
 TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenNoMedia) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2557,8 +2607,7 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenNoMedia) {
 TEST_F(LockContentsViewUnitTest, ShowMediaControlsIfPausedAndAlreadyShowing) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2587,13 +2636,12 @@ TEST_F(LockContentsViewUnitTest,
        LockScreenMediaControlsHiddenIfPreferenceDisabled) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
-  // Disable user preference for media keys.
+  // Disable user preference for media controls.
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, false);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2616,8 +2664,7 @@ TEST_F(LockContentsViewUnitTest,
 TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build login screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2640,6 +2687,23 @@ TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
 
   // Verify that media controls view isn't created for non low-density layouts.
   EXPECT_EQ(nullptr, lock_contents.media_controls_view());
+}
+
+TEST_F(LockContentsViewUnitTest, NoNavigationOrHotseatOnLockScreen) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  LockContentsView* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  ShelfWidget* shelf_widget =
+      Shelf::ForWindow(widget->GetNativeWindow())->shelf_widget();
+  EXPECT_FALSE(shelf_widget->navigation_widget()->IsVisible())
+      << "The navigation widget should not appear on the lock screen.";
+  EXPECT_FALSE(shelf_widget->hotseat_widget()->IsVisible())
+      << "The hotseat widget should not appear on the lock screen.";
 }
 
 }  // namespace ash

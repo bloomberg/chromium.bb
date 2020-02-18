@@ -574,7 +574,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       return has_chump_cls
     current_author = None
     current_committer = None
-    for line in unicode(result.output, 'ascii', 'ignore').splitlines():
+    for line in result.output.decode('utf-8', 'replace').splitlines():
       author_match = author_re.match(line)
       if author_match:
         current_author = author_match.group(1)

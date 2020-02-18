@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "printing/backend/test_print_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -41,7 +41,7 @@ class PrinterCapabilitiesTest : public testing::Test {
   TestPrintBackend* print_backend() { return test_backend_.get(); }
 
  private:
-  content::TestBrowserThreadBundle test_browser_threads_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<TestPrintBackend> test_backend_;
 };
 

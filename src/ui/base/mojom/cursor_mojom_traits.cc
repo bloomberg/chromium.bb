@@ -4,10 +4,10 @@
 
 #include "ui/base/mojom/cursor_mojom_traits.h"
 
-#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/mojom/cursor.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

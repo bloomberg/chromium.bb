@@ -38,18 +38,23 @@ void TestAppRegistrar::SimulateExternalAppUninstalledByUser(
 
 void TestAppRegistrar::Init(base::OnceClosure callback) {}
 
-bool TestAppRegistrar::IsInstalled(const GURL& start_url) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::Contains(installed_apps_, app_id);
+}
+
+bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool TestAppRegistrar::WasExternalAppUninstalledByUser(
     const AppId& app_id) const {
   return base::Contains(user_uninstalled_external_apps_, app_id);
+}
+
+bool TestAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 std::map<AppId, GURL> TestAppRegistrar::GetExternallyInstalledApps(
@@ -110,14 +115,39 @@ base::Optional<SkColor> TestAppRegistrar::GetAppThemeColor(
   return base::nullopt;
 }
 
-const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
-  NOTIMPLEMENTED();
-  return GURL::EmptyGURL();
+const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
+  auto iterator = installed_apps_.find(app_id);
+  if (iterator == installed_apps_.end())
+    return GURL::EmptyGURL();
+
+  return iterator->second.launch_url;
 }
 
 base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
+  const auto& result = installed_apps_.find(app_id);
+  if (result == installed_apps_.end())
+    return base::nullopt;
+
+  return base::make_optional(result->second.install_url);
+}
+
+LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
+    const AppId& app_id) const {
   NOTIMPLEMENTED();
-  return base::nullopt;
+  return LaunchContainer::kTab;
+}
+
+void TestAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
+                                             LaunchContainer launch_container) {
+  NOTIMPLEMENTED();
+}
+
+std::vector<AppId> TestAppRegistrar::GetAppIds() const {
+  std::vector<AppId> result;
+  for (const std::pair<AppId, AppInfo>& it : installed_apps_) {
+    result.push_back(it.first);
+  }
+  return result;
 }
 
 }  // namespace web_app

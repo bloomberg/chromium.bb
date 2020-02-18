@@ -91,7 +91,7 @@ void GetSaltOriginAndPermissionsOnUIThread(
   auto salt_and_origin = GetMediaDeviceSaltAndOrigin(process_id, frame_id);
   bool access = MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
       blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, process_id, frame_id);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(cb), std::move(salt_and_origin), access));
 }
@@ -112,7 +112,7 @@ class RenderFrameAudioInputStreamFactory::Core final
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
       mojom::RendererAudioInputStreamFactoryClientPtr client,
-      int32_t session_id,
+      const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
       uint32_t shared_memory_count,
@@ -169,7 +169,7 @@ RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
   // as it doesn't post in case it is already executed on the right thread. That
   // causes issues in unit tests where the UI thread and the IO thread are the
   // same.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
@@ -199,7 +199,7 @@ RenderFrameAudioInputStreamFactory::Core::Core(
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Core::Init, base::Unretained(this), std::move(request)));
 }
@@ -216,14 +216,14 @@ void RenderFrameAudioInputStreamFactory::Core::Init(
 
 void RenderFrameAudioInputStreamFactory::Core::CreateStream(
     mojom::RendererAudioInputStreamFactoryClientPtr client,
-    int32_t session_id,
+    const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count,
     audio::mojom::AudioProcessingConfigPtr processing_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT1("audio", "RenderFrameAudioInputStreamFactory::CreateStream",
-               "session id", session_id);
+               "session id", session_id.ToString());
 
   if (!forwarding_factory_)
     return;
@@ -246,7 +246,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
     // TODO(qiangchen): Analyze audio constraints to make a duplicating or
     // diverting decision. It would give web developer more flexibility.
 
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&GetLoopbackSourceOnUIThread,
                        capture_id.render_process_id,
@@ -297,7 +297,7 @@ void RenderFrameAudioInputStreamFactory::Core::AssociateInputAndOutputForAec(
   if (!IsValidDeviceId(output_device_id))
     return;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &GetSaltOriginAndPermissionsOnUIThread, process_id_, frame_id_,

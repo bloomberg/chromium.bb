@@ -164,13 +164,6 @@ base::TimeDelta StopTimerFieldTrialDuration();
 std::string GetZeroSuggestVariant(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
-// Returns the server address associated with the current field trial.
-std::string GetOnFocusSuggestionsCustomEndpointURL();
-
-// Returns the server-side experiment ID to use for contextual suggestions.
-// Returns -1 if there is no associated experiment ID.
-int GetOnFocusSuggestionsCustomEndpointExperimentId();
-
 // ---------------------------------------------------------
 // For the ShortcutsScoringMaxRelevance experiment that's part of the
 // bundled omnibox field trial.
@@ -399,6 +392,9 @@ bool IsTabSwitchSuggestionsEnabled();
 // Returns true if the feature of reversing the tab switch logic is enabled.
 bool IsTabSwitchLogicReversed();
 
+// Returns true if dedicated rows for tab switch suggestions is enabled.
+bool IsTabSwitchSuggestionsDedicatedRowEnabled();
+
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 
@@ -408,11 +404,6 @@ bool IsHideSteadyStateUrlSchemeEnabled();
 // Returns true if either the steady-state elision flag for trivial
 // subdomains is enabled.
 bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
-
-// Returns the field trial override for the vertical margin size that should be
-// used in the suggestion view. Returns base::nullopt if the UI code should use
-// the default vertical margin.
-base::Optional<int> GetSuggestionVerticalMarginFieldTrialOverride();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
@@ -429,6 +420,9 @@ bool IsMaxURLMatchesFeatureEnabled();
 // Returns whether the feature to allow the Omnibox pop-up position to wrap
 // between top and bottom is enabled.
 bool IsOmniboxWrapPopupPositionEnabled();
+
+// Returns whether on device head provider is enabled for incognito mode.
+bool IsOnDeviceHeadProviderEnabledForIncognito();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -492,11 +486,6 @@ extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 // Parameter names used by UI experiments.
 extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
-extern const char kUIVerticalMarginParam[];
-
-// Parameter names used by On Focus Suggestions Custom Endpoint.
-extern const char kOnFocusSuggestionsEndpointExperimentIdParam[];
-extern const char kOnFocusSuggestionsEndpointURLParam[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.

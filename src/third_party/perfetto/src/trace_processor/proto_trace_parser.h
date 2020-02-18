@@ -25,13 +25,14 @@
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/protozero/field.h"
 #include "src/trace_processor/ftrace_descriptors.h"
+#include "src/trace_processor/graphics_frame_event_parser.h"
 #include "src/trace_processor/proto_incremental_state.h"
 #include "src/trace_processor/slice_tracker.h"
 #include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/trace_parser.h"
 #include "src/trace_processor/trace_storage.h"
 
-#include "perfetto/trace/track_event/track_event.pbzero.h"
+#include "protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -79,7 +80,6 @@ class ProtoTraceParser : public TraceParser {
   void ParseOOMScoreAdjUpdate(int64_t ts, ConstBytes);
   void ParseMmEventRecord(int64_t ts, uint32_t pid, ConstBytes);
   void ParseSysEvent(int64_t ts, uint32_t pid, bool is_enter, ConstBytes);
-  void ParseClockSnapshot(ConstBytes);
   void ParseAndroidLogPacket(ConstBytes);
   void ParseAndroidLogEvent(ConstBytes);
   void ParseAndroidLogStats(ConstBytes);
@@ -97,6 +97,10 @@ class ProtoTraceParser : public TraceParser {
   void ParseProfilePacket(int64_t ts,
                           ProtoIncrementalState::PacketSequenceState*,
                           ConstBytes);
+  void ParseStreamingProfilePacket(ProtoIncrementalState::PacketSequenceState*,
+                                   ConstBytes);
+  void ParseProfiledFrameSymbols(ProtoIncrementalState::PacketSequenceState*,
+                                 ConstBytes);
   void ParseSystemInfo(ConstBytes);
   void ParseTrackEvent(int64_t ts,
                        int64_t tts,
@@ -128,13 +132,22 @@ class ProtoTraceParser : public TraceParser {
       ArgsTracker* args_tracker,
       RowId row);
   void ParseChromeBenchmarkMetadata(ConstBytes);
+  void ParseChromeEvents(ConstBytes);
   void ParseMetatraceEvent(int64_t ts, ConstBytes);
   void ParseGpuCounterEvent(int64_t ts, ConstBytes);
   void ParseGpuRenderStageEvent(int64_t ts, ConstBytes);
   void ParseAndroidPackagesList(ConstBytes);
+  void ParseLogMessage(ConstBytes,
+                       ProtoIncrementalState::PacketSequenceState*,
+                       int64_t,
+                       uint32_t,
+                       ArgsTracker*,
+                       RowId);
 
  private:
   TraceProcessorContext* context_;
+  std::unique_ptr<GraphicsFrameEventParser> graphics_frame_event_parser_;
+
   const StringId utid_name_id_;
   const StringId sched_wakeup_name_id_;
   const StringId sched_waking_name_id_;
@@ -167,6 +180,12 @@ class ProtoTraceParser : public TraceParser {
   const StringId metatrace_id_;
   const StringId task_file_name_args_key_id_;
   const StringId task_function_name_args_key_id_;
+  const StringId task_line_number_args_key_id_;
+  const StringId log_message_body_key_id_;
+  const StringId data_name_id_;
+  const StringId raw_chrome_metadata_event_id_;
+  const StringId raw_chrome_legacy_system_trace_event_id_;
+  const StringId raw_chrome_legacy_user_trace_event_id_;
   const StringId raw_legacy_event_id_;
   const StringId legacy_event_category_key_id_;
   const StringId legacy_event_name_key_id_;
@@ -190,7 +209,7 @@ class ProtoTraceParser : public TraceParser {
   std::vector<StringId> vmstat_strs_id_;
   std::vector<StringId> rss_members_;
   std::vector<StringId> power_rails_strs_id_;
-  std::unordered_map<uint32_t, const StringId> gpu_counter_ids_;
+  std::unordered_map<uint32_t, const TraceStorage::CounterDefinitions::Id> gpu_counter_ids_;
   std::vector<StringId> gpu_hw_queue_ids_;
   std::vector<StringId> gpu_render_stage_ids_;
 

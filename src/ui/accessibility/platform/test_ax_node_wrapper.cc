@@ -104,10 +104,10 @@ const AXTree::Selection TestAXNodeWrapper::GetUnignoredSelection() const {
 }
 
 AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
-    int offset,
-    ax::mojom::TextAffinity affinity) const {
-  return ui::AXNodePosition::CreateTextPosition(GetTreeData().tree_id,
-                                                node_->id(), offset, affinity);
+    int offset) const {
+  return ui::AXNodePosition::CreateTextPosition(
+      GetTreeData().tree_id, node_->id(), offset,
+      ax::mojom::TextAffinity::kDownstream);
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
@@ -476,7 +476,26 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
     case ax::mojom::Action::kScrollToPoint:
       g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.y());
       return true;
+    case ax::mojom::Action::kSetScrollOffset: {
+      int scroll_x_min =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+      int scroll_x_max =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+      int scroll_y_min =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+      int scroll_y_max =
+          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+      int scroll_x =
+          std::max(scroll_x_min, std::min(data.target_point.x(), scroll_x_max));
+      int scroll_y =
+          std::max(scroll_y_min, std::min(data.target_point.y(), scroll_y_max));
 
+      ReplaceIntAttribute(node_->id(), ax::mojom::IntAttribute::kScrollX,
+                          scroll_x);
+      ReplaceIntAttribute(node_->id(), ax::mojom::IntAttribute::kScrollY,
+                          scroll_y);
+      return true;
+    }
     case ax::mojom::Action::kScrollToMakeVisible: {
       auto offset = node_->data().relative_bounds.bounds.OffsetFromOrigin();
       g_offset = gfx::Vector2d(-offset.x(), -offset.y());
@@ -550,6 +569,75 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
       if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
         return base::ASCIIToUTF16("region");
       FALLTHROUGH;
+
+    default:
+      return {};
+  }
+}
+
+base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kArticle:
+      return base::ASCIIToUTF16("article");
+
+    case ax::mojom::Role::kAudio:
+      return base::ASCIIToUTF16("audio");
+
+    case ax::mojom::Role::kColorWell:
+      return base::ASCIIToUTF16("color picker");
+
+    case ax::mojom::Role::kContentInfo:
+      return base::ASCIIToUTF16("content information");
+
+    case ax::mojom::Role::kDate:
+      return base::ASCIIToUTF16("date picker");
+
+    case ax::mojom::Role::kDateTime: {
+      std::string input_type;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &input_type)) {
+        if (input_type == "datetime-local") {
+          return base::ASCIIToUTF16("local date and time picker");
+        } else if (input_type == "week") {
+          return base::ASCIIToUTF16("week picker");
+        }
+      }
+      return {};
+    }
+
+    case ax::mojom::Role::kDetails:
+      return base::ASCIIToUTF16("details");
+
+    case ax::mojom::Role::kFigure:
+      return base::ASCIIToUTF16("figure");
+
+    case ax::mojom::Role::kMeter:
+      return base::ASCIIToUTF16("meter");
+
+    case ax::mojom::Role::kSearchBox:
+      return base::ASCIIToUTF16("search box");
+
+    case ax::mojom::Role::kStatus:
+      return base::ASCIIToUTF16("output");
+
+    case ax::mojom::Role::kTextField: {
+      std::string input_type;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &input_type)) {
+        if (input_type == "email") {
+          return base::ASCIIToUTF16("email");
+        } else if (input_type == "tel") {
+          return base::ASCIIToUTF16("telephone");
+        } else if (input_type == "url") {
+          return base::ASCIIToUTF16("url");
+        }
+      }
+      return {};
+    }
+
+    case ax::mojom::Role::kTime:
+      return base::ASCIIToUTF16("time");
 
     default:
       return {};

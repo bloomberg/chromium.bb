@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015 The ANGLE Project Authors. All rights reserved.
+// Copyright 2015 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -133,6 +133,8 @@ TEST_P(EGLBackwardsCompatibleContextTest, BackwardsCompatibleEnabledES3)
 {
     ANGLE_SKIP_TEST_IF(
         !IsEGLDisplayExtensionEnabled(mDisplay, "EGL_ANGLE_create_context_backwards_compatible"));
+    // TODO(anglebug.com/3750): Re-evaluate when Vulkan can return 3.0 contexts
+    ANGLE_SKIP_TEST_IF(isVulkanRenderer());
 
     EGLint es3ContextAttribs[] = {
         EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 0, EGL_NONE, EGL_NONE};

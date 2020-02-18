@@ -9,6 +9,7 @@
 #include <fuchsia/ui/input/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/resources.h>
 #include <lib/ui/scenic/cpp/session.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <string>
 #include <vector>
 
@@ -21,11 +22,11 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
 class ScenicWindowManager;
-class PlatformWindowDelegate;
 
 class COMPONENT_EXPORT(OZONE) ScenicWindow
     : public PlatformWindow,
@@ -33,9 +34,12 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
   // |view_token| is passed to Scenic to attach the view to the view tree.
+  // |view_ref_pair| will be associated with this window's View, and used to
+  // identify it when calling out to other services (e.g. the SemanticsManager).
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               fuchsia::ui::views::ViewToken view_token);
+               fuchsia::ui::views::ViewToken view_token,
+               scenic::ViewRefPair view_ref_pair);
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }
@@ -60,6 +64,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   PlatformWindowState GetPlatformWindowState() const override;
   void Activate() override;
   void Deactivate() override;
+  void SetUseNativeFrame(bool use_native_frame) override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;

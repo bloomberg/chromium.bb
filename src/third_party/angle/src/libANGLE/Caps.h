@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -160,6 +160,9 @@ struct Extensions
     bool textureHalfFloat       = false;
     bool textureHalfFloatLinear = false;
 
+    // GL_EXT_texture_type_2_10_10_10_REV
+    bool textureFormat2101010REV = false;
+
     // GL_OES_texture_float and GL_OES_texture_float_linear
     // Implies that TextureCaps for GL_RGB32F, GL_RGBA32F, GL_ALPHA16F_EXT, GL_LUMINANCE16F_EXT and
     // GL_LUMINANCE_ALPHA16F_EXT exist
@@ -299,6 +302,9 @@ struct Extensions
     // GL_ANGLE_framebuffer_multisample
     bool framebufferMultisample = false;
 
+    // GL_EXT_multisampled_render_to_texture
+    bool multisampledRenderToTexture = false;
+
     // GL_ANGLE_instanced_arrays
     bool instancedArraysANGLE = false;
     // GL_EXT_instanced_arrays
@@ -372,6 +378,9 @@ struct Extensions
 
     // NV_pack_subimage
     bool packSubimage = false;
+
+    // GL_OES_vertex_half_float
+    bool vertexHalfFloat = false;
 
     // GL_OES_vertex_array_object
     bool vertexArrayObject = false;

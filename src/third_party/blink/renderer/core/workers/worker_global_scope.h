@@ -29,9 +29,10 @@
 
 #include <memory>
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -120,9 +121,6 @@ class CORE_EXPORT WorkerGlobalScope
   const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
   HttpsState GetHttpsState() const override { return https_state_; }
-  const base::UnguessableToken& GetAgentClusterID() const final {
-    return agent_cluster_id_;
-  }
   scheduler::WorkerScheduler* GetScheduler() final;
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
@@ -131,6 +129,7 @@ class CORE_EXPORT WorkerGlobalScope
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
@@ -151,9 +150,10 @@ class CORE_EXPORT WorkerGlobalScope
   virtual void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space,
+      network::mojom::IPAddressSpace response_address_space,
       const Vector<CSPHeaderAndType>& response_csp_headers,
-      const Vector<String>* response_origin_trial_tokens) = 0;
+      const Vector<String>* response_origin_trial_tokens,
+      int64_t appcache_id) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context
@@ -270,7 +270,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   service_manager::InterfaceProvider interface_provider_;
 
-  const base::UnguessableToken agent_cluster_id_;
+  blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
   // State transition about worker-toplevel script evaluation.
   enum class ScriptEvalState {

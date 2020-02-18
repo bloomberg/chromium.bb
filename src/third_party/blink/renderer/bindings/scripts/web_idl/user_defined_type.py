@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .common import WithIdentifier
+from .composition_parts import WithComponent
+from .composition_parts import WithIdentifier
 
 
 class UserDefinedType(WithIdentifier):
     """
     UserDefinedType is a common base class of spec-author-defined types.
 
-    Spec-author-defined types are top-level IDL definitions given an unique
-    name.
+    Spec-author-defined types are top-level IDL definitions given an identifier.
     """
 
     def __init__(self, identifier):
@@ -18,40 +18,31 @@ class UserDefinedType(WithIdentifier):
 
     @property
     def is_interface(self):
-        """
-        Returns True if |self| represents an Interface.
-        @return bool
-        """
+        """Returns True if this is an IDL interface."""
         return False
 
     @property
     def is_dictionary(self):
-        """
-        Returns True if |self| represents a Dictionary.
-        @return bool
-        """
+        """Returns True if this is an IDL dictionary."""
         return False
 
     @property
     def is_callback_function(self):
-        """
-        Returns True if |self| represents a CallbackFunction.
-        @return bool
-        """
+        """Returns True if this is an IDL callback function."""
         return False
 
     @property
     def is_callback_interface(self):
-        """
-        Returns True if |self| represents a CallbackInterface.
-        @return bool
-        """
+        """Returns True if this is an IDL callback interface."""
         return False
 
     @property
     def is_enumeration(self):
-        """
-        Returns True if |self| represents an Enumeration.
-        @return bool
-        """
+        """Returns True if this is an IDL enumeration."""
         return False
+
+
+class StubUserDefinedType(UserDefinedType, WithComponent):
+    def __init__(self, identifier):
+        UserDefinedType.__init__(self, identifier)
+        WithComponent.__init__(self, components=[])

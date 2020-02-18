@@ -30,20 +30,22 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 2:
       return "PaintPhaseDescendantBlockBackgroundsOnly";
     case 3:
-      return "PaintPhaseFloat";
+      return "PaintPhaseForcedColorsModeBackplate";
     case 4:
-      return "PaintPhaseForeground";
+      return "PaintPhaseFloat";
     case 5:
-      return "PaintPhaseOutline";
+      return "PaintPhaseForeground";
     case 6:
-      return "PaintPhaseSelfOutlineOnly";
+      return "PaintPhaseOutline";
     case 7:
-      return "PaintPhaseDescendantOutlinesOnly";
+      return "PaintPhaseSelfOutlineOnly";
     case 8:
-      return "PaintPhaseOverlayScrollbars";
+      return "PaintPhaseDescendantOutlinesOnly";
     case 9:
-      return "PaintPhaseSelection";
+      return "PaintPhaseOverlayScrollbars";
     case 10:
+      return "PaintPhaseSelection";
+    case 11:
       return "PaintPhaseTextClip";
     case DisplayItem::kPaintPhaseMax:
       return "PaintPhaseMask";
@@ -80,6 +82,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(DragImage);
     DEBUG_STRING_CASE(DragCaret);
     DEBUG_STRING_CASE(EmptyContentForFilters);
+    DEBUG_STRING_CASE(ForcedColorsModeBackplate);
     DEBUG_STRING_CASE(SVGImage);
     DEBUG_STRING_CASE(LinkHighlight);
     DEBUG_STRING_CASE(ImageAreaFocusRing);
@@ -150,6 +153,8 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
   switch (type) {
     DEBUG_STRING_CASE(HitTest);
     DEBUG_STRING_CASE(ScrollHitTest);
+    DEBUG_STRING_CASE(ResizerScrollHitTest);
+    DEBUG_STRING_CASE(PluginScrollHitTest);
     DEBUG_STRING_CASE(LayerChunkBackground);
     DEBUG_STRING_CASE(LayerChunkNegativeZOrderChildren);
     DEBUG_STRING_CASE(LayerChunkDescendantBackgrounds);

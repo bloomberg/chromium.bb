@@ -26,24 +26,39 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
                                            AutofillClient* client);
   ~TestCreditCardFIDOAuthenticator() override;
 
+  // CreditCardFIDOAuthenticator:
+  void GetAssertion(
+      PublicKeyCredentialRequestOptionsPtr request_options) override;
+  void MakeCredential(
+      PublicKeyCredentialCreationOptionsPtr creation_options) override;
+
+  // Invokes fido_authenticator->OnDidGetAssertion().
+  static void GetAssertion(CreditCardFIDOAuthenticator* fido_authenticator,
+                           bool did_succeed);
+
+  // Invokes fido_authenticator->OnDidMakeCredential().
+  static void MakeCredential(CreditCardFIDOAuthenticator* fido_authenticator,
+                             bool did_succeed);
+
+  // Getter methods to query Request Options.
+  std::vector<uint8_t> GetCredentialId();
+  std::vector<uint8_t> GetChallenge();
+  std::string GetRelyingPartyId();
+
   void SetUserVerifiable(bool is_user_verifiable) {
     is_user_verifiable_ = is_user_verifiable;
   }
 
-  void SetUserOptIn(bool is_user_opted_in) {
-    is_user_opted_in_ = is_user_opted_in;
-  }
-
   // CreditCardFIDOAuthenticator:
   void IsUserVerifiable(base::OnceCallback<void(bool)> callback) override;
-  bool IsUserOptedIn() override;
 
  private:
   friend class AutofillManagerTest;
   friend class CreditCardAccessManagerTest;
 
+  PublicKeyCredentialRequestOptionsPtr request_options_;
+  PublicKeyCredentialCreationOptionsPtr creation_options_;
   bool is_user_verifiable_ = false;
-  bool is_user_opted_in_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardFIDOAuthenticator);
 };

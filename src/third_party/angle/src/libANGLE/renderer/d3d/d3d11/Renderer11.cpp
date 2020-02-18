@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1238,30 +1238,28 @@ NativeWindowD3D *Renderer11::createNativeWindow(EGLNativeWindowType window,
 }
 
 egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
-                                         IUnknown *d3dTexture,
+                                         IUnknown *texture,
                                          EGLint *width,
                                          EGLint *height,
                                          EGLint *samples,
                                          const angle::Format **angleFormat) const
 {
-    ID3D11Texture2D *texture = d3d11::DynamicCastComObject<ID3D11Texture2D>(d3dTexture);
-    if (texture == nullptr)
+    angle::ComPtr<ID3D11Texture2D> d3dTexture =
+        d3d11::DynamicCastComObjectToComPtr<ID3D11Texture2D>(texture);
+    if (d3dTexture == nullptr)
     {
         return egl::EglBadParameter() << "client buffer is not a ID3D11Texture2D";
     }
 
-    ID3D11Device *textureDevice = nullptr;
-    texture->GetDevice(&textureDevice);
-    if (textureDevice != mDevice)
+    angle::ComPtr<ID3D11Device> textureDevice;
+    d3dTexture->GetDevice(&textureDevice);
+    if (textureDevice.Get() != mDevice)
     {
-        SafeRelease(texture);
         return egl::EglBadParameter() << "Texture's device does not match.";
     }
-    SafeRelease(textureDevice);
 
     D3D11_TEXTURE2D_DESC desc = {0};
-    texture->GetDesc(&desc);
-    SafeRelease(texture);
+    d3dTexture->GetDesc(&desc);
 
     if (width)
     {
@@ -1526,7 +1524,9 @@ angle::Result Renderer11::drawElements(const gl::Context *context,
                                        GLsizei indexCount,
                                        gl::DrawElementsType indexType,
                                        const void *indices,
-                                       GLsizei instanceCount)
+                                       GLsizei instanceCount,
+                                       GLint baseVertex,
+                                       GLuint baseInstance)
 {
     if (mStateManager.getCullEverything())
     {
@@ -1539,21 +1539,20 @@ angle::Result Renderer11::drawElements(const gl::Context *context,
     ASSERT(!glState.isTransformFeedbackActiveUnpaused());
 
     // If this draw call is coming from an indirect call, offset by the indirect call's base vertex.
-    // No base vertex parameter exists for a normal drawElements, so params.baseVertex will be zero.
-    int baseVertex = -startVertex;
+    GLint baseVertexAdjusted = baseVertex - startVertex;
 
     const ProgramD3D *programD3D  = mStateManager.getProgramD3D();
     GLsizei adjustedInstanceCount = GetAdjustedInstanceCount(programD3D, instanceCount);
 
     if (mode == gl::PrimitiveMode::LineLoop)
     {
-        return drawLineLoop(context, indexCount, indexType, indices, baseVertex,
+        return drawLineLoop(context, indexCount, indexType, indices, baseVertexAdjusted,
                             adjustedInstanceCount);
     }
 
     if (mode == gl::PrimitiveMode::TriangleFan)
     {
-        return drawTriangleFan(context, indexCount, indexType, indices, baseVertex,
+        return drawTriangleFan(context, indexCount, indexType, indices, baseVertexAdjusted,
                                adjustedInstanceCount);
     }
 
@@ -1561,12 +1560,12 @@ angle::Result Renderer11::drawElements(const gl::Context *context,
     {
         if (adjustedInstanceCount == 0)
         {
-            mDeviceContext->DrawIndexed(indexCount, 0, baseVertex);
+            mDeviceContext->DrawIndexed(indexCount, 0, baseVertexAdjusted);
         }
         else
         {
-            mDeviceContext->DrawIndexedInstanced(indexCount, adjustedInstanceCount, 0, baseVertex,
-                                                 0);
+            mDeviceContext->DrawIndexedInstanced(indexCount, adjustedInstanceCount, 0,
+                                                 baseVertexAdjusted, baseInstance);
         }
         return angle::Result::Continue;
     }
@@ -1586,7 +1585,7 @@ angle::Result Renderer11::drawElements(const gl::Context *context,
     // that do not support geometry shaders.
     if (instanceCount == 0)
     {
-        mDeviceContext->DrawIndexedInstanced(6, indexCount, 0, 0, 0);
+        mDeviceContext->DrawIndexedInstanced(6, indexCount, 0, baseVertexAdjusted, baseInstance);
         return angle::Result::Continue;
     }
 
@@ -1605,7 +1604,8 @@ angle::Result Renderer11::drawElements(const gl::Context *context,
     {
         ANGLE_TRY(
             mStateManager.updateVertexOffsetsForPointSpritesEmulation(context, startVertex, i));
-        mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, 0, 0);
+        mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, baseVertexAdjusted,
+                                             baseInstance);
     }
     mStateManager.invalidateVertexBuffer();
     return angle::Result::Continue;
@@ -2158,7 +2158,7 @@ angle::Result Renderer11::copyImageInternal(const gl::Context *context,
     ASSERT(colorAttachment);
 
     RenderTarget11 *sourceRenderTarget = nullptr;
-    ANGLE_TRY(colorAttachment->getRenderTarget(context, &sourceRenderTarget));
+    ANGLE_TRY(colorAttachment->getRenderTarget(context, 0, &sourceRenderTarget));
     ASSERT(sourceRenderTarget);
 
     const d3d11::RenderTargetView &dest =
@@ -2230,7 +2230,8 @@ angle::Result Renderer11::copyImage2D(const gl::Context *context,
 
     gl::ImageIndex index              = gl::ImageIndex::Make2D(level);
     RenderTargetD3D *destRenderTarget = nullptr;
-    ANGLE_TRY(storage11->getRenderTarget(context, index, &destRenderTarget));
+    ANGLE_TRY(storage11->getRenderTarget(context, index, storage11->getRenderToTextureSamples(),
+                                         &destRenderTarget));
     ASSERT(destRenderTarget);
 
     ANGLE_TRY(copyImageInternal(context, framebuffer, sourceRect, destFormat, destOffset,
@@ -2255,7 +2256,8 @@ angle::Result Renderer11::copyImageCube(const gl::Context *context,
 
     gl::ImageIndex index              = gl::ImageIndex::MakeCubeMapFace(target, level);
     RenderTargetD3D *destRenderTarget = nullptr;
-    ANGLE_TRY(storage11->getRenderTarget(context, index, &destRenderTarget));
+    ANGLE_TRY(storage11->getRenderTarget(context, index, storage11->getRenderToTextureSamples(),
+                                         &destRenderTarget));
     ASSERT(destRenderTarget);
 
     ANGLE_TRY(copyImageInternal(context, framebuffer, sourceRect, destFormat, destOffset,
@@ -2279,7 +2281,8 @@ angle::Result Renderer11::copyImage3D(const gl::Context *context,
 
     gl::ImageIndex index              = gl::ImageIndex::Make3D(level, destOffset.z);
     RenderTargetD3D *destRenderTarget = nullptr;
-    ANGLE_TRY(storage11->getRenderTarget(context, index, &destRenderTarget));
+    ANGLE_TRY(storage11->getRenderTarget(context, index, storage11->getRenderToTextureSamples(),
+                                         &destRenderTarget));
     ASSERT(destRenderTarget);
 
     ANGLE_TRY(copyImageInternal(context, framebuffer, sourceRect, destFormat, destOffset,
@@ -2303,7 +2306,8 @@ angle::Result Renderer11::copyImage2DArray(const gl::Context *context,
 
     gl::ImageIndex index              = gl::ImageIndex::Make2DArray(level, destOffset.z);
     RenderTargetD3D *destRenderTarget = nullptr;
-    ANGLE_TRY(storage11->getRenderTarget(context, index, &destRenderTarget));
+    ANGLE_TRY(storage11->getRenderTarget(context, index, storage11->getRenderToTextureSamples(),
+                                         &destRenderTarget));
     ASSERT(destRenderTarget);
 
     ANGLE_TRY(copyImageInternal(context, framebuffer, sourceRect, destFormat, destOffset,
@@ -2434,7 +2438,8 @@ angle::Result Renderer11::copyTexture(const gl::Context *context,
         }
 
         RenderTargetD3D *destRenderTargetD3D = nullptr;
-        ANGLE_TRY(destStorage11->getRenderTarget(context, destIndex, &destRenderTargetD3D));
+        ANGLE_TRY(destStorage11->getRenderTarget(
+            context, destIndex, destStorage11->getRenderToTextureSamples(), &destRenderTargetD3D));
 
         RenderTarget11 *destRenderTarget11 = GetAs<RenderTarget11>(destRenderTargetD3D);
 
@@ -2775,14 +2780,12 @@ angle::Result Renderer11::compileToExecutable(d3d::Context *context,
 
     UINT flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
 
-    if (gl::DebugAnnotationsActive())
-    {
-#ifndef NDEBUG
-        flags = D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-        flags |= D3DCOMPILE_DEBUG;
-    }
+#if defined(ANGLE_ENABLE_DEBUG_TRACE)
+#    ifndef NDEBUG
+    flags = D3DCOMPILE_SKIP_OPTIMIZATION;
+#    endif  // NDEBUG
+    flags |= D3DCOMPILE_DEBUG;
+#endif  // defined(ANGLE_ENABLE_DEBUG_TRACE)
 
     if (workarounds.enableIEEEStrictness)
         flags |= D3DCOMPILE_IEEE_STRICTNESS;
@@ -3087,7 +3090,7 @@ angle::Result Renderer11::readFromAttachment(const gl::Context *context,
     const bool invertTexture = UsePresentPathFast(this, &srcAttachment);
 
     RenderTarget11 *rt11 = nullptr;
-    ANGLE_TRY(srcAttachment.getRenderTarget(context, &rt11));
+    ANGLE_TRY(srcAttachment.getRenderTarget(context, 0, &rt11));
     ASSERT(rt11->getTexture().valid());
 
     const TextureHelper11 &textureHelper = rt11->getTexture();

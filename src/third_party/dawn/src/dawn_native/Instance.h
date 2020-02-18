@@ -17,6 +17,7 @@
 
 #include "dawn_native/Adapter.h"
 #include "dawn_native/BackendConnection.h"
+#include "dawn_native/Extensions.h"
 #include "dawn_native/Toggles.h"
 
 #include <array>
@@ -47,15 +48,23 @@ namespace dawn_native {
         // Used to query the details of a toggle. Return nullptr if toggleName is not a valid name
         // of a toggle supported in Dawn.
         const ToggleInfo* GetToggleInfo(const char* toggleName);
-
         Toggle ToggleNameToEnum(const char* toggleName);
-        const char* ToggleEnumToName(Toggle toggle);
+
+        // Used to query the details of an extension. Return nullptr if extensionName is not a valid
+        // name of an extension supported in Dawn.
+        const ExtensionInfo* GetExtensionInfo(const char* extensionName);
+        Extension ExtensionNameToEnum(const char* extensionName);
+        ExtensionsSet ExtensionNamesToExtensionsSet(
+            const std::vector<const char*>& requiredExtensions);
 
         void EnableBackendValidation(bool enableBackendValidation);
         bool IsBackendValidationEnabled() const;
 
         void EnableBeginCaptureOnStartup(bool beginCaptureOnStartup);
         bool IsBeginCaptureOnStartupEnabled() const;
+
+        void SetPlatform(dawn_platform::Platform* platform);
+        dawn_platform::Platform* GetPlatform() const;
 
       private:
         // Lazily creates connections to all backends that have been compiled.
@@ -66,19 +75,19 @@ namespace dawn_native {
 
         MaybeError DiscoverAdaptersInternal(const AdapterDiscoveryOptionsBase* options);
 
-        void EnsureToggleNameToEnumMapInitialized();
-
         bool mBackendsConnected = false;
         bool mDiscoveredDefaultAdapters = false;
 
-        bool mToggleNameToEnumMapInitialized = false;
         bool mEnableBackendValidation = false;
         bool mBeginCaptureOnStartup = false;
+
+        dawn_platform::Platform* mPlatform = nullptr;
 
         std::vector<std::unique_ptr<BackendConnection>> mBackends;
         std::vector<std::unique_ptr<AdapterBase>> mAdapters;
 
-        std::unordered_map<std::string, Toggle> mToggleNameToEnumMap;
+        ExtensionsInfo mExtensionsInfo;
+        TogglesInfo mTogglesInfo;
     };
 
 }  // namespace dawn_native

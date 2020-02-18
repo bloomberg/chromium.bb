@@ -12,8 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -29,17 +29,11 @@ namespace {
 
 class TestNetworkPropertiesManager : public NetworkPropertiesManager {
  public:
-  TestNetworkPropertiesManager(
-      PrefService* pref_service,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+  TestNetworkPropertiesManager(PrefService* pref_service)
       : TestNetworkPropertiesManager(base::DefaultClock::GetInstance(),
-                                     pref_service,
-                                     ui_task_runner) {}
-  TestNetworkPropertiesManager(
-      base::Clock* clock,
-      PrefService* pref_service,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-      : NetworkPropertiesManager(clock, pref_service, ui_task_runner) {}
+                                     pref_service) {}
+  TestNetworkPropertiesManager(base::Clock* clock, PrefService* pref_service)
+      : NetworkPropertiesManager(clock, pref_service) {}
   ~TestNetworkPropertiesManager() override {}
 };
 
@@ -47,10 +41,9 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   base::HistogramTester histogram_tester;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   std::string network_id("test");
   network_properties_manager.OnChangeInNetworkID(network_id);
@@ -71,8 +64,7 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   EXPECT_TRUE(
       test_prefs.GetDictionary(prefs::kNetworkProperties)->HasKey(network_id));
   {
-    TestNetworkPropertiesManager network_properties_manager_2(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_2(&test_prefs);
     network_properties_manager_2.OnChangeInNetworkID(network_id);
     EXPECT_TRUE(network_properties_manager_2.IsCaptivePortal());
   }
@@ -84,8 +76,7 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   base::RunLoop().RunUntilIdle();
 
   {
-    TestNetworkPropertiesManager network_properties_manager_2(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_2(&test_prefs);
     network_properties_manager_2.OnChangeInNetworkID(network_id);
     EXPECT_FALSE(network_properties_manager_2.IsCaptivePortal());
   }
@@ -101,10 +92,9 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
 TEST(NetworkPropertyTest, TestSetterGetterDisallowedByCarrier) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   network_properties_manager.SetIsSecureProxyDisallowedByCarrier(true);
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
@@ -120,10 +110,9 @@ TEST(NetworkPropertyTest, TestSetterGetterDisallowedByCarrier) {
 TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   network_properties_manager.SetHasWarmupURLProbeFailed(
       true /* secure_proxy */, true /* is_core_proxy */,
@@ -147,10 +136,9 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
 TEST(NetworkPropertyTest, TestWarmupURLFailedOnInSecureCoreProxy) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
@@ -177,10 +165,9 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnInSecureCoreProxy) {
 TEST(NetworkPropertyTest, TestLimitPrefSize) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   size_t num_network_ids = 100;
 
@@ -217,8 +204,7 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
   }
 
   {
-    TestNetworkPropertiesManager network_properties_manager_2(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_2(&test_prefs);
     for (size_t i = 0; i < num_network_ids; ++i) {
       std::string network_id("test" + base::NumberToString(i));
       network_properties_manager_2.OnChangeInNetworkID(network_id);
@@ -239,10 +225,9 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
 TEST(NetworkPropertyTest, TestChangeNetworkIDBackAndForth) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   // First network ID has a captive portal.
   std::string first_network_id("test1");
@@ -289,10 +274,9 @@ TEST(NetworkPropertyTest, TestChangeNetworkIDBackAndForth) {
 TEST(NetworkPropertyTest, TestNetworkQualitiesOverwrite) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   // First network ID has a captive portal.
   std::string first_network_id("test1");
@@ -341,10 +325,9 @@ TEST(NetworkPropertyTest, TestDeleteHistory) {
   base::HistogramTester histogram_tester;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   std::string network_id("test");
   network_properties_manager.OnChangeInNetworkID(network_id);
@@ -370,8 +353,7 @@ TEST(NetworkPropertyTest, TestDeleteHistory) {
   EXPECT_TRUE(
       test_prefs.GetDictionary(prefs::kNetworkProperties)->HasKey(network_id));
   {
-    TestNetworkPropertiesManager network_properties_manager_2(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_2(&test_prefs);
     network_properties_manager_2.OnChangeInNetworkID(network_id);
     EXPECT_TRUE(network_properties_manager_2.IsCaptivePortal());
     histogram_tester.ExpectBucketCount(
@@ -384,8 +366,7 @@ TEST(NetworkPropertyTest, TestDeleteHistory) {
   network_properties_manager.DeleteHistory();
   base::RunLoop().RunUntilIdle();
   {
-    TestNetworkPropertiesManager network_properties_manager_2(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_2(&test_prefs);
     network_properties_manager_2.OnChangeInNetworkID(network_id);
     EXPECT_FALSE(network_properties_manager_2.IsCaptivePortal());
     histogram_tester.ExpectBucketCount(
@@ -402,10 +383,10 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
 
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_clock,
+                                                          &test_prefs);
 
   for (size_t i = 0; i < 5; ++i) {
     std::string network_id("test" + base::NumberToString(i));
@@ -433,8 +414,8 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
 
   // Entries should not be cleared since all values are less than 30 days old.
   {
-    TestNetworkPropertiesManager network_properties_manager_2(
-        &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_2(&test_clock,
+                                                              &test_prefs);
     for (size_t i = 0; i < 10; ++i) {
       std::string network_id("test" + base::NumberToString(i));
 
@@ -446,8 +427,8 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
   // Only the entries from 5 to 9 should be cleared since they are 40 days old.
   test_clock.Advance(base::TimeDelta::FromDays(20));
   {
-    TestNetworkPropertiesManager network_properties_manager_3(
-        &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    TestNetworkPropertiesManager network_properties_manager_3(&test_clock,
+                                                              &test_prefs);
     for (size_t i = 0; i < 10; ++i) {
       std::string network_id("test" + base::NumberToString(i));
       EXPECT_EQ(i >= 5, test_prefs.GetDictionary(prefs::kNetworkProperties)
@@ -462,10 +443,9 @@ TEST(NetworkPropertyTest,
 
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-  TestNetworkPropertiesManager network_properties_manager(
-      &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(&test_prefs);
 
   // First network ID has a captive portal and the canary check failed.
   std::string first_network_id("test1");

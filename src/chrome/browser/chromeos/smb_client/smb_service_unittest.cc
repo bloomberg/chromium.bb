@@ -31,7 +31,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@ class MockSmbProviderClient : public chromeos::FakeSmbProviderClient {
 class SmbServiceTest : public testing::Test {
  protected:
   SmbServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     EXPECT_TRUE(profile_manager_->SetUp());
@@ -170,8 +170,8 @@ class SmbServiceTest : public testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle
-      thread_bundle_;        // Included so tests magically don't crash.
+  content::BrowserTaskEnvironment
+      task_environment_;  // Included so tests magically don't crash.
   TestingProfile* profile_ = nullptr;     // Not owned.
   TestingProfile* ad_profile_ = nullptr;  // Not owned.
   std::unique_ptr<TestingProfileManager> profile_manager_;

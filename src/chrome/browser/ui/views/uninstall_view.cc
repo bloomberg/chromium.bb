@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/uninstall_view.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "chrome/browser/shell_integration.h"
@@ -92,7 +92,7 @@ void UninstallView::SetupControls() {
   // instance because the OS doesn't permit that).
   if (ShellUtil::CanMakeChromeDefaultUnattended() &&
       shell_integration::GetDefaultBrowser() == shell_integration::IS_DEFAULT) {
-    browsers_.reset(new BrowsersMap());
+    browsers_ = std::make_unique<BrowsersMap>();
     ShellUtil::GetRegisteredBrowsers(browsers_.get());
     if (!browsers_->empty()) {
       layout->AddPaddingRow(views::GridLayout::kFixedSize,

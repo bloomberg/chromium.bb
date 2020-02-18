@@ -25,6 +25,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
@@ -39,8 +40,7 @@ using QuotaAllocationTask = BlobMemoryController::QuotaAllocationTask;
 }  // namespace
 
 BlobStorageContext::BlobStorageContext()
-    : memory_controller_(base::FilePath(), scoped_refptr<base::TaskRunner>()),
-      ptr_factory_(this) {
+    : memory_controller_(base::FilePath(), scoped_refptr<base::TaskRunner>()) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "BlobStorageContext", base::ThreadTaskRunnerHandle::Get());
 }
@@ -48,8 +48,7 @@ BlobStorageContext::BlobStorageContext()
 BlobStorageContext::BlobStorageContext(
     base::FilePath storage_directory,
     scoped_refptr<base::TaskRunner> file_runner)
-    : memory_controller_(std::move(storage_directory), std::move(file_runner)),
-      ptr_factory_(this) {
+    : memory_controller_(std::move(storage_directory), std::move(file_runner)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "BlobStorageContext", base::ThreadTaskRunnerHandle::Get());
 }
@@ -76,14 +75,16 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
   return CreateHandle(uuid, entry);
 }
 
-void BlobStorageContext::GetBlobDataFromBlobPtr(
-    blink::mojom::BlobPtr blob,
+void BlobStorageContext::GetBlobDataFromBlobRemote(
+    mojo::PendingRemote<blink::mojom::Blob> blob,
     base::OnceCallback<void(std::unique_ptr<BlobDataHandle>)> callback) {
   DCHECK(blob);
-  blink::mojom::Blob* raw_blob = blob.get();
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob));
+  blink::mojom::Blob* raw_blob = blob_remote.get();
   raw_blob->GetInternalUUID(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(
-          [](blink::mojom::BlobPtr, base::WeakPtr<BlobStorageContext> context,
+          [](mojo::Remote<blink::mojom::Blob>,
+             base::WeakPtr<BlobStorageContext> context,
              base::OnceCallback<void(std::unique_ptr<BlobDataHandle>)> callback,
              const std::string& uuid) {
             if (!context || uuid.empty()) {
@@ -92,7 +93,7 @@ void BlobStorageContext::GetBlobDataFromBlobPtr(
             }
             std::move(callback).Run(context->GetBlobDataFromUUID(uuid));
           },
-          std::move(blob), AsWeakPtr(), std::move(callback)),
+          std::move(blob_remote), AsWeakPtr(), std::move(callback)),
       ""));
 }
 

@@ -19,9 +19,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -44,6 +45,7 @@ using password_manager::PrimaryKeyToFormMap;
 using password_manager::UnorderedPasswordFormElementsAre;
 using password_manager::metrics_util::LinuxBackendMigrationStatus;
 using testing::ElementsAreArray;
+using testing::Field;
 using testing::IsEmpty;
 using testing::Pointee;
 using testing::UnorderedElementsAre;
@@ -72,7 +74,7 @@ PasswordForm MakePasswordForm() {
   form.username_element = base::UTF8ToUTF16("username_element");
   form.username_value = base::UTF8ToUTF16(kUsername);
   form.password_element = base::UTF8ToUTF16("password_element");
-  form.username_value = base::UTF8ToUTF16(kPassword);
+  form.password_value = base::UTF8ToUTF16(kPassword);
   form.signon_realm = form.origin.GetOrigin().spec();
   return form;
 }
@@ -104,7 +106,7 @@ class PasswordStoreXTest : public testing::Test {
 
  private:
   TestingPrefServiceSimple fake_pref_service_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreXTest);
@@ -120,14 +122,14 @@ TEST_F(PasswordStoreXTest, MigrationCompleted) {
   // Add existing credential into loginDB. It should be the only thing that's
   // available in the store.
   auto login_db = std::make_unique<password_manager::LoginDatabase>(
-      test_login_db_file_path());
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   ASSERT_TRUE(login_db->Init());
   ignore_result(login_db->AddLogin(MakePasswordForm()));
   login_db.reset();
 
   // Create the store.
   login_db = std::make_unique<password_manager::LoginDatabase>(
-      test_login_db_file_path());
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   scoped_refptr<PasswordStoreX> store =
       new PasswordStoreX(std::move(login_db), fake_pref_service());
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -144,7 +146,8 @@ TEST_F(PasswordStoreXTest, MigrationCompleted) {
   WaitForPasswordStore();
 
   // Check if the database is encrypted.
-  password_manager::LoginDatabase login_db2(test_login_db_file_path());
+  password_manager::LoginDatabase login_db2(
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   // Disable encryption.
   login_db2.disable_encryption();
   EXPECT_TRUE(login_db2.Init());
@@ -170,7 +173,7 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedEmptyDB) {
 
   // Create the store with an empty database.
   auto login_db = std::make_unique<password_manager::LoginDatabase>(
-      test_login_db_file_path());
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   password_manager::LoginDatabase* login_db_ptr = login_db.get();
 
   scoped_refptr<PasswordStoreX> store =
@@ -187,7 +190,8 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedEmptyDB) {
   WaitForPasswordStore();
 
   // Check if the database is encrypted.
-  password_manager::LoginDatabase login_db2(test_login_db_file_path());
+  password_manager::LoginDatabase login_db2(
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   login_db2.disable_encryption();
   EXPECT_TRUE(login_db2.Init());
   // Read the password again.
@@ -204,6 +208,8 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedEmptyDB) {
       LinuxBackendMigrationStatus::kLoginDBReplaced, 1);
 }
 
+// If the login database contains unmigrated entries, they will be migrated into
+// encryption.
 TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
   IntegerPrefMember migration_step_pref_;
   migration_step_pref_.Init(password_manager::prefs::kMigrationToLoginDBStep,
@@ -212,16 +218,17 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
   migration_step_pref_.SetValue(PasswordStoreX::NOT_ATTEMPTED);
 
   // Add existing credential into loginDB.
+  auto existing_login = MakePasswordForm();
   auto login_db = std::make_unique<password_manager::LoginDatabase>(
-      test_login_db_file_path());
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   login_db->disable_encryption();
   ASSERT_TRUE(login_db->Init());
-  ignore_result(login_db->AddLogin(MakePasswordForm()));
+  ignore_result(login_db->AddLogin(existing_login));
   login_db.reset();
 
   // Create the store with a non-empty database.
   login_db = std::make_unique<password_manager::LoginDatabase>(
-      test_login_db_file_path());
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
   password_manager::LoginDatabase* login_db_ptr = login_db.get();
 
   scoped_refptr<PasswordStoreX> store =
@@ -230,34 +237,43 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
   WaitForPasswordStore();
 
   // Add another password to the db.
-  PasswordForm form = MakePasswordForm();
-  form.username_value = base::UTF8ToUTF16(kAnotherUsername);
-  PasswordStoreChangeList changes = login_db_ptr->AddLogin(form);
+  PasswordForm new_login = MakePasswordForm();
+  new_login.username_value = base::UTF8ToUTF16(kAnotherUsername);
+  PasswordStoreChangeList changes = login_db_ptr->AddLogin(new_login);
   EXPECT_EQ(1U, changes.size());
 
   store->ShutdownOnUIThread();
   store.reset();
   WaitForPasswordStore();
 
-  // Check if the database is unencrypted.
-  password_manager::LoginDatabase login_db2(test_login_db_file_path());
-  // Disable encryption.
+  // Check that the database is encrypted.
+  password_manager::LoginDatabase login_db2(
+      test_login_db_file_path(), password_manager::IsAccountStore(false));
+  // Disable encryption and get the raw values. An encrypted database would have
+  // read both encrypted and unencrypted entries.
   login_db2.disable_encryption();
   EXPECT_TRUE(login_db2.Init());
   // Read the password again.
   std::vector<std::unique_ptr<PasswordForm>> stored_forms;
   EXPECT_TRUE(login_db2.GetAutofillableLogins(&stored_forms));
   EXPECT_EQ(2U, stored_forms.size());
-  for (const std::unique_ptr<PasswordForm>& stored_form : stored_forms) {
-    if (base::UTF16ToUTF8(stored_forms[0]->username_value) ==
-        kAnotherUsername) {
-      // Password values match because they have been stored unencrypted and
-      // read unencrypted.
-      EXPECT_EQ(kPassword, base::UTF16ToUTF8(stored_form->password_value));
-    }
-  }
-  EXPECT_THAT(migration_step_pref_.GetValue(), PasswordStoreX::POSTPONED);
+
+  // Encrypt the passwords to compare them to the raw (i.e. encrypted) values.
+  std::string existing_password_encrypted, new_password_encrypted;
+  OSCrypt::EncryptString16(existing_login.password_value,
+                           &existing_password_encrypted);
+  OSCrypt::EncryptString16(new_login.password_value, &new_password_encrypted);
+  EXPECT_THAT(
+      stored_forms,
+      UnorderedElementsAre(
+          Pointee(Field(&PasswordForm::password_value,
+                        base::UTF8ToUTF16(existing_password_encrypted))),
+          Pointee(Field(&PasswordForm::password_value,
+                        base::UTF8ToUTF16(new_password_encrypted)))));
+
+  EXPECT_THAT(migration_step_pref_.GetValue(),
+              PasswordStoreX::LOGIN_DB_REPLACED);
   histogram_tester_.ExpectBucketCount(
       "PasswordManager.LinuxBackendMigration.AttemptResult",
-      LinuxBackendMigrationStatus::kPostponed, 1);
+      LinuxBackendMigrationStatus::kLoginDBReplaced, 1);
 }

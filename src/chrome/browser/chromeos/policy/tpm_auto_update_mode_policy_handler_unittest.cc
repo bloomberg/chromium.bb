@@ -16,9 +16,8 @@
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -28,7 +27,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -43,9 +42,7 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   TPMAutoUpdateModePolicyHandlerTest()
       : local_state_(TestingBrowserProcess::GetGlobal()),
         user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(base::WrapUnique(user_manager_)),
-        profile_manager_(TestingBrowserProcess::GetGlobal(), &local_state_) {
-    CHECK(profile_manager_.SetUp());
+        user_manager_enabler_(base::WrapUnique(user_manager_)) {
     chromeos::SessionManagerClient::InitializeFakeInMemory();
   }
 
@@ -67,8 +64,7 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   }
 
   void ShowNotification(
-      chromeos::TpmAutoUpdateUserNotification notification_type,
-      Profile* profile) {
+      chromeos::TpmAutoUpdateUserNotification notification_type) {
     last_shown_notification_ = notification_type;
   }
 
@@ -77,11 +73,10 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   chromeos::TpmAutoUpdateUserNotification last_shown_notification_ =
       chromeos::TpmAutoUpdateUserNotification::kNone;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
   chromeos::FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  TestingProfileManager profile_manager_;
 
   // Set up fake install attributes to pretend the machine is enrolled.
   chromeos::ScopedStubInstallAttributes test_install_attributes_{

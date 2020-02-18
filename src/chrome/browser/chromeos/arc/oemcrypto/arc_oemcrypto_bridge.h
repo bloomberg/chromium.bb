@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/arc/common/oemcrypto.mojom.h"
-#include "components/arc/common/oemcrypto_daemon.mojom.h"
+#include "components/arc/mojom/oemcrypto.mojom.h"
+#include "components/arc/mojom/oemcrypto_daemon.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -50,7 +50,7 @@ class ArcOemCryptoBridge : public KeyedService,
   arc_oemcrypto::mojom::OemCryptoHostDaemonPtr oemcrypto_host_daemon_ptr_;
 
   // WeakPtrFactory to use for callbacks.
-  base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_;
+  base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcOemCryptoBridge);
 };

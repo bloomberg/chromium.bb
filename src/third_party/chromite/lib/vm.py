@@ -242,7 +242,7 @@ class VM(device.Device):
     #
     # qemu-x86_64 version 2.10.1
     # Copyright (c) 2003-2017 Fabrice Bellard and the QEMU Project developers
-    m = re.search(r"version ([0-9.]+)", version_str)
+    m = re.search(r'version ([0-9.]+)', version_str)
     if not m:
       raise VMError('Unable to determine QEMU version from:\n%s.' % version_str)
     return m.group(1)
@@ -298,9 +298,10 @@ class VM(device.Device):
 
   def _GetBuiltVMImagePath(self):
     """Get path of a locally built VM image."""
-    vm_image_path = os.path.join(constants.SOURCE_ROOT, 'src/build/images',
-                                 cros_build_lib.GetBoard(self.board),
-                                 'latest', constants.VM_IMAGE_BIN)
+    vm_image_path = os.path.join(
+        constants.SOURCE_ROOT, 'src/build/images',
+        cros_build_lib.GetBoard(self.board, strict=True),
+        'latest', constants.VM_IMAGE_BIN)
     return vm_image_path if os.path.isfile(vm_image_path) else None
 
   def _GetCacheVMImagePath(self):

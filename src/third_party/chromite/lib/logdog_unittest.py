@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import time
+
+import mock
 
 from chromite.lib import auth
 from chromite.lib import cros_test_lib

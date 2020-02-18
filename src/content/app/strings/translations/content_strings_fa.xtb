@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">مقدار باید <ph name="MINIMUM_DATE_OR_TIME" /> یا بعد از آن باشد.</translation>
 <translation id="2759744352195237655">دکمه بازشو</translation>
 <translation id="2761667185364618470">درصورتی‌که می‌خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
+<translation id="2844350028562914727">جزئیات</translation>
 <translation id="2896972712917208084">گروه رادیویی</translation>
 <translation id="2908441821576996758">لطفاً لیستی از آدرس‌های ایمیل که با کاما از هم جدا شده‌اند را وارد کنید.</translation>
 <translation id="2940813599313844715">شیء</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM" /> باشد.</translation>
 <translation id="3486220673238053218">معنی</translation>
 <translation id="3557673793733683882">عنوان <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">انتخاب‌گر هفته</translation>
 <translation id="3685101356851116974">تصویر بدون برچسب</translation>
 <translation id="3706100364254443312">تعویض</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">نوار پیمایش</translation>
 <translation id="4103419683916926126">میلی‌ ثانیه</translation>
 <translation id="4151657705144244502">گرافیک</translation>
+<translation id="4160057747563657758">تلفن</translation>
 <translation id="4193965531860883258">پیش‌گفتار</translation>
 <translation id="4201051445878709314">نمایش ماه قبلی</translation>
 <translation id="421884353938374759">انتخابگر رنگ</translation>
 <translation id="4248100235867064564">نوار منو</translation>
-<translation id="4254339807215791271">اطلاعات محتوا</translation>
 <translation id="4360991593054037559">لطفاً یک مقدار معتبر وارد کنید. نزدیک‌ترین مقادیر معتبر <ph name="VALID_VALUE_LOW" /> و <ph name="VALID_VALUE_HIGHER" /> هستند.</translation>
 <translation id="4384583879834880242">پرسش و پاسخ</translation>
 <translation id="4413860115965805769">دکمه منو</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="588258955323874662">تمام صفحه</translation>
 <translation id="5888666972993069672">درحال ارسال محتوا به <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">جعبه جستجو</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5966707198760109579">هفته</translation>
 <translation id="5987525920412732405">دکمه چرخش</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">سخن پایانی</translation>
 <translation id="6209276755895393898">به‌نظر می‌رسد <ph name="DESCRIPTION" /> باشد</translation>
 <translation id="6213469881011901533">واژه‌نامه</translation>
+<translation id="6281763101136022427">نشانی وب</translation>
 <translation id="6310801910862476708">خروج از تصویر در تصویر</translation>
 <translation id="6398862346408813489">نمایش پانل انتخاب ماه</translation>
 <translation id="6404546809543547843">انتخابگر زمان صدا</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
 <translation id="7118469954320184356">توضیحی دردسترس نیست.</translation>
 <translation id="7139483182332611405">پیش‌گفتار</translation>
+<translation id="7214187073215825913">اطلاعات محتوا</translation>
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
 <translation id="7320576522385648310">درحال بافر کردن</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">درحال دریافت توضیح…</translation>
 <translation id="8117451130807776954">این هفته</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8208673686607688524">انتخابگر تاریخ و زمان محلی</translation>
 <translation id="8261464734335370856">املای نامعتبر</translation>
 <translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">فهرست مطالب</translation>
 <translation id="8613126697340063924">کنترل بازپخش راه دور</translation>
 <translation id="862370744433916922">زیرنویس</translation>
+<translation id="8711688047404765493">خروجی</translation>
 <translation id="8750798805984357768">لطفاً یکی از این گزینه‌ها را انتخاب کنید.</translation>
 <translation id="8808573423886751634">فصل</translation>
 <translation id="8845239796550121995">درحال ارسال محتوا به تلویزیون</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> کیلوبایت</translation>
 <translation id="8987927404178983737">ماه</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>
+<translation id="901834265349196618">ایمیل</translation>
 <translation id="9048119486235211610">پیمایش</translation>
 <translation id="9062295712474918030">سند</translation>
 <translation id="9062307380734144336">برای تغییر وضعیت بین پخش/توقف موقت، انتخاب کنید</translation>

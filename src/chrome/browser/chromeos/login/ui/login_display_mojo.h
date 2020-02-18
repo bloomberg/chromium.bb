@@ -27,8 +27,9 @@ class LoginDisplayMojo : public LoginDisplay,
   explicit LoginDisplayMojo(LoginDisplayHostMojo* host);
   ~LoginDisplayMojo() override;
 
-  // Updates the state of the PIN keyboard.
+  // Updates the state of the authentication methods supported for the user.
   void UpdatePinKeyboardState(const AccountId& account_id);
+  void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
 
   // LoginDisplay:
   void ClearAndEnablePassword() override;
@@ -82,7 +83,7 @@ class LoginDisplayMojo : public LoginDisplay,
   LoginDisplayHostMojo* const host_ = nullptr;  // Unowned.
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
-  base::WeakPtrFactory<LoginDisplayMojo> weak_factory_;
+  base::WeakPtrFactory<LoginDisplayMojo> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);
 };

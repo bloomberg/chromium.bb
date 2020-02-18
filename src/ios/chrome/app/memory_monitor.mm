@@ -37,7 +37,7 @@ void UpdateMemoryValues() {
       static_cast<int>(base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024);
   breakpad_helper::SetCurrentFreeMemoryInKB(free_memory);
 
-  NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:@"/"];
+  NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:NSHomeDirectory()];
   NSDictionary* results = [fileURL resourceValuesForKeys:@[
     NSURLVolumeAvailableCapacityForImportantUsageKey
   ]
@@ -57,15 +57,17 @@ void UpdateMemoryValues() {
 // |kMemoryMonitorDelayInSeconds|.
 void AsynchronousFreeMemoryMonitor() {
   UpdateMemoryValues();
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostDelayedTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AsynchronousFreeMemoryMonitor),
       base::TimeDelta::FromSeconds(kMemoryMonitorDelayInSeconds));
 }
 }  // namespace
 
 void StartFreeMemoryMonitor() {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::BindOnce(&AsynchronousFreeMemoryMonitor));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&AsynchronousFreeMemoryMonitor));
 }

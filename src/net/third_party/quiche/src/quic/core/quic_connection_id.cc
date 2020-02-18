@@ -53,22 +53,18 @@ class QuicConnectionIdHasher {
 QuicConnectionId::QuicConnectionId() : QuicConnectionId(nullptr, 0) {}
 
 QuicConnectionId::QuicConnectionId(const char* data, uint8_t length) {
-  static_assert(
-      kQuicMaxConnectionIdLength <= std::numeric_limits<uint8_t>::max(),
-      "kQuicMaxConnectionIdLength too high");
-  if (length > kQuicMaxConnectionIdLength) {
-    QUIC_BUG << "Attempted to create connection ID of length " << length;
-    length = kQuicMaxConnectionIdLength;
+  static_assert(kQuicMaxConnectionIdAllVersionsLength <=
+                    std::numeric_limits<uint8_t>::max(),
+                "kQuicMaxConnectionIdAllVersionsLength too high");
+  if (length > kQuicMaxConnectionIdAllVersionsLength) {
+    QUIC_BUG << "Attempted to create connection ID of length "
+             << static_cast<int>(length);
+    length = kQuicMaxConnectionIdAllVersionsLength;
   }
   length_ = length;
   if (length_ == 0) {
     return;
   }
-  if (!GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
-    memcpy(data_, data, length_);
-    return;
-  }
-  QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 1, 6);
   if (length_ <= sizeof(data_short_)) {
     memcpy(data_short_, data, length_);
     return;
@@ -79,10 +75,6 @@ QuicConnectionId::QuicConnectionId(const char* data, uint8_t length) {
 }
 
 QuicConnectionId::~QuicConnectionId() {
-  if (!GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
-    return;
-  }
-  QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 2, 6);
   if (length_ > sizeof(data_short_)) {
     free(data_long_);
     data_long_ = nullptr;
@@ -99,10 +91,6 @@ QuicConnectionId& QuicConnectionId::operator=(const QuicConnectionId& other) {
 }
 
 const char* QuicConnectionId::data() const {
-  if (!GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
-    return data_;
-  }
-  QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 3, 6);
   if (length_ <= sizeof(data_short_)) {
     return data_short_;
   }
@@ -110,10 +98,6 @@ const char* QuicConnectionId::data() const {
 }
 
 char* QuicConnectionId::mutable_data() {
-  if (!GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
-    return data_;
-  }
-  QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 4, 6);
   if (length_ <= sizeof(data_short_)) {
     return data_short_;
   }
@@ -125,30 +109,32 @@ uint8_t QuicConnectionId::length() const {
 }
 
 void QuicConnectionId::set_length(uint8_t length) {
-  if (GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 5, 6);
-    char temporary_data[sizeof(data_short_)];
-    if (length > sizeof(data_short_)) {
-      if (length_ <= sizeof(data_short_)) {
-        // Copy data from data_short_ to data_long_.
-        memcpy(temporary_data, data_short_, length_);
-        data_long_ = reinterpret_cast<char*>(malloc(length));
-        CHECK_NE(nullptr, data_long_);
-        memcpy(data_long_, temporary_data, length_);
-      } else {
-        // Resize data_long_.
-        char* realloc_result =
-            reinterpret_cast<char*>(realloc(data_long_, length));
-        CHECK_NE(nullptr, realloc_result);
-        data_long_ = realloc_result;
-      }
-    } else if (length_ > sizeof(data_short_)) {
-      // Copy data from data_long_ to data_short_.
-      memcpy(temporary_data, data_long_, length);
-      free(data_long_);
-      data_long_ = nullptr;
-      memcpy(data_short_, temporary_data, length);
+  if (length > kQuicMaxConnectionIdAllVersionsLength) {
+    QUIC_BUG << "Attempted to set connection ID length to "
+             << static_cast<int>(length);
+    length = kQuicMaxConnectionIdAllVersionsLength;
+  }
+  char temporary_data[sizeof(data_short_)];
+  if (length > sizeof(data_short_)) {
+    if (length_ <= sizeof(data_short_)) {
+      // Copy data from data_short_ to data_long_.
+      memcpy(temporary_data, data_short_, length_);
+      data_long_ = reinterpret_cast<char*>(malloc(length));
+      CHECK_NE(nullptr, data_long_);
+      memcpy(data_long_, temporary_data, length_);
+    } else {
+      // Resize data_long_.
+      char* realloc_result =
+          reinterpret_cast<char*>(realloc(data_long_, length));
+      CHECK_NE(nullptr, realloc_result);
+      data_long_ = realloc_result;
     }
+  } else if (length_ > sizeof(data_short_)) {
+    // Copy data from data_long_ to data_short_.
+    memcpy(temporary_data, data_long_, length);
+    free(data_long_);
+    data_long_ = nullptr;
+    memcpy(data_short_, temporary_data, length);
   }
   length_ = length;
 }
@@ -160,8 +146,8 @@ bool QuicConnectionId::IsEmpty() const {
 size_t QuicConnectionId::Hash() const {
   if (!GetQuicRestartFlag(quic_connection_id_use_siphash)) {
     uint64_t data_bytes[3] = {0, 0, 0};
-    static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdLength,
-                  "kQuicMaxConnectionIdLength changed");
+    static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdAllVersionsLength,
+                  "kQuicMaxConnectionIdAllVersionsLength changed");
     memcpy(data_bytes, data(), length_);
     // This Hash function is designed to return the same value as the host byte
     // order representation when the connection ID length is 64 bits.

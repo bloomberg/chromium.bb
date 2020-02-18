@@ -10,9 +10,10 @@ from __future__ import print_function
 import collections
 import datetime
 import glob
-import itertools
 import os
 import re
+
+from six.moves import zip as izip
 
 from chromite.lib import build_requests
 from chromite.lib import constants
@@ -574,8 +575,8 @@ class SchemaVersionedMySQLConnection(object):
     """
     f = lambda: engine.execute(query, *args, **kwargs)
 
-    log.info('Running cidb query on pid %s, repr(query) starts with %s',
-             os.getpid(), repr(query)[:100])
+    log.info('Running cidb query on pid %s, str(query) starts with %s',
+             os.getpid(), str(query)[:100])
     return self._RunFunctorWithRetries(f)
 
   def _RunFunctorWithRetries(self, functor):
@@ -650,7 +651,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   # See https://stackoverflow.com/a/7745635/219138 for a discussion of how to
   # perform "greatest-n-per-group" in SQL. I chose the LEFT OUTER JOIN solution.
   # TODO(phobbs) JOIN with buildTable to get status.
-  _SQL_FETCH_LATEST_BUILD_REQUEST = '''
+  _SQL_FETCH_LATEST_BUILD_REQUEST = """
   SELECT t1.*
   FROM buildRequestTable as t1
   LEFT OUTER JOIN buildRequestTable as t2
@@ -658,9 +659,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
        AND t1.request_build_config = t2.request_build_config
        AND t1.timestamp < t2.timestamp
   WHERE t2.request_build_config is NULL
-  '''
+  """
 
-  _SQL_FETCH_RETRIED_PRE_CQ_FAILURES = '''
+  _SQL_FETCH_RETRIED_PRE_CQ_FAILURES = """
   SELECT b.build_config, config_counts.failure_count, count(distinct b.id)
   FROM buildTable as b
     JOIN (
@@ -682,7 +683,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       b.build_config = config_counts.build_config
       {time_constraint}
   GROUP BY b.build_config
-  '''
+  """
 
   _DATE_FORMAT = '%Y-%m-%d'
   _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -1756,7 +1757,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
     keys = ('build_config', 'flake_count', 'build_count')
-    return [dict(itertools.izip(keys, row)) for row in results]
+    return [dict(izip(keys, row)) for row in results]
 
 
 def _INV():

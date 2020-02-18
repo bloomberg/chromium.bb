@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +26,7 @@ using testing::Expectation;
 class SystemMediaControlsNotifierTest : public testing::Test {
  public:
   SystemMediaControlsNotifierTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~SystemMediaControlsNotifierTest() override = default;
 
   void SetUp() override {
@@ -89,7 +88,7 @@ class SystemMediaControlsNotifierTest : public testing::Test {
   base::OneShotTimer& hide_smtc_timer() { return notifier_->hide_smtc_timer_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<SystemMediaControlsNotifier> notifier_;
   system_media_controls::testing::MockSystemMediaControlsService
       mock_system_media_controls_service_;

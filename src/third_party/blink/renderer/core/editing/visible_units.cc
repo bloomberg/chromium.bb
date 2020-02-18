@@ -450,6 +450,8 @@ static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
 // the text node. It seems weird to return false in this case.
 bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
+  if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
+    return false;
   const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
@@ -558,7 +560,7 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
 
   // A Marquee elements are moving so we should assume their ends are always
   // visibily distinct.
-  if (IsHTMLMarqueeElement(*node))
+  if (IsA<HTMLMarqueeElement>(*node))
     return true;
 
   // There is a VisiblePosition inside an empty inline-block container.
@@ -655,7 +657,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*current_node))
+    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
       continue;
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed) {
@@ -734,7 +736,7 @@ bool HasInvisibleFirstLetter(const Node* node) {
   if (!first_letter || first_letter == remaining_text)
     return false;
   return first_letter->StyleRef().Visibility() != EVisibility::kVisible ||
-         DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
+         DisplayLockUtilities::NearestLockedExclusiveAncestor(*first_letter);
 }
 }  // namespace
 
@@ -780,7 +782,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
 
     // stop before going above the body, up into the head
     // return the last visible streamer position
-    if (IsHTMLBodyElement(*current_node) && current_pos.AtEndOfNode())
+    if (IsA<HTMLBodyElement>(*current_node) && current_pos.AtEndOfNode())
       break;
 
     // There is no caret position in non-text svg elements.
@@ -805,7 +807,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*current_node))
+    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
       continue;
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed)
@@ -902,7 +904,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (layout_object->Style()->Visibility() != EVisibility::kVisible)
     return false;
 
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*anchor_node))
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
     return false;
 
   if (layout_object->IsBR()) {

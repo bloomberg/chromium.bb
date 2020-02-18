@@ -14,8 +14,7 @@
 
 namespace device {
 
-NintendoDataFetcher::NintendoDataFetcher()
-    : binding_(this), weak_factory_(this) {}
+NintendoDataFetcher::NintendoDataFetcher() : binding_(this) {}
 
 NintendoDataFetcher::~NintendoDataFetcher() {
   for (auto& entry : controllers_) {
@@ -182,6 +181,9 @@ void NintendoDataFetcher::GetGamepadData(bool) {
     auto& device = entry.second;
     if (device->IsOpen() && device->IsUsable()) {
       PadState* state = GetPadState(device->GetSourceId());
+      if (!state)
+        continue;
+
       if (!state->is_initialized) {
         state->mapper = device->GetMappingFunction();
         device->InitializeGamepadState(state->mapper != nullptr, state->data);

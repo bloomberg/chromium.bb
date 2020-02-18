@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -43,9 +44,9 @@
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
@@ -548,10 +549,8 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SetInitialVisualProperties() {
-    VisualProperties visual_properties;
-    bool needs_ack = false;
-    host_->GetVisualProperties(&visual_properties, &needs_ack);
-    host_->SetInitialVisualProperties(visual_properties, needs_ack);
+    VisualProperties visual_properties = host_->GetVisualProperties();
+    host_->SetInitialVisualProperties(visual_properties);
   }
 
   virtual void ConfigureView(TestView* view) {
@@ -714,7 +713,7 @@ class RenderWidgetHostTest : public testing::Test {
  private:
   SyntheticWebTouchEvent touch_event_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
@@ -1573,16 +1572,15 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
 
 TEST_F(RenderWidgetHostTest, VisualProperties) {
   gfx::Rect bounds(0, 0, 100, 100);
-  gfx::Size compositor_viewport_pixel_size(40, 50);
+  gfx::Rect compositor_viewport_pixel_rect(40, 50);
   view_->SetBounds(bounds);
-  view_->SetMockCompositorViewportPixelSize(compositor_viewport_pixel_size);
+  view_->SetMockCompositorViewportPixelSize(
+      compositor_viewport_pixel_rect.size());
 
-  VisualProperties visual_properties;
-  bool needs_ack = false;
-  host_->GetVisualProperties(&visual_properties, &needs_ack);
+  VisualProperties visual_properties = host_->GetVisualProperties();
   EXPECT_EQ(bounds.size(), visual_properties.new_size);
-  EXPECT_EQ(compositor_viewport_pixel_size,
-            visual_properties.compositor_viewport_pixel_size);
+  EXPECT_EQ(compositor_viewport_pixel_rect,
+            visual_properties.compositor_viewport_pixel_rect);
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
@@ -2011,6 +2009,84 @@ TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
       InputEventAckSource::UNKNOWN);
   tester.ExpectTotalCount("Renderer.Hung.Duration", 1u);
   tester.ExpectUniqueSample("Renderer.Hung.Duration", 17000, 1);
+}
+
+// TODO(https://crbug.com/992784): Flakily fails the final
+// ConsumePendingUserActivationIfAllowed expectation, after RunLoopFor().
+TEST_F(RenderWidgetHostTest, DISABLED_PendingUserActivationTimeout) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kBrowserVerifiedUserActivation);
+
+  // One event allows one activation notification.
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+
+  // Mouse move and up does not increase pending user activation counter.
+  SimulateMouseEvent(WebInputEvent::kMouseMove);
+  SimulateMouseEvent(WebInputEvent::kMouseUp);
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+
+  // 2 events allow 2 activation notifications.
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  SimulateKeyboardEvent(WebInputEvent::kKeyDown);
+  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+
+  // Pending activation is reset after |kActivationNotificationExpireTime|.
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  RunLoopFor(RenderWidgetHostImpl::kActivationNotificationExpireTime);
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+}
+
+// Tests that fling events are not dispatched when the wheel event is consumed.
+TEST_F(RenderWidgetHostTest, NoFlingEventsWhenLastScrollEventConsumed) {
+  // Simulate a consumed wheel event.
+  SimulateWheelEvent(10, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
+  MockWidgetInputHandler::MessageVector dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(1u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // A GestureFlingStart event following a consumed scroll event should not be
+  // dispatched.
+  SimulateGestureEvent(blink::WebInputEvent::kGestureFlingStart,
+                       blink::WebGestureDevice::kTouchpad);
+  dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  EXPECT_EQ(0u, dispatched_events.size());
+}
+
+// Tests that fling events are dispatched when some, but not all, scroll events
+// were consumed.
+TEST_F(RenderWidgetHostTest, FlingEventsWhenSomeScrollEventsConsumed) {
+  // Simulate a consumed wheel event.
+  SimulateWheelEvent(10, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
+  MockWidgetInputHandler::MessageVector dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(1u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+  dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Followed by a not consumed wheel event.
+  SimulateWheelEvent(10, 0, 0, true, WebMouseWheelEvent::kPhaseChanged);
+  dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  ASSERT_EQ(1u, dispatched_events.size());
+  ASSERT_TRUE(dispatched_events[0]->ToEvent());
+  dispatched_events[0]->ToEvent()->CallCallback(
+      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // A GestureFlingStart event following the scroll events should be dispatched.
+  SimulateGestureEvent(blink::WebInputEvent::kGestureFlingStart,
+                       blink::WebGestureDevice::kTouchpad);
+  dispatched_events =
+      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
+  EXPECT_NE(0u, dispatched_events.size());
 }
 
 }  // namespace content

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
@@ -38,7 +39,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/test_audio_thread.h"
@@ -85,6 +86,7 @@ class ScreenLockerUnitTest : public testing::Test {
     chromeos::AccessibilityManager::Initialize();
 
     // Initialize ScreenLocker dependencies:
+    chromeos::ProfileHelper::GetSigninProfile();
     SystemSaltGetter::Initialize();
     const AccountId account_id =
         AccountId::FromUserEmail("testemail@example.com");
@@ -110,7 +112,7 @@ class ScreenLockerUnitTest : public testing::Test {
 
  protected:
   // Needed for main loop and posting async tasks.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Needed to set up Service Manager and create mojo fakes.
   content::TestServiceManagerContext context_;

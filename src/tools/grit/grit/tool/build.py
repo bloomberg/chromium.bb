@@ -14,6 +14,8 @@ import os
 import shutil
 import sys
 
+import six
+
 from grit import grd_reader
 from grit import shortcuts
 from grit import util
@@ -149,6 +151,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     return 'A tool that builds RC files for compilation.'
 
   def Run(self, opts, args):
+    brotli_util.SetBrotliCommand(None)
     os.environ['cwd'] = os.getcwd()
     self.output_directory = '.'
     first_ids_file = None
@@ -256,6 +259,16 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
     self.Process()
 
+    # Check that brotli was used if initialized.
+    if brotli_util.IsInitialized():
+      brotli_used = False
+      for node in self.res.ActiveDescendants():
+        if node.attrs.get('compress') == 'brotli':
+          brotli_used = True
+      if not brotli_used:
+        raise Exception('"use_brotli" was set to true in GN grit(...) target, ' +
+                        'but no resources were brotli compressed.')
+
     if assert_output_files:
       if not self.CheckAssertedOutputFiles(assert_output_files):
         return 2
@@ -314,7 +327,18 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
     formatter = GetFormatter(output_node.GetType())
     formatted = formatter(node, output_node.GetLanguage(), output_dir=base_dir)
-    outfile.writelines(formatted)
+    # NB: Formatters may be generators or return lists.  The writelines API
+    # accepts iterables as a shortcut to calling write directly.  That means
+    # you can pass strings (iteration yields characters), but not bytes (as
+    # iteration yields integers).  Python 2 worked due to its quirks with
+    # bytes/string implementation, but Python 3 fails.  It's also a bit more
+    # inefficient to call write once per character/byte.  Handle all of this
+    # ourselves by calling write directly on strings/bytes before falling back
+    # to writelines.
+    if isinstance(formatted, (six.string_types, six.binary_type)):
+      outfile.write(formatted)
+    else:
+      outfile.writelines(formatted)
     if output_node.GetType() == 'data_package':
       with open(output_node.GetOutputFilename() + '.info', 'w') as infofile:
         if node.info:
@@ -510,7 +534,7 @@ Extra output files:
     depfile_contents = output_file + ': ' + deps_text
     self.MakeDirectoriesTo(depfile)
     outfile = self.fo_create(depfile, 'w', encoding='utf-8')
-    outfile.writelines(depfile_contents)
+    outfile.write(depfile_contents)
 
   @staticmethod
   def MakeDirectoriesTo(file):

@@ -8,7 +8,7 @@
 
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
@@ -116,7 +116,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // means tests must ensure any MessageLoop they make is created before
   // the RenderViewHostTestEnabler.
   if (!base::MessageLoopCurrent::Get())
-    task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
       std::make_unique<TestImageTransportFactory>());
@@ -251,7 +251,7 @@ void RenderViewHostTestHarness::SetUp() {
   sanity_checker_.reset(new ContentBrowserSanityChecker());
 
   DCHECK(!browser_context_);
-  browser_context_.reset(CreateBrowserContext());
+  browser_context_ = CreateBrowserContext();
 
   SetContents(CreateTestWebContents());
   BrowserSideNavigationSetUp();
@@ -292,11 +292,12 @@ void RenderViewHostTestHarness::TearDown() {
   // Although this isn't required by many, some subclasses members require that
   // the task environment is gone by the time that they are destroyed (akin to
   // browser shutdown).
-  thread_bundle_.reset();
+  task_environment_.reset();
 }
 
-BrowserContext* RenderViewHostTestHarness::CreateBrowserContext() {
-  return new TestBrowserContext();
+std::unique_ptr<BrowserContext>
+RenderViewHostTestHarness::CreateBrowserContext() {
+  return std::make_unique<TestBrowserContext>();
 }
 
 BrowserContext* RenderViewHostTestHarness::GetBrowserContext() {
@@ -312,7 +313,7 @@ void RenderViewHostTestHarness::SetRenderProcessHostFactory(
 }
 
 RenderViewHostTestHarness::RenderViewHostTestHarness(
-    std::unique_ptr<TestBrowserThreadBundle> thread_bundle)
-    : thread_bundle_(std::move(thread_bundle)) {}
+    std::unique_ptr<BrowserTaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)) {}
 
 }  // namespace content

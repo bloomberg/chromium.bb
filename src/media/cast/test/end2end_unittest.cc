@@ -25,9 +25,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/time/tick_clock.h"
+#include "build/build_config.h"
 #include "media/base/audio_bus.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
@@ -879,7 +880,7 @@ class End2EndTest : public ::testing::Test {
   std::vector<std::pair<base::TimeTicks, base::TimeTicks> > video_ticks_;
 
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 namespace {
@@ -1218,7 +1219,9 @@ TEST_F(End2EndTest, MAYBE_EvilNetwork) {
 // Tests that a system configured for 30 FPS drops frames when input is provided
 // at a much higher frame rate.
 // Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
+// crbug.com/997944. Flaky on multiple platforms.
+#if defined(OFFICIAL_BUILD) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
 #define MAYBE_ShoveHighFrameRateDownYerThroat \
   DISABLED_ShoveHighFrameRateDownYerThroat
 #else

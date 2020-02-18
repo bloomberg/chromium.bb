@@ -12,6 +12,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
@@ -105,6 +106,12 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
     is_modal_warning_showing_ = is_warning_showing;
   }
 
+  RequestOutcome request_outcome() const { return request_outcome_; }
+
+  void set_request_outcome(RequestOutcome request_outcome) {
+    request_outcome_ = request_outcome;
+  }
+
   // Keeps track of created navigation throttle.
   void AddThrottle(PasswordProtectionNavigationThrottle* throttle) {
     throttles_.insert(throttle);
@@ -149,6 +156,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Fill |request_proto_| with appropriate values.
   void FillRequestProto();
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Collects visual features from the current login page.
   void CollectVisualFeatures();
 
@@ -158,6 +166,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Called when the visual feature extraction is complete.
   void OnVisualFeatureCollectionDone(
       std::unique_ptr<VisualFeatures> visual_features);
+#endif
 
   // Initiates network request to Safe Browsing backend.
   void SendRequest();
@@ -169,8 +178,17 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   void Finish(RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Called when the DOM feature extraction is complete.
   void OnGetDomFeatures(const std::string& verdict);
+
+  // Called when the DOM feature extraction times out.
+  void OnGetDomFeatureTimeout();
+
+  // If appropriate, collects visual features, otherwise continues on to sending
+  // the request.
+  void MaybeCollectVisualFeatures();
+#endif
 
   // WebContents of the password protection event.
   content::WebContents* web_contents_;
@@ -213,6 +231,9 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Can only be accessed on UI thread.
   PasswordProtectionService* password_protection_service_;
 
+  // The outcome of the password protection request.
+  RequestOutcome request_outcome_;
+
   // If we haven't receive response after this period of time, we cancel this
   // request.
   const int request_timeout_in_ms_;
@@ -233,6 +254,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // If a request is sent, this is the token returned by the WebUI.
   int web_ui_token_;
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // When we start extracting visual features.
   base::TimeTicks visual_feature_start_time_;
 
@@ -243,6 +265,11 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // feature extraction, which is logged at
   // PasswordProtection.DomFeatureExtractionDuration.
   base::TimeTicks dom_feature_start_time_;
+
+  // Whether the DOM features collection is finished, either by timeout or by
+  // successfully gathering the features.
+  bool dom_features_collection_complete_;
+#endif
 
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);

@@ -95,10 +95,8 @@ struct BuiltInHost {
 
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       g_browser_process->policy_service());
 }
 
@@ -127,7 +125,9 @@ static const BuiltInHost kBuiltInHost[] = {
     {arc::ArcSupportMessageHost::kHostName,
      arc::ArcSupportMessageHost::kHostOrigin, 1,
      &arc::ArcSupportMessageHost::Create},
-    {chromeos::kWilcoDtcSupportdUiMessageHost, nullptr, 0,
+    {chromeos::kWilcoDtcSupportdUiMessageHost,
+     chromeos::kWilcoDtcSupportdHostOrigins,
+     chromeos::kWilcoDtcSupportdHostOriginsSize,
      &chromeos::CreateExtensionOwnedWilcoDtcSupportdMessageHost},
 };
 

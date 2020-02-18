@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -223,7 +223,7 @@ class RegistrationManagerTest : public testing::Test {
 
  private:
   // Needed by timers in RegistrationManager.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationManagerTest);
 };

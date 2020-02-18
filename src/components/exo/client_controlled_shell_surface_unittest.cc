@@ -1280,18 +1280,10 @@ class ClientControlledShellSurfaceDisplayTest : public test::ExoTestBase {
                            ash::WindowStateType current_state,
                            ash::WindowStateType requested_state,
                            int64_t display_id,
-                           const gfx::Rect& bounds_in_screen,
+                           const gfx::Rect& bounds_in_display,
                            bool is_resize,
                            int bounds_change) {
     bounds_change_count_++;
-
-    display::Display target_display;
-    const display::Screen* screen = display::Screen::GetScreen();
-
-    ASSERT_TRUE(screen->GetDisplayWithDisplayId(display_id, &target_display));
-    gfx::Rect bounds_in_display(bounds_in_screen);
-    bounds_in_display.Offset(-target_display.bounds().OffsetFromOrigin());
-
     requested_bounds_.push_back(bounds_in_display);
     requested_display_ids_.push_back(display_id);
   }
@@ -1351,6 +1343,11 @@ TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
 
   // Drag the pointer to the right. Once it reaches the right edge of the
   // primary display, it warps to the secondary.
+  display::Display secondary_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
+  ash::Shell::Get()->cursor_manager()->SetDisplay(secondary_display);
   resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
 
   shell_surface->set_bounds_changed_callback(base::BindRepeating(
@@ -1367,8 +1364,6 @@ TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
   EXPECT_EQ(gfx::Rect(-150, 10, 200, 200), requested_bounds()[0]);
   EXPECT_EQ(gfx::Rect(-150, 10, 200, 200), requested_bounds()[1]);
 
-  display::Display secondary_display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
   EXPECT_EQ(secondary_display.id(), requested_display_ids()[0]);
   EXPECT_EQ(secondary_display.id(), requested_display_ids()[1]);
 }

@@ -7,7 +7,6 @@
 
 #include "modules/skottie/src/effects/Effects.h"
 
-#include "include/effects/SkBlurImageFilter.h"
 #include "modules/skottie/src/SkottieAdapter.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGRenderEffect.h"
@@ -63,9 +62,9 @@ private:
         fBlur->setSigma({ sigma * kDimensionsMap[dim_index].x(),
                           sigma * kDimensionsMap[dim_index].y() });
 
-        static constexpr SkBlurImageFilter::TileMode kRepeatEdgeMap[] = {
-            SkBlurImageFilter::kClampToBlack_TileMode, // 0 -> repeat edge pixels: off
-            SkBlurImageFilter::       kClamp_TileMode, // 1 -> repeat edge pixels: on
+        static constexpr SkTileMode kRepeatEdgeMap[] = {
+            SkTileMode::kDecal, // 0 -> repeat edge pixels: off
+            SkTileMode::kClamp, // 1 -> repeat edge pixels: on
         };
 
         const auto repeat_index = SkTPin<size_t>(static_cast<size_t>(fRepeatEdge),
@@ -90,15 +89,15 @@ sk_sp<sksg::RenderNode> EffectBuilder::attachGaussianBlurEffect(
     auto blur_effect   = sksg::BlurImageFilter::Make();
     auto blur_addapter = sk_make_sp<GaussianBlurEffectAdapter>(blur_effect);
 
-    fBuilder->bindProperty<ScalarValue>(GetPropValue(jprops, kBlurriness_Index), fScope,
+    fBuilder->bindProperty<ScalarValue>(GetPropValue(jprops, kBlurriness_Index),
         [blur_addapter](const ScalarValue& b) {
             blur_addapter->setBlurriness(b);
         });
-    fBuilder->bindProperty<ScalarValue>(GetPropValue(jprops, kDimensions_Index), fScope,
+    fBuilder->bindProperty<ScalarValue>(GetPropValue(jprops, kDimensions_Index),
         [blur_addapter](const ScalarValue& d) {
             blur_addapter->setDimensions(d);
         });
-    fBuilder->bindProperty<ScalarValue>(GetPropValue(jprops, kRepeatEdge_Index), fScope,
+    fBuilder->bindProperty<ScalarValue>(GetPropValue(jprops, kRepeatEdge_Index),
         [blur_addapter](const ScalarValue& r) {
             blur_addapter->setRepeatEdge(r);
         });

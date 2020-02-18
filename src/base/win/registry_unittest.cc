@@ -4,8 +4,8 @@
 
 #include "base/win/registry.h"
 
-#include <stdint.h>
 #include <windows.h>
+#include <stdint.h>
 
 #include <cstring>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -378,7 +378,7 @@ class TestChangeDelegate {
 TEST_F(RegistryTest, ChangeCallback) {
   RegKey key;
   TestChangeDelegate delegate;
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   string16 foo_key(kRootKey);
   foo_key += STRING16_LITERAL("\\Foo");

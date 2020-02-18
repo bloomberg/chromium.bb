@@ -18,6 +18,8 @@ per-file child_process_security_policy_unittest.cc=creis@chromium.org
 per-file child_process_security_policy_unittest.cc=lukasza@chromium.org
 per-file child_process_security_policy_unittest.cc=mkwst@chromium.org
 per-file child_process_security_policy_unittest.cc=tsepez@chromium.org
+per-file browser_interface_binders.cc=set noparent
+per-file browser_interface_binders.cc=file://ipc/SECURITY_OWNERS
 
 per-file host_zoom_*=wjmaclean@chromium.org
 per-file find_request_manager*=paulmeyer@chromium.org
@@ -36,3 +38,10 @@ per-file builtin_service_manifests.cc=set noparent
 per-file builtin_service_manifests.cc=file://ipc/SECURITY_OWNERS
 per-file builtin_service_manifests.h=set noparent
 per-file builtin_service_manifests.h=file://ipc/SECURITY_OWNERS
+
+# BackForwardCache
+per-file back_forward_cache_browsertest.cc=arthursonzogni@chromium.org
+
+# Storage API dependencies.
+per-file storage_partition*=file://storage/OWNERS
+per-file quota_dispatcher_host*=file://storage/OWNERS

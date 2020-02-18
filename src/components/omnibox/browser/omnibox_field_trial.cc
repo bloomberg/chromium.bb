@@ -241,21 +241,6 @@ std::string OmniboxFieldTrial::GetZeroSuggestVariant(
       page_classification);
 }
 
-// static
-// static
-std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
-  return base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnFocusSuggestions, kOnFocusSuggestionsEndpointURLParam);
-}
-
-// static
-int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kOnFocusSuggestions,
-      kOnFocusSuggestionsEndpointExperimentIdParam,
-      /*default_value=*/-1);
-}
-
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
     OmniboxEventProto::PageClassification current_page_classification,
     int* max_relevance) {
@@ -660,6 +645,11 @@ bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseTabSwitchLogic);
 }
 
+bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);
+}
+
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }
@@ -671,24 +661,6 @@ bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {
 bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kHideSteadyStateUrlTrivialSubdomains);
-}
-
-base::Optional<int>
-OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride() {
-  if (!base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin))
-    return base::nullopt;
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly) &&
-      ui::MaterialDesignController::touch_ui()) {
-    return base::nullopt;
-  }
-
-  // When the vertical margin is set to 2dp, the suggestion height is the
-  // closest to the pre-Refresh height. In fact it's 1dp taller than the
-  // pre-Refresh height on Linux.
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam, 2);
 }
 
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
@@ -706,6 +678,11 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
 
 bool OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxWrapPopupPosition);
+}
+
+bool OmniboxFieldTrial::IsOnDeviceHeadProviderEnabledForIncognito() {
+  return base::GetFieldTrialParamByFeatureAsBool(omnibox::kOnDeviceHeadProvider,
+                                                 "EnableForIncongnito", false);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
@@ -781,12 +758,6 @@ const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
     "UIMaxAutocompleteMatches";
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam[] =
     "UIMaxAutocompleteMatchesByProvider";
-const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
-
-const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointExperimentIdParam[] =
-    "CustomEndpointExperimentID";
-const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam[] =
-    "CustomEndpointURL";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;

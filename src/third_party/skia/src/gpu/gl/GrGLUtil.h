@@ -30,6 +30,9 @@ typedef uint64_t GrGLDriverVersion;
                                                (static_cast<uint64_t>(minor) << 16) | \
                                                 static_cast<uint64_t>(point))
 
+#define GR_GL_MAJOR_VER(version) (static_cast<uint32_t>(version) >> 16)
+#define GR_GL_MINOR_VER(version) (static_cast<uint32_t>(version) & 0xFFFF)
+
 #define GR_GL_INVALID_VER GR_GL_VER(0, 0)
 #define GR_GLSL_INVALID_VER GR_GLSL_VER(0, 0)
 #define GR_GL_DRIVER_UNKNOWN_VER GR_GL_DRIVER_VER(0, 0, 0)
@@ -104,6 +107,7 @@ enum GrGLDriver {
     kANGLE_GrGLDriver,
     kSwiftShader_GrGLDriver,
     kQualcomm_GrGLDriver,
+    kAndroidEmulator_GrGLDriver,
     kUnknown_GrGLDriver
 };
 
@@ -302,12 +306,64 @@ static constexpr GrGLFormat GrGLFormatFromGLEnum(GrGLenum glFormat) {
     }
 }
 
-static inline GrGLFormat GrGLBackendFormatToGLFormat(const GrBackendFormat& format) {
-    if (const GrGLenum* glFormat = format.getGLFormat()) {
-        return GrGLFormatFromGLEnum(*glFormat);
+/** Returns either the sized internal format or compressed internal format of the GrGLFormat. */
+static constexpr GrGLenum GrGLFormatToEnum(GrGLFormat format) {
+    switch (format) {
+        case GrGLFormat::kRGBA8:                return GR_GL_RGBA8;
+        case GrGLFormat::kR8:                   return GR_GL_R8;
+        case GrGLFormat::kALPHA8:               return GR_GL_ALPHA8;
+        case GrGLFormat::kLUMINANCE8:           return GR_GL_LUMINANCE8;
+        case GrGLFormat::kBGRA8:                return GR_GL_BGRA8;
+        case GrGLFormat::kRGB565:               return GR_GL_RGB565;
+        case GrGLFormat::kRGBA16F:              return GR_GL_RGBA16F;
+        case GrGLFormat::kLUMINANCE16F:         return GR_GL_LUMINANCE16F;
+        case GrGLFormat::kR16F:                 return GR_GL_R16F;
+        case GrGLFormat::kRGB8:                 return GR_GL_RGB8;
+        case GrGLFormat::kRG8:                  return GR_GL_RG8;
+        case GrGLFormat::kRGB10_A2:             return GR_GL_RGB10_A2;
+        case GrGLFormat::kRGBA4:                return GR_GL_RGBA4;
+        case GrGLFormat::kRGBA32F:              return GR_GL_RGBA32F;
+        case GrGLFormat::kSRGB8_ALPHA8:         return GR_GL_SRGB8_ALPHA8;
+        case GrGLFormat::kCOMPRESSED_RGB8_ETC2: return GR_GL_COMPRESSED_RGB8_ETC2;
+        case GrGLFormat::kCOMPRESSED_ETC1_RGB8: return GR_GL_COMPRESSED_ETC1_RGB8;
+        case GrGLFormat::kR16:                  return GR_GL_R16;
+        case GrGLFormat::kRG16:                 return GR_GL_RG16;
+        case GrGLFormat::kRGBA16:               return GR_GL_RGBA16;
+        case GrGLFormat::kRG16F:                return GR_GL_RG16F;
+        case GrGLFormat::kUnknown:              return 0;
     }
-    return GrGLFormat::kUnknown;
+    SkUNREACHABLE;
 }
+
+#if GR_TEST_UTILS
+static constexpr const char* GrGLFormatToStr(GrGLenum glFormat) {
+    switch (glFormat) {
+        case GR_GL_RGBA8:                return "RGBA8";
+        case GR_GL_R8:                   return "R8";
+        case GR_GL_ALPHA8:               return "ALPHA8";
+        case GR_GL_LUMINANCE8:           return "LUMINANCE8";
+        case GR_GL_BGRA8:                return "BGRA8";
+        case GR_GL_RGB565:               return "RGB565";
+        case GR_GL_RGBA16F:              return "RGBA16F";
+        case GR_GL_LUMINANCE16F:         return "LUMINANCE16F";
+        case GR_GL_R16F:                 return "R16F";
+        case GR_GL_RGB8:                 return "RGB8";
+        case GR_GL_RG8:                  return "RG8";
+        case GR_GL_RGB10_A2:             return "RGB10_A2";
+        case GR_GL_RGBA4:                return "RGBA4";
+        case GR_GL_RGBA32F:              return "RGBA32F";
+        case GR_GL_SRGB8_ALPHA8:         return "SRGB8_ALPHA8";
+        case GR_GL_COMPRESSED_RGB8_ETC2: return "ETC2";
+        case GR_GL_COMPRESSED_ETC1_RGB8: return "ETC1";
+        case GR_GL_R16:                  return "R16";
+        case GR_GL_RG16:                 return "RG16";
+        case GR_GL_RGBA16:               return "RGBA16";
+        case GR_GL_RG16F:                return "RG16F";
+
+        default:                         return "Unknown";
+    }
+}
+#endif
 
 GrGLenum GrToGLStencilFunc(GrStencilTest test);
 

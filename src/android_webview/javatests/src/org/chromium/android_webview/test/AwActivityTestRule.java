@@ -4,12 +4,11 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.util.AndroidRuntimeException;
+import android.util.Base64;
 import android.view.ViewGroup;
 
 import org.junit.Assert;
@@ -45,7 +44,7 @@ import java.util.regex.Pattern;
 
 /** Custom ActivityTestRunner for WebView instrumentation tests */
 public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
-    public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000);
+    public static final long WAIT_TIMEOUT_MS = 15000L;
 
     public static final int CHECK_INTERVAL = 100;
 
@@ -98,9 +97,9 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         return getActivity();
     }
 
-    public AwBrowserContext createAwBrowserContextOnUiThread(
-            InMemorySharedPreferences prefs, Context appContext) {
-        return new AwBrowserContext(prefs, appContext);
+    public AwBrowserContext createAwBrowserContextOnUiThread(InMemorySharedPreferences prefs) {
+        // Native pointer is initialized later in startBrowserProcess if needed.
+        return new AwBrowserContext(prefs, 0, true);
     }
 
     public TestDependencyFactory createTestDependencyFactory() {
@@ -132,17 +131,19 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         }
         launchActivity(); // The Activity must be launched in order to load native code
         final InMemorySharedPreferences prefs = new InMemorySharedPreferences();
-        final Context appContext = InstrumentationRegistry.getInstrumentation()
-                                           .getTargetContext()
-                                           .getApplicationContext();
         TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mBrowserContext = createAwBrowserContextOnUiThread(prefs, appContext));
+                () -> mBrowserContext = createAwBrowserContextOnUiThread(prefs));
     }
 
     public void startBrowserProcess() throws Exception {
         // The Activity must be launched in order for proper webview statics to be setup.
         launchActivity();
         TestThreadUtils.runOnUiThreadBlocking(() -> AwBrowserProcess.start());
+        if (mBrowserContext != null) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> mBrowserContext.setNativePointer(
+                            AwBrowserContext.getDefault().getNativePointer()));
+        }
     }
 
     public static void enableJavaScriptOnUiThread(final AwContents awContents) {
@@ -234,6 +235,13 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         loadDataAsync(awContents, data, mimeType, isBase64Encoded);
         onPageFinishedHelper.waitForCallback(
                 currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+    }
+
+    public void loadHtmlSync(final AwContents awContents, CallbackHelper onPageFinishedHelper,
+            final String html) throws Throwable {
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        final String encodedData = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
+        loadDataSync(awContents, onPageFinishedHelper, encodedData, "text/html", true);
     }
 
     public void loadDataSyncWithCharset(final AwContents awContents,

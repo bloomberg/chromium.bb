@@ -57,6 +57,7 @@
 #include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
 namespace net {
@@ -862,9 +863,12 @@ SpdySession::SpdySession(
     const quic::ParsedQuicVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
+    bool is_http2_enabled,
+    bool is_quic_enabled,
     bool support_ietf_format_quic_altsvc,
     bool is_trusted_proxy,
     size_t session_max_recv_window_size,
+    int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
     const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
         greased_http2_frame,
@@ -909,6 +913,7 @@ SpdySession::SpdySession(
       check_ping_status_pending_(false),
       session_send_window_size_(0),
       session_max_recv_window_size_(session_max_recv_window_size),
+      session_max_queued_capped_frames_(session_max_queued_capped_frames),
       session_recv_window_size_(0),
       session_unacked_recv_window_bytes_(0),
       stream_initial_send_window_size_(kDefaultInitialWindowSize),
@@ -922,6 +927,8 @@ SpdySession::SpdySession(
       enable_sending_initial_data_(enable_sending_initial_data),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
+      is_http2_enabled_(is_http2_enabled),
+      is_quic_enabled_(is_quic_enabled),
       support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       is_trusted_proxy_(is_trusted_proxy),
       enable_push_(IsPushEnabled(initial_settings)),
@@ -1663,8 +1670,8 @@ void SpdySession::InitializeInternal(SpdySessionPool* pool) {
   // Bootstrap the read loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(&SpdySession::PumpReadLoop,
-                          weak_factory_.GetWeakPtr(), READ_STATE_DO_READ, OK));
+      base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                     READ_STATE_DO_READ, OK));
 }
 
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
@@ -2397,8 +2404,8 @@ int SpdySession::DoWrite() {
       in_flight_write_->GetIOBufferForRemainingData();
   return socket_->Write(
       write_io_buffer.get(), in_flight_write_->GetRemainingSize(),
-      base::Bind(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
-                 WRITE_STATE_DO_WRITE_COMPLETE),
+      base::BindOnce(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
+                     WRITE_STATE_DO_WRITE_COMPLETE),
       NetworkTrafficAnnotationTag(in_flight_write_traffic_annotation));
 }
 
@@ -2712,6 +2719,16 @@ void SpdySession::EnqueueSessionWrite(
          frame_type == spdy::SpdyFrameType::WINDOW_UPDATE ||
          frame_type == spdy::SpdyFrameType::PING ||
          frame_type == spdy::SpdyFrameType::GOAWAY);
+  DCHECK(IsSpdyFrameTypeWriteCapped(frame_type));
+  if (write_queue_.num_queued_capped_frames() >
+      session_max_queued_capped_frames_) {
+    LOG(WARNING)
+        << "Draining session due to exceeding max queued capped frames";
+    // Use ERR_CONNECTION_CLOSED to avoid sending a GOAWAY frame since that
+    // frame would also exceed the cap.
+    DoDrainSession(ERR_CONNECTION_CLOSED, "Exceeded max queued capped frames");
+    return;
+  }
   auto buffer = std::make_unique<SpdyBuffer>(std::move(frame));
   EnqueueWrite(priority, frame_type,
                std::make_unique<SimpleBufferProducer>(std::move(buffer)),
@@ -2857,7 +2874,10 @@ void SpdySession::DoDrainSession(Error err, const std::string& description) {
 
   // Mark host_port_pair requiring HTTP/1.1 for subsequent connections.
   if (err == ERR_HTTP_1_1_REQUIRED) {
-    http_server_properties_->SetHTTP11Required(host_port_pair());
+    http_server_properties_->SetHTTP11Required(
+        url::SchemeHostPort(url::kHttpsScheme, host_port_pair().host(),
+                            host_port_pair().port()),
+        spdy_session_key_.network_isolation_key());
   }
 
   // If |err| indicates an error occurred, inform the peer that we're closing
@@ -3367,44 +3387,11 @@ void SpdySession::OnAltSvc(
     scheme_host_port = url::SchemeHostPort(gurl);
   }
 
-  AlternativeServiceInfoVector alternative_service_info_vector;
-  alternative_service_info_vector.reserve(altsvc_vector.size());
-  const base::Time now(base::Time::Now());
-  DCHECK(!quic_supported_versions_.empty());
-  for (const spdy::SpdyAltSvcWireFormat::AlternativeService& altsvc :
-       altsvc_vector) {
-    const NextProto protocol = NextProtoFromString(altsvc.protocol_id);
-    if (protocol == kProtoUnknown)
-      continue;
-
-    // Check if QUIC version is supported. Filter supported QUIC versions.
-    quic::ParsedQuicVersionVector advertised_versions;
-    if (protocol == kProtoQUIC && !altsvc.version.empty()) {
-      advertised_versions = FilterSupportedAltSvcVersions(
-          altsvc, quic_supported_versions_, support_ietf_format_quic_altsvc_);
-      if (advertised_versions.empty())
-        continue;
-    }
-
-    const AlternativeService alternative_service(protocol, altsvc.host,
-                                                 altsvc.port);
-    const base::Time expiration =
-        now + base::TimeDelta::FromSeconds(altsvc.max_age);
-    AlternativeServiceInfo alternative_service_info;
-    if (protocol == kProtoQUIC) {
-      alternative_service_info =
-          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
-              alternative_service, expiration, advertised_versions);
-    } else {
-      alternative_service_info =
-          AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
-              alternative_service, expiration);
-    }
-    alternative_service_info_vector.push_back(alternative_service_info);
-  }
-
   http_server_properties_->SetAlternativeServices(
-      scheme_host_port, alternative_service_info_vector);
+      scheme_host_port, spdy_session_key_.network_isolation_key(),
+      ProcessAlternativeServices(altsvc_vector, is_http2_enabled_,
+                                 is_quic_enabled_, quic_supported_versions_,
+                                 support_ietf_format_quic_altsvc_));
 }
 
 bool SpdySession::OnUnknownFrame(spdy::SpdyStreamId stream_id,

@@ -80,7 +80,7 @@ KERNEL_WARN_STALE_DAYS = 14
 # at least 4GB of memory.
 #
 # This must be consistent with the definitions in autotest.
-AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
+AFDO_DATA_GENERATORS_LLVM = ('chell')
 
 AFDO_ALERT_RECIPIENTS = [
     'chromeos-toolchain-sheriff@grotations.appspotmail.com'
@@ -96,10 +96,13 @@ KERNEL_PROFILE_WRITE_PATTERN = 'AFDO_PROFILE_VERSION="R%d-%d.%d-%d"'
 KERNEL_EBUILD_ROOT = os.path.join(
     constants.SOURCE_ROOT, 'src/third_party/chromiumos-overlay/sys-kernel')
 
+# Kernels that we can't generate afdo anymore because of reasons like
+# too few samples etc.
+KERNEL_SKIP_AFDO_UPDATE = ['3.8']
+
 GSURL_CWP_SUBDIR = {
     'silvermont': '',
     'airmont': 'airmont',
-    'haswell': 'haswell',
     'broadwell': 'broadwell',
 }
 
@@ -114,7 +117,7 @@ _RELEASE_CWP_MERGE_WEIGHT = 75
 CWP_CHROME_PROFILE_NAME_PATTERN = r'R%s-%s.%s-%s' + AFDO_SUFFIX + '.xz'
 
 BENCHMARK_PROFILE_NAME_RE = re.compile(
-    r'''
+    r"""
        ^chromeos-chrome-amd64-
        (\d+)\.                    # Major
        (\d+)\.                    # Minor
@@ -124,7 +127,7 @@ BENCHMARK_PROFILE_NAME_RE = re.compile(
        (-merged)?\.
        afdo(?:\.bz2)?$            # We don't care about the presence of .bz2,
                                   # so we use the ignore-group '?:' operator.
-     ''', re.VERBOSE)
+     """, re.VERBOSE)
 
 BenchmarkProfileVersion = collections.namedtuple(
     'BenchmarkProfileVersion',
@@ -356,13 +359,13 @@ def _EnumerateMostRecentCWPProfiles(gs_context, milestones):
 
   # e.g. R75-3729.38-1554716539.afdo.xz
   profile_name_re = re.compile(
-      r'''
+      r"""
          ^R(\d+)-      # Major
          (\d+)\.       # Build
          (\d+)-        # Patch
          (\d+)         # Clock; breaks ties sometimes.
          \.afdo\.xz$
-       ''', re.VERBOSE)
+       """, re.VERBOSE)
 
   ProfileVersion = collections.namedtuple('ProfileVersion',
                                           ['major', 'build', 'patch', 'clock'])
@@ -1200,6 +1203,5 @@ PROFILE_SOURCES = {
     'benchmark': GetBenchmarkProfile,
     'silvermont': GetCWPProfile,
     'airmont': GetCWPProfile,
-    'haswell': GetCWPProfile,
     'broadwell': GetCWPProfile,
 }

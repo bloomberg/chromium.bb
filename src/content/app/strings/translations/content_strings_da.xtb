@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Værdien må ikke være tidligere end <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
 <translation id="2759744352195237655">pop op-knap</translation>
 <translation id="2761667185364618470">Markér dette felt, hvis du vil fortsætte.</translation>
+<translation id="2844350028562914727">detaljer</translation>
 <translation id="2896972712917208084">gruppe af alternativknapper</translation>
 <translation id="2908441821576996758">Angiv en kommasepareret liste over mailadresser.</translation>
 <translation id="2940813599313844715">objekt</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Værdien skal være mindre end eller lig med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">overskrift <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">ugevælger</translation>
 <translation id="3685101356851116974">Billedet har ingen etiket</translation>
 <translation id="3706100364254443312">kontakt</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">rullepanel</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
 <translation id="4151657705144244502">grafik</translation>
+<translation id="4160057747563657758">telefon</translation>
 <translation id="4193965531860883258">forord</translation>
 <translation id="4201051445878709314">Vis den foregående måned</translation>
 <translation id="421884353938374759">farvevælger</translation>
 <translation id="4248100235867064564">menulinje</translation>
-<translation id="4254339807215791271">indholdsoplysninger</translation>
 <translation id="4360991593054037559">Angiv en gyldig værdi. De to nærmeste gyldige værdier er <ph name="VALID_VALUE_LOW" /> og <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Spørgsmål og svar</translation>
 <translation id="4413860115965805769">menuknap</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Fra</translation>
 <translation id="588258955323874662">Fuld skærm</translation>
 <translation id="5888666972993069672">Caster nu til <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">søgefelt</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5966707198760109579">Uge</translation>
 <translation id="5987525920412732405">skalafelt</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">efterskrift</translation>
 <translation id="6209276755895393898">Det lader til at være: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordliste</translation>
+<translation id="6281763101136022427">webadresse</translation>
 <translation id="6310801910862476708">Afslut integreret billede</translation>
 <translation id="6398862346408813489">Vis panel til valg af måned</translation>
 <translation id="6404546809543547843">afspilningsbjælke for lyd</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Find et match til det anmodede format.</translation>
 <translation id="7118469954320184356">Der er ingen beskrivelse.</translation>
 <translation id="7139483182332611405">forord</translation>
+<translation id="7214187073215825913">oplysninger om indholdet</translation>
 <translation id="7263440858009898357">Vælg et punkt på listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
 <translation id="7320576522385648310">gemmer i buffer</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Henter beskrivelsen...</translation>
 <translation id="8117451130807776954">Denne uge</translation>
 <translation id="8199524924445686405">åååå</translation>
+<translation id="8208673686607688524">lokal dato- og tidsvælger</translation>
 <translation id="8261464734335370856">Ugyldig stavning</translation>
 <translation id="8284326494547611709">Undertekster</translation>
 <translation id="835897206747267392">Ugyldig værdi.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">indholdsfortegnelse</translation>
 <translation id="8613126697340063924">kontrollér afspilning via fjernadgang</translation>
 <translation id="862370744433916922">undertitel</translation>
+<translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Vælg en af disse muligheder.</translation>
 <translation id="8808573423886751634">kapitel</translation>
 <translation id="8845239796550121995">Caster nu til dit fjernsyn</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="901493112792887934">aktuel tid i sekunder</translation>
+<translation id="901834265349196618">mail</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9062307380734144336">vælg for at aktivere eller deaktivere afspil sæt på pause</translation>

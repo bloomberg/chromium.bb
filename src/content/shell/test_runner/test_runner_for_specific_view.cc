@@ -55,7 +55,6 @@
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_surrounding_text.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -603,7 +602,7 @@ void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
 
 v8::Local<v8::Value>
 TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
-    int world_id,
+    int32_t world_id,
     const std::string& script) {
   blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   // This relies on the iframe focusing itself when it loads. This is a bit
@@ -617,14 +616,14 @@ TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
 }
 
 void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
-    int world_id,
+    int32_t world_id,
     const std::string& script) {
   blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
 }
 
 void TestRunnerForSpecificView::SetIsolatedWorldInfo(
-    int world_id,
+    int32_t world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
   if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL ||
@@ -661,6 +660,15 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
   web_view()->FocusedFrame()->ClearIsolatedWorldCSPForTesting(world_id);
 
   web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
+
+  if (!info.security_origin.IsNull()) {
+    // Isolated world's origin may differ from the main world origin and trigger
+    // security checks when it doesn't match request_initiator_site_lock.  To
+    // avoid this, we need to explicitly exclude the isolated world's scheme
+    // from these security checks.
+    delegate()->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+        info.security_origin.Protocol().Utf8());
+  }
 }
 
 void TestRunner::InsertStyleSheet(const std::string& source_code) {

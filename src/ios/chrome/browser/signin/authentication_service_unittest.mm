@@ -20,7 +20,6 @@
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
@@ -38,7 +37,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -88,6 +87,9 @@ class AuthenticationServiceTest : public PlatformTest {
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         browser_state_.get(),
         std::make_unique<AuthenticationServiceDelegateFake>());
+    // Account ID migration is done on iOS.
+    DCHECK_EQ(signin::IdentityManager::MIGRATION_DONE,
+              identity_manager()->GetAccountIdMigrationState());
   }
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
@@ -108,10 +110,6 @@ class AuthenticationServiceTest : public PlatformTest {
 
   void StoreAccountsInPrefs() {
     authentication_service()->StoreAccountsInPrefs();
-  }
-
-  void MigrateAccountsStoredInPrefsIfNeeded() {
-    authentication_service()->MigrateAccountsStoredInPrefsIfNeeded();
   }
 
   std::vector<std::string> GetAccountsInPrefs() {
@@ -174,7 +172,7 @@ class AuthenticationServiceTest : public PlatformTest {
         objectAtIndex:index];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };
 
@@ -193,7 +191,8 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
   std::string user_email = base::SysNSStringToUTF8([identity(0) userEmail]);
   AccountInfo account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(user_email)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              user_email)
           .value();
   EXPECT_EQ(user_email, account_info.email);
   EXPECT_EQ(base::SysNSStringToUTF8([identity(0) gaiaID]), account_info.gaia);
@@ -209,72 +208,6 @@ TEST_F(AuthenticationServiceTest, TestSetPromptForSignIn) {
   EXPECT_TRUE(authentication_service()->ShouldPromptForSignIn());
   authentication_service()->ResetPromptForSignIn();
   EXPECT_FALSE(authentication_service()->ShouldPromptForSignIn());
-}
-
-TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Authentication Service does not force sign the user our during its
-    // initialization when Unified Consent feature is enabled. So this tests
-    // is meaningless when Unfied Consent is enabled.
-    return;
-  }
-
-  // Sign in.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-
-  EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
-      .WillOnce(Return(true));
-
-  EXPECT_EQ(base::SysNSStringToUTF8([identity(0) userEmail]),
-            identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_EQ(identity(0), authentication_service()->GetAuthenticatedIdentity());
-}
-
-TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Authentication Service does not force sign the user our during its
-    // initialization when Unified Consent feature is enabled. So this tests
-    // is meaningless when Unfied Consent is enabled.
-    return;
-  }
-
-  // Sign in.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-
-  EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
-      .WillOnce(Invoke(
-          sync_setup_service_mock(),
-          &SyncSetupServiceMock::SyncSetupServiceHasFinishedInitialSetup));
-  EXPECT_CALL(*mock_sync_service(), GetDisableReasons())
-      .WillOnce(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
-
-  EXPECT_EQ(base::SysNSStringToUTF8([identity(0) userEmail]),
-            identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_EQ(identity(0), authentication_service()->GetAuthenticatedIdentity());
-}
-
-TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Authentication Service does not force sign the user our when the app
-    // enters when Unified Consent feature is enabled. So this tests
-    // is meaningless when Unfied Consent is enabled.
-    return;
-  }
-
-  // Sign in.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-
-  EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
-      .WillOnce(Return(false));
-  // Expect a call to disable sync as part of the sign out process.
-  EXPECT_CALL(*mock_sync_service(), StopAndClear());
-
-  // User is signed out if sync initial setup isn't completed.
-  EXPECT_TRUE(identity_manager()->GetPrimaryAccountInfo().email.empty());
-  EXPECT_FALSE(authentication_service()->GetAuthenticatedIdentity());
 }
 
 TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
@@ -329,20 +262,8 @@ TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
   accounts = GetAccountsInPrefs();
   ASSERT_EQ(2u, accounts.size());
 
-  switch (identity_manager()->GetAccountIdMigrationState()) {
-    case signin::IdentityManager::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0]);
-      EXPECT_EQ("foo@foo.com", accounts[1]);
-      break;
-    case signin::IdentityManager::MIGRATION_IN_PROGRESS:
-    case signin::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0]);
       EXPECT_EQ("fooID", accounts[1]);
-      break;
-    case signin::IdentityManager::NUM_MIGRATION_STATES:
-      FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
-      break;
-  }
 }
 
 TEST_F(AuthenticationServiceTest,
@@ -362,20 +283,8 @@ TEST_F(AuthenticationServiceTest,
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
 
-  switch (identity_manager()->GetAccountIdMigrationState()) {
-    case signin::IdentityManager::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
-      EXPECT_EQ("foo@foo.com", accounts[1].account_id);
-      break;
-    case signin::IdentityManager::MIGRATION_IN_PROGRESS:
-    case signin::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0].account_id);
       EXPECT_EQ("fooID", accounts[1].account_id);
-      break;
-    case signin::IdentityManager::NUM_MIGRATION_STATES:
-      FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
-      break;
-  }
 
   // Simulate a switching to background and back to foreground, triggering a
   // credentials reload.
@@ -387,29 +296,16 @@ TEST_F(AuthenticationServiceTest,
   accounts = identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
-  switch (identity_manager()->GetAccountIdMigrationState()) {
-    case signin::IdentityManager::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
-      EXPECT_EQ("foo3@foo.com", accounts[1].account_id);
-      EXPECT_EQ("foo@foo.com", accounts[2].account_id);
-      break;
-    case signin::IdentityManager::MIGRATION_IN_PROGRESS:
-    case signin::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0].account_id);
       EXPECT_EQ("foo3ID", accounts[1].account_id);
       EXPECT_EQ("fooID", accounts[2].account_id);
-      break;
-    case signin::IdentityManager::NUM_MIGRATION_STATES:
-      FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
-      break;
-  }
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsNotChangedDefault) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_Default) {
   EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_NoChange) {
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
 
@@ -417,45 +313,87 @@ TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
 
-  // Simulate a switching to background and back to foreground.
+  // If an account is added while the application is in foreground, then the
+  // have accounts changed state should stay false.
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+
+  // Backgrounding the app should not change the have accounts changed state.
   FireApplicationDidEnterBackground();
-  FireApplicationWillEnterForeground();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 
+  // Foregrounding the app should not change the have accounts changed state.
+  FireApplicationWillEnterForeground();
   EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsChanged) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ChangedInBackground) {
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 
   // Simulate a switching to background and back to foreground, changing the
-  // accounts while in background.
+  // accounts while in background (no notification fired by |identity_service|).
   FireApplicationDidEnterBackground();
   identity_service()->AddIdentities(@[ @"foo4" ]);
   FireApplicationWillEnterForeground();
-
   EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsChangedBackground) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_CalledInBackground) {
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 
   // Simulate a switching to background, changing the accounts while in
   // background.
   FireApplicationDidEnterBackground();
   identity_service()->AddIdentities(@[ @"foo4" ]);
+  FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
-
   EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+
+  // Entering foreground should not change the have accounts changed state.
+  FireApplicationWillEnterForeground();
+  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+}
+
+// Regression test for http://crbug.com/1006717
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ResetOntwoBackgrounds) {
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(identity(0));
+
+  identity_service()->AddIdentities(@[ @"foo3" ]);
+  FireIdentityListChanged();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+
+  // Simulate a switching to background, changing the accounts while in
+  // background.
+  FireApplicationDidEnterBackground();
+
+  // Clear |kSigninLastAccounts| pref to simulate a case when the list of
+  // accounts in pref |kSigninLastAccounts| are no the same as the ones
+  browser_state_->GetPrefs()->ClearPref(prefs::kSigninLastAccounts);
+
+  // When entering foreground, the have accounts changed state should be
+  // updated.
+  FireApplicationWillEnterForeground();
+  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+
+  // Backgrounding and foregrounding the application a second time should update
+  // the list of accounts in |kSigninLastAccounts| and should reset the have
+  // account changed state.
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 }
 
 TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {
@@ -471,56 +409,6 @@ TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(authentication_service()->IsAuthenticated());
-}
-
-TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
-  if (identity_manager()->GetAccountIdMigrationState() ==
-      signin::IdentityManager::MIGRATION_NOT_STARTED) {
-    // The account tracker is not migratable. Skip the test as the accounts
-    // cannot be migrated.
-    return;
-  }
-
-  // Force the migration state to MIGRATION_NOT_STARTED before signing in.
-  browser_state_->GetPrefs()->SetInteger(
-      prefs::kAccountIdMigrationState,
-      signin::IdentityManager::MIGRATION_NOT_STARTED);
-  browser_state_->GetPrefs()->SetBoolean(prefs::kSigninLastAccountsMigrated,
-                                         false);
-
-  // Sign in user emails as account ids.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-  std::vector<std::string> accounts_in_prefs = GetAccountsInPrefs();
-  ASSERT_EQ(2U, accounts_in_prefs.size());
-  EXPECT_EQ("foo2@gmail.com", accounts_in_prefs[0]);
-  EXPECT_EQ("foo@gmail.com", accounts_in_prefs[1]);
-
-  // Migrate the accounts.
-  browser_state_->GetPrefs()->SetInteger(
-      prefs::kAccountIdMigrationState, signin::IdentityManager::MIGRATION_DONE);
-
-  // Reload all credentials to find account info with the refresh token.
-  // If it tries to find refresh token with gaia ID after
-  // AccountTrackerService::Initialize(), it fails because account ids are
-  // updated with gaia ID from email at MigrateToGaiaId. As IdentityManager
-  // needs refresh token to find account info, it reloads all credentials.
-  identity_manager()
-      ->GetDeviceAccountsSynchronizer()
-      ->ReloadAllAccountsFromSystem();
-
-  // Actually migrate the accounts in prefs.
-  MigrateAccountsStoredInPrefsIfNeeded();
-  std::vector<std::string> migrated_accounts_in_prefs = GetAccountsInPrefs();
-  ASSERT_EQ(2U, migrated_accounts_in_prefs.size());
-  EXPECT_EQ("foo2ID", migrated_accounts_in_prefs[0]);
-  EXPECT_EQ("fooID", migrated_accounts_in_prefs[1]);
-  EXPECT_TRUE(browser_state_->GetPrefs()->GetBoolean(
-      prefs::kSigninLastAccountsMigrated));
-
-  // Calling migrate after the migration is done is a no-op.
-  MigrateAccountsStoredInPrefsIfNeeded();
-  EXPECT_EQ(migrated_accounts_in_prefs, GetAccountsInPrefs());
 }
 
 // Tests that MDM errors are correctly cleared on foregrounding, sending

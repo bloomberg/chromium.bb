@@ -135,7 +135,7 @@ int32_t PepperFlashBrowserHost::OnGetLocalDataRestrictions(
                              plugin_url,
                              cookie_settings_);
   } else {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::Bind(&GetCookieSettings, render_process_id_),
         base::Bind(&PepperFlashBrowserHost::GetLocalDataRestrictions,
@@ -180,8 +180,6 @@ device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-
   // The system Connector might be not initialized in some testing environments.
   if (!content::GetSystemConnector())
     return wake_lock_.get();
@@ -192,16 +190,16 @@ device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
   // The existing connector is bound to the UI thread, the current thread is
   // IO thread. So bind the ConnectorRequest of IO thread to the connector
   // in UI thread.
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&PepperBindConnectorRequest,
-                                          std::move(connector_request)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PepperBindConnectorRequest,
+                                std::move(connector_request)));
 
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+  connector->Connect(device::mojom::kServiceName,
+                     wake_lock_provider.BindNewPipeAndPassReceiver());
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
       device::mojom::WakeLockReason::kOther, "Requested By PepperFlash",
-      std::move(request));
+      wake_lock_.BindNewPipeAndPassReceiver());
   return wake_lock_.get();
 }

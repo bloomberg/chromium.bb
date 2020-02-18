@@ -32,6 +32,26 @@ constexpr int kMouseDragThreshold = 2;
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 
+// App list config types supported by AppListConfig.
+enum class AppListConfigType {
+  // Config type used for all screens when app_list_features::ScalableAppList
+  // feature is disabled. (Note that two configs having this type can differ, in
+  // case one of them is scaled down).
+  kShared,
+
+  // Config used on large screens when app_list_features::ScalableAppList
+  // feature is enabled.
+  kLarge,
+
+  // Config used on medium sized screens when app_list_features::ScalableAppList
+  // feature is enabled.
+  kMedium,
+
+  // Config used on small screens when app_list_features::ScalableAppList
+  // feature is enabled.
+  kSmall
+};
+
 // A structure holding the common information which is sent between ash and,
 // chrome representing an app list item.
 struct ASH_PUBLIC_EXPORT AppListItemMetadata {
@@ -113,16 +133,18 @@ enum class AppListLaunchType {
 
 // Type of the search result, which is set in Chrome.
 enum class SearchResultType {
-  kUnknown,         // Unknown type. Don't use over IPC
-  kInstalledApp,    // Installed apps.
-  kPlayStoreApp,    // Installable apps from PlayStore.
-  kInstantApp,      // Instant apps.
-  kInternalApp,     // Chrome OS apps.
-  kOmnibox,         // Results from Omnibox.
-  kLauncher,        // Results from launcher search (currently only from Files).
-  kAnswerCard,      // WebContents based answer card.
+  kUnknown,       // Unknown type. Don't use over IPC
+  kInstalledApp,  // Installed apps.
+  kPlayStoreApp,  // Installable apps from PlayStore.
+  kInstantApp,    // Instant apps.
+  kInternalApp,   // Chrome OS apps.
+  kOmnibox,       // Results from Omnibox.
+  kLauncher,      // Results from launcher search (currently only from Files).
+  kAnswerCard,    // WebContents based answer card.
   kPlayStoreReinstallApp,  // Reinstall recommendations from PlayStore.
   kArcAppShortcut,         // ARC++ app shortcuts.
+  kZeroStateFile,          // Zero state local file results.
+  kDriveQuickAccess,       // Drive QuickAccess results.
   // Add new values here.
 };
 
@@ -143,7 +165,7 @@ enum SearchResultDisplayType {
 enum SearchResultDisplayLocation {
   kSuggestionChipContainer,
   kTileListContainer,
-  kUnknown,
+  kPlacementUndefined,
 };
 
 // Which index in the UI container should the result be placed in.
@@ -154,7 +176,7 @@ enum SearchResultDisplayIndex {
   kFourthIndex,
   kFifthIndex,
   kSixthIndex,
-  kPlacementUndefined,
+  kUndefined,
 };
 
 // Actions for OmniBox zero state suggestion.
@@ -261,11 +283,14 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Which UI container should the result be displayed in.
   SearchResultDisplayLocation display_location =
-      SearchResultDisplayLocation::kUnknown;
+      SearchResultDisplayLocation::kPlacementUndefined;
 
   // Which index in the UI container should the result be placed in.
-  SearchResultDisplayIndex display_index =
-      SearchResultDisplayIndex::kPlacementUndefined;
+  SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
+
+  // A score to settle conflicts between two apps with the same requested
+  // |display_index|.
+  float position_priority = 0.0f;
 
   // A score to determine the result display order.
   double display_score = 0;

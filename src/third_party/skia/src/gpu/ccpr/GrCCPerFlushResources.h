@@ -62,8 +62,8 @@ struct GrCCPerFlushResourceSpecs {
 
 /**
  * This class wraps all the GPU resources that CCPR builds at flush time. It is allocated in CCPR's
- * preFlush() method, and referenced by all the GrCCPerOpListPaths objects that are being flushed.
- * It is deleted in postFlush() once all the flushing GrCCPerOpListPaths objects are deleted.
+ * preFlush() method, and referenced by all the GrCCPerOpsTaskPaths objects that are being flushed.
+ * It is deleted in postFlush() once all the flushing GrCCPerOpsTaskPaths objects are deleted.
  */
 class GrCCPerFlushResources : public GrNonAtomicRef<GrCCPerFlushResources> {
 public:
@@ -107,7 +107,7 @@ public:
     }
 
     // Finishes off the GPU buffers and renders the atlas(es).
-    bool finalize(GrOnFlushResourceProvider*, SkTArray<sk_sp<GrRenderTargetContext>>* out);
+    bool finalize(GrOnFlushResourceProvider*);
 
     // Accessors used by draw calls, once the resources have been finalized.
     const GrCCFiller& filler() const { SkASSERT(!this->isMapped()); return fFiller; }

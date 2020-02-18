@@ -11,7 +11,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
-#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
@@ -50,13 +49,20 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 const base::Feature kOptimizationHintsFetching{
     "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the initialization of the Optimization Guide Keyed Service.
+const base::Feature kOptimizationGuideKeyedService{
+    "OptimizationGuideKeyedService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
   // (2*N) as many hosts that the HintsFetcher request hints for. The extra N
   // hosts on the blacklist are meant to cover the case that the engagement
   // scores on some of the top N host engagement scores decay and they fall out
   // of the top N.
-  return 2 * MaxHostsForOptimizationGuideServiceHintsFetch();
+  return GetFieldTrialParamByFeatureAsInt(features::kOptimizationHintsFetching,
+                                          "top_host_blacklist_size_multiplier",
+                                          2) *
+         MaxHostsForOptimizationGuideServiceHintsFetch();
 }
 
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
@@ -65,10 +71,31 @@ size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
+size_t MaxHostsForRecordingSuccessfullyCovered() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "max_hosts_for_recording_successfully_covered", 200);
+}
+
+double MinTopHostEngagementScoreThreshold() {
+  // The default initial site engagement score for a navigation is 3.0, 1.5
+  // points for a navigation from the omnibox and 1.5 points for the first
+  // navigation of the day.
+  return GetFieldTrialParamByFeatureAsDouble(
+      features::kOptimizationHintsFetching,
+      "min_top_host_engagement_score_threshold", 3.0);
+}
+
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
       features::kOptimizationHintsFetching,
       "max_store_duration_for_featured_hints_in_days", 7));
+}
+
+base::TimeDelta DurationApplyLowEngagementScoreThreshold() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "duration_apply_low_engagement_score_threshold_in_days", 30));
 }
 
 std::string GetOptimizationGuideServiceAPIKey() {
@@ -110,6 +137,16 @@ bool IsOptimizationHintsEnabled() {
 
 bool IsHintsFetchingEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
+}
+
+bool IsOptimizationGuideKeyedServiceEnabled() {
+  return base::FeatureList::IsEnabled(features::kOptimizationGuideKeyedService);
+}
+
+int MaxServerBloomFilterByteSize() {
+  return base::GetFieldTrialParamByFeatureAsInt(features::kOptimizationHints,
+                                                "max_bloom_filter_byte_size",
+                                                250 * 1024 /* 250KB */);
 }
 
 }  // namespace features

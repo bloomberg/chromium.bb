@@ -15,6 +15,8 @@ static_library("utility") {
   sources = [
     "chrome_content_utility_client.cc",
     "chrome_content_utility_client.h",
+    "services.cc",
+    "services.h",
   ]
 
   defines = []
@@ -30,8 +32,8 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//components/mirroring/mojom:constants",
     "//components/mirroring/service:mirroring_service",
+    "//components/safe_browsing:buildflags",
     "//components/search_engines",
     "//components/services/patch:lib",
     "//components/services/unzip:lib",
@@ -92,8 +94,6 @@ static_library("utility") {
       "importer/nss_decryptor_win.h",
       "importer/profile_import_impl.cc",
       "importer/profile_import_impl.h",
-      "importer/profile_import_service.cc",
-      "importer/profile_import_service.h",
       "importer/safari_importer.h",
       "importer/safari_importer.mm",
     ]
@@ -134,10 +134,7 @@ static_library("utility") {
       libs = [ "esent.lib" ]
       ldflags += [ "/DELAYLOAD:esent.dll" ]
 
-      deps += [
-        "//chrome/services/util_win:lib",
-        "//chrome/services/wifi_util_win:lib",
-      ]
+      deps += [ "//chrome/services/util_win:lib" ]
     }
 
     if (is_win || is_mac) {
@@ -149,7 +146,7 @@ static_library("utility") {
 
   if (is_chromeos) {
     deps += [
-      "//chrome/services/file_util:lib",
+      "//chrome/services/file_util",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:lib",
       "//chromeos/services/ime/public/mojom",
@@ -176,14 +173,14 @@ static_library("utility") {
 
   if (enable_basic_printing) {
     deps += [
-      "//components/services/pdf_compositor/public/cpp:factory",
+      "//components/services/pdf_compositor",
       "//components/services/pdf_compositor/public/mojom",
     ]
 
     if (is_chromeos) {
       deps += [
-        "//chrome/services/cups_ipp_parser",
-        "//chrome/services/cups_ipp_parser/public/mojom",
+        "//chrome/services/ipp_parser",
+        "//chrome/services/ipp_parser/public/mojom",
       ]
     }
   }
@@ -200,7 +197,7 @@ static_library("utility") {
   }
 
   if (safe_browsing_mode == 1) {
-    deps += [ "//chrome/services/file_util:lib" ]
+    deps += [ "//chrome/services/file_util" ]
     if (is_mac) {
       deps += [ "//chrome/utility/safe_browsing/mac" ]
     }
@@ -214,29 +211,6 @@ static_library("utility") {
     deps += [
       "//chrome/services/isolated_xr_device:lib",
       "//device/vr/public/mojom",
-    ]
-  }
-
-  if (enable_simple_browser_service_out_of_process) {
-    deps += [
-      "//services/content/simple_browser",
-      "//services/content/simple_browser/public/mojom",
-    ]
-  }
-}
-
-if (!is_android) {
-  source_set("profile_import_manifest") {
-    sources = [
-      "importer/profile_import_manifest.cc",
-      "importer/profile_import_manifest.h",
-    ]
-
-    deps = [
-      "//base",
-      "//chrome:strings",
-      "//chrome/common/importer:interfaces",
-      "//services/service_manager/public/cpp",
     ]
   }
 }

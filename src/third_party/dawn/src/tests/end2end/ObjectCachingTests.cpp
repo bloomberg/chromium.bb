@@ -22,24 +22,41 @@ class ObjectCachingTest : public DawnTest {};
 // Test that BindGroupLayouts are correctly deduplicated.
 TEST_P(ObjectCachingTest, BindGroupLayoutDeduplication) {
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
     dawn::BindGroupLayout sameBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
     dawn::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer}});
 
     EXPECT_NE(bgl.Get(), otherBgl.Get());
     EXPECT_EQ(bgl.Get() == sameBgl.Get(), !UsesWire());
 }
 
-// Test that two similar bind group layouts won't refer to the same one.
+// Test that two similar bind group layouts won't refer to the same one if they differ by dynamic.
 TEST_P(ObjectCachingTest, BindGroupLayoutDynamic) {
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer, true}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer, true}});
     dawn::BindGroupLayout sameBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer, true}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer, true}});
     dawn::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer, false}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer, false}});
+
+    EXPECT_NE(bgl.Get(), otherBgl.Get());
+    EXPECT_EQ(bgl.Get() == sameBgl.Get(), !UsesWire());
+}
+
+// Test that two similar bind group layouts won't refer to the same one if they differ by
+// textureComponentType
+TEST_P(ObjectCachingTest, BindGroupLayoutTextureComponentType) {
+    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::SampledTexture, false, false,
+                  dawn::TextureComponentType::Float}});
+    dawn::BindGroupLayout sameBgl = utils::MakeBindGroupLayout(
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::SampledTexture, false, false,
+                  dawn::TextureComponentType::Float}});
+    dawn::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::SampledTexture, false, false,
+                  dawn::TextureComponentType::Uint}});
 
     EXPECT_NE(bgl.Get(), otherBgl.Get());
     EXPECT_EQ(bgl.Get() == sameBgl.Get(), !UsesWire());
@@ -49,16 +66,16 @@ TEST_P(ObjectCachingTest, BindGroupLayoutDynamic) {
 TEST_P(ObjectCachingTest, ErrorObjectDoesntUncache) {
     ASSERT_DEVICE_ERROR(
         dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-            device, {{0, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer},
-                     {0, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer}}));
+            device, {{0, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer},
+                     {0, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}}));
 }
 
 // Test that PipelineLayouts are correctly deduplicated.
 TEST_P(ObjectCachingTest, PipelineLayoutDeduplication) {
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
     dawn::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer}});
 
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
     dawn::PipelineLayout samePl = utils::MakeBasicPipelineLayout(device, &bgl);
@@ -72,21 +89,22 @@ TEST_P(ObjectCachingTest, PipelineLayoutDeduplication) {
 
 // Test that ShaderModules are correctly deduplicated.
 TEST_P(ObjectCachingTest, ShaderModuleDeduplication) {
-    dawn::ShaderModule module = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+    dawn::ShaderModule module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             layout(location = 0) out vec4 fragColor;
             void main() {
                 fragColor = vec4(0.0, 1.0, 0.0, 1.0);
             })");
     dawn::ShaderModule sameModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             layout(location = 0) out vec4 fragColor;
             void main() {
                 fragColor = vec4(0.0, 1.0, 0.0, 1.0);
             })");
     dawn::ShaderModule otherModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             layout(location = 0) out vec4 fragColor;
             void main() {
@@ -99,19 +117,20 @@ TEST_P(ObjectCachingTest, ShaderModuleDeduplication) {
 
 // Test that ComputePipeline are correctly deduplicated wrt. their ShaderModule
 TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnShaderModule) {
-    dawn::ShaderModule module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
+    dawn::ShaderModule module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
             void main() {
                 int i = 0;
             })");
     dawn::ShaderModule sameModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
             void main() {
                 int i = 0;
             })");
     dawn::ShaderModule otherModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
             void main() {
             })");
@@ -121,20 +140,17 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnShaderModule) {
 
     dawn::PipelineLayout layout = utils::MakeBasicPipelineLayout(device, nullptr);
 
-    dawn::PipelineStageDescriptor stageDesc;
-    stageDesc.entryPoint = "main";
-    stageDesc.module = module;
-
     dawn::ComputePipelineDescriptor desc;
-    desc.computeStage = &stageDesc;
+    desc.computeStage.entryPoint = "main";
     desc.layout = layout;
 
+    desc.computeStage.module = module;
     dawn::ComputePipeline pipeline = device.CreateComputePipeline(&desc);
 
-    stageDesc.module = sameModule;
+    desc.computeStage.module = sameModule;
     dawn::ComputePipeline samePipeline = device.CreateComputePipeline(&desc);
 
-    stageDesc.module = otherModule;
+    desc.computeStage.module = otherModule;
     dawn::ComputePipeline otherPipeline = device.CreateComputePipeline(&desc);
 
     EXPECT_NE(pipeline.Get(), otherPipeline.Get());
@@ -144,9 +160,9 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnShaderModule) {
 // Test that ComputePipeline are correctly deduplicated wrt. their layout
 TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnLayout) {
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
     dawn::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer}});
 
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
     dawn::PipelineLayout samePl = utils::MakeBasicPipelineLayout(device, &bgl);
@@ -155,16 +171,14 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnLayout) {
     EXPECT_NE(pl.Get(), otherPl.Get());
     EXPECT_EQ(pl.Get() == samePl.Get(), !UsesWire());
 
-    dawn::PipelineStageDescriptor stageDesc;
-    stageDesc.entryPoint = "main";
-    stageDesc.module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
+    dawn::ComputePipelineDescriptor desc;
+    desc.computeStage.entryPoint = "main";
+    desc.computeStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
             void main() {
                 int i = 0;
             })");
-
-    dawn::ComputePipelineDescriptor desc;
-    desc.computeStage = &stageDesc;
 
     desc.layout = pl;
     dawn::ComputePipeline pipeline = device.CreateComputePipeline(&desc);
@@ -182,9 +196,9 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnLayout) {
 // Test that RenderPipelines are correctly deduplicated wrt. their layout
 TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnLayout) {
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
     dawn::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer}});
+        device, {{1, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer}});
 
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
     dawn::PipelineLayout samePl = utils::MakeBasicPipelineLayout(device, &bgl);
@@ -194,12 +208,14 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnLayout) {
     EXPECT_EQ(pl.Get() == samePl.Get(), !UsesWire());
 
     utils::ComboRenderPipelineDescriptor desc(device);
-    desc.cVertexStage.module = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+    desc.vertexStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 gl_Position = vec4(0.0);
             })");
-    desc.cFragmentStage.module = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+    desc.cFragmentStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             void main() {
             })");
@@ -219,19 +235,20 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnLayout) {
 
 // Test that RenderPipelines are correctly deduplicated wrt. their vertex module
 TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnVertexModule) {
-    dawn::ShaderModule module = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+    dawn::ShaderModule module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 gl_Position = vec4(0.0);
             })");
     dawn::ShaderModule sameModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 gl_Position = vec4(0.0);
             })");
     dawn::ShaderModule otherModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 gl_Position = vec4(1.0);
@@ -241,18 +258,19 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnVertexModule) {
     EXPECT_EQ(module.Get() == sameModule.Get(), !UsesWire());
 
     utils::ComboRenderPipelineDescriptor desc(device);
-    desc.cFragmentStage.module = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+    desc.cFragmentStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             void main() {
             })");
 
-    desc.cVertexStage.module = module;
+    desc.vertexStage.module = module;
     dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
 
-    desc.cVertexStage.module = sameModule;
+    desc.vertexStage.module = sameModule;
     dawn::RenderPipeline samePipeline = device.CreateRenderPipeline(&desc);
 
-    desc.cVertexStage.module = otherModule;
+    desc.vertexStage.module = otherModule;
     dawn::RenderPipeline otherPipeline = device.CreateRenderPipeline(&desc);
 
     EXPECT_NE(pipeline.Get(), otherPipeline.Get());
@@ -261,17 +279,18 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnVertexModule) {
 
 // Test that RenderPipelines are correctly deduplicated wrt. their fragment module
 TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnFragmentModule) {
-    dawn::ShaderModule module = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+    dawn::ShaderModule module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             void main() {
             })");
     dawn::ShaderModule sameModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             void main() {
             })");
     dawn::ShaderModule otherModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             void main() {
                 int i = 0;
@@ -281,7 +300,8 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnFragmentModule) {
     EXPECT_EQ(module.Get() == sameModule.Get(), !UsesWire());
 
     utils::ComboRenderPipelineDescriptor desc(device);
-    desc.cVertexStage.module = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+    desc.vertexStage.module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 gl_Position = vec4(0.0);

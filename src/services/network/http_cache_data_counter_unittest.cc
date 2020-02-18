@@ -15,12 +15,13 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/disk_cache_test_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
@@ -61,8 +62,7 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
 class HttpCacheDataCounterTest : public testing::Test {
  public:
   HttpCacheDataCounterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::CreateForTesting()) {}
 
   ~HttpCacheDataCounterTest() override = default;
@@ -84,19 +84,20 @@ class HttpCacheDataCounterTest : public testing::Test {
 
     // Create some entries in the cache.
     for (const CacheTestEntry& test_entry : kCacheEntries) {
-      disk_cache::Entry* entry = nullptr;
-      net::TestCompletionCallback create_entry_callback;
-      int rv = backend_->CreateEntry(test_entry.url, net::HIGHEST, &entry,
-                                     create_entry_callback.callback());
-      ASSERT_EQ(net::OK, create_entry_callback.GetResult(rv));
+      TestEntryResultCompletionCallback create_entry_callback;
+      disk_cache::EntryResult result = backend_->CreateEntry(
+          test_entry.url, net::HIGHEST, create_entry_callback.callback());
+      result = create_entry_callback.GetResult(std::move(result));
+      ASSERT_EQ(net::OK, result.net_error());
+      disk_cache::Entry* entry = result.ReleaseEntry();
       ASSERT_TRUE(entry);
 
       auto io_buf = base::MakeRefCounted<net::IOBuffer>(test_entry.size);
       std::fill(io_buf->data(), io_buf->data() + test_entry.size, 0);
 
       net::TestCompletionCallback write_data_callback;
-      rv = entry->WriteData(1, 0, io_buf.get(), test_entry.size,
-                            write_data_callback.callback(), true);
+      int rv = entry->WriteData(1, 0, io_buf.get(), test_entry.size,
+                                write_data_callback.callback(), true);
       ASSERT_EQ(static_cast<int>(test_entry.size),
                 write_data_callback.GetResult(rv));
 
@@ -104,7 +105,7 @@ class HttpCacheDataCounterTest : public testing::Test {
       ASSERT_TRUE(base::Time::FromString(test_entry.date, &time));
       entry->SetLastUsedTimeForTest(time);
       entry->Close();
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
   }
 
@@ -183,7 +184,7 @@ class HttpCacheDataCounterTest : public testing::Test {
         std::move(context_params));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir cache_dir_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
@@ -215,8 +216,8 @@ TEST_F(HttpCacheDataCounterTest, Basic) {
 
 // Return the sensible thing (0 bytes used) when there is no cache.
 TEST(HttpCacheDataCounterTestNoCache, BeSensible) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   std::unique_ptr<NetworkService> network_service(
       NetworkService::CreateForTesting());
   std::unique_ptr<NetworkContext> network_context;

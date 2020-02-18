@@ -29,14 +29,14 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kLockScreenMediaKeys{"LockScreenMediaKeys",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHideArcMediaNotifications{
     "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMediaSessionNotification{"MediaSessionNotification",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -44,8 +44,8 @@ const base::Feature kMediaSessionNotification{"MediaSessionNotification",
 const base::Feature kMultiDisplayOverviewAndSplitView{
     "MultiDisplayOverviewAndSplitView", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNewOverviewLayout{"NewOverviewLayout",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -67,13 +67,13 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 const base::Feature kUnlockWithExternalBinary{
     "UnlockWithExternalBinary", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kKioskNextShell{"KioskNextShell",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kVirtualDesks{"VirtualDesks",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kVirtualDesksGestures{"VirtualDesksGestures",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -86,6 +86,9 @@ const base::Feature kSystemTrayFeaturePodsPagination{
 
 const base::Feature kSwapSideVolumeButtonsForOrientation{
     "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUnifiedMessageCenterRefactor{
+    "UnifiedMessageCenterRefactor", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
@@ -135,6 +138,10 @@ bool IsVirtualDesksEnabled() {
   return base::FeatureList::IsEnabled(kVirtualDesks);
 }
 
+bool IsVirtualDesksGesturesEnabled() {
+  return base::FeatureList::IsEnabled(kVirtualDesksGestures);
+}
+
 bool IsViewsLoginEnabled() {
   // Always show webui login if --show-webui-login is present, which is passed
   // by session manager for automatic recovery. Otherwise, only show views
@@ -154,6 +161,10 @@ bool IsSystemTrayFeaturePodsPaginationEnabled() {
 
 bool IsSwapSideVolumeButtonsForOrientationEnabled() {
   return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
+}
+
+bool IsUnifiedMessageCenterRefactorEnabled() {
+  return base::FeatureList::IsEnabled(kUnifiedMessageCenterRefactor);
 }
 
 }  // namespace features

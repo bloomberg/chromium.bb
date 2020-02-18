@@ -22,6 +22,7 @@
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
 #include "chromecast/net/connectivity_checker.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -294,6 +295,26 @@ void CastWebContentsImpl::RemoveBeforeLoadJavaScript(base::StringPiece id) {
   }
 }
 
+void CastWebContentsImpl::PostMessageToMainFrame(
+    const std::string& target_origin,
+    const std::string& data,
+    std::vector<mojo::ScopedMessagePipeHandle> channels) {
+  DCHECK(!data.empty());
+
+  base::string16 data_utf16;
+  data_utf16 = base::UTF8ToUTF16(data);
+
+  // If origin is set as wildcard, no origin scoping would be applied.
+  constexpr char kWildcardOrigin[] = "*";
+  base::Optional<base::string16> target_origin_utf16;
+  if (target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents(), base::string16(), target_origin_utf16, data_utf16,
+      std::move(channels));
+}
+
 void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer);
@@ -551,7 +572,7 @@ void CastWebContentsImpl::DidFinishLoad(
     // An error HTML page was loaded instead of the content we requested.
     LOG(ERROR) << "Failed loading page for: " << validated_url
                << "; http status code: " << http_status_code;
-    Stop(net::ERR_FAILED);
+    Stop(net::ERR_HTTP_RESPONSE_CODE_FAILURE);
     DCHECK_EQ(page_state_, PageState::ERROR);
     return;
   }

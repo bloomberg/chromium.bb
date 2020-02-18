@@ -27,7 +27,6 @@
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/frame_message_enums.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
@@ -48,7 +47,6 @@
 #include "content/public/common/screen_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
-#include "content/public/common/was_activated_option.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -119,8 +117,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebScrollIntoViewParams::Behavior,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptDialogType,
                               content::JAVASCRIPT_DIALOG_TYPE_ALERT,
                               content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
-IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
-                          FrameMsg_Navigate_Type::NAVIGATE_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::kMediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
@@ -148,8 +144,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
                           blink::WebMediaPlayerAction::Type::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(content::WasActivatedOption,
-                          content::WasActivatedOption::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)
@@ -274,6 +268,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameVisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(max_size_for_auto_resize)
   IPC_STRUCT_TRAITS_MEMBER(screen_space_rect)
   IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
+  IPC_STRUCT_TRAITS_MEMBER(compositor_viewport)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
@@ -472,75 +467,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::InitiatorCSPInfo)
   IPC_STRUCT_TRAITS_MEMBER(initiator_self_source)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::PrefetchedSignedExchangeInfo)
-  IPC_STRUCT_TRAITS_MEMBER(outer_url)
-  IPC_STRUCT_TRAITS_MEMBER(header_integrity)
-  IPC_STRUCT_TRAITS_MEMBER(inner_url)
-  IPC_STRUCT_TRAITS_MEMBER(inner_response)
-  IPC_STRUCT_TRAITS_MEMBER(loader_factory_handle)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_origin)
-  IPC_STRUCT_TRAITS_MEMBER(referrer)
-  IPC_STRUCT_TRAITS_MEMBER(transition)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_type)
-  IPC_STRUCT_TRAITS_MEMBER(download_policy)
-  IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
-  IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
-  IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)
-  IPC_STRUCT_TRAITS_MEMBER(previews_state)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_start)
-  IPC_STRUCT_TRAITS_MEMBER(method)
-  IPC_STRUCT_TRAITS_MEMBER(post_data)
-  IPC_STRUCT_TRAITS_MEMBER(source_location)
-  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
-  IPC_STRUCT_TRAITS_MEMBER(started_from_context_menu)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_csp_info)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_origin_trial_features)
-  IPC_STRUCT_TRAITS_MEMBER(href_translate)
-  IPC_STRUCT_TRAITS_MEMBER(input_start)
-  IPC_STRUCT_TRAITS_MEMBER(is_history_navigation_in_new_child_frame)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_start)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_end)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_start)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(origin_to_commit)
-  IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
-  IPC_STRUCT_TRAITS_MEMBER(redirects)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_response)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_infos)
-  IPC_STRUCT_TRAITS_MEMBER(post_content_type)
-  IPC_STRUCT_TRAITS_MEMBER(original_url)
-  IPC_STRUCT_TRAITS_MEMBER(original_method)
-  IPC_STRUCT_TRAITS_MEMBER(can_load_local_resources)
-  IPC_STRUCT_TRAITS_MEMBER(page_state)
-  IPC_STRUCT_TRAITS_MEMBER(nav_entry_id)
-  IPC_STRUCT_TRAITS_MEMBER(subframe_unique_names)
-  IPC_STRUCT_TRAITS_MEMBER(intended_as_new_entry)
-  IPC_STRUCT_TRAITS_MEMBER(pending_history_list_offset)
-  IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
-  IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
-  IPC_STRUCT_TRAITS_MEMBER(was_discarded)
-  IPC_STRUCT_TRAITS_MEMBER(is_view_source)
-  IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_timing)
-  IPC_STRUCT_TRAITS_MEMBER(appcache_host_id)
-  IPC_STRUCT_TRAITS_MEMBER(was_activated)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_token)
-  IPC_STRUCT_TRAITS_MEMBER(prefetched_signed_exchanges)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
-#endif
-  IPC_STRUCT_TRAITS_MEMBER(is_browser_initiated)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
   IPC_STRUCT_TRAITS_MEMBER(feature)
   IPC_STRUCT_TRAITS_MEMBER(values)
@@ -646,6 +572,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)
                     document_interface_broker_content_handle)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
                     document_interface_broker_blink_handle)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, browser_interface_broker_handle)
   IPC_STRUCT_MEMBER(base::UnguessableToken, devtools_frame_token)
 IPC_STRUCT_END()
 
@@ -756,9 +683,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED1(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                     blink::WebIntrinsicSizingInfo)
 
-IPC_MESSAGE_ROUTED1(FrameMsg_FirstSurfaceActivation,
-                    viz::SurfaceInfo /* surface_info */)
-
 // Notifies the embedding frame that the process rendering the child frame's
 // contents has terminated.
 IPC_MESSAGE_ROUTED0(FrameMsg_ChildFrameProcessGone)
@@ -809,7 +733,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SwapIn)
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 
-// PlzNavigate
 // Informs the renderer that the browser stopped processing a renderer-initiated
 // navigation. It does not stop ongoing loads in the current page.
 IPC_MESSAGE_ROUTED0(FrameMsg_DroppedNavigation)
@@ -943,7 +866,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
 #endif
 #endif
 
-// PlzNavigate
 // Tells the renderer that a navigation was blocked because a content security
 // policy was violated.
 IPC_MESSAGE_ROUTED1(FrameMsg_ReportContentSecurityPolicyViolation,
@@ -1085,9 +1007,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
-
-// Sent by the renderer when the frame becomes focused.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
 // Notifies the browser that a document has been loaded.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFinishDocumentLoad)
@@ -1438,11 +1357,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UnregisterProtocolHandler,
 // The security info is non empty if the resource was originally loaded over
 // a secure connection.
 // Note: May only be sent once per URL per frame per committed load.
-IPC_MESSAGE_ROUTED5(FrameHostMsg_DidLoadResourceFromMemoryCache,
+IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     GURL /* url */,
                     std::string /* http method */,
                     std::string /* mime type */,
-                    base::Optional<url::Origin> /* top frame origin */,
                     content::ResourceType /* resource type */)
 
 // This frame attempted to navigate the main frame from the |initiator_url| to
@@ -1452,7 +1370,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidBlockNavigation,
                     GURL /* initiator_url */,
                     blink::NavigationBlockedReason /* reason */)
 
-// PlzNavigate
 // Tells the browser to abort an ongoing renderer-initiated navigation. This is
 // used when the page calls document.open.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_AbortNavigation)
@@ -1587,9 +1504,10 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_RenderFallbackContentInParentProcess)
 // Used to go to the session history entry at the given offset (ie, -1 will
 // return the "back" item). This message affects a view and not just a frame,
 // but is sent on the frame channel for attribution purposes.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_GoToEntryAtOffset,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_GoToEntryAtOffset,
                     int /* offset (from current) of history item to get */,
-                    bool /* has_user_gesture */)
+                    bool /* has_user_gesture */,
+                    bool /* from_script */)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 

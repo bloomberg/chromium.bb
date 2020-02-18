@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -355,6 +354,7 @@ IDBTransaction* IDBDatabase::transaction(
     ScriptState* script_state,
     const StringOrStringSequence& store_names,
     const String& mode_string,
+    const IDBTransactionOptions* options,
     ExceptionState& exception_state) {
   IDB_TRACE("IDBDatabase::transaction");
 
@@ -421,8 +421,13 @@ IDBTransaction* IDBDatabase::transaction(
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
 
-  backend_->CreateTransaction(transaction_backend->CreateRequest(),
-                              transaction_id, object_store_ids, mode);
+  bool relaxed_durability = false;
+  if (RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled() && options)
+    relaxed_durability = options->relaxedDurability();
+
+  backend_->CreateTransaction(transaction_backend->CreateReceiver(),
+                              transaction_id, object_store_ids, mode,
+                              relaxed_durability);
 
   return IDBTransaction::CreateNonVersionChange(
       script_state, std::move(transaction_backend), transaction_id, scope, mode,

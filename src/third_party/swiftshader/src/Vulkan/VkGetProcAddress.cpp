@@ -87,6 +87,12 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctio
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfaceCapabilitiesKHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfaceFormatsKHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfacePresentModesKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDevicePresentRectanglesKHR),
+#endif
+#ifdef VK_USE_PLATFORM_XCB_KHR
+	// VK_KHR_Xcb_surface
+	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateXcbSurfaceKHR),
+	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceXcbPresentationSupportKHR),
 #endif
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 	// VK_KHR_xlib_surface
@@ -96,6 +102,10 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctio
 #ifdef VK_USE_PLATFORM_MACOS_MVK
     // VK_MVK_macos_surface
     MAKE_VULKAN_INSTANCE_ENTRY(vkCreateMacOSSurfaceMVK),
+#endif
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+	// VK_KHR_win32_surface
+	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateWin32SurfaceKHR),
 #endif
 };
 #undef MAKE_VULKAN_INSTANCE_ENTRY
@@ -317,6 +327,7 @@ static const std::vector<std::pair<const char*, std::unordered_map<std::string, 
 			MAKE_VULKAN_DEVICE_ENTRY(vkDestroySwapchainKHR),
 			MAKE_VULKAN_DEVICE_ENTRY(vkGetSwapchainImagesKHR),
 			MAKE_VULKAN_DEVICE_ENTRY(vkAcquireNextImageKHR),
+			MAKE_VULKAN_DEVICE_ENTRY(vkAcquireNextImage2KHR),
 			MAKE_VULKAN_DEVICE_ENTRY(vkQueuePresentKHR),
 			MAKE_VULKAN_DEVICE_ENTRY(vkGetDeviceGroupPresentCapabilitiesKHR),
 			MAKE_VULKAN_DEVICE_ENTRY(vkGetDeviceGroupSurfacePresentModesKHR),

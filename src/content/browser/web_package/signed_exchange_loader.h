@@ -19,8 +19,13 @@
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/origin.h"
+
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
 
 namespace net {
 struct SHA256HashValue;
@@ -40,7 +45,6 @@ class SignedExchangePrefetchMetricRecorder;
 class SignedExchangeReporter;
 class SignedExchangeValidityPinger;
 class SourceStreamToDataPipe;
-class URLLoaderThrottle;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
@@ -52,7 +56,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       public network::mojom::URLLoader {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
   // If |should_redirect_on_failure| is true, verification failure causes a
   // redirect to the fallback URL.
@@ -77,10 +81,10 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // network::mojom::URLLoaderClient implementation
   // Only OnStartLoadingResponseBody() and OnComplete() are called.
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
@@ -94,7 +98,6 @@ class CONTENT_EXPORT SignedExchangeLoader final
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;

@@ -8,6 +8,7 @@
 This module should only be imported inside the chroot.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import cStringIO
@@ -15,8 +16,6 @@ import collections
 import errno
 import fnmatch
 import itertools
-import lddtree
-import magic
 import mimetypes
 import os
 import re
@@ -25,6 +24,8 @@ import unittest
 
 from elftools.elf import elffile
 from elftools.common import exceptions
+import lddtree
+import magic  # pylint: disable=import-error
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -324,10 +325,10 @@ class FileSystemMetaDataTest(image_test_lib.ImageTestCase):
     metadata_size = (block_count - free_blocks) * block_size - sum_file_size
 
     self.OutputPerfValue('free_inodes_over_inode_count',
-                         free_inodes * 100.0 / inode_count, 'percent',
+                         free_inodes * 100 / inode_count, 'percent',
                          graph='free_over_used_ratio')
     self.OutputPerfValue('free_blocks_over_block_count',
-                         free_blocks * 100.0 / block_count, 'percent',
+                         free_blocks * 100 / block_count, 'percent',
                          graph='free_over_used_ratio')
     self.OutputPerfValue('apparent_size', sum_file_size, 'bytes',
                          higher_is_better=False, graph='filesystem_stats')

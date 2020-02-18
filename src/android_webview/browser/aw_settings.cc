@@ -25,7 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -43,6 +42,8 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->should_clear_document_background = false;
   web_prefs->viewport_meta_enabled = true;
   web_prefs->picture_in_picture_enabled = false;
+  web_prefs->disable_features_depending_on_viz = true;
+  web_prefs->disable_accelerated_small_canvases = true;
 }
 
 const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
@@ -253,8 +254,7 @@ void AwSettings::UpdateRendererPreferencesLocked(
   if (update_prefs && host)
     host->SyncRendererPrefs();
 
-  if (update_prefs &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (update_prefs) {
     // make sure to update accept languages when the network service is enabled
     AwBrowserContext* aw_browser_context =
         AwBrowserContext::FromWebContents(web_contents());
@@ -456,18 +456,9 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   bool enable_supported_hardware_accelerated_features =
       Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(env,
                                                                           obj);
-
-  bool accelerated_2d_canvas_enabled_by_switch =
-      web_prefs->accelerated_2d_canvas_enabled;
-  web_prefs->accelerated_2d_canvas_enabled = true;
-  if (!accelerated_2d_canvas_enabled_by_switch ||
-      !enable_supported_hardware_accelerated_features) {
-    // Any canvas smaller than this will fallback to software. Abusing this
-    // slightly to turn canvas off without changing
-    // accelerated_2d_canvas_enabled, which also affects compositing mode.
-    // Using 100M instead of max int to avoid overflows.
-    web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
-  }
+  web_prefs->accelerated_2d_canvas_enabled =
+      web_prefs->accelerated_2d_canvas_enabled &&
+      enable_supported_hardware_accelerated_features;
   // Always allow webgl. Webview always requires access to the GPU even if
   // it only does software draws. WebGL will not show up in software draw so
   // there is no more brokenness for user. This makes it easier for apps that

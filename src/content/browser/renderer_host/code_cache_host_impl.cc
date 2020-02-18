@@ -23,7 +23,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/io_buffer.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "url/gurl.h"
@@ -104,7 +104,7 @@ CodeCacheHostImpl::CodeCacheHostImpl(
       generated_code_cache_context_(std::move(generated_code_cache_context)) {}
 
 CodeCacheHostImpl::~CodeCacheHostImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 // static
@@ -112,13 +112,13 @@ void CodeCacheHostImpl::Create(
     int render_process_id,
     scoped_refptr<CacheStorageContextImpl> cache_storage_context,
     scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context,
-    blink::mojom::CodeCacheHostRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<CodeCacheHostImpl>(
           render_process_id, std::move(cache_storage_context),
           std::move(generated_code_cache_context)),
-      std::move(request));
+      std::move(receiver));
 }
 
 void CodeCacheHostImpl::DidGenerateCacheableMetadata(
@@ -131,7 +131,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
     return;
   }
 
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
   if (!code_cache)
@@ -226,10 +226,10 @@ GeneratedCodeCache* CodeCacheHostImpl::GetCodeCache(
 
 void CodeCacheHostImpl::OnReceiveCachedCode(FetchCachedCodeCallback callback,
                                             const base::Time& response_time,
-                                            const std::vector<uint8_t>& data) {
+                                            mojo_base::BigBuffer data) {
   // TODO(crbug.com/867848): Pass the data as a mojo data pipe instead
-  // of vector<uint8>
-  std::move(callback).Run(response_time, data);
+  // of BigBuffer.
+  std::move(callback).Run(response_time, std::move(data));
 }
 
 void CodeCacheHostImpl::OnCacheStorageOpenCallback(

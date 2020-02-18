@@ -56,6 +56,7 @@ struct OpenInputDeviceParams {
 #if defined(USE_EVDEV_GESTURES)
   GesturePropertyProvider* gesture_property_provider;
 #endif
+  SharedPalmDetectionFilterState* shared_palm_state;
 };
 
 #if defined(USE_EVDEV_GESTURES)
@@ -105,7 +106,8 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   if (devinfo.HasTouchscreen()) {
     std::unique_ptr<TouchEventConverterEvdev> converter(
         new TouchEventConverterEvdev(std::move(fd), params.path, params.id,
-                                     devinfo, params.dispatcher));
+                                     devinfo, params.shared_palm_state,
+                                     params.dispatcher));
     converter->Initialize(devinfo);
     return std::move(converter);
   }
@@ -169,11 +171,11 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
     CursorDelegateEvdev* cursor)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       cursor_(cursor),
+      shared_palm_state_(new SharedPalmDetectionFilterState),
 #if defined(USE_EVDEV_GESTURES)
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
-      dispatcher_(std::move(dispatcher)),
-      weak_ptr_factory_(this) {
+      dispatcher_(std::move(dispatcher)) {
 }
 
 InputDeviceFactoryEvdev::~InputDeviceFactoryEvdev() {
@@ -186,6 +188,7 @@ void InputDeviceFactoryEvdev::AddInputDevice(int id,
   params.path = path;
   params.cursor = cursor_;
   params.dispatcher = dispatcher_.get();
+  params.shared_palm_state = shared_palm_state_.get();
 
 #if defined(USE_EVDEV_GESTURES)
   params.gesture_property_provider = gesture_property_provider_.get();
@@ -314,6 +317,9 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
                            input_device_settings_.touchpad_sensitivity);
   SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity",
                            input_device_settings_.touchpad_sensitivity);
+  SetBoolPropertyForOneType(
+      DT_TOUCHPAD, "Pointer Acceleration",
+      input_device_settings_.touchpad_acceleration_enabled);
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Enable",
                             input_device_settings_.tap_to_click_enabled);
@@ -329,6 +335,8 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
                            input_device_settings_.mouse_sensitivity);
   SetIntPropertyForOneType(DT_MOUSE, "Scroll Sensitivity",
                            input_device_settings_.mouse_sensitivity);
+  SetBoolPropertyForOneType(DT_MOUSE, "Pointer Acceleration",
+                            input_device_settings_.mouse_acceleration_enabled);
   SetBoolPropertyForOneType(
       DT_MOUSE, "Mouse Reverse Scrolling",
       input_device_settings_.mouse_reverse_scroll_enabled);

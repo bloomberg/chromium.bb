@@ -7,96 +7,13 @@
  */
 
 goog.provide('LogStore');
-goog.provide('BaseLog');
-goog.provide('TextLog');
-goog.provide('TreeLog');
 
 goog.require('TreeDumper');
-
-/** @constructor */
-BaseLog = function(logType) {
-  /**
-   * @type {!TextLog.LogType | !TreeLog.LogType}
-   */
-  this.logType = logType;
-
-  /**
-   * @type {!Date}
-   */
-  this.date = new Date();
-};
-
-/** @return {string} */
-BaseLog.prototype.toString = function() {
-  return '';
-};
-
-/**
- * @param {string} logStr
- * @param {!TextLog.LogType} logType
- * @constructor
- * @extends {BaseLog}
- */
-TextLog = function(logStr, logType) {
-  BaseLog.call(this, logType);
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this.logStr_ = logStr;
-};
-
-TextLog.prototype = {
-  __proto__: BaseLog.prototype,
-
-  /** @override */
-  toString: function() {
-    return this.logStr_;
-  },
-};
-
-/**
- * Filter type checkboxes are shown in this order at the log page.
- * @enum {string}
- */
-TextLog.LogType = {
-  SPEECH: 'speech',
-  SPEECH_RULE: 'speechRule',
-  BRAILLE: 'braille',
-  BRAILLE_RULE: 'brailleRule',
-  EARCON: 'earcon',
-  EVENT: 'event',
-};
-
-/**
- * @param {!TreeDumper} logTree
- * @constructor
- * @extends {BaseLog}
- */
-TreeLog = function(logTree) {
-  BaseLog.call(this, TreeLog.LogType.TREE);
-
-  /**
-   * @type {!TreeDumper}
-   * @private
-   */
-  this.logTree_ = logTree;
-};
-
-TreeLog.prototype = {
-  __proto__: BaseLog.prototype,
-
-  /** @override */
-  toString: function() {
-    return this.logTree_.treeToString();
-  },
-};
-
-/** @enum {string} */
-TreeLog.LogType = {
-  TREE: 'tree',
-};
+goog.require('BaseLog');
+goog.require('EventLog');
+goog.require('SpeechLog');
+goog.require('TextLog');
+goog.require('TreeLog');
 
 /** @constructor */
 LogStore = function() {
@@ -124,32 +41,34 @@ LogStore = function() {
 LogStore.LOG_LIMIT = 3000;
 
 /**
- * List of all LogTypes.
- * @return {!Array<!TextLog.LogType | !TreeLog.LogType>}
+ * List of all LogType.
+ * Note that filter type checkboxes are shown in this order at the log page.
+ * @enum {string}
  */
-LogStore.logTypes = function() {
-  var types = [];
-  for (var type in TextLog.LogType)
-    types.push(TextLog.LogType[type]);
-  for (var type in TreeLog.LogType)
-    types.push(TreeLog.LogType[type]);
-  return types;
+LogStore.LogType = {
+  SPEECH: 'speech',
+  SPEECH_RULE: 'speechRule',
+  BRAILLE: 'braille',
+  BRAILLE_RULE: 'brailleRule',
+  EARCON: 'earcon',
+  EVENT: 'event',
+  TREE: 'tree',
 };
 
 /**
  * Creates logs of type |type| in order.
  * This is not the best way to create logs fast but
  * getLogsOfType() is not called often.
- * @param {!TextLog.LogType} logType
+ * @param {!LogStore.LogType} LogType
  * @return {!Array<BaseLog>}
  */
-LogStore.prototype.getLogsOfType = function(logType) {
+LogStore.prototype.getLogsOfType = function(LogType) {
   var returnLogs = [];
   for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
     var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
     if (!this.logs_[index])
       continue;
-    if (this.logs_[index].logType == logType)
+    if (this.logs_[index].logType == LogType)
       returnLogs.push(this.logs_[index]);
   }
   return returnLogs;
@@ -174,31 +93,38 @@ LogStore.prototype.getLogs = function() {
 
 /**
  * Write a text log to this.logs_.
- * To add a message to logs, this function shuold be called.
+ * To add a message to logs, this function should be called.
  * @param {string} logContent
- * @param {!TextLog.LogType} logType
+ * @param {!LogStore.LogType} LogType
  */
-LogStore.prototype.writeTextLog = function(logContent, logType) {
+LogStore.prototype.writeTextLog = function(logContent, LogType) {
   if (this.shouldSkipOutput_())
     return;
 
-  var log = new TextLog(logContent, logType);
-  this.logs_[this.startIndex_] = log;
-  this.startIndex_ += 1;
-  if (this.startIndex_ == LogStore.LOG_LIMIT)
-    this.startIndex_ = 0;
+  this.writeLog(new TextLog(logContent, LogType));
 };
 
 /**
  * Write a tree log to this.logs_.
- * To add a message to logs, this function shuold be called.
+ * To add a message to logs, this function should be called.
  * @param {!TreeDumper} logContent
  */
 LogStore.prototype.writeTreeLog = function(logContent) {
   if (this.shouldSkipOutput_())
     return;
 
-  var log = new TreeLog(logContent);
+  this.writeLog(new TreeLog(logContent));
+};
+
+/**
+ * Write a log to this.logs_.
+ * To add a message to logs, this function should be called.
+ * @param {!BaseLog} log
+ */
+LogStore.prototype.writeLog = function(log) {
+  if (this.shouldSkipOutput_())
+    return;
+
   this.logs_[this.startIndex_] = log;
   this.startIndex_ += 1;
   if (this.startIndex_ == LogStore.LOG_LIMIT)

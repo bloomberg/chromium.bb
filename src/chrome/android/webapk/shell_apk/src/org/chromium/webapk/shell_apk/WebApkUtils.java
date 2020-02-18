@@ -4,7 +4,9 @@
 
 package org.chromium.webapk.shell_apk;
 
-import android.app.Activity;
+import android.annotation.TargetApi;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -279,14 +281,6 @@ public class WebApkUtils {
                 .setData(Uri.parse("http://"));
     }
 
-    public static void finishAndRemoveTask(Activity activity) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            activity.finishAndRemoveTask();
-        } else {
-            activity.finish();
-        }
-    }
-
     public static String getNotificationChannelName(Context context) {
         return context.getString(R.string.notification_channel_name);
     }
@@ -353,5 +347,26 @@ public class WebApkUtils {
             context.grantUriPermission(
                     params.getHostBrowserPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
+    }
+
+    /** Returns the ComponentName for the top activity in {@link taskId}'s task stack. */
+    @TargetApi(Build.VERSION_CODES.M)
+    public static ComponentName fetchTopActivityComponent(Context context, int taskId) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return null;
+        }
+
+        ActivityManager manager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.AppTask task : manager.getAppTasks()) {
+            try {
+                ActivityManager.RecentTaskInfo taskInfo = task.getTaskInfo();
+                if (taskInfo != null && taskInfo.id == taskId) {
+                    return taskInfo.topActivity;
+                }
+            } catch (IllegalArgumentException e) {
+            }
+        }
+        return null;
     }
 }

@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
+#include "chrome/browser/extensions/api/extension_action/test_icon_image_observer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -209,7 +211,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   // Test that we received the changes.
   ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ("Modified", action->GetTitle(ExtensionAction::kDefaultTabId));
-  ASSERT_EQ("badge", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("badge",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 
@@ -701,7 +704,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
       extensions::ProcessManager::Get(browser()->profile());
   ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
   ExtensionAction* action = GetBrowserAction(*extension);
-  ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
 
   content::WindowedNotificationObserver host_destroyed_observer(
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -715,7 +719,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   // and the badge text has been set.
   host_destroyed_observer.Wait();
   ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension->id()));
-  ASSERT_EQ("X", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+  ASSERT_EQ("X",
+            action->GetExplicitlySetBadgeText(ExtensionAction::kDefaultTabId));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
@@ -878,14 +883,28 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionWithRectangularIcon) {
   ExtensionTestMessageListener ready_listener("ready", true);
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("browser_action").AppendASCII("rect_icon")));
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("browser_action").AppendASCII("rect_icon"));
+  ASSERT_TRUE(extension);
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // Wait for the default icon to load before accessing the underlying
+  // gfx::Image.
+  TestIconImageObserver::WaitForExtensionActionIcon(extension, profile());
+
   gfx::Image first_icon = GetBrowserActionsBar()->GetIcon(0);
+  ASSERT_FALSE(first_icon.IsEmpty());
+
+  TestExtensionActionAPIObserver observer(profile(), extension->id());
   ResultCatcher catcher;
   ready_listener.Reply(std::string());
   EXPECT_TRUE(catcher.GetNextResult());
+  // Wait for extension action to be updated.
+  observer.Wait();
+
   gfx::Image next_icon = GetBrowserActionsBar()->GetIcon(0);
+  ASSERT_FALSE(next_icon.IsEmpty());
   EXPECT_FALSE(gfx::test::AreImagesEqual(first_icon, next_icon));
 }
 

@@ -197,13 +197,13 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
       root_surface_(new DirectCompositionChildSurfaceWin()),
       layer_tree_(std::make_unique<DCLayerTree>(
           settings.disable_nv12_dynamic_textures,
-          settings.disable_larger_than_screen_overlays)),
+          settings.disable_larger_than_screen_overlays,
+          settings.disable_vp_scaling)),
       presentation_helper_(
           std::make_unique<GLSurfacePresentationHelper>(vsync_provider.get())),
       vsync_provider_(std::move(vsync_provider)),
       vsync_callback_(std::move(vsync_callback)),
-      max_pending_frames_(settings.max_pending_frames),
-      weak_factory_(this) {
+      max_pending_frames_(settings.max_pending_frames) {
   // Call GetWeakPtr() on main thread before calling on vsync thread so that the
   // internal weak reference is initialized in a thread-safe way.
   weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -272,9 +272,9 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Enable flag should be checked before the disable flag, so we could
   // overwrite GPU driver bug workarounds in testing.
-  if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
+  if (command_line->HasSwitch(switches::kEnableDirectCompositionVideoOverlays))
     return true;
-  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
+  if (command_line->HasSwitch(switches::kDisableDirectCompositionVideoOverlays))
     return false;
 
   return g_supports_overlays;
@@ -405,6 +405,43 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
 
   UMA_HISTOGRAM_BOOLEAN("GPU.Output.HDR", hdr_monitor_found);
   return hdr_monitor_found;
+}
+
+// static
+bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported() {
+  static const bool supported = [] {
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+        QueryD3D11DeviceObjectFromANGLE();
+    if (!d3d11_device) {
+      DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
+                     "D3D11 device from ANGLE";
+      return false;
+    }
+    Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+    d3d11_device.As(&dxgi_device);
+    DCHECK(dxgi_device);
+    Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+    dxgi_device->GetAdapter(&dxgi_adapter);
+    DCHECK(dxgi_adapter);
+    Microsoft::WRL::ComPtr<IDXGIFactory5> dxgi_factory;
+    if (FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory)))) {
+      DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
+                     "IDXGIFactory5 interface";
+      return false;
+    }
+
+    BOOL present_allow_tearing = FALSE;
+    DCHECK(dxgi_factory);
+    if (FAILED(dxgi_factory->CheckFeatureSupport(
+            DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_allow_tearing,
+            sizeof(present_allow_tearing)))) {
+      DLOG(ERROR)
+          << "Not using swap chain tearing because CheckFeatureSupport failed";
+      return false;
+    }
+    return !!present_allow_tearing;
+  }();
+  return supported;
 }
 
 bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
@@ -575,21 +612,13 @@ bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {
   return base::FeatureList::IsEnabled(features::kDirectCompositionGpuVSync);
 }
 
-bool DirectCompositionSurfaceWin::NeedsVSync() const {
-  return vsync_callback_enabled_ || !pending_frames_.empty();
-}
-
 void DirectCompositionSurfaceWin::SetGpuVSyncEnabled(bool enabled) {
   DCHECK(vsync_thread_);
-  if (vsync_callback_enabled_ == enabled)
-    return;
-  vsync_callback_enabled_ = enabled;
-
-  if (NeedsVSync()) {
-    vsync_thread_->AddObserver(this);
-  } else {
-    vsync_thread_->RemoveObserver(this);
+  {
+    base::AutoLock lock(vsync_callback_lock_);
+    vsync_callback_enabled_ = enabled;
   }
+  StartOrStopVSyncThread();
 }
 
 void DirectCompositionSurfaceWin::CheckPendingFrames() {
@@ -622,8 +651,7 @@ void DirectCompositionSurfaceWin::CheckPendingFrames() {
     pending_frames_.pop_front();
   }
 
-  if (!NeedsVSync())
-    vsync_thread_->RemoveObserver(this);
+  StartOrStopVSyncThread();
 }
 
 void DirectCompositionSurfaceWin::EnqueuePendingFrame(
@@ -639,20 +667,35 @@ void DirectCompositionSurfaceWin::EnqueuePendingFrame(
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
     d3d11_device_->GetImmediateContext(&context);
     context->End(query.Get());
+    context->Flush();
   } else {
     DLOG(ERROR) << "CreateQuery failed with error 0x" << std::hex << hr;
   }
 
-  if (!NeedsVSync())
-    vsync_thread_->AddObserver(this);
-
   pending_frames_.emplace_back(std::move(query), std::move(callback));
+
+  StartOrStopVSyncThread();
+}
+
+bool DirectCompositionSurfaceWin::VSyncCallbackEnabled() const {
+  base::AutoLock lock(vsync_callback_lock_);
+  return vsync_callback_enabled_;
+}
+
+void DirectCompositionSurfaceWin::StartOrStopVSyncThread() {
+  if (VSyncCallbackEnabled() || !pending_frames_.empty()) {
+    vsync_thread_->AddObserver(this);
+  } else {
+    vsync_thread_->RemoveObserver(this);
+  }
 }
 
 void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
                                           base::TimeDelta interval) {
-  if (!SupportsLowLatencyPresentation() && vsync_callback_)
+  if (!SupportsLowLatencyPresentation() && VSyncCallbackEnabled()) {
+    DCHECK(vsync_callback_);
     vsync_callback_.Run(vsync_time, interval);
+  }
 
   if (SupportsPresentationFeedback()) {
     task_runner_->PostTask(
@@ -673,8 +716,9 @@ void DirectCompositionSurfaceWin::HandleVSyncOnMainThread(
   UMA_HISTOGRAM_COUNTS_100("GPU.DirectComposition.NumPendingFrames",
                            pending_frames_.size());
 
-  if (SupportsLowLatencyPresentation() && vsync_callback_ &&
+  if (SupportsLowLatencyPresentation() && VSyncCallbackEnabled() &&
       pending_frames_.size() < max_pending_frames_) {
+    DCHECK(vsync_callback_);
     vsync_callback_.Run(vsync_time, interval);
   }
 }

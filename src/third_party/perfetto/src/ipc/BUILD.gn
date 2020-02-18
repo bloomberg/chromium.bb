@@ -16,17 +16,11 @@ import("../../gn/fuzzer.gni")
 import("../../gn/ipc_library.gni")
 import("../../gn/perfetto.gni")
 import("../../gn/proto_library.gni")
-
-# For use_libfuzzer.
-if (perfetto_build_standalone || perfetto_build_with_android) {
-  import("//gn/standalone/sanitizers/vars.gni")
-} else {
-  import("//build/config/sanitizers/sanitizers.gni")
-}
+import("../../gn/test.gni")
 
 # This build file should not be leaked into all embedders. Only select
 # projects should be depending on our IPC layer.
-assert(perfetto_build_with_ipc_layer)
+assert(enable_perfetto_ipc)
 
 source_set("ipc") {
   public_configs = [ "../../gn:default_config" ]
@@ -41,7 +35,9 @@ source_set("ipc") {
   ]
   sources = [
     "buffered_frame_deserializer.cc",
+    "buffered_frame_deserializer.h",
     "client_impl.cc",
+    "client_impl.h",
     "deferred.cc",
     "host_impl.cc",
     "host_impl.h",
@@ -61,7 +57,7 @@ perfetto_fuzzer_test("buffered_frame_deserializer_fuzzer") {
   ]
 }
 
-source_set("unittests") {
+perfetto_unittest_source_set("unittests") {
   testonly = true
   deps = [
     ":ipc",
@@ -81,13 +77,12 @@ source_set("unittests") {
   ]
 }
 
-proto_library("wire_protocol") {
-  generate_python = false
+perfetto_proto_library("wire_protocol") {
+  proto_generators = [ "lite" ]
   sources = [
     "wire_protocol.proto",
   ]
-  proto_in_dir = perfetto_root_path
-  proto_out_dir = perfetto_root_path
+  proto_path = perfetto_root_path
 }
 
 ipc_library("test_messages") {

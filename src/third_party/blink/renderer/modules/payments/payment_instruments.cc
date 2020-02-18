@@ -139,7 +139,7 @@ class PaymentInstrumentParameter
 };
 
 PaymentInstruments::PaymentInstruments(
-    const payments::mojom::blink::PaymentManagerPtr& manager)
+    const mojo::Remote<payments::mojom::blink::PaymentManager>& manager)
     : manager_(manager) {}
 
 ScriptPromise PaymentInstruments::deleteInstrument(
@@ -286,8 +286,9 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
 mojom::blink::PermissionService* PaymentInstruments::GetPermissionService(
     ScriptState* script_state) {
   if (!permission_service_) {
-    ConnectToPermissionService(ExecutionContext::From(script_state),
-                               mojo::MakeRequest(&permission_service_));
+    ConnectToPermissionService(
+        ExecutionContext::From(script_state),
+        permission_service_.BindNewPipeAndPassReceiver());
   }
   return permission_service_.get();
 }

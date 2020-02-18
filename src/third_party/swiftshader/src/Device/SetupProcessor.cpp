@@ -69,14 +69,14 @@ namespace sw
 
 		bool vPosZW = (context->pixelShader && context->pixelShader->hasBuiltinInput(spv::BuiltInFragCoord));
 
-		state.isDrawPoint = context->isDrawPoint();
-		state.isDrawLine = context->isDrawLine();
-		state.isDrawTriangle = context->isDrawTriangle();
+		state.isDrawPoint = context->isDrawPoint(true);
+		state.isDrawLine = context->isDrawLine(true);
+		state.isDrawTriangle = context->isDrawTriangle(true);
+		state.applySlopeDepthBias = context->isDrawTriangle(false) && (context->slopeDepthBias != 0.0f);
 		state.interpolateZ = context->depthBufferActive() || vPosZW;
 		state.interpolateW = context->pixelShader != nullptr;
 		state.frontFace = context->frontFace;
 		state.cullMode = context->cullMode;
-		state.slopeDepthBias = context->slopeDepthBias != 0.0f;
 
 		state.multiSample = context->sampleCount;
 		state.rasterizerDiscard = context->rasterizerDiscard;
@@ -94,9 +94,9 @@ namespace sw
 		return state;
 	}
 
-	Routine *SetupProcessor::routine(const State &state)
+	std::shared_ptr<Routine> SetupProcessor::routine(const State &state)
 	{
-		Routine *routine = routineCache->query(state);
+		auto routine = routineCache->query(state);
 
 		if(!routine)
 		{

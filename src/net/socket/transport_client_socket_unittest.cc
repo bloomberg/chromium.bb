@@ -22,7 +22,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +43,7 @@ enum ClientSocketTestTypes { TCP, SCTP };
 
 class TransportClientSocketTest
     : public ::testing::TestWithParam<ClientSocketTestTypes>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   TransportClientSocketTest()
       : listen_port_(0),
@@ -111,9 +111,10 @@ void TransportClientSocketTest::SetUp() {
   // Get the server's address (including the actual port number).
   ASSERT_THAT(listen_sock_->GetLocalAddress(&local_address), IsOk());
   listen_port_ = local_address.port();
-  listen_sock_->Accept(&connected_sock_,
-                       base::Bind(&TransportClientSocketTest::AcceptCallback,
-                                  base::Unretained(this)));
+  listen_sock_->Accept(
+      &connected_sock_,
+      base::BindOnce(&TransportClientSocketTest::AcceptCallback,
+                     base::Unretained(this)));
 
   AddressList addr = AddressList::CreateFromIPAddress(
       IPAddress::IPv4Localhost(), listen_port_);

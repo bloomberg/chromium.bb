@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -45,13 +44,14 @@ static const CGFloat kButtonVerticalMargin = 12;
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
   CGFloat alpha = highlighted ? 0.07 : 0;
-  self.backgroundColor = [UIColor.cr_labelColor colorWithAlphaComponent:alpha];
+  self.backgroundColor =
+      [[UIColor colorNamed:kTextPrimaryColor] colorWithAlphaComponent:alpha];
 }
 
 #pragma mark - Private
 
 - (void)initializeStyling {
-  [self setTitleColor:[UIColor colorNamed:kTintColor]
+  [self setTitleColor:[UIColor colorNamed:kBlueColor]
              forState:UIControlStateNormal];
   self.translatesAutoresizingMaskIntoConstraints = NO;
   self.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];

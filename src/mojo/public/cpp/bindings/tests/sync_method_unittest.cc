@@ -11,7 +11,7 @@
 #include "base/sequence_token.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -252,7 +252,7 @@ template <typename Interface>
 class TestSyncServiceSequence {
  public:
   TestSyncServiceSequence()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
         ping_called_(false) {}
 
   void SetUp(InterfaceRequest<Interface> request) {
@@ -295,7 +295,7 @@ class SyncMethodTest : public testing::Test {
   ~SyncMethodTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 };
 
 template <typename TypeParam>
@@ -409,7 +409,7 @@ class SequencedTaskRunnerTestBase {
 // so gtest can instantiate copies for each |TypeParam|.
 template <typename TypeParam>
 class SequencedTaskRunnerTestLauncher : public testing::Test {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 };
 
 // Similar to SyncMethodCommonTest, but the test body runs on a
@@ -432,7 +432,8 @@ void RunTestOnSequencedTaskRunner(
     std::unique_ptr<SequencedTaskRunnerTestBase> test) {
   base::RunLoop run_loop;
   test->Init(run_loop.QuitClosure());
-  base::CreateSequencedTaskRunnerWithTraits({base::WithBaseSyncPrimitives()})
+  base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SequencedTaskRunnerTestBase::RunTest,
                                 base::Unretained(test.release())));

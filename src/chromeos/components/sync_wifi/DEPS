@@ -1,3 +1,7 @@
 include_rules = [
+  "+components/keyed_service/core",
+  "+components/prefs",
+  "+components/version_info",
   "+components/sync",
+  "+components/sync_preferences"
 ]

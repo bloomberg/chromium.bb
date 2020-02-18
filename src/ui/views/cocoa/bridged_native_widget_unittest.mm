@@ -18,7 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
@@ -304,7 +304,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   using NativeWidgetMac::GetNSWindowHost;
 
   // internal::NativeWidgetPrivate:
-  void InitNativeWidget(const Widget::InitParams& params) override {
+  void InitNativeWidget(Widget::InitParams params) override {
     ownership_ = params.ownership;
 
     base::scoped_nsobject<NativeWidgetMacNSWindow> window(
@@ -377,23 +377,16 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
 
     ui::MaterialDesignController::Initialize();
 
-    init_params_.native_widget = native_widget_mac_;
-
-    // Use a frameless window, otherwise Widget will try to center the window
-    // before the tests covering the Init() flow are ready to do that.
-    init_params_.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-
-    // To control the lifetime without an actual window that must be closed,
-    // tests in this file need to use WIDGET_OWNS_NATIVE_WIDGET.
-    init_params_.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-
-    // Opacity defaults to "infer" which is usually updated by ViewsDelegate.
-    init_params_.opacity = Widget::InitParams::OPAQUE_WINDOW;
-
-    init_params_.bounds = gfx::Rect(100, 100, 100, 100);
+    Widget::InitParams init_params;
+    init_params.native_widget = native_widget_mac_;
+    init_params.type = type_;
+    init_params.ownership = ownership_;
+    init_params.opacity = opacity_;
+    init_params.bounds = bounds_;
+    init_params.shadow_type = shadow_type_;
 
     if (native_widget_mac_)
-      native_widget_mac_->GetWidget()->Init(init_params_);
+      native_widget_mac_->GetWidget()->Init(std::move(init_params));
   }
 
   void TearDown() override {
@@ -414,8 +407,19 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   std::unique_ptr<Widget> widget_;
   MockNativeWidgetMac* native_widget_mac_;  // Weak. Owned by |widget_|.
 
-  // Make the InitParams available to tests to cover initialization codepaths.
-  Widget::InitParams init_params_;
+  // Use a frameless window, otherwise Widget will try to center the window
+  // before the tests covering the Init() flow are ready to do that.
+  Widget::InitParams::Type type_ = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  // To control the lifetime without an actual window that must be closed,
+  // tests in this file need to use WIDGET_OWNS_NATIVE_WIDGET.
+  Widget::InitParams::Ownership ownership_ =
+      Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  // Opacity defaults to "infer" which is usually updated by ViewsDelegate.
+  Widget::InitParams::WindowOpacity opacity_ =
+      Widget::InitParams::OPAQUE_WINDOW;
+  gfx::Rect bounds_ = gfx::Rect(100, 100, 100, 100);
+  Widget::InitParams::ShadowType shadow_type_ =
+      Widget::InitParams::SHADOW_TYPE_DEFAULT;
 
  private:
   TestViewsDelegate test_views_delegate_;
@@ -507,8 +511,8 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase,
 
   HandleKeyEventCallback handle_key_event_callback_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);
@@ -544,7 +548,7 @@ Textfield* BridgedNativeWidgetTest::InstallTextField(
   textfield->set_controller(this);
   view_->RemoveAllChildViews(true);
   view_->AddChildView(textfield);
-  textfield->SetBoundsRect(init_params_.bounds);
+  textfield->SetBoundsRect(bounds_);
 
   // Request focus so the InputMethod can dispatch events to the RootView, and
   // have them delivered to the textfield. Note that focusing a textfield
@@ -628,7 +632,7 @@ void BridgedNativeWidgetTest::SetHandleKeyEventCallback(
 void BridgedNativeWidgetTest::SetUp() {
   BridgedNativeWidgetTestBase::SetUp();
 
-  view_.reset(new views::internal::RootView(widget_.get()));
+  view_ = std::make_unique<views::internal::RootView>(widget_.get());
   base::scoped_nsobject<NSWindow> window([bridge_window() retain]);
 
   // The delegate should exist before setting the root view.
@@ -861,13 +865,19 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
 
   // Prepares a new |window_| and |widget_| for a call to PerformInit().
   void CreateNewWidgetToInit() {
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     native_widget_mac_ = new MockNativeWidgetMac(widget_.get());
-    init_params_.native_widget = native_widget_mac_;
   }
 
   void PerformInit() {
-    widget_->Init(init_params_);
+    Widget::InitParams init_params;
+    init_params.native_widget = native_widget_mac_;
+    init_params.type = type_;
+    init_params.ownership = ownership_;
+    init_params.opacity = opacity_;
+    init_params.bounds = bounds_;
+    init_params.shadow_type = shadow_type_;
+    widget_->Init(std::move(init_params));
   }
 
  private:
@@ -890,9 +900,9 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
 // Tests the shadow type given in InitParams.
 TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   // Verify Widget::InitParam defaults and arguments added from SetUp().
-  EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, init_params_.type);
-  EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, init_params_.opacity);
-  EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, init_params_.shadow_type);
+  EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, type_);
+  EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, opacity_);
+  EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, shadow_type_);
 
   CreateNewWidgetToInit();
   EXPECT_FALSE(
@@ -905,7 +915,7 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
       [bridge_window() hasShadow]);  // SHADOW_TYPE_DEFAULT means a shadow.
 
   CreateNewWidgetToInit();
-  init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  shadow_type_ = Widget::InitParams::SHADOW_TYPE_NONE;
   PerformInit();
   EXPECT_FALSE([bridge_window() hasShadow]);  // Preserves lack of shadow.
 
@@ -915,7 +925,7 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   EXPECT_FALSE(
       [bridge_window() hasShadow]);  // SHADOW_TYPE_NONE removes shadow.
 
-  init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  shadow_type_ = Widget::InitParams::SHADOW_TYPE_DEFAULT;
   CreateNewWidgetToInit();
   PerformInit();
   EXPECT_TRUE([bridge_window() hasShadow]);  // Preserves shadow.
@@ -1488,29 +1498,29 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
         if (event.key_code() == ui::VKEY_RETURN) {
           EXPECT_FALSE(*saw_return);
           *saw_return = true;
-          EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+          EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
         }
         return false;
       },
       &saw_vkey_return));
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
 
   g_fake_interpret_key_events = &handle_q_in_ime;
   [ns_view_ keyDown:q_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->GetText());
   EXPECT_FALSE(saw_vkey_return);
 
   g_fake_interpret_key_events = &handle_o_in_ime;
   [ns_view_ keyDown:o_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
   EXPECT_FALSE(saw_vkey_return);
 
   // Note the "Enter" should not replace the replacement range, even though a
   // replacement range was set.
   g_fake_interpret_key_events = &handle_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
 
   // VKEY_RETURN should be seen by via the unhandled key event handler (but not
   // via -insertText:.
@@ -1564,28 +1574,29 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulateTelexMoo) {
         [view doCommandBySelector:@selector(insertNewLine:)];
       });
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   g_fake_interpret_key_events = &handle_m_in_ime;
   [ns_view_ keyDown:m_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"m"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"m"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_o_in_ime;
   [ns_view_ keyDown:o_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"mo"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mo"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_second_o_in_ime;
   [ns_view_ keyDown:o_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->text());  // No change.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"),
+            textfield->GetText());    // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
@@ -1617,24 +1628,25 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorEnterComposition) {
   InterpretKeyEventsCallback handle_second_return_in_ime = base::BindRepeating(
       [](id view) { [view doCommandBySelector:@selector(insertNewLine:)]; });
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   g_fake_interpret_key_events = &handle_a_in_ime;
   [ns_view_ keyDown:a_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_second_return_in_ime;
   [ns_view_
       keyDown:VkeyKeyDown(ui::VKEY_RETURN)];  // Sanity check: send Enter again.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());  // No change.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"),
+            textfield->GetText());    // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
@@ -1683,37 +1695,38 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
         [view doCommandBySelector:@selector(insertNewLine:)];
       });
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   g_fake_interpret_key_events = &handle_a_in_ime;
   [ns_view_ keyDown:a_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_tab_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_TAB)];
   // Tab will switch to a Romanji (Latin) character.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   // Enter just dismisses the IME window. The composition is still active.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_second_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   // Enter now confirms the composition (unmarks text). Note there is still no
   // IME window visible but, since there is marked text, IME is still active.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_third_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];  // Send Enter a third time.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());  // No change.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"),
+            textfield->GetText());    // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
@@ -1797,7 +1810,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
   // Starting text (just insert it).
   [ns_view_ insertText:@"ㅂ" replacementRange:NSMakeRange(NSNotFound, 0)];
 
-  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->GetText());
 
   g_fake_interpret_key_events = &generate_return_and_fake_ime;
   g_update_windows_closure = &update_windows_closure;
@@ -1814,7 +1827,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
 
   // The text inserted during updateWindows should have been inserted, even
   // though we were trying to change the input context.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
 
   EXPECT_TRUE(g_fake_current_input_context);
 

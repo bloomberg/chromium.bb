@@ -121,9 +121,6 @@ class TouchEventAckQueue {
 
   void UpdateQueueAfterTargetDestroyed(RenderWidgetHostViewBase* target_view);
 
-  std::vector<AckData> GetQueueEntriesForRootView(
-      RenderWidgetHostViewBase* root_view) const;
-
   size_t length_for_testing() { return ack_queue_.size(); }
 
  private:
@@ -235,17 +232,6 @@ void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
   ProcessAckedTouchEvents();
 }
 
-std::vector<TouchEventAckQueue::AckData>
-TouchEventAckQueue::GetQueueEntriesForRootView(
-    RenderWidgetHostViewBase* root_view) const {
-  std::vector<TouchEventAckQueue::AckData> acks;
-  for (const auto& data : ack_queue_) {
-    if (data.root_view == root_view)
-      acks.push_back(data);
-  }
-  return acks;
-}
-
 RenderWidgetHostInputEventRouter::TouchscreenPinchState::TouchscreenPinchState()
     : state_(PinchState::NONE) {}
 
@@ -347,22 +333,6 @@ size_t RenderWidgetHostInputEventRouter::TouchEventAckQueueLengthForTesting()
 
 size_t RenderWidgetHostInputEventRouter::RegisteredViewCountForTesting() const {
   return owner_map_.size();
-}
-
-void RenderWidgetHostInputEventRouter::IgnoreUnackedTouchEvents(
-    RenderWidgetHostViewBase* root_view) {
-  DCHECK(!root_view->IsRenderWidgetHostViewChildFrame());
-  std::vector<TouchEventAckQueue::AckData> acks =
-      touch_event_ack_queue_->GetQueueEntriesForRootView(root_view);
-  std::map<RenderWidgetHostViewBase*, std::unordered_set<uint32_t>>
-      events_for_target;
-  for (auto& ack : acks) {
-    events_for_target[ack.target_view].insert(
-        ack.touch_event.event.unique_touch_event_id);
-  }
-  for (auto& pair : events_for_target) {
-    pair.first->host()->IgnoreTouchEventAcks(pair.second);
-  }
 }
 
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
@@ -660,9 +630,28 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
   // platforms where MouseUps are not received when the mouse cursor is off the
   // browser window.
   // Also, this is strictly necessary for touch emulation.
-  if (mouse_event.GetType() == blink::WebInputEvent::kMouseUp ||
-      !IsMouseButtonDown(mouse_event))
+  if (mouse_capture_target_ &&
+      (mouse_event.GetType() == blink::WebInputEvent::kMouseUp ||
+       !IsMouseButtonDown(mouse_event))) {
     mouse_capture_target_ = nullptr;
+
+    // Since capture is being lost it is possible that MouseMoves over a hit
+    // test region might have been going to a different region, and now the
+    // CursorManager might need to be notified that the view underneath the
+    // cursor has changed, which could cause the display cursor to update.
+    gfx::PointF transformed_point;
+    auto* hit_test_result =
+        FindViewAtLocation(root_view, mouse_event.PositionInWidget(),
+                           viz::EventSource::MOUSE, &transformed_point)
+            .view;
+    if (hit_test_result != target) {
+      SendMouseEnterOrLeaveEvents(
+          mouse_event, hit_test_result, root_view,
+          blink::WebInputEvent::Modifiers::kRelativeMotionEvent, true);
+      if (root_view->GetCursorManager())
+        root_view->GetCursorManager()->UpdateViewUnderCursor(hit_test_result);
+    }
+  }
 
   // When touch emulation is active, mouse events have to act like touch
   // events, which requires that there be implicit capture between MouseDown
@@ -944,7 +933,9 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
 void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     const blink::WebMouseEvent& event,
     RenderWidgetHostViewBase* target,
-    RenderWidgetHostViewBase* root_view) {
+    RenderWidgetHostViewBase* root_view,
+    blink::WebInputEvent::Modifiers extra_modifiers,
+    bool include_target_view) {
   // This method treats RenderWidgetHostViews as a tree, where the mouse
   // cursor is potentially leaving one node and entering another somewhere
   // else in the tree. Since iframes are graphically self-contained (i.e. an
@@ -1027,6 +1018,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   for (auto* view : exited_views) {
     blink::WebMouseEvent mouse_leave(event);
     mouse_leave.SetType(blink::WebInputEvent::kMouseLeave);
+    mouse_leave.SetModifiers(mouse_leave.GetModifiers() | extra_modifiers);
     // There is a chance of a race if the last target has recently created a
     // new compositor surface. The SurfaceID for that might not have
     // propagated to its embedding surface, which makes it impossible to
@@ -1041,8 +1033,9 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   }
 
   // The ancestor might need to trigger MouseOut handlers.
-  if (common_ancestor && common_ancestor != target) {
+  if (common_ancestor && (include_target_view || common_ancestor != target)) {
     blink::WebMouseEvent mouse_move(event);
+    mouse_move.SetModifiers(mouse_move.GetModifiers() | extra_modifiers);
     mouse_move.SetType(blink::WebInputEvent::kMouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), common_ancestor, &transformed_point)) {
@@ -1055,9 +1048,10 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 
   // Send MouseMoves to trigger MouseEnter handlers.
   for (auto* view : entered_views) {
-    if (view == target)
+    if (view == target && !include_target_view)
       continue;
     blink::WebMouseEvent mouse_enter(event);
+    mouse_enter.SetModifiers(mouse_enter.GetModifiers() | extra_modifiers);
     mouse_enter.SetType(blink::WebInputEvent::kMouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), view, &transformed_point)) {
@@ -1933,15 +1927,11 @@ void RenderWidgetHostInputEventRouter::SetCursor(const WebCursor& cursor) {
 
 void RenderWidgetHostInputEventRouter::ShowContextMenuAtPoint(
     const gfx::Point& point,
-    const ui::MenuSourceType source_type) {
-  // It's possible that since |last_mouse_move_target_| was set by the
-  // outbound mouse event that the view may have gone away. Before dispatching
-  // the context menu, confirm the view is still available.
-  if (!IsViewInMap(last_mouse_move_target_))
-    return;
-
-  auto* rwhi = static_cast<RenderWidgetHostImpl*>(
-      last_mouse_move_target_->GetRenderWidgetHost());
+    const ui::MenuSourceType source_type,
+    RenderWidgetHostViewBase* target) {
+  DCHECK(IsViewInMap(target));
+  auto* rwhi =
+      static_cast<RenderWidgetHostImpl*>(target->GetRenderWidgetHost());
   DCHECK(rwhi);
   rwhi->ShowContextMenuAtPoint(point, source_type);
 }

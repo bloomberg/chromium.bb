@@ -68,15 +68,12 @@ def _GetPylintGroups(paths):
 
 def _GetPythonPath(paths):
   """Return the set of Python library paths to use."""
-  return sys.path + [
+  # Carry through custom PYTHONPATH that the host env has set.
+  return os.environ.get('PYTHONPATH', '').split(os.pathsep) + [
       # Add the Portage installation inside the chroot to the Python path.
       # This ensures that scripts that need to import portage can do so.
       os.path.join(constants.SOURCE_ROOT, 'chroot', 'usr', 'lib', 'portage',
                    'pym'),
-
-      # Scripts outside of chromite expect the scripts in src/scripts/lib to
-      # be importable.
-      os.path.join(constants.CROSUTILS_DIR, 'lib'),
 
       # Allow platform projects to be imported by name (e.g. crostestutils).
       os.path.join(constants.SOURCE_ROOT, 'src', 'platform'),
@@ -161,7 +158,7 @@ def _CpplintFile(path, output_format, debug):
 
 def _PylintFile(path, output_format, debug):
   """Returns result of running pylint on |path|."""
-  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint')
+  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.6')
   pylintrc = _GetPylintrc(path)
   cmd = [pylint, '--rcfile=%s' % pylintrc]
   if output_format != 'default':
@@ -250,8 +247,6 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     cmd.append('--exclude=SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
-  else:
-    cmd.append('--uses-shflags')
   cmd.append(file_name)
 
   # TODO(crbug.com/969045): Remove chdir once -P is available in shellcheck.
@@ -425,5 +420,5 @@ run other checks (e.g. pyflakes, etc.)
             q.put([linter, path])
 
     if errors.value:
-      logging.error("I found lint errors in %i files.", errors.value)
+      logging.error('Found lint errors in %i files.', errors.value)
       sys.exit(1)

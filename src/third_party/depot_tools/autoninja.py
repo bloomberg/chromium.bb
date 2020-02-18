@@ -59,19 +59,15 @@ for index, arg in enumerate(input_args[1:]):
 
 use_goma = False
 use_jumbo_build = False
-try:
-  # If GOMA_DISABLED is set (to anything) then gomacc will use the local
-  # compiler instead of doing a goma compile. This is convenient if you want
-  # to briefly disable goma. It avoids having to rebuild the world when
-  # transitioning between goma/non-goma builds. However, it is not as fast as
-  # doing a "normal" non-goma build because an extra process is created for each
-  # compile step. Checking this environment variable ensures that autoninja uses
-  # an appropriate -j value in this situation.
+
+# Attempt to auto-detect goma usage.  We support gn-based builds, where we
+# look for args.gn in the build tree, and cmake-based builds where we look for
+# rules.ninja.
+if os.path.exists(os.path.join(output_dir, 'args.gn')):
   with open(os.path.join(output_dir, 'args.gn')) as file_handle:
     for line in file_handle:
       # This regex pattern copied from create_installer_archive.py
-      match_use_goma = re.match(r'^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
-      if match_use_goma and 'GOMA_DISABLED' not in os.environ:
+      if re.match(r'^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line):
         use_goma = True
         continue
       match_use_jumbo_build = re.match(
@@ -79,8 +75,22 @@ try:
       if match_use_jumbo_build:
         use_jumbo_build = True
         continue
-except IOError:
-  pass
+elif os.path.exists(os.path.join(output_dir, 'rules.ninja')):
+  with open(os.path.join(output_dir, 'rules.ninja')) as file_handle:
+    for line in file_handle:
+      if re.match(r'^\s*command\s*=\s*\S+gomacc', line):
+        use_goma = True
+        break
+
+# If GOMA_DISABLED is set (to anything) then gomacc will use the local
+# compiler instead of doing a goma compile. This is convenient if you want
+# to briefly disable goma. It avoids having to rebuild the world when
+# transitioning between goma/non-goma builds. However, it is not as fast as
+# doing a "normal" non-goma build because an extra process is created for each
+# compile step. Checking this environment variable ensures that autoninja uses
+# an appropriate -j value in this situation.
+if 'GOMA_DISABLED' in os.environ:
+  use_goma = False
 
 # Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
 # be called back.

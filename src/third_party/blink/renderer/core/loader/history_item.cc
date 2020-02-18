@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -152,12 +151,8 @@ EncodedFormData* HistoryItem::FormData() {
 ResourceRequest HistoryItem::GenerateResourceRequest(
     mojom::FetchCacheMode cache_mode) {
   ResourceRequest request(url_string_);
-  request.SetReferrerString(
-      referrer_.referrer,
-      ResourceRequest::SetReferrerStringLocation::kHistoryItem);
-  request.SetReferrerPolicy(
-      referrer_.referrer_policy,
-      ResourceRequest::SetReferrerPolicyLocation::kHistoryItem);
+  request.SetReferrerString(referrer_.referrer);
+  request.SetReferrerPolicy(referrer_.referrer_policy);
   request.SetCacheMode(cache_mode);
   if (form_data_) {
     request.SetHttpMethod(http_names::kPOST);

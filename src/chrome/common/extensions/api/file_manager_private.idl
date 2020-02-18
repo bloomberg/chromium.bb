@@ -229,7 +229,14 @@ enum SourceRestriction {
   native_or_drive_source
 };
 
-enum CrostiniEventType { enable, disable, share, unshare };
+enum CrostiniEventType {
+  enable,
+  disable,
+  root_access_allow,
+  root_access_disallow,
+  share,
+  unshare
+};
 
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
@@ -1041,11 +1048,6 @@ interface Functions {
   // |changeInfo|
   static void setPreferences(PreferencesChange changeInfo);
 
-  // Sets the flag for remembering if the toast UI for ARC storage
-  // has already been shown.
-  // |callback| Completion callback with the original value of the flag.
-  static void setArcStorageToastShownFlag(BooleanCallback callback);
-
   // Performs drive content search.
   // |searchParams|
   // |callback|
@@ -1220,7 +1222,7 @@ interface Functions {
   // |vmName| VM to get shared paths of.
   // first time this function has been called with observeFirstForSession true.
   [nocompile] static void getCrostiniSharedPaths(
-      boolean observeFirstForSession, DOMString vmName, 
+      boolean observeFirstForSession, DOMString vmName,
       GetCrostiniSharedPathsCallback callback);
 
   // Requests information about a Linux package. |entry| is a .deb file.
@@ -1232,6 +1234,11 @@ interface Functions {
   [nocompile]
   static void installLinuxPackage([instanceof=Entry] object entry,
                                   InstallLinuxPackageCallback callback);
+
+  // Imports a Crostini Image File (.tini). This overrides the existing Linux
+  // apps and files.
+  [nocompile]
+  static void importCrostiniImage([instanceof=Entry] object entry);
 
   // For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
   // returns a thumbnail appropriate for file list or grid views; otherwise,

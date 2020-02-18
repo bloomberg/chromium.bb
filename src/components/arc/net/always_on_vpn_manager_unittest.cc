@@ -14,7 +14,7 @@
 #include "chromeos/network/network_handler.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -80,7 +80,7 @@ class AlwaysOnVpnManagerTest : public testing::Test {
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnVpnManagerTest);

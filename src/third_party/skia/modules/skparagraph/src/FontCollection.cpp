@@ -1,5 +1,8 @@
 // Copyright 2019 Google LLC.
+#include "include/core/SkTypeface.h"
 #include "modules/skparagraph/include/FontCollection.h"
+#include "modules/skparagraph/include/Paragraph.h"
+#include "modules/skparagraph/src/ParagraphImpl.h"
 
 namespace skia {
 namespace textlayout {
@@ -62,9 +65,9 @@ std::vector<sk_sp<SkFontMgr>> FontCollection::getFontManagerOrder() const {
     return order;
 }
 
-sk_sp<SkTypeface> FontCollection::matchTypeface(const char familyName[], SkFontStyle fontStyle) {
+sk_sp<SkTypeface> FontCollection::matchTypeface(const char familyName[], SkFontStyle fontStyle, const SkString& locale) {
     // Look inside the font collections cache first
-    FamilyKey familyKey(familyName, "en", fontStyle);
+    FamilyKey familyKey(familyName, locale.c_str(), fontStyle);
     auto found = fTypefaces.find(familyKey);
     if (found) {
         return *found;
@@ -84,16 +87,17 @@ sk_sp<SkTypeface> FontCollection::matchTypeface(const char familyName[], SkFontS
         sk_sp<SkTypeface> match(set->matchStyle(fontStyle));
         if (match) {
             typeface = std::move(match);
-            return typeface;
+            break;
         }
     }
 
-    return nullptr;
+    fTypefaces.set(familyKey, typeface);
+    return typeface;
 }
 
-sk_sp<SkTypeface> FontCollection::matchDefaultTypeface(SkFontStyle fontStyle) {
+sk_sp<SkTypeface> FontCollection::matchDefaultTypeface(SkFontStyle fontStyle, const SkString& locale) {
     // Look inside the font collections cache first
-    FamilyKey familyKey(fDefaultFamilyName.c_str(), "en", fontStyle);
+    FamilyKey familyKey(fDefaultFamilyName.c_str(), locale.c_str(), fontStyle);
     auto found = fTypefaces.find(familyKey);
     if (found) {
         return *found;
@@ -113,13 +117,15 @@ sk_sp<SkTypeface> FontCollection::matchDefaultTypeface(SkFontStyle fontStyle) {
         sk_sp<SkTypeface> match(set->matchStyle(fontStyle));
         if (match) {
             typeface = std::move(match);
-            return typeface;
+            break;
         }
     }
 
-    return nullptr;
+    fTypefaces.set(familyKey, typeface);
+    return typeface;
 }
 
+// Find ANY font in available font managers that resolves the unicode codepoint
 sk_sp<SkTypeface> FontCollection::defaultFallback(SkUnichar unicode, SkFontStyle fontStyle, const SkString& locale) {
 
     for (const auto& manager : this->getFontManagerOrder()) {
@@ -133,13 +139,17 @@ sk_sp<SkTypeface> FontCollection::defaultFallback(SkUnichar unicode, SkFontStyle
             return typeface;
         }
     }
+    return nullptr;
+}
 
+sk_sp<SkTypeface> FontCollection::defaultFallback() {
     if (fDefaultFontManager == nullptr) {
         return nullptr;
     }
-    auto result = fDefaultFontManager->matchFamilyStyle(fDefaultFamilyName.c_str(), fontStyle);
+    auto result = fDefaultFontManager->matchFamilyStyle(fDefaultFamilyName.c_str(), SkFontStyle());
     return sk_ref_sp<SkTypeface>(result);
 }
+
 
 void FontCollection::disableFontFallback() { fEnableFontFallback = false; }
 

@@ -68,7 +68,10 @@ class ASH_EXPORT BluetoothNotificationController
   // and means we "update" one notification if not handled rather than
   // continually bugging the user.
   static const char kBluetoothDevicePairingNotificationId[];
-  static const char kBluetoothDevicePairedNotificationId[];
+
+  // Adds a prefix to the device's address to obtain an unique notification ID.
+  static std::string GetPairedNotificationId(
+      const device::BluetoothDevice* device);
 
   // Internal method called by BluetoothAdapterFactory to provide the adapter
   // object.
@@ -102,7 +105,7 @@ class ASH_EXPORT BluetoothNotificationController
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothNotificationController> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothNotificationController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothNotificationController);
 };

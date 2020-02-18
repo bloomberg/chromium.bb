@@ -8,8 +8,9 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -21,7 +22,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 
 using ThreadPoolExecutionMode =
-    base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode;
+    base::test::TaskEnvironment::ThreadPoolExecutionMode;
 
 namespace blink {
 
@@ -44,12 +45,11 @@ class ParkableStringTest : public ::testing::Test {
   ParkableStringTest(ThreadPoolExecutionMode thread_pool_execution_mode =
                          ThreadPoolExecutionMode::DEFAULT)
       : ::testing::Test(),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            thread_pool_execution_mode) {}
+        task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+                          thread_pool_execution_mode) {}
 
  protected:
-  void RunPostedTasks() { scoped_task_environment_.RunUntilIdle(); }
+  void RunPostedTasks() { task_environment_.RunUntilIdle(); }
 
   bool ParkAndWait(const ParkableString& string) {
     bool success =
@@ -59,8 +59,8 @@ class ParkableStringTest : public ::testing::Test {
   }
 
   void WaitForAging() {
-    EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
-    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
+    EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kAgingIntervalInSeconds));
   }
 
@@ -76,7 +76,7 @@ class ParkableStringTest : public ::testing::Test {
       expected_count = 1;
     }
     EXPECT_EQ(expected_count,
-              scoped_task_environment_.GetPendingMainThreadTaskCount());
+              task_environment_.GetPendingMainThreadTaskCount());
   }
 
   void SetUp() override { ParkableStringManager::Instance().ResetForTesting(); }
@@ -85,7 +85,7 @@ class ParkableStringTest : public ::testing::Test {
     // No leaks.
     CHECK_EQ(0u, ParkableStringManager::Instance().Size());
     // Delayed tasks may remain, clear the queues.
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
 
@@ -101,7 +101,7 @@ class ParkableStringTest : public ::testing::Test {
     return parkable;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // The main aim of this test is to check that the compressed size of a string
@@ -526,7 +526,7 @@ TEST_F(ParkableStringTest, CorrectAsanPoisoning) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
   // A main thread task is posted once compression is done.
-  while (scoped_task_environment_.GetPendingMainThreadTaskCount() == 0) {
+  while (task_environment_.GetPendingMainThreadTaskCount() == 0) {
     parkable.Lock();
     parkable.ToString();
     parkable.Unlock();
@@ -575,7 +575,7 @@ TEST_F(ParkableStringTest, SynchronousCompression) {
   // No waiting, synchronous compression.
   manager.ParkAll(ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
   EXPECT_TRUE(parkable.Impl()->is_parked());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(ParkableStringTest, OnPurgeMemoryInBackground) {
@@ -729,9 +729,9 @@ TEST_F(ParkableStringTest, OldStringsAreParked) {
 
 TEST_F(ParkableStringTest, AgingTicksStopsAndRestarts) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   // Nothing more to do, the tick is not re-scheduled.
   WaitForAging();
@@ -739,7 +739,7 @@ TEST_F(ParkableStringTest, AgingTicksStopsAndRestarts) {
 
   // Unparking, the tick restarts.
   parkable.ToString();
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   WaitForAging();
   // And stops again. 2 ticks to park the string (age, then park), and one
@@ -758,18 +758,18 @@ TEST_F(ParkableStringTest, AgingTicksStopsWithNoProgress) {
   ParkableString parkable(MakeLargeString('a').ReleaseImpl());
   String retained = parkable.ToString();
 
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   // The only string is referenced externally, nothing aging can change.
   CheckOnlyCpuCostTaskRemains();
 
   ParkableString parkable2(MakeLargeString('b').ReleaseImpl());
   WaitForAging();
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   EXPECT_TRUE(parkable2.Impl()->is_parked());
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   WaitForAging();
   // Once |parkable2| has been parked, back to the case where the only
   // remaining strings are referenced externally.
@@ -790,12 +790,13 @@ TEST_F(ParkableStringTest, OnlyOneAgingTask) {
 
   parkable1.ToString();
   parkable2.ToString();
-  EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  EXPECT_GT(task_environment_.GetPendingMainThreadTaskCount(), 0u);
   // Aging task + stats.
-  EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+  EXPECT_EQ(2u, task_environment_.GetPendingMainThreadTaskCount());
 }
 
 TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
+  base::ScopedMockElapsedTimersForTest mock_elapsed_timers;
   base::HistogramTester histogram_tester;
 
   // On some platforms, initialization takes time, though it happens when
@@ -811,7 +812,8 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
 
   ParkAndWait(parkable);
-  for (int i = 0; i < 10; ++i) {
+  const int kNumIterations = 10;
+  for (int i = 0; i < kNumIterations; ++i) {
     parkable.ToString();
     ASSERT_FALSE(parkable.Impl()->is_parked());
     WaitForAging();
@@ -821,17 +823,22 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   }
   const size_t compressed_size = parkable.Impl()->compressed_size();
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  histogram_tester.ExpectTotalCount("Memory.ParkableString.MainThreadTime.5min",
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      "Memory.ParkableString.MainThreadTime.5min", 0, 0);
+  task_environment_.FastForwardUntilNoTasksRemain();
+
+  // The string is unparked kNumIterations times.
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.MainThreadTime.5min",
+      base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds() *
+          kNumIterations,
+      1);
 
   if (base::ThreadTicks::IsSupported()) {
-    histogram_tester.ExpectTotalCount(
-        "Memory.ParkableString.ParkingThreadTime.5min", 1);
-    histogram_tester.ExpectBucketCount(
-        "Memory.ParkableString.ParkingThreadTime.5min", 0, 0);
+    // The string is only compressed once despite the multiple parking/unparking
+    // calls.
+    histogram_tester.ExpectUniqueSample(
+        "Memory.ParkableString.ParkingThreadTime.5min",
+        base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds(),
+        1);
   }
 
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb.5min",
@@ -871,7 +878,7 @@ TEST_F(ParkableStringTestWithQueuedThreadPool, AgingParkingInProgress) {
   run_loop.Run();
 
   // The aging task is rescheduled.
-  EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+  EXPECT_EQ(2u, task_environment_.GetPendingMainThreadTaskCount());
 
   // Complete asynchronous work.
   RunPostedTasks();

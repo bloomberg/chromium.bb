@@ -13,7 +13,6 @@ import logging
 from google.appengine.ext import ndb
 
 from dashboard import find_change_points
-from dashboard import start_try_job
 from dashboard.common import descriptor
 from dashboard.common import math_utils
 from dashboard.common import request_handler
@@ -41,8 +40,8 @@ class InvalidParamsError(Exception):
 
 class PinpointNewPrefillRequestHandler(request_handler.RequestHandler):
   def post(self):
-    story_filter = start_try_job.GuessStoryFilter(self.request.get('test_path'))
-    self.response.write(json.dumps({'story_filter': story_filter}))
+    t = utils.TestKey(self.request.get('test_path')).get()
+    self.response.write(json.dumps({'story_filter': t.unescaped_story_name}))
 
 
 class PinpointNewBisectRequestHandler(request_handler.RequestHandler):
@@ -87,24 +86,6 @@ class PinpointNewPerfTryRequestHandler(request_handler.RequestHandler):
       return
 
     self.response.write(json.dumps(pinpoint_service.NewJob(pinpoint_params)))
-
-
-def ParseMetricParts(test_path_parts):
-  metric_parts = test_path_parts[3:]
-
-  # Normal test path structure, ie. M/B/S/foo/bar.html
-  if len(metric_parts) == 2:
-    return '', metric_parts[0], metric_parts[1]
-
-  # 3 part structure, so there's a TIR label in there.
-  # ie. M/B/S/timeToFirstMeaningfulPaint_avg/load_tools/load_tools_weather
-  if len(metric_parts) == 3:
-    return metric_parts[1], metric_parts[0], metric_parts[2]
-
-  # Should be something like M/B/S/EventsDispatching where the trace_name is
-  # left empty and implied to be summary.
-  assert len(metric_parts) == 1
-  return '', metric_parts[0], ''
 
 
 def _GitHashToCommitPosition(commit_position):
@@ -196,14 +177,16 @@ def _GetIsolateTarget(bot_name, suite, start_commit,
   return 'performance_test_suite'
 
 
-def ParseTIRLabelChartNameAndTraceName(test_path_parts):
+def ParseTIRLabelChartNameAndTraceName(test_path):
   """Returns tir_label, chart_name, trace_name from a test path."""
+  test_path_parts = test_path.split('/')
   suite = test_path_parts[2]
   if suite in _NON_CHROME_TARGETS:
     return '', '', ''
 
   test = ndb.Key('TestMetadata', '/'.join(test_path_parts)).get()
-  tir_label, chart_name, trace_name = ParseMetricParts(test_path_parts)
+  tir_label, chart_name, trace_name = utils.ParseTelemetryMetricParts(
+      test_path)
   if trace_name and test.unescaped_story_name:
     trace_name = test.unescaped_story_name
   return tir_label, chart_name, trace_name
@@ -263,6 +246,7 @@ def PinpointParamsFromPerfTryParams(params):
   job_name = 'Try job on %s/%s' % (bot_name, suite)
 
   pinpoint_params = {
+      'comparison_mode': 'try',
       'configuration': bot_name,
       'benchmark': suite,
       'start_git_hash': start_git_hash,
@@ -318,7 +302,7 @@ def PinpointParamsFromBisectParams(params):
   trace_name = ''
   if bisect_mode == 'performance':
     tir_label, chart_name, trace_name = ParseTIRLabelChartNameAndTraceName(
-        test_path_parts)
+        test_path)
 
   start_commit = params['start_commit']
   end_commit = params['end_commit']

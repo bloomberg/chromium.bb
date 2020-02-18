@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
@@ -157,7 +157,7 @@ class RemoteCommandsInvalidatorTest : public testing::TestWithParam<bool> {
 
   const bool is_fcm_enabled_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   base::test::ScopedFeatureList feature_list_;
 

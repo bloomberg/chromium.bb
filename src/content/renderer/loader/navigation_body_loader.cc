@@ -20,8 +20,8 @@ constexpr uint32_t NavigationBodyLoader::kMaxNumConsumedBytesInTask;
 
 // static
 void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-    const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
+    const mojom::CommonNavigationParams& common_params,
+    const mojom::CommitNavigationParams& commit_params,
     int request_id,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
@@ -38,7 +38,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       render_frame_id, request_id, url,
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method,
-      common_params.referrer.url,
+      common_params.referrer->url,
       is_main_frame ? ResourceType::kMainFrame : ResourceType::kSubFrame,
       is_main_frame ? net::HIGHEST : net::LOWEST);
   size_t redirect_count = commit_params.redirect_response.size();
@@ -52,8 +52,9 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     NotifyResourceRedirectReceived(render_frame_id, resource_load_info.get(),
                                    redirect_info, redirect_response);
     WebURLLoaderImpl::PopulateURLResponse(
-        url, redirect_response, &redirect.redirect_response,
-        response_head.ssl_info.has_value(), request_id);
+        url, network::ResourceResponseHead(redirect_response),
+        &redirect.redirect_response, response_head.ssl_info.has_value(),
+        request_id);
     if (url.SchemeIs(url::kDataScheme))
       redirect.redirect_response.SetHttpStatusCode(200);
     redirect.new_url = redirect_info.new_url;
@@ -107,14 +108,14 @@ NavigationBodyLoader::~NavigationBodyLoader() {
 }
 
 void NavigationBodyLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // This has already happened in the browser process.
   NOTREACHED();
 }
 
 void NavigationBodyLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // This has already happened in the browser process.
   NOTREACHED();
 }
@@ -196,10 +197,10 @@ void NavigationBodyLoader::StartLoadingBody(
 }
 
 void NavigationBodyLoader::CodeCacheReceived(base::Time response_time,
-                                             base::span<const uint8_t> data) {
+                                             mojo_base::BigBuffer data) {
   if (response_head_.response_time == response_time && client_) {
     base::WeakPtr<NavigationBodyLoader> weak_self = weak_factory_.GetWeakPtr();
-    client_->BodyCodeCacheReceived(data);
+    client_->BodyCodeCacheReceived(std::move(data));
     if (!weak_self)
       return;
   }

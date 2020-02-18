@@ -24,7 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
@@ -71,7 +71,8 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
   ~ChromePromptChannelProtobufTest() override = default;
 
   void SetUp() override {
-    auto task_runner = base::CreateSequencedTaskRunner({base::MayBlock()});
+    auto task_runner =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     channel_ = ChromePromptChannelPtr(
         new ChromePromptChannelProtobuf(
             /*on_connection_closed=*/run_loop_.QuitClosure(),
@@ -272,7 +273,7 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
     return base::win::ScopedHandle(duplicate_handle);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   ChromePromptChannelPtr channel_ =
       ChromePromptChannelPtr(nullptr, base::OnTaskRunnerDeleter(nullptr));

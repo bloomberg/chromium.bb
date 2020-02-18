@@ -13,8 +13,10 @@ class Shelf;
 // The containers that rely on ShelfFocusCycler to move focus outside of their
 // view trees.
 enum class SourceView {
-  kShelfView = 0,
-  kSystemTrayView,
+  kShelfNavigationView = 0,
+  kShelfView,
+  kShelfOverflowView,
+  kStatusAreaView,
 };
 
 // ShelfFocusCycler handles the special focus transitions from the Login UI,
@@ -28,6 +30,18 @@ class ShelfFocusCycler {
   // to the container to the left in LTR. RTL does not need to be accounted
   // for when calling this function.
   void FocusOut(bool reverse, SourceView source_view);
+
+  // Focuses the navigation widget (back and home buttons).
+  void FocusNavigation(bool last_element);
+
+  // Focuses the shelf widget (app shortcuts).
+  void FocusShelf(bool last_element);
+
+  // Focuses the overflow shelf (app shortcuts in the overflow menu).
+  void FocusOverflowShelf(bool last_element);
+
+  // Focuses the status area widget.
+  void FocusStatusArea(bool last_element);
 
  private:
   // Owned by RootWindowController.

@@ -37,6 +37,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
@@ -56,8 +57,6 @@
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/metrics/address_form_event_logger.h"
-#include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -252,6 +251,98 @@ void LogAutofillTypePredictionsAvailable(
 
   log_manager->Log() << LoggingScope::kParsing << LogMessage::kParsedForms
                      << std::move(buffer);
+}
+
+// Finds the first field in |form_structure| with |field.value|=|value|.
+AutofillField* FindFirstFieldWithValue(const FormStructure& form_structure,
+                                       const base::string16& value) {
+  for (const auto& field : form_structure) {
+    base::string16 trimmed_value;
+    base::TrimWhitespace(field->value, base::TRIM_ALL, &trimmed_value);
+    if (trimmed_value == value)
+      return field.get();
+  }
+  return nullptr;
+}
+
+// Heuristically identifies all possible credit card verification fields.
+AutofillField* HeuristicallyFindCVCField(const FormStructure& form_structure) {
+  // Stores a pointer to the explicitly found expiration year.
+  bool found_explicit_expiration_year_field = false;
+
+  // The first pass checks the existence of an explicitly marked field for the
+  // credit card expiration year.
+  for (const auto& field : form_structure) {
+    const ServerFieldTypeSet& type_set = field->possible_types();
+    if (type_set.find(CREDIT_CARD_EXP_2_DIGIT_YEAR) != type_set.end() ||
+        type_set.find(CREDIT_CARD_EXP_4_DIGIT_YEAR) != type_set.end()) {
+      found_explicit_expiration_year_field = true;
+      break;
+    }
+  }
+
+  // Keeps track if a credit card number field was found.
+  bool credit_card_number_found = false;
+
+  // In the second pass, the CVC field is heuristically searched for.
+  // A field is considered a CVC field, iff:
+  // * it appears after the credit card number field;
+  // * it has the |UNKNOWN_TYPE| prediction;
+  // * it does not look like an expiration year or an expiration year was
+  //   already found;
+  // * it is filled with a 3-4 digit number;
+  for (const auto& field : form_structure) {
+    const ServerFieldTypeSet& type_set = field->possible_types();
+
+    // Checks if the field is of |CREDIT_CARD_NUMBER| type.
+    if (type_set.find(CREDIT_CARD_NUMBER) != type_set.end()) {
+      credit_card_number_found = true;
+      continue;
+    }
+    // Skip the field if no credit card number was found yet.
+    if (!credit_card_number_found) {
+      continue;
+    }
+
+    // Don't consider fields that already have any prediction.
+    if (type_set.find(UNKNOWN_TYPE) == type_set.end())
+      continue;
+    // |UNKNOWN_TYPE| should come alone.
+    DCHECK_EQ(1u, type_set.size());
+
+    base::string16 trimmed_value;
+    base::TrimWhitespace(field->value, base::TRIM_ALL, &trimmed_value);
+
+    // Skip the field if it can be confused with a expiration year.
+    if (!found_explicit_expiration_year_field &&
+        IsPlausible4DigitExpirationYear(trimmed_value)) {
+      continue;
+    }
+
+    // Skip the field if its value does not like a CVC value.
+    if (!IsPlausibleCreditCardCVCNumber(trimmed_value))
+      continue;
+
+    return field.get();
+  }
+  return nullptr;
+}
+
+// Iff the CVC of the credit card is known, find the first field with this
+// value (also set |properties_mask| to |KNOWN_VALUE|). Otherwise, heuristically
+// search for the CVC field if any.
+AutofillField* GetBestPossibleCVCField(
+    const FormStructure& form_structure,
+    base::string16 last_unlocked_credit_card_cvc) {
+  if (!last_unlocked_credit_card_cvc.empty()) {
+    AutofillField* result =
+        FindFirstFieldWithValue(form_structure, last_unlocked_credit_card_cvc);
+    if (result)
+      result->properties_mask = FieldPropertiesFlags::KNOWN_VALUE;
+    return result;
+  }
+
+  return HeuristicallyFindCVCField(form_structure);
 }
 
 }  // namespace
@@ -552,11 +643,20 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   // so that we can safely pass the address to the first callback regardless of
   // the (undefined) order in which the callback parameters are computed.
   FormStructure* raw_form = form_structure.get();
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      // If the priority is BEST_EFFORT, the task can be preempted, which is
+      // thought to cause high memory usage (as memory is retained by the task
+      // while it is preempted).
+      //
+      // TODO(fdoray): Update when the hypothesis that setting the priority to
+      // USER_VISIBLE instead of BEST_EFFORT fixes memory usage. Consider
+      // keeping BEST_EFFORT priority, but manually enforcing a limit on the
+      // number of outstanding tasks. https://crbug.com/974249
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
-                     copied_profiles, copied_credit_cards, app_locale_,
-                     raw_form),
+                     copied_profiles, copied_credit_cards,
+                     last_unlocked_credit_card_cvc_, app_locale_, raw_form),
       base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(form_structure.release()),
@@ -662,8 +762,7 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
 }
 
 bool AutofillManager::IsFormNonSecure(const FormData& form) const {
-  return !client_->IsContextSecure() ||
-         (form.action.is_valid() && form.action.SchemeIs("http"));
+  return IsFormOrClientNonSecure(client_, form);
 }
 
 void AutofillManager::OnQueryFormFieldAutofillImpl(
@@ -1005,6 +1104,12 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
                                  form_structure->form_parsed_timestamp(),
                                  sync_state_, driver()->IsIncognito());
   }
+
+  if (autofill_field->Type().group() == CREDIT_CARD &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardAuthentication)) {
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+  }
 }
 
 void AutofillManager::OnHidePopup() {
@@ -1194,6 +1299,8 @@ void AutofillManager::OnCreditCardFetched(bool did_succeed,
     return;
   }
 
+  last_unlocked_credit_card_cvc_ = cvc;
+
   FormStructure* form_structure = nullptr;
   AutofillField* autofill_field = nullptr;
   if (!GetCachedFormAndField(credit_card_form_, credit_card_field_,
@@ -1232,6 +1339,10 @@ bool AutofillManager::IsRichQueryEnabled(version_info::Channel channel) {
   return base::FeatureList::IsEnabled(features::kAutofillRichMetadataQueries) &&
          channel != version_info::Channel::STABLE &&
          channel != version_info::Channel::BETA;
+}
+
+const FormData& AutofillManager::last_query_form() const {
+  return external_delegate_->query_form();
 }
 
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
@@ -1285,6 +1396,11 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form,
 
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
+  // AS CVC is not stored, treat it separately.
+  if (!last_unlocked_credit_card_cvc_.empty() ||
+      non_empty_types.find(CREDIT_CARD_NUMBER) != non_empty_types.end()) {
+    non_empty_types.insert(CREDIT_CARD_VERIFICATION_CODE);
+  }
 
   download_manager_->StartUploadRequest(
       submitted_form, was_autofilled, non_empty_types,
@@ -1322,6 +1438,7 @@ void AutofillManager::Reset() {
   credit_card_query_id_ = -1;
   credit_card_form_ = FormData();
   credit_card_field_ = FormFieldData();
+  last_unlocked_credit_card_cvc_.clear();
   credit_card_action_ = AutofillDriver::FORM_DATA_ACTION_PREVIEW;
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
@@ -1334,8 +1451,9 @@ AutofillManager::AutofillManager(
     PersonalDataManager* personal_data,
     AutocompleteHistoryManager* autocomplete_history_manager,
     const std::string app_locale,
-    AutofillDownloadManagerState enable_download_manager)
-    : AutofillHandler(driver),
+    AutofillDownloadManagerState enable_download_manager,
+    std::unique_ptr<CreditCardAccessManager> cc_access_manager)
+    : AutofillHandler(driver, client->GetLogManager()),
       client_(client),
       log_manager_(client_->GetLogManager()),
       app_locale_(app_locale),
@@ -1355,21 +1473,21 @@ AutofillManager::AutofillManager(
               form_interactions_ukm_logger_.get(),
               personal_data_,
               client_)),
-      credit_card_access_manager_(std::make_unique<CreditCardAccessManager>(
-          driver,
-          client_,
-          personal_data_,
-          credit_card_form_event_logger_.get())),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
       is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())) {
   DCHECK(driver);
   DCHECK(client_);
+  credit_card_access_manager_ = cc_access_manager
+                                    ? std::move(cc_access_manager)
+                                    : std::make_unique<CreditCardAccessManager>(
+                                          driver, client_, personal_data_,
+                                          credit_card_form_event_logger_.get());
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     version_info::Channel channel = client_->GetChannel();
-    download_manager_.reset(
-        new AutofillDownloadManager(driver, this, GetAPIKeyForUrl(channel)));
+    download_manager_.reset(new AutofillDownloadManager(
+        driver, this, GetAPIKeyForUrl(channel), client_->GetLogManager()));
   }
   CountryNames::SetLocaleString(app_locale_);
 }
@@ -1452,9 +1570,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
       filling_contexts_map_.find(form_structure->GetIdentifierForRefill());
   if (itr != filling_contexts_map_.end())
     filling_context = itr->second.get();
-  bool could_attempt_refill =
-      filling_context != nullptr && !filling_context->attempted_refill &&
-      !is_refill && !is_credit_card;
+  bool could_attempt_refill = filling_context != nullptr &&
+                              !filling_context->attempted_refill &&
+                              !is_refill && !is_credit_card;
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     // On the renderer, the section is used regardless of the autofill status.
@@ -1843,13 +1961,13 @@ void AutofillManager::UpdateInitialInteractionTimestamp(
 void AutofillManager::DeterminePossibleFieldTypesForUpload(
     const std::vector<AutofillProfile>& profiles,
     const std::vector<CreditCard>& credit_cards,
+    const base::string16& last_unlocked_credit_card_cvc,
     const std::string& app_locale,
     FormStructure* submitted_form) {
   // For each field in the |submitted_form|, extract the value.  Then for each
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     AutofillField* field = submitted_form->field(i);
-
     if (!field->possible_types().empty() && field->IsEmpty()) {
       // This is a password field in a sign-in form. Skip checking its type
       // since |field->value| is not set.
@@ -1885,6 +2003,16 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
     }
 
     field->set_possible_types(matching_types);
+  }
+
+  // As CVCs are not stored, run special heuristics to detect CVC-like values.
+  AutofillField* cvc_field =
+      GetBestPossibleCVCField(*submitted_form, last_unlocked_credit_card_cvc);
+  if (cvc_field) {
+    ServerFieldTypeSet possible_types = cvc_field->possible_types();
+    possible_types.erase(UNKNOWN_TYPE);
+    possible_types.insert(CREDIT_CARD_VERIFICATION_CODE);
+    cvc_field->set_possible_types(possible_types);
   }
 
   AutofillManager::DisambiguateUploadTypes(submitted_form);

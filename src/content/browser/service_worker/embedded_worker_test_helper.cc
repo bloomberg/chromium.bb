@@ -19,6 +19,7 @@
 #include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
@@ -35,16 +36,13 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
   }
 
  private:
-  void CreateEmbedderRendererService(
-      service_manager::mojom::ServiceRequest service_request) override {
-    NOTREACHED();
-  }
   void CreateView(mojom::CreateViewParamsPtr) override { NOTREACHED(); }
+  void DestroyView(int32_t) override { NOTREACHED(); }
   void CreateFrame(mojom::CreateFrameParamsPtr) override { NOTREACHED(); }
   void SetUpEmbeddedWorkerChannelForServiceWorker(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest client_request)
-      override {
-    helper_->OnInstanceClientRequest(std::move(client_request));
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          client_receiver) override {
+    helper_->OnInstanceClientReceiver(std::move(client_receiver));
   }
   void CreateFrameProxy(
       int32_t routing_id,
@@ -80,6 +78,10 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
                              const std::string& highlight_color) override {
     NOTREACHED();
   }
+  void UpdateSystemColorInfo(
+      mojom::UpdateSystemColorInfoParamsPtr params) override {
+    NOTREACHED();
+  }
   void PurgePluginListCache(bool reload_pages) override { NOTREACHED(); }
   void SetProcessState(mojom::RenderProcessState process_state) override {
     NOTREACHED();
@@ -108,7 +110,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           base::MakeRefCounted<URLLoaderFactoryGetter>()) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  wrapper_->InitOnIO(
+  wrapper_->InitOnCoreThread(
       user_data_directory, std::move(database_task_runner), nullptr, nullptr,
       nullptr, url_loader_factory_getter_.get(),
       blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
@@ -117,7 +119,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           : nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-  wrapper_->InitializeResourceContext(browser_context_->GetResourceContext());
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
+    wrapper_->InitializeResourceContext(browser_context_->GetResourceContext());
 
   // Install a mocked mojom::Renderer interface to catch requests to
   // establish Mojo connection for EWInstanceClient.
@@ -168,8 +171,9 @@ void EmbeddedWorkerTestHelper::AddPendingServiceWorker(
   pending_service_workers_.push(std::move(service_worker));
 }
 
-void EmbeddedWorkerTestHelper::OnInstanceClientRequest(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
+void EmbeddedWorkerTestHelper::OnInstanceClientReceiver(
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
   std::unique_ptr<FakeEmbeddedWorkerInstanceClient> client;
   if (!pending_embedded_worker_instance_clients_.empty()) {
     // Use the instance client that was registered for this message.
@@ -183,12 +187,12 @@ void EmbeddedWorkerTestHelper::OnInstanceClientRequest(
     client = CreateInstanceClient();
   }
 
-  client->Bind(std::move(request));
+  client->Bind(std::move(receiver));
   instance_clients_.insert(std::move(client));
 }
 
-void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
-    blink::mojom::ServiceWorkerRequest request) {
+void EmbeddedWorkerTestHelper::OnServiceWorkerReceiver(
+    mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver) {
   std::unique_ptr<FakeServiceWorker> service_worker;
   if (!pending_service_workers_.empty()) {
     // Use the service worker that was registered for this message.
@@ -202,7 +206,7 @@ void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
     service_worker = CreateServiceWorker();
   }
 
-  service_worker->Bind(std::move(request));
+  service_worker->Bind(std::move(receiver));
   service_workers_.insert(std::move(service_worker));
 }
 

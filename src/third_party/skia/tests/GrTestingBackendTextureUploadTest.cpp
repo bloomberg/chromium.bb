@@ -29,8 +29,8 @@ void testing_only_texture_test(skiatest::Reporter* reporter, GrContext* context,
 
     GrColorType grCT = SkColorTypeToGrColorType(ct);
 
-    GrBackendFormat backendFormat = caps->getBackendFormatFromColorType(grCT);
-    if (!caps->isFormatTexturable(grCT, backendFormat)) {
+    GrBackendFormat backendFormat = context->defaultBackendFormat(ct, renderable);
+    if (!backendFormat.isValid()) {
         return;
     }
 
@@ -58,7 +58,7 @@ void testing_only_texture_test(skiatest::Reporter* reporter, GrContext* context,
     // skbug.com/9165
     auto supportedRead =
             caps->supportedReadPixelsColorType(grCT, backendTex.getBackendFormat(), grCT);
-    if (supportedRead.fColorType != grCT || supportedRead.fSwizzle != GrSwizzle("rgba")) {
+    if (supportedRead.fColorType != grCT) {
         return;
     }
 

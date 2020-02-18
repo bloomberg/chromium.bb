@@ -19,6 +19,7 @@
 #include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -140,10 +140,10 @@ void LaunchReleaseNotesImpl(Profile* profile) {
           extensions::ExtensionRegistry::EVERYTHING);
   if (extension) {
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, 0, extensions::AppLaunchSource::kSourceUntracked,
+        profile, extension, 0, apps::mojom::AppLaunchSource::kSourceUntracked,
         -1);
     params.override_url = GURL(BuildQueryString(profile));
-    OpenApplication(params);
+    apps::LaunchService::Get(profile)->OpenApplication(params);
     return;
   }
   DVLOG(1) << "ReleaseNotes App Not Found";
@@ -183,7 +183,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  OpenApplication(AppLaunchParams(
+  apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
       profile, extension_misc::kGeniusAppId,
       extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile),
                                      extension),
@@ -217,7 +217,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   }
   std::unique_ptr<ScopedTabbedBrowserDisplayer> displayer;
   if (!browser) {
-    displayer.reset(new ScopedTabbedBrowserDisplayer(profile));
+    displayer = std::make_unique<ScopedTabbedBrowserDisplayer>(profile);
     browser = displayer->browser();
   }
   ShowSingletonTab(browser, url);
@@ -360,7 +360,7 @@ GURL GetSettingsUrl(const std::string& sub_page) {
 
 bool IsTrustedPopupWindowWithScheme(const Browser* browser,
                                     const std::string& scheme) {
-  if (!browser->is_type_popup() || !browser->is_trusted_source())
+  if (browser->is_type_normal() || !browser->is_trusted_source())
     return false;
   if (scheme.empty())  // Any trusted popup window
     return true;
@@ -496,19 +496,10 @@ void ShowManagementPageForProfile(Profile* profile) {
 
 void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kAppManagement));
-  constexpr char kAppManagementPagePrefix[] =
-      "chrome://app-management/detail?id=";
+  constexpr char kAppManagementSubPagePrefix[] = "app-management/detail?id=";
   base::RecordAction(base::UserMetricsAction("ShowAppManagementDetailPage"));
-  GURL url(kAppManagementPagePrefix + app_id);
-
-  Browser* browser = chrome::FindTabbedBrowser(profile, false);
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(profile, true));
-
-  FocusWebContents(browser);
-  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile, kAppManagementSubPagePrefix + app_id);
 }
 
 GURL GetOSSettingsUrl(const std::string& sub_page) {

@@ -50,13 +50,33 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     void OnProfileCompleted(base::TimeDelta profile_duration,
                             base::TimeDelta sampling_period) override {}
 
+    void SetTraceWriter(std::unique_ptr<perfetto::TraceWriter> trace_writer);
+
    private:
+    struct BufferedSample {
+      BufferedSample(base::TimeTicks, std::vector<base::Frame>&&);
+      BufferedSample(BufferedSample&& other);
+      ~BufferedSample();
+
+      base::TimeTicks timestamp;
+      std::vector<base::Frame> sample;
+
+      DISALLOW_COPY_AND_ASSIGN(BufferedSample);
+    };
+
     InterningID GetCallstackIDAndMaybeEmit(
         const std::vector<base::Frame>& frames,
         perfetto::TraceWriter::TracePacketHandle* trace_packet);
+    void WriteSampleToTrace(const BufferedSample& sample);
+
+    // We usually sample at 50ms, and expect that tracing should have started in
+    // 10s.
+    constexpr static size_t kMaxBufferedSamples = 200;
+    std::vector<BufferedSample> buffered_samples_;
 
     base::ModuleCache module_cache_;
     const base::PlatformThreadId sampled_thread_id_;
+    base::Lock trace_writer_lock_;
     std::unique_ptr<perfetto::TraceWriter> trace_writer_;
     InterningIndex<size_t> interned_callstacks_{1000};
     InterningIndex<std::pair<std::string, std::string>,
@@ -73,17 +93,26 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     const bool should_enable_filtering_;
   };
 
-  // Sets up tracing sampling profiler on the current thread. The profiler will
-  // be stored in SequencedLocalStorageSlot and will be destroyed with the
-  // thread task runner.
-  static void CreateForCurrentThread();
+  // Creates sampling profiler on main thread. The profiler *must* be
+  // destroyed prior to process shutdown.
+  static std::unique_ptr<TracingSamplerProfiler> CreateOnMainThread();
+
+  // Sets up tracing sampling profiler on a child thread. The profiler will be
+  // stored in SequencedLocalStorageSlot and will be destroyed with the thread
+  // task runner.
+  static void CreateOnChildThread();
+
+  // Registers the TracingSamplerProfiler as a Perfetto data source
   static void RegisterDataSource();
 
+  static void SetupStartupTracing();
+
   // For tests.
-  static void DeleteForCurrentThreadForTesting();
+  static void DeleteOnChildThreadForTesting();
   static void StartTracingForTesting(tracing::PerfettoProducer* producer);
   static void StopTracingForTesting();
 
+  explicit TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
   virtual ~TracingSamplerProfiler();
 
   void StartTracing(std::unique_ptr<perfetto::TraceWriter> trace_writer,
@@ -91,12 +120,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   void StopTracing();
 
  private:
-  explicit TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
-
   const base::PlatformThreadId sampled_thread_id_;
 
   base::Lock lock_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|
+  TracingProfileBuilder* profile_builder_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TracingSamplerProfiler);
 };

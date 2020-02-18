@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 
+#include <memory>
 #include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,12 +17,12 @@ namespace content {
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()
     : IndexedDBCallbacks(nullptr,
                          url::Origin(),
-                         nullptr,
+                         mojo::NullAssociatedRemote(),
                          base::SequencedTaskRunnerHandle::Get()) {}
 MockIndexedDBCallbacks::MockIndexedDBCallbacks(bool expect_connection)
     : IndexedDBCallbacks(nullptr,
                          url::Origin(),
-                         nullptr,
+                         mojo::NullAssociatedRemote(),
                          base::SequencedTaskRunnerHandle::Get()),
       expect_connection_(expect_connection) {}
 
@@ -42,8 +43,6 @@ void MockIndexedDBCallbacks::OnSuccess(
     std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
   info_called_ = true;
 }
-
-void MockIndexedDBCallbacks::OnSuccess(const IndexedDBKey& key) {}
 
 void MockIndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,

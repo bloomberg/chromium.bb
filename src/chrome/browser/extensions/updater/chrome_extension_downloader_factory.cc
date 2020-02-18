@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/updater/extension_updater_switches.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,12 +37,12 @@ ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
   std::unique_ptr<ExtensionDownloader> downloader(new ExtensionDownloader(
       delegate, std::move(url_loader_factory), connector,
       required_verifier_format, profile_path));
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string brand;
   google_brand::GetBrand(&brand);
   if (!google_brand::IsOrganic(brand))
     downloader->set_brand_code(brand);
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string manifest_query_params =
       UpdateQueryParams::Get(UpdateQueryParams::CRX);
   base::CommandLine* command_line =
@@ -62,10 +63,7 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
       delegate, content::GetSystemConnector(),
-      extensions::GetPolicyVerifierFormat(
-          extensions::ExtensionPrefs::Get(profile)
-              ->InsecureExtensionUpdatesEnabled()),
-      profile->GetPath());
+      extensions::GetPolicyVerifierFormat(), profile->GetPath());
 
   // NOTE: It is not obvious why it is OK to pass raw pointers to the token
   // service and identity manager here. The logic is as follows:

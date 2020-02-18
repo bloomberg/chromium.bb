@@ -778,6 +778,8 @@ external/wpt/css/css-writing-modes/first-page-vlr-003.xht [ WontFix ]
 external/wpt/css/css-writing-modes/first-page-vrl-002.xht [ WontFix ]
 external/wpt/css/css-writing-modes/page-flow-direction-002.xht [ WontFix ]
 external/wpt/css/css-writing-modes/page-flow-direction-003.xht [ WontFix ]
+external/wpt/css/css-writing-modes/tcy-white-space-processing-001.html [ WontFix ]
+external/wpt/css/css-writing-modes/tcy-white-space-processing-003.html [ WontFix ]
 external/wpt/html/interaction/focus/focus-02.html [ WontFix ]
 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ WontFix ]
@@ -1620,6 +1622,7 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontF
 
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
+virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
 
 # These directories have manual tests that don't have to run with
 # run_web_tests.py; see https://crbug.com/359838.
@@ -2128,23 +2131,18 @@ external/wpt/webstorage/storage_local-manual.html [ WontFix ]
 external/wpt/webstorage/storage_session-manual.html [ WontFix ]
 external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/blink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
+virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
+virtual/audio-service/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
+virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
+virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
+virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/not-omt-sw-fetch/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/not-omt-sw-fetch/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
@@ -2196,8 +2194,8 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_protot
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ WontFix ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
+Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.https.sub.html [ WontFix ]
+Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.https.sub.html [ WontFix ]
 Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ WontFix ]
 Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 # -------------------- origin-vs-url in console messages -----------------
@@ -2211,7 +2209,6 @@ Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin
 # https://foo.example.com/path?token=secret needs to be replaced with just
 # https://foo.example.com).
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
-crbug.com/669083 virtual/blink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
 # --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
@@ -2246,6 +2243,7 @@ crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ W
 crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ WontFix ]
 crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] virtual/audio-service/media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ WontFix ]
@@ -2273,3 +2271,35 @@ external/wpt/web-share/share-image-manual.html [ WontFix ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ WontFix ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ WontFix ]
 external/wpt/html/webappapis/user-prompts/print-manual.html [ WontFix ]
+
+# WebGPU tests are only run on GPU bots, so they are skipped by default and run
+# separately from other Web Tests.
+external/wpt/webgpu/ [ WontFix ]
+
+# Tests that do not pass with the Blink CORS, but pass with OOR-CORS.
+# We maintain the Blink CORS for a while, and keep it work without regressions.
+# But will not change the existing behavior for Blink CORS when expectations are
+# changed for the spec update, other features side-effects, and so on.
+# TODO(cbur.com/870173): Double check following failed tests later.
+crbug.com/870173 external/wpt/fetch/sec-metadata/appcache.tentative.https.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ WontFix ]
+crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
+crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ WontFix ]
+crbug.com/870173 http/tests/devtools/network/extra-info-redirects.js [ WontFix ]
+crbug.com/870173 http/tests/eventsource/eventsource-cors-non-http.html [ WontFix ]
+crbug.com/870173 http/tests/eventsource/workers/eventsource-cors-non-http.html [ WontFix ]
+crbug.com/870173 http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ WontFix ]
+crbug.com/870173 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ WontFix ]
+crbug.com/870173 http/tests/preload/warning/request-mode.html [ WontFix ]
+crbug.com/870173 http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ WontFix ]
+crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.html [ WontFix ]
+crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ WontFix ]
+crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ WontFix ]
+crbug.com/870173 mhtml/cid_in_html_resource.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ WontFix ]

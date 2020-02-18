@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_observer.h"
@@ -22,12 +23,14 @@ class ApplicationDragAndDropHost;
 
 namespace ash {
 enum class AnimationChangeType;
-class HomeButton;
 class BackButton;
 class FocusCycler;
+class HomeButton;
+class HotseatWidget;
 class LoginShelfView;
 class Shelf;
 class ShelfLayoutManager;
+class ShelfNavigationWidget;
 class ShelfView;
 class StatusAreaWidget;
 
@@ -39,14 +42,14 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfObserver,
                                public SessionObserver {
  public:
-  ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
+  explicit ShelfWidget(Shelf* shelf);
   ~ShelfWidget() override;
 
   // Sets the initial session state and show the UI. Not part of the constructor
   // because showing the UI triggers the accessibility checks in browser_tests,
   // which will crash unless the constructor returns, allowing the caller
   // to store the constructed widget.
-  void Initialize();
+  void Initialize(aura::Window* shelf_container);
 
   // Clean up prior to deletion.
   void Shutdown();
@@ -54,6 +57,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Returns true if the views-based shelf is being shown.
   static bool IsUsingViewsShelf();
 
+  void CreateNavigationWidget(aura::Window* container);
+  void CreateHotseatWidget(aura::Window* container);
   void CreateStatusAreaWidget(aura::Window* status_container);
 
   void OnShelfAlignmentChanged();
@@ -67,6 +72,13 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   const Shelf* shelf() const { return shelf_; }
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
+
+  // TODO(manucornet): Move these three getters directly to |Shelf| to make it
+  // clear that they are on the same level as the shelf widget.
+  ShelfNavigationWidget* navigation_widget() const {
+    return navigation_widget_.get();
+  }
+  HotseatWidget* hotseat_widget() const { return hotseat_widget_.get(); }
   StatusAreaWidget* status_area_widget() const {
     return status_area_widget_.get();
   }
@@ -75,9 +87,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   bool IsShowingAppList() const;
   bool IsShowingMenu() const;
-  bool IsShowingOverflowBubble() const;
 
-  // Sets the focus cycler.  Also adds the shelf to the cycle.
+  // Sets the focus cycler. Also adds the shelf to the cycle.
   void SetFocusCycler(FocusCycler* focus_cycler);
   FocusCycler* GetFocusCycler();
 
@@ -97,10 +108,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   LoginShelfView* login_shelf_view() { return login_shelf_view_; }
 
   void set_default_last_focusable_child(bool default_last_focusable_child);
-
-  // Finds the first or last focusable child of the set (main shelf + overflow)
-  // and focuses it.
-  void FocusFirstOrLastFocusableChild(bool last);
 
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -124,13 +131,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                        gfx::Rect* hit_test_rect_touch);
 
   // Internal implementation detail. Do not expose outside of tests.
-  ShelfView* shelf_view_for_testing() const { return shelf_view_; }
-  ShelfBackgroundAnimator* background_animator_for_testing() {
-    return &background_animator_;
+  ShelfView* shelf_view_for_testing() const {
+    return hotseat_widget()->GetShelfView();
   }
 
-  void set_activated_from_overflow_bubble(bool val) {
-    activated_from_overflow_bubble_ = val;
+  ShelfBackgroundAnimator* background_animator_for_testing() {
+    return &background_animator_;
   }
 
  private:
@@ -143,6 +149,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Shows shelf widget if IsVisible() returns false.
   void ShowIfHidden();
 
+  ShelfView* GetShelfView();
+  const ShelfView* GetShelfView() const;
+
   Shelf* shelf_;
 
   ShelfBackgroundAnimator background_animator_;
@@ -150,24 +159,18 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
 
+  // Pointers to widgets that are visually part of the shelf.
+  std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
+  std::unique_ptr<HotseatWidget> hotseat_widget_;
   std::unique_ptr<StatusAreaWidget> status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
 
-  // View containing the shelf items within an active user session. Owned by
-  // the views hierarchy.
-  ShelfView* shelf_view_;
-
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.
-  LoginShelfView* const login_shelf_view_;
-
-  // Set to true when the widget is activated from another widget. Do not
-  // focus the default element in this case. This should be set when
-  // cycling focus from another widget to the shelf.
-  bool activated_from_overflow_bubble_ = false;
+  LoginShelfView* login_shelf_view_;
 
   ScopedSessionObserver scoped_session_observer_;
 

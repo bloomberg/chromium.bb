@@ -4,12 +4,16 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 
-#include <string>
 #include <utility>
 
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -17,11 +21,15 @@
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -32,6 +40,12 @@ namespace {
 constexpr char kLoginDisplay[] = "login";
 constexpr char kAccelSendFeedback[] = "send_feedback";
 constexpr char kAccelReset[] = "reset";
+
+CertificateProviderService* GetLoginScreenCertProviderService() {
+  DCHECK(ProfileHelper::IsSigninProfileInitialized());
+  return CertificateProviderServiceFactory::GetForBrowserContext(
+      ProfileHelper::GetSigninProfile());
+}
 
 }  // namespace
 
@@ -47,15 +61,20 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
       user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)),
-      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
-      weak_factory_(this) {
+      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
   // Preload webui-based OOBE for add user, kiosk apps, etc.
   LoadOobeDialog();
+
+  GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
+      &security_token_pin_dialog_host_ash_impl_);
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
+  GetLoginScreenCertProviderService()
+      ->pin_dialog_manager()
+      ->RemovePinDialogHost(&security_token_pin_dialog_host_ash_impl_);
   LoginScreenClient::Get()->SetDelegate(nullptr);
   if (dialog_) {
     dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
@@ -349,6 +368,23 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
   user_selection_screen_->AttemptEasyUnlock(account_id);
 }
 
+void LoginDisplayHostMojo::HandleAuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  if (!ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id)) {
+    LOG(ERROR)
+        << "Challenge-response authentication isn't supported for the user";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  challenge_response_auth_keys_loader_.LoadAvailableKeys(
+      account_id,
+      base::BindOnce(&LoginDisplayHostMojo::OnChallengeResponseKeysPrepared,
+                     weak_factory_.GetWeakPtr(), account_id,
+                     std::move(callback)));
+}
+
 void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
   user_selection_screen_->HardLockPod(account_id);
 }
@@ -394,6 +430,9 @@ void LoginDisplayHostMojo::OnAuthFailure(const AuthFailure& error) {
   // called directly.
   if (pending_auth_state_) {
     login_display_->UpdatePinKeyboardState(pending_auth_state_->account_id);
+    GetLoginScreenCertProviderService()
+        ->AbortSignatureRequestsForAuthenticatingUser(
+            pending_auth_state_->account_id);
     std::move(pending_auth_state_->callback).Run(false);
     pending_auth_state_.reset();
   }
@@ -419,6 +458,30 @@ void LoginDisplayHostMojo::LoadOobeDialog() {
   dialog_ = new OobeUIDialogDelegate(weak_factory_.GetWeakPtr());
   dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(
       login_display_.get());
+}
+
+void LoginDisplayHostMojo::OnChallengeResponseKeysPrepared(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> on_auth_complete_callback,
+    std::vector<ChallengeResponseKey> challenge_response_keys) {
+  if (challenge_response_keys.empty()) {
+    // TODO(crbug.com/826417): Indicate the error in the UI.
+    std::move(on_auth_complete_callback).Run(false);
+    return;
+  }
+
+  CHECK(!pending_auth_state_);
+  pending_auth_state_ = std::make_unique<AuthState>(
+      account_id, std::move(on_auth_complete_callback));
+
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  UserContext user_context(*user);
+  *user_context.GetMutableChallengeResponseKeys() =
+      std::move(challenge_response_keys);
+
+  existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
 }
 
 }  // namespace chromeos

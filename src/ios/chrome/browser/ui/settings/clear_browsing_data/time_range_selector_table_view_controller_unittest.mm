@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 
 #include "base/files/file_path.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -33,8 +33,7 @@ class TimeRangeSelectorTableViewControllerTest
     : public ChromeTableViewControllerTest {
  protected:
   TimeRangeSelectorTableViewControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
@@ -66,7 +65,7 @@ class TimeRangeSelectorTableViewControllerTest
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> pref_service_;
   TimeRangeSelectorTableViewController* time_range_selector_controller_;
 };

@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "components/arc/common/app.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
 
 class AppListControllerDelegate;
 class ArcPlayStoreAppContextMenu;
@@ -67,7 +67,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
   std::unique_ptr<ArcPlayStoreAppContextMenu> context_menu_;
 
-  base::WeakPtrFactory<ArcPlayStoreSearchResult> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPlayStoreSearchResult> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreSearchResult);
 };

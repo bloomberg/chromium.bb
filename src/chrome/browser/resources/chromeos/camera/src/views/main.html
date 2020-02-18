@@ -26,13 +26,18 @@
     <script src="../js/models/filenamer.js"></script>
     <script src="../js/models/gallery.js"></script>
     <script src="../js/models/filesystem.js"></script>
+    <script src="../js/models/result_saver.js"></script>
+    <script src="../js/models/video_saver.js"></script>
     <script src="../js/mojo/mojo_bindings_lite.js"></script>
     <script src="../js/mojo/camera_metadata_tags.mojom-lite.js"></script>
     <script src="../js/mojo/camera_metadata.mojom-lite.js"></script>
     <script src="../js/mojo/camera_common.mojom-lite.js"></script>
     <script src="../js/mojo/image_capture.mojom-lite.js"></script>
-    <script src="../js/mojo/cros_image_capture.mojom-lite.js"></script>
-    <script src="../js/mojo/imagecapture.js"></script>
+    <script src="../js/mojo/geometry.mojom-lite.js"></script>
+    <script src="../js/mojo/range.mojom-lite.js"></script>
+    <script src="../js/mojo/camera_app.mojom-lite.js"></script>
+    <script src="../js/mojo/device_operator.js"></script>
+    <script src="../js/mojo/image_capture.js"></script>
     <script src="../js/views/view.js"></script>
     <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
@@ -53,6 +58,25 @@
     <div id="camera">
       <div id="preview-wrapper" aria-hidden="true">
         <video id="preview-video"></video>
+        <div id="preview-metadata">
+          <div id="preview-af" class="metadata-row">
+            <span class="metadata-category">AF</span>
+            <div id="preview-focus-distance" class="metadata-value"></div>
+            <div id="preview-focal-length" class="metadata-value"></div>
+            <div id="preview-aperture" class="metadata-value"></div>
+          </div>
+          <div id="preview-ae" class="metadata-row">
+            <span class="metadata-category">AE</span>
+            <div id="preview-sensitivity" class="metadata-value"></div>
+            <div id="preview-exposure-time" class="metadata-value"></div>
+            <div id="preview-frame-duration" class="metadata-value"></div>
+          </div>
+          <div id="preview-awb" class="metadata-row">
+            <span class="metadata-category">AWB</span>
+            <div id="preview-wb-gain-red" class="metadata-value"></div>
+            <div id="preview-wb-gain-blue" class="metadata-value"></div>
+          </div>
+        </div>
         <div id="preview-grid">
           <div id="preview-grid-horizontal"></div>
           <div id="preview-grid-vertical"></div>
@@ -96,7 +120,7 @@
           <span i18n-content="label_switch_take_square_photo_button"
                 aria-hidden="true"></span>
         </div>
-        <div class="mode-item">
+        <div class="mode-item hide">
           <input type="radio" name="mode"
                data-mode="portrait-mode" tabindex="0"
                i18n-aria="switch_take_portrait_photo_button">
@@ -188,6 +212,12 @@
         <button class="menu-item circle" id="settings-resolution" tabindex="0">
           <div class="icon"></div>
           <div i18n-content="camera_resolution_button">
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item circle" id="settings-expert" tabindex="0">
+          <div class="icon"></div>
+          <div i18n-content="expert_mode_button">
           </div>
           <div class="icon end"></div>
         </button>
@@ -314,6 +344,26 @@
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-content="video_resolution_button"></div>
         </div>
+      </div>
+    </div>
+    <div id="expertsettings">
+      <div class="menu">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div i18n-content="expert_mode_button"></div>
+        </div>
+        <label class="menu-item circle" for="expert-show-metadata">
+          <input class="icon" id="expert-show-metadata" type="checkbox"
+                 tabindex="0" data-state="show-metadata"
+                 data-key="showMetadata">
+          <span i18n-content="expert_preview_metadata"></span>
+        </label>
+        <label class="menu-item circle" for="expert-save-metadata">
+          <input class="icon" id="expert-save-metadata" type="checkbox"
+                 tabindex="0" data-state="save-metadata"
+                 data-key="saveMetadata">
+          <span i18n-content="expert_save_metadata"></span>
+        </label>
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>

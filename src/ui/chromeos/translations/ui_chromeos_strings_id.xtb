@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Resolusi gambar</translation>
 <translation id="1943097386230153518">Instal layanan baru</translation>
 <translation id="1947424002851288782">Keyboard untuk bahasa Jerman</translation>
+<translation id="1972984168337863910">Luaskan panel masukan file</translation>
 <translation id="197560921582345123">Dapat mengedit</translation>
 <translation id="1984603991036629094">Keyboard fonetik Armenia</translation>
 <translation id="2001796770603320721">Kelola di Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Anda harus online untuk mengakses file ini.</translation>
 <translation id="4212740939091998969">Folder bernama "<ph name="FOLDER_NAME" />" sudah ada. Harap pilih nama lain.</translation>
 <translation id="4215448920900139318">Mencadangkan <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Buka setelan</translation>
 <translation id="426015154560005552">Keyboard Arab</translation>
 <translation id="4261901459838235729">Presentasi Google</translation>
 <translation id="4290535918735525311">1 folder dibagikan dengan Linux</translation>
-<translation id="42981349822642051">Luaskan</translation>
 <translation id="4298972503445160211">Keyboard untuk bahasa Denmark</translation>
 <translation id="4299729908419173967">Brasil</translation>
 <translation id="4309915981827077375">Info umum</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Perbaikan Otomatis</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4886021172213954916">Keyboard Tamil (Mesin ketik)</translation>
-<translation id="4892969127351273348">Tidak dapat membuka dengan <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Siap untuk mencadangkan <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Telah Diperbaiki</translation>
 <translation id="4935975195727477204">Bunga Gazania</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Prancis Swiss</translation>
 <translation id="5234764350956374838">Tutup</translation>
 <translation id="5241298539944515331">Keyboard Vietnam (VIQR)</translation>
-<translation id="52446585071384036">Untuk membuka file dengan <ph name="APP_NAME" />, salin ke folder file Linux terlebih dahulu.</translation>
 <translation id="5253070652067921974">Dibuat oleh</translation>
 <translation id="5257456363153333584">Capung</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Akses file dari mana saja, bahkan secara offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Korea</translation>
 <translation id="5819442873484330149">3 Himpunan Hangul (Akhir)</translation>
 <translation id="5833610766403489739">File ini tidak terdeteksi berada di mana. Periksa setelan lokasi download dan coba lagi.</translation>
-<translation id="5838051104334203064">Aplikasi Play Store tidak dapat mengakses perangkat ini</translation>
 <translation id="5838451609423551646">Semua entri dihapus dari pilihan.</translation>
 <translation id="5838825566232597749">Internasional Workman AS</translation>
 <translation id="5850516540536751549">Jenis file ini tidak didukung. Kunjungi <ph name="BEGIN_LINK" />Chrome Webstore<ph name="END_LINK" /> untuk menemukan aplikasi yang dapat membuka jenis file ini.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Untuk menyimpan file ini agar dapat digunakan saat offline, sambungkan ke internet, klik kanan pada file, dan pilih opsi <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Batalkan</translation>
 <translation id="8261506727792406068">Hapus</translation>
+<translation id="8269755669432358899">Ciutkan panel masukan file</translation>
 <translation id="8279388322240498158">Keyboard berbasis Inggris Kurdi Sorani</translation>
 <translation id="8280151743281770066">Fonetik Armenia</translation>
 <translation id="8294431847097064396">Sumber</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Pilih file yang akan dibuka</translation>
 <translation id="8579285237314169903">Menyinkronkan <ph name="NUMBER_OF_FILES" /> item...</translation>
 <translation id="8600173386174225982">Daftar file telah diubah menjadi tampilan thumbnail.</translation>
+<translation id="8601932370724196034">File gambar Crostini</translation>
 <translation id="8669949407341943408">Memindahkan...</translation>
 <translation id="8671210955687109937">Dapat mengomentari</translation>
 <translation id="8686213429977032554">File Drive ini belum dibagikan</translation>

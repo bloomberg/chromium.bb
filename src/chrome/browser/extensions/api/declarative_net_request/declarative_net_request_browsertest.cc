@@ -29,17 +29,22 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
+#include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -488,6 +493,18 @@ class DeclarativeNetRequestBrowserTest
     const std::string script = content::JsReplace(
         kScript, static_cast<const base::Value&>(*builder.Build()));
     ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
+  }
+
+  void SetActionsAsBadgeText(const ExtensionId& extension_id, bool pref) {
+    const char* pref_string = pref ? "true" : "false";
+    static constexpr char kSetActionCountAsBadgeTextScript[] = R"(
+      chrome.declarativeNetRequest.setActionCountAsBadgeText(%s);
+      window.domAutomationController.send("done");
+    )";
+
+    ExecuteScriptInBackgroundPage(
+        extension_id,
+        base::StringPrintf(kSetActionCountAsBadgeTextScript, pref_string));
   }
 
   std::set<GURL> GetAndResetRequestsToServer() {
@@ -942,7 +959,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
     rule.condition->url_filter = rule_data.url_filter;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
-    rule.action->redirect_url = rule_data.redirect_url;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
     rules.push_back(rule);
   }
 
@@ -1155,7 +1173,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Add |kNumExtensions| each redirecting example.com to a different redirect
   // url.
   for (size_t i = 1; i <= kNumExtensions; ++i) {
-    rule.action->redirect_url = redirect_url_for_extension_number(i);
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = redirect_url_for_extension_number(i);
     ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
         {rule}, std::to_string(i), {URLPattern::kAllUrlsPattern}));
 
@@ -1198,7 +1217,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"def.com", 4, "block", base::nullopt},
       {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
       {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
-      {"ijk*", 7, "redirect", "/manifest.json"},
   };
 
   // Load the extension.
@@ -1210,7 +1228,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
     rule.priority = kMinValidPriority;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
-    rule.action->redirect_url = rule_data.redirect_url;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
     rules.push_back(rule);
   }
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
@@ -1236,13 +1255,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       // Though ghijk.com still matches the redirect rule for |ghi*|, it will
       // not redirect to itself.
       {"ghi.com", true, GURL(get_url_for_host("ghijk.com")), 2},
-      // ijklm.com -> chrome-extension://<extension_id>/manifest.json.
-      // Since this redirects to a manifest.json, don't expect the frame with
-      // script to load.
-      {"ijklm.com", false,
-       GURL("chrome-extension://" + last_loaded_extension_id() +
-            "/manifest.json"),
-       2}};
+  };
 
   for (const auto& test_case : test_cases) {
     std::string url = get_url_for_host(test_case.hostname);
@@ -1299,7 +1312,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
       rule.id = id++;
       rule.priority = j;
       rule.action->type = std::string("redirect");
-      rule.action->redirect_url = redirect_url_for_priority(j);
+      rule.action->redirect.emplace();
+      rule.action->redirect->url = redirect_url_for_priority(j);
       rule.condition->url_filter = pattern;
       rule.condition->resource_types = std::vector<std::string>({"main_frame"});
       rules.push_back(rule);
@@ -1372,7 +1386,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
     rule.priority = rule_data.priority;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
-    rule.action->redirect_url = rule_data.redirect_url;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
     rules.push_back(rule);
   }
 
@@ -1688,8 +1703,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   set_has_background_script(true);
   LoadExtensionWithRules({});
 
-  const Extension* dnr_extension = extension_service()->GetExtensionById(
-      last_loaded_extension_id(), false /*include_disabled*/);
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(dnr_extension);
   EXPECT_EQ("Test extension", dnr_extension->name());
 
@@ -2046,8 +2061,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   const GURL unblocked_url = embedded_test_server()->GetURL(
       "yahoo.com", "/pages_with_script/index.html");
 
-  const Extension* extension = extension_service()->GetExtensionById(
-      extension_id, false /*include_disabled*/);
+  const Extension* extension = extension_registry()->GetExtensionById(
+      extension_id, ExtensionRegistry::ENABLED);
   RulesetSource static_source = RulesetSource::CreateStatic(*extension);
   RulesetSource dynamic_source =
       RulesetSource::CreateDynamic(profile(), *extension);
@@ -2281,15 +2296,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   rule.condition->resource_types = std::vector<std::string>({"script"});
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
-  rule.action->redirect_url =
+  rule.action->redirect.emplace();
+  rule.action->redirect->url =
       embedded_test_server()->GetURL("b.com", "/subresources/script.js").spec();
 
   std::vector<std::string> host_permissions = {"*://a.com/", "*://b.com/*"};
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {rule}, "extension" /* directory */, host_permissions));
 
-  const Extension* extension = extension_service()->GetExtensionById(
-      last_loaded_extension_id(), false /*include_disabled*/);
+  const Extension* extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
   ASSERT_TRUE(extension);
 
   auto verify_script_redirected = [this, extension](
@@ -2414,8 +2430,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {rule}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
-  const Extension* extension = extension_service()->GetExtensionById(
-      last_loaded_extension_id(), false /*include_disabled*/);
+  const Extension* extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
   ASSERT_TRUE(extension);
 
   EXPECT_TRUE(extension->permissions_data()->HasEffectiveAccessToAllHosts());
@@ -2477,7 +2493,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, DynamicRules) {
       std::vector<std::string>({"main_frame"});
   redirect_rule.priority = kMinValidPriority;
   redirect_rule.action->type = std::string("redirect");
-  redirect_rule.action->redirect_url = dynamic_redirect_url.spec();
+  redirect_rule.action->redirect.emplace();
+  redirect_rule.action->redirect->url = dynamic_redirect_url.spec();
   redirect_rule.id = kMinValidID + 1;
 
   ASSERT_NO_FATAL_FAILURE(AddDynamicRules(last_loaded_extension_id(),
@@ -2571,6 +2588,464 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   test_referrer_blocked(false);
 }
 
+// Tests rules using the Redirect dictionary.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
+  TestRule rule1 = CreateGenericRule();
+  rule1.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule1.id = kMinValidID;
+  rule1.condition->url_filter = std::string("ex");
+  rule1.action->type = std::string("redirect");
+  rule1.priority = kMinValidPriority;
+  rule1.action->redirect.emplace();
+  rule1.action->redirect->url =
+      embedded_test_server()
+          ->GetURL("google.com", "/pages_with_script/index.html")
+          .spec();
+
+  TestRule rule2 = CreateGenericRule();
+  rule2.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule2.id = kMinValidID + 1;
+  rule2.condition->url_filter = std::string("example.com");
+  rule2.action->type = std::string("redirect");
+  rule2.priority = kMinValidPriority + 1;
+  rule2.action->redirect.emplace();
+  rule2.action->redirect->extension_path = "/manifest.json?query#fragment";
+
+  TestRule rule3 = CreateGenericRule();
+  rule3.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule3.id = kMinValidID + 2;
+  rule3.condition->url_filter = std::string("||example.com");
+  rule3.action->type = std::string("redirect");
+  rule3.priority = kMinValidPriority + 2;
+  rule3.action->redirect.emplace();
+  rule3.action->redirect->transform.emplace();
+  auto& transform = rule3.action->redirect->transform;
+  transform->host = "new.host.com";
+  transform->path = "/pages_with_script/page.html";
+  transform->query = "?new_query";
+  transform->fragment = "#new_fragment";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {rule1, rule2, rule3}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  struct {
+    GURL url;
+    GURL expected_url;
+  } cases[] = {{embedded_test_server()->GetURL("example.com",
+                                               "/pages_with_script/index.html"),
+                // Because of higher priority, the transform rule is chosen.
+                embedded_test_server()->GetURL(
+                    "new.host.com",
+                    "/pages_with_script/page.html?new_query#new_fragment")},
+               // Because of higher priority, the extensionPath rule is chosen.
+               {embedded_test_server()->GetURL(
+                    "xyz.com", "/pages_with_script/index.html?example.com"),
+                GURL("chrome-extension://" + last_loaded_extension_id() +
+                     "/manifest.json?query#fragment")},
+               {embedded_test_server()->GetURL("ex.com",
+                                               "/pages_with_script/index.html"),
+                embedded_test_server()->GetURL(
+                    "google.com", "/pages_with_script/index.html")}};
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE("Testing " + test_case.url.spec());
+    ui_test_utils::NavigateToURL(browser(), test_case.url);
+    EXPECT_EQ(test_case.expected_url, web_contents()->GetLastCommittedURL());
+  }
+}
+
+// Test that the badge text for an extension will update to reflect the number
+// of actions taken on requests matching the extension's ruleset.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       ActionsMatchedCountAsBadgeText) {
+  auto get_url_for_host = [this](std::string hostname) {
+    return embedded_test_server()->GetURL(hostname,
+                                          "/pages_with_script/index.html");
+  };
+
+  // This page simulates a user clicking on a link, so that the next page it
+  // navigates to has a Referrer header.
+  auto get_url_with_referrer = [this](std::string hostname) {
+    return embedded_test_server()->GetURL(hostname, "/simulate_click.html");
+  };
+
+  // Navigates frame with name |frame_name| to |url|.
+  auto navigate_frame = [this](const std::string& frame_name, const GURL& url) {
+    content::TestNavigationObserver navigation_observer(
+        web_contents(), 1 /*number_of_navigations*/);
+
+    // Before navigation, We set the referrer policy of the iframe to
+    // 'no-referrer' to prevent a referer header from being added for the iframe
+    // navigation.
+    ASSERT_TRUE(content::ExecuteScript(
+        GetMainFrame(),
+        base::StringPrintf(R"(
+          document.getElementsByName('%s')[0].referrerPolicy = 'no-referrer';
+          document.getElementsByName('%s')[0].src = '%s';)",
+                           frame_name.c_str(), frame_name.c_str(),
+                           url.spec().c_str())));
+    navigation_observer.Wait();
+  };
+
+  const std::string kFrameName1 = "frame1";
+  const GURL page_url = embedded_test_server()->GetURL(
+      "norulesmatched.com", "/page_with_two_frames.html");
+
+  struct {
+    std::string url_filter;
+    int id;
+    int priority;
+    std::string action_type;
+    base::Optional<std::string> redirect_url;
+    base::Optional<std::vector<std::string>> remove_headers_list;
+  } rules_data[] = {
+      {"abc.com", 1, 1, "block", base::nullopt, base::nullopt},
+      {"def.com", 2, 1, "redirect", "http://zzz.com", base::nullopt},
+      {"jkl.com", 3, 1, "removeHeaders", base::nullopt,
+       std::vector<std::string>({"referer"})},
+      {"abcd.com", 4, 1, "block", base::nullopt, base::nullopt},
+      {"abcd", 5, 1, "allow", base::nullopt, base::nullopt},
+  };
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.id = rule_data.id;
+    rule.priority = rule_data.priority;
+    rule.condition->resource_types =
+        std::vector<std::string>({"main_frame", "sub_frame"});
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
+    rule.action->remove_headers_list = rule_data.remove_headers_list;
+    rules.push_back(rule);
+  }
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+
+  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
+                                                                  true);
+
+  ExtensionAction* action =
+      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  struct {
+    std::string frame_hostname;
+    std::string expected_badge_text;
+    bool has_referrer_header;
+  } test_cases[] = {
+      // zzz.com does not match any rules, but we should still display 0 as the
+      // badge text as the preference is on.
+      {"zzz.com", "0", false},
+      // abc.com is blocked by a matching rule and should increment the badge
+      // text.
+      {"abc.com", "1", false},
+      // def.com is redirected by a matching rule and should increment the badge
+      // text.
+      {"def.com", "2", false},
+      // jkl.com matches with a removeHeaders rule, but has no headers.
+      // Therefore no action is taken and the badge text stays the same.
+      {"jkl.com", "2", false},
+      // jkl.com matches with a removeHeaders rule and has a referrer header.
+      // Therefore the badge text should be incremented.
+      {"jkl.com", "3", true},
+      // abcd.com matches both a block rule and an allow rule. Since the allow
+      // rule overrides the block rule, no action is taken and the badge text
+      // stays the same,
+      {"abcd.com", "3", false},
+  };
+
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  // Verify that the badge text is 0 when navigation finishes.
+  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  EXPECT_EQ("0", action->GetDisplayBadgeText(first_tab_id));
+
+  for (const auto& test_case : test_cases) {
+    GURL url = test_case.has_referrer_header
+                   ? get_url_with_referrer(test_case.frame_hostname)
+                   : get_url_for_host(test_case.frame_hostname);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    navigate_frame(kFrameName1, url);
+    EXPECT_EQ(test_case.expected_badge_text,
+              action->GetDisplayBadgeText(first_tab_id));
+  }
+
+  std::string first_tab_badge_text = action->GetDisplayBadgeText(first_tab_id);
+
+  const GURL second_tab_url = get_url_for_host("nomatch.com");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), second_tab_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));
+
+  int second_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  EXPECT_EQ("0", action->GetDisplayBadgeText(second_tab_id));
+
+  // Verify that the badge text for the first tab is unaffected.
+  EXPECT_EQ(first_tab_badge_text, action->GetDisplayBadgeText(first_tab_id));
+}
+
+// Test that the extension cannot retrieve the number of actions matched
+// from the badge text by calling chrome.browserAction.getBadgeText.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetBadgeTextForActionsMatched) {
+  auto query_badge_text_from_ext = [this](const ExtensionId& extension_id,
+                                          int tab_id) {
+    static constexpr char kBadgeTextQueryScript[] = R"(
+        chrome.browserAction.getBadgeText({tabId: %d}, badgeText => {
+          window.domAutomationController.send(badgeText);
+        });
+      )";
+
+    return ExecuteScriptInBackgroundPage(
+        extension_id, base::StringPrintf(kBadgeTextQueryScript, tab_id));
+  };
+
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+
+  ExtensionAction* action =
+      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  const std::string default_badge_text = "asdf";
+  action->SetBadgeText(ExtensionAction::kDefaultTabId, default_badge_text);
+
+  const GURL page_url = embedded_test_server()->GetURL(
+      "norulesmatched.com", "/pages_with_script/index.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  // The preference is initially turned off. Both the visible badge text and the
+  // badge text queried by the extension using getBadgeText() should return the
+  // default badge text.
+  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  EXPECT_EQ(default_badge_text, action->GetDisplayBadgeText(first_tab_id));
+
+  std::string queried_badge_text =
+      query_badge_text_from_ext(extension_id, first_tab_id);
+  EXPECT_EQ(default_badge_text, queried_badge_text);
+
+  SetActionsAsBadgeText(extension_id, true);
+  // Since the preference is on for the current tab, attempting to query the
+  // badge text from the extension should return the placeholder text instead of
+  // the matched action count.
+  queried_badge_text = query_badge_text_from_ext(extension_id, first_tab_id);
+  EXPECT_EQ(declarative_net_request::kActionCountPlaceholderBadgeText,
+            queried_badge_text);
+
+  // The displayed badge text should show "0" as no actions have been matched.
+  EXPECT_EQ("0", action->GetDisplayBadgeText(first_tab_id));
+
+  SetActionsAsBadgeText(extension_id, false);
+  // Switching the preference off should cause the extension queried badge text
+  // to be the explicitly set badge text for this tab if it exists. In this
+  // case, the queried badge text should be the default badge text.
+  queried_badge_text = query_badge_text_from_ext(extension_id, first_tab_id);
+  EXPECT_EQ(default_badge_text, queried_badge_text);
+
+  // The displayed badge text should be the default badge text now that the
+  // preference is off.
+  EXPECT_EQ(default_badge_text, action->GetDisplayBadgeText(first_tab_id));
+
+  // Verify that turning off the preference deletes the DNR action count within
+  // the extension action.
+  EXPECT_FALSE(action->HasDNRActionCount(first_tab_id));
+}
+
+// Test that enabling the setActionCountAsBadgeText preference will update
+// all browsers sharing the same browser context.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       ActionCountPreferenceMultipleWindows) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+
+  ExtensionAction* extension_action =
+      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  const GURL page_url = embedded_test_server()->GetURL(
+      "norulesmatched.com", "/pages_with_script/index.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  int first_browser_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  EXPECT_EQ("", extension_action->GetDisplayBadgeText(first_browser_tab_id));
+
+  // Now create a new browser with the same profile as |browser()| and navigate
+  // to |page_url|.
+  Browser* second_browser = CreateBrowser(profile());
+  ui_test_utils::NavigateToURL(second_browser, page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame(second_browser)));
+  content::WebContents* second_browser_contents =
+      second_browser->tab_strip_model()->GetActiveWebContents();
+
+  int second_browser_tab_id =
+      ExtensionTabUtil::GetTabId(second_browser_contents);
+  EXPECT_EQ("", extension_action->GetDisplayBadgeText(second_browser_tab_id));
+
+  // Set up an observer to listen for ExtensionAction updates for the active web
+  // contents of both browser windows.
+  TestExtensionActionAPIObserver test_api_observer(
+      profile(), extension_id, {web_contents(), second_browser_contents});
+
+  SetActionsAsBadgeText(extension_id, true);
+
+  // Wait until ExtensionActionAPI::NotifyChange is called, then perform a
+  // sanity check on the browser action's badge text.
+  test_api_observer.Wait();
+
+  EXPECT_EQ("0", extension_action->GetDisplayBadgeText(first_browser_tab_id));
+
+  // The badge text for the second browser window should also update to the
+  // matched action count because the second browser shares the same browser
+  // context as the first.
+  EXPECT_EQ("0", extension_action->GetDisplayBadgeText(second_browser_tab_id));
+}
+
+// Test that the action matched badge text for an extension is visible in an
+// incognito context if the extension is incognito enabled.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       ActionsMatchedCountAsBadgeTextIncognito) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = "abc.com";
+  rule.id = kMinValidID;
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule.action->type = "block";
+
+  std::vector<TestRule> rules({rule});
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {rules}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const ExtensionId extension_id = last_loaded_extension_id();
+  util::SetIsIncognitoEnabled(extension_id, profile(), true /*enabled*/);
+
+  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
+                                                                  true);
+
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(incognito_browser, GURL("http://abc.com"));
+
+  content::WebContents* incognito_contents =
+      incognito_browser->tab_strip_model()->GetActiveWebContents();
+
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+  ExtensionAction* incognito_action =
+      ExtensionActionManager::Get(incognito_contents->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  // TODO(crbug.com/992251): This should be a "1" after the main-frame
+  // navigation case is fixed.
+  EXPECT_EQ("0", incognito_action->GetDisplayBadgeText(
+                     ExtensionTabUtil::GetTabId(incognito_contents)));
+}
+
+// Test that the actions matched badge text for an extension will be reset
+// when a main-frame navigation finishes.
+// TODO(crbug.com/992251): Edit this test to add more main-frame cases.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       ActionsMatchedCountAsBadgeTextMainFrame) {
+  auto get_url_for_host = [this](std::string hostname) {
+    return embedded_test_server()->GetURL(hostname,
+                                          "/pages_with_script/index.html");
+  };
+
+  struct {
+    std::string url_filter;
+    int id;
+    int priority;
+    std::string action_type;
+    std::vector<std::string> resource_types;
+    base::Optional<std::string> redirect_url;
+  } rules_data[] = {
+      {"abc.com", 1, 1, "block", std::vector<std::string>({"script"}),
+       base::nullopt},
+      {"def.com", 2, 1, "redirect", std::vector<std::string>({"main_frame"}),
+       get_url_for_host("abc.com").spec()},
+  };
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.id = rule_data.id;
+    rule.priority = rule_data.priority;
+    rule.condition->resource_types = rule_data.resource_types;
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
+    rules.push_back(rule);
+  }
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+
+  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
+      last_loaded_extension_id(), true);
+
+  ExtensionAction* action =
+      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  struct {
+    std::string frame_hostname;
+    std::string expected_badge_text;
+  } test_cases[] = {
+      // The script on get_url_for_host("abc.com") matches with a rule and
+      // should increment the badge text.
+      {"abc.com", "1"},
+      // No rules match, so the badge text should be 0 once navigation finishes.
+      {"nomatch.com", "0"},
+      // The request to def.com will redirect to get_url_for_host("abc.com") and
+      // the script on abc.com should match with a rule.
+      {"def.com", "1"},
+  };
+
+  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  for (const auto& test_case : test_cases) {
+    GURL url = get_url_for_host(test_case.frame_hostname);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_EQ(test_case.expected_badge_text,
+              action->GetDisplayBadgeText(first_tab_id));
+  }
+}
+
 // Test fixture to verify that host permissions for the request url and the
 // request initiator are properly checked when redirecting requests. Loads an
 // example.com url with four sub-frames named frame_[1..4] from hosts
@@ -2595,7 +3070,8 @@ class DeclarativeNetRequestHostPermissionsBrowserTest
     rule.condition->url_filter = std::string("not_a_valid_child_frame.html");
     rule.condition->resource_types = std::vector<std::string>({"sub_frame"});
     rule.action->type = std::string("redirect");
-    rule.action->redirect_url =
+    rule.action->redirect.emplace();
+    rule.action->redirect->url =
         embedded_test_server()->GetURL("foo.com", "/child_frame.html").spec();
 
     ASSERT_NO_FATAL_FAILURE(

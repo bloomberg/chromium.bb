@@ -9,9 +9,10 @@ from __future__ import print_function
 
 import base64
 import cStringIO
-import mock
 import os
 from textwrap import dedent
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -132,11 +133,11 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
     TEST_URL = 'proto://host.org/path/to/repo'
-    TEST_VERSION_CONTENTS = dedent('''\
+    TEST_VERSION_CONTENTS = dedent("""\
         A=8
         B=0
         C=256
-        D=0''')
+        D=0""")
     result = cStringIO.StringIO(base64.b64encode(TEST_VERSION_CONTENTS))
     self.PatchObject(gob_util, 'FetchUrl', return_value=result)
     # pylint: disable=protected-access
@@ -161,12 +162,12 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     TEST_URL = 'phthp://%s/tqs' % TEST_HOST
     TEST_TAGS = ['7.0.224.1', '7.0.224', '8.0.365.5', 'foo', 'bar-12.13.14.15']
     TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
-    TEST_BAD_DEPS_CONTENT = dedent('''\
+    TEST_BAD_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'TRS-80,',
-        ''')
-    TEST_GOOD_DEPS_CONTENT = dedent('''\
+        """)
+    TEST_GOOD_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'chromeos,',
-        ''')
+        """)
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
         cStringIO.StringIO(base64.b64encode(TEST_BAD_DEPS_CONTENT)),
@@ -182,9 +183,9 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     TEST_URL = 'phthp://%s/tqs' % TEST_HOST
     TEST_TAGS = ['7.0.224.2', '7.0.224', '7.0.365.5', 'foo', 'bar-12.13.14.15']
     TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
-    TEST_DEPS_CONTENT = dedent('''\
+    TEST_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'chromeos,',
-        ''')
+        """)
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
         cStringIO.StringIO(base64.b64encode(TEST_DEPS_CONTENT)),

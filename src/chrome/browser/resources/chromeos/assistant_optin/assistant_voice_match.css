@@ -19,9 +19,17 @@
   color: #757575;
 }
 
-#voice-match-video {
-  padding-top: 100px;
-  text-align: center;
+#voice-match-animation-container {
+  flex-grow: 1;
+}
+
+#voice-match-animation {
+  height: 170px;
+  left: 50%;
+  position: relative;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 255px;
 }
 
 #already-setup-video-container {
@@ -30,12 +38,6 @@
 
 #already-setup-video {
   height: 450px;
-}
-
-#already-setup-img {
-  display: block;
-  margin: auto;
-  padding-top: 80px;
 }
 
 #intro-container,
@@ -47,7 +49,8 @@
 
 .intro #intro-container,
 .already-setup #already-setup-container {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 .recording #title-completed,

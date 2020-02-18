@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import collections
-import cPickle
+import pickle
 
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_failure_message
@@ -42,7 +42,7 @@ def CancelBuilds(buildbucket_ids, buildbucket_client,
       build initiating the cancel. Optional.
   """
   if buildbucket_ids:
-    logging.info("Canceling buildbucket_ids: %s", buildbucket_ids)
+    logging.info('Canceling buildbucket_ids: %s', buildbucket_ids)
     if (not debug) and config:
       fields = {'build_type': config.build_type,
                 'build_name': config.name}
@@ -56,8 +56,8 @@ def CancelBuilds(buildbucket_ids, buildbucket_client,
       #Check for error messages
       if buildbucket_lib.GetNestedAttr(result, ['error']):
         # TODO(nxia): Get build url and log url in the warnings.
-        logging.warning("Error cancelling build %s with reason: %s. "
-                        "Please check the status of the build.",
+        logging.warning('Error cancelling build %s with reason: %s. '
+                        'Please check the status of the build.',
                         buildbucket_id,
                         buildbucket_lib.GetErrorReason(result))
 
@@ -184,8 +184,8 @@ class BuilderStatus(object):
 
   def AsPickledDict(self):
     """Returns a pickled dictionary representation of this builder status."""
-    return cPickle.dumps(dict(status=self.status, message=self.message,
-                              dashboard_url=self.dashboard_url))
+    return pickle.dumps(dict(status=self.status, message=self.message,
+                             dashboard_url=self.dashboard_url))
 
 
 class BuilderStatusManager(object):

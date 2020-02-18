@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -24,14 +24,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
-#include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/content/previews_ui_service.h"
-#include "components/previews/core/previews_constants.h"
+#include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -40,6 +39,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
 
@@ -72,14 +72,13 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
     if (total_count >= count) {
       break;
     }
-    LOG(WARNING) << "xxx histogram_name=" << histogram_name
-                 << " count=" << count << " total_count=" << total_count;
   }
 }
 
 }  // namespace
 
-class DeferAllScriptBrowserTest : public InProcessBrowserTest {
+class DeferAllScriptBrowserTest : public InProcessBrowserTest,
+                                  public testing::WithParamInterface<bool> {
  public:
   DeferAllScriptBrowserTest() = default;
   ~DeferAllScriptBrowserTest() override = default;
@@ -92,6 +91,14 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},
         {});
+
+    if (GetParam()) {
+      param_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      param_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
+    }
 
     InProcessBrowserTest::SetUp();
   }
@@ -135,21 +142,14 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
   // processed before returning.
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    base::HistogramTester histogram_tester;
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
-    run_loop.Run();
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
   }
 
   // Performs a navigation to |url| and waits for the the url's host's hints to
@@ -164,8 +164,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
+        &histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         1);
   }
 
@@ -205,6 +204,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList param_feature_list_;
 
  private:
   void TearDownOnMainThread() override {
@@ -228,6 +228,11 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
 
+// True if testing using the OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         DeferAllScriptBrowserTest,
+                         testing::Bool());
+
 // Avoid flakes and issues on non-applicable platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
@@ -235,10 +240,9 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelisted)) {
-
   GURL url = https_url();
 
   // Whitelist DeferAllScript for any path for the url's host.
@@ -278,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Defer should not be used on a webpage whose URL matches the denylist regex.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelistedDenylistURL)) {
   // Whitelist DeferAllScript for any path for the url's host.
@@ -300,10 +304,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsNotWhitelisted)) {
-
   GURL url = https_url();
 
   // Whitelist DeferAllScript for the url's host but with nonmatching pattern.
@@ -323,14 +326,14 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectTotalCount("Previews.PreviewShown.DeferAllScript", 0);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         DeferAllScriptHttpsWhitelistedButWithCoinFlipHoldback)) {
@@ -365,15 +368,25 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);
 
   // Verify UKM entries.
-  using UkmEntry = ukm::builders::Previews;
-  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
-  ASSERT_EQ(1u, entries.size());
-  auto* entry = entries.at(0);
-  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
-                                      2);
-  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName, 1);
-  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
-                                      true);
+  {
+    using UkmEntry = ukm::builders::Previews;
+    auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries.at(0);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName,
+                                        1);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
+                                        true);
+  }
+
+  {
+    using UkmEntry = ukm::builders::PreviewsCoinFlip;
+    auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries.at(0);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
+                                        2);
+  }
 }
 
 // The client_redirect_url (/client_redirect_base.html) performs a client
@@ -381,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(
 // peforms a client redirect back to the initial client_redirect_url if
 // and only if script execution is deferred. This emulates the navigation
 // pattern seen in crbug.com/987062
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptClientRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -403,6 +416,9 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), client_redirect_url());
 
   RetryForHistogramUntilCountReached(
+      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
+      2);
+  RetryForHistogramUntilCountReached(
       &histogram_tester, "Previews.PageEndReason.DeferAllScript", 3);
 
   // If there is a redirect loop, call to NavigateToURL() would never finish.
@@ -411,6 +427,8 @@ IN_PROC_BROWSER_TEST_F(
   //
   // Client redirect loop is broken on 2nd pass around the loop so expect 3
   // previews before previews turned off to stop loop.
+  histogram_tester.ExpectTotalCount(
+      "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       client_redirect_url()));
@@ -427,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(
 // client_redirect_url_target_url(). Finally,
 // client_redirect_url_target_url() performs a client redirect back to
 // client_redirect_url() only if script execution is deferred.
-IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
+IN_PROC_BROWSER_TEST_P(DeferAllScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(
                            DeferAllScriptServerClientRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -455,8 +473,13 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   // Client redirect loop is broken on 2nd pass around the loop so expect 3
   // previews before previews turned off to stop loop.
   RetryForHistogramUntilCountReached(
+      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
+      2);
+  RetryForHistogramUntilCountReached(
       &histogram_tester, "Previews.PageEndReason.DeferAllScript", 3);
 
+  histogram_tester.ExpectTotalCount(
+      "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       server_redirect_url()));
@@ -474,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
 // performs a server redirect which does a client redirect followed
 // by another client redirect (only when defer is enabled) to
 // server_redirect_base_redirect_to_final_server_redirect().
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         DeferAllScriptServerClientServerClientServerRedirectLoopStopped)) {
@@ -501,8 +524,13 @@ IN_PROC_BROWSER_TEST_F(
   // The checks belows are additional checks to ensure that the logic to detect
   // redirect loops is being called.
   RetryForHistogramUntilCountReached(
+      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
+      1);
+  RetryForHistogramUntilCountReached(
       &histogram_tester, "Previews.PageEndReason.DeferAllScript", 3);
 
+  histogram_tester.ExpectTotalCount(
+      "Navigation.ClientRedirectCycle.RedirectToReferrer", 1);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       server_redirect_base_redirect_to_final_server_redirect()));

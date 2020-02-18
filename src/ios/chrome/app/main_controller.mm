@@ -39,7 +39,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/ukm/ios/features.h"
-#include "components/unified_consent/feature.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -161,7 +160,7 @@
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/thread/web_task_traits.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "mojo/core/embedder/embedder.h"
 #import "net/base/mac/url_conversions.h"
@@ -623,7 +622,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)startUpBrowserBasicInitialization {
-  _appLaunchTime = base::TimeTicks::Now();
+  _appLaunchTime = IOSChromeMain::StartTime();
   _isColdStart = YES;
 
   [SetupDebugging setUpDebuggingOptions];
@@ -1588,7 +1587,8 @@ enum class EnterTabSwitcherSnapshotResult {
     _settingsNavigationController = [SettingsNavigationController
         newUserFeedbackController:_mainBrowserState
                          delegate:self
-               feedbackDataSource:self];
+               feedbackDataSource:self
+                       dispatcher:self];
     [baseViewController presentViewController:_settingsNavigationController
                                      animated:YES
                                    completion:nil];
@@ -1638,7 +1638,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
   self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
       initWithBrowserState:_mainBrowserState
                 dispatcher:self.mainBVC.dispatcher];
@@ -1718,26 +1717,6 @@ enum class EnterTabSwitcherSnapshotResult {
   _settingsNavigationController = [SettingsNavigationController
       newGoogleServicesController:originalBrowserState
                          delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showSyncSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  // When unified consent feather is enabled,
-  // |showGoogleServicesSettingsFromViewController:| should be called.
-  DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showSyncSettingsFromViewController:baseViewController];
-    return;
-  }
-  _settingsNavigationController =
-      [SettingsNavigationController newSyncController:_mainBrowserState
-                                             delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1944,10 +1923,10 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // OffTheRecordProfileIOData cannot be deleted before all the requests are
   // deleted. Queue browser state recreation on IO thread.
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {web::WebThread::IO}, base::DoNothing(), base::BindRepeating(^{
-        [self destroyAndRebuildIncognitoBrowserState];
-      }));
+  base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
+                         base::BindRepeating(^{
+                           [self destroyAndRebuildIncognitoBrowserState];
+                         }));
 
   // a) The first condition can happen when the last incognito tab is closed
   // from the tab switcher.
@@ -2188,61 +2167,41 @@ enum class EnterTabSwitcherSnapshotResult {
     disableWebUsageDuringRemoval = NO;
   }
 
-  ProceduralBlock removeBrowsingDataBlock = ^{
-    if (disableWebUsageDuringRemoval) {
-      // Disables browsing and purges web views.
-      // Must be called only on the main thread.
-      DCHECK([NSThread isMainThread]);
-      self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
-      self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
-    } else if (showActivityIndicator) {
-      // Show activity overlay so users know that clear browsing data is in
-      // progress.
-      [self.mainBVC.dispatcher showActivityOverlay:YES];
-    }
-
-    BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-        ->Remove(timePeriod, removeMask, base::BindOnce(^{
-                   // Activates browsing and enables web views.
-                   // Must be called only on the main thread.
-                   DCHECK([NSThread isMainThread]);
-                   if (showActivityIndicator) {
-                     // User interaction still needs to be disabled as a way to
-                     // force reload all the web states and to reset NTPs.
-                     self.interfaceProvider.mainInterface
-                         .userInteractionEnabled = NO;
-                     self.interfaceProvider.incognitoInterface
-                         .userInteractionEnabled = NO;
-
-                     [self.mainBVC.dispatcher showActivityOverlay:NO];
-                   }
-                   self.interfaceProvider.mainInterface.userInteractionEnabled =
-                       YES;
-                   self.interfaceProvider.incognitoInterface
-                       .userInteractionEnabled = YES;
-                   [self.currentBVC setPrimary:YES];
-
-                   if (completionBlock)
-                     completionBlock();
-                 }));
-  };
-
-  // Removing browsing data triggers session restore in navigation manager. If
-  // there is an in-progress session restore, wait for it to finish before
-  // attempting to clear browsing data again.
-  web::WebState* webState =
-      self.currentBVC.tabModel
-          ? self.currentBVC.tabModel.webStateList->GetActiveWebState()
-          : nullptr;
-  if (webState && webState->GetNavigationManager()) {
-    webState->GetNavigationManager()->AddRestoreCompletionCallback(
-        base::BindOnce(^{
-          removeBrowsingDataBlock();
-        }));
-    return;
+  if (disableWebUsageDuringRemoval) {
+    // Disables browsing and purges web views.
+    // Must be called only on the main thread.
+    DCHECK([NSThread isMainThread]);
+    self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+    self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
+  } else if (showActivityIndicator) {
+    // Show activity overlay so users know that clear browsing data is in
+    // progress.
+    [self.mainBVC.dispatcher showActivityOverlay:YES];
   }
 
-  removeBrowsingDataBlock();
+  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
+      ->Remove(
+          timePeriod, removeMask, base::BindOnce(^{
+            // Activates browsing and enables web views.
+            // Must be called only on the main thread.
+            DCHECK([NSThread isMainThread]);
+            if (showActivityIndicator) {
+              // User interaction still needs to be disabled as a way to
+              // force reload all the web states and to reset NTPs.
+              self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+              self.interfaceProvider.incognitoInterface.userInteractionEnabled =
+                  NO;
+
+              [self.mainBVC.dispatcher showActivityOverlay:NO];
+            }
+            self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
+            self.interfaceProvider.incognitoInterface.userInteractionEnabled =
+                YES;
+            [self.currentBVC setPrimary:YES];
+
+            if (completionBlock)
+              completionBlock();
+          }));
 }
 
 #pragma mark - Navigation Controllers
@@ -2277,9 +2236,11 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
   if (_settingsNavigationController) {
-    [_settingsNavigationController settingsWillBeDismissed];
+    [_settingsNavigationController cleanUpSettings];
     UIViewController* presentingViewController =
         [_settingsNavigationController presentingViewController];
+    // If presentingViewController is nil it means the VC was already dismissed
+    // by some other action like swiping down.
     DCHECK(presentingViewController);
     [presentingViewController dismissViewControllerAnimated:animated
                                                  completion:completion];
@@ -2650,6 +2611,11 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)closeSettings {
   [self closeSettingsUI];
+}
+
+- (void)settingsWasDismissed {
+  [_settingsNavigationController cleanUpSettings];
+  _settingsNavigationController = nil;
 }
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/base_switches.h"
@@ -148,6 +149,7 @@ static const char* kBadFlags[] = {
 // "stability and security will suffer".
 static const base::Feature* kBadFeatureFlagsInAboutFlags[] = {
     &features::kAllowSignedHTTPExchangeCertsWithoutExtension,
+    &features::kBundledHTTPExchanges,
 #if defined(OS_ANDROID)
     &chrome::android::kCommandLineOnNonRooted,
 #endif  // OS_ANDROID

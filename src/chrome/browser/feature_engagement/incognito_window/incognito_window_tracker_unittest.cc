@@ -24,7 +24,7 @@
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/feature_engagement/test/test_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,7 +85,7 @@ class IncognitoWindowTrackerEventTest : public testing::Test {
   std::unique_ptr<FakeIncognitoWindowTracker> incognito_window_tracker_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoWindowTrackerEventTest);
 };
@@ -169,7 +169,7 @@ class IncognitoWindowTrackerTest : public testing::Test {
  private:
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoWindowTrackerTest);
 };

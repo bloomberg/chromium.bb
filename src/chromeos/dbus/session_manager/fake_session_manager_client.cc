@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -285,6 +286,33 @@ void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {
   login_password_ = password;
 }
 
+void FakeSessionManagerClient::LoginScreenStorageStore(
+    const std::string& key,
+    const login_manager::LoginScreenStorageMetadata& metadata,
+    const std::string& data,
+    LoginScreenStorageStoreCallback callback) {
+  PostReply(FROM_HERE, std::move(callback), base::nullopt /* error */);
+}
+
+void FakeSessionManagerClient::LoginScreenStorageRetrieve(
+    const std::string& key,
+    LoginScreenStorageRetrieveCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), "Test" /* data */,
+                                base::nullopt /* error */));
+}
+
+void FakeSessionManagerClient::LoginScreenStorageListKeys(
+    LoginScreenStorageListKeysCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::vector<std::string>() /* keys */,
+                     base::nullopt /* error */));
+}
+
+void FakeSessionManagerClient::LoginScreenStorageDelete(
+    const std::string& key) {}
+
 void FakeSessionManagerClient::StartSession(
     const cryptohome::AccountIdentifier& cryptohome_id) {
   DCHECK_EQ(0UL, user_sessions_.count(cryptohome_id.account_id()));
@@ -299,6 +327,19 @@ void FakeSessionManagerClient::StopSession() {
 
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
+  if (!on_start_device_wipe_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_start_device_wipe_callback_));
+  }
+}
+
+void FakeSessionManagerClient::StartRemoteDeviceWipe(
+    const enterprise_management::SignedData& signed_command) {
+  start_device_wipe_call_count_++;
+  if (!on_start_device_wipe_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_start_device_wipe_callback_));
+  }
 }
 
 void FakeSessionManagerClient::ClearForcedReEnrollmentVpd(
@@ -409,9 +450,10 @@ void FakeSessionManagerClient::RetrievePolicy(
         GetStubPolicyFilePath(descriptor, nullptr /* key_path */);
     DCHECK(!policy_path.empty());
 
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&GetFileContent, policy_path),
         base::BindOnce(std::move(callback),
                        RetrievePolicyResponseType::SUCCESS));
@@ -493,9 +535,10 @@ void FakeSessionManagerClient::StorePolicy(
     if (response.has_new_public_key())
       files_to_store[key_path] = response.new_public_key();
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(StoreFiles, std::move(files_to_store)),
         base::BindOnce(std::move(callback), true /* success */));
   } else {
@@ -509,9 +552,9 @@ void FakeSessionManagerClient::StorePolicy(
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
 
-        base::PostTaskWithTraitsAndReply(
+        base::PostTaskAndReply(
             FROM_HERE,
-            {base::MayBlock(),
+            {base::ThreadPool(), base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(StoreFiles,
                            std::map<base::FilePath, std::string>{
@@ -526,7 +569,7 @@ void FakeSessionManagerClient::StorePolicy(
     }
 
     // Run the callback if it hasn't been passed to
-    // PostTaskWithTraitsAndReply(), in which case it will be run after the
+    // PostTaskAndReply(), in which case it will be run after the
     // owner key file was stored to disk.
     if (callback) {
       PostReply(FROM_HERE, std::move(callback), true /* success */);
@@ -556,9 +599,10 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
     CHECK(base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
     const base::FilePath state_keys_path =
         owner_key_path.DirName().AppendASCII(kStubStateKeysFileName);
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ReadCreateStateKeysStub, state_keys_path),
         std::move(callback));
   } else {
@@ -719,6 +763,11 @@ void FakeSessionManagerClient::HandleOwnerKeySet(
     observer.OwnerKeySet(true /* success */);
 
   std::move(callback_to_run).Run();
+}
+
+void FakeSessionManagerClient::set_on_start_device_wipe_callback(
+    base::OnceClosure callback) {
+  on_start_device_wipe_callback_ = std::move(callback);
 }
 
 }  // namespace chromeos

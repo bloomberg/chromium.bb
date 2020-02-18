@@ -6,14 +6,17 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.customtabs.CustomTabsIntent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatDelegate;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -21,9 +24,12 @@ import org.chromium.chrome.browser.util.IntentUtils;
 /**
  * Maintains and provides the night mode state for {@link CustomTabActivity}.
  */
-public class CustomTabNightModeStateController
-        implements Destroyable, NightModeStateProvider, SystemNightModeMonitor.Observer {
+public class CustomTabNightModeStateController implements Destroyable, NightModeStateProvider {
     private final ObserverList<Observer> mObservers = new ObserverList<>();
+    private final PowerSavingModeMonitor mPowerSavingModeMonitor;
+    private final SystemNightModeMonitor mSystemNightModeMonitor;
+    private final SystemNightModeMonitor.Observer mSystemNightModeObserver = this::updateNightMode;
+    private final Runnable mPowerSaveModeObserver = this::updateNightMode;
 
     /**
      * The color scheme requested for the CCT. Only {@link CustomTabsIntent#COLOR_SCHEME_LIGHT}
@@ -33,11 +39,14 @@ public class CustomTabNightModeStateController
     private int mRequestedColorScheme;
     private AppCompatDelegate mAppCompatDelegate;
 
-    /**
-     * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} that will notify this
-     *                            class about lifecycle changes.
-     */
-    CustomTabNightModeStateController(ActivityLifecycleDispatcher lifecycleDispatcher) {
+    @Nullable // Null initially, so that the first update is always applied (see updateNightMode()).
+    private Boolean mIsInNightMode;
+
+    CustomTabNightModeStateController(ActivityLifecycleDispatcher lifecycleDispatcher,
+            SystemNightModeMonitor systemNightModeMonitor,
+            PowerSavingModeMonitor powerSavingModeMonitor) {
+        mSystemNightModeMonitor = systemNightModeMonitor;
+        mPowerSavingModeMonitor = powerSavingModeMonitor;
         lifecycleDispatcher.register(this);
     }
 
@@ -61,29 +70,24 @@ public class CustomTabNightModeStateController
 
         updateNightMode();
 
-        // No need to observe system night mode if the intent specifies a light/dark color scheme.
+        // No need to observe system settings if the intent specifies a light/dark color scheme.
         if (mRequestedColorScheme == CustomTabsIntent.COLOR_SCHEME_SYSTEM) {
-            SystemNightModeMonitor.getInstance().addObserver(this);
+            mSystemNightModeMonitor.addObserver(mSystemNightModeObserver);
+            mPowerSavingModeMonitor.addObserver(mPowerSaveModeObserver);
         }
     }
 
     // Destroyable implementation.
     @Override
     public void destroy() {
-        SystemNightModeMonitor.getInstance().removeObserver(this);
+        mSystemNightModeMonitor.removeObserver(mSystemNightModeObserver);
+        mPowerSavingModeMonitor.removeObserver(mPowerSaveModeObserver);
     }
 
     // NightModeStateProvider implementation.
     @Override
     public boolean isInNightMode() {
-        switch (mRequestedColorScheme) {
-            case CustomTabsIntent.COLOR_SCHEME_LIGHT:
-                return false;
-            case CustomTabsIntent.COLOR_SCHEME_DARK:
-                return true;
-            default:
-                return SystemNightModeMonitor.getInstance().isSystemNightModeOn();
-        }
+        return mIsInNightMode != null && mIsInNightMode;
     }
 
     @Override
@@ -103,19 +107,27 @@ public class CustomTabNightModeStateController
         return false;
     }
 
-    // SystemNightModeMonitor.Observer implementation.
-    @Override
-    public void onSystemNightModeChanged() {
-        updateNightMode();
-        // We need to notify observers on system night mode change so that activities can be
-        // restarted as needed (we do not handle color scheme changes during runtime). No need to
-        // check for color scheme because we don't observe system night mode for light/dark color
-        // scheme.
-        for (Observer observer : mObservers) observer.onNightModeStateChanged();
+    private void updateNightMode() {
+        boolean shouldBeInNightMode = shouldBeInNightMode();
+        if (mIsInNightMode != null && mIsInNightMode == shouldBeInNightMode) return;
+
+        mIsInNightMode = shouldBeInNightMode;
+        mAppCompatDelegate.setLocalNightMode(mIsInNightMode ? AppCompatDelegate.MODE_NIGHT_YES
+                                                             : AppCompatDelegate.MODE_NIGHT_NO);
+        for (Observer observer : mObservers) {
+            observer.onNightModeStateChanged();
+        }
     }
 
-    private void updateNightMode() {
-        mAppCompatDelegate.setLocalNightMode(isInNightMode() ? AppCompatDelegate.MODE_NIGHT_YES
-                                                             : AppCompatDelegate.MODE_NIGHT_NO);
+    private boolean shouldBeInNightMode() {
+        switch (mRequestedColorScheme) {
+            case CustomTabsIntent.COLOR_SCHEME_LIGHT:
+                return false;
+            case CustomTabsIntent.COLOR_SCHEME_DARK:
+                return true;
+            default:
+                return mSystemNightModeMonitor.isSystemNightModeOn() ||
+                        mPowerSavingModeMonitor.powerSavingIsOn();
+        }
     }
 }

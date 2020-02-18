@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/device/generic_sensor/platform_sensor_reader_win_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +43,7 @@ class MockSensorReaderFactory : public SensorReaderFactory {
 // Tests that PlatformSensorProviderWinrt can successfully be instantiated
 // and passes the correct result to the CreateSensor callback.
 TEST(PlatformSensorProviderTestWinrt, SensorCreationReturnCheck) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   auto mock_sensor_reader_factory =
       std::make_unique<testing::NiceMock<MockSensorReaderFactory>>();

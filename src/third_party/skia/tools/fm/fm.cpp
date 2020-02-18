@@ -358,12 +358,12 @@ int main(int argc, char** argv) {
     sk_gpu_test::MemoryCache memoryCache;
     if (!FLAGS_writeShaders.isEmpty()) {
         baseOptions.fPersistentCache = &memoryCache;
-        baseOptions.fDisallowGLSLBinaryCaching = true;
+        baseOptions.fShaderCacheStrategy = GrContextOptions::ShaderCacheStrategy::kBackendSource;
     }
 
     SkTHashMap<SkString, skiagm::GMFactory> gm_factories;
     for (skiagm::GMFactory factory : skiagm::GMRegistry::Range()) {
-        std::unique_ptr<skiagm::GM> gm{factory(nullptr)};
+        std::unique_ptr<skiagm::GM> gm{factory()};
         if (FLAGS_sources.isEmpty()) {
             fprintf(stdout, "%s\n", gm->getName());
         } else {
@@ -379,9 +379,9 @@ int main(int argc, char** argv) {
         Source* source = &sources.push_back();
 
         if (skiagm::GMFactory* factory = gm_factories.find(name)) {
-            std::shared_ptr<skiagm::GM> gm{(*factory)(nullptr)};
+            std::shared_ptr<skiagm::GM> gm{(*factory)()};
             source->name = name;
-            init(source, gm);
+            init(source, std::move(gm));
             continue;
         }
 

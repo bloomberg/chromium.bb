@@ -15,7 +15,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
@@ -26,7 +25,7 @@
 #include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,30 +36,35 @@ namespace {
 const IPEndPoint kEndpoint(IPAddress(1, 2, 3, 4), 100);
 }
 
-class ContextHostResolverTest : public TestWithScopedTaskEnvironment {
+class ContextHostResolverTest : public TestWithTaskEnvironment {
  protected:
   void SetUp() override {
     manager_ = std::make_unique<HostResolverManager>(
-        HostResolver::ManagerOptions(), nullptr);
+        HostResolver::ManagerOptions(),
+        nullptr /* system_dns_config_notifier */, nullptr /* net_log */);
   }
 
   void SetMockDnsRules(MockDnsClientRuleList rules) {
-    // HostResolver expects DnsConfig to get set after setting DnsClient, so
-    // create first with an empty config and then update the config.
-    auto dns_client =
-        std::make_unique<MockDnsClient>(DnsConfig(), std::move(rules));
-    dns_client_ = dns_client.get();
-    manager_->SetDnsClientForTesting(std::move(dns_client));
-
-    scoped_refptr<HostResolverProc> proc = CreateCatchAllHostResolverProc();
-    manager_->set_proc_params_for_test(ProcTaskParams(proc.get(), 1u));
-
     IPAddress dns_ip(192, 168, 1, 0);
     DnsConfig config;
     config.nameservers.push_back(
         IPEndPoint(dns_ip, dns_protocol::kDefaultPort));
     EXPECT_TRUE(config.IsValid());
-    manager_->SetBaseDnsConfigForTesting(config);
+
+    auto dns_client =
+        std::make_unique<MockDnsClient>(std::move(config), std::move(rules));
+    dns_client->set_ignore_system_config_changes(true);
+    dns_client_ = dns_client.get();
+    manager_->SetDnsClientForTesting(std::move(dns_client));
+    manager_->SetInsecureDnsClientEnabled(true);
+
+    // Ensure DnsClient is fully usable.
+    EXPECT_TRUE(dns_client_->CanUseInsecureDnsTransactions());
+    EXPECT_FALSE(dns_client_->FallbackFromInsecureTransactionPreferred());
+    EXPECT_TRUE(dns_client_->GetEffectiveConfig());
+
+    scoped_refptr<HostResolverProc> proc = CreateCatchAllHostResolverProc();
+    manager_->set_proc_params_for_test(ProcTaskParams(proc.get(), 1u));
   }
 
   MockDnsClient* dns_client_;
@@ -273,8 +277,12 @@ TEST_F(ContextHostResolverTest, ResolveFromCache) {
       std::make_unique<ContextHostResolver>(manager_.get(), std::move(cache));
   resolver->SetTickClockForTesting(&clock);
 
+  // Allow stale results and then confirm the result is not stale in order to
+  // make the issue more clear if something is invalidating the cache.
   HostResolver::ResolveHostParameters parameters;
   parameters.source = HostResolverSource::LOCAL_ONLY;
+  parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetLogWithSource(), parameters);
@@ -284,6 +292,9 @@ TEST_F(ContextHostResolverTest, ResolveFromCache) {
   EXPECT_THAT(callback.GetResult(rv), test::IsOk());
   EXPECT_THAT(request->GetAddressResults().value().endpoints(),
               testing::ElementsAre(kEndpoint));
+  ASSERT_TRUE(request->GetStaleInfo());
+  EXPECT_EQ(0, request->GetStaleInfo().value().network_changes);
+  EXPECT_FALSE(request->GetStaleInfo().value().is_stale());
 }
 
 TEST_F(ContextHostResolverTest, ResultsAddedToCache) {

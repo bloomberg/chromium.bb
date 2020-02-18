@@ -45,10 +45,13 @@ class TestLoginScreen : public ash::LoginScreen {
       const AccountId& child_account_id,
       base::RepeatingCallback<void(bool success)> callback,
       ash::ParentAccessRequestReason reason,
-      bool extra_dimmer) override;
+      bool extra_dimmer,
+      base::Time validation_time) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   std::unique_ptr<ash::ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
       override;
+  void RequestSecurityTokenPin(ash::SecurityTokenPinRequest request) override;
+  void ClearSecurityTokenPinRequest() override;
 
  private:
   TestLoginScreenModel test_screen_model_;

@@ -9,9 +9,10 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "chromeos/services/ime/public/mojom/constants.mojom.h"
-#include "content/public/browser/system_connector.h"
-
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/ime/constants.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
+#include "content/public/browser/service_process_host.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -42,25 +43,29 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
         "Not implemented, considered not useful."
     })");
 
-bool IsImePathInvalid(const base::FilePath& file_path) {
+bool IsDownloadPathValid(const base::FilePath& file_path) {
   // Only non-empty, relative path which doesn't reference a parent is allowed.
-  return file_path.empty() || file_path.IsAbsolute() ||
-         file_path.ReferencesParent();
+  if (file_path.empty() || file_path.IsAbsolute() ||
+      file_path.ReferencesParent())
+    return false;
+
+  // Target path must be restricted in the provided path.
+  base::FilePath parent(chromeos::ime::kInputMethodsDirName);
+  parent = parent.Append(chromeos::ime::kLanguageDataDirName);
+  return parent.IsParent(file_path);
 }
 
-bool IsURLInvalid(const GURL& url) {
-  // TODO(https://crbug.com/837156): Use URL whitelist instead of the general
+bool IsDownloadURLValid(const GURL& url) {
+  // TODO(https://crbug.com/837156): Whitelist all URLs instead of some general
   // checks below.
-  return !url.DomainIs("dl.google.com") || !url.SchemeIs(url::kHttpsScheme);
+  return url.SchemeIs(url::kHttpsScheme) &&
+         url.DomainIs(chromeos::ime::kGoogleKeyboardDownloadDomain);
 }
 
 }  // namespace
 
 ImeServiceConnector::ImeServiceConnector(Profile* profile)
-    : profile_(profile),
-      url_loader_factory_(profile->GetURLLoaderFactory()),
-      instance_id_(base::Token::CreateRandom()),
-      access_(this) {}
+    : profile_(profile), url_loader_factory_(profile->GetURLLoaderFactory()) {}
 
 ImeServiceConnector::~ImeServiceConnector() = default;
 
@@ -73,7 +78,8 @@ void ImeServiceConnector::DownloadImeFileTo(
   // downloading task exits.
   // TODO(https://crbug.com/971954): Support multi downloads.
   // Validate url and file_path, return an empty file path if not.
-  if (url_loader_ || IsURLInvalid(url) || IsImePathInvalid(file_path)) {
+  if (url_loader_ || !IsDownloadURLValid(url) ||
+      !IsDownloadPathValid(file_path)) {
     base::FilePath empty_path;
     std::move(callback).Run(empty_path);
     return;
@@ -81,10 +87,10 @@ void ImeServiceConnector::DownloadImeFileTo(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
-  // Disable cookies for this request.
   resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+  // Disable cookies for this request.
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
@@ -101,27 +107,25 @@ void ImeServiceConnector::DownloadImeFileTo(
 
 void ImeServiceConnector::SetupImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
-  auto* connector = content::GetSystemConnector();
-  auto per_id_filter = service_manager::ServiceFilter::ByNameWithId(
-      chromeos::ime::mojom::kServiceName, instance_id_);
+  if (!remote_service_) {
+    auto kImeServiceSandboxType =
+        chromeos::features::IsImeDecoderWithSandboxEnabled()
+            ? service_manager::SANDBOX_TYPE_IME
+            : service_manager::SANDBOX_TYPE_UTILITY;
+    content::ServiceProcessHost::Launch(
+        remote_service_.BindNewPipeAndPassReceiver(),
+        content::ServiceProcessHost::Options()
+            .WithDisplayName(IDS_IME_SERVICE_DISPLAY_NAME)
+            .WithSandboxType(kImeServiceSandboxType)
+            .Pass());
+    remote_service_.reset_on_disconnect();
 
-  // Connect to the ChromeOS IME service.
-  if (!access_client_.is_bound()) {
-    // Connect service as a PlatformAccessClient interface.
-    connector->Connect(per_id_filter,
-                       access_client_.BindNewPipeAndPassReceiver());
-
-    access_client_->SetPlatformAccessProvider(
-        access_.BindNewPipeAndPassRemote());
+    platform_access_receiver_.reset();
+    remote_service_->SetPlatformAccessProvider(
+        platform_access_receiver_.BindNewPipeAndPassRemote());
   }
 
-  // Connect to the same service as a InputEngineManager interface.
-  connector->Connect(per_id_filter, std::move(receiver));
-}
-
-void ImeServiceConnector::OnPlatformAccessConnectionLost() {
-  // Reset the access_client_
-  access_client_.reset();
+  remote_service_->BindInputEngineManager(std::move(receiver));
 }
 
 void ImeServiceConnector::OnFileDownloadComplete(

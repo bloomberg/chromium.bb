@@ -42,11 +42,11 @@
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_image_decoder.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -788,8 +788,17 @@ TEST_F(BitmapImageTestWithMockDecoder, PaintImageForStaticBitmapImage) {
 
 template <typename HistogramEnumType>
 struct HistogramTestParams {
+  HistogramTestParams(const char* filename, HistogramEnumType type, int count)
+      : filename(filename), type(type), count(count) {}
+  HistogramTestParams(const char* filename, HistogramEnumType type)
+      : HistogramTestParams(filename, type, 1) {}
+
   const char* filename;
   HistogramEnumType type;
+
+  // The number of events reported in the histogram when |type| is not
+  // kNoSamplesReported, otherwise is ignored.
+  int count;
 };
 
 template <typename HistogramEnumType>
@@ -810,7 +819,7 @@ class BitmapHistogramTest : public BitmapImageTest,
       histogram_tester.ExpectTotalCount(histogram_name, 0);
     } else {
       histogram_tester.ExpectUniqueSample(histogram_name, this->GetParam().type,
-                                          1);
+                                          this->GetParam().count);
     }
   }
 };
@@ -904,5 +913,26 @@ INSTANTIATE_TEST_SUITE_P(
     DecodedImageDensityHistogramTest400px,
     DecodedImageDensityHistogramTest400px,
     testing::ValuesIn(kDecodedImageDensityHistogramTest400pxParams));
+
+using DecodedImageDensityHistogramTestKiBWeighted = BitmapHistogramTest<int>;
+
+TEST_P(DecodedImageDensityHistogramTestKiBWeighted, JpegDensity) {
+  RunTest("Blink.DecodedImage.JpegDensity.KiBWeighted");
+}
+
+const DecodedImageDensityHistogramTestKiBWeighted::ParamType
+    kDecodedImageDensityHistogramTestKiBWeightedParams[] = {
+        // 64x64 too small to report any metric
+        {"rgb-jpeg-red.jpg",
+         DecodedImageDensityHistogramTest100px::kNoSamplesReported},
+        // 439x154, 23220 bytes --> 2.74 bpp, 23 KiB (rounded up)
+        {"cropped_mandrill.jpg", 274, 23},
+        // 320x320, 74017 bytes --> 5.78, 72 KiB (rounded down)
+        {"blue-wheel-srgb-color-profile.jpg", 578, 72}};
+
+INSTANTIATE_TEST_SUITE_P(
+    DecodedImageDensityHistogramTestKiBWeighted,
+    DecodedImageDensityHistogramTestKiBWeighted,
+    testing::ValuesIn(kDecodedImageDensityHistogramTestKiBWeightedParams));
 
 }  // namespace blink

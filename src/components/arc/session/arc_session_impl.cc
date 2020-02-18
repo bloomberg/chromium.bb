@@ -145,7 +145,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   const version_info::Channel channel_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_;
+  base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionDelegateImpl);
 };
@@ -156,12 +156,11 @@ ArcSessionDelegateImpl::ArcSessionDelegateImpl(
     version_info::Channel channel)
     : arc_bridge_service_(arc_bridge_service),
       default_scale_factor_retriever_(retriever),
-      channel_(channel),
-      weak_factory_(this) {}
+      channel_(channel) {}
 
 void ArcSessionDelegateImpl::CreateSocket(CreateSocketCallback callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&ArcSessionDelegateImpl::CreateSocketInternal),
       std::move(callback));
 }
@@ -181,8 +180,8 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
   // For production, |socket_fd| passed from session_manager is either a valid
   // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
   // might be invalid.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&ArcSessionDelegateImpl::ConnectMojoInternal,
                      std::move(socket_fd), std::move(cancel_fd)),
       base::BindOnce(&ArcSessionDelegateImpl::OnMojoConnected,
@@ -201,8 +200,8 @@ void ArcSessionDelegateImpl::GetLcdDensity(GetLcdDensityCallback callback) {
 
 void ArcSessionDelegateImpl::GetFreeDiskSpace(
     GetFreeDiskSpaceCallback callback) {
-  PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath("/home")),
       std::move(callback));
@@ -337,9 +336,7 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
 }
 
 ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)),
-      client_(ArcClientAdapter::Create()),
-      weak_factory_(this) {
+    : delegate_(std::move(delegate)), client_(ArcClientAdapter::Create()) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -368,7 +365,7 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   state_ = State::STARTING_MINI_INSTANCE;
   StartArcMiniContainerRequest request;
   request.set_native_bridge_experiment(
-      base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
+      base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature));
   request.set_arc_file_picker_experiment(
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
   // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.

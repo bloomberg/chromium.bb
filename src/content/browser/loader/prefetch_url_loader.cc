@@ -6,17 +6,17 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -38,8 +38,6 @@ PrefetchURLLoader::PrefetchURLLoader(
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<SignedExchangePrefetchMetricRecorder>
         signed_exchange_prefetch_metric_recorder,
     scoped_refptr<PrefetchedSignedExchangeCache>
@@ -53,12 +51,11 @@ PrefetchURLLoader::PrefetchURLLoader(
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
       browser_context_(browser_context),
-      resource_context_(resource_context),
-      request_context_getter_(std::move(request_context_getter)),
       signed_exchange_prefetch_metric_recorder_(
           std::move(signed_exchange_prefetch_metric_recorder)),
       accept_langs_(accept_langs) {
   DCHECK(network_loader_factory_);
+  RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchMade);
 
   if (IsSignedExchangeHandlingEnabled()) {
     // Set the SignedExchange accept header.
@@ -67,19 +64,10 @@ PrefetchURLLoader::PrefetchURLLoader(
         network::kAcceptHeader, kSignedExchangeEnabledAcceptHeaderForPrefetch);
     if (prefetched_signed_exchange_cache &&
         resource_request.is_signed_exchange_prefetch_cache_enabled) {
-      BrowserContext::BlobContextGetter getter;
-      if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-        getter = BrowserContext::GetBlobStorageContext(browser_context_);
-      } else {
-        getter = base::BindRepeating(
-            [](base::WeakPtr<storage::BlobStorageContext> context) {
-              return context;
-            },
-            std::move(blob_storage_context));
-      }
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
-              std::move(prefetched_signed_exchange_cache), std::move(getter),
+              std::move(prefetched_signed_exchange_cache),
+              BrowserContext::GetBlobStorageContext(browser_context_),
               resource_request.url, this);
     }
   }
@@ -95,6 +83,16 @@ PrefetchURLLoader::PrefetchURLLoader(
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
+void PrefetchURLLoader::RecordPrefetchRedirectHistogram(
+    PrefetchRedirect event) {
+  // We only want to record prefetch vs prefetch redirects when we're not
+  // experimenting with a request's redirect mode.
+  if (base::FeatureList::IsEnabled(blink::features::kPrefetchPrivacyChanges))
+    return;
+
+  base::UmaHistogramEnumeration("Prefetch.Redirect", event);
+}
+
 void PrefetchURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
@@ -105,21 +103,21 @@ void PrefetchURLLoader::FollowRedirect(
   DCHECK(!new_url) << "Redirect with modified URL was not "
                       "supported yet. crbug.com/845683";
   if (signed_exchange_prefetch_handler_) {
+    RecordPrefetchRedirectHistogram(
+        PrefetchRedirect::kPrefetchRedirectedSXGHandler);
+
     // Rebind |client_binding_| and |loader_|.
     client_binding_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
         mojo::MakeRequest(&loader_)));
     return;
   }
 
+  RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchRedirected);
+
   DCHECK(loader_);
   loader_->FollowRedirect(removed_headers,
                           net::HttpRequestHeaders() /* modified_headers */,
                           base::nullopt);
-}
-
-void PrefetchURLLoader::ProceedWithResponse() {
-  if (loader_)
-    loader_->ProceedWithResponse();
 }
 
 void PrefetchURLLoader::SetPriority(net::RequestPriority priority,
@@ -143,7 +141,7 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 }
 
 void PrefetchURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response) {
+    network::mojom::URLResponseHeadPtr response) {
   if (IsSignedExchangeHandlingEnabled() &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, response)) {
@@ -159,8 +157,7 @@ void PrefetchURLLoader::OnReceiveResponse(
             frame_tree_node_id_getter_, resource_request_, response,
             mojo::ScopedDataPipeConsumerHandle(), std::move(loader_),
             client_binding_.Unbind(), network_loader_factory_,
-            url_loader_throttles_getter_, resource_context_,
-            request_context_getter_, this,
+            url_loader_throttles_getter_, this,
             signed_exchange_prefetch_metric_recorder_, accept_langs_);
     return;
   }
@@ -169,12 +166,12 @@ void PrefetchURLLoader::OnReceiveResponse(
     prefetched_signed_exchange_cache_adapter_->OnReceiveInnerResponse(response);
   }
 
-  forwarding_client_->OnReceiveResponse(response);
+  forwarding_client_->OnReceiveResponse(std::move(response));
 }
 
 void PrefetchURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   if (prefetched_signed_exchange_cache_adapter_ &&
       signed_exchange_prefetch_handler_) {
     prefetched_signed_exchange_cache_adapter_->OnReceiveRedirect(
@@ -188,7 +185,7 @@ void PrefetchURLLoader::OnReceiveRedirect(
   resource_request_.top_frame_origin = redirect_info.new_top_frame_origin;
   resource_request_.referrer = GURL(redirect_info.new_referrer);
   resource_request_.referrer_policy = redirect_info.new_referrer_policy;
-  forwarding_client_->OnReceiveRedirect(redirect_info, head);
+  forwarding_client_->OnReceiveRedirect(redirect_info, std::move(head));
 }
 
 void PrefetchURLLoader::OnUploadProgress(int64_t current_position,
@@ -264,12 +261,8 @@ void PrefetchURLLoader::OnNetworkConnectionError() {
 }
 
 bool PrefetchURLLoader::IsSignedExchangeHandlingEnabled() {
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    return signed_exchange_utils::IsSignedExchangeHandlingEnabled(
-        browser_context_);
-  }
-  return signed_exchange_utils::IsSignedExchangeHandlingEnabledOnIO(
-      resource_context_);
+  return signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+      browser_context_);
 }
 
 }  // namespace content

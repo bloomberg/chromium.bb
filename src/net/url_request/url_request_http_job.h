@@ -123,7 +123,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void ContinueDespiteLastError() override;
   int ReadRawData(IOBuffer* buf, int buf_size) override;
   void StopCaching() override;
-  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
@@ -150,7 +149,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   // Callback functions for Cookie Monster
   void SetCookieHeaderAndStart(const CookieOptions& options,
-                               const CookieList& cookie_list,
+                               const CookieStatusList& cookie_list,
                                const CookieStatusList& excluded_list);
 
   // Another Cookie Monster callback
@@ -159,7 +158,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
                          std::string cookie_string,
                          CanonicalCookie::CookieInclusionStatus status);
   int num_cookie_lines_left_;
-  CookieAndLineStatusList cs_status_list_;
+  CookieAndLineStatusList set_cookie_status_list_;
 
   // Some servers send the body compressed, but specify the content length as
   // the uncompressed size. If this is the case, we return true in order

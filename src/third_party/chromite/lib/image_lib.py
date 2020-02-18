@@ -45,13 +45,15 @@ class LoopbackPartitions(object):
   when garbage collected or when explicitly closed, ala the tempfile module.
 
   In either case, the same arguments should be passed to init.
-
-  Args:
-    path: Path to the backing file.
-    losetup: Path to the losetup utility. The default uses the system PATH.
   """
-  def __init__(self, path, destination=None, util_path=None):
-    self._util_path = util_path
+
+  def __init__(self, path, destination=None):
+    """Initialize.
+
+    Args:
+      path: Path to the backing file.
+      destination: Base path to mount partitions.
+    """
     self.path = path
     self.destination = destination
     self.dev = None
@@ -67,17 +69,25 @@ class LoopbackPartitions(object):
 
     try:
       cmd = ['losetup', '--show', '-f', self.path]
-      ret = self._au_safe_sudo(cmd, print_cmd=False, capture_output=True)
+      ret = cros_build_lib.SudoRunCommand(
+          cmd, print_cmd=False, capture_output=True)
       self.dev = ret.output.strip()
       cmd = ['partx', '-d', self.dev]
-      self._au_safe_sudo(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
       cmd = ['partx', '-a', self.dev]
-      self._au_safe_sudo(cmd, print_cmd=False)
+      ret = cros_build_lib.SudoRunCommand(
+          cmd, print_cmd=False, error_code_ok=True)
+      if ret.returncode:
+        logging.warning('Adding partitions failed; dumping log & retrying')
+        cros_build_lib.RunCommand(['sync'])
+        cros_build_lib.RunCommand(['dmesg'])
+        cmd = ['partx', '-u', self.dev]
+        cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
 
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
       if not part_devs:
-        logging.Warning('Didn\'t find partition devices nodes for %s.',
+        logging.warning("Didn't find partition devices nodes for %s.",
                         self.path)
         return
 
@@ -88,13 +98,6 @@ class LoopbackPartitions(object):
     except:
       self.close()
       raise
-
-  def _au_safe_sudo(self, cmd, **kwargs):
-    """Run a command using sudo in a way that respects the util_path"""
-    newcmd = osutils.Which(cmd[0], path=self._util_path)
-    if newcmd:
-      cmd = [newcmd] + cmd[1:]
-    return cros_build_lib.SudoRunCommand(cmd, **kwargs)
 
   def GetPartitionDevName(self, part_id):
     """Return the loopback device for a partition.
@@ -241,8 +244,8 @@ class LoopbackPartitions(object):
                                   osutils.RmDir, path, sudo=True, sleep=1)
       self._to_be_rmdir = set()
       cmd = ['partx', '-d', self.dev]
-      self._au_safe_sudo(cmd, quiet=True, error_code_ok=True)
-      self._au_safe_sudo(['losetup', '--detach', self.dev])
+      cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.SudoRunCommand(['losetup', '--detach', self.dev])
       self.dev = None
       self.parts = {}
       self._gpt_table = None

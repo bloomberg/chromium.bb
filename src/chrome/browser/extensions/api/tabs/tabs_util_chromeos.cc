@@ -19,21 +19,13 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/clipboard_types.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 
 namespace extensions {
 namespace tabs_util {
 
 void SetLockedFullscreenState(Browser* browser, bool locked) {
   UMA_HISTOGRAM_BOOLEAN("Extensions.LockedFullscreenStateRequest", locked);
-
-  // Disable ChromeVox before entering locked fullscreen.  Quickfix for
-  // crbug.com/957950.
-  auto* const accessibility_manager = chromeos::AccessibilityManager::Get();
-  if (locked && accessibility_manager &&
-      accessibility_manager->IsSpokenFeedbackEnabled()) {
-    accessibility_manager->EnableSpokenFeedback(false);
-  }
 
   aura::Window* window = browser->window()->GetNativeWindow();
   // TRUSTED_PINNED is used here because that one locks the window fullscreen
@@ -50,7 +42,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
 
   // Reset the clipboard and kill dev tools when entering or exiting locked
   // fullscreen (security concerns).
-  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardType::kCopyPaste);
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
   content::DevToolsAgentHost::DetachAllClients();
 
   // Disable ARC while in the locked fullscreen mode.

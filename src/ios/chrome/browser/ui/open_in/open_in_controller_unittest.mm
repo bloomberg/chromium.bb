@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -73,7 +73,7 @@ class OpenInControllerTest : public PlatformTest {
                        pdf_data.length);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
@@ -102,7 +102,7 @@ TEST_F(OpenInControllerTest, TestDisplayOpenInMenu) {
   std::string pdf_str = CreatePdfString();
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url.spec(), pdf_str);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   histogram_tester_.ExpectBucketCount(kOpenInDownloadResultHistogram,
                                       static_cast<base::HistogramBase::Sample>(
                                           OpenInDownloadResult::kSucceeded),
@@ -127,7 +127,7 @@ TEST_F(OpenInControllerTest, TestCorruptedPDFDownload) {
   // Only use half the string so the downloaded PDF is corrupted.
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url.spec(), pdf_str.substr(pdf_str.size() / 2));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   histogram_tester_.ExpectBucketCount(
       kOpenInDownloadResultHistogram,
       static_cast<base::HistogramBase::Sample>(OpenInDownloadResult::kFailed),

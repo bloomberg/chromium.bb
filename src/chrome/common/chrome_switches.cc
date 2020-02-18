@@ -377,17 +377,6 @@ const char kKioskMode[]                     = "kiosk";
 // Enable automatically pressing the print button in print preview.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
-// Launches an in-process instance of the simple_browser service on startup if
-// this Chrome build supports it. See |enable_simple_browser_service_in_process|
-// in chrome/common/features.gni.
-const char kLaunchInProcessSimpleBrowserSwitch[] =
-    "launch-in-process-simple-browser";
-
-// Launches a sandboxed out-of-process instance of the simple_browser service on
-// startup if this Chrome build supports it. See
-// |enable_simple_browser_service_out_of_process| in chrome/common/features.gni.
-const char kLaunchSimpleBrowserSwitch[] = "launch-simple-browser";
-
 // Loads the Media Router component extension on startup.
 const char kLoadMediaRouterComponentExtension[] =
     "load-media-router-component-extension";
@@ -409,6 +398,11 @@ const char kNativeMessagingConnectHost[] = "native-messaging-connect-host";
 // kNativeMessagingConnectHost switch.
 const char kNativeMessagingConnectExtension[] =
     "native-messaging-connect-extension";
+
+// If set when kNativeMessagingConnectHost and kNativeMessagingConnectExtension
+// are specified, is reflected to the native messaging host as a command line
+// parameter.
+const char kNativeMessagingConnectId[] = "native-messaging-connect-id";
 
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
@@ -715,11 +709,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 
-// Provides the name of the mojo service running in a mash utility process.
-// NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
-// change or remove the flag please update platform2/crash_reporter.
-const char kMashServiceName[] = "mash-service-name";
-
 // Use a short (1 second) timeout for merge session loader throttle testing.
 const char kShortMergeSessionTimeoutForTest[] =
     "short-merge-session-timeout-for-test";
@@ -836,6 +825,10 @@ const char kShowIcons[]                     = "show-icons";
 
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
+
+// Indicates that this process is the product of a relaunch following migration
+// of User Data.
+const char kUserDataMigrated[] = "user-data-migrated";
 
 // Causes the process to run as a watcher process.
 const char kWatcherProcess[]                = "watcher";

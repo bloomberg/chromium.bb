@@ -83,9 +83,10 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info) {
         std::make_unique<sys::ServiceDirectory>(std::move(dummy_directory));
   }
 
-  component_context_ = std::make_unique<sys::ComponentContext>(
-      std::move(incoming_services),
-      std::move(startup_info.launch_info.directory_request));
+  component_context_ =
+      std::make_unique<sys::ComponentContext>(std::move(incoming_services));
+  outgoing_directory_request_ =
+      std::move(startup_info.launch_info.directory_request);
 
   service_directory_ =
       std::make_unique<ServiceDirectory>(component_context_->outgoing().get());
@@ -94,6 +95,17 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info) {
 }
 
 StartupContext::~StartupContext() = default;
+
+void StartupContext::ServeOutgoingDirectory() {
+  DCHECK(outgoing_directory_request_);
+  component_context_->outgoing()->Serve(std::move(outgoing_directory_request_));
+}
+
+ServiceDirectory* StartupContext::public_services() {
+  if (outgoing_directory_request_)
+    ServeOutgoingDirectory();
+  return service_directory_.get();
+}
 
 }  // namespace fuchsia
 }  // namespace base

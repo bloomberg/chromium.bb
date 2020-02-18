@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 2.8)
 
-project(SwiftShader C CXX)
+project(SwiftShader C CXX ASM)
 
 # On Windows we use custom solution and project files, except for certain third-
 # party projects which use CMake-generated ones. They are manually (re)generated
@@ -71,6 +71,13 @@ if(CCACHE_FOUND)
 endif(CCACHE_FOUND)
 
 ###########################################################
+# Host libraries
+###########################################################
+
+find_library(X11 X11)
+find_library(XCB xcb)
+
+###########################################################
 # Options
 ###########################################################
 
@@ -99,11 +106,7 @@ option(REACTOR_EMIT_DEBUG_INFO "Emit debug info for JIT functions" 0)
 option(REACTOR_EMIT_PRINT_LOCATION "Emit printing of location info for JIT functions" 0)
 option(REACTOR_VERIFY_LLVM_IR "Check reactor-generated LLVM IR is valid even in release builds" 0)
 
-if(ARCH STREQUAL "arm")
-    set(DEFAULT_REACTOR_BACKEND "Subzero")
-else()
-    set(DEFAULT_REACTOR_BACKEND "LLVM")
-endif()
+set(DEFAULT_REACTOR_BACKEND "LLVM")
 
 set(REACTOR_BACKEND ${DEFAULT_REACTOR_BACKEND} CACHE STRING "JIT compiler back-end used by Reactor")
 set_property(CACHE REACTOR_BACKEND PROPERTY STRINGS LLVM Subzero)
@@ -262,6 +265,7 @@ endif()
 ###########################################################
 
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(YARN_DIR ${SOURCE_DIR}/Yarn)
 set(OPENGL_DIR ${SOURCE_DIR}/OpenGL)
 set(OPENGL_COMPILER_DIR ${OPENGL_DIR}/compiler)
 set(VULKAN_DIR ${SOURCE_DIR}/Vulkan)
@@ -303,6 +307,7 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS)
     add_definitions(-D_SBCS)  # Single Byte Character Set (ASCII)
+    add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)  # Disable MSVC warnings about std::aligned_storage being broken before VS 2017 15.8
 
     if(WARNINGS_AS_ERRORS)
         set_cpp_flag("/WX") # Treat all warnings as errors
@@ -392,15 +397,6 @@ else()
         set_cpp_flag("-march=mips64r2")
         set_cpp_flag("-mabi=64")
         set_cpp_flag("-fPIC")
-    endif()
-
-    if(WIN32)
-        set_cpp_flag("-DVK_USE_PLATFORM_WIN32_KHR")
-    elseif(LINUX)
-        set_cpp_flag("-DUSE_X11=1")
-        set_cpp_flag("-DVK_USE_PLATFORM_XLIB_KHR")
-    elseif(APPLE)
-        set_cpp_flag("-DVK_USE_PLATFORM_MACOS_MVK")
     endif()
 
     # Use -g3 to have even more debug info
@@ -1423,6 +1419,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 8)
         list(APPEND LLVM_COMPILE_OPTIONS
             "-Wno-class-memaccess"  # memset/memcmp used on non-trivial class object
+            "-Wno-attributes"	# declared inline but not inline
         )
     endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -1535,7 +1532,6 @@ if(${REACTOR_BACKEND} STREQUAL "Subzero")
         ${SOURCE_DIR}/Reactor/Reactor.cpp
         ${SOURCE_DIR}/Reactor/Reactor.hpp
         ${SOURCE_DIR}/Reactor/SubzeroReactor.cpp
-        ${SOURCE_DIR}/Reactor/Routine.cpp
         ${SOURCE_DIR}/Reactor/Optimizer.cpp
         ${SOURCE_DIR}/Reactor/Nucleus.hpp
         ${SOURCE_DIR}/Reactor/Routine.hpp
@@ -1670,7 +1666,6 @@ set(REACTOR_LLVM_LIST
     ${SOURCE_DIR}/Reactor/LLVMReactorDebugInfo.cpp
     ${SOURCE_DIR}/Reactor/LLVMReactorDebugInfo.hpp
     ${SOURCE_DIR}/Reactor/Nucleus.hpp
-    ${SOURCE_DIR}/Reactor/Routine.cpp
     ${SOURCE_DIR}/Reactor/Routine.hpp
     ${SOURCE_DIR}/Reactor/CPUID.cpp
     ${SOURCE_DIR}/Reactor/CPUID.hpp
@@ -1736,6 +1731,7 @@ file(GLOB_RECURSE VULKAN_LIST
     ${VULKAN_DIR}/*.cpp
     ${VULKAN_DIR}/*.h
     ${VULKAN_DIR}/*.hpp
+    ${SOURCE_DIR}/System/Build.hpp
     ${SOURCE_DIR}/System/CPUID.cpp
     ${SOURCE_DIR}/System/CPUID.hpp
     ${SOURCE_DIR}/System/Configurator.cpp
@@ -1764,6 +1760,22 @@ file(GLOB_RECURSE VULKAN_LIST
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan/*.h}
 )
 
+file(GLOB YARN_FULL_LIST
+    ${YARN_DIR}/*.cpp
+    ${YARN_DIR}/*.hpp
+    ${YARN_DIR}/*.c
+)
+
+if (NOT MSVC)
+    file(GLOB YARN_ASSEMBLY_LIST ${YARN_DIR}/*.S)
+    list(APPEND YARN_FULL_LIST ${YARN_ASSEMBLY_LIST})
+endif(NOT MSVC)
+
+set(YARN_LIST ${YARN_FULL_LIST})
+set(YARN_TEST_LIST ${YARN_FULL_LIST})
+list(FILTER YARN_LIST EXCLUDE REGEX ".*_test\\..*")
+list(FILTER YARN_TEST_LIST INCLUDE REGEX ".*_test\\..*")
+
 ###########################################################
 # Append OS specific files to lists
 ###########################################################
@@ -1781,6 +1793,11 @@ if(WIN32)
     list(APPEND EGL_LIST ${OPENGL_DIR}/libEGL/libEGL.rc)
     list(APPEND GLES2_LIST ${OPENGL_DIR}/libGLESv2/libGLESv2.rc)
     list(APPEND GLES_CM_LIST ${OPENGL_DIR}/libGLES_CM/libGLES_CM.rc)
+    list(APPEND VULKAN_LIST
+        ${VULKAN_DIR}/Vulkan.rc
+        ${SOURCE_DIR}/WSI/Win32SurfaceKHR.cpp
+        ${SOURCE_DIR}/WSI/Win32SurfaceKHR.hpp
+    )
 elseif(LINUX)
     list(APPEND SWIFTSHADER_LIST
         ${SOURCE_DIR}/Main/FrameBufferX11.cpp
@@ -1798,12 +1815,22 @@ elseif(LINUX)
         ${OPENGL_COMPILER_DIR}/ossource_posix.cpp
     )
 
-    list(APPEND VULKAN_LIST
-        ${SOURCE_DIR}/WSI/libX11.cpp
-        ${SOURCE_DIR}/WSI/libX11.hpp
-        ${SOURCE_DIR}/WSI/XlibSurfaceKHR.cpp
-        ${SOURCE_DIR}/WSI/XlibSurfaceKHR.hpp
-    )
+    if(X11)
+        list(APPEND VULKAN_LIST
+            ${SOURCE_DIR}/WSI/XlibSurfaceKHR.cpp
+            ${SOURCE_DIR}/WSI/XlibSurfaceKHR.hpp
+            ${SOURCE_DIR}/WSI/libX11.cpp
+            ${SOURCE_DIR}/WSI/libX11.hpp
+        )
+    endif(X11)
+
+    if(XCB)
+        list(APPEND VULKAN_LIST
+            ${SOURCE_DIR}/WSI/XcbSurfaceKHR.cpp
+            ${SOURCE_DIR}/WSI/XcbSurfaceKHR.hpp
+        )
+    endif(XCB)
+
 elseif(APPLE)
     list(APPEND SWIFTSHADER_LIST
         ${SOURCE_DIR}/Main/FrameBufferOSX.mm
@@ -1846,6 +1873,15 @@ endif()
 ###########################################################
 # SwiftShader Targets
 ###########################################################
+
+add_library(Yarn STATIC ${YARN_LIST})
+set_target_properties(Yarn PROPERTIES
+    POSITION_INDEPENDENT_CODE 1
+    FOLDER "Core"
+    COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
+    COMPILE_DEFINITIONS "NO_SANITIZE_FUNCTION=;"
+)
+target_link_libraries(Yarn ${OS_LIBS})
 
 add_library(SwiftShader STATIC ${SWIFTSHADER_LIST})
 set_target_properties(SwiftShader PROPERTIES
@@ -1928,6 +1964,11 @@ if(BUILD_EGL)
         COMPILE_DEFINITIONS "EGL_EGLEXT_PROTOTYPES; EGLAPI=; NO_SANITIZE_FUNCTION=;$<$<CONFIG:Debug>:DEBUGGER_WAIT_DIALOG>"
         PREFIX ""
     )
+    if(LINUX)
+        if(X11)
+            set_property(TARGET libEGL APPEND PROPERTY COMPILE_DEFINITIONS "USE_X11=1")
+        endif(X11)
+    endif()
     if (ANDROID)
         set_target_properties(libEGL PROPERTIES SUFFIX "_swiftshader.so")
     endif ()
@@ -1998,33 +2039,50 @@ if(BUILD_VULKAN)
         add_subdirectory(third_party/SPIRV-Tools)
     endif()
 
-    add_library(libvk_swiftshader SHARED ${VULKAN_LIST})
-    set_target_properties(libvk_swiftshader PROPERTIES
+    add_library(vk_swiftshader SHARED ${VULKAN_LIST})
+
+    set_target_properties(vk_swiftshader PROPERTIES
         INCLUDE_DIRECTORIES "${VULKAN_INCLUDE_DIR}"
         FOLDER "Vulkan"
         COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
         COMPILE_DEFINITIONS "VK_EXPORT=;NO_SANITIZE_FUNCTION=;$<$<CONFIG:Debug>:DEBUGGER_WAIT_DIALOG>"
-        PREFIX ""
     )
-    set_shared_library_export_map(libvk_swiftshader ${SOURCE_DIR}/Vulkan)
-    target_link_libraries(libvk_swiftshader ${Reactor} ${OS_LIBS} SPIRV-Tools SPIRV-Tools-opt)
+
+    if(WIN32)
+        set_property(TARGET vk_swiftshader APPEND
+                     PROPERTY COMPILE_DEFINITIONS "VK_USE_PLATFORM_WIN32_KHR")
+    elseif(LINUX)
+        if(X11)
+            set_property(TARGET vk_swiftshader APPEND
+                        PROPERTY COMPILE_DEFINITIONS "VK_USE_PLATFORM_XLIB_KHR")
+        endif(X11)
+        if(XCB)
+            set_property(TARGET vk_swiftshader APPEND
+                        PROPERTY COMPILE_DEFINITIONS "VK_USE_PLATFORM_XCB_KHR")
+        endif(XCB)
+    elseif(APPLE)
+        set_property(TARGET vk_swiftshader APPEND
+                     PROPERTY COMPILE_DEFINITIONS "VK_USE_PLATFORM_MACOS_MVK")
+    endif()
+
+    set_shared_library_export_map(vk_swiftshader ${SOURCE_DIR}/Vulkan)
+    target_link_libraries(vk_swiftshader ${Reactor} Yarn ${OS_LIBS} SPIRV-Tools SPIRV-Tools-opt)
     add_custom_command(
-        TARGET libvk_swiftshader
+        TARGET vk_swiftshader
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libvk_swiftshader>/translator
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> $<TARGET_FILE_DIR:libvk_swiftshader>/translator/${LIB_PREFIX}Vulkan_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:vk_swiftshader>/translator
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vk_swiftshader> $<TARGET_FILE_DIR:vk_swiftshader>/translator/${LIB_PREFIX}Vulkan_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vk_swiftshader> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
 
     # The vk_swiftshader_icd.json manifest file will point to ICD_LIBRARY_PATH.
     # Set ICD_LIBRARY_PATH to be a relative path similar to "./libvk_swiftshader.so", so both files can be moved.
     # A relative path is relative to the manifest file.
-    # Note that the library name is always "libvk_swiftshader"; we do not use the platform-specific prefix.
-    set(ICD_LIBRARY_PATH "libvk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(ICD_LIBRARY_PATH "${CMAKE_SHARED_LIBRARY_PREFIX}vk_swiftshader${CMAKE_SHARED_LIBRARY_SUFFIX}")
     if(WIN32)
         # The path is output to a JSON file, which requires backslashes to be escaped.
-        set(ICD_LIBRARY_PATH ".\\${ICD_LIBRARY_PATH}")
+        set(ICD_LIBRARY_PATH ".\\\\${ICD_LIBRARY_PATH}")
     else()
         set(ICD_LIBRARY_PATH "./${ICD_LIBRARY_PATH}")
     endif()
@@ -2056,7 +2114,7 @@ if(BUILD_SAMPLES)
             COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
             COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES"
         )
-        target_link_libraries(OGLES2HelloAPI dl X11 libEGL libGLESv2)   # Explicitly link our "lib*" targets, not the platform provided "EGL" and "GLESv2"
+        target_link_libraries(OGLES2HelloAPI dl ${X11} libEGL libGLESv2)   # Explicitly link our "lib*" targets, not the platform provided "EGL" and "GLESv2"
     elseif(APPLE)
         add_executable(OGLES2HelloAPI MACOSX_BUNDLE
             ${HELLO2_DIR}/OGLES2HelloAPI_OSX.mm
@@ -2126,6 +2184,56 @@ if(BUILD_TESTS)
     if(ANDROID)
         target_link_libraries(gles-unittests -landroid)
     endif()
+endif(BUILD_TESTS)
+
+if(BUILD_TESTS)
+    # Yarn unit tests
+    file(GLOB YARN_TEST_LIST
+        ${YARN_DIR}/*_test.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
+    )
+
+    set(YARN_TEST_INCLUDE_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
+
+    add_executable(yarn-unittests ${YARN_TEST_LIST})
+    set_target_properties(yarn-unittests PROPERTIES
+        INCLUDE_DIRECTORIES "${YARN_TEST_INCLUDE_DIR}"
+        FOLDER "Tests"
+        COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
+        COMPILE_DEFINITIONS "STANDALONE"
+    )
+
+    target_link_libraries(yarn-unittests Yarn ${OS_LIBS})
+
+    # Math unit tests
+    set(MATH_UNITTESTS_LIST
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/MathUnitTests/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/MathUnitTests/unittests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
+    )
+
+    set(MATH_UNITTESTS_INCLUDE_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/
+    )
+
+    add_executable(math-unittests ${MATH_UNITTESTS_LIST})
+    set_target_properties(math-unittests PROPERTIES
+        INCLUDE_DIRECTORIES "${MATH_UNITTESTS_INCLUDE_DIR}"
+        FOLDER "Tests"
+        COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
+    )
+
+    if(NOT WIN32)
+        target_link_libraries(math-unittests pthread)
+    endif()
 endif()
 
 if(BUILD_TESTS AND BUILD_VULKAN)
@@ -2146,6 +2254,8 @@ if(BUILD_TESTS AND BUILD_VULKAN)
     )
 
     add_executable(vk-unittests ${VK_UNITTESTS_LIST})
+    add_dependencies(vk-unittests vk_swiftshader)
+
     set_target_properties(vk-unittests PROPERTIES
         INCLUDE_DIRECTORIES "${VK_UNITTESTS_INCLUDE_DIR}"
         FOLDER "Tests"
@@ -2154,4 +2264,4 @@ if(BUILD_TESTS AND BUILD_VULKAN)
     )
 
     target_link_libraries(vk-unittests ${OS_LIBS} SPIRV-Tools)
-endif()
+endif(BUILD_TESTS AND BUILD_VULKAN)

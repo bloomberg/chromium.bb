@@ -73,16 +73,8 @@ declare_args() {
   # This is initialized below, after use_gold might have been overridden.
   gold_path = false
 
-  if (is_win) {
-    # Whether the VS xtree header has been patched to disable warning 4702. If
-    # it has, then we don't need to disable 4702 (unreachable code warning).
-    # The patch is preapplied to the internal toolchain and hence all bots.
-    msvs_xtree_patched = false
-  }
-
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
-  # See: https://bugs.chromium.org/p/chromium/issues/detail?id=457359
   fatal_linker_warnings = true
 
   # Build with C++ RTTI enabled. Chromium builds without RTTI by default,
@@ -194,11 +186,13 @@ if (is_win || is_android || is_chromeos) {
     } else if (is_win && is_clang && is_official_build) {
       chrome_orderfile_path = "//chrome/build/chrome.$target_cpu.orderfile"
     } else if (is_chromeos) {
-      # FIXME(tcwang): update this with autoroller.
-      chrome_orderfile_path = ""
+      chrome_orderfile_path = "//chromeos/profiles/chromeos.orderfile.txt"
     }
   }
 }
+
+assert(!(llvm_force_head_revision && use_goma),
+       "can't use goma with trunk clang")
 
 # default_include_dirs ---------------------------------------------------------
 #
@@ -294,12 +288,12 @@ config("compiler") {
 
     # Linker warnings.
     if (fatal_linker_warnings && !(is_chromeos && current_cpu == "arm") &&
-        !(is_android && use_order_profiling) && !is_mac && !is_ios &&
-        current_os != "aix") {
+        !is_mac && !is_ios && current_os != "aix") {
       # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
-      # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
-      # crbug.com/485542
       ldflags += [ "-Wl,--fatal-warnings" ]
+    }
+    if (fatal_linker_warnings && (is_mac || is_ios)) {
+      ldflags += [ "-Wl,-fatal_warnings" ]
     }
   } else {
   }
@@ -399,14 +393,6 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
-  if (is_android && is_clang) {
-    _rebased_android_toolchain_root =
-        rebase_path(android_toolchain_root, root_build_dir)
-
-    # Let clang find the linker in the NDK.
-    ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
-  }
-
   if (((is_posix || is_fuchsia) && use_lld) ||
       (target_os == "chromeos" && is_android)) {
     # NOTE: Some Chrome OS builds globally disable LLD, but they also build some
@@ -1057,16 +1043,6 @@ config("compiler_codegen") {
 
   if (is_nacl) {
     configs += [ "//build/config/nacl:compiler_codegen" ]
-  } else if (is_posix && !is_mac && !is_ios) {
-    if (current_cpu == "x86") {
-      if (is_clang) {
-        cflags += [
-          # Else building libyuv gives clang's register allocator issues,
-          # see llvm.org/PR15798 / crbug.com/233709
-          "-momit-leaf-frame-pointer",
-        ]
-      }
-    }
   }
 
   if (current_cpu == "arm64" && is_android) {
@@ -1259,6 +1235,7 @@ config("runtime_library") {
 # flags are guaranteed to appear on the compile command line after -Wall.
 config("default_warnings") {
   cflags = []
+  cflags_c = []
   cflags_cc = []
   ldflags = []
 
@@ -1424,14 +1401,6 @@ config("default_warnings") {
         "/wd4267",
       ]
     }
-
-    # VS xtree header file needs to be patched or 4702 (unreachable code
-    # warning) is reported if _HAS_EXCEPTIONS=0. Disable the warning if xtree is
-    # not patched.
-    if (!msvs_xtree_patched &&
-        exec_script("../../win_is_xtree_patched.py", [], "value") == 0) {
-      cflags += [ "/wd4702" ]  # Unreachable code.
-    }
   } else {
     if ((is_mac || is_ios) && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
@@ -1531,6 +1500,27 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
+
+          # TODO(https://crbug.com/989932): Evaluate and possibly enable.
+          "-Wno-implicit-int-float-conversion",
+
+          # TODO(https://crbug.com/995200): Clean up and enable.
+          "-Wno-xor-used-as-pow",
+
+          # TODO(https://crbug.com/999871): Decide if we want to clean up the
+          # codebase or just disable this.  Doesn't seem super useful, but
+          # also fires in only 4 files.
+          "-Wno-c99-designator",
+
+          # This is a side effect of -Wc99-designator; easier to clean up.
+          "-Wno-reorder-init-list",
+
+          # TODO(https://crbug.com/999886): Clean up, enable.
+          "-Wno-final-dtor-non-final-class",
+        ]
+        cflags_c += [
+          # TODO(https://crbug.com/995993): Clean up and enable.
+          "-Wno-implicit-fallthrough",
         ]
       }
     }
@@ -1958,6 +1948,13 @@ config("default_stack_frames") {
   if (is_posix || is_fuchsia) {
     if (enable_frame_pointers) {
       cflags = [ "-fno-omit-frame-pointer" ]
+
+      # Omit frame pointers for leaf functions on x86, otherwise building libyuv
+      # gives clang's register allocator issues, see llvm.org/PR15798 /
+      # crbug.com/233709
+      if (is_clang && current_cpu == "x86" && !is_mac && !is_ios) {
+        cflags += [ "-momit-leaf-frame-pointer" ]
+      }
     } else {
       cflags = [ "-fomit-frame-pointer" ]
     }
@@ -1978,15 +1975,7 @@ config("optimize") {
   if (is_win) {
     # TODO(thakis): Remove is_clang here, https://crbug.com/598772
     if (is_official_build && full_wpo_on_official && !is_clang) {
-      common_optimize_on_cflags += [
-        "/GL",  # Whole program optimization.
-
-        # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-        # Probably anything that this would catch that wouldn't be caught in a
-        # normal build isn't going to actually be a bug, so the incremental
-        # value of C4702 for PGO builds is likely very small.
-        "/wd4702",
-      ]
+      common_optimize_on_cflags += [ "/GL" ]  # Whole program optimization.
     }
 
     # Favor size over speed, /O1 must be before the common flags. The GYP
@@ -2079,15 +2068,7 @@ config("optimize_max") {
 
       if (is_official_build) {
         if (!is_clang) {
-          cflags += [
-            "/GL",  # Whole program optimization.
-
-            # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-            # Probably anything that this would catch that wouldn't be caught
-            # in a normal build isn't going to actually be a bug, so the
-            # incremental value of C4702 for PGO builds is likely very small.
-            "/wd4702",
-          ]
+          cflags += [ "/GL" ]  # Whole program optimization.
         }
         # TODO(crbug.com/598772): Enable -flto for Clang.
       }
@@ -2126,15 +2107,7 @@ config("optimize_speed") {
 
       # TODO(thakis): Remove is_clang here, https://crbug.com/598772
       if (is_official_build && !is_clang) {
-        cflags += [
-          "/GL",  # Whole program optimization.
-
-          # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-          # Probably anything that this would catch that wouldn't be caught in a
-          # normal build isn't going to actually be a bug, so the incremental
-          # value of C4702 for PGO builds is likely very small.
-          "/wd4702",
-        ]
+        cflags += [ "/GL" ]  # Whole program optimization.
       }
     } else if (optimize_for_fuzzing) {
       cflags = [ "-O1" ] + common_optimize_on_cflags

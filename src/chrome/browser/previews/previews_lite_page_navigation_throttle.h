@@ -13,7 +13,7 @@
 namespace content {
 struct OpenURLParams;
 class BrowserContext;
-}
+}  // namespace content
 
 // If the given URL is a LitePage Preview URL, this returns true but does not
 // change the |url|. This will set |update_virtual_url_with_url| on
@@ -64,12 +64,14 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kExceededMaxNavigationRestarts = 9,
     kPreviewsState_DEPRECATED = 10,
     kInvalidProxyHeaders = 11,
-    kMaxValue = kInvalidProxyHeaders,
+    kServiceProbeIncomplete = 12,
+    kServiceProbeFailed = 13,
+    kMaxValue = kServiceProbeFailed,
   };
 
   // The response type from the previews server. This enum must
   // remain synchronized with the enum |PreviewsServerLitePageServerResponse| in
-  // metrics/histograms/enums.xml.
+  // tools/metrics/histograms/enums.xml.
   enum class ServerResponse {
     // A preview was served (HTTP 200).
     kOk = 0,
@@ -96,7 +98,16 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     // The previews server rejected our authentication (HTTP 403).
     kAuthFailure = 7,
 
-    kMaxValue = kAuthFailure,
+    // No response headers were available from the preview server.
+    kNoResponseHeaders = 8,
+
+    // The connection was closed without getting a response.
+    kOnCompleteBeforeOnResponse = 9,
+
+    // There was an error connecting to the previews server.
+    kConnectionError = 10,
+
+    kMaxValue = kConnectionError,
   };
 
   PreviewsLitePageNavigationThrottle(

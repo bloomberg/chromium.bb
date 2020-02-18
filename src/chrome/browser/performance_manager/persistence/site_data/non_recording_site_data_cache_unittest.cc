@@ -10,7 +10,7 @@
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -23,11 +23,10 @@ class NonRecordingSiteDataCacheTest : public testing::Test {
   NonRecordingSiteDataCacheTest()
       : use_in_memory_db_for_testing_(
             LevelDBSiteDataStore::UseInMemoryDBForTesting()),
-        factory_(SiteDataCacheFactory::CreateForTesting(
-            test_browser_thread_bundle_.GetMainThreadTaskRunner())),
+        factory_(std::make_unique<SiteDataCacheFactory>()),
         off_the_record_profile_(parent_profile_.GetOffTheRecordProfile()) {}
 
-  ~NonRecordingSiteDataCacheTest() override { factory_.reset(); }
+  ~NonRecordingSiteDataCacheTest() override = default;
 
   void SetUp() override {
     recording_data_cache_ = base::WrapUnique(new SiteDataCacheImpl(
@@ -48,7 +47,7 @@ class NonRecordingSiteDataCacheTest : public testing::Test {
   const url::Origin kTestOrigin =
       url::Origin::Create(GURL("http://www.foo.com"));
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Ensure that the database used by the data store owned by
   // |recording_data_cache_| gets created in memory. This avoid having to wait
@@ -56,7 +55,7 @@ class NonRecordingSiteDataCacheTest : public testing::Test {
   std::unique_ptr<base::AutoReset<bool>> use_in_memory_db_for_testing_;
 
   // The data cache factory that will be used by the caches tested here.
-  std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter> factory_;
+  std::unique_ptr<SiteDataCacheFactory> factory_;
 
   // The on the record profile.
   TestingProfile parent_profile_;

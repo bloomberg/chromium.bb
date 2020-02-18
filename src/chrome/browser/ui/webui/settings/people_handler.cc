@@ -36,7 +36,6 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -221,6 +220,7 @@ base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
                              base::TimeFormatShortDate(passphrase_time));
     case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
     case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
+    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
     case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
       break;
   }
@@ -243,6 +243,7 @@ base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
                              base::TimeFormatShortDate(passphrase_time));
     case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
     case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
+    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
     case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
       break;
   }
@@ -302,6 +303,10 @@ void PeopleHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
       base::BindRepeating(&PeopleHandler::HandleGetSyncStatus,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncPrefsDispatch",
+      base::BindRepeating(&PeopleHandler::HandleSyncPrefsDispatch,
                           base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -404,13 +409,11 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(browser->profile());
     DCHECK(error_controller->HasError());
-      browser->window()->ShowAvatarBubbleFromAvatarButton(
-          BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-          signin::ManageAccountsParams(), access_point, false);
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH, access_point, false);
   } else {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-        signin::ManageAccountsParams(), access_point, false);
+        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, access_point, false);
   }
 }
 #endif
@@ -426,7 +429,7 @@ void PeopleHandler::DisplaySpinner() {
 
   const int kTimeoutSec = 30;
   DCHECK(!engine_start_timer_);
-  engine_start_timer_.reset(new base::OneShotTimer());
+  engine_start_timer_ = std::make_unique<base::OneShotTimer>();
   engine_start_timer_->Start(FROM_HERE,
                              base::TimeDelta::FromSeconds(kTimeoutSec), this,
                              &PeopleHandler::DisplayTimeout);
@@ -554,7 +557,7 @@ base::Value PeopleHandler::GetStoredAccountsList() {
     // account.
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
     base::Optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     if (primary_account_info.has_value())
       accounts_list.push_back(GetAccountValue(primary_account_info.value()));
@@ -575,7 +578,7 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
 
   base::Optional<AccountInfo> maybe_account =
       IdentityManagerFactory::GetForProfile(profile_)
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               email->GetString());
 
   signin_ui_util::EnableSyncFromPromo(
@@ -850,6 +853,11 @@ void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   ResolveJavascriptCallback(*callback_id, *GetSyncStatusDictionary());
 }
 
+void PeopleHandler::HandleSyncPrefsDispatch(const base::ListValue* args) {
+  AllowJavascript();
+  PushSyncPrefs();
+}
+
 void PeopleHandler::CloseSyncSetup() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   engine_start_timer_.reset();
@@ -1037,9 +1045,8 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
       "disabled", !service || disallowed_by_policy ||
                       !service->GetUserSettings()->IsSyncAllowedByPlatform());
   sync_status->SetBoolean("signedIn", identity_manager->HasPrimaryAccount());
-  sync_status->SetString(
-      "signedInUsername",
-      signin_ui_util::GetAuthenticatedUsername(identity_manager));
+  sync_status->SetString("signedInUsername",
+                         signin_ui_util::GetAuthenticatedUsername(profile_));
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
   return sync_status;

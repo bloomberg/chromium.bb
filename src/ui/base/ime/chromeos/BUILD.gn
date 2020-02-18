@@ -46,11 +46,12 @@ jumbo_component("chromeos") {
 
   public_deps = [
     "//ui/base/ime",
-    "//ui/base/ime/chromeos/public/interfaces",
+    "//ui/base/ime/chromeos/public/mojom",
     "//url",
   ]
 
   deps = [
+    "//build:branding_buildflags",
     "//chromeos/constants",
     "//chromeos/ime:gencode",
     "//chromeos/services/ime/public/mojom",

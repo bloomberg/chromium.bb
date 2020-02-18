@@ -39,22 +39,23 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
-#include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -90,11 +91,11 @@ using ResponseHeaderMap = base::flat_map<std::string, std::string>;
 
 class DelayedBlob : public storage::FakeBlob {
  public:
-  DelayedBlob(blink::mojom::BlobRequest request,
+  DelayedBlob(mojo::PendingReceiver<blink::mojom::Blob> receiver,
               std::string data,
               base::OnceClosure read_closure)
       : FakeBlob("foo"),
-        binding_(this, std::move(request)),
+        receiver_(this, std::move(receiver)),
         data_(std::move(data)),
         read_closure_(std::move(read_closure)) {}
 
@@ -103,9 +104,10 @@ class DelayedBlob : public storage::FakeBlob {
     MaybeComplete();
   }
 
-  void ReadAll(mojo::ScopedDataPipeProducerHandle producer_handle,
-               blink::mojom::BlobReaderClientPtr client) override {
-    client_ = std::move(client);
+  void ReadAll(
+      mojo::ScopedDataPipeProducerHandle producer_handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override {
+    client_.Bind(std::move(client));
     producer_handle_ = std::move(producer_handle);
 
     client_->OnCalculatedSize(data_.length(), data_.length());
@@ -132,10 +134,10 @@ class DelayedBlob : public storage::FakeBlob {
     producer_handle_.reset();
   }
 
-  mojo::Binding<blink::mojom::Blob> binding_;
+  mojo::Receiver<blink::mojom::Blob> receiver_;
   std::string data_;
   base::OnceClosure read_closure_;
-  blink::mojom::BlobReaderClientPtr client_;
+  mojo::Remote<blink::mojom::BlobReaderClient> client_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   bool paused_ = true;
 };
@@ -262,7 +264,7 @@ class TestCacheStorageContext : public CacheStorageContextWithManager {
 class CacheStorageManagerTest : public testing::Test {
  public:
   CacheStorageManagerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         blob_storage_context_(nullptr),
         observers_(
             base::MakeRefCounted<CacheStorageContextImpl::ObserverList>()),
@@ -802,7 +804,7 @@ class CacheStorageManagerTest : public testing::Test {
   // Temporary directory must be allocated first so as to be destroyed last.
   base::ScopedTempDir temp_dir_;
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   storage::BlobStorageContext* blob_storage_context_;
 
@@ -1402,15 +1404,36 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
   auto cache_handle =
       LegacyCacheStorage::From(cache_storage)->GetLoadedCache(kCacheName);
-  base::FilePath index_path =
-      LegacyCacheStorageCache::From(cache_handle)->path().AppendASCII("index");
+  base::FilePath cache_path =
+      LegacyCacheStorageCache::From(cache_handle)->path();
+  base::FilePath storage_path = cache_path.DirName();
+  base::FilePath index_path = cache_path.AppendASCII("index");
   cache_handle = CacheStorageCacheHandle();
+
+  // Do our best to flush any pending cache_storage index file writes to disk
+  // before proceeding.  This does not guarantee the simple disk_cache index
+  // is written, though.
+  EXPECT_TRUE(FlushCacheStorageIndex(origin1_));
+  EXPECT_FALSE(FlushCacheStorageIndex(origin1_));
 
   DestroyStorageManager();
 
   // Truncate the SimpleCache index to force an error when next opened.
   ASSERT_FALSE(index_path.empty());
   ASSERT_EQ(5, base::WriteFile(index_path, "hello", 5));
+
+  // The cache_storage index and simple disk_cache index files are written from
+  // background threads.  They may be written in unexpected orders due to timing
+  // differences.  We need to ensure the cache directory to have a newer time
+  // stamp, though, in order for the Size() method to actually try calculating
+  // the size from the corrupted simple disk_cache.  Therefore we force the
+  // cache_storage index to have a much older time to ensure that it is not used
+  // in the following Size() call.
+  base::FilePath cache_index_path =
+      storage_path.AppendASCII(LegacyCacheStorage::kIndexFileName);
+  base::Time t = base::Time::Now() + base::TimeDelta::FromHours(-1);
+  EXPECT_TRUE(base::TouchFile(cache_index_path, t, t));
+  EXPECT_FALSE(IsIndexFileCurrent(storage_path));
 
   CreateStorageManager();
 

@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1a\x63hromite/api/binhost.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\"-\n\x07\x42inhost\x12\x0b\n\x03uri\x18\x01 \x01(\t\x12\x15\n\rpackage_index\x18\x02 \x01(\t\".\n\x0cPackageIndex\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"?\n\x0e\x41\x63lArgsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"k\n\x0f\x41\x63lArgsResponse\x12\x32\n\x04\x61rgs\x18\x01 \x03(\x0b\x32$.chromite.api.AclArgsResponse.AclArg\x1a$\n\x06\x41\x63lArg\x12\x0b\n\x03\x61rg\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"S\n\x11\x42inhostGetRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0f\n\x07private\x18\x02 \x01(\x08\"=\n\x12\x42inhostGetResponse\x12\'\n\x08\x62inhosts\x18\x01 \x03(\x0b\x32\x15.chromite.api.Binhost\"\xdf\x01\n\x1cPrepareBinhostUploadsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0b\n\x03uri\x18\x02 \x01(\t\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\x07sysroot\x18\x04 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\x37\n\x13package_index_files\x18\x05 \x03(\x0b\x32\x1a.chromite.api.PackageIndex\"\xa4\x01\n\x1dPrepareBinhostUploadsResponse\x12\x13\n\x0buploads_dir\x18\x01 \x01(\t\x12P\n\x0eupload_targets\x18\x02 \x03(\x0b\x32\x38.chromite.api.PrepareBinhostUploadsResponse.UploadTarget\x1a\x1c\n\x0cUploadTarget\x12\x0c\n\x04path\x18\x01 \x01(\t\"\x87\x01\n\x11SetBinhostRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0f\n\x07private\x18\x02 \x01(\x08\x12%\n\x03key\x18\x03 \x01(\x0e\x32\x18.chromite.api.BinhostKey\x12\x0b\n\x03uri\x18\x04 \x01(\t\")\n\x12SetBinhostResponse\x12\x13\n\x0boutput_file\x18\x01 \x01(\t\"I\n\x16RegenBuildCacheRequest\x12/\n\x0coverlay_type\x18\x01 \x01(\x0e\x32\x19.chromite.api.OverlayType\"\x19\n\x17RegenBuildCacheResponse*o\n\nBinhostKey\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\x16\n\x12POSTSUBMIT_BINHOST\x10\x01\x12!\n\x1dLATEST_RELEASE_CHROME_BINHOST\x10\x02\x12\x15\n\x11PREFLIGHT_BINHOST\x10\x03*\x87\x01\n\x0bOverlayType\x12\x1b\n\x17OVERLAYTYPE_UNSPECIFIED\x10\x00\x12\x14\n\x10OVERLAYTYPE_BOTH\x10\x01\x12\x16\n\x12OVERLAYTYPE_PUBLIC\x10\x02\x12\x17\n\x13OVERLAYTYPE_PRIVATE\x10\x03\x12\x14\n\x10OVERLAYTYPE_NONE\x10\x04\x32\x83\x04\n\x0e\x42inhostService\x12[\n\x03Get\x12\x1f.chromite.api.BinhostGetRequest\x1a .chromite.api.BinhostGetResponse\"\x11\xc2\xed\x1a\r\n\x0bGetBinhosts\x12X\n\x19GetPrivatePrebuiltAclArgs\x12\x1c.chromite.api.AclArgsRequest\x1a\x1d.chromite.api.AclArgsResponse\x12p\n\x15PrepareBinhostUploads\x12*.chromite.api.PrepareBinhostUploadsRequest\x1a+.chromite.api.PrepareBinhostUploadsResponse\x12O\n\nSetBinhost\x12\x1f.chromite.api.SetBinhostRequest\x1a .chromite.api.SetBinhostResponse\x12\x66\n\x0fRegenBuildCache\x12$.chromite.api.RegenBuildCacheRequest\x1a%.chromite.api.RegenBuildCacheResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x62inhost\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1a\x63hromite/api/binhost.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\"-\n\x07\x42inhost\x12\x0b\n\x03uri\x18\x01 \x01(\t\x12\x15\n\rpackage_index\x18\x02 \x01(\t\".\n\x0cPackageIndex\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"?\n\x0e\x41\x63lArgsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"k\n\x0f\x41\x63lArgsResponse\x12\x32\n\x04\x61rgs\x18\x01 \x03(\x0b\x32$.chromite.api.AclArgsResponse.AclArg\x1a$\n\x06\x41\x63lArg\x12\x0b\n\x03\x61rg\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"S\n\x11\x42inhostGetRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0f\n\x07private\x18\x02 \x01(\x08\"=\n\x12\x42inhostGetResponse\x12\'\n\x08\x62inhosts\x18\x01 \x03(\x0b\x32\x15.chromite.api.Binhost\"\xdf\x01\n\x1cPrepareBinhostUploadsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0b\n\x03uri\x18\x02 \x01(\t\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\x07sysroot\x18\x04 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\x37\n\x13package_index_files\x18\x05 \x03(\x0b\x32\x1a.chromite.api.PackageIndex\"\x1c\n\x0cUploadTarget\x12\x0c\n\x04path\x18\x01 \x01(\t\"h\n\x1dPrepareBinhostUploadsResponse\x12\x13\n\x0buploads_dir\x18\x01 \x01(\t\x12\x32\n\x0eupload_targets\x18\x02 \x03(\x0b\x32\x1a.chromite.api.UploadTarget\"\x96\x01\n&PrepareDevInstallBinhostUploadsRequest\x12\x13\n\x0buploads_dir\x18\x01 \x01(\t\x12\x0b\n\x03uri\x18\x02 \x01(\t\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\x07sysroot\x18\x04 \x01(\x0b\x32\x15.chromite.api.Sysroot\"]\n\'PrepareDevInstallBinhostUploadsResponse\x12\x32\n\x0eupload_targets\x18\x01 \x03(\x0b\x32\x1a.chromite.api.UploadTarget\"\x87\x01\n\x11SetBinhostRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0f\n\x07private\x18\x02 \x01(\x08\x12%\n\x03key\x18\x03 \x01(\x0e\x32\x18.chromite.api.BinhostKey\x12\x0b\n\x03uri\x18\x04 \x01(\t\")\n\x12SetBinhostResponse\x12\x13\n\x0boutput_file\x18\x01 \x01(\t\"m\n\x16RegenBuildCacheRequest\x12/\n\x0coverlay_type\x18\x01 \x01(\x0e\x32\x19.chromite.api.OverlayType\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\"|\n\x17RegenBuildCacheResponse\x12H\n\x11modified_overlays\x18\x01 \x03(\x0b\x32-.chromite.api.RegenBuildCacheResponse.Overlay\x1a\x17\n\x07Overlay\x12\x0c\n\x04path\x18\x01 \x01(\t*o\n\nBinhostKey\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\x16\n\x12POSTSUBMIT_BINHOST\x10\x01\x12!\n\x1dLATEST_RELEASE_CHROME_BINHOST\x10\x02\x12\x15\n\x11PREFLIGHT_BINHOST\x10\x03*\x87\x01\n\x0bOverlayType\x12\x1b\n\x17OVERLAYTYPE_UNSPECIFIED\x10\x00\x12\x14\n\x10OVERLAYTYPE_BOTH\x10\x01\x12\x16\n\x12OVERLAYTYPE_PUBLIC\x10\x02\x12\x17\n\x13OVERLAYTYPE_PRIVATE\x10\x03\x12\x14\n\x10OVERLAYTYPE_NONE\x10\x04\x32\x8c\x05\n\x0e\x42inhostService\x12[\n\x03Get\x12\x1f.chromite.api.BinhostGetRequest\x1a .chromite.api.BinhostGetResponse\"\x11\xc2\xed\x1a\r\n\x0bGetBinhosts\x12X\n\x19GetPrivatePrebuiltAclArgs\x12\x1c.chromite.api.AclArgsRequest\x1a\x1d.chromite.api.AclArgsResponse\x12p\n\x15PrepareBinhostUploads\x12*.chromite.api.PrepareBinhostUploadsRequest\x1a+.chromite.api.PrepareBinhostUploadsResponse\x12\x8e\x01\n\x1fPrepareDevInstallBinhostUploads\x12\x34.chromite.api.PrepareDevInstallBinhostUploadsRequest\x1a\x35.chromite.api.PrepareDevInstallBinhostUploadsResponse\x12O\n\nSetBinhost\x12\x1f.chromite.api.SetBinhostRequest\x1a .chromite.api.SetBinhostResponse\x12^\n\x0fRegenBuildCache\x12$.chromite.api.RegenBuildCacheRequest\x1a%.chromite.api.RegenBuildCacheResponse\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x62inhost\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromite_dot_api_dot_sysroot__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -52,8 +52,8 @@ _BINHOSTKEY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1220,
-  serialized_end=1331,
+  serialized_start=1572,
+  serialized_end=1683,
 )
 _sym_db.RegisterEnumDescriptor(_BINHOSTKEY)
 
@@ -87,8 +87,8 @@ _OVERLAYTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1334,
-  serialized_end=1469,
+  serialized_start=1686,
+  serialized_end=1821,
 )
 _sym_db.RegisterEnumDescriptor(_OVERLAYTYPE)
 
@@ -401,15 +401,15 @@ _PREPAREBINHOSTUPLOADSREQUEST = _descriptor.Descriptor(
 )
 
 
-_PREPAREBINHOSTUPLOADSRESPONSE_UPLOADTARGET = _descriptor.Descriptor(
+_UPLOADTARGET = _descriptor.Descriptor(
   name='UploadTarget',
-  full_name='chromite.api.PrepareBinhostUploadsResponse.UploadTarget',
+  full_name='chromite.api.UploadTarget',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='path', full_name='chromite.api.PrepareBinhostUploadsResponse.UploadTarget.path', index=0,
+      name='path', full_name='chromite.api.UploadTarget.path', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -427,9 +427,10 @@ _PREPAREBINHOSTUPLOADSRESPONSE_UPLOADTARGET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=907,
-  serialized_end=935,
+  serialized_start=770,
+  serialized_end=798,
 )
+
 
 _PREPAREBINHOSTUPLOADSRESPONSE = _descriptor.Descriptor(
   name='PrepareBinhostUploadsResponse',
@@ -455,7 +456,7 @@ _PREPAREBINHOSTUPLOADSRESPONSE = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_PREPAREBINHOSTUPLOADSRESPONSE_UPLOADTARGET, ],
+  nested_types=[],
   enum_types=[
   ],
   serialized_options=None,
@@ -464,8 +465,91 @@ _PREPAREBINHOSTUPLOADSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=771,
-  serialized_end=935,
+  serialized_start=800,
+  serialized_end=904,
+)
+
+
+_PREPAREDEVINSTALLBINHOSTUPLOADSREQUEST = _descriptor.Descriptor(
+  name='PrepareDevInstallBinhostUploadsRequest',
+  full_name='chromite.api.PrepareDevInstallBinhostUploadsRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='uploads_dir', full_name='chromite.api.PrepareDevInstallBinhostUploadsRequest.uploads_dir', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='uri', full_name='chromite.api.PrepareDevInstallBinhostUploadsRequest.uri', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='chroot', full_name='chromite.api.PrepareDevInstallBinhostUploadsRequest.chroot', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='sysroot', full_name='chromite.api.PrepareDevInstallBinhostUploadsRequest.sysroot', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=907,
+  serialized_end=1057,
+)
+
+
+_PREPAREDEVINSTALLBINHOSTUPLOADSRESPONSE = _descriptor.Descriptor(
+  name='PrepareDevInstallBinhostUploadsResponse',
+  full_name='chromite.api.PrepareDevInstallBinhostUploadsResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='upload_targets', full_name='chromite.api.PrepareDevInstallBinhostUploadsResponse.upload_targets', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1059,
+  serialized_end=1152,
 )
 
 
@@ -516,8 +600,8 @@ _SETBINHOSTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=938,
-  serialized_end=1073,
+  serialized_start=1155,
+  serialized_end=1290,
 )
 
 
@@ -547,8 +631,8 @@ _SETBINHOSTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1075,
-  serialized_end=1116,
+  serialized_start=1292,
+  serialized_end=1333,
 )
 
 
@@ -566,6 +650,13 @@ _REGENBUILDCACHEREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='chroot', full_name='chromite.api.RegenBuildCacheRequest.chroot', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -578,10 +669,40 @@ _REGENBUILDCACHEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1118,
-  serialized_end=1191,
+  serialized_start=1335,
+  serialized_end=1444,
 )
 
+
+_REGENBUILDCACHERESPONSE_OVERLAY = _descriptor.Descriptor(
+  name='Overlay',
+  full_name='chromite.api.RegenBuildCacheResponse.Overlay',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='path', full_name='chromite.api.RegenBuildCacheResponse.Overlay.path', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1547,
+  serialized_end=1570,
+)
 
 _REGENBUILDCACHERESPONSE = _descriptor.Descriptor(
   name='RegenBuildCacheResponse',
@@ -590,10 +711,17 @@ _REGENBUILDCACHERESPONSE = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='modified_overlays', full_name='chromite.api.RegenBuildCacheResponse.modified_overlays', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_REGENBUILDCACHERESPONSE_OVERLAY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -602,8 +730,8 @@ _REGENBUILDCACHERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1193,
-  serialized_end=1218,
+  serialized_start=1446,
+  serialized_end=1570,
 )
 
 _PACKAGEINDEX.fields_by_name['path'].message_type = chromiumos_dot_common__pb2._PATH
@@ -616,11 +744,16 @@ _PREPAREBINHOSTUPLOADSREQUEST.fields_by_name['build_target'].message_type = chro
 _PREPAREBINHOSTUPLOADSREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _PREPAREBINHOSTUPLOADSREQUEST.fields_by_name['sysroot'].message_type = chromite_dot_api_dot_sysroot__pb2._SYSROOT
 _PREPAREBINHOSTUPLOADSREQUEST.fields_by_name['package_index_files'].message_type = _PACKAGEINDEX
-_PREPAREBINHOSTUPLOADSRESPONSE_UPLOADTARGET.containing_type = _PREPAREBINHOSTUPLOADSRESPONSE
-_PREPAREBINHOSTUPLOADSRESPONSE.fields_by_name['upload_targets'].message_type = _PREPAREBINHOSTUPLOADSRESPONSE_UPLOADTARGET
+_PREPAREBINHOSTUPLOADSRESPONSE.fields_by_name['upload_targets'].message_type = _UPLOADTARGET
+_PREPAREDEVINSTALLBINHOSTUPLOADSREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
+_PREPAREDEVINSTALLBINHOSTUPLOADSREQUEST.fields_by_name['sysroot'].message_type = chromite_dot_api_dot_sysroot__pb2._SYSROOT
+_PREPAREDEVINSTALLBINHOSTUPLOADSRESPONSE.fields_by_name['upload_targets'].message_type = _UPLOADTARGET
 _SETBINHOSTREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _SETBINHOSTREQUEST.fields_by_name['key'].enum_type = _BINHOSTKEY
 _REGENBUILDCACHEREQUEST.fields_by_name['overlay_type'].enum_type = _OVERLAYTYPE
+_REGENBUILDCACHEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
+_REGENBUILDCACHERESPONSE_OVERLAY.containing_type = _REGENBUILDCACHERESPONSE
+_REGENBUILDCACHERESPONSE.fields_by_name['modified_overlays'].message_type = _REGENBUILDCACHERESPONSE_OVERLAY
 DESCRIPTOR.message_types_by_name['Binhost'] = _BINHOST
 DESCRIPTOR.message_types_by_name['PackageIndex'] = _PACKAGEINDEX
 DESCRIPTOR.message_types_by_name['AclArgsRequest'] = _ACLARGSREQUEST
@@ -628,7 +761,10 @@ DESCRIPTOR.message_types_by_name['AclArgsResponse'] = _ACLARGSRESPONSE
 DESCRIPTOR.message_types_by_name['BinhostGetRequest'] = _BINHOSTGETREQUEST
 DESCRIPTOR.message_types_by_name['BinhostGetResponse'] = _BINHOSTGETRESPONSE
 DESCRIPTOR.message_types_by_name['PrepareBinhostUploadsRequest'] = _PREPAREBINHOSTUPLOADSREQUEST
+DESCRIPTOR.message_types_by_name['UploadTarget'] = _UPLOADTARGET
 DESCRIPTOR.message_types_by_name['PrepareBinhostUploadsResponse'] = _PREPAREBINHOSTUPLOADSRESPONSE
+DESCRIPTOR.message_types_by_name['PrepareDevInstallBinhostUploadsRequest'] = _PREPAREDEVINSTALLBINHOSTUPLOADSREQUEST
+DESCRIPTOR.message_types_by_name['PrepareDevInstallBinhostUploadsResponse'] = _PREPAREDEVINSTALLBINHOSTUPLOADSRESPONSE
 DESCRIPTOR.message_types_by_name['SetBinhostRequest'] = _SETBINHOSTREQUEST
 DESCRIPTOR.message_types_by_name['SetBinhostResponse'] = _SETBINHOSTRESPONSE
 DESCRIPTOR.message_types_by_name['RegenBuildCacheRequest'] = _REGENBUILDCACHEREQUEST
@@ -694,20 +830,33 @@ PrepareBinhostUploadsRequest = _reflection.GeneratedProtocolMessageType('Prepare
   ))
 _sym_db.RegisterMessage(PrepareBinhostUploadsRequest)
 
-PrepareBinhostUploadsResponse = _reflection.GeneratedProtocolMessageType('PrepareBinhostUploadsResponse', (_message.Message,), dict(
+UploadTarget = _reflection.GeneratedProtocolMessageType('UploadTarget', (_message.Message,), dict(
+  DESCRIPTOR = _UPLOADTARGET,
+  __module__ = 'chromite.api.binhost_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.UploadTarget)
+  ))
+_sym_db.RegisterMessage(UploadTarget)
 
-  UploadTarget = _reflection.GeneratedProtocolMessageType('UploadTarget', (_message.Message,), dict(
-    DESCRIPTOR = _PREPAREBINHOSTUPLOADSRESPONSE_UPLOADTARGET,
-    __module__ = 'chromite.api.binhost_pb2'
-    # @@protoc_insertion_point(class_scope:chromite.api.PrepareBinhostUploadsResponse.UploadTarget)
-    ))
-  ,
+PrepareBinhostUploadsResponse = _reflection.GeneratedProtocolMessageType('PrepareBinhostUploadsResponse', (_message.Message,), dict(
   DESCRIPTOR = _PREPAREBINHOSTUPLOADSRESPONSE,
   __module__ = 'chromite.api.binhost_pb2'
   # @@protoc_insertion_point(class_scope:chromite.api.PrepareBinhostUploadsResponse)
   ))
 _sym_db.RegisterMessage(PrepareBinhostUploadsResponse)
-_sym_db.RegisterMessage(PrepareBinhostUploadsResponse.UploadTarget)
+
+PrepareDevInstallBinhostUploadsRequest = _reflection.GeneratedProtocolMessageType('PrepareDevInstallBinhostUploadsRequest', (_message.Message,), dict(
+  DESCRIPTOR = _PREPAREDEVINSTALLBINHOSTUPLOADSREQUEST,
+  __module__ = 'chromite.api.binhost_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.PrepareDevInstallBinhostUploadsRequest)
+  ))
+_sym_db.RegisterMessage(PrepareDevInstallBinhostUploadsRequest)
+
+PrepareDevInstallBinhostUploadsResponse = _reflection.GeneratedProtocolMessageType('PrepareDevInstallBinhostUploadsResponse', (_message.Message,), dict(
+  DESCRIPTOR = _PREPAREDEVINSTALLBINHOSTUPLOADSRESPONSE,
+  __module__ = 'chromite.api.binhost_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.PrepareDevInstallBinhostUploadsResponse)
+  ))
+_sym_db.RegisterMessage(PrepareDevInstallBinhostUploadsResponse)
 
 SetBinhostRequest = _reflection.GeneratedProtocolMessageType('SetBinhostRequest', (_message.Message,), dict(
   DESCRIPTOR = _SETBINHOSTREQUEST,
@@ -731,11 +880,19 @@ RegenBuildCacheRequest = _reflection.GeneratedProtocolMessageType('RegenBuildCac
 _sym_db.RegisterMessage(RegenBuildCacheRequest)
 
 RegenBuildCacheResponse = _reflection.GeneratedProtocolMessageType('RegenBuildCacheResponse', (_message.Message,), dict(
+
+  Overlay = _reflection.GeneratedProtocolMessageType('Overlay', (_message.Message,), dict(
+    DESCRIPTOR = _REGENBUILDCACHERESPONSE_OVERLAY,
+    __module__ = 'chromite.api.binhost_pb2'
+    # @@protoc_insertion_point(class_scope:chromite.api.RegenBuildCacheResponse.Overlay)
+    ))
+  ,
   DESCRIPTOR = _REGENBUILDCACHERESPONSE,
   __module__ = 'chromite.api.binhost_pb2'
   # @@protoc_insertion_point(class_scope:chromite.api.RegenBuildCacheResponse)
   ))
 _sym_db.RegisterMessage(RegenBuildCacheResponse)
+_sym_db.RegisterMessage(RegenBuildCacheResponse.Overlay)
 
 
 DESCRIPTOR._options = None
@@ -746,8 +903,8 @@ _BINHOSTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\013\n\007binhost\020\002'),
-  serialized_start=1472,
-  serialized_end=1987,
+  serialized_start=1824,
+  serialized_end=2476,
   methods=[
   _descriptor.MethodDescriptor(
     name='Get',
@@ -777,9 +934,18 @@ _BINHOSTSERVICE = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
+    name='PrepareDevInstallBinhostUploads',
+    full_name='chromite.api.BinhostService.PrepareDevInstallBinhostUploads',
+    index=3,
+    containing_service=None,
+    input_type=_PREPAREDEVINSTALLBINHOSTUPLOADSREQUEST,
+    output_type=_PREPAREDEVINSTALLBINHOSTUPLOADSRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
     name='SetBinhost',
     full_name='chromite.api.BinhostService.SetBinhost',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_SETBINHOSTREQUEST,
     output_type=_SETBINHOSTRESPONSE,
@@ -788,11 +954,11 @@ _BINHOSTSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='RegenBuildCache',
     full_name='chromite.api.BinhostService.RegenBuildCache',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_REGENBUILDCACHEREQUEST,
     output_type=_REGENBUILDCACHERESPONSE,
-    serialized_options=_b('\302\355\032\002\020\001'),
+    serialized_options=None,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_BINHOSTSERVICE)

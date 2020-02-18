@@ -124,8 +124,7 @@ ClientAppMetadataProviderService::ClientAppMetadataProviderService(
     : pref_service_(pref_service),
       network_state_handler_(network_state_handler),
       instance_id_(instance_id_profile_service->driver()->GetInstanceID(
-          device_sync::kCryptAuthGcmAppId)),
-      weak_ptr_factory_(this) {}
+          device_sync::kCryptAuthGcmAppId)) {}
 
 ClientAppMetadataProviderService::~ClientAppMetadataProviderService() {
   // If there are any pending callbacks, invoke them before this object is
@@ -208,9 +207,9 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
   DCHECK(!instance_id.empty());
   instance_id_->GetToken(
       device_sync::
-          kCryptAuthGcmInstanceIdAuthorizedEntity /* authorized_entity */,
+          kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */,
-      std::map<std::string, std::string>() /* options */, false /* is_lazy */,
+      std::map<std::string, std::string>() /* options */, {} /* flags */,
       base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
                  weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter,
                  hardware_info, instance_id));

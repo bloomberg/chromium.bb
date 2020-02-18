@@ -88,10 +88,10 @@ class PackageLog(object):
     return self.cpv.cp
 
   def has_errors(self):
-    return "ERROR" in self.log_levels
+    return 'ERROR' in self.log_levels
 
   def has_warnings(self):
-    return "WARN" in self.log_levels
+    return 'WARN' in self.log_levels
 
 
 def _parse_summary_log_from_lines_iterator(log_lines, no_duplicates=False):

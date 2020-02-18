@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -92,8 +93,7 @@ bool IsValidChannel(const std::string& channel) {
 // The UpdateEngineClient implementation used in production.
 class UpdateEngineClientImpl : public UpdateEngineClient {
  public:
-  UpdateEngineClientImpl()
-      : update_engine_proxy_(NULL), last_status_(), weak_ptr_factory_(this) {}
+  UpdateEngineClientImpl() : update_engine_proxy_(nullptr), last_status_() {}
 
   ~UpdateEngineClientImpl() override = default;
 
@@ -437,14 +437,16 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   void OnGetEolStatus(GetEolStatusCallback callback, dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request getting eol status";
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
+                              base::nullopt /* number_of_milestones */);
       return;
     }
     dbus::MessageReader reader(response);
     int status;
     if (!reader.PopInt32(&status)) {
       LOG(ERROR) << "Incorrect response: " << response->ToString();
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
+                              base::nullopt /* number_of_milestones */);
       return;
     }
 
@@ -452,13 +454,25 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     if (status > update_engine::EndOfLifeStatus::kEol ||
         status < update_engine::EndOfLifeStatus::kSupported) {
       LOG(ERROR) << "Incorrect status value: " << status;
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
+                              base::nullopt /* number_of_milestones */);
       return;
     }
 
-    VLOG(1) << "Eol status received: " << status;
-    std::move(callback).Run(
-        static_cast<update_engine::EndOfLifeStatus>(status));
+    base::Optional<int32_t> opt_number_of_milestones;
+    int32_t number_of_milestones;
+    if (reader.PopInt32(&number_of_milestones)) {
+      opt_number_of_milestones = number_of_milestones;
+    }
+
+    std::string str_number_of_milestones =
+        opt_number_of_milestones
+            ? base::NumberToString(opt_number_of_milestones.value())
+            : "not provided";
+    VLOG(1) << "Eol status received: " << status
+            << ". Number of Milestones: " << str_number_of_milestones;
+    std::move(callback).Run(static_cast<update_engine::EndOfLifeStatus>(status),
+                            std::move(opt_number_of_milestones));
   }
 
   // Called when a response for SetUpdateOverCellularPermission() is received.
@@ -557,7 +571,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UpdateEngineClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<UpdateEngineClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientImpl);
 };
@@ -568,8 +582,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
  public:
   UpdateEngineClientStubImpl()
       : current_channel_(kReleaseChannelBeta),
-        target_channel_(kReleaseChannelBeta),
-        weak_factory_(this) {}
+        target_channel_(kReleaseChannelBeta) {}
 
   // UpdateEngineClient implementation:
   void Init(dbus::Bus* bus) override {}
@@ -633,7 +646,8 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
   }
 
   void GetEolStatus(GetEolStatusCallback callback) override {
-    std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
+    std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported,
+                            base::nullopt /* number_of_milestones */);
   }
 
   void SetUpdateOverCellularPermission(bool allowed,
@@ -701,7 +715,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
 
   Status last_status_;
 
-  base::WeakPtrFactory<UpdateEngineClientStubImpl> weak_factory_;
+  base::WeakPtrFactory<UpdateEngineClientStubImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientStubImpl);
 };

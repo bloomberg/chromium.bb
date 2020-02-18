@@ -32,7 +32,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_session.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
@@ -440,7 +440,7 @@ class LockScreenAppManagerImplTest
   void OnNoteTakingChanged() { ++note_taking_changed_count_; }
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
 
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager user_manager_;

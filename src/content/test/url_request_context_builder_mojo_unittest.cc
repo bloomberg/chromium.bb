@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/test/test_mojo_proxy_resolver_factory.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -23,6 +23,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "services/network/mock_mojo_dhcp_wpad_url_client.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace content {
 
@@ -48,14 +52,13 @@ std::unique_ptr<net::test_server::HttpResponse> HandlePacRequest(
 class URLRequestContextBuilderMojoTest : public PlatformTest {
  protected:
   URLRequestContextBuilderMojoTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     test_server_.RegisterRequestHandler(base::Bind(&HandlePacRequest));
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   net::EmbeddedTestServer test_server_;
   network::URLRequestContextBuilderMojo builder_;
@@ -73,6 +76,12 @@ TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
   builder_.SetMojoProxyResolverFactory(
       proxy_resolver::mojom::ProxyResolverFactoryPtr(
           test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
+
+#if defined(OS_CHROMEOS)
+  builder_.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
+      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+          std::string())));
+#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
   net::TestDelegate delegate;
@@ -105,6 +114,12 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
   builder_.SetMojoProxyResolverFactory(
       proxy_resolver::mojom::ProxyResolverFactoryPtr(
           test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
+
+#if defined(OS_CHROMEOS)
+  builder_.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
+      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+          std::string())));
+#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
   net::TestDelegate delegate;

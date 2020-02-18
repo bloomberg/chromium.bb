@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
@@ -22,7 +22,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -30,12 +30,11 @@ namespace {
 
 const char kHostName[] = "unresolvable.host.name";
 
-class TransportConnectJobTest : public WithScopedTaskEnvironment,
+class TransportConnectJobTest : public WithTaskEnvironment,
                                 public testing::Test {
  public:
   TransportConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         client_socket_factory_(&net_log_),
         common_connect_job_params_(
             &client_socket_factory_,

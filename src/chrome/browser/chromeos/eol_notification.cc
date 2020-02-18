@@ -94,9 +94,7 @@ bool EolNotification::ShouldShowEolNotification() {
 }
 
 EolNotification::EolNotification(Profile* profile)
-    : profile_(profile),
-      status_(update_engine::EndOfLifeStatus::kSupported),
-      weak_factory_(this) {}
+    : profile_(profile), status_(update_engine::EndOfLifeStatus::kSupported) {}
 
 EolNotification::~EolNotification() {}
 
@@ -109,8 +107,11 @@ void EolNotification::CheckEolStatus() {
       &EolNotification::OnEolStatus, weak_factory_.GetWeakPtr()));
 }
 
-void EolNotification::OnEolStatus(update_engine::EndOfLifeStatus status) {
+void EolNotification::OnEolStatus(
+    update_engine::EndOfLifeStatus status,
+    base::Optional<int32_t> number_of_milestones) {
   status_ = status;
+  number_of_milestones_ = std::move(number_of_milestones);
 
   const int pre_eol_status =
       profile_->GetPrefs()->GetInteger(prefs::kEolStatus);

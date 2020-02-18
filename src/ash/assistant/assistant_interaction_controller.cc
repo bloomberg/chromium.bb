@@ -8,7 +8,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -22,6 +21,8 @@
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -32,6 +33,7 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -41,6 +43,24 @@ namespace {
 constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 
 // Helpers ---------------------------------------------------------------------
+
+// Creates a suggestion to initiate a Google search for the specified |query|.
+chromeos::assistant::mojom::AssistantSuggestionPtr CreateSearchSuggestion(
+    const std::string& query) {
+  constexpr char kIconUrl[] =
+      "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png";
+  constexpr char kSearchUrl[] = "https://www.google.com/search";
+  constexpr char kQueryParamKey[] = "q";
+
+  chromeos::assistant::mojom::AssistantSuggestionPtr suggestion =
+      chromeos::assistant::mojom::AssistantSuggestion::New();
+  suggestion->text = l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_SEARCH);
+  suggestion->icon_url = GURL(kIconUrl),
+  suggestion->action_url = net::AppendOrReplaceQueryParameter(
+      GURL(kSearchUrl), kQueryParamKey, query);
+
+  return suggestion;
+}
 
 // Returns true if device is in tablet mode, false otherwise.
 bool IsTabletMode() {
@@ -54,8 +74,7 @@ bool IsTabletMode() {
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      assistant_interaction_subscriber_binding_(this),
-      weak_factory_(this) {
+      assistant_interaction_subscriber_binding_(this) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -345,8 +364,21 @@ void AssistantInteractionController::OnCommittedQueryChanged(
   assistant::util::RecordAssistantQuerySource(assistant_query.source());
 }
 
+// TODO(b/140565663): Set pending query from |metadata| and remove calls to set
+// pending query that occur outside of this method.
 void AssistantInteractionController::OnInteractionStarted(
-    bool is_voice_interaction) {
+    AssistantInteractionMetadataPtr metadata) {
+  // Stop the interaction if the opt-in window is active.
+  auto* assistant_setup = AssistantSetup::GetInstance();
+  if (assistant_setup && assistant_setup->BounceOptInWindowIfActive()) {
+    StopActiveInteraction(true);
+    return;
+  }
+
+  const bool is_voice_interaction =
+      chromeos::assistant::mojom::AssistantInteractionType::kVoice ==
+      metadata->type;
+
   if (is_voice_interaction) {
     // If the Assistant UI is not visible yet, and |is_voice_interaction| is
     // true, then it will be sure that Assistant is fired via OKG. ShowUi will
@@ -369,21 +401,19 @@ void AssistantInteractionController::OnInteractionStarted(
       model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
     }
   } else {
-    // TODO(b/112000321): It should not be possible to reach this code without
-    // having previously pended a query. It does currently happen, however, in
-    // the case of notifications and device action queries which bypass the
-    // AssistantInteractionController when beginning an interaction. To address
-    // this, we temporarily pend an empty text query to commit until we can do
-    // development to expose something more meaningful.
-    if (model_.pending_query().type() == AssistantQueryType::kNull)
-      model_.SetPendingQuery(std::make_unique<AssistantTextQuery>());
-
+    // Once b/140565663 has been addressed to remove all calls which currently
+    // set the pending query from outside of the interaction lifecycle, the
+    // pending query type will always be |kNull| here.
+    if (model_.pending_query().type() == AssistantQueryType::kNull) {
+      model_.SetPendingQuery(
+          std::make_unique<AssistantTextQuery>(metadata->query));
+    }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
   }
 
   // Start caching a new Assistant response for the interaction.
-  model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+  model_.SetPendingResponse(base::MakeRefCounted<AssistantResponse>());
 }
 
 void AssistantInteractionController::OnInteractionFinished(
@@ -582,7 +612,7 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
     // It is possible that an error Tts could be sent in addition to server Tts.
     // In that case, the pending_response may have already been finalized.
     if (!model_.pending_response())
-      model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+      model_.SetPendingResponse(base::MakeRefCounted<AssistantResponse>());
 
     // Add an error message to the response.
     model_.pending_response()->AddUiElement(
@@ -701,8 +731,7 @@ void AssistantInteractionController::OnUiVisible(
             assistant_controller_->ui_controller()->model()->visibility());
 
   const bool launch_with_mic_open =
-      assistant_controller_->prefs_controller()->prefs()->GetBoolean(
-          chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
+      AssistantState::Get()->launch_with_mic_open().value_or(false);
   const bool prefer_voice = launch_with_mic_open || IsTabletMode();
 
   // We don't explicitly start a new voice interaction if the entry point
@@ -712,6 +741,23 @@ void AssistantInteractionController::OnUiVisible(
       entry_point != AssistantEntryPoint::kHotword) {
     should_attempt_warmer_welcome_ = false;
     StartVoiceInteraction();
+    return;
+  }
+
+  if (entry_point == AssistantEntryPoint::kProactiveSuggestions) {
+    should_attempt_warmer_welcome_ = false;
+    // When entering Assistant with a proactive suggestions interaction, there
+    // will be no server latency as the response for the interaction has already
+    // been cached on the client. To avoid jank, we need to post a task to start
+    // our interaction to give the Assistant UI a chance to initialize itself.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantInteractionController::
+                           StartProactiveSuggestionsInteraction,
+                       weak_factory_.GetWeakPtr(),
+                       assistant_controller_->suggestions_controller()
+                           ->model()
+                           ->GetProactiveSuggestions()));
     return;
   }
 
@@ -774,6 +820,39 @@ void AssistantInteractionController::StartMetalayerInteraction(
       AssistantQuerySource::kStylus));
 
   assistant_->StartMetalayerInteraction(region);
+}
+
+void AssistantInteractionController::StartProactiveSuggestionsInteraction(
+    scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
+  // For a proactive suggestions interaction, we've already cached the response
+  // but we still need to spoof lifecycle events. This is only safe to do if we
+  // aren't already in the midst of an interaction.
+  DCHECK_EQ(InteractionState::kInactive, model_.interaction_state());
+
+  // To be extra protective of interaction lifecycle when DCHECK is disabled,
+  // we'll ignore any attempts to start a proactive suggestions interaction if
+  // an interaction is already in progress.
+  if (model_.interaction_state() != InteractionState::kInactive)
+    return;
+
+  const std::string& description = proactive_suggestions->description();
+  const std::string& search_query = proactive_suggestions->search_query();
+
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(description));
+
+  OnInteractionStarted(AssistantInteractionMetadata::New(
+      AssistantInteractionType::kText, /*query=*/description));
+
+  OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
+
+  // TODO(dmblack): Support suggestion chips from the server when available.
+  if (!search_query.empty()) {
+    std::vector<AssistantSuggestionPtr> suggestions;
+    suggestions.push_back(CreateSearchSuggestion(search_query));
+    OnSuggestionsResponse(std::move(suggestions));
+  }
+
+  OnInteractionFinished(AssistantInteractionResolution::kNormal);
 }
 
 void AssistantInteractionController::StartScreenContextInteraction(

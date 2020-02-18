@@ -72,7 +72,7 @@ class AccessibilityTreeFormatterAndroid
       std::vector<PropertyFilter>* property_filters) override;
 
  private:
-  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
@@ -199,7 +199,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
 
   base::string16 class_value;
   dict.GetString("class", &class_value);
-  WriteAttribute(true, base::UTF16ToUTF8(class_value), &line);
+  WriteAttribute(true, class_value, &line);
 
   std::string role_description;
   dict.GetString("role_description", &role_description);
@@ -236,7 +236,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
   return line;
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterAndroid::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-android.txt");
 }

@@ -31,7 +31,8 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     const GURL& frame_origin,
     const PaymentRequestSpec* spec,
     std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
-    PaymentRequestDelegate* payment_request_delegate)
+    PaymentRequestDelegate* payment_request_delegate,
+    base::WeakPtr<IdentityObserver> identity_observer)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       browser_context_(browser_context),
       top_origin_(top_origin),
@@ -40,6 +41,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
       stored_payment_app_info_(std::move(stored_payment_app_info)),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
+      identity_observer_(identity_observer),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(false) {
@@ -47,6 +49,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
+  DCHECK(identity_observer_);
 
   if (stored_payment_app_info_->icon) {
     icon_image_ =
@@ -67,13 +70,15 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     const PaymentRequestSpec* spec,
     std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
     const std::string& enabled_method,
-    PaymentRequestDelegate* payment_request_delegate)
+    PaymentRequestDelegate* payment_request_delegate,
+    base::WeakPtr<IdentityObserver> identity_observer)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
+      identity_observer_(identity_observer),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(true),
@@ -84,6 +89,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
+  DCHECK(identity_observer_);
 
   if (installable_web_app_info_->icon) {
     icon_image_ =
@@ -193,6 +199,7 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
 
 void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventSkipped(
     ValidateCanMakePaymentCallback callback) {
+  // |can_make_payment| is true as long as there is a matching payment handler.
   can_make_payment_result_ = true;
   has_enrolled_instrument_result_ = false;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -203,16 +210,9 @@ void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventSkipped(
 void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventResponded(
     ValidateCanMakePaymentCallback callback,
     bool result) {
-  // If hasEnrolledInstrument is supported, always return true for
-  // canMakePayment for any matching payment handler.
-  if (base::FeatureList::IsEnabled(
-          ::features::kPaymentRequestHasEnrolledInstrument)) {
-    can_make_payment_result_ = true;
-    has_enrolled_instrument_result_ = result;
-  } else {
-    can_make_payment_result_ = result;
-    has_enrolled_instrument_result_ = result;
-  }
+  // |can_make_payment| is true as long as there is a matching payment handler.
+  can_make_payment_result_ = true;
+  has_enrolled_instrument_result_ = result;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), this, can_make_payment_result_));
@@ -231,12 +231,19 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->sw_js_url,
         installable_web_app_info_->sw_scope,
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
+        base::BindOnce(
+            &IdentityObserver::SetInvokedServiceWorkerIdentity,
+            identity_observer_,
+            url::Origin::Create(GURL(installable_web_app_info_->sw_scope))),
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
+    url::Origin sw_origin =
+        url::Origin::Create(stored_payment_app_info_->scope);
+    identity_observer_->SetInvokedServiceWorkerIdentity(
+        sw_origin, stored_payment_app_info_->registration_id);
     content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
-        browser_context_, stored_payment_app_info_->registration_id,
-        url::Origin::Create(stored_payment_app_info_->scope),
+        browser_context_, stored_payment_app_info_->registration_id, sw_origin,
         CreatePaymentRequestEventData(),
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -341,11 +348,7 @@ bool ServiceWorkerPaymentInstrument::IsValidForCanMakePayment() const {
   // This instrument should not be used when can_make_payment_result_ is false,
   // so this interface should not be invoked.
   DCHECK(can_make_payment_result_);
-  if (base::FeatureList::IsEnabled(
-          ::features::kPaymentRequestHasEnrolledInstrument)) {
-    return has_enrolled_instrument_result_;
-  }
-  return true;
+  return has_enrolled_instrument_result_;
 }
 
 void ServiceWorkerPaymentInstrument::RecordUse() {

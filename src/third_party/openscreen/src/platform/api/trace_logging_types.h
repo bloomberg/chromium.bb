@@ -35,6 +35,15 @@ struct TraceIdHierarchy {
   bool HasParent() { return parent != kUnsetTraceId; }
   bool HasRoot() { return root != kUnsetTraceId; }
 };
+inline bool operator==(const TraceIdHierarchy& lhs,
+                       const TraceIdHierarchy& rhs) {
+  return lhs.current == rhs.current && lhs.parent == rhs.parent &&
+         lhs.root == rhs.root;
+}
+inline bool operator!=(const TraceIdHierarchy& lhs,
+                       const TraceIdHierarchy& rhs) {
+  return !(lhs == rhs);
+}
 
 // BitFlags to represent the supported tracing categories.
 // NOTE: These are currently placeholder values and later changes should feel
@@ -42,9 +51,9 @@ struct TraceIdHierarchy {
 struct TraceCategory {
   enum Value : uint64_t {
     Any = std::numeric_limits<uint64_t>::max(),
-    CastPlatformLayer = 0x01,
-    CastStreaming = 0x01 << 1,
-    CastFlinging = 0x01 << 2
+    mDNS = 0x01 << 0,
+    Quic = 0x01 << 1,
+    Presentation = 0x01 << 2,
   };
 };
 

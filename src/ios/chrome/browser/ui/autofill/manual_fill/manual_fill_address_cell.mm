@@ -6,9 +6,9 @@
 
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,7 +18,8 @@
 @interface ManualFillAddressItem ()
 
 // The content delegate for this item.
-@property(nonatomic, weak, readonly) id<ManualFillContentDelegate> delegate;
+@property(nonatomic, weak, readonly) id<ManualFillContentInjector>
+    contentInjector;
 
 // The address/profile for this item.
 @property(nonatomic, readonly) ManualFillAddress* address;
@@ -28,10 +29,10 @@
 @implementation ManualFillAddressItem
 
 - (instancetype)initWithAddress:(ManualFillAddress*)address
-                       delegate:(id<ManualFillContentDelegate>)delegate {
+                contentInjector:(id<ManualFillContentInjector>)contentInjector {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
-    _delegate = delegate;
+    _contentInjector = contentInjector;
     _address = address;
     self.cellClass = [ManualFillAddressCell class];
   }
@@ -41,7 +42,7 @@
 - (void)configureCell:(ManualFillAddressCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  [cell setUpWithAddress:self.address delegate:self.delegate];
+  [cell setUpWithAddress:self.address contentInjector:self.contentInjector];
 }
 
 @end
@@ -95,7 +96,7 @@
 @property(nonatomic, strong) UIButton* emailAddressButton;
 
 // The content delegate for this item.
-@property(nonatomic, weak) id<ManualFillContentDelegate> delegate;
+@property(nonatomic, weak) id<ManualFillContentInjector> contentInjector;
 
 @end
 
@@ -121,15 +122,15 @@
   [self.countryButton setTitle:@"" forState:UIControlStateNormal];
   [self.phoneNumberButton setTitle:@"" forState:UIControlStateNormal];
   [self.emailAddressButton setTitle:@"" forState:UIControlStateNormal];
-  self.delegate = nil;
+  self.contentInjector = nil;
 }
 
 - (void)setUpWithAddress:(ManualFillAddress*)address
-                delegate:(id<ManualFillContentDelegate>)delegate {
+         contentInjector:(id<ManualFillContentInjector>)contentInjector {
   if (self.contentView.subviews.count == 0) {
     [self createViewHierarchy];
   }
-  self.delegate = delegate;
+  self.contentInjector = contentInjector;
 
   NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
   UIView* guide = self.grayLine;
@@ -154,7 +155,8 @@
     attributedString = [[NSMutableAttributedString alloc]
         initWithString:blackText
             attributes:@{
-              NSForegroundColorAttributeName : UIColor.cr_labelColor,
+              NSForegroundColorAttributeName :
+                  [UIColor colorNamed:kTextPrimaryColor],
               NSFontAttributeName :
                   [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
             }];
@@ -162,7 +164,8 @@
       NSString* formattedGrayText =
           [NSString stringWithFormat:@" –– %@", grayText];
       NSDictionary* attributes = @{
-        NSForegroundColorAttributeName : UIColor.cr_secondaryLabelColor,
+        NSForegroundColorAttributeName :
+            [UIColor colorNamed:kTextSecondaryColor],
         NSFontAttributeName :
             [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
       };
@@ -469,9 +472,9 @@
   DCHECK(metricsAction);
   base::RecordAction(base::UserMetricsAction(metricsAction));
 
-  [self.delegate userDidPickContent:sender.titleLabel.text
-                      passwordField:NO
-                      requiresHTTPS:NO];
+  [self.contentInjector userDidPickContent:sender.titleLabel.text
+                             passwordField:NO
+                             requiresHTTPS:NO];
 }
 
 @end

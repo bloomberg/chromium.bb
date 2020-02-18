@@ -20,23 +20,22 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
-#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -54,8 +53,9 @@
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
@@ -81,6 +81,38 @@ ACTION_TEMPLATE(SaveArgPointeeMove,
                 AND_1_VALUE_PARAMS(pointer)) {
   *pointer = std::move(*testing::get<k>(args));
 }
+
+// Test blink::Platform implementation that overrides the known methods needed
+// by the tests, including creation of WebRtcAudioDevice and
+// AudioCapturerSource instances.
+//
+// TODO(crbug.com/704136): When this test moves to blink/renderer/ it should
+// inherit from TestingPlatformSupport and use ScopedTestingPlatformSupport.
+class WebRtcAudioDeviceTestingPlatformSupport : public blink::Platform {
+ public:
+  WebRtcAudioDeviceTestingPlatformSupport(
+      MockPeerConnectionDependencyFactory* pc_factory)
+      : pc_factory_(pc_factory) {}
+  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override {
+    return pc_factory_->GetWebRtcAudioDevice();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override {
+    return ChildProcess::current() ? ChildProcess::current()->io_task_runner()
+                                   : nullptr;
+  }
+
+  scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSourceParameters& params) override {
+    // The |web_frame| is irrelevant here, so we use MSG_ROUTING_NONE directly.
+    EXPECT_EQ(nullptr, web_frame);
+    return AudioDeviceFactory::NewAudioCapturerSource(MSG_ROUTING_NONE, params);
+  }
+
+ private:
+  MockPeerConnectionDependencyFactory* pc_factory_;
+};
 
 class MockRTCStatsResponse : public LocalRTCStatsResponse {
  public:
@@ -270,6 +302,14 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   void SetUp() override {
     mock_client_.reset(new NiceMock<MockWebRTCPeerConnectionHandlerClient>());
     mock_dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
+
+    platform_original_ = blink::Platform::Current();
+    webrtc_audio_device_platform_support_.reset(
+        new WebRtcAudioDeviceTestingPlatformSupport(
+            mock_dependency_factory_.get()));
+    blink::Platform::SetCurrentPlatformForTesting(
+        webrtc_audio_device_platform_support_.get());
+
     pc_handler_ = CreateRTCPeerConnectionHandlerUnderTest();
     mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
     webrtc::PeerConnectionInterface::RTCConfiguration config;
@@ -289,6 +329,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     mock_dependency_factory_.reset();
     mock_client_.reset();
     blink::WebHeap::CollectAllGarbageForTesting();
+    blink::Platform::SetCurrentPlatformForTesting(platform_original_);
   }
 
   std::unique_ptr<RTCPeerConnectionHandlerUnderTest>
@@ -307,18 +348,17 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                                   blink::WebMediaStreamSource::kTypeAudio,
                                   blink::WebString::FromUTF8("audio_track"),
                                   false /* remote */);
-    ProcessedLocalAudioSource* const audio_source =
-        new ProcessedLocalAudioSource(
-            -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-            blink::MediaStreamDevice(
-                blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-                "mock_device_id", "Mock device",
-                media::AudioParameters::kAudioCDSampleRate,
-                media::CHANNEL_LAYOUT_STEREO,
-                media::AudioParameters::kAudioCDSampleRate / 100),
-            false /* disable_local_echo */, blink::AudioProcessingProperties(),
-            base::DoNothing(), mock_dependency_factory_.get(),
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+    auto* const audio_source = new blink::ProcessedLocalAudioSource(
+        nullptr /* consumer_web_frame is N/A for non-browser tests */,
+        blink::MediaStreamDevice(
+            blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+            "mock_device_id", "Mock device",
+            media::AudioParameters::kAudioCDSampleRate,
+            media::CHANNEL_LAYOUT_STEREO,
+            media::AudioParameters::kAudioCDSampleRate / 100),
+        false /* disable_local_echo */, blink::AudioProcessingProperties(),
+        base::DoNothing(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
     blink_audio_source.SetPlatformSource(
         base::WrapUnique(audio_source));  // Takes ownership.
@@ -552,10 +592,13 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
  public:
-  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // The TaskEnvironment prevents the ChildProcess from leaking a
   // ThreadPool.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
+  std::unique_ptr<WebRtcAudioDeviceTestingPlatformSupport>
+      webrtc_audio_device_platform_support_;
+  blink::Platform* platform_original_ = nullptr;
   std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> mock_dependency_factory_;
   std::unique_ptr<NiceMock<MockPeerConnectionTracker>> mock_tracker_;
@@ -901,7 +944,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
-  WhitelistStatsForTesting(webrtc::RTCTestStats::kType);
+  blink::WhitelistStatsForTesting(webrtc::RTCTestStats::kType);
 
   rtc::scoped_refptr<webrtc::RTCStatsReport> report =
       webrtc::RTCStatsReport::Create();
@@ -951,7 +994,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
     } else if (stats->Id().Utf8() == "RTCDefinedStats") {
       ++defined_stats_count;
       EXPECT_EQ(stats->Timestamp(), 2.0);
-      std::set<blink::WebRTCStatsMemberType> members;
+      std::set<webrtc::RTCStatsMemberInterface::Type> members;
       for (size_t i = 0; i < stats->MembersCount(); ++i) {
         std::unique_ptr<blink::WebRTCStatsMember> member = stats->GetMember(i);
         // TODO(hbos): A WebRTC-change is adding new members, this would cause
@@ -963,50 +1006,50 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
         EXPECT_TRUE(member->IsDefined());
         members.insert(member->GetType());
         switch (member->GetType()) {
-          case blink::kWebRTCStatsMemberTypeBool:
+          case webrtc::RTCStatsMemberInterface::kBool:
             EXPECT_EQ(member->ValueBool(), true);
             break;
-          case blink::kWebRTCStatsMemberTypeInt32:
+          case webrtc::RTCStatsMemberInterface::kInt32:
             EXPECT_EQ(member->ValueInt32(), static_cast<int32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeUint32:
+          case webrtc::RTCStatsMemberInterface::kUint32:
             EXPECT_EQ(member->ValueUint32(), static_cast<uint32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeInt64:
+          case webrtc::RTCStatsMemberInterface::kInt64:
             EXPECT_EQ(member->ValueInt64(), static_cast<int64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeUint64:
+          case webrtc::RTCStatsMemberInterface::kUint64:
             EXPECT_EQ(member->ValueUint64(), static_cast<uint64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeDouble:
+          case webrtc::RTCStatsMemberInterface::kDouble:
             EXPECT_EQ(member->ValueDouble(), 42.0);
             break;
-          case blink::kWebRTCStatsMemberTypeString:
+          case webrtc::RTCStatsMemberInterface::kString:
             EXPECT_EQ(member->ValueString(), blink::WebString::FromUTF8("42"));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceBool:
+          case webrtc::RTCStatsMemberInterface::kSequenceBool:
             ExpectSequenceEquals(member->ValueSequenceBool(), 1);
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceInt32:
+          case webrtc::RTCStatsMemberInterface::kSequenceInt32:
             ExpectSequenceEquals(member->ValueSequenceInt32(),
                                  static_cast<int32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceUint32:
+          case webrtc::RTCStatsMemberInterface::kSequenceUint32:
             ExpectSequenceEquals(member->ValueSequenceUint32(),
                                  static_cast<uint32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceInt64:
+          case webrtc::RTCStatsMemberInterface::kSequenceInt64:
             ExpectSequenceEquals(member->ValueSequenceInt64(),
                                  static_cast<int64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceUint64:
+          case webrtc::RTCStatsMemberInterface::kSequenceUint64:
             ExpectSequenceEquals(member->ValueSequenceUint64(),
                                  static_cast<uint64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceDouble:
+          case webrtc::RTCStatsMemberInterface::kSequenceDouble:
             ExpectSequenceEquals(member->ValueSequenceDouble(), 42.0);
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceString:
+          case webrtc::RTCStatsMemberInterface::kSequenceString:
             ExpectSequenceEquals(member->ValueSequenceString(),
                                  blink::WebString::FromUTF8("42"));
             break;

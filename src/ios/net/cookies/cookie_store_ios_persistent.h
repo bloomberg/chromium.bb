@@ -42,10 +42,6 @@ class CookieStoreIOSPersistent : public CookieStoreIOS {
   ~CookieStoreIOSPersistent() override;
 
   // Inherited CookieStore methods.
-  void SetCookieWithOptionsAsync(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const net::CookieOptions& options,
-                                 SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
                                const net::CookieOptions& options,
@@ -53,7 +49,7 @@ class CookieStoreIOSPersistent : public CookieStoreIOS {
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;
-  void GetAllCookiesAsync(GetCookieListCallback callback) override;
+  void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(

@@ -11,6 +11,7 @@
 #include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/switches.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
@@ -18,7 +19,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "components/viz/common/switches.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -61,6 +61,8 @@ RendererSettings CreateRendererSettings() {
       command_line->HasSwitch(switches::kTintGlCompositedContent);
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
+  renderer_settings.show_aggregated_damage =
+      command_line->HasSwitch(switches::kShowAggregatedDamage);
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
@@ -71,6 +73,8 @@ RendererSettings CreateRendererSettings() {
           switches::kDisableMacOverlays);
 #endif
   renderer_settings.record_sk_picture = features::IsRecordingSkPicture();
+  renderer_settings.show_dc_layer_debug_borders =
+      command_line->HasSwitch(switches::kShowDCLayerDebugBorders);
 
   if (command_line->HasSwitch(switches::kSlowDownCompositingScaleFactor)) {
     const int kMinSlowDownScaleFactor = 1;

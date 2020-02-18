@@ -26,13 +26,8 @@ from __future__ import print_function
 import errno
 import multiprocessing
 import os
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
+
+from six.moves import queue as Queue
 
 from chromite.lib import constants
 from chromite.lib import commandline

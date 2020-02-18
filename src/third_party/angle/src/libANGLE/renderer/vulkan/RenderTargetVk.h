@@ -44,10 +44,10 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
     RenderTargetVk(RenderTargetVk &&other);
 
     void init(vk::ImageHelper *image,
-              vk::ImageView *imageView,
-              vk::ImageView *cubeImageFetchView,
-              size_t levelIndex,
-              size_t layerIndex);
+              const vk::ImageView *imageView,
+              const vk::ImageView *cubeImageFetchView,
+              uint32_t levelIndex,
+              uint32_t layerIndex);
     void reset();
 
     // Note: RenderTargets should be called in order, with the depth/stencil onRender last.
@@ -67,21 +67,21 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
                                      vk::CommandBuffer *commandBuffer);
     vk::ImageHelper *getImageForWrite(vk::CommandGraphResource *writingResource) const;
 
-    vk::ImageView *getDrawImageView() const;
-    vk::ImageView *getReadImageView() const;
+    const vk::ImageView *getDrawImageView() const;
+    const vk::ImageView *getReadImageView() const;
     // GLSL's texelFetch() needs a 2D array view to read from cube maps.  This function returns the
     // same view as `getReadImageView()`, except for cubemaps, in which case it returns a 2D array
     // view of it.
-    vk::ImageView *getFetchImageView() const;
+    const vk::ImageView *getFetchImageView() const;
 
     const vk::Format &getImageFormat() const;
     gl::Extents getExtents() const;
-    size_t getLevelIndex() const { return mLevelIndex; }
-    size_t getLayerIndex() const { return mLayerIndex; }
+    uint32_t getLevelIndex() const { return mLevelIndex; }
+    uint32_t getLayerIndex() const { return mLayerIndex; }
 
     // Special mutator for Surface RenderTargets. Allows the Framebuffer to keep a single
     // RenderTargetVk pointer.
-    void updateSwapchainImage(vk::ImageHelper *image, vk::ImageView *imageView);
+    void updateSwapchainImage(vk::ImageHelper *image, const vk::ImageView *imageView);
 
     angle::Result flushStagedUpdates(ContextVk *contextVk);
 
@@ -89,11 +89,11 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
     vk::ImageHelper *mImage;
     // Note that the draw and read image views are the same, given the requirements of a render
     // target.
-    vk::ImageView *mImageView;
+    const vk::ImageView *mImageView;
     // For cubemaps, a 2D-array view is also created to be used with shaders that use texelFetch().
-    vk::ImageView *mCubeImageFetchView;
-    size_t mLevelIndex;
-    size_t mLayerIndex;
+    const vk::ImageView *mCubeImageFetchView;
+    uint32_t mLevelIndex;
+    uint32_t mLayerIndex;
 };
 
 }  // namespace rx

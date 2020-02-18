@@ -12,9 +12,10 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/syslog_logging.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 
 namespace policy {
@@ -23,8 +24,9 @@ namespace em = enterprise_management;
 
 RemoteCommandsService::RemoteCommandsService(
     std::unique_ptr<RemoteCommandsFactory> factory,
-    CloudPolicyClient* client)
-    : factory_(std::move(factory)), client_(client) {
+    CloudPolicyClient* client,
+    CloudPolicyStore* store)
+    : factory_(std::move(factory)), client_(client), store_(store) {
   DCHECK(client_);
   queue_.AddObserver(this);
 }
@@ -78,8 +80,10 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   return true;
 }
 
-void RemoteCommandsService::SetClockForTesting(const base::TickClock* clock) {
-  queue_.SetClockForTesting(clock);
+void RemoteCommandsService::SetClocksForTesting(
+    const base::Clock* clock,
+    const base::TickClock* tick_clock) {
+  queue_.SetClocksForTesting(clock, tick_clock);
 }
 
 void RemoteCommandsService::SetOnCommandAckedCallback(
@@ -87,8 +91,52 @@ void RemoteCommandsService::SetOnCommandAckedCallback(
   on_command_acked_callback_ = std::move(callback);
 }
 
+void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
+    const em::SignedData& signed_command) {
+  const bool valid_signature = CloudPolicyValidatorBase::VerifySignature(
+      signed_command.data(), store_->policy_signature_public_key(),
+      signed_command.signature(),
+      CloudPolicyValidatorBase::SignatureType::SHA1);
+
+  if (!valid_signature) {
+    SYSLOG(ERROR) << "Secure remote command signature verification failed";
+    em::RemoteCommandResult result;
+    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
+    unsent_results_.push_back(result);
+    return;
+  }
+
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(signed_command.data()) ||
+      !policy_data.has_policy_type() ||
+      policy_data.policy_type() !=
+          dm_protocol::kChromeRemoteCommandPolicyType) {
+    SYSLOG(ERROR) << "Secure remote command with wrong PolicyData type";
+    em::RemoteCommandResult result;
+    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
+    unsent_results_.push_back(result);
+    return;
+  }
+
+  em::RemoteCommand command;
+  if (!policy_data.has_policy_value() ||
+      !command.ParseFromString(policy_data.policy_value())) {
+    SYSLOG(ERROR) << "Secure remote command invalid RemoteCommand data";
+    em::RemoteCommandResult result;
+    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
+    unsent_results_.push_back(result);
+    return;
+  }
+
+  // TODO(isandrk): Also make sure that target_device_id matches and add tests!
+
+  // Signature verification passed.
+  EnqueueCommand(command, &signed_command);
+}
+
 void RemoteCommandsService::EnqueueCommand(
-    const enterprise_management::RemoteCommand& command) {
+    const em::RemoteCommand& command,
+    const em::SignedData* signed_command) {
   if (!command.has_type() || !command.has_command_id()) {
     SYSLOG(ERROR) << "Invalid remote command from server.";
     return;
@@ -103,8 +151,10 @@ void RemoteCommandsService::EnqueueCommand(
   std::unique_ptr<RemoteCommandJob> job =
       factory_->BuildJobForType(command.type(), this);
 
-  if (!job || !job->Init(queue_.GetNowTicks(), command)) {
-    SYSLOG(ERROR) << "Initialization of remote command failed.";
+  if (!job || !job->Init(queue_.GetNowTicks(), command, signed_command)) {
+    SYSLOG(ERROR) << "Initialization of remote command type "
+                  << command.type() << " with id " << command.command_id()
+                  << " failed.";
     em::RemoteCommandResult ignored_result;
     ignored_result.set_result(
         em::RemoteCommandResult_ResultType_RESULT_IGNORED);
@@ -129,8 +179,7 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
 
   em::RemoteCommandResult result;
   result.set_command_id(command->unique_id());
-  result.set_timestamp((command->execution_started_time() -
-                        base::TimeTicks::UnixEpoch()).InMilliseconds());
+  result.set_timestamp(command->execution_started_time().ToJavaTime());
 
   if (command->status() == RemoteCommandJob::SUCCEEDED ||
       command->status() == RemoteCommandJob::FAILED) {
@@ -159,7 +208,8 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
 
 void RemoteCommandsService::OnRemoteCommandsFetched(
     DeviceManagementStatus status,
-    const std::vector<enterprise_management::RemoteCommand>& commands) {
+    const std::vector<enterprise_management::RemoteCommand>& commands,
+    const std::vector<enterprise_management::SignedData>& signed_commands) {
   DCHECK(command_fetch_in_progress_);
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
   SYSLOG(INFO) << "Remote commands fetched.";
@@ -171,7 +221,9 @@ void RemoteCommandsService::OnRemoteCommandsFetched(
   // TODO(binjin): Add retrying on errors. See http://crbug.com/466572.
   if (status == DM_STATUS_SUCCESS) {
     for (const auto& command : commands)
-      EnqueueCommand(command);
+      EnqueueCommand(command, nullptr /* signed_command */);
+    for (const auto& signed_command : signed_commands)
+      VerifyAndEnqueueSignedCommand(signed_command);
   }
 
   // Start another fetch request job immediately if there are unsent command

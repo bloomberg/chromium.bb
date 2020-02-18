@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/webgpu_decoder_impl.h"
 
 #include <dawn_native/DawnNative.h>
+#include <dawn_platform/DawnPlatform.h>
 #include <dawn_wire/WireServer.h>
 
 #include <algorithm>
@@ -18,6 +19,8 @@
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/dawn_platform.h"
+#include "gpu/command_buffer/service/dawn_service_memory_transfer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -334,7 +337,9 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                  std::unique_ptr<SharedImageRepresentationDawn>>
       associated_shared_image_map_;
 
+  std::unique_ptr<dawn_platform::Platform> dawn_platform_;
   std::unique_ptr<WireServerCommandSerializer> wire_serializer_;
+  std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
   DawnProcTable dawn_procs_;
   DawnDevice dawn_device_ = nullptr;
@@ -376,9 +381,13 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
               memory_tracker)),
+      dawn_platform_(new DawnPlatform()),
       wire_serializer_(new WireServerCommandSerializer(client)),
+      memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
       dawn_instance_(new dawn_native::Instance()),
-      dawn_procs_(dawn_native::GetProcs()) {}
+      dawn_procs_(dawn_native::GetProcs()) {
+  dawn_instance_->SetPlatform(dawn_platform_.get());
+}
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {
   associated_shared_image_map_.clear();
@@ -401,6 +410,7 @@ ContextResult WebGPUDecoderImpl::Initialize() {
   descriptor.device = dawn_device_;
   descriptor.procs = &dawn_procs_;
   descriptor.serializer = wire_serializer_.get();
+  descriptor.memoryTransferService = memory_transfer_service_.get();
 
   wire_server_ = std::make_unique<dawn_wire::WireServer>(descriptor);
 
@@ -564,7 +574,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   uint32_t device_generation = static_cast<uint32_t>(c.device_generation);
   uint32_t id = static_cast<uint32_t>(c.id);
   uint32_t generation = static_cast<uint32_t>(c.generation);
-  uint32_t usage = static_cast<DawnTextureUsageBit>(c.usage);
+  uint32_t usage = static_cast<DawnTextureUsage>(c.usage);
 
   // Unpack the mailbox
   if (sizeof(Mailbox) > immediate_data_size) {
@@ -589,14 +599,13 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   }
 
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
-      DAWN_TEXTURE_USAGE_BIT_COPY_SRC | DAWN_TEXTURE_USAGE_BIT_COPY_DST |
-      DAWN_TEXTURE_USAGE_BIT_SAMPLED |
-      DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT);
+      DAWN_TEXTURE_USAGE_COPY_SRC | DAWN_TEXTURE_USAGE_COPY_DST |
+      DAWN_TEXTURE_USAGE_SAMPLED | DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT);
   if (usage & ~kAllowedTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";
     return error::kInvalidArguments;
   }
-  DawnTextureUsageBit dawn_usage = static_cast<DawnTextureUsageBit>(usage);
+  DawnTextureUsage dawn_usage = static_cast<DawnTextureUsage>(usage);
 
   // Create a DawnTexture from the mailbox.
   std::unique_ptr<SharedImageRepresentationDawn> shared_image =

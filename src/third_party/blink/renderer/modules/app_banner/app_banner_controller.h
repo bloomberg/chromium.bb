@@ -20,13 +20,13 @@ class MODULES_EXPORT AppBannerController final
  public:
   explicit AppBannerController(LocalFrame&);
 
-  static void BindMojoRequest(LocalFrame*,
-                              mojom::blink::AppBannerControllerRequest);
+  static void BindMojoRequest(
+      LocalFrame*,
+      mojo::PendingReceiver<mojom::blink::AppBannerController>);
 
-  void BannerPromptRequest(mojom::blink::AppBannerServicePtr,
-                           mojom::blink::AppBannerEventRequest,
+  void BannerPromptRequest(mojo::PendingRemote<mojom::blink::AppBannerService>,
+                           mojo::PendingReceiver<mojom::blink::AppBannerEvent>,
                            const Vector<String>& platforms,
-                           bool require_gesture,
                            BannerPromptRequestCallback) override;
 
  private:

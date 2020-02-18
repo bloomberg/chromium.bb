@@ -30,48 +30,45 @@ namespace cc {
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       float page_scale_factor,
                                       const Layer* page_scale_layer,
                                       const Layer* inner_viewport_scroll_layer,
-                                      const Layer* outer_viewport_scroll_layer,
-                                      TransformNode* page_scale_transform_node)
+                                      const Layer* outer_viewport_scroll_layer)
     : root_layer(root_layer),
-      device_viewport_size(device_viewport_size),
+      device_viewport_rect(device_viewport_rect),
       device_transform(device_transform),
       device_scale_factor(device_scale_factor),
       page_scale_factor(page_scale_factor),
       page_scale_layer(page_scale_layer),
       inner_viewport_scroll_layer(inner_viewport_scroll_layer),
-      outer_viewport_scroll_layer(outer_viewport_scroll_layer),
-      page_scale_transform_node(page_scale_transform_node) {}
+      outer_viewport_scroll_layer(outer_viewport_scroll_layer) {}
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform)
     : CalcDrawPropsMainInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         device_transform,
                                         1.f,
                                         1.f,
-                                        nullptr,
                                         nullptr,
                                         nullptr,
                                         nullptr) {}
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size)
+                                      const gfx::Rect& device_viewport_rect)
     : CalcDrawPropsMainInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         gfx::Transform()) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     LayerImpl* root_layer,
-    const gfx::Size& device_viewport_size,
+    const gfx::Rect& device_viewport_rect,
     const gfx::Transform& device_transform,
     float device_scale_factor,
     float page_scale_factor,
@@ -85,7 +82,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     PropertyTrees* property_trees,
     TransformNode* page_scale_transform_node)
     : root_layer(root_layer),
-      device_viewport_size(device_viewport_size),
+      device_viewport_rect(device_viewport_rect),
       device_transform(device_transform),
       device_scale_factor(device_scale_factor),
       page_scale_factor(page_scale_factor),
@@ -101,12 +98,12 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputs(root_layer,
-                              device_viewport_size,
+                              device_viewport_rect,
                               device_transform,
                               device_scale_factor,
                               1.f,
@@ -125,32 +122,32 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         device_transform,
                                         1.f,
                                         render_surface_list) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         gfx::Transform(),
                                         1.f,
                                         render_surface_list) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         gfx::Transform(),
                                         device_scale_factor,
                                         render_surface_list) {}
@@ -517,9 +514,10 @@ static void RecordRenderSurfaceReasonsForTracing(
   }
 }
 
-void CalculateDrawPropertiesInternal(
+static void CalculateDrawPropertiesInternal(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
-    PropertyTreeOption property_tree_option) {
+    PropertyTreeOption property_tree_option,
+    LayerImplList* output_update_layer_list) {
   inputs->render_surface_list->clear();
 
   LayerImplList visible_layer_list;
@@ -534,18 +532,10 @@ void CalculateDrawPropertiesInternal(
           inputs->outer_viewport_scroll_layer,
           inputs->elastic_overscroll_element_id, inputs->elastic_overscroll,
           inputs->page_scale_factor, inputs->device_scale_factor,
-          gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+          inputs->device_viewport_rect, inputs->device_transform,
           inputs->property_trees);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees);
-
-      // Property trees are normally constructed on the main thread and
-      // passed to compositor thread. Source to parent updates on them are not
-      // allowed in the compositor thread. Some tests build them on the
-      // compositor thread, so we need to explicitly disallow source to parent
-      // updates when they are built on compositor thread.
-      inputs->property_trees->transform_tree
-          .set_source_to_parent_updates_allowed(false);
       break;
     }
     case DONT_BUILD_PROPERTY_TREES: {
@@ -553,21 +543,6 @@ void CalculateDrawPropertiesInternal(
       // on the active tree immediately affect the pending tree, so instead of
       // trying to update property trees whenever these values change, we
       // update property trees before using them.
-
-      // When the page scale layer is also the root layer, the node should also
-      // store the combined scale factor and not just the page scale factor.
-      // TODO(bokan): Need to implement this behavior for
-      // BlinkGeneratedPropertyTrees. i.e. (no page scale layer). Ideally by
-      // not baking these into the page scale layer.
-      bool combine_dsf_and_psf = inputs->page_scale_layer == inputs->root_layer;
-      float device_scale_factor_for_page_scale_node = 1.f;
-      gfx::Transform device_transform_for_page_scale_node;
-      if (combine_dsf_and_psf) {
-        DCHECK(
-            !inputs->root_layer->layer_tree_impl()->settings().use_layer_lists);
-        device_transform_for_page_scale_node = inputs->device_transform;
-        device_scale_factor_for_page_scale_node = inputs->device_scale_factor;
-      }
 
       // We should never be setting a non-unit page scale factor on an oopif
       // subframe ... if we attempt this log it and fail.
@@ -586,10 +561,10 @@ void CalculateDrawPropertiesInternal(
         NOTREACHED();
       }
 
+      DCHECK_NE(inputs->page_scale_layer, inputs->root_layer);
       draw_property_utils::UpdatePageScaleFactor(
           inputs->property_trees, inputs->page_scale_transform_node,
-          inputs->page_scale_factor, device_scale_factor_for_page_scale_node,
-          device_transform_for_page_scale_node);
+          inputs->page_scale_factor);
       draw_property_utils::UpdateElasticOverscroll(
           inputs->property_trees, inputs->elastic_overscroll_element_id,
           inputs->elastic_overscroll);
@@ -597,12 +572,9 @@ void CalculateDrawPropertiesInternal(
       // by both trees.
       PropertyTrees* property_trees = inputs->property_trees;
       property_trees->clip_tree.SetViewportClip(
-          gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
-      float page_scale_factor_for_root =
-          combine_dsf_and_psf ? inputs->page_scale_factor : 1.f;
-      property_trees->transform_tree.SetRootTransformsAndScales(
-          inputs->device_scale_factor, page_scale_factor_for_root,
-          inputs->device_transform);
+          gfx::RectF(inputs->device_viewport_rect));
+      property_trees->transform_tree.SetRootScaleAndTransform(
+          inputs->device_scale_factor, inputs->device_transform);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees);
       break;
@@ -637,6 +609,9 @@ void CalculateDrawPropertiesInternal(
   // CalculateDrawProperties.
   DCHECK(inputs->property_trees->effect_tree.GetRenderSurface(
       EffectTree::kContentsRootNodeId));
+
+  if (output_update_layer_list)
+    *output_update_layer_list = std::move(visible_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
@@ -644,37 +619,68 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   LayerList update_layer_list;
   PropertyTrees* property_trees =
       inputs->root_layer->layer_tree_host()->property_trees();
-  gfx::Vector2dF elastic_overscroll;
-  PropertyTreeBuilder::BuildPropertyTrees(
-      inputs->root_layer, inputs->page_scale_layer,
-      inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
-      ElementId(), elastic_overscroll, inputs->page_scale_factor,
-      inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
-      inputs->device_transform, property_trees);
+  if (inputs->root_layer->layer_tree_host()->IsUsingLayerLists()) {
+    // TODO(wangxianzhu): We should DCHECK(!needs_rebuild) after we remove all
+    // unnecessary setting of the flag in layer list mode.
+    property_trees->needs_rebuild = false;
+  } else {
+    gfx::Vector2dF elastic_overscroll;
+    PropertyTreeBuilder::BuildPropertyTrees(
+        inputs->root_layer, inputs->page_scale_layer,
+        inputs->inner_viewport_scroll_layer,
+        inputs->outer_viewport_scroll_layer, ElementId(), elastic_overscroll,
+        inputs->page_scale_factor, inputs->device_scale_factor,
+        inputs->device_viewport_rect, inputs->device_transform, property_trees);
+  }
   draw_property_utils::UpdatePropertyTrees(
       inputs->root_layer->layer_tree_host(), property_trees);
   draw_property_utils::FindLayersThatNeedUpdates(
       inputs->root_layer->layer_tree_host(), property_trees,
       &update_layer_list);
+
+  if (inputs->update_layer_list)
+    *inputs->update_layer_list = std::move(update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputs* inputs) {
-  CalculateDrawPropertiesInternal(inputs, DONT_BUILD_PROPERTY_TREES);
+  CalculateDrawPropertiesInternal(inputs, DONT_BUILD_PROPERTY_TREES, nullptr);
+}
+
+void LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
+    LayerTreeImpl* layer_tree_impl) {
+  if (layer_tree_impl->settings().use_layer_lists) {
+    // TODO(wangxianzhu): We should DCHECK(!needs_rebuild) after we remove all
+    // unnecessary setting of the flag in layer list mode.
+    auto* property_trees = layer_tree_impl->property_trees();
+    property_trees->needs_rebuild = false;
+    // The following are needed for tests that modify impl-side property trees.
+    // In production code impl-side property trees are pushed from the main
+    // thread and the following are done in other ways.
+    std::vector<std::unique_ptr<RenderSurfaceImpl>> old_render_surfaces;
+    property_trees->effect_tree.TakeRenderSurfaces(&old_render_surfaces);
+    property_trees->effect_tree.CreateOrReuseRenderSurfaces(
+        &old_render_surfaces, layer_tree_impl);
+    property_trees->ResetCachedData();
+  }
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
     CalcDrawPropsImplInputsForTesting* inputs) {
-  CalculateDrawPropertiesInternal(inputs, inputs->property_trees->needs_rebuild
-                                              ? BUILD_PROPERTY_TREES
-                                              : DONT_BUILD_PROPERTY_TREES);
+  PrepareForUpdateDrawPropertiesForTesting(
+      inputs->root_layer->layer_tree_impl());
+  CalculateDrawPropertiesInternal(inputs,
+                                  inputs->property_trees->needs_rebuild
+                                      ? BUILD_PROPERTY_TREES
+                                      : DONT_BUILD_PROPERTY_TREES,
+                                  inputs->update_layer_list);
 }
 
-PropertyTrees* GetPropertyTrees(Layer* layer) {
+PropertyTrees* GetPropertyTrees(const Layer* layer) {
   return layer->layer_tree_host()->property_trees();
 }
 
-PropertyTrees* GetPropertyTrees(LayerImpl* layer) {
+PropertyTrees* GetPropertyTrees(const LayerImpl* layer) {
   return layer->layer_tree_impl()->property_trees();
 }
 

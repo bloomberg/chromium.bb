@@ -44,6 +44,7 @@ class HostWindowProxy::Core
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
+  void OnLocalKeyPressed(uint32_t usb_keycode) override;
   void OnLocalPointerMoved(const webrtc::DesktopVector& position,
                            ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
@@ -67,7 +68,7 @@ class HostWindowProxy::Core
   std::unique_ptr<HostWindow> host_window_;
 
   // Used to create the control pointer passed to |host_window_|.
-  base::WeakPtrFactory<ClientSessionControl> weak_factory_;
+  base::WeakPtrFactory<ClientSessionControl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -103,8 +104,7 @@ HostWindowProxy::Core::Core(
     std::unique_ptr<HostWindow> host_window)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
-      host_window_(std::move(host_window)),
-      weak_factory_(this) {
+      host_window_(std::move(host_window)) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
@@ -160,6 +160,17 @@ void HostWindowProxy::Core::DisconnectSession(protocol::ErrorCode error) {
 
   if (client_session_control_.get())
     client_session_control_->DisconnectSession(error);
+}
+
+void HostWindowProxy::Core::OnLocalKeyPressed(uint32_t usb_keycode) {
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::OnLocalKeyPressed, this, usb_keycode));
+    return;
+  }
+
+  if (client_session_control_.get())
+    client_session_control_->OnLocalKeyPressed(usb_keycode);
 }
 
 void HostWindowProxy::Core::OnLocalPointerMoved(

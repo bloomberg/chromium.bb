@@ -28,8 +28,8 @@
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkTypeface.h"
 #include "include/docs/SkPDFDocument.h"
-#include "include/effects/SkBlurImageFilter.h"
 #include "include/effects/SkGradientShader.h"
+#include "include/effects/SkImageFilters.h"
 #include "include/private/SkTo.h"
 #include "modules/skshaper/include/SkShaper.h"
 #include "src/core/SkMakeUnique.h"
@@ -412,10 +412,10 @@ static SkColor lua2color(lua_State* L, int index) {
 }
 
 static SkRect* lua2rect(lua_State* L, int index, SkRect* rect) {
-    rect->set(getfield_scalar_default(L, index, "left", 0),
-              getfield_scalar_default(L, index, "top", 0),
-              getfield_scalar(L, index, "right"),
-              getfield_scalar(L, index, "bottom"));
+    rect->setLTRB(getfield_scalar_default(L, index, "left", 0),
+                  getfield_scalar_default(L, index, "top", 0),
+                  getfield_scalar(L, index, "right"),
+                  getfield_scalar(L, index, "bottom"));
     return rect;
 }
 
@@ -814,9 +814,6 @@ static int lpaint_getEffects(lua_State* L) {
     const SkPaint* paint = get_obj<SkPaint>(L, 1);
 
     lua_newtable(L);
-#ifdef SK_SUPPORT_LEGACY_DRAWLOOPER
-    setfield_bool_if(L, "looper",      !!paint->getLooper());
-#endif
     setfield_bool_if(L, "pathEffect",  !!paint->getPathEffect());
     setfield_bool_if(L, "maskFilter",  !!paint->getMaskFilter());
     setfield_bool_if(L, "shader",      !!paint->getShader());
@@ -1375,7 +1372,7 @@ static int lpath_getVerbs(lua_State* L) {
     bool done = false;
     int i = 0;
     do {
-        switch (iter.next(pts, true)) {
+        switch (iter.next(pts)) {
             case SkPath::kMove_Verb:
                 setarray_string(L, ++i, "move");
                 break;
@@ -1815,7 +1812,7 @@ static int lsk_newDocumentPDF(lua_State* L) {
 static int lsk_newBlurImageFilter(lua_State* L) {
     SkScalar sigmaX = lua2scalar_def(L, 1, 0);
     SkScalar sigmaY = lua2scalar_def(L, 2, 0);
-    sk_sp<SkImageFilter> imf(SkBlurImageFilter::Make(sigmaX, sigmaY, nullptr));
+    sk_sp<SkImageFilter> imf(SkImageFilters::Blur(sigmaX, sigmaY, nullptr));
     if (!imf) {
         lua_pushnil(L);
     } else {

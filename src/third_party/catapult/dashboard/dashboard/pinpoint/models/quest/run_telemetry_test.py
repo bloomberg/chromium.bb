@@ -8,12 +8,25 @@ from __future__ import division
 from __future__ import absolute_import
 
 import copy
+import re
 
 from dashboard.pinpoint.models.quest import run_performance_test
 
 
 _DEFAULT_EXTRA_ARGS = [
     '-v', '--upload-results', '--output-format', 'histograms']
+
+_STORY_REGEX = re.compile(r'[^a-zA-Z0-9]')
+
+
+def _StoryToRegex(story_name):
+  # During import, some chars in story names got replaced by "_" so they
+  # could be safely included in the test_path. At this point we don't know
+  # what the original characters were. Additionally, some special characters
+  # and argument quoting are not interpreted correctly, e.g. by bisect
+  # scripts (crbug.com/662472). We thus keep only a small set of "safe chars"
+  # and replace all others with match-any-character regex dots.
+  return '^%s$' % _STORY_REGEX.sub('.', story_name)
 
 
 class RunTelemetryTest(run_performance_test.RunPerformanceTest):
@@ -39,7 +52,7 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
 
     story = arguments.get('story')
     if story:
-      extra_test_args += ('--story-filter', story)
+      extra_test_args += ('--story-filter', _StoryToRegex(story))
 
     story_tags = arguments.get('story_tags')
     if story_tags:
@@ -57,7 +70,7 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
       raise TypeError('Missing "browser" argument.')
     extra_test_args += ('--browser', browser)
 
-    if browser == 'android-webview':
+    if browser.startswith('android-webview'):
       # TODO: Share code with the perf waterfall configs. crbug.com/771680
       extra_test_args += ('--webview-embedder-apk',
                           '../../out/Release/apks/SystemWebViewShell.apk')

@@ -17,18 +17,21 @@ namespace password_manager {
 
 using ::autofill::PasswordForm;
 
-CSVPassword::CSVPassword() = default;
+namespace {
 
-CSVPassword::CSVPassword(ColumnMap map, base::StringPiece csv_row)
-    : map_(std::move(map)), row_(csv_row) {}
+// Convert() unescapes a CSV field |str| and converts the result to a 16-bit
+// string. |str| is assumed to exclude the outer pair of quotation marks, if
+// originally present.
+base::string16 Convert(base::StringPiece str) {
+  std::string str_copy(str);
+  base::ReplaceSubstringsAfterOffset(&str_copy, 0, "\"\"", "\"");
+  return base::UTF8ToUTF16(str_copy);
+}
 
-CSVPassword::CSVPassword(const CSVPassword&) = default;
+}  // namespace
 
-CSVPassword::CSVPassword(CSVPassword&&) = default;
-
-CSVPassword& CSVPassword::operator=(const CSVPassword&) = default;
-
-CSVPassword& CSVPassword::operator=(CSVPassword&&) = default;
+CSVPassword::CSVPassword(const ColumnMap& map, base::StringPiece csv_row)
+    : map_(map), row_(csv_row) {}
 
 CSVPassword::~CSVPassword() = default;
 
@@ -84,8 +87,8 @@ bool CSVPassword::Parse(PasswordForm* form) const {
                            ? origin.spec()
                            : origin.GetOrigin().spec();
   form->origin = std::move(origin);
-  form->username_value = base::UTF8ToUTF16(username);
-  form->password_value = base::UTF8ToUTF16(password);
+  form->username_value = Convert(username);
+  form->password_value = Convert(password);
   return true;
 }
 

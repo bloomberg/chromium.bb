@@ -80,6 +80,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Provides the message parser to use when data is received on this stream.
   virtual CryptoMessageParser* crypto_message_parser() = 0;
 
+  // Returns the maximum number of bytes that can be buffered at a particular
+  // encryption level |level|.
+  virtual size_t BufferSizeLimitForLevel(EncryptionLevel level) const;
+
   // Called when the underlying QuicConnection has agreed upon a QUIC version to
   // use.
   virtual void OnSuccessfulVersionNegotiation(const ParsedQuicVersion& version);
@@ -129,6 +133,12 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Called to retransmit any outstanding data in the range indicated by the
   // encryption level, offset, and length in |crypto_frame|.
   void RetransmitData(QuicCryptoFrame* crypto_frame);
+
+  // Called to write buffered crypto frames.
+  void WriteBufferedCryptoFrames();
+
+  // Returns true if there is buffered crypto frames.
+  bool HasBufferedCryptoFrames() const;
 
   // Returns true if any portion of the data at encryption level |level|
   // starting at |offset| for |length| bytes is outstanding.

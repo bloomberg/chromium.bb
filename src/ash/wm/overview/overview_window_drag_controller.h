@@ -63,7 +63,7 @@ class ASH_EXPORT OverviewWindowDragController {
 
   OverviewWindowDragController(OverviewSession* overview_session,
                                OverviewItem* item,
-                               bool allow_drag_to_close);
+                               bool is_touch_dragging);
   ~OverviewWindowDragController();
 
   void InitiateDrag(const gfx::PointF& location_in_screen);
@@ -103,6 +103,8 @@ class ASH_EXPORT OverviewWindowDragController {
   void UpdateDragIndicatorsAndOverviewGrid(
       const gfx::PointF& location_in_screen);
 
+  gfx::Rect GetWorkAreaOfDisplayBeingDraggedIn() const;
+
   // Dragged items should not attempt to update the indicators or snap if
   // the drag started in a snap region and has not been dragged pass the
   // threshold.
@@ -110,9 +112,6 @@ class ASH_EXPORT OverviewWindowDragController {
 
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::PointF& location_in_screen) const;
-
-  // Returns the expected window grid bounds based on |snap_position|.
-  gfx::Rect GetGridBounds(SplitViewController::SnapPosition snap_position);
 
   void SnapWindow(SplitViewController::SnapPosition snap_position);
 
@@ -157,9 +156,9 @@ class ASH_EXPORT OverviewWindowDragController {
 
   const size_t display_count_;
 
-  // True if the drag-to-close mode is allowed (generally when the item is
-  // dragged by touch gestures).
-  const bool should_allow_drag_to_close_;
+  // Indicates touch dragging, as opposed to mouse dragging. The drag-to-close
+  // mode is only allowed when |is_touch_dragging_| is true.
+  const bool is_touch_dragging_;
 
   // True if SplitView is enabled.
   const bool should_allow_split_view_;

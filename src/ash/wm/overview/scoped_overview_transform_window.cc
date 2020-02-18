@@ -17,6 +17,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -104,8 +105,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
-      original_clip_rect_(window_->layer()->clip_rect()),
-      weak_ptr_factory_(this) {
+      original_clip_rect_(window_->layer()->clip_rect()) {
   type_ = GetWindowDimensionsType(window);
 
   std::vector<aura::Window*> transient_children_to_hide;
@@ -126,6 +126,34 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   }
 
   aura::client::GetTransientWindowClient()->AddObserver(this);
+
+  // Tablet mode grid layout has scrolling, so all windows must be stacked under
+  // the current split view window if they share the same parent so that during
+  // scrolls, they get scrolled underneath the split view window. The window
+  // will be returned to its proper z-order on exiting overview if it is
+  // activated.
+  // TODO(sammiequon): This does not handle the case if either the snapped
+  // window or this window is an always on top window.
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (ShouldUseTabletModeGridLayout() &&
+      split_view_controller->InSplitViewMode()) {
+    aura::Window* snapped_window =
+        split_view_controller->GetDefaultSnappedWindow();
+    if (window->parent() == snapped_window->parent()) {
+      // Helper to get the z order of a window in its parent.
+      auto get_z_order = [](aura::Window* window) -> size_t {
+        for (size_t i = 0u; i < window->parent()->children().size(); ++i) {
+          if (window == window->parent()->children()[i])
+            return i;
+        }
+        NOTREACHED();
+        return 0u;
+      };
+
+      if (get_z_order(window_) > get_z_order(snapped_window))
+        window_->parent()->StackChildBelow(window_, snapped_window);
+    }
+  }
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
@@ -383,20 +411,19 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
                                                          bool update_clip) {
-  // Minimized windows have their corners rounded in CaptionContainerView.
-  if (IsMinimized())
-    return;
-
+  // Hide the corners if minimized, CaptionContainerView will handle showing the
+  // rounded corners on the UI.
+  const bool show_corners = show && !IsMinimized();
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
-  const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
-                                        : 0.0f);
+  const gfx::RoundedCornersF radii(
+      show_corners ? kOverviewWindowRoundingDp / scale : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
 
-  if (!update_clip || layer->GetAnimator()->is_animating())
+  if (!update_clip || layer->GetAnimator()->is_animating() || IsMinimized())
     return;
 
   const int top_inset = GetTopInset();

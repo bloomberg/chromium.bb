@@ -16,7 +16,7 @@ function addLog(logText) {
 // Converts an internal representation of nodes to actual DOM nodes that can
 // be attached to the DOM. The internal representation has the following
 // properties for each node:
-// - type: 'node' | 'text'
+// - type: 'element' | 'text'
 // - value: name of tag | text content
 // - children (opt): list of child nodes
 // - attributes (opt): dictionary of name/value pairs
@@ -24,7 +24,7 @@ function nodeToDomNode(node) {
   if (node.type === 'text') {
     return document.createTextNode(node.value);
   }
-  // Else the node is of type 'node'.
+  // Else the node is of type 'element'.
   var domNode = document.createElement(node.value);
   if ('children' in node) {
     node.children.forEach((child) => {
@@ -47,7 +47,15 @@ function addRawLog(node) {
     return;
   }
   logDiv.appendChild(document.createElement('hr'));
-  logDiv.appendChild(nodeToDomNode(node));
+  if (node.type === 'fragment') {
+    if ('children' in node) {
+      node.children.forEach((child) => {
+        logDiv.appendChild(nodeToDomNode(child));
+      });
+    }
+  } else {
+    logDiv.appendChild(nodeToDomNode(node));
+  }
 }
 
 function setUpAutofillInternals() {
@@ -73,6 +81,16 @@ function setUpPasswordManagerInternals() {
 
 function notifyAboutIncognito(isIncognito) {
   document.body.dataset.incognito = isIncognito;
+}
+
+function notifyAboutVariations(variations) {
+  var list = document.createElement("div");
+  for (let item of variations) {
+    list.appendChild(document.createTextNode(item));
+    list.appendChild(document.createElement("br"));
+  }
+  var variationsList = document.getElementById("variations-list");
+  variationsList.appendChild(list);
 }
 
 document.addEventListener("DOMContentLoaded", function(event) {

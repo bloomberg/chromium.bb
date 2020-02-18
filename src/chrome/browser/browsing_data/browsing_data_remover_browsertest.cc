@@ -67,7 +67,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "media/base/media_switches.h"
-#include "media/mojo/interfaces/media_types.mojom.h"
+#include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/dns/mock_host_resolver.h"
@@ -268,8 +268,7 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
       callback = base::BindLambdaForTesting(
           [&success, &loop](net::CanonicalCookie::CookieInclusionStatus s) {
-            success =
-                (s == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            success = s.IsInclude();
             loop.Quit();
           });
   network::mojom::CookieManager* cookie_manager =

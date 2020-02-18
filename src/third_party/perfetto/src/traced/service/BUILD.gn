@@ -12,6 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../../../gn/test.gni")
+
+# The unprivileged trace daemon that listens for Producer and Consumer
+# connections, handles the coordination of the tracing sessions and owns the
+# log buffers.
+executable("traced") {
+  deps = [
+    # Both traced and traced_probes depend on "libprefetto" instead of directly
+    # on lib. This is to reduce binary size on android builds. All the code is
+    # built into libperfetto and the executables are just tiny shells that call
+    # into the xxx_main() defined in the library.
+    "../../../:libperfetto",
+    "../../../gn:default_deps",
+    "../../../include/perfetto/ext/traced",
+  ]
+  sources = [
+    "main.cc",
+  ]
+}
+
+# Contains all the implementation but not the main() entry point. This target
+# is shared both by the executable and tests.
 source_set("service") {
   public_deps = [
     "../../../include/perfetto/ext/traced",
@@ -23,13 +45,13 @@ source_set("service") {
     "../../tracing:ipc",
   ]
   sources = [
-    "lazy_producer.cc",
-    "lazy_producer.h",
+    "builtin_producer.cc",
+    "builtin_producer.h",
     "service.cc",
   ]
 }
 
-source_set("unittests") {
+perfetto_unittest_source_set("unittests") {
   testonly = true
   deps = [
     ":service",
@@ -40,6 +62,6 @@ source_set("unittests") {
     "../../tracing",
   ]
   sources = [
-    "lazy_producer_unittest.cc",
+    "builtin_producer_unittest.cc",
   ]
 }

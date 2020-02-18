@@ -21,11 +21,13 @@
 #include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
+#include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
@@ -33,6 +35,7 @@
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
@@ -42,13 +45,35 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using TraceLog = base::trace_event::TraceLog;
 using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
+using perfetto::protos::pbzero::ChromeMetadataPacket;
 
 namespace tracing {
 namespace {
+
 TraceEventMetadataSource* g_trace_event_metadata_source_for_testing = nullptr;
+
+void WriteMetadataProto(ChromeMetadataPacket* metadata_proto,
+                        bool privacy_filtering_enabled) {
+#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
+  // Version code is only set for official builds on Android.
+  const char* version_code_str =
+      base::android::BuildInfo::GetInstance()->package_version_code();
+  if (version_code_str) {
+    int version_code = 0;
+    bool res = base::StringToInt(version_code_str, &version_code);
+    DCHECK(res);
+    metadata_proto->set_chrome_version_code(version_code);
+  }
+#endif  // defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
+}
+
 }  // namespace
 
 using ChromeEventBundleHandle =
@@ -65,6 +90,7 @@ TraceEventMetadataSource::TraceEventMetadataSource()
       origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   g_trace_event_metadata_source_for_testing = this;
   PerfettoTracedProcess::Get()->AddDataSource(this);
+  AddGeneratorFunction(base::BindRepeating(&WriteMetadataProto));
   AddGeneratorFunction(base::BindRepeating(
       &TraceEventMetadataSource::GenerateTraceConfigMetadataDict,
       base::Unretained(this)));
@@ -114,7 +140,7 @@ void TraceEventMetadataSource::GenerateMetadata(
   auto trace_packet = trace_writer->NewTracePacket();
   auto* chrome_metadata = trace_packet->set_chrome_metadata();
   for (auto& generator : generator_functions_) {
-    generator.Run(chrome_metadata);
+    generator.Run(chrome_metadata, privacy_filtering_enabled_);
   }
   trace_packet = perfetto::TraceWriter::TracePacketHandle();
 
@@ -171,7 +197,7 @@ void TraceEventMetadataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
   if (trace_writer_) {
     // Write metadata at the end of tracing to make it less likely that it is
-    // overridden by other trace data in perfetto's ring buffer.
+    // overwritten by other trace data in perfetto's ring buffer.
     origin_task_runner_->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TraceEventMetadataSource::GenerateMetadata,
@@ -287,6 +313,7 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
 }
 
 void TraceEventDataSource::OnTaskSchedulerAvailable() {
+  CHECK(IsTracingInitialized());
   {
     base::AutoLock lock(lock_);
     if (!startup_writer_registry_)
@@ -389,9 +416,10 @@ void TraceEventDataSource::StartTracingInternal(
     target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
-  }
 
-  session_id_.fetch_add(1u, std::memory_order_relaxed);
+    // Protected by |lock_| for CreateThreadLocalEventSink().
+    session_id_.fetch_add(1u, std::memory_order_relaxed);
+  }
 
   if (unbound_writer_registry) {
     // TODO(oysteine): Investigate why trace events emitted by something in
@@ -539,7 +567,14 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer;
   uint32_t session_id = session_id_.load(std::memory_order_relaxed);
   if (startup_writer_registry_) {
-    trace_writer = startup_writer_registry_->CreateUnboundTraceWriter();
+    // Chromium uses BufferExhaustedPolicy::kDrop to avoid stalling trace
+    // writers when the chunks in the SMB are exhausted. Stalling could
+    // otherwise lead to deadlocks in chromium, because a stalled mojo IPC
+    // thread could prevent CommitRequest messages from reaching the perfetto
+    // service.
+    auto buffer_exhausted_policy = perfetto::BufferExhaustedPolicy::kDrop;
+    trace_writer = startup_writer_registry_->CreateUnboundTraceWriter(
+        buffer_exhausted_policy);
   } else if (producer_) {
     trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
         producer_->CreateTraceWriter(target_buffer_));

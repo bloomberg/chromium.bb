@@ -26,15 +26,16 @@ ServiceWorkerNavigationHandle::ServiceWorkerNavigationHandle(
 
 ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Delete the ServiceWorkerNavigationHandleCore on the IO thread.
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_);
+  // Delete the ServiceWorkerNavigationHandleCore on the core thread.
+  BrowserThread::DeleteSoon(ServiceWorkerContext::GetCoreThreadId(), FROM_HERE,
+                            core_);
 }
 
 void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
     blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(provider_info->host_ptr_info.is_valid() &&
-         provider_info->client_request.is_pending());
+  DCHECK(provider_info->host_remote.is_valid() &&
+         provider_info->client_receiver.is_valid());
 
   provider_info_ = std::move(provider_info);
 }
@@ -47,8 +48,8 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
   // We may have failed to pre-create the provider host.
   if (!provider_info_)
     return;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE,
       base::BindOnce(
           &ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit,
           base::Unretained(core_), render_process_id, render_frame_id));
@@ -57,8 +58,8 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
 
 void ServiceWorkerNavigationHandle::OnBeginWorkerCommit() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE,
       base::BindOnce(&ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit,
                      base::Unretained(core_)));
 }

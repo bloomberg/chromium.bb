@@ -21,15 +21,18 @@
 #include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_buildflags.h"  // For BUILDFLAG(IPC_MESSAGE_LOG_ENABLED).
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
@@ -95,6 +98,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void RecordComputedAction(const std::string& action) override;
   ServiceManagerConnection* GetServiceManagerConnection() override;
   service_manager::Connector* GetConnector() override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
@@ -135,9 +139,21 @@ class CONTENT_EXPORT ChildThreadImpl
   void GetBackgroundTracingAgentProvider(
       mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
           receiver);
+
+  // Returns a reference to the thread-safe SharedRemote<ChildProcessHost>
+  // interface endpoint.
+  const mojo::SharedRemote<mojom::ChildProcessHost>& child_process_host()
+      const {
+    return child_process_host_;
+  }
+
   virtual void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+
+  virtual void BindServiceInterface(mojo::GenericPendingReceiver receiver);
+
+  virtual void OnBindReceiver(mojo::GenericPendingReceiver receiver);
 
  protected:
   friend class ChildProcess;
@@ -204,10 +220,10 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
-  mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
+  mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
   mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
-  mojom::RouteProviderAssociatedPtr remote_route_provider_;
+  mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
 #if defined(OS_WIN)
   mojom::FontCacheWinPtr font_cache_win_ptr_;
 #endif
@@ -245,6 +261,9 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
+  // An interface to the browser's process host object.
+  mojo::SharedRemote<mojom::ChildProcessHost> child_process_host_;
+
   base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
@@ -265,7 +284,7 @@ struct ChildThreadImpl::Options {
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
 
   using ServiceBinder =
-      base::RepeatingCallback<void(mojo::GenericPendingReceiver)>;
+      base::RepeatingCallback<void(mojo::GenericPendingReceiver*)>;
   ServiceBinder service_binder;
 
  private:

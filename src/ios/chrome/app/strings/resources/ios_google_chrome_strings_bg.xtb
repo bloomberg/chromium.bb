@@ -30,6 +30,7 @@
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
 <translation id="4615174829807303908">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="5389212809648216794">Google Chrome не може да използва камерата ви, защото е заета от друго приложение</translation>
+<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Прегледайте актуализираните Общи условия на Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Отворете „Settings“ &gt; „Privacy“ &gt; „Camera“ &gt; „Google Chrome“ и включете камерата.</translation>
 <translation id="5642200033778930880">Google Chrome не може да използва камерата ви в режим на разделен изглед</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -45,11 +46,11 @@
 <translation id="7172660552945675509">Съвет: <ph name="BEGIN_LINK" />Преместете Chrome в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome използва Face ID, за да обезпечи упълномощен достъп до паролите ви.</translation>
 <translation id="7265369419224458312">Осъществявайте оттук достъп до разделите, които сте отворили на компютъра си. Трябва само да стартирате Chrome на компютъра си и да изберете „Вход в Chrome…“ от менюто.</translation>
-<translation id="728488472449859922">Включване на скенера за QR кодове в Google Chrome</translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
+<translation id="7698568245838009292">Chrome иска достъп до камерата</translation>
 <translation id="8370517070665726704">Авторски права <ph name="YEAR" /> г. Google LLC. Всички права запазени.</translation>
 <translation id="840168496893712993">Някои добавки водят до срив на Chrome. Моля, опитайте да ги деинсталирате.</translation>
 <translation id="8459495907675268833">Избраните данни са премахнати от Chrome и синхронизираните устройства. Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес history.google.com – например търсения и активност от други наши услуги.</translation>

@@ -15,7 +15,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -41,7 +42,8 @@ namespace apps {
 
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
-class ExtensionAppShimHandler : public AppShimHandler,
+class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
+                                public AppShimHost::Client,
                                 public content::NotificationObserver,
                                 public AppLifetimeMonitor::Observer,
                                 public BrowserListObserver {
@@ -67,8 +69,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
         const std::string& extension_id);
     virtual bool AllowShimToConnect(Profile* profile,
                                     const extensions::Extension* extension);
-    virtual AppShimHost* CreateHost(Profile* profile,
-                                    const extensions::Extension* extension);
+    virtual std::unique_ptr<AppShimHost> CreateHost(
+        AppShimHost::Client* client,
+        Profile* profile,
+        const extensions::Extension* extension);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
                                  base::OnceCallback<void()> callback);
@@ -93,8 +97,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
   ~ExtensionAppShimHandler() override;
 
   // Get the host corresponding to a profile and app id, or null if there is
-  // none. Virtual for tests.
-  virtual AppShimHost* FindHost(Profile* profile, const std::string& app_id);
+  // none.
+  AppShimHost* FindHost(Profile* profile, const std::string& app_id);
 
   // Return the host corresponding to |profile| and |app_id|, if one exists.
   // If one does not exist, create one, and launch the app shim (so that the
@@ -108,47 +112,31 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // bind to the app process when it finishes launching.
   AppShimHost* GetHostForBrowser(Browser* browser);
 
-  void SetHostedAppHidden(Profile* profile,
-                          const std::string& app_id,
-                          bool hidden);
-
   static const extensions::Extension* MaybeGetAppExtension(
       content::BrowserContext* context,
       const std::string& extension_id);
 
   static const extensions::Extension* MaybeGetAppForBrowser(Browser* browser);
 
-  void QuitAppForWindow(extensions::AppWindow* app_window);
-  void QuitHostedAppForWindow(Profile* profile, const std::string& app_id);
-  void HideAppForWindow(extensions::AppWindow* app_window);
-  void HideHostedApp(Profile* profile, const std::string& app_id);
-  void FocusAppForWindow(extensions::AppWindow* app_window);
-
-  // Instructs the shim to set it's "Hide/Show" state to not-hidden.
-  void UnhideWithoutActivationForWindow(extensions::AppWindow* app_window);
-
   // Instructs the shim to request user attention. Returns false if there is no
   // shim for this window.
   void RequestUserAttentionForWindow(extensions::AppWindow* app_window,
                                      AppShimAttentionType attention_type);
 
-  // Called by AppControllerMac when Chrome hides.
-  void OnChromeWillHide();
+  // AppShimHostBootstrap::Client:
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
 
-  // AppShimHandler overrides:
+  // AppShimHost::Client:
   void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
       base::OnceCallback<void(base::Process)> launched_callback,
       base::OnceClosure terminated_callback) override;
-  void OnShimProcessConnected(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimClose(AppShimHost* host) override;
+  void OnShimProcessDisconnected(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host,
                    AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override;
-  void OnShimSetHidden(AppShimHost* host, bool hidden) override;
-  void OnShimQuit(AppShimHost* host) override;
 
   // AppLifetimeMonitor::Observer overrides:
   void OnAppStart(content::BrowserContext* context,
@@ -170,29 +158,25 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnBrowserRemoved(Browser* browser) override;
 
  protected:
-  typedef std::map<std::pair<Profile*, std::string>, AppShimHost*> HostMap;
   typedef std::set<Browser*> BrowserSet;
-  typedef std::map<std::pair<Profile*, std::string>, BrowserSet> AppBrowserMap;
 
   // Virtual for tests.
   virtual bool IsAcceptablyCodeSigned(pid_t pid) const;
 
   // Exposed for testing.
   void set_delegate(Delegate* delegate);
-  HostMap& hosts() { return hosts_; }
   content::NotificationRegistrar& registrar() { return registrar_; }
 
  private:
-  // Gets the extension for the corresponding |host|. Note that extensions can
-  // be uninstalled at any time (even between sending OnAppClosed() to the host,
-  // and receiving the quit confirmation). If the extension has been uninstalled
-  // or disabled, the host is immediately closed. If non-nil, the Extension's
-  // Profile will be set in |profile|.
-  const extensions::Extension* MaybeGetExtensionOrCloseHost(AppShimHost* host,
-                                                            Profile** profile);
+  // The state for an individual app, and for the profile-scoped app info.
+  struct ProfileState;
+  struct AppState;
 
-  // Closes all browsers associated with an app.
-  void CloseBrowsersForApp(Profile* profile, const std::string& app_id);
+  // Close all app shims associated with the specified profile.
+  void CloseShimsForProfile(Profile* profile);
+
+  // Close one specified app.
+  void CloseShimForApp(Profile* profile, const std::string& app_id);
 
   // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
   // where the profile was not yet loaded.
@@ -205,10 +189,14 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   std::unique_ptr<Delegate> delegate_;
 
-  HostMap hosts_;
+  // Retrieve the ProfileState for a given (app, Profile) pair. If one does not
+  // exist, do not create one unless |create| is specified.
+  ProfileState* GetProfileState(Profile* profile,
+                                const std::string& app_id,
+                                bool create = false);
 
-  // A map of app ids to associated browser windows.
-  AppBrowserMap app_browser_windows_;
+  // Map from extension id to the state for that app.
+  std::map<std::string, std::unique_ptr<AppState>> apps_;
 
   content::NotificationRegistrar registrar_;
 

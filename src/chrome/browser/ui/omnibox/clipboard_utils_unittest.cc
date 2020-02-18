@@ -9,7 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -24,8 +24,7 @@ namespace {
 class ClipboardUtilsTest : public PlatformTest {
  public:
   ClipboardUtilsTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -39,7 +38,7 @@ class ClipboardUtilsTest : public PlatformTest {
 
  private:
   // Windows requires a message loop for clipboard access.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(ClipboardUtilsTest, GetClipboardText) {
@@ -50,7 +49,7 @@ TEST_F(ClipboardUtilsTest, GetClipboardText) {
 
   // Can we pull straight text off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(kPlainText);
   }
   EXPECT_EQ(kPlainText, GetClipboardText());
@@ -59,13 +58,13 @@ TEST_F(ClipboardUtilsTest, GetClipboardText) {
   const base::string16 kSpace6(ASCIIToUTF16("      "));
   const base::string16 kSpace1(ASCIIToUTF16(" "));
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(kSpace6);
   }
   EXPECT_EQ(kSpace1, GetClipboardText());
 
   // Does an empty clipboard get empty text?
-  clipboard->Clear(ui::ClipboardType::kCopyPaste);
+  clipboard->Clear(ui::ClipboardBuffer::kCopyPaste);
   EXPECT_EQ(base::string16(), GetClipboardText());
 
 // Bookmark clipboard apparently not supported on Linux.
@@ -74,14 +73,14 @@ TEST_F(ClipboardUtilsTest, GetClipboardText) {
   const base::string16 kTitle(ASCIIToUTF16("The Example Company"));
   // Can we pull a bookmark off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteBookmark(kTitle, kURL);
   }
   EXPECT_EQ(ASCIIToUTF16(kURL), GetClipboardText());
 
   // Do we pull text in preference to a bookmark?
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(kPlainText);
     clipboard_writer.WriteBookmark(kTitle, kURL);
   }
@@ -91,7 +90,7 @@ TEST_F(ClipboardUtilsTest, GetClipboardText) {
   // Do we get nothing if there is neither text nor a bookmark?
   {
     const base::string16 kMarkup(ASCIIToUTF16("<strong>Hi!</string>"));
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteHTML(kMarkup, kURL);
   }
   EXPECT_TRUE(GetClipboardText().empty());
@@ -101,7 +100,7 @@ TEST_F(ClipboardUtilsTest, TruncateLongText) {
   const base::string16 almost_long_text =
       base::ASCIIToUTF16(std::string(kMaxClipboardTextLength, '.'));
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(almost_long_text);
   }
   EXPECT_EQ(almost_long_text, GetClipboardText());
@@ -109,7 +108,7 @@ TEST_F(ClipboardUtilsTest, TruncateLongText) {
   const base::string16 long_text =
       base::ASCIIToUTF16(std::string(kMaxClipboardTextLength + 1, '.'));
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(long_text);
   }
   EXPECT_EQ(almost_long_text, GetClipboardText());

@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,7 +84,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   TestingPrefServiceSimple local_state_;
 
@@ -270,4 +270,30 @@ TEST_F(SSLConfigServiceManagerPrefTest, H2ClientCertCoalescingPref) {
   EXPECT_EQ("non-canon.example", observed_patterns[2]);
   EXPECT_EQ("127.0.0.1", observed_patterns[3]);
   EXPECT_EQ("128.2.1.10", observed_patterns[4]);
+}
+
+// Tests that the cert revocation checking pref correctly sets the corresponding
+// value in SSL configs.
+TEST_F(SSLConfigServiceManagerPrefTest,
+       RequireOnlineRevocationChecksForLocalAnchors) {
+  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
+
+  TestingPrefServiceSimple local_state;
+  local_state.SetUserPref(prefs::kCertRevocationCheckingRequiredLocalAnchors,
+                          std::make_unique<base::Value>(false));
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager =
+      SetUpConfigServiceManager(&local_state);
+
+  EXPECT_FALSE(initial_config_->rev_checking_required_local_anchors);
+
+  local_state.SetUserPref(prefs::kCertRevocationCheckingRequiredLocalAnchors,
+                          std::make_unique<base::Value>(true));
+
+  // Wait for the SSLConfigServiceManagerPref to be notified of the preferences
+  // being changed, and for it to notify the test fixture of the change.
+  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
+
+  EXPECT_TRUE(observed_configs_[0]->rev_checking_required_local_anchors);
 }

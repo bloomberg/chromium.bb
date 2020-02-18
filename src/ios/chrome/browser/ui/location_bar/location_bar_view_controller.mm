@@ -40,11 +40,18 @@ typedef NS_ENUM(int, TrailingButtonState) {
   kVoiceSearchButton,
 };
 
+// FullScreen progress threshold in which to toggle between full screen on and
+// off mode for the badge view.
+const double kFullscreenProgressBadgeViewThreshold = 0.85;
+
 }  // namespace
 
 @interface LocationBarViewController ()
 // The injected edit view.
 @property(nonatomic, strong) UIView* editView;
+
+// The injected badge view.
+@property(nonatomic, strong) UIView* badgeView;
 
 // The view that displays current location when the omnibox is not focused.
 @property(nonatomic, strong) LocationBarSteadyView* locationBarSteadyView;
@@ -60,17 +67,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // state of the share button if it's temporarily replaced by the voice search
 // icon (in iPad multitasking).
 @property(nonatomic, assign) BOOL shareButtonEnabled;
-
-// Keeps the status of the leading button of the location bar steady view. Used
-// to preserve leading button visibility during animations.
-@property(nonatomic, assign) BOOL shouldShowLeadingButton;
-
-// Used to build and record Infobar metrics.
-@property(nonatomic, strong) InfobarMetricsRecorder* infobarMetricsRecorder;
-
-// Whether the InfobarBadge is active or not.
-// TODO(crbug.com/961343): Move this into a future BadgeContainer.
-@property(nonatomic, assign) BOOL activeBadge;
 
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
@@ -100,17 +96,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self = [super init];
   if (self) {
     _locationBarSteadyView = [[LocationBarSteadyView alloc] init];
-
-    [_locationBarSteadyView.locationButton
-               addTarget:self
-                  action:@selector(locationBarSteadyViewTapped)
-        forControlEvents:UIControlEventTouchUpInside];
-
-    UILongPressGestureRecognizer* recognizer =
-        [[UILongPressGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(showLongPressMenu:)];
-    [_locationBarSteadyView.locationButton addGestureRecognizer:recognizer];
   }
   return self;
 }
@@ -118,6 +103,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
 - (void)setEditView:(UIView*)editView {
   DCHECK(!self.editView);
   _editView = editView;
+}
+
+- (void)setBadgeView:(UIView*)badgeView {
+  DCHECK(!self.badgeView);
+  _badgeView = badgeView;
 }
 
 - (void)switchToEditing:(BOOL)editing {
@@ -177,6 +167,20 @@ typedef NS_ENUM(int, TrailingButtonState) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+    DCHECK(self.badgeView) << "The badge view must be set at this point";
+    self.locationBarSteadyView.badgeView = self.badgeView;
+
+  [_locationBarSteadyView.locationButton
+             addTarget:self
+                action:@selector(locationBarSteadyViewTapped)
+      forControlEvents:UIControlEventTouchUpInside];
+
+  UILongPressGestureRecognizer* recognizer =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(showLongPressMenu:)];
+  [_locationBarSteadyView.locationButton addGestureRecognizer:recognizer];
+
   DCHECK(self.editView) << "The edit view must be set at this point";
 
   [self.view addSubview:self.editView];
@@ -188,10 +192,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
   AddSameConstraints(self.locationBarSteadyView, self.view);
 
   [self switchToEditing:NO];
-
-  if (IsInfobarUIRebootEnabled()) {
-    [self updateInfobarButton];
-  }
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -205,9 +205,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   CGFloat alphaValue = fmax((progress - 0.85) / 0.15, 0);
   CGFloat scaleValue = 0.79 + 0.21 * progress;
   self.locationBarSteadyView.trailingButton.alpha = alphaValue;
-  if (IsInfobarUIRebootEnabled()) {
-    self.locationBarSteadyView.leadingButton.alpha = alphaValue;
-  }
+  BOOL badgeViewShouldCollapse =
+      progress <= kFullscreenProgressBadgeViewThreshold;
+  [self.locationBarSteadyView
+      setFullScreenCollapsedMode:badgeViewShouldCollapse];
   self.locationBarSteadyView.transform =
       CGAffineTransformMakeScale(scaleValue, scaleValue);
 }
@@ -259,13 +260,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
   }
 }
 
-- (void)displayInfobarButton:(BOOL)display
-             metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder {
-  self.infobarMetricsRecorder = metricsRecorder;
-  self.shouldShowLeadingButton = display;
-  [self.locationBarSteadyView displayBadge:display animated:YES];
-}
-
 #pragma mark - LocationBarAnimatee
 
 - (void)offsetEditViewToMatchSteadyView {
@@ -296,13 +290,12 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self.locationBarSteadyView.alpha = hidden ? 0 : 1;
 }
 
-- (void)hideSteadyViewLeadingButton {
-  [self.locationBarSteadyView displayBadge:NO animated:NO];
+- (void)hideSteadyViewBadgeView {
+    [self.locationBarSteadyView displayBadgeView:NO animated:NO];
 }
 
-- (void)showSteadyViewLeadingButtonIfNeeded {
-  [self.locationBarSteadyView displayBadge:self.shouldShowLeadingButton
-                                  animated:NO];
+- (void)showSteadyViewBadgeView {
+    [self.locationBarSteadyView displayBadgeView:YES animated:NO];
 }
 
 - (void)setEditViewFaded:(BOOL)hidden {
@@ -433,19 +426,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)startVoiceSearch {
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view]
-        .constrainedView = self.locationBarSteadyView.trailingButton;
-  } else {
-    // On iOS 11 and below, constraining the layout guide to a view instead of
-    // using frame freeze the app. The root cause wasn't found. See
-    // https://crbug.com/874017.
-    NamedGuide* voiceSearchGuide =
-        [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view];
-    voiceSearchGuide.constrainedFrame = [voiceSearchGuide.owningView
-        convertRect:self.locationBarSteadyView.trailingButton.bounds
-           fromView:self.locationBarSteadyView.trailingButton];
-  }
+  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view]
+      .constrainedView = self.locationBarSteadyView.trailingButton;
   [self.dispatcher startVoiceSearch];
 }
 
@@ -456,70 +438,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
 }
 
-// TODO(crbug.com/935804): Create constants variables for the magic numbers
-// being used here if/when this stops being temporary.
-- (void)updateInfobarButton {
-  DCHECK(IsInfobarUIRebootEnabled());
-
-  [self.locationBarSteadyView.leadingButton
-             addTarget:self
-                action:@selector(displayModalInfobar)
-      forControlEvents:UIControlEventTouchUpInside];
-  // Set as hidden as it should only be shown by |displayInfobarButton:|
-  [self.locationBarSteadyView.leadingButton displayBadge:NO animated:NO];
-}
-
-- (void)displayModalInfobar {
-  MobileMessagesBadgeState state;
-  if (self.activeBadge) {
-    state = MobileMessagesBadgeState::Active;
-    base::RecordAction(
-        base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
-  } else {
-    state = MobileMessagesBadgeState::Inactive;
-    base::RecordAction(
-        base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
-  }
-  [self.infobarMetricsRecorder recordBadgeTappedInState:state];
-  [self.dispatcher displayModalInfobar];
-}
-
-- (void)setInfobarButtonStyleActive:(BOOL)active {
-  self.activeBadge = active;
-  [self.locationBarSteadyView.leadingButton setActive:active animated:YES];
-}
-
-#pragma mark - BadgeConsumer
-
-- (void)setupWithBadges:(NSArray*)badges {
-  BOOL hasBadge = badges.count > 0;
-  if (hasBadge) {
-    id<BadgeItem> firstBadge = badges[0];
-    BOOL isAccepted = firstBadge.isAccepted;
-    self.activeBadge = isAccepted;
-    [self.locationBarSteadyView.leadingButton setActive:isAccepted animated:NO];
-  }
-  [self.locationBarSteadyView.leadingButton displayBadge:hasBadge animated:NO];
-  self.shouldShowLeadingButton = hasBadge;
-}
-
-- (void)addBadge:(id<BadgeItem>)badgeItem {
-  self.activeBadge = badgeItem.isAccepted;
-  [self.locationBarSteadyView.leadingButton setActive:badgeItem.isAccepted
-                                             animated:NO];
-  [self.locationBarSteadyView.leadingButton displayBadge:YES animated:YES];
-  self.shouldShowLeadingButton = YES;
-}
-
-- (void)removeBadge:(id<BadgeItem>)badgeItem {
-  [self.locationBarSteadyView.leadingButton displayBadge:NO animated:NO];
-  self.shouldShowLeadingButton = NO;
-}
-
-- (void)updateBadge:(id<BadgeItem>)badgeItem {
-  [self.locationBarSteadyView.leadingButton setActive:badgeItem.isAccepted
-                                             animated:YES];
-}
 
 #pragma mark - UIMenu
 

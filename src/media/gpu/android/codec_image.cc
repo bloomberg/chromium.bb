@@ -19,7 +19,7 @@ namespace {
 
 // Makes |texture_owner|'s context current if it isn't already.
 std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
-    TextureOwner* texture_owner) {
+    gpu::TextureOwner* texture_owner) {
   gl::GLContext* context = texture_owner->GetContext();
   // Note: this works for virtual contexts too, because IsCurrent() returns true
   // if their shared platform context is current, regardless of which virtual
@@ -52,12 +52,12 @@ CodecImage::~CodecImage() {
 
 void CodecImage::Initialize(
     std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<TextureOwner> texture_owner,
+    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb) {
   DCHECK(output_buffer);
   phase_ = Phase::kInCodec;
   output_buffer_ = std::move(output_buffer);
-  texture_owner_ = std::move(texture_owner);
+  codec_buffer_wait_coordinator_ = std::move(codec_buffer_wait_coordinator);
   promotion_hint_cb_ = std::move(promotion_hint_cb);
 }
 
@@ -83,7 +83,7 @@ unsigned CodecImage::GetInternalFormat() {
 CodecImage::BindOrCopy CodecImage::ShouldBindOrCopy() {
   // If we're using an overlay, then pretend it's bound.  That way, we'll get
   // calls to ScheduleOverlayPlane.  Otherwise, CopyTexImage needs to be called.
-  return !texture_owner_ ? BIND : COPY;
+  return !codec_buffer_wait_coordinator_ ? BIND : COPY;
 }
 
 bool CodecImage::BindTexImage(unsigned target) {
@@ -103,7 +103,9 @@ bool CodecImage::CopyTexImage(unsigned target) {
   GLint bound_service_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
   // The currently bound texture should be the texture owner's texture.
-  if (bound_service_id != static_cast<GLint>(texture_owner_->GetTextureId()))
+  if (bound_service_id !=
+      static_cast<GLint>(
+          codec_buffer_wait_coordinator_->texture_owner()->GetTextureId()))
     return false;
 
   RenderToTextureOwnerFrontBuffer(BindingsMode::kEnsureTexImageBound);
@@ -125,25 +127,39 @@ bool CodecImage::ScheduleOverlayPlane(
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   TRACE_EVENT0("media", "CodecImage::ScheduleOverlayPlane");
-  if (texture_owner_) {
+  if (codec_buffer_wait_coordinator_) {
     DVLOG(1) << "Invalid call to ScheduleOverlayPlane; this image is "
                 "TextureOwner backed.";
     return false;
   }
 
-  // Move the overlay if needed.
-  if (most_recent_bounds_ != bounds_rect) {
-    most_recent_bounds_ = bounds_rect;
-    // Note that, if we're actually promoted to overlay, that this is where the
-    // hint is sent to the callback.  NotifyPromotionHint detects this case and
-    // lets us do it.  If we knew that we were going to get promotion hints,
-    // then we could always let NotifyPromotionHint do it.  Unfortunately, we
-    // don't know that.
-    promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds_rect, true));
-  }
-
+  NotifyOverlayPromotion(true, bounds_rect);
   RenderToOverlay();
   return true;
+}
+
+void CodecImage::NotifyOverlayPromotion(bool promotion,
+                                        const gfx::Rect& bounds) {
+  if (!codec_buffer_wait_coordinator_ && promotion) {
+    // When |CodecImage| is already backed by SurfaceView, and it should be used
+    // as overlay.
+
+    // Move the overlay if needed.
+    if (most_recent_bounds_ != bounds) {
+      most_recent_bounds_ = bounds;
+      // Note that, if we're actually promoted to overlay, that this is where
+      // the hint is sent to the callback.  NotifyPromotionHint detects this
+      // case and lets us do it.  If we knew that we were going to get promotion
+      // hints, then we could always let NotifyPromotionHint do it.
+      // Unfortunately, we don't know that.
+      promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds, promotion));
+    }
+  } else {
+    // This could be when |CodecImage| is backed by SurfaceTexture but should be
+    // promoted, or when this is backed by either SurfaceView or SurfaceTexture
+    // but should not be promoted.
+    promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds, promotion));
+  }
 }
 
 void CodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
@@ -159,14 +175,14 @@ void CodecImage::GetTextureMatrix(float matrix[16]) {
       0, 1,  0, 1   //
   };
   memcpy(matrix, kYInvertedIdentity, sizeof(kYInvertedIdentity));
-  if (!texture_owner_)
+  if (!codec_buffer_wait_coordinator_)
     return;
 
   // The matrix is available after we render to the front buffer. If that fails
   // we'll return the matrix from the previous frame, which is more likely to be
   // correct than the identity matrix anyway.
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
-  texture_owner_->GetTransformMatrix(matrix);
+  codec_buffer_wait_coordinator_->texture_owner()->GetTransformMatrix(matrix);
   YInvertMatrix(matrix);
 }
 
@@ -175,26 +191,48 @@ void CodecImage::NotifyPromotionHint(bool promotion_hint,
                                      int display_y,
                                      int display_width,
                                      int display_height) {
-  // If this is promotable, and we're using an overlay, then skip sending this
-  // hint.  ScheduleOverlayPlane will do it.
-  if (promotion_hint && !texture_owner_)
+  // TODO(crbug.com/1004859): Add back early skip due to suspecting affecting
+  // video smoothness.
+  if (promotion_hint && !codec_buffer_wait_coordinator_)
     return;
 
-  promotion_hint_cb_.Run(PromotionHintAggregator::Hint(
-      gfx::Rect(display_x, display_y, display_width, display_height),
-      promotion_hint));
+  NotifyOverlayPromotion(
+      promotion_hint,
+      gfx::Rect(display_x, display_y, display_width, display_height));
+}
+
+void CodecImage::ReleaseResources() {
+  ReleaseCodecBuffer();
+}
+
+bool CodecImage::IsUsingGpuMemory() const {
+  // Only the images which are bound to texture accounts for gpu memory.
+  return was_tex_image_bound_;
+}
+
+void CodecImage::UpdateAndBindTexImage() {
+  RenderToTextureOwnerFrontBuffer(BindingsMode::kEnsureTexImageBound);
+}
+
+bool CodecImage::HasTextureOwner() const {
+  return !!texture_owner();
+}
+
+gpu::gles2::Texture* CodecImage::GetTexture() const {
+  DCHECK(texture_owner());
+  return gpu::gles2::Texture::CheckedCast(texture_owner()->GetTextureBase());
 }
 
 bool CodecImage::RenderToFrontBuffer() {
   // This code is used to trigger early rendering of the image before it is used
   // for compositing, there is no need to bind the image.
-  return texture_owner_
+  return codec_buffer_wait_coordinator_
              ? RenderToTextureOwnerFrontBuffer(BindingsMode::kRestoreIfBound)
              : RenderToOverlay();
 }
 
 bool CodecImage::RenderToTextureOwnerBackBuffer() {
-  DCHECK(texture_owner_);
+  DCHECK(codec_buffer_wait_coordinator_);
   DCHECK_NE(phase_, Phase::kInFrontBuffer);
   if (phase_ == Phase::kInBackBuffer)
     return true;
@@ -203,19 +241,19 @@ bool CodecImage::RenderToTextureOwnerBackBuffer() {
 
   // Wait for a previous frame available so we don't confuse it with the one
   // we're about to release.
-  if (texture_owner_->IsExpectingFrameAvailable())
-    texture_owner_->WaitForFrameAvailable();
+  if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable())
+    codec_buffer_wait_coordinator_->WaitForFrameAvailable();
   if (!output_buffer_->ReleaseToSurface()) {
     phase_ = Phase::kInvalidated;
     return false;
   }
   phase_ = Phase::kInBackBuffer;
-  texture_owner_->SetReleaseTimeToNow();
+  codec_buffer_wait_coordinator_->SetReleaseTimeToNow();
   return true;
 }
 
 bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {
-  DCHECK(texture_owner_);
+  DCHECK(codec_buffer_wait_coordinator_);
 
   if (phase_ == Phase::kInFrontBuffer) {
     EnsureBoundIfNeeded(bindings_mode);
@@ -230,21 +268,23 @@ bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {
 
   // The image is now in the back buffer, so promote it to the front buffer.
   phase_ = Phase::kInFrontBuffer;
-  if (texture_owner_->IsExpectingFrameAvailable())
-    texture_owner_->WaitForFrameAvailable();
+  if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable())
+    codec_buffer_wait_coordinator_->WaitForFrameAvailable();
 
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current =
-      MakeCurrentIfNeeded(texture_owner_.get());
+      MakeCurrentIfNeeded(
+          codec_buffer_wait_coordinator_->texture_owner().get());
   // If updating the image will implicitly update the texture bindings then
   // restore if requested or the update needed a context switch.
   bool should_restore_bindings =
-      texture_owner_->binds_texture_on_update() &&
+      codec_buffer_wait_coordinator_->texture_owner()
+          ->binds_texture_on_update() &&
       (bindings_mode == BindingsMode::kRestoreIfBound || !!scoped_make_current);
 
   GLint bound_service_id = 0;
   if (should_restore_bindings)
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
-  texture_owner_->UpdateTexImage();
+  codec_buffer_wait_coordinator_->texture_owner()->UpdateTexImage();
   EnsureBoundIfNeeded(bindings_mode);
   if (should_restore_bindings)
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, bound_service_id);
@@ -252,15 +292,16 @@ bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {
 }
 
 void CodecImage::EnsureBoundIfNeeded(BindingsMode mode) {
-  DCHECK(texture_owner_);
+  DCHECK(codec_buffer_wait_coordinator_);
 
-  if (texture_owner_->binds_texture_on_update()) {
+  if (codec_buffer_wait_coordinator_->texture_owner()
+          ->binds_texture_on_update()) {
     was_tex_image_bound_ = true;
     return;
   }
   if (mode != BindingsMode::kEnsureTexImageBound)
     return;
-  texture_owner_->EnsureTexImageBound();
+  codec_buffer_wait_coordinator_->texture_owner()->EnsureTexImageBound();
   was_tex_image_bound_ = true;
 }
 
@@ -285,10 +326,10 @@ void CodecImage::ReleaseCodecBuffer() {
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 CodecImage::GetAHardwareBuffer() {
-  DCHECK(texture_owner_);
+  DCHECK(codec_buffer_wait_coordinator_);
 
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
-  return texture_owner_->GetAHardwareBuffer();
+  return codec_buffer_wait_coordinator_->texture_owner()->GetAHardwareBuffer();
 }
 
 CodecImageHolder::CodecImageHolder(

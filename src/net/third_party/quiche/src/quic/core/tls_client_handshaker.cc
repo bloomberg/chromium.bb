@@ -76,36 +76,61 @@ bool TlsClientHandshaker::CryptoConnect() {
     return false;
   }
 
-  std::string alpn_string = AlpnForVersion(session()->connection()->version());
-  if (alpn_string.length() > std::numeric_limits<uint8_t>::max()) {
-    QUIC_BUG << "ALPN too long: '" << alpn_string << "'";
-    CloseConnection(QUIC_HANDSHAKE_FAILED, "ALPN too long");
+  if (!SetAlpn()) {
+    CloseConnection(QUIC_HANDSHAKE_FAILED, "Client failed to set ALPN");
     return false;
   }
-  const uint8_t alpn_length = alpn_string.length();
-  // SSL_set_alpn_protos expects a sequence of one-byte-length-prefixed strings
-  // so we copy alpn_string to a new buffer that has the length in alpn[0].
-  uint8_t alpn[std::numeric_limits<uint8_t>::max() + 1];
-  alpn[0] = alpn_length;
-  memcpy(reinterpret_cast<char*>(alpn + 1), alpn_string.data(), alpn_length);
-  if (SSL_set_alpn_protos(ssl(), alpn,
-                          static_cast<unsigned>(alpn_length) + 1) != 0) {
-    QUIC_BUG << "Failed to set ALPN: '" << alpn_string << "'";
-    CloseConnection(QUIC_HANDSHAKE_FAILED, "Failed to set ALPN");
-    return false;
-  }
-  QUIC_DLOG(INFO) << "Client using ALPN: '" << alpn_string << "'";
 
   // Set the Transport Parameters to send in the ClientHello
   if (!SetTransportParameters()) {
     CloseConnection(QUIC_HANDSHAKE_FAILED,
-                    "Failed to set Transport Parameters");
+                    "Client failed to set Transport Parameters");
     return false;
   }
 
   // Start the handshake.
   AdvanceHandshake();
   return session()->connection()->connected();
+}
+
+static bool IsValidAlpn(const std::string& alpn_string) {
+  return alpn_string.length() <= std::numeric_limits<uint8_t>::max();
+}
+
+bool TlsClientHandshaker::SetAlpn() {
+  std::vector<std::string> alpns = session()->GetAlpnsToOffer();
+  if (alpns.empty()) {
+    if (allow_empty_alpn_for_tests_) {
+      return true;
+    }
+
+    QUIC_BUG << "ALPN missing";
+    return false;
+  }
+  if (!std::all_of(alpns.begin(), alpns.end(), IsValidAlpn)) {
+    QUIC_BUG << "ALPN too long";
+    return false;
+  }
+
+  // SSL_set_alpn_protos expects a sequence of one-byte-length-prefixed
+  // strings.
+  uint8_t alpn[1024];
+  QuicDataWriter alpn_writer(sizeof(alpn), reinterpret_cast<char*>(alpn));
+  bool success = true;
+  for (const std::string& alpn_string : alpns) {
+    success = success && alpn_writer.WriteUInt8(alpn_string.size()) &&
+              alpn_writer.WriteStringPiece(alpn_string);
+  }
+  success =
+      success && (SSL_set_alpn_protos(ssl(), alpn, alpn_writer.length()) == 0);
+  if (!success) {
+    QUIC_BUG << "Failed to set ALPN: "
+             << QuicTextUtils::HexDump(
+                    QuicStringPiece(alpn_writer.data(), alpn_writer.length()));
+    return false;
+  }
+  QUIC_DLOG(INFO) << "Client using ALPN: '" << alpns[0] << "'";
+  return true;
 }
 
 bool TlsClientHandshaker::SetTransportParameters() {
@@ -120,7 +145,8 @@ bool TlsClientHandshaker::SetTransportParameters() {
   params.google_quic_params->SetStringPiece(kUAID, user_agent_id_);
 
   std::vector<uint8_t> param_bytes;
-  return SerializeTransportParameters(params, &param_bytes) &&
+  return SerializeTransportParameters(session()->connection()->version(),
+                                      params, &param_bytes) &&
          SSL_set_quic_transport_params(ssl(), param_bytes.data(),
                                        param_bytes.size()) == 1;
 }
@@ -132,8 +158,9 @@ bool TlsClientHandshaker::ProcessTransportParameters(
   size_t param_bytes_len;
   SSL_get_peer_quic_transport_params(ssl(), &param_bytes, &param_bytes_len);
   if (param_bytes_len == 0 ||
-      !ParseTransportParameters(param_bytes, param_bytes_len,
-                                Perspective::IS_SERVER, &params)) {
+      !ParseTransportParameters(session()->connection()->version(),
+                                Perspective::IS_SERVER, param_bytes,
+                                param_bytes_len, &params)) {
     *error_details = "Unable to parse Transport Parameters";
     return false;
   }
@@ -197,6 +224,11 @@ CryptoMessageParser* TlsClientHandshaker::crypto_message_parser() {
   return TlsHandshaker::crypto_message_parser();
 }
 
+size_t TlsClientHandshaker::BufferSizeLimitForLevel(
+    EncryptionLevel level) const {
+  return TlsHandshaker::BufferSizeLimitForLevel(level);
+}
+
 void TlsClientHandshaker::AdvanceHandshake() {
   if (state_ == STATE_CONNECTION_CLOSED) {
     QUIC_LOG(INFO)
@@ -204,7 +236,8 @@ void TlsClientHandshaker::AdvanceHandshake() {
     return;
   }
   if (state_ == STATE_IDLE) {
-    CloseConnection(QUIC_HANDSHAKE_FAILED, "TLS handshake failed");
+    CloseConnection(QUIC_HANDSHAKE_FAILED,
+                    "Client observed TLS handshake idle failure");
     return;
   }
   if (state_ == STATE_HANDSHAKE_COMPLETE) {
@@ -234,7 +267,8 @@ void TlsClientHandshaker::AdvanceHandshake() {
     // TODO(nharper): Surface error details from the error queue when ssl_error
     // is SSL_ERROR_SSL.
     QUIC_LOG(WARNING) << "SSL_do_handshake failed; closing connection";
-    CloseConnection(QUIC_HANDSHAKE_FAILED, "TLS handshake failed");
+    CloseConnection(QUIC_HANDSHAKE_FAILED,
+                    "Client observed TLS handshake failure");
   }
 }
 
@@ -259,29 +293,38 @@ void TlsClientHandshaker::FinishHandshake() {
   const uint8_t* alpn_data = nullptr;
   unsigned alpn_length = 0;
   SSL_get0_alpn_selected(ssl(), &alpn_data, &alpn_length);
-  // TODO(b/130164908) Act on ALPN.
-  if (alpn_length != 0) {
-    std::string received_alpn_string(reinterpret_cast<const char*>(alpn_data),
-                                     alpn_length);
-    std::string sent_alpn_string =
-        AlpnForVersion(session()->connection()->version());
-    if (received_alpn_string != sent_alpn_string) {
-      QUIC_LOG(ERROR) << "Client: received mismatched ALPN '"
-                      << received_alpn_string << "', expected '"
-                      << sent_alpn_string << "'";
-      CloseConnection(QUIC_HANDSHAKE_FAILED, "Mismatched ALPN");
-      return;
-    }
-    QUIC_DLOG(INFO) << "Client: server selected ALPN: '" << received_alpn_string
-                    << "'";
-  } else {
-    QUIC_DLOG(INFO) << "Client: server did not select ALPN";
+
+  if (alpn_length == 0) {
+    QUIC_DLOG(ERROR) << "Client: server did not select ALPN";
+    // TODO(b/130164908) this should send no_application_protocol
+    // instead of QUIC_HANDSHAKE_FAILED.
+    CloseConnection(QUIC_HANDSHAKE_FAILED, "Server did not select ALPN");
+    return;
   }
+
+  std::string received_alpn_string(reinterpret_cast<const char*>(alpn_data),
+                                   alpn_length);
+  std::vector<std::string> offered_alpns = session()->GetAlpnsToOffer();
+  if (std::find(offered_alpns.begin(), offered_alpns.end(),
+                received_alpn_string) == offered_alpns.end()) {
+    QUIC_LOG(ERROR) << "Client: received mismatched ALPN '"
+                    << received_alpn_string;
+    // TODO(b/130164908) this should send no_application_protocol
+    // instead of QUIC_HANDSHAKE_FAILED.
+    CloseConnection(QUIC_HANDSHAKE_FAILED, "Client received mismatched ALPN");
+    return;
+  }
+  session()->OnAlpnSelected(received_alpn_string);
+  QUIC_DLOG(INFO) << "Client: server selected ALPN: '" << received_alpn_string
+                  << "'";
 
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;
+  session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED);
+  session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+  session()->connection()->OnHandshakeComplete();
 }
 
 enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {

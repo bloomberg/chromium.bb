@@ -312,8 +312,10 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {
     PostAnnouncementNotification(announcement_text);
     return;
   }
-  NSAccessibilityPostNotification(
-      target, [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type]);
+  NSString* notification =
+      [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type];
+  if (notification)
+    NSAccessibilityPostNotification(target, notification);
 }
 
 // Returns true if |action| should be added implicitly for |data|.
@@ -492,6 +494,76 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
   if (data.action != ax::mojom::Action::kNone)
     node_->GetDelegate()->AccessibilityPerformAction(data);
+}
+
+// This method, while deprecated, is still called internally by AppKit.
+- (NSArray*)accessibilityAttributeNames {
+  if (!node_)
+    return @[];
+  // These attributes are required on all accessibility objects.
+  NSArray* const kAllRoleAttributes = @[
+    NSAccessibilityChildrenAttribute,
+    NSAccessibilityParentAttribute,
+    NSAccessibilityPositionAttribute,
+    NSAccessibilityRoleAttribute,
+    NSAccessibilitySizeAttribute,
+    NSAccessibilitySubroleAttribute,
+    // Title is required for most elements. Cocoa asks for the value even if it
+    // is omitted here, but won't present it to accessibility APIs without this.
+    NSAccessibilityTitleAttribute,
+    // Attributes which are not required, but are general to all roles.
+    NSAccessibilityRoleDescriptionAttribute,
+    NSAccessibilityEnabledAttribute,
+    NSAccessibilityFocusedAttribute,
+    NSAccessibilityHelpAttribute,
+    NSAccessibilityTopLevelUIElementAttribute,
+    NSAccessibilityWindowAttribute,
+  ];
+  // Attributes required for user-editable controls.
+  NSArray* const kValueAttributes = @[ NSAccessibilityValueAttribute ];
+  // Attributes required for unprotected textfields and labels.
+  NSArray* const kUnprotectedTextAttributes = @[
+    NSAccessibilityInsertionPointLineNumberAttribute,
+    NSAccessibilityNumberOfCharactersAttribute,
+    NSAccessibilitySelectedTextAttribute,
+    NSAccessibilitySelectedTextRangeAttribute,
+    NSAccessibilityVisibleCharacterRangeAttribute,
+  ];
+  // Required for all text, including protected textfields.
+  NSString* const kTextAttributes = NSAccessibilityPlaceholderValueAttribute;
+  base::scoped_nsobject<NSMutableArray> axAttributes(
+      [[NSMutableArray alloc] init]);
+  [axAttributes addObjectsFromArray:kAllRoleAttributes];
+  switch (node_->GetData().role) {
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kStaticText:
+      [axAttributes addObject:kTextAttributes];
+      if (!node_->GetData().HasState(ax::mojom::State::kProtected))
+        [axAttributes addObjectsFromArray:kUnprotectedTextAttributes];
+      FALLTHROUGH;
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kSearchBox:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSliderThumb:
+    case ax::mojom::Role::kToggleButton:
+      [axAttributes addObjectsFromArray:kValueAttributes];
+      break;
+      // TODO(tapted): Add additional attributes based on role.
+    default:
+      break;
+  }
+  if (node_->GetData().HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+    [axAttributes addObjectsFromArray:@[ NSAccessibilitySelectedAttribute ]];
+  }
+  if (ui::IsMenuItem(node_->GetData().role)) {
+    [axAttributes addObjectsFromArray:@[ @"AXMenuItemMarkChar" ]];
+  }
+  return axAttributes.autorelease();
 }
 
 // Despite it being deprecated, AppKit internally calls this function sometimes

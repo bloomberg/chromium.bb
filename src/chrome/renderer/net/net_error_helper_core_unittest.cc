@@ -23,12 +23,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/available_offline_content.mojom.h"
+#include "chrome/renderer/net/available_offline_content_helper.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/net_error_info.h"
@@ -37,7 +38,6 @@
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -272,9 +272,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockOneShotTimer* timer() { return timer_; }
 
-  base::test::ScopedTaskEnvironment* task_environment() {
-    return &task_environment_;
-  }
+  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
   content::MockRenderThread* render_thread() { return &render_thread_; }
 
   void NavigationCorrectionsLoadSuccess(const NavigationCorrection* corrections,
@@ -494,7 +492,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockOneShotTimer* timer_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   content::MockRenderThread render_thread_;
 
   std::unique_ptr<NetErrorHelperCore> core_;
@@ -2569,10 +2567,10 @@ class FakeAvailableOfflineContentProvider
   MOCK_METHOD1(LaunchDownloadsPage, void(bool open_prefetched_articles_tab));
   MOCK_METHOD1(ListVisibilityChanged, void(bool is_visible));
 
-  void AddBinding(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(this,
-                         chrome::mojom::AvailableOfflineContentProviderRequest(
-                             std::move(handle)));
+  void AddBinding(
+      mojo::PendingReceiver<chrome::mojom::AvailableOfflineContentProvider>
+          receiver) {
+    bindings_.AddBinding(this, std::move(receiver));
   }
 
   void set_return_content(bool return_content) {
@@ -2597,12 +2595,14 @@ class NetErrorHelperCoreAvailableOfflineContentTest
  public:
   void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
-    render_thread()->GetConnector()->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(
-            content::mojom::kBrowserServiceName),
-        chrome::mojom::AvailableOfflineContentProvider::Name_,
+    AvailableOfflineContentHelper::OverrideBinderForTesting(
         base::BindRepeating(&FakeAvailableOfflineContentProvider::AddBinding,
                             base::Unretained(&fake_provider_)));
+  }
+
+  void TearDown() override {
+    AvailableOfflineContentHelper::OverrideBinderForTesting(
+        base::NullCallback());
   }
 
  protected:
@@ -2739,9 +2739,8 @@ class FakeOfflinePageAutoFetcher
 
   void CancelSchedule() override { cancel_calls_++; }
 
-  void AddBinding(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(
-        this, chrome::mojom::OfflinePageAutoFetcherRequest(std::move(handle)));
+  void AddBinding(chrome::mojom::OfflinePageAutoFetcherRequest request) {
+    bindings_.AddBinding(this, std::move(request));
   }
 
   int cancel_calls() const { return cancel_calls_; }
@@ -2781,25 +2780,19 @@ class NetErrorHelperCoreAutoFetchTest : public NetErrorHelperCoreTest {
  public:
   void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
-    // Override PageAutoFetcherHelper so that it talks to
-    // FakeOfflinePageAutoFetcher. This is a bit roundabout because
-    // we do not create a RenderFrame in this fixture.
-    render_thread()->GetConnector()->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(
-            content::mojom::kBrowserServiceName),
-        chrome::mojom::OfflinePageAutoFetcher::Name_,
-        base::BindRepeating(&FakeOfflinePageAutoFetcher::AddBinding,
-                            base::Unretained(&fake_fetcher_)));
-
     auto binder = base::BindLambdaForTesting([&]() {
       chrome::mojom::OfflinePageAutoFetcherPtr fetcher_ptr;
-      render_thread()->GetConnector()->BindInterface(
-          content::mojom::kBrowserServiceName, &fetcher_ptr);
+      fake_fetcher_.AddBinding(mojo::MakeRequest(&fetcher_ptr));
       return fetcher_ptr;
     });
 
     core()->SetPageAutoFetcherHelperForTesting(
         std::make_unique<TestPageAutoFetcherHelper>(binder));
+  }
+
+  void TearDown() override {
+    AvailableOfflineContentHelper::OverrideBinderForTesting(
+        base::NullCallback());
   }
 
  protected:

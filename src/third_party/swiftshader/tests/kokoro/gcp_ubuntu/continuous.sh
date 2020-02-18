@@ -18,15 +18,14 @@ fi
 cmake .. "-DREACTOR_BACKEND=${REACTOR_BACKEND}" "-DREACTOR_VERIFY_LLVM_IR=1"
 make --jobs=$(nproc)
 
-# Run the reactor unit tests.
-./ReactorUnitTests
+# Run unit tests
 
-cd .. # Tests must be run from project root
+cd .. # Some tests must be run from project root
 
-# Run the OpenGL ES and Vulkan unit tests.
+build/ReactorUnitTests
+build/yarn-unittests
 build/gles-unittests
 
 if [ "${REACTOR_BACKEND}" != "Subzero" ]; then
-  # Currently vulkan does not work with Subzero.
-  build/vk-unittests
+  build/vk-unittests # Currently vulkan does not work with Subzero.
 fi

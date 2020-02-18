@@ -9,6 +9,9 @@
 
 syntax = "proto2";
 
+option java_multiple_files = true;
+option java_package = "org.chromium.components.sync.protocol";
+
 option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
@@ -95,7 +98,10 @@ message NigoriSpecifics {
     FROZEN_IMPLICIT_PASSPHRASE = 3;
     // User provided custom passphrase.
     CUSTOM_PASSPHRASE = 4;
+    // Encryption key provided by a trusted vault.
+    TRUSTED_VAULT_PASSPHRASE = 5;
   }
+
   // An |int| field is used instead of enum PassphraseType so we can better
   // handle unknown values coming from later versions. Prior to M77, this was an
   // enum so old clients will assume IMPLICIT_PASSPHRASE for values greater than

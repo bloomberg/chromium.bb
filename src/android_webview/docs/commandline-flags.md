@@ -90,7 +90,6 @@ WebView supports any flags supported in any layer we depend on (ex. content).
 Some interesting flags and Features:
 
  * `--show-composited-layer-borders`
- * `--enable-features=NetworkService,NetworkServiceInProcess`
  * `--webview-log-js-console-messages`
 
 WebView also defines its own flags and Features:
@@ -104,4 +103,4 @@ WebView also defines its own flags and Features:
 
 ## Implementation
 
-See [CommandLineUtil.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/command_line/CommandLineUtil.java).
+See [CommandLineUtil.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/common/CommandLineUtil.java).

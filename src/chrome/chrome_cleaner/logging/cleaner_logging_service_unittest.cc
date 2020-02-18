@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
@@ -320,8 +320,7 @@ class CleanerLoggingServiceTest : public testing::TestWithParam<ExecutionMode> {
 
   CleanerLoggingServiceTest()
       : logging_service_(nullptr),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         done_callback_called_(false),
         upload_success_(false),
         matched_uws_(&kMatchedUwSSignature),
@@ -335,7 +334,7 @@ class CleanerLoggingServiceTest : public testing::TestWithParam<ExecutionMode> {
   std::unique_ptr<RegistryLogger> registry_logger_;
 
   // Needed for the current task runner to be available.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // |done_callback_called_| is set to true in |LoggingServiceDone| to confirm
   // it was called appropriately.

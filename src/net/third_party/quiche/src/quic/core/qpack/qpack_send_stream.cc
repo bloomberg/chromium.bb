@@ -25,6 +25,11 @@ void QpackSendStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
 
 void QpackSendStream::WriteStreamData(QuicStringPiece data) {
   QuicConnection::ScopedPacketFlusher flusher(session()->connection());
+  MaybeSendStreamType();
+  WriteOrBufferData(data, false, nullptr);
+}
+
+void QpackSendStream::MaybeSendStreamType() {
   if (!stream_type_sent_) {
     char type[sizeof(http3_stream_type_)];
     QuicDataWriter writer(QUIC_ARRAYSIZE(type), type);
@@ -33,7 +38,6 @@ void QpackSendStream::WriteStreamData(QuicStringPiece data) {
                       nullptr);
     stream_type_sent_ = true;
   }
-  WriteOrBufferData(data, false, nullptr);
 }
 
 }  // namespace quic

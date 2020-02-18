@@ -23,7 +23,7 @@ CrElementsActionMenuTest.prototype = {
       'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html',
 
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_action_menu_test.js',
   ]),
 };
@@ -65,7 +65,7 @@ CrElementsToggleTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_toggle_test.js',
   ]),
 };
@@ -89,12 +89,13 @@ CrElementsCheckboxTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_checkbox_test.js',
   ]),
 };
 
-TEST_F('CrElementsCheckboxTest', 'All', function() {
+// crbug.com/997943.
+TEST_F('CrElementsCheckboxTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -112,12 +113,18 @@ CrElementsInputTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_input_test.js',
   ]),
 };
 
-TEST_F('CrElementsInputTest', 'All', function() {
+// https://crbug.com/997943: Flaky on Mac
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('CrElementsInputTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
@@ -136,6 +143,7 @@ CrElementsIconButtonFocusTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'cr_icon_button_focus_tests.js',
   ]),
 };
@@ -161,7 +169,7 @@ CrElementsExpandButtonTest.prototype = {
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_expand_button_focus_tests.js',
   ]),
 };
@@ -185,7 +193,7 @@ CrElementsTabsTest.prototype = {
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_tabs_test.js',
   ]),
 };

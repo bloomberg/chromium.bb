@@ -21,6 +21,8 @@ import os
 import sys
 import urlparse
 
+from chromite.api.gen.chromite.api import test_metadata_pb2
+from chromite.api.gen.test_platform import request_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import config_lib
@@ -34,6 +36,8 @@ from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import utils
+
+from google.protobuf import json_format
 
 # For crostools access.
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -1148,6 +1152,7 @@ def ValidateBoardConfig(board):
     raise BoardNotConfigured(board)
 
 
+# pylint: disable=unused-argument
 def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
                           debug, payload_test_configs, test_env,
                           job_keyvals=None):
@@ -1158,60 +1163,37 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
     board: A string representing the name of the archive board.
     model: The model that will be tested against.
     build: A string representing the name of the archive build.
-    skip_duts_check: A boolean indicating to not check minimum available DUTs.
-    debug: A boolean indicating whether or not we are in debug mode.
+    skip_duts_check: Deprecated (ignored).
+    debug: Deprecated (ignored).
     payload_test_configs: A list of test_params.TestConfig objets to be
                           scheduled with.
-    test_env: A string to indicate the env that the test should run in. The
-              value could be constants.ENV_SKYLAB, constants.ENV_AUTOTEST.
-    job_keyvals: A dict of job keyvals to be injected to suite control file.
+    test_env: Deprecated (ignored).
+    job_keyvals: Deprecated (ignored).
   """
+  test_plan = _TestPlan(
+      payload_test_configs=payload_test_configs,
+      suite_name=suite_name,
+      build=build)
+
   # Double timeout for crbug.com/930256. Will change back once paygen
   # suites been migrated to skylab.
-  timeout_mins = 2 * config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-  if test_env == constants.ENV_SKYLAB:
-    tags = ['build:%s' % build,
-            'suite:%s' % suite_name,
-            'user:PaygenTestStage']
-    for payload_test in payload_test_configs:
-      test_name = test_control.get_test_name()
-      # TKO parser requires that label format can be parsed by
-      # site_utils.parse_job_name to get build, build_version, board and suite.
-      # A parsable label format for autoupdate_EndtoEnd test should be:
-      #   reef-release/R74-XX.0.0/paygen_au_canary/autoupdate_E2E_***_XX.0.0
-      shown_test_name = '%s_%s' % (test_name, payload_test.unique_name_suffix())
-      tko_label = '%s/%s/%s' % (build, suite_name, shown_test_name)
-      keyvals = ['build:%s' % build,
-                 'suite:%s' % suite_name,
-                 'label:%s' % tko_label]
-      test_args = payload_test.get_cmdline_args()
-      cmd_result = commands.RunSkylabHWTest(
-          build=build,
-          pool='bvt',
-          test_name=test_control.get_test_name(),
-          shown_test_name=shown_test_name,
-          board=board,
-          model=model,
-          timeout_mins=timeout_mins,
-          tags=tags,
-          keyvals=keyvals,
-          test_args=test_args)
-  else:
-    cmd_result = commands.RunHWTestSuite(
-        board=board,
-        model=model,
-        build=build,
-        suite=suite_name,
-        file_bugs=True,
-        pool='bvt',
-        priority=constants.HWTEST_BUILD_PRIORITY,
-        retry=True,
-        wait_for_results=False,
-        timeout_mins=timeout_mins,
-        suite_min_duts=2,
-        debug=debug,
-        skip_duts_check=skip_duts_check,
-        job_keyvals=job_keyvals)
+  timeout_mins = 2 * config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT // 60
+  tags = ['build:%s' % build,
+          'suite:%s' % suite_name,
+          'user:PaygenTestStage']
+
+  keyvals = {'build': build, 'suite': suite_name}
+
+  cmd_result = commands.RunSkylabHWTestPlan(
+      test_plan=test_plan,
+      build=build,
+      legacy_suite=suite_name,
+      pool='DUT_POOL_BVT',
+      board=board,
+      model=model,
+      timeout_mins=timeout_mins,
+      tags=tags,
+      keyvals=keyvals)
 
   if cmd_result.to_raise:
     if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
@@ -1219,3 +1201,50 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
                       cmd_result.to_raise)
     else:
       raise cmd_result.to_raise
+
+
+def _TestPlan(payload_test_configs, suite_name=None, build=None):
+  """Construct a TestPlan proto for the given payload tests.
+
+  Args:
+    payload_test_configs: A list of test_params.TestConfig objects.
+    suite_name: The name of the test suite.
+    build: A string representing the name of the archive build.
+
+  Returns:
+    A JSON-encoded string containing a TestPlan proto.
+  """
+  autotest_invocations = []
+  test_name = test_control.get_test_name()
+
+  for payload_test in payload_test_configs:
+    # TKO parser requires that label format can be parsed by
+    # site_utils.parse_job_name to get build, build_version, board and suite.
+    # A parsable label format for autoupdate_EndtoEnd test should be:
+    #   reef-release/R74-XX.0.0/paygen_au_canary/autoupdate_E2E_***_XX.0.0
+    shown_test_name = '%s_%s' % (test_name, payload_test.unique_name_suffix())
+    tko_label = '%s/%s/%s' % (build, suite_name, shown_test_name)
+    test_args = payload_test.get_cmdline_args()
+
+    autotest_invocations.append(
+        request_pb2.Request.Enumeration.AutotestInvocation(
+            test=test_metadata_pb2.AutotestTest(
+                name=test_name,
+                allow_retries=True,
+                # Matching autoupdate_EndToEndTest control file.
+                max_retries=1,
+                execution_environment=(
+                    test_metadata_pb2.AutotestTest.EXECUTION_ENVIRONMENT_SERVER)
+            ),
+            test_args=test_args,
+            display_name=tko_label,
+        )
+    )
+
+  test_plan = request_pb2.Request.TestPlan(
+      enumeration=request_pb2.Request.Enumeration(
+          autotest_invocations=autotest_invocations
+      )
+  )
+
+  return json_format.MessageToJson(test_plan)

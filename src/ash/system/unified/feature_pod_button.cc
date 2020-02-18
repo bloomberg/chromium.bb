@@ -6,9 +6,11 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/tray_constants.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -24,6 +26,9 @@
 #include "ui/views/view_class_properties.h"
 
 namespace ash {
+
+using ContentLayerType = AshColorProvider::ContentLayerType;
+using AshColorMode = AshColorProvider::AshColorMode;
 
 namespace {
 
@@ -60,12 +65,18 @@ void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
 
-  SkColor color = kUnifiedMenuButtonColor;
+  const AshColorProvider* color_provider = AshColorProvider::Get();
+  SkColor color = color_provider->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      kUnifiedMenuButtonColor);
   if (GetEnabled()) {
-    if (toggled_)
-      color = kUnifiedMenuButtonColorActive;
+    if (toggled_) {
+      color = color_provider->DeprecatedGetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kActiveControlBackground,
+          kUnifiedMenuButtonColorActive);
+    }
   } else {
-    color = kUnifiedMenuButtonColorDisabled;
+    color = AshColorProvider::GetDisabledColor(color);
   }
   flags.setColor(color);
 
@@ -83,13 +94,15 @@ std::unique_ptr<views::InkDropRipple>
 FeaturePodIconButton::CreateInkDropRipple() const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+      GetInkDropCenterBasedOnLastEvent(),
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 FeaturePodIconButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
@@ -189,13 +202,15 @@ std::unique_ptr<views::InkDropRipple>
 FeaturePodLabelButton::CreateInkDropRipple() const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedFeaturePodHoverColor);
+      GetInkDropCenterBasedOnLastEvent(),
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 FeaturePodLabelButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedFeaturePodHoverColor);
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
@@ -225,13 +240,25 @@ void FeaturePodLabelButton::ShowDetailedViewArrow() {
 }
 
 void FeaturePodLabelButton::OnEnabledChanged() {
-  label_->SetEnabledColor(GetEnabled() ? kUnifiedMenuTextColor
-                                       : kUnifiedMenuTextColorDisabled);
-  sub_label_->SetEnabledColor(GetEnabled() ? kUnifiedMenuSecondaryTextColor
-                                           : kUnifiedMenuTextColorDisabled);
+  const AshColorProvider* color_provider = AshColorProvider::Get();
+  const SkColor primary_text_color =
+      color_provider->DeprecatedGetContentLayerColor(
+          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
+  const SkColor secondary_text_color = color_provider->GetContentLayerColor(
+      ContentLayerType::kTextSecondary, AshColorMode::kDark);
+  label_->SetEnabledColor(
+      GetEnabled() ? primary_text_color
+                   : AshColorProvider::GetDisabledColor(primary_text_color));
+  sub_label_->SetEnabledColor(
+      GetEnabled() ? secondary_text_color
+                   : AshColorProvider::GetDisabledColor(secondary_text_color));
+
+  const SkColor icon_color = color_provider->GetContentLayerColor(
+      ContentLayerType::kIconPrimary, AshColorMode::kDark);
   detailed_view_arrow_->SetImage(gfx::CreateVectorIcon(
       kUnifiedMenuMoreIcon,
-      GetEnabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
+      GetEnabled() ? icon_color
+                   : AshColorProvider::GetDisabledColor(icon_color)));
 }
 
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
@@ -269,11 +296,14 @@ double FeaturePodButton::GetOpacityForExpandedAmount(double expanded_amount) {
 }
 
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kIconPrimary, AshColorMode::kDark);
   icon_button_->SetImage(views::Button::STATE_NORMAL,
-                         gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+                         gfx::CreateVectorIcon(icon, icon_color));
   icon_button_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(icon, kUnifiedMenuIconColorDisabled));
+      gfx::CreateVectorIcon(icon,
+                            AshColorProvider::GetDisabledColor(icon_color)));
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {

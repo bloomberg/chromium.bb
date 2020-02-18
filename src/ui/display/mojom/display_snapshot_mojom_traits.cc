@@ -8,7 +8,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/mojo/color_space_mojom_traits.h"
+#include "ui/gfx/mojom/color_space_mojom_traits.h"
 
 namespace mojo {
 
@@ -81,6 +81,10 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
   if (!data.ReadType(&type))
     return false;
 
+  display::PanelOrientation panel_orientation;
+  if (!data.ReadPanelOrientation(&panel_orientation))
+    return false;
+
   gfx::ColorSpace color_space;
   if (!data.ReadColorSpace(&color_space))
     return false;
@@ -133,8 +137,9 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
       data.display_id(), origin, physical_size, type,
       data.is_aspect_preserving_scaling(), data.has_overscan(),
       data.has_color_correction_matrix(),
-      data.color_correction_in_linear_space(), color_space, display_name,
-      file_path, std::move(modes), std::move(edid), current_mode, native_mode,
+      data.color_correction_in_linear_space(), color_space,
+      data.bits_per_channel(), display_name, file_path, std::move(modes),
+      panel_orientation, std::move(edid), current_mode, native_mode,
       data.product_code(), data.year_of_manufacture(), maximum_cursor_size);
   return true;
 }

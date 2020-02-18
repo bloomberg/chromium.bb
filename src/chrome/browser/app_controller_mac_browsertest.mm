@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -395,15 +395,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   EXPECT_FALSE(UserManager::IsShowing());
 }
 
-#if defined(ADDRESS_SANITIZER)
-// Flaky under ASAN. See https://crbug.com/674475.
-#define MAYBE_GuestProfileReopenWithNoWindows DISABLED_GuestProfileReopenWithNoWindows
-#else
-#define MAYBE_GuestProfileReopenWithNoWindows GuestProfileReopenWithNoWindows
-#endif
 // Test that for a guest last profile, a reopen event opens the User Manager.
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
-                       MAYBE_GuestProfileReopenWithNoWindows) {
+                       GuestProfileReopenWithNoWindows) {
   // Create the system profile. Set the guest as the last used profile so the
   // app controller can use it on init.
   CreateAndWaitForSystemProfile();
@@ -430,14 +424,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   UserManager::Hide();
 }
 
-#if defined(ADDRESS_SANITIZER)
-// Flaky under ASAN. See https://crbug.com/674475.
-#define MAYBE_AboutChromeForcesUserManager DISABLED_AboutChromeForcesUserManager
-#else
-#define MAYBE_AboutChromeForcesUserManager AboutChromeForcesUserManager
-#endif
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
-                       MAYBE_AboutChromeForcesUserManager) {
+                       AboutChromeForcesUserManager) {
   AppController* ac = base::mac::ObjCCast<AppController>(
       [[NSApplication sharedApplication] delegate]);
   ASSERT_TRUE(ac);
@@ -472,8 +460,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerOpenShortcutBrowserTest() {
-    scoped_feature_list_.InitWithFeatures({nux::kNuxOnboardingForceEnabled},
-                                          {});
+    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
   }
 
   void SetUpInProcessBrowserTestFixture() override {

@@ -7,22 +7,30 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/do_nothing_promise.h"
-#include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Even trivial DCHECK_DEATH_TESTs like
-// AbstractPromiseTest.CantRejectIfpromiseDeclaredAsNonRejecting can flakily
-// timeout on the chromeos bots.
-#if defined(OS_CHROMEOS)
-#define ABSTRACT_PROMISE_DEATH_TEST(test_name) DISABLED_##test_name
+// Errors from PROMISE_API_DCHECK are only observable in builds where DCHECKS
+// are on.
+#if DCHECK_IS_ON()
+#define PROMISE_API_DCHECK_TEST(test_name) test_name
 #else
-#define ABSTRACT_PROMISE_DEATH_TEST(test_name) test_name
+#define PROMISE_API_DCHECK_TEST(test_name) DISABLED_##test_name
 #endif
+
+#define EXPECT_PROMISE_DCHECK_FAIL(code_that_should_fail)          \
+  {                                                                \
+    bool api_error_reported = false;                               \
+    SetApiErrorObserver(                                           \
+        BindLambdaForTesting([&] { api_error_reported = true; })); \
+    code_that_should_fail;                                         \
+    EXPECT_TRUE(api_error_reported);                               \
+    SetApiErrorObserver(RepeatingClosure());                       \
+  }
 
 using testing::ElementsAre;
 
@@ -47,23 +55,25 @@ size_t CountTasksRunUntilIdle(
 
 }  // namespace
 
+template <PrerequisitePolicy PREREQUISITE_POLICY>
 class TestExecutor {
  public:
-  TestExecutor(PrerequisitePolicy policy,
+  TestExecutor(
 #if DCHECK_IS_ON()
-               ArgumentPassingType resolve_executor_type,
-               ArgumentPassingType reject_executor_type,
-               bool can_resolve,
-               bool can_reject,
+      ArgumentPassingType resolve_executor_type,
+      ArgumentPassingType reject_executor_type,
+      bool can_resolve,
+      bool can_reject,
 #endif
-               base::OnceCallback<void(AbstractPromise*)> callback)
-      : callback_(std::move(callback)),
+      base::OnceCallback<void(AbstractPromise*)> callback)
+      : callback_(std::move(callback))
 #if DCHECK_IS_ON()
+        ,
         resolve_argument_passing_type_(resolve_executor_type),
         reject_argument_passing_type_(reject_executor_type),
-        resolve_flags_(can_resolve + (can_reject << 1)),
+        resolve_flags_(can_resolve + (can_reject << 1))
 #endif
-        policy_(policy) {
+  {
   }
 
 #if DCHECK_IS_ON()
@@ -80,7 +90,8 @@ class TestExecutor {
   bool CanReject() const { return resolve_flags_ & 2; }
 #endif
 
-  PrerequisitePolicy GetPrerequisitePolicy() const { return policy_; }
+  static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+      PREREQUISITE_POLICY;
 
   bool IsCancelled() const { return false; }
 
@@ -95,11 +106,17 @@ class TestExecutor {
   // void*.
   uint8_t resolve_flags_;
 #endif
-  const PrerequisitePolicy policy_;
 };
 
 class AbstractPromiseTest : public testing::Test {
  public:
+  void SetApiErrorObserver(RepeatingClosure on_api_error_callback) {
+#if DCHECK_IS_ON()
+    AbstractPromise::SetApiErrorObserverForTesting(
+        std::move(on_api_error_callback));
+#endif
+  }
+
   enum class CallbackResultType : uint8_t {
     kNoCallback,
     kCanResolve,
@@ -198,8 +215,23 @@ class AbstractPromiseTest : public testing::Test {
     }
 
     operator scoped_refptr<AbstractPromise>() {
+      switch (settings.prerequisite_policy) {
+        case PrerequisitePolicy::kAll:
+          return MakeAbstractPromise<PrerequisitePolicy::kAll>();
+
+        case PrerequisitePolicy::kAny:
+          return MakeAbstractPromise<PrerequisitePolicy::kAny>();
+
+        case PrerequisitePolicy::kNever:
+          return MakeAbstractPromise<PrerequisitePolicy::kNever>();
+      }
+    }
+
+   private:
+    template <PrerequisitePolicy POLICY>
+    scoped_refptr<AbstractPromise> MakeAbstractPromise() {
       PromiseExecutor::Data executor_data(
-          in_place_type_t<TestExecutor>(), settings.prerequisite_policy,
+          in_place_type_t<TestExecutor<POLICY>>(),
 #if DCHECK_IS_ON()
           settings.resolve_executor_type, settings.reject_executor_type,
           settings.executor_can_resolve, settings.executor_can_reject,
@@ -212,7 +244,6 @@ class AbstractPromiseTest : public testing::Test {
           DependentList::ConstructUnresolved(), std::move(executor_data));
     }
 
-   private:
     PromiseSettings settings;
   };
 
@@ -226,11 +257,9 @@ class AbstractPromiseTest : public testing::Test {
       AbstractPromise* prerequisite = p->GetOnlyPrerequisite();
       if (prerequisite->IsResolved()) {
         p->emplace(Resolved<void>());
-        p->OnResolved();
       } else if (prerequisite->IsRejected()) {
         // Consistent with BaseThenAndCatchExecutor::ProcessNullExecutor.
         p->emplace(scoped_refptr<AbstractPromise>(prerequisite));
-        p->OnResolved();
       } else {
         NOTREACHED();
       }
@@ -253,10 +282,8 @@ class AbstractPromiseTest : public testing::Test {
           if (prerequisite->IsResolved()) {
             // Consistent with BaseThenAndCatchExecutor::ProcessNullExecutor.
             p->emplace(scoped_refptr<AbstractPromise>(prerequisite));
-            p->OnResolved();
           } else if (prerequisite->IsRejected()) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           } else {
             NOTREACHED();
           }
@@ -275,12 +302,10 @@ class AbstractPromiseTest : public testing::Test {
           AbstractPromise* first_settled = p->GetFirstSettledPrerequisite();
           if (first_settled && first_settled->IsRejected()) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
             return;
           }
 
           p->emplace(Resolved<void>());
-          p->OnResolved();
         }));
     return builder;
   }
@@ -296,17 +321,32 @@ class AbstractPromiseTest : public testing::Test {
           AbstractPromise* first_settled = p->GetFirstSettledPrerequisite();
           if (first_settled && first_settled->IsRejected()) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
             return;
           }
 
           p->emplace(Resolved<void>());
-          p->OnResolved();
         }));
     return builder;
   }
 
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  // Convenience wrappers for calling private methods.
+  static void OnCanceled(scoped_refptr<AbstractPromise> promise) {
+    promise->OnCanceled();
+  }
+
+  static void OnResolved(scoped_refptr<AbstractPromise> promise) {
+    promise->OnResolved();
+  }
+
+  static void OnRejected(scoped_refptr<AbstractPromise> promise) {
+    promise->OnRejected();
+  }
+
+  static AbstractPromise* GetCurriedPromise(AbstractPromise* promise) {
+    return promise->GetCurriedPromise();
+  }
+
+  test::TaskEnvironment task_environment_;
 };
 
 TEST_F(AbstractPromiseTest, UnfulfilledPromise) {
@@ -321,7 +361,7 @@ TEST_F(AbstractPromiseTest, OnResolve) {
   scoped_refptr<AbstractPromise> promise =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   EXPECT_FALSE(promise->IsResolvedForTesting());
-  promise->OnResolved();
+  OnResolved(promise);
   EXPECT_TRUE(promise->IsResolvedForTesting());
 }
 
@@ -330,7 +370,7 @@ TEST_F(AbstractPromiseTest, OnReject) {
       DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetRejectPolicy(
           RejectPolicy::kCatchNotRequired);
   EXPECT_FALSE(promise->IsRejectedForTesting());
-  promise->OnRejected();
+  OnRejected(promise);
   EXPECT_TRUE(promise->IsRejectedForTesting());
 }
 
@@ -338,7 +378,6 @@ TEST_F(AbstractPromiseTest, ExecuteOnResolve) {
   scoped_refptr<AbstractPromise> promise =
       ThenPromise(FROM_HERE, nullptr).With(BindOnce([](AbstractPromise* p) {
         p->emplace(Resolved<void>());
-        p->OnResolved();
       }));
 
   EXPECT_FALSE(promise->IsResolvedForTesting());
@@ -353,7 +392,6 @@ TEST_F(AbstractPromiseTest, ExecuteOnReject) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   EXPECT_FALSE(promise->IsRejectedForTesting());
@@ -369,7 +407,7 @@ TEST_F(AbstractPromiseTest, ExecutionChain) {
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
   scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p4);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p2->IsResolvedForTesting());
   EXPECT_FALSE(p3->IsResolvedForTesting());
@@ -398,7 +436,7 @@ TEST_F(AbstractPromiseTest, MoveExecutionChain) {
   scoped_refptr<AbstractPromise> p5 =
       ThenPromise(FROM_HERE, p4).WithResolve(ArgumentPassingType::kMove);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p2->IsResolvedForTesting());
   EXPECT_FALSE(p3->IsResolvedForTesting());
@@ -421,7 +459,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChain) {
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p3 =
@@ -430,7 +467,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChain) {
           .WithReject(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p4 =
@@ -439,7 +475,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChain) {
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p5 =
@@ -448,10 +483,9 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChain) {
           .WithReject(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p2->IsRejectedForTesting());
   EXPECT_FALSE(p3->IsResolvedForTesting());
@@ -474,7 +508,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p3 =
@@ -483,7 +516,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithReject(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p4 =
@@ -492,7 +524,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithReject(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p5 =
@@ -501,7 +532,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p6 =
@@ -510,7 +540,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p7 =
@@ -519,7 +548,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithReject(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p8 =
@@ -528,7 +556,6 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithReject(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p9 =
@@ -537,9 +564,8 @@ TEST_F(AbstractPromiseTest, MoveResolveCatchExecutionChainType2) {
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p2->IsRejectedForTesting());
   EXPECT_FALSE(p3->IsRejectedForTesting());
@@ -574,7 +600,7 @@ TEST_F(AbstractPromiseTest, MixedMoveAndNormalExecutionChain) {
 
   scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p4);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p2->IsResolvedForTesting());
   EXPECT_FALSE(p3->IsResolvedForTesting());
@@ -603,7 +629,7 @@ TEST_F(AbstractPromiseTest, BranchedExecutionChain) {
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p4);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p2->IsResolvedForTesting());
   EXPECT_FALSE(p3->IsResolvedForTesting());
@@ -619,7 +645,7 @@ TEST_F(AbstractPromiseTest, BranchedExecutionChain) {
 TEST_F(AbstractPromiseTest, PrerequisiteAlreadyResolved) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
-  p1->OnResolved();
+  OnResolved(p1);
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
 
@@ -632,7 +658,8 @@ TEST_F(AbstractPromiseTest, PrerequisiteAlreadyRejected) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
           false);
-  p1->OnRejected();
+  OnRejected(p1);
+  ;
 
   scoped_refptr<AbstractPromise> p2 =
       CatchPromise(FROM_HERE, p1)
@@ -641,7 +668,6 @@ TEST_F(AbstractPromiseTest, PrerequisiteAlreadyRejected) {
                 p->GetFirstSettledPrerequisite()->IsRejectedForTesting());
             EXPECT_EQ(p->GetFirstSettledPrerequisite(), p1);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   EXPECT_FALSE(p2->IsResolvedForTesting());
@@ -668,13 +694,13 @@ TEST_F(AbstractPromiseTest, MultipleResolvedPrerequisitePolicyALL) {
   scoped_refptr<AbstractPromise> all_promise =
       AllPromise(FROM_HERE, std::move(prerequisite_list));
 
-  p1->OnResolved();
-  p2->OnResolved();
-  p3->OnResolved();
+  OnResolved(p1);
+  OnResolved(p2);
+  OnResolved(p3);
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(all_promise->IsResolvedForTesting());
-  p4->OnResolved();
+  OnResolved(p4);
 
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(all_promise->IsResolvedForTesting());
@@ -706,7 +732,7 @@ TEST_F(AbstractPromiseTest,
       ThenPromise(FROM_HERE, all_promise)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_loop.Quit();
-            p->OnResolved();
+            p->emplace(Resolved<void>());
           }));
 
   for (int i = 0; i < num_promises; i++) {
@@ -715,7 +741,7 @@ TEST_F(AbstractPromiseTest,
                        [](scoped_refptr<AbstractPromise> all_promise,
                           scoped_refptr<AbstractPromise> promise) {
                          EXPECT_FALSE(all_promise->IsResolvedForTesting());
-                         promise->OnResolved();
+                         AbstractPromiseTest::OnResolved(promise);
                        },
                        all_promise, promise[i]));
   }
@@ -761,12 +787,11 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALL) {
                 p->GetFirstSettledPrerequisite()->IsRejectedForTesting());
             EXPECT_EQ(p->GetFirstSettledPrerequisite(), p3);
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, all_promise);
 
-  p3->OnRejected();
+  OnRejected(p3);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(all_promise->IsRejectedForTesting());
   EXPECT_TRUE(p5->IsResolvedForTesting());
@@ -800,7 +825,6 @@ TEST_F(AbstractPromiseTest, MultipleRejectPrerequisitePolicyALL) {
             if (settled && settled->IsRejected()) {
               EXPECT_EQ(settled, p2);
               p->emplace(Rejected<void>());
-              p->OnRejected();
             } else {
               FAIL() << "A prerequisite was rejected";
             }
@@ -814,12 +838,11 @@ TEST_F(AbstractPromiseTest, MultipleRejectPrerequisitePolicyALL) {
                 p->GetFirstSettledPrerequisite()->IsRejectedForTesting());
             EXPECT_EQ(p->GetFirstSettledPrerequisite(), all_promise);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
-  p2->OnRejected();
-  p1->OnRejected();
-  p3->OnRejected();
+  OnRejected(p2);
+  OnRejected(p1);
+  OnRejected(p3);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(all_promise->IsRejectedForTesting());
   EXPECT_TRUE(p5->IsResolvedForTesting());
@@ -844,7 +867,7 @@ TEST_F(AbstractPromiseTest, SingleResolvedPrerequisitePolicyANY) {
   scoped_refptr<AbstractPromise> any_promise =
       AnyPromise(FROM_HERE, std::move(prerequisite_list));
 
-  p2->OnResolved();
+  OnResolved(p2);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(any_promise->IsResolvedForTesting());
 }
@@ -868,8 +891,8 @@ TEST_F(AbstractPromiseTest, MultipleResolvedPrerequisitePolicyANY) {
   scoped_refptr<AbstractPromise> any_promise =
       AnyPromise(FROM_HERE, std::move(prerequisite_list));
 
-  p1->OnResolved();
-  p2->OnResolved();
+  OnResolved(p1);
+  OnResolved(p2);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(any_promise->IsResolvedForTesting());
 }
@@ -900,7 +923,7 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyANY) {
 
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, any_promise);
 
-  p3->OnRejected();
+  OnRejected(p3);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(any_promise->IsRejectedForTesting());
   EXPECT_TRUE(p5->IsResolvedForTesting());
@@ -927,7 +950,7 @@ TEST_F(AbstractPromiseTest, SingleResolvePrerequisitePolicyANY) {
 
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, any_promise);
 
-  p3->OnResolved();
+  OnResolved(p3);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(any_promise->IsResolvedForTesting());
   EXPECT_TRUE(p5->IsResolvedForTesting());
@@ -936,7 +959,7 @@ TEST_F(AbstractPromiseTest, SingleResolvePrerequisitePolicyANY) {
 TEST_F(AbstractPromiseTest, IsCanceled) {
   scoped_refptr<AbstractPromise> promise = ThenPromise(FROM_HERE, nullptr);
   EXPECT_FALSE(promise->IsCanceled());
-  promise->OnCanceled();
+  OnCanceled(promise);
   EXPECT_TRUE(promise->IsCanceled());
 }
 
@@ -945,7 +968,7 @@ TEST_F(AbstractPromiseTest, OnCanceledPreventsExecution) {
       ThenPromise(FROM_HERE, nullptr).With(BindOnce([](AbstractPromise* p) {
         FAIL() << "Should not be called";
       }));
-  promise->OnCanceled();
+  OnCanceled(promise);
   promise->Execute();
 }
 
@@ -954,13 +977,13 @@ TEST_F(AbstractPromiseTest, CancelationStopsExecutionChain) {
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   scoped_refptr<AbstractPromise> p2 =
       ThenPromise(FROM_HERE, p1).With(BindOnce([](AbstractPromise* p) {
-        p->OnCanceled();
-        p->OnCanceled();  // NOP shouldn't crash.
+        OnCanceled(p);
+        OnCanceled(p);  // NOP shouldn't crash.
       }));
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(p3->IsCanceled());
@@ -973,7 +996,9 @@ TEST_F(AbstractPromiseTest, CancelationStopsBranchedExecutionChain) {
 
   scoped_refptr<AbstractPromise> p2 =
       ThenPromise(FROM_HERE, p1).With(BindOnce([](AbstractPromise* p) {
-        p->OnCanceled();
+        // This cancellation should get propagated down the chain which is
+        // registered below.
+        OnCanceled(p);
       }));
 
   // Branch one
@@ -984,7 +1009,7 @@ TEST_F(AbstractPromiseTest, CancelationStopsBranchedExecutionChain) {
   scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p2);
   scoped_refptr<AbstractPromise> promise6 = ThenPromise(FROM_HERE, p5);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(p3->IsCanceled());
@@ -1002,13 +1027,12 @@ TEST_F(AbstractPromiseTest, CancelChainCanReject) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p2);
 
-  p0->OnCanceled();
+  OnCanceled(p0);
   RunLoop().RunUntilIdle();
 }
 
@@ -1028,7 +1052,7 @@ TEST_F(AbstractPromiseTest, CancelationPrerequisitePolicyALL) {
   scoped_refptr<AbstractPromise> all_promise =
       AllPromise(FROM_HERE, std::move(prerequisite_list));
 
-  p2->OnCanceled();
+  OnCanceled(p2);
   EXPECT_TRUE(all_promise->IsCanceled());
 }
 
@@ -1048,11 +1072,11 @@ TEST_F(AbstractPromiseTest, CancelationPrerequisitePolicyANY) {
   scoped_refptr<AbstractPromise> any_promise =
       AnyPromise(FROM_HERE, std::move(prerequisite_list));
 
-  p3->OnCanceled();
-  p2->OnCanceled();
+  OnCanceled(p3);
+  OnCanceled(p2);
   EXPECT_FALSE(any_promise->IsCanceled());
 
-  p1->OnCanceled();
+  OnCanceled(p1);
   EXPECT_TRUE(any_promise->IsCanceled());
 }
 
@@ -1068,7 +1092,7 @@ TEST_F(AbstractPromiseTest, AlreadyCanceledPrerequisitePolicyALL) {
   prerequisite_list[0].SetPrerequisite(p1.get());
   prerequisite_list[1].SetPrerequisite(p2.get());
   prerequisite_list[2].SetPrerequisite(p3.get());
-  p2->OnCanceled();
+  OnCanceled(p2);
 
   scoped_refptr<AbstractPromise> all_promise =
       AllPromise(FROM_HERE, std::move(prerequisite_list));
@@ -1088,7 +1112,7 @@ TEST_F(AbstractPromiseTest, SomeAlreadyCanceledPrerequisitePolicyANY) {
   prerequisite_list[0].SetPrerequisite(p1.get());
   prerequisite_list[1].SetPrerequisite(p2.get());
   prerequisite_list[2].SetPrerequisite(p3.get());
-  p2->OnCanceled();
+  OnCanceled(p2);
 
   scoped_refptr<AbstractPromise> any_promise =
       AnyPromise(FROM_HERE, std::move(prerequisite_list));
@@ -1108,9 +1132,9 @@ TEST_F(AbstractPromiseTest, AllAlreadyCanceledPrerequisitePolicyANY) {
   prerequisite_list[0].SetPrerequisite(p1.get());
   prerequisite_list[1].SetPrerequisite(p2.get());
   prerequisite_list[2].SetPrerequisite(p3.get());
-  p1->OnCanceled();
-  p2->OnCanceled();
-  p3->OnCanceled();
+  OnCanceled(p1);
+  OnCanceled(p2);
+  OnCanceled(p3);
 
   scoped_refptr<AbstractPromise> any_promise =
       AnyPromise(FROM_HERE, std::move(prerequisite_list));
@@ -1128,7 +1152,6 @@ TEST_F(AbstractPromiseTest, CurriedResolvedPromiseAny) {
           .With(BindOnce(
               [](scoped_refptr<AbstractPromise> p2, AbstractPromise* p) {
                 p->emplace(std::move(p2));
-                p->OnResolved();
               },
               p2))
           .With(PrerequisitePolicy::kAny);
@@ -1138,8 +1161,8 @@ TEST_F(AbstractPromiseTest, CurriedResolvedPromiseAny) {
   scoped_refptr<AbstractPromise> p3 =
       ThenPromise(FROM_HERE, p1).With(task_runner);
 
-  p0->OnResolved();
-  p2->OnResolved();
+  OnResolved(p0);
+  OnResolved(p2);
   RunLoop().RunUntilIdle();
 
   // |p3| should run.
@@ -1156,7 +1179,6 @@ TEST_F(AbstractPromiseTest, CurriedRejectedPromiseAny) {
           .With(BindOnce(
               [](scoped_refptr<AbstractPromise> p2, AbstractPromise* p) {
                 p->emplace(std::move(p2));
-                p->OnResolved();
               },
               p2))
           .With(PrerequisitePolicy::kAny);
@@ -1166,8 +1188,8 @@ TEST_F(AbstractPromiseTest, CurriedRejectedPromiseAny) {
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).With(task_runner);
 
-  p0->OnResolved();
-  p2->OnRejected();
+  OnResolved(p0);
+  OnRejected(p2);
   RunLoop().RunUntilIdle();
 
   // |p3| should run.
@@ -1175,27 +1197,27 @@ TEST_F(AbstractPromiseTest, CurriedRejectedPromiseAny) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectResolveDoubleMoveHazard)) {
+       PROMISE_API_DCHECK_TEST(DetectResolveDoubleMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
       ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  EXPECT_PROMISE_DCHECK_FAIL({
     scoped_refptr<AbstractPromise> p2 =
         ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
   });
 }
 
-TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(
-           DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
+TEST_F(
+    AbstractPromiseTest,
+    PROMISE_API_DCHECK_TEST(DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
       ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH(
+  EXPECT_PROMISE_DCHECK_FAIL(
       { scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p0); });
 }
 
@@ -1224,7 +1246,7 @@ TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazard)) {
+       PROMISE_API_DCHECK_TEST(DetectCatchCallbackDoubleMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1244,15 +1266,14 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p1 =
       CatchPromise(FROM_HERE, p0).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  EXPECT_PROMISE_DCHECK_FAIL({
     scoped_refptr<AbstractPromise> p2 =
         CatchPromise(FROM_HERE, p0).WithReject(ArgumentPassingType::kMove);
   });
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazardInChain)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(DetectCatchCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1279,7 +1300,7 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  EXPECT_PROMISE_DCHECK_FAIL({
     scoped_refptr<AbstractPromise> p4 =
         CatchPromise(FROM_HERE, p2).WithReject(ArgumentPassingType::kMove);
   });
@@ -1287,7 +1308,7 @@ TEST_F(
 
 TEST_F(
     AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(
+    PROMISE_API_DCHECK_TEST(
         DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject)) {
   /*
    * Key:  T = Then, C = Catch
@@ -1318,15 +1339,14 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  EXPECT_PROMISE_DCHECK_FAIL({
     scoped_refptr<AbstractPromise> p4 =
         CatchPromise(FROM_HERE, p2).WithReject(ArgumentPassingType::kMove);
   });
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1354,12 +1374,12 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH(
+  EXPECT_PROMISE_DCHECK_FAIL(
       { scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p2); });
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectThenCallbackDoubleMoveHazardInChain)) {
+       PROMISE_API_DCHECK_TEST(DetectThenCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1384,13 +1404,13 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p3 =
       ThenPromise(FROM_HERE, p1).WithResolve(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  EXPECT_PROMISE_DCHECK_FAIL({
     scoped_refptr<AbstractPromise> p4 =
         ThenPromise(FROM_HERE, p2).WithResolve(ArgumentPassingType::kMove);
   });
 }
 
-TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
+TEST_F(AbstractPromiseTest, PROMISE_API_DCHECK_TEST(SimpleMissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1399,21 +1419,16 @@ TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p1| is deleted.
-  EXPECT_DCHECK_DEATH({ p1 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p1| isn't actually
-  // cleared so we need to tidy up.
-  p1->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p1| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p1 = nullptr; });
 }
 
-TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
+TEST_F(AbstractPromiseTest, PROMISE_API_DCHECK_TEST(MissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1422,21 +1437,16 @@ TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   // The missing catch here will get noticed.
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p2| is deleted.
-  EXPECT_DCHECK_DEATH({ p2 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
-  // cleared so we need to tidy up.
-  p2->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p2| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p2 = nullptr; });
 }
 
 TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
@@ -1449,19 +1459,18 @@ TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
           .With(RejectPolicy::kCatchNotRequired)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   // The missing catch here will gets ignored.
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
 
-  p0->OnResolved();
+  OnResolved(p0);
 
   RunLoop().RunUntilIdle();
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(MissingCatchFromCurriedPromise)) {
+       PROMISE_API_DCHECK_TEST(MissingCatchFromCurriedPromise)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1470,7 +1479,6 @@ TEST_F(AbstractPromiseTest,
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 =
@@ -1481,24 +1489,18 @@ TEST_F(AbstractPromiseTest,
                 ThreadTaskRunnerHandle::Get()->PostTask(
                     FROM_HERE, BindOnce(&AbstractPromise::Execute, p1));
                 p->emplace(std::move(p1));
-                p->OnResolved();
               },
               std::move(p1)));
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p2| is deleted.
-  EXPECT_DCHECK_DEATH({ p2 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
-  // cleared so we need to tidy up.
-  p2->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p2| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p2 = nullptr; });
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(MissingCatchFromCurriedPromiseWithDependent)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(MissingCatchFromCurriedPromiseWithDependent)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1507,7 +1509,6 @@ TEST_F(
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 =
@@ -1518,25 +1519,20 @@ TEST_F(
                 ThreadTaskRunnerHandle::Get()->PostTask(
                     FROM_HERE, BindOnce(&AbstractPromise::Execute, p1));
                 p->emplace(std::move(p1));
-                p->OnResolved();
               },
               std::move(p1)));
 
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p3| is deleted.
-  EXPECT_DCHECK_DEATH({ p3 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p3| isn't actually
-  // cleared so we need to tidy up.
-  p3->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p3| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p3 = nullptr; });
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(
+       PROMISE_API_DCHECK_TEST(
            MissingCatchFromCurriedPromiseWithDependentAddedAfterExecution)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
@@ -1546,7 +1542,6 @@ TEST_F(AbstractPromiseTest,
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 =
@@ -1557,26 +1552,20 @@ TEST_F(AbstractPromiseTest,
                 ThreadTaskRunnerHandle::Get()->PostTask(
                     FROM_HERE, BindOnce(&AbstractPromise::Execute, p1));
                 p->emplace(std::move(p1));
-                p->OnResolved();
               },
               std::move(p1)));
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p3| is deleted.
-  EXPECT_DCHECK_DEATH({ p3 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p3| isn't actually
-  // cleared so we need to tidy up.
-  p3->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p3| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p3 = nullptr; });
 }
 
-TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(MissingCatchLongChain)) {
+TEST_F(AbstractPromiseTest, PROMISE_API_DCHECK_TEST(MissingCatchLongChain)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1585,61 +1574,52 @@ TEST_F(AbstractPromiseTest,
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p4| is deleted.
-  EXPECT_DCHECK_DEATH({ p4 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  p4->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p4| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p4 = nullptr; });
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(
+       PROMISE_API_DCHECK_TEST(
            ThenAddedToSettledPromiseWithMissingCatchAndSeveralDependents)) {
-  scoped_refptr<AbstractPromise> p0 =
-      DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
+    scoped_refptr<AbstractPromise> p0 =
+        DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
-  scoped_refptr<AbstractPromise> p1 =
-      ThenPromise(FROM_HERE, p0)
-          .With(CallbackResultType::kCanReject)
-          .With(BindOnce([](AbstractPromise* p) {
-            p->emplace(Rejected<void>());
-            p->OnRejected();
-          }));
+    scoped_refptr<AbstractPromise> p1 =
+        ThenPromise(FROM_HERE, p0)
+            .With(CallbackResultType::kCanReject)
+            .With(BindOnce([](AbstractPromise* p) {
+              p->emplace(Rejected<void>());
+            }));
 
-  scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
-  scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
-  scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p2);
+    scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
+    scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
+    scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p2);
 
-  p0->OnResolved();
-  RunLoop().RunUntilIdle();
+    OnResolved(p0);
+    RunLoop().RunUntilIdle();
 
-  scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p2);
+    scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p2);
 
-  RunLoop().RunUntilIdle();
+    RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p5| is deleted.
-  EXPECT_DCHECK_DEATH({ p5 = nullptr; });
+    // An error should be reported when |p5| is deleted.
+    EXPECT_PROMISE_DCHECK_FAIL({ p5 = nullptr; });
 
-  // Tidy up.
-  p3->IgnoreUncaughtCatchForTesting();
-  p4->IgnoreUncaughtCatchForTesting();
-  p5->IgnoreUncaughtCatchForTesting();
+    p3->IgnoreUncaughtCatchForTesting();
+    p4->IgnoreUncaughtCatchForTesting();
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(ThenAddedAfterChainExecutionWithMissingCatch)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(ThenAddedAfterChainExecutionWithMissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1648,25 +1628,20 @@ TEST_F(
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
   // The missing catch here will get noticed.
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p4| is deleted.
-  EXPECT_DCHECK_DEATH({ p4 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  p4->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p4| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p4 = nullptr; });
 }
 
 TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
@@ -1678,13 +1653,12 @@ TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
@@ -1695,7 +1669,7 @@ TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(MultipleThensAddedAfterChainExecution)) {
+       PROMISE_API_DCHECK_TEST(MultipleThensAddedAfterChainExecution)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1704,7 +1678,6 @@ TEST_F(AbstractPromiseTest,
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
@@ -1713,7 +1686,7 @@ TEST_F(AbstractPromiseTest,
   // |p5| - |p7| should still inherit catch responsibility despite this.
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
   // The missing catches will get noticed.
@@ -1722,16 +1695,10 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p7 = ThenPromise(FROM_HERE, p3);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p5|, |p6| or |p7| are deleted.
-  EXPECT_DCHECK_DEATH({ p5 = nullptr; });
-  EXPECT_DCHECK_DEATH({ p6 = nullptr; });
-  EXPECT_DCHECK_DEATH({ p7 = nullptr; });
-
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p5|, |p6| & |p7| aren't
-  // actually cleared so we need to tidy up.
-  p5->IgnoreUncaughtCatchForTesting();
-  p6->IgnoreUncaughtCatchForTesting();
-  p7->IgnoreUncaughtCatchForTesting();
+  // An error should be reported when |p5|, |p6| or |p7| are deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p5 = nullptr; });
+  EXPECT_PROMISE_DCHECK_FAIL({ p6 = nullptr; });
+  EXPECT_PROMISE_DCHECK_FAIL({ p7 = nullptr; });
 }
 
 TEST_F(AbstractPromiseTest, MultipleDependentsAddedAfterChainExecution) {
@@ -1743,13 +1710,12 @@ TEST_F(AbstractPromiseTest, MultipleDependentsAddedAfterChainExecution) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
@@ -1771,21 +1737,19 @@ TEST_F(AbstractPromiseTest, CatchAfterLongChain) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
 
-  p0->OnResolved();
+  OnResolved(p0);
 
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(MissingCatchOneSideOfBranchedExecutionChain)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(MissingCatchOneSideOfBranchedExecutionChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1811,34 +1775,30 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p2);
 
-  p0->OnRejected();
+  OnRejected(p0);
 
   RunLoop().RunUntilIdle();
-  // This should DCHECK when |p4| is deleted.
-  EXPECT_DCHECK_DEATH({ p4 = nullptr; });
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  p4->IgnoreUncaughtCatchForTesting();
-}
-
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(CantResolveIfpromiseDeclaredAsNonResolving)) {
-  scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
-
-  EXPECT_DCHECK_DEATH({ p->OnResolved(); });
+  // An error should be reported when |p4| is deleted.
+  EXPECT_PROMISE_DCHECK_FAIL({ p4 = nullptr; });
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(CantRejectIfpromiseDeclaredAsNonRejecting)) {
+       PROMISE_API_DCHECK_TEST(CantResolveIfPromiseDeclaredAsNonResolving)) {
   scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
 
-  EXPECT_DCHECK_DEATH({ p->OnRejected(); });
+  EXPECT_PROMISE_DCHECK_FAIL({ AbstractPromiseTest::OnResolved(p); });
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DoubleMoveDoNothingPromise)) {
+       PROMISE_API_DCHECK_TEST(CantRejectIfPromiseDeclaredAsNonRejecting)) {
+  scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
+
+  EXPECT_PROMISE_DCHECK_FAIL({ AbstractPromiseTest::OnRejected(p); });
+}
+
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(DoubleMoveDoNothingPromise)) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1847,16 +1807,14 @@ TEST_F(AbstractPromiseTest,
           .WithResolve(ArgumentPassingType::kMove)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<int>(42));
-            p->OnResolved();
           }));
 
-  EXPECT_DCHECK_DEATH({
+  EXPECT_PROMISE_DCHECK_FAIL({
     scoped_refptr<AbstractPromise> p3 =
         ThenPromise(FROM_HERE, p1)
             .WithResolve(ArgumentPassingType::kMove)
             .With(BindOnce([](AbstractPromise* p) {
               p->emplace(Resolved<int>(42));
-              p->OnResolved();
             }));
   });
 }
@@ -1887,7 +1845,7 @@ TEST_F(AbstractPromiseTest, CatchBothSidesOfBranchedExecutionChain) {
   scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p1);
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p2);
 
-  p0->OnRejected();
+  OnRejected(p0);
 
   RunLoop().RunUntilIdle();
 }
@@ -1903,7 +1861,6 @@ TEST_F(AbstractPromiseTest, ResolvedCurriedPromise) {
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_order.push_back(2);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p3 =
@@ -1914,7 +1871,6 @@ TEST_F(AbstractPromiseTest, ResolvedCurriedPromise) {
             ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
             p->emplace(std::move(p2));
-            p->OnResolved();
 
             EXPECT_TRUE(p3->IsResolvedWithPromise());
           }));
@@ -1924,10 +1880,9 @@ TEST_F(AbstractPromiseTest, ResolvedCurriedPromise) {
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_order.push_back(4);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
-  p1->OnResolved();
+  OnResolved(p1);
   RunLoop().RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(3, 2, 4));
@@ -1950,7 +1905,6 @@ TEST_F(AbstractPromiseTest, UnresolvedCurriedPromise) {
             ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
             p->emplace(p2);
-            p->OnResolved();
 
             EXPECT_TRUE(p3->IsResolvedWithPromise());
           }));
@@ -1960,14 +1914,13 @@ TEST_F(AbstractPromiseTest, UnresolvedCurriedPromise) {
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_order.push_back(4);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
-  p1->OnResolved();
+  OnResolved(p1);
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(3));
 
-  p2->OnResolved();
+  OnResolved(p2);
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(3, 4));
 }
@@ -1989,7 +1942,6 @@ TEST_F(AbstractPromiseTest, NeverResolvedCurriedPromise) {
             ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
             p->emplace(p2);
-            p->OnResolved();
 
             EXPECT_TRUE(p3->IsResolvedWithPromise());
           }));
@@ -1999,10 +1951,9 @@ TEST_F(AbstractPromiseTest, NeverResolvedCurriedPromise) {
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_order.push_back(4);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
-  p1->OnResolved();
+  OnResolved(p1);
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(3));
 
@@ -2016,7 +1967,7 @@ TEST_F(AbstractPromiseTest, CanceledCurriedPromise) {
   // Promise |p3| will be resolved with.
   scoped_refptr<AbstractPromise> p2 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
-  p2->OnCanceled();
+  OnCanceled(p2);
 
   scoped_refptr<AbstractPromise> p3 =
       ThenPromise(FROM_HERE, p1)
@@ -2026,8 +1977,6 @@ TEST_F(AbstractPromiseTest, CanceledCurriedPromise) {
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
             EXPECT_TRUE(p2->IsCanceled());
             p->emplace(p2);
-            p->OnResolved();
-            EXPECT_TRUE(p->IsCanceled());
           }));
 
   scoped_refptr<AbstractPromise> p4 =
@@ -2035,9 +1984,10 @@ TEST_F(AbstractPromiseTest, CanceledCurriedPromise) {
           .With(BindLambdaForTesting(
               [&](AbstractPromise* p) { FAIL() << "Should not get here"; }));
 
-  p1->OnResolved();
+  OnResolved(p1);
   RunLoop().RunUntilIdle();
 
+  EXPECT_TRUE(p3->IsCanceled());
   EXPECT_TRUE(p4->IsCanceled());
 }
 
@@ -2052,7 +2002,6 @@ TEST_F(AbstractPromiseTest, CurriedPromiseChain) {
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_order.push_back(2);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
   // Promise |p4| will be resolved with.
@@ -2064,7 +2013,6 @@ TEST_F(AbstractPromiseTest, CurriedPromiseChain) {
             ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
             p->emplace(std::move(p2));
-            p->OnResolved();
           }));
 
   // Promise |p5| will be resolved with.
@@ -2076,7 +2024,6 @@ TEST_F(AbstractPromiseTest, CurriedPromiseChain) {
             ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p3));
             p->emplace(std::move(p3));
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p5 =
@@ -2087,7 +2034,6 @@ TEST_F(AbstractPromiseTest, CurriedPromiseChain) {
             ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p4));
             p->emplace(std::move(p4));
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p6 =
@@ -2095,10 +2041,70 @@ TEST_F(AbstractPromiseTest, CurriedPromiseChain) {
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             run_order.push_back(6);
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }));
 
-  p1->OnResolved();
+  OnResolved(p1);
+  RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(5, 4, 3, 2, 6));
+}
+
+TEST_F(AbstractPromiseTest, RejectedCurriedPromiseChain) {
+  scoped_refptr<AbstractPromise> p1 =
+      DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true);
+  std::vector<int> run_order;
+
+  // Promise |p3| will be resolved with.
+  scoped_refptr<AbstractPromise> p2 =
+      CatchPromise(FROM_HERE, nullptr)
+          .With(CallbackResultType::kCanReject)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            run_order.push_back(2);
+            p->emplace(Rejected<void>());
+          }));
+
+  // Promise |p4| will be resolved with.
+  scoped_refptr<AbstractPromise> p3 =
+      CatchPromise(FROM_HERE, nullptr)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            run_order.push_back(3);
+            // Resolve with a promise.
+            ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
+            p->emplace(std::move(p2));
+          }));
+
+  // Promise |p5| will be resolved with.
+  scoped_refptr<AbstractPromise> p4 =
+      CatchPromise(FROM_HERE, nullptr)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            run_order.push_back(4);
+            // Resolve with a promise.
+            ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE, BindOnce(&AbstractPromise::Execute, p3));
+            p->emplace(std::move(p3));
+          }));
+
+  scoped_refptr<AbstractPromise> p5 =
+      CatchPromise(FROM_HERE, p1)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            run_order.push_back(5);
+            // Resolve with a promise.
+            ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE, BindOnce(&AbstractPromise::Execute, p4));
+            p->emplace(std::move(p4));
+          }));
+
+  scoped_refptr<AbstractPromise> p6 =
+      CatchPromise(FROM_HERE, p3)
+          .With(RejectPolicy::kCatchNotRequired)
+          .With(CallbackResultType::kCanReject)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            run_order.push_back(6);
+            p->emplace(Rejected<void>());
+          }));
+
+  OnRejected(p1);
   RunLoop().RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(5, 4, 3, 2, 6));
@@ -2112,28 +2118,26 @@ TEST_F(AbstractPromiseTest, CurriedPromiseChainType2) {
       ThenPromise(FROM_HERE, p1)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(p1);
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p3 =
       ThenPromise(FROM_HERE, p2)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(p2);
-            p->OnResolved();
           }));
 
   scoped_refptr<AbstractPromise> p4 =
       ThenPromise(FROM_HERE, p3)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(p3);
-            p->OnResolved();
           }));
 
-  p1->OnResolved();
+  OnResolved(p1);
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(p4->IsResolvedForTesting());
-  EXPECT_EQ(p1.get(), p4->FindNonCurriedAncestor());
+  EXPECT_EQ(p1.get(),
+            GetCurriedPromise(GetCurriedPromise(GetCurriedPromise(p4.get()))));
 }
 
 TEST_F(AbstractPromiseTest, CurriedPromiseMoveArg) {
@@ -2144,10 +2148,8 @@ TEST_F(AbstractPromiseTest, CurriedPromiseMoveArg) {
       ThenPromise(FROM_HERE, nullptr)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
           }))
           .WithResolve(ArgumentPassingType::kMove);
-  ;
 
   scoped_refptr<AbstractPromise> p2 =
       ThenPromise(FROM_HERE, p0)
@@ -2156,12 +2158,11 @@ TEST_F(AbstractPromiseTest, CurriedPromiseMoveArg) {
                 ThreadTaskRunnerHandle::Get()->PostTask(
                     FROM_HERE, BindOnce(&AbstractPromise::Execute, p1));
                 p->emplace(std::move(p1));
-                p->OnResolved();
               },
               std::move(p1)))
           .WithResolve(ArgumentPassingType::kMove);
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
 }
 
@@ -2174,7 +2175,6 @@ TEST_F(AbstractPromiseTest, CatchCurriedPromise) {
           .With(CallbackResultType::kCanReject)
           .With(BindOnce([](AbstractPromise* p) {
             p->emplace(Rejected<void>());
-            p->OnRejected();
           }));
 
   scoped_refptr<AbstractPromise> p2 =
@@ -2185,13 +2185,12 @@ TEST_F(AbstractPromiseTest, CatchCurriedPromise) {
                 ThreadTaskRunnerHandle::Get()->PostTask(
                     FROM_HERE, BindOnce(&AbstractPromise::Execute, p1));
                 p->emplace(std::move(p1));
-                p->OnResolved();
               },
               std::move(p1)));
 
   scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p2);
 
-  p0->OnResolved();
+  OnResolved(p0);
   EXPECT_FALSE(p3->IsResolvedForTesting());
 
   RunLoop().RunUntilIdle();
@@ -2208,12 +2207,12 @@ TEST_F(AbstractPromiseTest, ManuallyResolveWithNonSettledCurriedPromise) {
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
 
   p1->emplace(p0);
-  p1->OnResolved();
+  OnResolved(p1);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(p1->IsResolvedForTesting());
   EXPECT_FALSE(p2->IsResolvedForTesting());
 
-  p0->OnResolved();
+  OnResolved(p0);
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(p2->IsResolvedForTesting());
 }
@@ -2231,19 +2230,18 @@ TEST_F(AbstractPromiseTest, ExecuteCalledOnceForLateResolvedCurriedPromise) {
       ThenPromise(FROM_HERE, p0)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(p1);
-            p->OnResolved();
           }))
           .With(task_runner);
 
   scoped_refptr<AbstractPromise> p3 =
       ThenPromise(FROM_HERE, p1).With(task_runner);
 
-  p0->OnResolved();
+  OnResolved(p0);
   // |p2| should run but not |p3|.
   EXPECT_EQ(1u, CountTasksRunUntilIdle(task_runner));
   EXPECT_FALSE(p3->IsResolvedForTesting());
 
-  p1->OnResolved();
+  OnResolved(p1);
   // |p3| should run.
   EXPECT_EQ(1u, CountTasksRunUntilIdle(task_runner));
   EXPECT_TRUE(p3->IsResolvedForTesting());
@@ -2263,19 +2261,18 @@ TEST_F(AbstractPromiseTest, ExecuteCalledOnceForLateRejectedCurriedPromise) {
       ThenPromise(FROM_HERE, p0)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(p1);
-            p->OnResolved();
           }))
           .With(task_runner);
 
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).With(task_runner);
 
-  p0->OnResolved();
+  OnResolved(p0);
   // |p2| should run but not |p3|.
   EXPECT_EQ(1u, CountTasksRunUntilIdle(task_runner));
   EXPECT_FALSE(p3->IsResolvedForTesting());
 
-  p1->OnRejected();
+  OnRejected(p1);
   // |p3| should run.
   EXPECT_EQ(1u, CountTasksRunUntilIdle(task_runner));
   EXPECT_TRUE(p3->IsResolvedForTesting());
@@ -2297,7 +2294,6 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
       ThenPromise(FROM_HERE, p1)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
             CHECK(thread_a->task_runner()->BelongsToCurrentThread());
           }))
           .With(thread_a->task_runner());
@@ -2306,7 +2302,6 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
       ThenPromise(FROM_HERE, p2)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
             CHECK(thread_b->task_runner()->BelongsToCurrentThread());
           }))
           .With(thread_b->task_runner());
@@ -2315,7 +2310,6 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
       ThenPromise(FROM_HERE, p3)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
             CHECK(thread_c->task_runner()->BelongsToCurrentThread());
           }))
           .With(thread_c->task_runner());
@@ -2326,13 +2320,12 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
       ThenPromise(FROM_HERE, p4)
           .With(BindLambdaForTesting([&](AbstractPromise* p) {
             p->emplace(Resolved<void>());
-            p->OnResolved();
             run_loop.Quit();
             CHECK(main_thread->BelongsToCurrentThread());
           }))
           .With(main_thread);
 
-  p1->OnResolved();
+  OnResolved(p1);
 
   EXPECT_FALSE(p5->IsResolvedForTesting());
   run_loop.Run();
@@ -2367,7 +2360,7 @@ TEST_F(AbstractPromiseTest, MutipleThreadsAddingDependants) {
     int count = pending_count.fetch_sub(1, std::memory_order_acq_rel);
     if (count == 1)
       run_loop.Quit();
-    p->OnResolved();
+    OnResolved(p);
   });
 
   // Post a bunch of tasks on multiple threads that create Then promises
@@ -2382,7 +2375,7 @@ TEST_F(AbstractPromiseTest, MutipleThreadsAddingDependants) {
     // Mid way through post a task to resolve |root|.
     if (i == num_promises / 2) {
       thread[i % num_threads]->task_runner()->PostTask(
-          FROM_HERE, BindOnce(&AbstractPromise::OnResolved, root));
+          FROM_HERE, BindOnce(&AbstractPromiseTest::OnResolved, root));
     }
   }
 
@@ -2422,28 +2415,28 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALLModified) {
             .With(CallbackResultType::kCanResolveOrReject)
             .With(BindLambdaForTesting([&](AbstractPromise* p) {
               p->emplace(Rejected<void>());
-              p->OnRejected();
             }));
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {},
-        base::Bind([](scoped_refptr<AbstractPromise> p2) { p2->OnRejected(); },
-                   p2));
+    base::PostTask(FROM_HERE, {base::ThreadPool()},
+                   base::BindOnce(
+                       [](scoped_refptr<AbstractPromise> p2) {
+                         p2->emplace(Rejected<void>());
+                       },
+                       p2));
 
     RunLoop run_loop;
     scoped_refptr<AbstractPromise> p5 =
         CatchPromise(FROM_HERE, all_promise)
             .With(BindLambdaForTesting([&](AbstractPromise* p) {
               p->emplace(Resolved<void>());
-              p->OnResolved();
               run_loop.Quit();
             }));
 
-    p3->OnRejected();
+    OnRejected(p3);
     run_loop.Run();
     EXPECT_TRUE(all_promise->IsRejected());
     EXPECT_TRUE(p5->IsResolved());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 

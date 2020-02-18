@@ -156,6 +156,10 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 
+  // When running headless there is no need to suppress input until content
+  // is ready for display (because it isn't displayed to users).
+  command_line->AppendSwitch(::switches::kAllowPreCommitInput);
+
   content::Profiling::ProcessStarted();
 
   SetContentClient(&content_client_);
@@ -233,7 +237,7 @@ void HeadlessContentMainDelegate::InitLogging(
   }
 
   settings.logging_dest = log_mode;
-  settings.log_file = log_path.value().c_str();
+  settings.log_file_path = log_path.value().c_str();
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
   settings.delete_old = process_type.empty() ? logging::DELETE_OLD_LOG_FILE
                                              : logging::APPEND_TO_OLD_LOG_FILE;

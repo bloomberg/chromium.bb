@@ -153,7 +153,8 @@ class CrostiniRegistryService : public KeyedService {
   bool IsCrostiniShelfAppId(const std::string& shelf_app_id);
 
   // Return all installed apps. This always includes the Terminal app.
-  std::vector<std::string> GetRegisteredAppIds() const;
+  std::map<std::string, CrostiniRegistryService::Registration>
+  GetRegisteredApps() const;
 
   // Return null if |app_id| is not found in the registry.
   base::Optional<CrostiniRegistryService::Registration> GetRegistration(
@@ -238,7 +239,7 @@ class CrostiniRegistryService : public KeyedService {
   std::map<std::string, uint32_t> active_icon_requests_;
   std::map<std::string, uint32_t> retry_icon_requests_;
 
-  base::WeakPtrFactory<CrostiniRegistryService> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniRegistryService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryService);
 };

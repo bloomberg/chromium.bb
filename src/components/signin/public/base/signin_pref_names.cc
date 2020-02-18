@@ -101,7 +101,7 @@ const char kSigninAllowed[] = "signin.allowed";
 // True if the token service has been prepared for Dice migration.
 const char kTokenServiceDiceCompatible[] = "token_service.dice_compatible";
 
-// Boolean which stores if the OAuth2TokenService should ignore secondary
+// Boolean which stores if the ProfileOAuth2TokenService should ignore secondary
 // accounts.
 const char kTokenServiceExcludeAllSecondaryAccounts[] =
     "token_service.exclude_all_secondary_accounts";
@@ -110,5 +110,9 @@ const char kTokenServiceExcludeAllSecondaryAccounts[] =
 // service.
 const char kTokenServiceExcludedSecondaryAccounts[] =
     "token_service.excluded_secondary_accounts";
+
+// Contains last |ListAccounts| data which corresponds to Gaia cookies.
+const char kGaiaCookieLastListAccountsData[] =
+    "gaia_cookie.last_list_accounts_data";
 
 }  // namespace prefs

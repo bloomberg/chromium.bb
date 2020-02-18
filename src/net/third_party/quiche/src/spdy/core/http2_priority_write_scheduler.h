@@ -11,6 +11,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -24,7 +25,6 @@
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_map_util.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_ptr_util.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
@@ -77,7 +77,7 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   size_t NumReadyStreams() const override;
   bool IsStreamReady(StreamIdType stream_id) const override;
   size_t NumRegisteredStreams() const override;
-  SpdyString DebugString() const override;
+  std::string DebugString() const override;
 
  private:
   friend class test::Http2PriorityWriteSchedulerPeer<StreamIdType>;
@@ -110,6 +110,16 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     int64_t ordinal = 0;
     // Time of latest write event for stream of this priority, in microseconds.
     int64_t last_event_time_usec = 0;
+
+    // Returns true if this stream is ancestor of |other|.
+    bool IsAncestorOf(const StreamInfo& other) const {
+      for (const StreamInfo* p = other.parent; p != nullptr; p = p->parent) {
+        if (p == this) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     // Whether this stream should be scheduled ahead of another stream.
     bool SchedulesBefore(const StreamInfo& other) const {
@@ -394,8 +404,10 @@ void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamParent(
     return;
   }
 
-  // If the new parent is already the stream's parent, we're done.
-  if (stream_info->parent == new_parent) {
+  if (stream_info->parent == new_parent &&
+      (!exclusive || new_parent->children.size() == 1u)) {
+    // If the new parent is already the stream's parent, and exclusivity (if
+    // specified) is already satisfied, we are done.
     return;
   }
 
@@ -500,13 +512,20 @@ bool Http2PriorityWriteScheduler<StreamIdType>::ShouldYield(
     SPDY_BUG << "Stream " << stream_id << " not registered";
     return false;
   }
+  if (HasReadyAncestor(*stream_info)) {
+    return true;
+  }
   for (const StreamInfo& scheduled : scheduling_queue_) {
-    if (stream_info == &scheduled) {
+    if (HasReadyAncestor(scheduled)) {
+      // Skip streams which cannot be scheduled.
+      continue;
+    }
+    if (stream_info->IsAncestorOf(scheduled)) {
+      // Do not yield to descendants.
       return false;
     }
-    if (!HasReadyAncestor(scheduled)) {
-      return true;
-    }
+    // Yield to streams with higher priorities.
+    return scheduled.SchedulesBefore(*stream_info);
   }
   return false;
 }
@@ -694,7 +713,7 @@ size_t Http2PriorityWriteScheduler<StreamIdType>::NumRegisteredStreams() const {
 }
 
 template <typename StreamIdType>
-SpdyString Http2PriorityWriteScheduler<StreamIdType>::DebugString() const {
+std::string Http2PriorityWriteScheduler<StreamIdType>::DebugString() const {
   return SpdyStrCat("Http2PriorityWriteScheduler {num_registered_streams=",
                     NumRegisteredStreams(),
                     " num_ready_streams=", NumReadyStreams(), "}");
@@ -703,8 +722,8 @@ SpdyString Http2PriorityWriteScheduler<StreamIdType>::DebugString() const {
 template <typename StreamIdType>
 bool Http2PriorityWriteScheduler<StreamIdType>::ValidateInvariantsForTests()
     const {
-  int total_streams = 0;
-  int streams_visited = 0;
+  size_t total_streams = 0;
+  size_t streams_visited = 0;
   // Iterate through all streams in the map.
   for (const auto& kv : all_stream_infos_) {
     ++total_streams;

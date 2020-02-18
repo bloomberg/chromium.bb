@@ -7,12 +7,13 @@
 
 from __future__ import print_function
 
-import apiclient
-import httplib2
-import oauth2client.client
 import os
 import pwd
 import urllib
+
+import apiclient
+import httplib2
+import oauth2client.client
 
 
 # Locations where to look for credentials JSON files, relative to the user's

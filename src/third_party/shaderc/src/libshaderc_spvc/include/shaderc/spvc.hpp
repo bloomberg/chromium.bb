@@ -67,8 +67,17 @@ class CompilationResult {
     return shaderc_spvc_result_get_status(result_);
   }
 
-  const std::string GetOutput() const {
-    return shaderc_spvc_result_get_output(result_);
+  const std::string GetStringOutput() const {
+    return shaderc_spvc_result_get_string_output(result_);
+  }
+
+  const std::vector<uint32_t> GetBinaryOutput() const {
+    const uint32_t* binary_output =
+        shaderc_spvc_result_get_binary_output(result_);
+    uint32_t binary_length = shaderc_spvc_result_get_binary_length(result_);
+    if (!binary_output || !binary_length) return {};
+
+    return std::vector<uint32_t>(binary_output, binary_output + binary_length);
   }
 
   const std::string GetMessages() const {
@@ -120,6 +129,14 @@ class CompileOptions {
     shaderc_spvc_compile_options_set_remove_unused_variables(options_, b);
   }
 
+  // If true, enable robust buffer access pass in the spirv-opt, meaning:
+  // Inject code to clamp indexed accesses to buffers and internal
+  // arrays, providing guarantees satisfying Vulkan's robustBufferAccess rules.
+  // This is useful when an implementation does not support robust-buffer access
+  // as a driver option.
+  void SetRobustBufferAccessPass(bool b){
+    shaderc_spvc_compile_options_set_robust_buffer_access_pass(options_, b);
+  }
   // If true, Vulkan GLSL features are used instead of GL-compatible features.
   void SetVulkanSemantics(bool b) {
     shaderc_spvc_compile_options_set_vulkan_semantics(options_, b);
@@ -286,6 +303,16 @@ class Compiler {
     shaderc_spvc_compilation_result_t compilation_result =
         shaderc_spvc_compile_into_msl(compiler_, source, source_len,
                                       options.options_);
+    return CompilationResult(compilation_result);
+  }
+
+  // Compiles the given source SPIR-V to Vulkan SPIR-V.
+  CompilationResult CompileSpvToVulkan(const uint32_t* source,
+                                       size_t source_len,
+                                       const CompileOptions& options) const {
+    shaderc_spvc_compilation_result_t compilation_result =
+        shaderc_spvc_compile_into_vulkan(compiler_, source, source_len,
+                                         options.options_);
     return CompilationResult(compilation_result);
   }
 

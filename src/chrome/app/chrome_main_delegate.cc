@@ -74,7 +74,6 @@
 
 #include "base/debug/close_handle_hook_win.h"
 #include "base/win/atl.h"
-#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
@@ -117,9 +116,10 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
 #include "chrome/common/chrome_descriptors.h"
-#else
+#else  // defined(OS_ANDROID)
 // Diagnostics is only available on non-android platforms.
 #include "chrome/browser/diagnostics/diagnostics_controller.h"
 #include "chrome/browser/diagnostics/diagnostics_writer.h"
@@ -542,21 +542,26 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   // Initialize D-Bus clients that depend on feature list.
   chromeos::InitializeFeatureListDependentDBus();
 #endif
+
+#if defined(OS_ANDROID)
+  startup_data_->CreateProfilePrefService();
+#endif
+
+  if (base::FeatureList::IsEnabled(
+          features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
+    bool record = true;
+#if defined(OS_ANDROID)
+    record =
+        base::FeatureList::IsEnabled(chrome::android::kUmaBackgroundSessions);
+#endif
+    if (record)
+      startup_data_->RecordCoreSystemProfile();
+  }
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
   // Chrome creates the FeatureList, so content should not.
   return false;
-}
-
-void ChromeMainDelegate::PostTaskSchedulerStart() {
-#if defined(OS_ANDROID)
-  startup_data_->CreateProfilePrefService();
-#endif
-  if (base::FeatureList::IsEnabled(
-          features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
-    startup_data_->RecordCoreSystemProfile();
-  }
 }
 
 #endif
@@ -634,7 +639,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   content::Profiling::ProcessStarted();
 
   // Setup tracing sampler profiler as early as possible at startup if needed.
-  tracing::TracingSamplerProfiler::CreateForCurrentThread();
+  tracing_sampler_profiler_ =
+      tracing::TracingSamplerProfiler::CreateOnMainThread();
 
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
   v8_crashpad_support::SetUp();
@@ -873,16 +879,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
 
   // Initialize the user data dir for any process type that needs it.
-  if (chrome::ProcessNeedsProfileDir(process_type)) {
+  if (chrome::ProcessNeedsProfileDir(process_type))
     InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
-#if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-    // TODO(grt): Enable this codepath for all desktop platforms.
-    downgrade::MoveUserDataForFirstRunAfterDowngrade();
-    base::FilePath user_data_dir;
-    if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-      downgrade::UpdateLastVersion(user_data_dir);
-#endif
-  }
 
   // Register component_updater PathProvider after DIR_USER_DATA overidden by
   // command line flags. Maybe move the chrome PathProvider down here also?
@@ -966,12 +964,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
       kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
     };
-    for (size_t i = 0; i < base::size(extra_pak_keys); ++i) {
-      pak_fd = global_descriptors->Get(extra_pak_keys[i]);
-      pak_region = global_descriptors->GetRegion(extra_pak_keys[i]);
+    for (int extra_pak_key : extra_pak_keys) {
+      pak_fd = global_descriptors->Get(extra_pak_key);
+      pak_region = global_descriptors->GetRegion(extra_pak_key);
       ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
           base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
     }
+
+    // For Android: Native resources for DFMs should only be used by the browser
+    // process. Their file descriptors and memory mapped file region are not
+    // passed to child processes, and are therefore not loaded here.
 
     base::i18n::SetICUDefaultLocale(locale);
     const std::string loaded_locale = locale;

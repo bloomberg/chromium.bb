@@ -7,6 +7,8 @@
  * @package
  */
 
+const ONE_SECOND_MS = 1000;
+
 /**
  * Creates a DIV with id and textContent set to |id|.
  */
@@ -15,6 +17,17 @@ export function div(id) {
   d.id = id;
   d.textContent = id;
   return d;
+}
+
+/**
+ * Creates a 5000px DIV with a solid border with id and textContent
+ * set to |id|.
+ */
+export function largeDiv(id) {
+  const large = div(id);
+  large.style.height = '5000px';
+  large.style.border = 'solid';
+  return large;
 }
 
 /**
@@ -44,9 +57,14 @@ export function withElement(name, callback) {
 
 /**
  * Remove the reftest-wait class from the HTML element.
-*/
+ *
+ * This includes a hack to wait 1s to give the virtual-scroller
+ * elements time to settle.
+ */
 export function stopWaiting() {
-  document.documentElement.classList.remove('reftest-wait');
+  setTimeout(() => {
+    document.documentElement.classList.remove('reftest-wait');
+  }, ONE_SECOND_MS);
 }
 
 /**
@@ -61,11 +79,23 @@ export function words(n) {
 }
 
 /**
- * Allow the current frame to end and then call |callback| asap in the next
- * frame.
-*/
-export function nextFrame(callback) {
-  window.requestAnimationFrame(() => {
+ * Allow the next |n| frames to end and then call |callback| ASAP in
+ * the following frame.
+ */
+export function inNFrames(n, callback) {
+  if (n == 0) {
     window.setTimeout(callback, 0);
-  });
+  } else {
+    window.requestAnimationFrame(() => {
+      inNFrames(n - 1, callback);
+    });
+  }
+}
+
+/**
+ * Allow the current frame to end and then call |callback| asap in the
+ * next frame.
+ */
+export function nextFrame(callback) {
+  inNFrames(1, callback);
 }

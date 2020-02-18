@@ -29,11 +29,13 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
@@ -62,12 +64,13 @@ void CreateAndBindTransactionPlaceholder(
 class IndexedDBFactoryTest : public testing::Test {
  public:
   IndexedDBFactoryTest()
-      : thread_bundle_(std::make_unique<TestBrowserThreadBundle>()),
+      : task_environment_(std::make_unique<BrowserTaskEnvironment>()),
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
-  IndexedDBFactoryTest(std::unique_ptr<TestBrowserThreadBundle> thread_bundle)
-      : thread_bundle_(std::move(thread_bundle)),
+  explicit IndexedDBFactoryTest(
+      std::unique_ptr<BrowserTaskEnvironment> task_environment)
+      : task_environment_(std::move(task_environment)),
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
@@ -111,25 +114,25 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        base::DefaultClock::GetInstance());
-    context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
+        base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get());
   }
 
   void SetupInMemoryContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         base::FilePath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        base::DefaultClock::GetInstance());
-    context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
+        base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get());
   }
 
   void SetupContextWithFactories(indexed_db::LevelDBFactory* factory,
                                  base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock);
+        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
+        base::SequencedTaskRunnerHandle::Get());
     context_->SetLevelDBFactoryForTesting(factory);
-    context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
 
   // Runs through the upgrade flow to create a basic database connection. There
@@ -172,10 +175,17 @@ class IndexedDBFactoryTest : public testing::Test {
       callbacks->connection()
           ->transactions()
           .find(transaction_id)
-          ->second->Commit();
+          ->second->SetCommitFlag();
       loop.Run();
     }
     return {callbacks->TakeConnection(), db_callbacks};
+  }
+
+  void RunPostedTasks() {
+    base::RunLoop loop;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     loop.QuitClosure());
+    loop.Run();
   }
 
  protected:
@@ -183,16 +193,17 @@ class IndexedDBFactoryTest : public testing::Test {
 
   IndexedDBFactoryImpl* factory() const { return context_->GetIDBFactory(); }
 
-  TestBrowserThreadBundle* thread_bundle() const {
-    return thread_bundle_.get();
+  BrowserTaskEnvironment* task_environment() const {
+    return task_environment_.get();
   }
+
   IndexedDBOriginState* OriginStateFromHandle(
       IndexedDBOriginStateHandle& handle) {
     return handle.origin_state();
   }
 
  private:
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
@@ -204,8 +215,8 @@ class IndexedDBFactoryTest : public testing::Test {
 class IndexedDBFactoryTestWithMockTime : public IndexedDBFactoryTest {
  public:
   IndexedDBFactoryTestWithMockTime()
-      : IndexedDBFactoryTest(std::make_unique<TestBrowserThreadBundle>(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME)) {}
+      : IndexedDBFactoryTest(std::make_unique<BrowserTaskEnvironment>(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME)) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryTestWithMockTime);
@@ -222,12 +233,16 @@ TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
   leveldb::Status s;
 
   std::tie(origin_state1_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin1, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin1, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state1_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
 
   std::tie(origin_state2_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin2, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin2, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state2_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
 
   std::vector<StorageUsageInfo> origin_info = context()->GetAllOriginsInfo();
   EXPECT_EQ(2ul, origin_info.size());
@@ -243,7 +258,8 @@ TEST_F(IndexedDBFactoryTest, CloseSequenceStarts) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -251,6 +267,7 @@ TEST_F(IndexedDBFactoryTest, CloseSequenceStarts) {
   EXPECT_TRUE(factory()->GetOriginFactory(origin)->IsClosing());
 
   factory()->ForceClose(origin, false);
+  RunPostedTasks();
   EXPECT_FALSE(factory()->GetOriginFactory(origin));
 }
 
@@ -265,10 +282,13 @@ TEST_F(IndexedDBFactoryTest, ImmediateClose) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
+  EXPECT_TRUE(factory()->GetOriginFactory(origin));
+  RunPostedTasks();
   EXPECT_FALSE(factory()->GetOriginFactory(origin));
   EXPECT_EQ(0ul, factory()->GetOpenOrigins().size());
 }
@@ -287,7 +307,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   // Open a connection & immediately release it to cause the closing sequence to
   // start.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -297,7 +318,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   EXPECT_EQ(IndexedDBOriginState::ClosingState::kPreCloseGracePeriod,
             factory()->GetOriginFactory(origin)->closing_stage());
 
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(2));
 
   // The factory should be closed, as the pre close tasks are delayed.
   EXPECT_FALSE(factory()->GetOriginFactory(origin));
@@ -308,7 +329,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   // Open a connection & immediately release it to cause the closing sequence to
   // start again.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -326,7 +348,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
 
   // Stop sweep by opening a connection.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   EXPECT_FALSE(
       OriginStateFromHandle(origin_state_handle)->pre_close_task_queue());
@@ -344,13 +367,15 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   // Manually execute the timer so that the PreCloseTaskList task doesn't also
   // run.
   factory()->GetOriginFactory(origin)->close_timer()->FireNow();
-
+  EXPECT_TRUE(factory()->GetOriginFactory(origin));
+  RunPostedTasks();
   EXPECT_FALSE(factory()->GetOriginFactory(origin));
 
   //  Finally, move the clock forward so the origin should allow a sweep.
   clock.Advance(IndexedDBOriginState::kMaxEarliestOriginSweepFromNow);
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   origin_state_handle.Release();
   factory()->GetOriginFactory(origin)->close_timer()->FireNow();
 
@@ -372,7 +397,8 @@ TEST_F(IndexedDBFactoryTest, InMemoryFactoriesStay) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(OriginStateFromHandle(origin_state_handle)
                   ->backing_store()
@@ -403,8 +429,8 @@ TEST_F(IndexedDBFactoryTest, TooLongOrigin) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(too_long_origin,
-                                        context()->data_path());
+      factory()->GetOrOpenOriginFactory(too_long_origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_FALSE(origin_state_handle.IsHeld());
   EXPECT_TRUE(s.IsIOError());
 }
@@ -425,6 +451,7 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesConnections) {
       std::move(create_transaction_callback));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection), origin,
                   context()->data_path());
+  RunPostedTasks();
 
   // Now simulate shutdown, which should clear all factories.
   factory()->ContextDestroyed();
@@ -439,7 +466,8 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesHandles) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 
   // Now simulate shutdown, which should clear all factories.
@@ -456,12 +484,15 @@ TEST_F(IndexedDBFactoryTest, FactoryForceClose) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 
   OriginStateFromHandle(origin_state_handle)->ForceClose();
   origin_state_handle.Release();
 
+  EXPECT_TRUE(factory()->GetOriginFactory(origin));
+  RunPostedTasks();
   EXPECT_FALSE(factory()->GetOriginFactory(origin));
 }
 
@@ -481,7 +512,8 @@ TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
       std::move(create_transaction_callback));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection), origin,
                   context()->data_path());
-
+  EXPECT_FALSE(callbacks->connection());
+  RunPostedTasks();
   EXPECT_TRUE(callbacks->connection());
 
   EXPECT_TRUE(factory()->GetOriginFactory(origin));
@@ -524,7 +556,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
   ASSERT_TRUE(callbacks->connection());
   ASSERT_TRUE(callbacks->connection()->database());
 
-  callbacks->connection()->database()->ForceClose();
+  callbacks->connection()->database()->ForceCloseAndRunTasks();
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
   // Since there are no more references the factory should be closing.
@@ -561,7 +593,8 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
   ASSERT_TRUE(callbacks->connection());
 
   // Close the connection.
-  callbacks->connection()->Close();
+  callbacks->connection()->AbortTransactionsAndClose(
+      IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
 
   // Since there are no more references the factory should be closing.
   EXPECT_TRUE(factory()->GetOriginFactory(origin));
@@ -578,7 +611,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseWithFullConnection) {
       CreateConnectionForDatatabase(origin, ASCIIToUTF16("db"));
 
   // Force close the database.
-  connection->database()->ForceClose();
+  connection->database()->ForceCloseAndRunTasks();
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
   // Since there are no more references the factory should be closing.
@@ -649,7 +682,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
   LookingForQuotaErrorMockCallbacks()
       : IndexedDBCallbacks(nullptr,
                            url::Origin(),
-                           nullptr,
+                           mojo::NullAssociatedRemote(),
                            base::SequencedTaskRunnerHandle::Get()),
         error_called_(false) {}
   void OnError(const IndexedDBDatabaseError& error) override {
@@ -674,8 +707,8 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
 
   auto callbacks = base::MakeRefCounted<LookingForQuotaErrorMockCallbacks>();
   auto dummy_database_callbacks =
-      base::MakeRefCounted<IndexedDBDatabaseCallbacks>(nullptr, nullptr,
-                                                       context()->TaskRunner());
+      base::MakeRefCounted<IndexedDBDatabaseCallbacks>(
+          nullptr, mojo::NullAssociatedRemote(), context()->TaskRunner());
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
   const base::string16 name(ASCIIToUTF16("name"));
   auto create_transaction_callback =
@@ -744,7 +777,9 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
     callbacks->connection()->database()->Commit(
         callbacks->connection()->GetTransaction(transaction_id));
     loop.Run();
-    callbacks->connection()->Close();
+    callbacks->connection()->AbortTransactionsAndClose(
+        IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
+    RunPostedTasks();
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }
 
@@ -759,6 +794,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
         std::move(create_transaction_callback));
     factory()->Open(db_name, std::move(connection), origin,
                     context()->data_path());
+    EXPECT_TRUE(factory()->IsDatabaseOpen(origin, db_name));
+    RunPostedTasks();
     EXPECT_TRUE(failed_open_callbacks->saw_error());
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }
@@ -837,8 +874,9 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
         }
       }
     }
-
+    RunPostedTasks();
     factory()->ForceClose(origin, false);
+    RunPostedTasks();
     return callbacks->data_loss();
   };
 
@@ -847,44 +885,10 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     IndexedDBDataFormatVersion open_version_1;
     IndexedDBDataFormatVersion open_version_2;
     blink::mojom::IDBDataLoss expected_data_loss;
-  } kTestCases[] = {
-      {"http://same-version.com/",
-       {3, 4},
-       {3, 4},
-       blink::mojom::IDBDataLoss::None},
-      {"http://blink-upgrade.com/",
-       {3, 4},
-       {3, 5},
-       blink::mojom::IDBDataLoss::None},
-      {"http://v8-upgrade.com/",
-       {3, 4},
-       {4, 4},
-       blink::mojom::IDBDataLoss::None},
-      {"http://both-upgrade.com/",
-       {3, 4},
-       {4, 5},
-       blink::mojom::IDBDataLoss::None},
-      {"http://blink-downgrade.com/",
-       {3, 4},
-       {3, 3},
-       blink::mojom::IDBDataLoss::Total},
-      {"http://v8-downgrade.com/",
-       {3, 4},
-       {2, 4},
-       blink::mojom::IDBDataLoss::Total},
-      {"http://both-downgrade.com/",
-       {3, 4},
-       {2, 3},
-       blink::mojom::IDBDataLoss::Total},
-      {"http://v8-up-blink-down.com/",
-       {3, 4},
-       {4, 2},
-       blink::mojom::IDBDataLoss::Total},
-      {"http://v8-down-blink-up.com/",
-       {3, 4},
-       {2, 5},
-       blink::mojom::IDBDataLoss::Total},
-  };
+  } kTestCases[] = {{"http://blink-downgrade.com/",
+                     {3, 4},
+                     {3, 3},
+                     blink::mojom::IDBDataLoss::Total}};
   for (const auto& test : kTestCases) {
     SCOPED_TRACE(test.origin);
     const Origin origin = Origin::Create(GURL(test.origin));
@@ -895,5 +899,4 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
 }
 
 }  // namespace
-
 }  // namespace content

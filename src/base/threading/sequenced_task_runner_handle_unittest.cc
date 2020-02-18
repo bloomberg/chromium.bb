@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +49,7 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
     EXPECT_TRUE(sequence_checker->CalledOnValidSequence());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(SequencedTaskRunnerHandleTest, FromTaskEnvironment) {
@@ -62,13 +62,13 @@ TEST_F(SequencedTaskRunnerHandleTest, FromThreadPoolSequencedTask) {
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SequencedTaskRunnerHandleTest::
                                     VerifyCurrentSequencedTaskRunner));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SequencedTaskRunnerHandleTest, NoHandleFromUnsequencedTask) {
   base::PostTask(base::BindOnce(
       []() { EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet()); }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST(SequencedTaskRunnerHandleTestWithoutTaskEnvironment, FromHandleInScope) {

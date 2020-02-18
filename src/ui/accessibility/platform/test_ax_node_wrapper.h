@@ -54,9 +54,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   const AXTreeData& GetTreeData() const override;
   const AXTree::Selection GetUnignoredSelection() const override;
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
+      int offset) const override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
@@ -109,6 +107,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   bool AccessibilityPerformAction(const AXActionData& data) override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   base::string16 GetLocalizedStringForLandmarkType() const override;
+  base::string16 GetLocalizedStringForRoleDescription() const override;
   base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;

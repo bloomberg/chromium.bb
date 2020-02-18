@@ -14,15 +14,6 @@ class TextInputManager {
 
     /** @private {!NavigationManager} */
     this.navigationManager_ = navigationManager;
-
-    /** @private {!chrome.accessibilityPrivate.FocusRingInfo} */
-    this.textInputFocusRing_ = {
-      id: SAConstants.Focus.TEXT_ID,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
   }
 
   /**
@@ -34,7 +25,8 @@ class TextInputManager {
       return false;
 
     this.node_ = node;
-    this.drawFocusRingForTextInput_();
+    this.navigationManager_.focusRingManager.setRing(
+        SAConstants.Focus.ID.TEXT, [this.node_.location]);
     return true;
   }
 
@@ -42,7 +34,8 @@ class TextInputManager {
   returnToTextFocus() {
     if (!this.node_)
       return;
-    this.clearFocusRingForTextInput_();
+    this.navigationManager_.focusRingManager.clearRing(
+        SAConstants.Focus.ID.TEXT);
     this.navigationManager_.exitCurrentScope(this.node_);
     this.node_ = null;
   }
@@ -110,25 +103,32 @@ class TextInputManager {
   }
 
   /**
-   * Draws a dashed focus ring around the active text input, so the user can
-   * easily reference where they are typing.
-   * @private
+   * Cuts currently selected text using a keyboard shortcut via synthetic keys.
+   * If there's no selected text, doesn't do anything.
+   * @public
    */
-  drawFocusRingForTextInput_() {
-    if (!this.node_)
-      return;
-
-    this.textInputFocusRing_.rects = [this.node_.location];
-    chrome.accessibilityPrivate.setFocusRings([this.textInputFocusRing_]);
-    return true;
+  cut() {
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.X, {ctrl: true});
   }
 
   /**
-   * Clears the focus ring around the active text input.
-   * @private
+   * Copies currently selected text using a keyboard shortcut via synthetic
+   * keys. If there's no selected text, doesn't do anything.
+   * @public
    */
-  clearFocusRingForTextInput_() {
-    this.textInputFocusRing_.rects = [];
-    chrome.accessibilityPrivate.setFocusRings([this.textInputFocusRing_]);
+  copy() {
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.C, {ctrl: true});
+  }
+
+  /**
+   * Pastes text from the clipboard using a keyboard shortcut via synthetic
+   * keys. If there's nothing in the clipboard, doesn't do anything.
+   * @public
+   */
+  paste() {
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.V, {ctrl: true});
   }
 }

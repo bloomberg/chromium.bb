@@ -97,6 +97,7 @@ struct FormParsingTestCase {
   bool fallback_only = false;
   SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
   base::Optional<bool> is_new_password_reliable;
+  bool form_has_autofilled_value = false;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -374,6 +375,8 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
           EXPECT_EQ(*test_case.is_new_password_reliable,
                     parsed_form->is_new_password_reliable);
         }
+        EXPECT_EQ(test_case.form_has_autofilled_value,
+                  parsed_form->form_has_autofilled_value);
 
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
@@ -1024,6 +1027,7 @@ TEST(FormParserTest, ReadonlyFields) {
                   {.form_control_type = "password", .is_readonly = true},
               },
           .number_of_all_possible_passwords = 3,
+          .form_has_autofilled_value = true,
       },
       {
           .description_for_logging = "And passwords already filled by user or "
@@ -1044,6 +1048,89 @@ TEST(FormParserTest, ReadonlyFields) {
                   {.form_control_type = "password", .is_readonly = true},
               },
           .number_of_all_possible_passwords = 3,
+          .form_has_autofilled_value = true,
+      },
+  });
+}
+
+TEST(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
+  CheckTestData({
+      {
+          "Server prediction for account change password and username field.",
+          {
+              {
+                  .role_filling = ElementRole::USERNAME,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+              },
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::NEW_PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account change password field only.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::NEW_PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account password and username field.",
+          {
+              {
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+              },
+              {
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account password field only.",
+          {
+              {.form_control_type = "text"},
+              {
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account creation password and username field.",
+          {
+              {
+                  .role_filling = ElementRole::USERNAME,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+              },
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account creation password field only.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+              },
+          },
       },
   });
 }
@@ -1179,6 +1266,7 @@ TEST(FormParserTest, Interactability) {
                    .is_focusable = true},
               },
           .number_of_all_possible_passwords = 3,
+          .form_has_autofilled_value = true,
       },
       {
           "Interactability for usernames is only considered before the first "
@@ -1197,6 +1285,7 @@ TEST(FormParserTest, Interactability) {
                .is_focusable = true},
               {.form_control_type = "text", .is_focusable = true, .value = ""},
           },
+          .form_has_autofilled_value = true,
       },
       {
           "Interactability also matters for HTML classifier.",
@@ -1667,6 +1756,7 @@ TEST(FormParserTest, ReadonlyStatus) {
           },
           .readonly_status =
               FormDataParser::ReadonlyPasswordFields::kNoneIgnored,
+          .form_has_autofilled_value = true,
       },
       {
           "Some readonly passwords ignored.",
@@ -2094,6 +2184,21 @@ TEST(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
                     .form_control_type = "password",
                     .prediction = {.type = autofill::PASSWORD},
                     .autocomplete_attribute = "new-password"}}}});
+}
+
+TEST(FormParserTest, SingleUsernamePrediction) {
+  CheckTestData({
+      {"1 field",
+       {{.role = ElementRole::USERNAME,
+         .form_control_type = "text",
+         .prediction = {.type = autofill::SINGLE_USERNAME}}}},
+      {"Password field is ignored",
+       {{.role = ElementRole::USERNAME,
+         .form_control_type = "text",
+         .prediction = {.type = autofill::SINGLE_USERNAME}},
+        {.form_control_type = "password",
+         .prediction = {.type = autofill::PASSWORD}}}},
+  });
 }
 
 }  // namespace

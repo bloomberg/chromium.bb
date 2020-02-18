@@ -15,6 +15,7 @@
 
 #include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "api/test/simulated_network.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "api/video/video_bitrate_allocation.h"
@@ -23,12 +24,11 @@
 #include "call/call.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/audio_coding/include/audio_coding_module.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "modules/audio_mixer/audio_mixer_impl.h"
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
 #include "system_wrappers/include/metrics.h"
 #include "test/call_test.h"
@@ -41,6 +41,7 @@
 #include "test/frame_generator_capturer.h"
 #include "test/gtest.h"
 #include "test/null_transport.h"
+#include "test/rtp_header_parser.h"
 #include "test/rtp_rtcp_observer.h"
 #include "test/single_threaded_task_queue.h"
 #include "test/testsupport/file_utils.h"
@@ -377,7 +378,7 @@ void CallPerfTest::TestCaptureNtpTime(
 
    private:
     test::PacketTransport* CreateSendTransport(
-        test::SingleThreadedTaskQueueForTesting* task_queue,
+        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue,
         Call* sender_call) override {
       return new test::PacketTransport(
           task_queue, sender_call, this, test::PacketTransport::kSender,
@@ -388,7 +389,8 @@ void CallPerfTest::TestCaptureNtpTime(
     }
 
     test::PacketTransport* CreateReceiveTransport(
-        test::SingleThreadedTaskQueueForTesting* task_queue) override {
+        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue)
+        override {
       return new test::PacketTransport(
           task_queue, nullptr, this, test::PacketTransport::kReceiver,
           payload_type_map_,
@@ -860,19 +862,22 @@ void CallPerfTest::TestMinAudioVideoBitrate(int test_bitrate_from,
 
   class MinVideoAndAudioBitrateTester : public test::EndToEndTest {
    public:
-    MinVideoAndAudioBitrateTester(int test_bitrate_from,
-                                  int test_bitrate_to,
-                                  int test_bitrate_step,
-                                  int min_bwe,
-                                  int start_bwe,
-                                  int max_bwe)
+    MinVideoAndAudioBitrateTester(
+        int test_bitrate_from,
+        int test_bitrate_to,
+        int test_bitrate_step,
+        int min_bwe,
+        int start_bwe,
+        int max_bwe,
+        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue)
         : EndToEndTest(),
           test_bitrate_from_(test_bitrate_from),
           test_bitrate_to_(test_bitrate_to),
           test_bitrate_step_(test_bitrate_step),
           min_bwe_(min_bwe),
           start_bwe_(start_bwe),
-          max_bwe_(max_bwe) {}
+          max_bwe_(max_bwe),
+          task_queue_(task_queue) {}
 
    protected:
     BuiltInNetworkBehaviorConfig GetFakeNetworkPipeConfig() {
@@ -882,7 +887,7 @@ void CallPerfTest::TestMinAudioVideoBitrate(int test_bitrate_from,
     }
 
     test::PacketTransport* CreateSendTransport(
-        test::SingleThreadedTaskQueueForTesting* task_queue,
+        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue,
         Call* sender_call) override {
       auto network =
           absl::make_unique<SimulatedNetwork>(GetFakeNetworkPipeConfig());
@@ -895,7 +900,8 @@ void CallPerfTest::TestMinAudioVideoBitrate(int test_bitrate_from,
     }
 
     test::PacketTransport* CreateReceiveTransport(
-        test::SingleThreadedTaskQueueForTesting* task_queue) override {
+        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue)
+        override {
       auto network =
           absl::make_unique<SimulatedNetwork>(GetFakeNetworkPipeConfig());
       receive_simulated_network_ = network.get();
@@ -922,15 +928,17 @@ void CallPerfTest::TestMinAudioVideoBitrate(int test_bitrate_from,
         send_simulated_network_->SetConfig(pipe_config);
         receive_simulated_network_->SetConfig(pipe_config);
 
-        rtc::ThreadManager::Instance()->CurrentThread()->SleepMs(
-            quick_perf_test ? kShortDelayMs : kBitrateStabilizationMs);
+        rtc::Thread::SleepMs(quick_perf_test ? kShortDelayMs
+                                             : kBitrateStabilizationMs);
 
         int64_t avg_rtt = 0;
         for (int i = 0; i < kBitrateMeasurements; i++) {
-          Call::Stats call_stats = sender_call_->GetStats();
+          Call::Stats call_stats;
+          task_queue_->SendTask(
+              [this, &call_stats]() { call_stats = sender_call_->GetStats(); });
           avg_rtt += call_stats.rtt_ms;
-          rtc::ThreadManager::Instance()->CurrentThread()->SleepMs(
-              quick_perf_test ? kShortDelayMs : kBitrateMeasurementMs);
+          rtc::Thread::SleepMs(quick_perf_test ? kShortDelayMs
+                                               : kBitrateMeasurementMs);
         }
         avg_rtt = avg_rtt / kBitrateMeasurements;
         if (avg_rtt > kMinGoodRttMs) {
@@ -976,8 +984,9 @@ void CallPerfTest::TestMinAudioVideoBitrate(int test_bitrate_from,
     SimulatedNetwork* send_simulated_network_;
     SimulatedNetwork* receive_simulated_network_;
     Call* sender_call_;
+    test::DEPRECATED_SingleThreadedTaskQueueForTesting* const task_queue_;
   } test(test_bitrate_from, test_bitrate_to, test_bitrate_step, min_bwe,
-         start_bwe, max_bwe);
+         start_bwe, max_bwe, &task_queue_);
 
   RunBaseTest(&test);
 }

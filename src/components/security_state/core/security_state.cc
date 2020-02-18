@@ -71,6 +71,22 @@ std::string GetHistogramSuffixForSecurityLevel(
   }
 }
 
+std::string GetHistogramSuffixForSafetyTipStatus(
+    security_state::SafetyTipStatus safety_tip_status) {
+  switch (safety_tip_status) {
+    case security_state::SafetyTipStatus::kUnknown:
+      return "SafetyTip_Unknown";
+    case security_state::SafetyTipStatus::kNone:
+      return "SafetyTip_None";
+    case security_state::SafetyTipStatus::kBadReputation:
+      return "SafetyTip_BadReputation";
+    case security_state::SafetyTipStatus::kLookalike:
+      return "SafetyTip_Lookalike";
+  };
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 SecurityLevel GetSecurityLevel(
@@ -92,6 +108,7 @@ SecurityLevel GetSecurityLevel(
   if (HasMajorCertificateError(visible_security_state)) {
     return DANGEROUS;
   }
+  DCHECK(!net::IsCertStatusError(visible_security_state.cert_status));
 
   const GURL& url = visible_security_state.url;
 
@@ -102,6 +119,12 @@ SecurityLevel GetSecurityLevel(
   // Display a "Not secure" badge for all these URLs.
   if (url.SchemeIs(url::kDataScheme) || url.SchemeIs(url::kFtpScheme)) {
     return HTTP_SHOW_WARNING;
+  }
+
+  // Display DevTools pages as neutral since we can't be confident the page
+  // is secure, but also don't want the "Not secure" badge.
+  if (visible_security_state.is_devtools) {
+    return NONE;
   }
 
   // Choose the appropriate security level for requests to HTTP and remaining
@@ -146,12 +169,6 @@ SecurityLevel GetSecurityLevel(
     return kDisplayedInsecureContentLevel;
   }
 
-  if (net::IsCertStatusError(visible_security_state.cert_status)) {
-    // Major cert errors are handled above.
-    DCHECK(net::IsCertStatusMinorError(visible_security_state.cert_status));
-    return NONE;
-  }
-
   if (visible_security_state.is_view_source) {
     return NONE;
   }
@@ -180,14 +197,14 @@ bool HasMajorCertificateError(
       visible_security_state.certificate;
 
   const bool is_major_cert_error =
-      net::IsCertStatusError(visible_security_state.cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state.cert_status);
+      net::IsCertStatusError(visible_security_state.cert_status);
 
   return is_cryptographic_with_certificate && is_major_cert_error;
 }
 
 VisibleSecurityState::VisibleSecurityState()
     : malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
+      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
       connection_info_initialized(false),
       cert_status(0),
       connection_status(0),
@@ -200,7 +217,8 @@ VisibleSecurityState::VisibleSecurityState()
       ran_content_with_cert_errors(false),
       pkp_bypassed(false),
       is_error_page(false),
-      is_view_source(false) {}
+      is_view_source(false),
+      is_devtools(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 
@@ -221,6 +239,11 @@ std::string GetSecurityLevelHistogramName(
     const std::string& prefix,
     security_state::SecurityLevel level) {
   return prefix + "." + GetHistogramSuffixForSecurityLevel(level);
+}
+
+std::string GetSafetyTipHistogramName(const std::string& prefix,
+                                      SafetyTipStatus safety_tip_status) {
+  return prefix + "." + GetHistogramSuffixForSafetyTipStatus(safety_tip_status);
 }
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {

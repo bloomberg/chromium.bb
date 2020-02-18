@@ -142,17 +142,14 @@ public:
     }
 
     SkSurfaceCharacterization createCharacterization(GrContext* context) const {
-        int maxResourceCount;
-        size_t maxResourceBytes;
-        context->getResourceCacheLimits(&maxResourceCount, &maxResourceBytes);
+        size_t maxResourceBytes = context->getResourceCacheLimit();
 
         // Note that Ganesh doesn't make use of the SkImageInfo's alphaType
         SkImageInfo ii = SkImageInfo::Make(fWidth, fHeight, fColorType,
                                            kPremul_SkAlphaType, fColorSpace);
 
-        const GrCaps* caps = context->priv().caps();
-        GrBackendFormat backendFormat =
-                caps->getBackendFormatFromColorType(SkColorTypeToGrColorType(fColorType));
+        GrBackendFormat backendFormat = context->defaultBackendFormat(fColorType,
+                                                                      GrRenderable::kYes);
         if (!backendFormat.isValid()) {
             return SkSurfaceCharacterization();
         }
@@ -373,8 +370,7 @@ void DDLSurfaceCharacterizationTestImpl(GrContext* context, skiatest::Reporter* 
 
         if (SurfaceParameters::kSampleCount == i) {
             int supportedSampleCount = caps->getRenderTargetSampleCount(
-                    params.sampleCount(), SkColorTypeToGrColorType(params.colorType()),
-                    backend.getBackendFormat());
+                    params.sampleCount(), backend.getBackendFormat());
             if (1 == supportedSampleCount) {
                 // If changing the sample count won't result in a different
                 // surface characterization, skip this step
@@ -415,11 +411,9 @@ void DDLSurfaceCharacterizationTestImpl(GrContext* context, skiatest::Reporter* 
 
         sk_sp<SkSurface> s = params.make(context, &backend);
 
-        int maxResourceCount;
-        size_t maxResourceBytes;
-        context->getResourceCacheLimits(&maxResourceCount, &maxResourceBytes);
+        size_t maxResourceBytes = context->getResourceCacheLimit();
 
-        context->setResourceCacheLimits(maxResourceCount, maxResourceBytes/2);
+        context->setResourceCacheLimit(maxResourceBytes/2);
         REPORTER_ASSERT(reporter, !s->draw(ddl.get()));
 
         // DDL TODO: once proxies/ops can be de-instantiated we can re-enable these tests.
@@ -764,8 +758,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLInvalidRecorder, reporter, ctxInfo) {
         REPORTER_ASSERT(reporter, !recorder.getCanvas());
         REPORTER_ASSERT(reporter, !recorder.detach());
 
-        const GrCaps* caps = context->priv().caps();
-        GrBackendFormat format = caps->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
+        GrBackendFormat format = context->defaultBackendFormat(kRGBA_8888_SkColorType,
+                                                               GrRenderable::kNo);
+        SkASSERT(format.isValid());
 
         sk_sp<SkImage> image = recorder.makePromiseTexture(
                 format, 32, 32, GrMipMapped::kNo,
@@ -850,8 +845,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLSkSurfaceFlush, reporter, ctxInfo) {
     {
         SkDeferredDisplayListRecorder recorder(characterization);
 
-        const GrCaps* caps = context->priv().caps();
-        GrBackendFormat format = caps->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
+        GrBackendFormat format = context->defaultBackendFormat(kRGBA_8888_SkColorType,
+                                                               GrRenderable::kNo);
+        SkASSERT(format.isValid());
 
         sk_sp<SkImage> promiseImage = recorder.makePromiseTexture(
                 format, 32, 32, GrMipMapped::kNo,

@@ -8,11 +8,12 @@
 from __future__ import print_function
 
 import json
-import mock
 import os
 import smtplib
 import socket
 import urllib
+
+import mock
 
 from chromite.lib import alerts
 from chromite.lib import constants

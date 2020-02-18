@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,8 @@ class GetPrefValueHelper
     : public base::RefCountedThreadSafe<GetPrefValueHelper> {
  public:
   GetPrefValueHelper()
-      : value_(false), task_runner_(base::CreateSequencedTaskRunner({})) {}
+      : value_(false),
+        task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})) {}
 
   void Init(const std::string& pref_name, PrefService* prefs) {
     pref_.Init(pref_name, prefs);
@@ -99,7 +100,7 @@ class PrefMemberTestClass {
 }  // anonymous namespace
 
 class PrefMemberTest : public testing::Test {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PrefMemberTest, BasicGetAndSet) {

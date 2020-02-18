@@ -74,8 +74,7 @@ MobileActivator::MobileActivator()
       initial_OTASP_attempts_(0),
       trying_OTASP_attempts_(0),
       final_OTASP_attempts_(0),
-      payment_reconnect_count_(0),
-      weak_ptr_factory_(this) {}
+      payment_reconnect_count_(0) {}
 
 MobileActivator::~MobileActivator() {
   TerminateActivation();
@@ -186,10 +185,9 @@ void MobileActivator::GetPropertiesFailure(
 }
 
 void MobileActivator::OnSetTransactionStatus(bool success) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
-                     weak_ptr_factory_.GetWeakPtr(), success));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
+                                weak_ptr_factory_.GetWeakPtr(), success));
 }
 
 void MobileActivator::HandleSetTransactionStatus(bool success) {
@@ -212,10 +210,9 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
 }
 
 void MobileActivator::OnPortalLoaded(bool success) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&MobileActivator::HandlePortalLoaded,
-                     weak_ptr_factory_.GetWeakPtr(), success));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&MobileActivator::HandlePortalLoaded,
+                                weak_ptr_factory_.GetWeakPtr(), success));
 }
 
 void MobileActivator::HandlePortalLoaded(bool success) {
@@ -850,7 +847,7 @@ void MobileActivator::ChangeState(const NetworkState* network,
       break;
     case PLAN_ACTIVATION_DELAY_OTASP: {
       UMA_HISTOGRAM_COUNTS_1M("Cellular.RetryOTASP", 1);
-      base::PostDelayedTaskWithTraits(
+      base::PostDelayedTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&MobileActivator::RetryOTASP,
                          weak_ptr_factory_.GetWeakPtr()),

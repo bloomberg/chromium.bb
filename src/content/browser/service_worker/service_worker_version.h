@@ -38,7 +38,8 @@
 #include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -335,8 +336,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   blink::mojom::ServiceWorker* endpoint() {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::RUNNING);
-    DCHECK(service_worker_ptr_.is_bound());
-    return service_worker_ptr_.get();
+    DCHECK(service_worker_remote_.is_bound());
+    return service_worker_remote_.get();
   }
 
   // Returns the 'controller' interface ptr of this worker. It is expected that
@@ -498,16 +499,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void IncrementPendingUpdateHintCount();
   void DecrementPendingUpdateHintCount();
 
-  void set_compared_script_info_map(
+  // ServiceWorkerImportedScriptUpdateCheck:
+  // Called on versions created for an update check. Called if the check
+  // determined an update exists before starting the worker for an install
+  // event.
+  void PrepareForUpdate(
       std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
-          compared_script_info_map);
+          compared_script_info_map,
+      const GURL& updated_script_url);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
-
-  // Take the ownership of the PausedState for changed script from the
-  // compared_script_info_map_.
-  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-  TakePausedStateOfChangedScript(const GURL& script_url);
+  ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(
+      const GURL& script_url);
 
   // Called by the EmbeddedWorkerInstance to determine if its worker process
   // should be kept at foreground priority.
@@ -517,9 +520,26 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // whether the service worker should be kept at foreground priority.
   void UpdateForegroundPriority();
 
+  // Adds a message to the service worker's DevTools console.
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
+                           const std::string& message);
+
+  // Adds a message to service worker internals UI page if the internal page is
+  // opened. Use this method only for events which can't be logged on the
+  // worker's DevTools console, e.g., the worker is not responding. For regular
+  // events use AddMessageToConsole().
+  void MaybeReportConsoleMessageToInternals(
+      blink::mojom::ConsoleMessageLevel message_level,
+      const std::string& message);
+
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   const base::debug::StackTrace& redundant_state_callstack() const {
     return redundant_state_callstack_;
+  }
+
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerHost>&
+  service_worker_host_receiver_for_testing() {
+    return receiver_;
   }
 
  private:
@@ -675,7 +695,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Implements blink::mojom::ServiceWorkerHost.
   void SetCachedMetadata(const GURL& url,
-                         const std::vector<uint8_t>& data) override;
+                         base::span<const uint8_t> data) override;
   void ClearCachedMetadata(const GURL& url) override;
   void ClaimClients(ClaimClientsCallback callback) override;
   void GetClients(blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
@@ -842,7 +862,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::set<std::string> pending_external_requests_;
 
   // Connected to ServiceWorkerContextClient while the worker is running.
-  blink::mojom::ServiceWorkerPtr service_worker_ptr_;
+  mojo::Remote<blink::mojom::ServiceWorker> service_worker_remote_;
 
   // Connection to the controller service worker.
   // |controller_receiver_| is non-null only when the |remote_controller_| is
@@ -859,7 +879,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks skip_waiting_time_;
   base::TimeTicks no_controllees_time_;
 
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerHost> binding_;
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerHost> receiver_{this};
 
   // Set to true if the worker has no inflight events and the idle timer has
   // been triggered. Set back to false if another event starts since the worker
@@ -953,9 +973,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
       compared_script_info_map_;
 
+  // ServiceWorkerImportedScriptUpdateCheck:
+  // If this version was created for an update check that found an update,
+  // |updated_script_url_| is the URL of the script for which a byte-for-byte
+  // change was found. Otherwise, it's the empty GURL.
+  GURL updated_script_url_;
+
   // This holds a mojo interface pointer info to this instance until
   // InitializeGlobalScope() is called.
-  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host_;
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
+      service_worker_host_;
 
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   // This is set when this service worker becomes redundant.

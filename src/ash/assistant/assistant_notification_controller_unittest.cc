@@ -8,7 +8,8 @@
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,14 +30,19 @@ class AssistantNotificationModelObserverMock
   AssistantNotificationModelObserverMock() = default;
   ~AssistantNotificationModelObserverMock() override = default;
 
-  MOCK_METHOD1(OnNotificationAdded,
-               void(const AssistantNotification* notification));
-  MOCK_METHOD1(OnNotificationUpdated,
-               void(const AssistantNotification* notification));
-  MOCK_METHOD2(OnNotificationRemoved,
-               void(const AssistantNotification* notification,
-                    bool from_server));
-  MOCK_METHOD1(OnAllNotificationsRemoved, void(bool from_server));
+  MOCK_METHOD(void,
+              OnNotificationAdded,
+              (const AssistantNotification* notification),
+              (override));
+  MOCK_METHOD(void,
+              OnNotificationUpdated,
+              (const AssistantNotification* notification),
+              (override));
+  MOCK_METHOD(void,
+              OnNotificationRemoved,
+              (const AssistantNotification* notification, bool from_server),
+              (override));
+  MOCK_METHOD(void, OnAllNotificationsRemoved, (bool from_server), (override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationModelObserverMock);
@@ -55,13 +61,10 @@ MATCHER_P(IdIs, expected_id, "") {
 class AssistantNotificationControllerTest : public AshTestBase {
  protected:
   AssistantNotificationControllerTest()
-      : AshTestBase(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AssistantNotificationControllerTest() override = default;
 
   void SetUp() override {
-    ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
-
     AshTestBase::SetUp();
 
     controller_ =
@@ -114,7 +117,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   }
 
   void ForwardTimeInMs(int time_in_ms) {
-    scoped_task_environment_->FastForwardBy(
+    task_environment_->FastForwardBy(
         base::TimeDelta::FromMilliseconds(time_in_ms));
   }
 

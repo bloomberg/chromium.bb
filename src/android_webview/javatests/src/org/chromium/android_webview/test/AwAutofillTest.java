@@ -599,7 +599,7 @@ public class AwAutofillTest {
             mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             // Note that we currently call ENTER/EXIT one more time.
             mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
-                    new Integer[] {AUTOFILL_VIEW_EXITED, AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
                             AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
         }
 
@@ -1100,11 +1100,10 @@ public class AwAutofillTest {
                             AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
             // Move to form2, cancel() should be called again.
             executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
-            cnt += waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_VIEW_EXITED});
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             waitForCallbackAndVerifyTypes(cnt,
-                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
-                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
+                            AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
         } finally {
             webServer.shutdown();
         }

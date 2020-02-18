@@ -9,11 +9,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -45,7 +45,7 @@ class DialURLFetcherTest : public testing::Test {
   MOCK_METHOD1(OnSuccess, void(const std::string&));
   MOCK_METHOD2(OnError, void(int, const std::string&));
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   network::TestURLLoaderFactory loader_factory_;
   const GURL url_;
   std::unique_ptr<TestDialURLFetcher> fetcher_;

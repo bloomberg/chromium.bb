@@ -33,14 +33,15 @@ class PreviewsOptimizationGuide;
 
 // Manages background preresolving or preconnecting for lite page redirect
 // previews. When a set of conditions are met, this class causes the litepage
-// version of the current committed page URL to be preresolved in a loop so that
-// the DNS entry for the litepage is always cached, or the origin URL to be
-// preresolved if the current page is a preview. This helps to mitigate the
-// delay of loading a preview or the original page of the same origin.
+// version of the current committed page URL to be preresolved/preconnected in a
+// loop so that the DNS entry for the litepage is always cached, or the origin
+// URL to be preresolved/preconnected if the current page is a preview. This
+// helps to mitigate the delay of loading a preview or the original page of the
+// same origin.
 //
-// All of the following conditions must be met to preresolve the litepages host
-// on a background loop during a page load:
-// * We allow preresolving by feature param.
+// All of the following conditions must be met to preresolve/preconnect the
+// litepages host on a background loop during a page load:
+// * We allow preresolving/preconnecting by feature param.
 // * A page is committed.
 // * There is no ongoing navigation.
 // * Lite mode is enabled for the user. - Note this change is not directly
@@ -73,7 +74,8 @@ class PreviewsLitePagePredictor
   // Virtual for testing.
   virtual bool DataSaverIsEnabled() const;
   virtual bool ECTIsSlow() const;
-  virtual bool PageIsBlacklisted(const GURL& url) const;
+  virtual bool PageIsBlacklisted(
+      content::NavigationHandle* navigation_handle) const;
 
   // Returns true when this |web_contents| is the active tab and Chrome is in
   // the foreground. Virtual for testing.
@@ -90,6 +92,8 @@ class PreviewsLitePagePredictor
                            DataSaverDisabled);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, NoNavigation);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, ECTNotSlow);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+                           ECTNotSlowOnPreview);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, PageBlacklisted);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, NotVisible);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, InsecurePage);
@@ -101,20 +105,21 @@ class PreviewsLitePagePredictor
                            ToggleMultipleTimes_Visibility);
 
   // Returns the GURL that should be preresolved, if any.
-  base::Optional<GURL> ShouldPreresolveOnPage() const;
+  base::Optional<GURL> ShouldActOnPage(
+      content::NavigationHandle* navigation_handle) const;
 
   // Toggles preresolving to either start or stop as needed. This operates
   // statelessly, but should be called every time a change potentially needs to
   // be made. See observers below.
-  void MaybeTogglePreresolveTimer();
+  void MaybeToggleTimer(content::NavigationHandle* navigation_handle);
 
-  // Immediately causes |url_| to be preresolved.
-  void Preresolve() const;
+  // Immediately causes |url_| to be preresolved/preconnected.
+  void PreresolveOrPreconnect() const;
 
-  // Set if the preview URL is actively being preresolved.
+  // Set if the preview URL is actively being preresolved/preconnected.
   std::unique_ptr<base::RepeatingTimer> timer_;
 
-  // The url that should be preresolved, if any.
+  // The url that should be preresolved/preconnected, if any.
   base::Optional<GURL> url_;
 
   // A reference to the DRP Settings.

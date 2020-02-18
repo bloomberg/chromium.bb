@@ -496,15 +496,14 @@ void Job::StartURLRequest(URLRequestContext* context) {
                                         this, traffic_annotation);
   if (request_params_->http_method == HTTP_METHOD_POST)
     url_request_->set_method("POST");
-  url_request_->SetLoadFlags(LOAD_DO_NOT_SAVE_COOKIES |
-                             LOAD_DO_NOT_SEND_COOKIES);
+  url_request_->set_allow_credentials(false);
   url_request_->Start();
 
   // Start a timer to limit how long the job runs for.
   if (request_params_->timeout > base::TimeDelta())
-    timer_.Start(
-        FROM_HERE, request_params_->timeout,
-        base::Bind(&Job::FailRequest, base::Unretained(this), ERR_TIMED_OUT));
+    timer_.Start(FROM_HERE, request_params_->timeout,
+                 base::BindOnce(&Job::FailRequest, base::Unretained(this),
+                                ERR_TIMED_OUT));
 }
 
 void Job::Cancel() {
@@ -537,8 +536,7 @@ void Job::OnResponseStarted(URLRequest* request, int net_error) {
   }
 
   if (request->GetResponseCode() != 200) {
-    // TODO(eroman): Use a more specific error code.
-    FailRequest(ERR_FAILED);
+    FailRequest(ERR_HTTP_RESPONSE_CODE_FAILURE);
     return;
   }
 

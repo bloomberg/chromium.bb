@@ -23,7 +23,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -36,8 +37,8 @@ class WebUsbService;
 
 using content::RenderFrameHost;
 using device::FakeUsbDeviceManager;
-using device::mojom::UsbDeviceManagerPtr;
 using device::mojom::UsbDeviceInfoPtr;
+using device::mojom::UsbDeviceManager;
 
 namespace {
 
@@ -106,15 +107,15 @@ class TestContentBrowserClient : public ChromeContentBrowserClient {
   // ChromeContentBrowserClient:
   void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<blink::mojom::WebUsbService> request) override {
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) override {
     if (use_real_chooser_) {
       ChromeContentBrowserClient::CreateWebUsbService(render_frame_host,
-                                                      std::move(request));
+                                                      std::move(receiver));
     } else {
       usb_chooser_.reset(new FakeUsbChooser(render_frame_host));
       web_usb_service_.reset(
           new WebUsbServiceImpl(render_frame_host, usb_chooser_->GetWeakPtr()));
-      web_usb_service_->BindRequest(std::move(request));
+      web_usb_service_->BindReceiver(std::move(receiver));
     }
   }
 
@@ -136,10 +137,11 @@ class WebUsbTest : public InProcessBrowserTest {
     AddFakeDevice("123456");
 
     // Connect with the FakeUsbDeviceManager.
-    UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+    mojo::PendingRemote<UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
     UsbChooserContextFactory::GetForProfile(browser()->profile())
-        ->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+        ->SetDeviceManagerForTesting(std::move(device_manager));
 
     original_content_browser_client_ =
         content::SetBrowserClientForTesting(&test_content_browser_client_);

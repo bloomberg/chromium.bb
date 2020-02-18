@@ -11,6 +11,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
@@ -101,14 +102,15 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
 
   void LoadURL(const std::string& page_data) {
     const GURL data_url("data:text/html," + page_data);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
     host->GetView()->SetSize(gfx::Size(600, 600));
 
     // The page is loaded in the renderer, wait for a new frame to arrive.
-    while (!host->RequestRepaintForTesting())
-      GiveItSomeTime();
+    // That's equivalent to hit test data being ready.
+    HitTestRegionObserver hittest_observer(host->GetFrameSinkId());
+    hittest_observer.WaitForHitTestData();
   }
   int ExecuteScriptAndExtractInt(const std::string& script) {
     int value = 0;

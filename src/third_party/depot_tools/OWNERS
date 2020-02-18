@@ -3,12 +3,12 @@ set noparent
 agable@chromium.org
 dpranke@chromium.org
 ehmaldonado@chromium.org
-hinoka@chromium.org
 iannucci@chromium.org
 jochen@chromium.org
 maruel@chromium.org
 nodir@chromium.org
 tandrii@chromium.org
+tandrii@google.com
 
 per-file ninja*=thakis@chromium.org
 per-file ninja*=scottmg@chromium.org
@@ -16,6 +16,8 @@ per-file ninja*=scottmg@chromium.org
 per-file autoninja*=brucedawson@chromium.org
 
 per-file ninjalog*=tikuta@chromium.org
+
+per-file pylint*=vapier@chromium.org
 
 per-file cbuildbot=file://CROS_OWNERS
 per-file chrome_set_ver=file://CROS_OWNERS

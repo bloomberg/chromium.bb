@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/strcat.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/fido_constants.h"
@@ -55,7 +55,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
     std::move(provide_pin).Run(kPIN);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   test::TestCallbackReceiver<> ready_callback_;
   test::StatusAndValuesCallbackReceiver<
@@ -64,7 +64,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
       base::Optional<size_t>>
       get_credentials_callback_;
   test::ValueCallbackReceiver<CtapDeviceResponseCode> delete_callback_;
-  test::ValueCallbackReceiver<FidoReturnCode> finished_callback_;
+  test::ValueCallbackReceiver<CredentialManagementStatus> finished_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
 
 #if defined(OS_WIN)

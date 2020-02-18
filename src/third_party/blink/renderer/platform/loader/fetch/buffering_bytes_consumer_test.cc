@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -20,8 +20,7 @@ namespace {
 class BufferingBytesConsumerTest : public testing::Test {
  public:
   BufferingBytesConsumerTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   using Command = ReplayingBytesConsumer::Command;
   using Result = BytesConsumer::Result;
@@ -40,7 +39,7 @@ class BufferingBytesConsumerTest : public testing::Test {
     return consumer_handle;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BufferingBytesConsumerTest, Read) {

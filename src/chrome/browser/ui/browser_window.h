@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -32,8 +33,7 @@
 #endif
 
 class Browser;
-class ClickToCallDialog;
-class ClickToCallSharingDialogController;
+class SharingDialog;
 class DownloadShelf;
 class ExclusiveAccessContext;
 class ExtensionsContainer;
@@ -41,6 +41,7 @@ class FindBar;
 class GURL;
 class LocationBar;
 class PageActionIconContainer;
+class SharingUiController;
 class StatusBubble;
 class ToolbarActionsBar;
 
@@ -64,10 +65,6 @@ class Extension;
 
 namespace gfx {
 class Size;
-}
-
-namespace signin {
-struct ManageAccountsParams;
 }
 
 namespace signin_metrics {
@@ -271,9 +268,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Updates the toolbar with the state for the specified |contents|.
   virtual void UpdateToolbar(content::WebContents* contents) = 0;
 
-  // Updates whether or not the toolbar is visible. Animates the transition if
-  // |animate| is true.
-  virtual void UpdateToolbarVisibility(bool visible, bool animate) = 0;
+  // Updates whether or not the custom tab bar is visible. Animates the
+  // transition if |animate| is true.
+  virtual void UpdateCustomTabBarVisibility(bool visible, bool animate) = 0;
 
   // Resets the toolbar's tab state for |contents|.
   virtual void ResetToolbarTabState(content::WebContents* contents) = 0;
@@ -331,25 +328,25 @@ class BrowserWindow : public ui::BaseWindow {
   // Visible() functions are renamed to Available().
   virtual bool IsToolbarShowing() const = 0;
 
-  // Shows the Click to Call dialog.
-  virtual ClickToCallDialog* ShowClickToCallDialog(
-      content::WebContents* contents,
-      ClickToCallSharingDialogController* controller) = 0;
+  // Shows the dialog for a sharing feature.
+  virtual SharingDialog* ShowSharingDialog(content::WebContents* contents,
+                                           SharingUiController* controller) = 0;
 
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 
   // Shows the intent picker bubble. |app_info| contains the app candidates to
-  // display, |enable_stay_in_chrome| allows to enable or disable 'Stay in
-  // Chrome' (used for non-http(s) queries), if |show_persistence_options| is
-  // false, the "remember my choice" checkbox is hidden, the "stay in chrome"
-  // button is hidden, and |callback| helps to continue the flow back to either
+  // display, if |show_stay_in_chrome| is false, the 'Stay in
+  // Chrome' (used for non-http(s) queries) button is hidden, if
+  // |show_remember_selection| is false, the "remember my choice" checkbox is
+  // hidden and |callback| helps to continue the flow back to either
   // AppsNavigationThrottle or ArcExternalProtocolDialog capturing the user's
   // decision and storing UMA metrics.
   virtual void ShowIntentPickerBubble(
       std::vector<apps::IntentPickerAppInfo> app_info,
-      bool enable_stay_in_chrome,
-      bool show_persistence_options,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
+      PageActionIconType icon_type,
       IntentPickerResponse callback) = 0;
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
@@ -405,7 +402,7 @@ class BrowserWindow : public ui::BaseWindow {
   // This method should call |callback| with the user's response.
   virtual void ConfirmBrowserCloseWithPendingDownloads(
       int download_count,
-      Browser::DownloadClosePreventionType dialog_type,
+      Browser::DownloadCloseType dialog_type,
       bool app_modal,
       const base::Callback<void(bool)>& callback) = 0;
 
@@ -455,13 +452,13 @@ class BrowserWindow : public ui::BaseWindow {
   };
   virtual void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) = 0;
 
-  // Shows User Happiness Tracking Survey's invitation bubble anchored to the
-  // app menu button.
-  virtual void ShowHatsBubbleFromAppMenuButton() = 0;
+  // Shows User Happiness Tracking Survey's invitation bubble when possible
+  // (such as having the proper anchor view).
+  // |site_id| is the site identification of the survey the bubble leads to.
+  virtual void ShowHatsBubble(const std::string& site_id) = 0;
 
   // Executes |command| registered by |extension|.
   virtual void ExecuteExtensionCommand(const extensions::Extension* extension,

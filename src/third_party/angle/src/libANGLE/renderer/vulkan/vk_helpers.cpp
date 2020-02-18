@@ -59,9 +59,7 @@ struct ImageMemoryBarrierData
 
     // If access is read-only, the execution barrier can be skipped altogether if retransitioning to
     // the same layout.  This is because read-after-read does not need an execution or memory
-    // barrier.  Vulkan additionally guarantees color attachment and depth/stencil attachment
-    // read/writes to be in execution order, so they too won't need a barrier if transitioning to
-    // the same layout.
+    // barrier.
     //
     // Otherwise, same-layout transitions only require an execution barrier (and not a memory
     // barrier).
@@ -149,16 +147,29 @@ constexpr angle::PackedEnumMap<ImageLayout, ImageMemoryBarrierData> kImageMemory
         },
     },
     {
-        ImageLayout::FragmentShaderReadOnly,
+        ImageLayout::AllGraphicsShadersReadOnly,
         {
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+            VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
             // Transition to: all reads must happen after barrier.
             VK_ACCESS_SHADER_READ_BIT,
             // Transition from: RAR and WAR don't need memory barrier.
             0,
             false,
+        },
+    },
+    {
+        ImageLayout::AllGraphicsShadersWrite,
+        {
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+            VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+            // Transition to: all reads and writes must happen after barrier.
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+            // Transition from: all writes must finish before barrier.
+            VK_ACCESS_SHADER_WRITE_BIT,
+            true,
         },
     },
     {
@@ -171,33 +182,20 @@ constexpr angle::PackedEnumMap<ImageLayout, ImageMemoryBarrierData> kImageMemory
             VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             // Transition from: all writes must finish before barrier.
             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            false,
+            true,
         },
     },
     {
         ImageLayout::DepthStencilAttachment,
         {
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
             // Transition to: all reads and writes must happen after barrier.
             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             // Transition from: all writes must finish before barrier.
             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            false,
-        },
-    },
-    {
-        ImageLayout::AllGraphicsShadersReadOnly,
-        {
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            // Transition to: all reads must happen after barrier.
-            VK_ACCESS_SHADER_READ_BIT,
-            // Transition from: RAR and WAR don't need memory barrier.
-            0,
-            false,
+            true,
         },
     },
     {
@@ -561,10 +559,25 @@ void DynamicBuffer::updateAlignment(RendererVk *renderer, size_t alignment)
     size_t atomSize =
         static_cast<size_t>(renderer->getPhysicalDeviceProperties().limits.nonCoherentAtomSize);
 
-    // We need lcm(alignment, atomSize), we are assuming one divides the other so std::max() could
-    // be used instead.
-    ASSERT(alignment % atomSize == 0 || atomSize % alignment == 0);
-    alignment = std::max(alignment, atomSize);
+    // We need lcm(alignment, atomSize).  Usually, one divides the other so std::max() could be used
+    // instead.  Only known case where this assumption breaks is for 3-component types with 16- or
+    // 32-bit channels, so that's special-cased to avoid a full-fledged lcm implementation.
+
+    if (gl::isPow2(alignment))
+    {
+        ASSERT(alignment % atomSize == 0 || atomSize % alignment == 0);
+        ASSERT(gl::isPow2(atomSize));
+
+        alignment = std::max(alignment, atomSize);
+    }
+    else
+    {
+        ASSERT(gl::isPow2(atomSize));
+        ASSERT(alignment % 3 == 0);
+        ASSERT(gl::isPow2(alignment / 3));
+
+        alignment = std::max(alignment / 3, atomSize) * 3;
+    }
 
     // If alignment has changed, make sure the next allocation is done at an aligned offset.
     if (alignment != mAlignment)
@@ -1135,14 +1148,12 @@ angle::Result LineLoopHelper::getIndexBufferForElementArrayBuffer(ContextVk *con
                                                                   intptr_t elementArrayOffset,
                                                                   vk::BufferHelper **bufferOut,
                                                                   VkDeviceSize *bufferOffsetOut,
-                                                                  size_t *indexCountOut)
+                                                                  uint32_t *indexCountOut)
 {
     if (glIndexType == gl::DrawElementsType::UnsignedByte ||
         contextVk->getState().isPrimitiveRestartEnabled())
     {
         ANGLE_TRACE_EVENT0("gpu.angle", "LineLoopHelper::getIndexBufferForElementArrayBuffer");
-        // Needed before reading buffer or we could get stale data.
-        ANGLE_TRY(contextVk->finishImpl());
 
         void *srcDataMapping = nullptr;
         ANGLE_TRY(elementArrayBufferVk->mapImpl(contextVk, &srcDataMapping));
@@ -1177,8 +1188,8 @@ angle::Result LineLoopHelper::getIndexBufferForElementArrayBuffer(ContextVk *con
     if (contextVk->getRenderer()->getFeatures().extraCopyBufferRegion.enabled)
         copies.push_back({sourceOffset, *bufferOffsetOut + (unitCount + 1) * unitSize, 1});
 
-    ANGLE_TRY(
-        elementArrayBufferVk->copyToBuffer(contextVk, *bufferOut, copies.size(), copies.data()));
+    ANGLE_TRY(elementArrayBufferVk->copyToBuffer(
+        contextVk, *bufferOut, static_cast<uint32_t>(copies.size()), copies.data()));
     ANGLE_TRY(mDynamicIndexBuffer.flush(contextVk));
     return angle::Result::Continue;
 }
@@ -1189,14 +1200,14 @@ angle::Result LineLoopHelper::streamIndices(ContextVk *contextVk,
                                             const uint8_t *srcPtr,
                                             vk::BufferHelper **bufferOut,
                                             VkDeviceSize *bufferOffsetOut,
-                                            size_t *indexCountOut)
+                                            uint32_t *indexCountOut)
 {
     VkIndexType indexType = gl_vk::kIndexTypeMap[glIndexType];
 
     uint8_t *indices = nullptr;
 
     auto unitSize = (indexType == VK_INDEX_TYPE_UINT16 ? sizeof(uint16_t) : sizeof(uint32_t));
-    size_t numOutIndices = static_cast<size_t>(indexCount) + 1;
+    uint32_t numOutIndices = indexCount + 1;
     if (contextVk->getState().isPrimitiveRestartEnabled())
     {
         numOutIndices = GetLineLoopWithRestartIndexCount(glIndexType, indexCount, srcPtr);
@@ -1414,7 +1425,7 @@ void BufferHelper::unmap(VkDevice device)
     }
 }
 
-angle::Result BufferHelper::flush(ContextVk *contextVk, size_t offset, size_t size)
+angle::Result BufferHelper::flush(ContextVk *contextVk, VkDeviceSize offset, VkDeviceSize size)
 {
     bool hostVisible  = mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
     bool hostCoherent = mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -1430,7 +1441,7 @@ angle::Result BufferHelper::flush(ContextVk *contextVk, size_t offset, size_t si
     return angle::Result::Continue;
 }
 
-angle::Result BufferHelper::invalidate(ContextVk *contextVk, size_t offset, size_t size)
+angle::Result BufferHelper::invalidate(ContextVk *contextVk, VkDeviceSize offset, VkDeviceSize size)
 {
     bool hostVisible  = mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
     bool hostCoherent = mMemoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -1493,20 +1504,20 @@ void ImageHelper::initStagingBuffer(RendererVk *renderer,
 
 angle::Result ImageHelper::init(Context *context,
                                 gl::TextureType textureType,
-                                const gl::Extents &glExtents,
+                                const VkExtent3D &extents,
                                 const Format &format,
                                 GLint samples,
                                 VkImageUsageFlags usage,
                                 uint32_t mipLevels,
                                 uint32_t layerCount)
 {
-    return initExternal(context, textureType, glExtents, format, samples, usage,
+    return initExternal(context, textureType, extents, format, samples, usage,
                         ImageLayout::Undefined, nullptr, mipLevels, layerCount);
 }
 
 angle::Result ImageHelper::initExternal(Context *context,
                                         gl::TextureType textureType,
-                                        const gl::Extents &glExtents,
+                                        const VkExtent3D &extents,
                                         const Format &format,
                                         GLint samples,
                                         VkImageUsageFlags usage,
@@ -1517,17 +1528,18 @@ angle::Result ImageHelper::initExternal(Context *context,
 {
     ASSERT(!valid());
 
-    // Validate that the input layerCount is compatible with the texture type
-    ASSERT(textureType != gl::TextureType::_3D || layerCount == 1);
-    ASSERT(textureType != gl::TextureType::External || layerCount == 1);
-    ASSERT(textureType != gl::TextureType::Rectangle || layerCount == 1);
-    ASSERT(textureType != gl::TextureType::CubeMap || layerCount == gl::kCubeFaceCount);
-
-    gl_vk::GetExtent(glExtents, &mExtents);
+    mExtents    = extents;
     mFormat     = &format;
     mSamples    = samples;
-    mLayerCount = layerCount;
     mLevelCount = mipLevels;
+    mLayerCount = layerCount;
+
+    // Validate that mLayerCount is compatible with the texture type
+    ASSERT(textureType != gl::TextureType::_3D || mLayerCount == 1);
+    ASSERT(textureType != gl::TextureType::_2DArray || mExtents.depth == 1);
+    ASSERT(textureType != gl::TextureType::External || mLayerCount == 1);
+    ASSERT(textureType != gl::TextureType::Rectangle || mLayerCount == 1);
+    ASSERT(textureType != gl::TextureType::CubeMap || mLayerCount == gl::kCubeFaceCount);
 
     VkImageCreateInfo imageInfo     = {};
     imageInfo.sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -2082,12 +2094,10 @@ angle::Result ImageHelper::stageSubresourceUpdate(ContextVk *contextVk,
         contextVk, formatInfo.computeDepthPitch(glExtents.height, unpack.imageHeight, inputRowPitch,
                                                 &inputDepthPitch));
 
-    bool applySkipImages = false;
-
     GLuint inputSkipBytes = 0;
     ANGLE_VK_CHECK_MATH(contextVk,
                         formatInfo.computeSkipBytes(type, inputRowPitch, inputDepthPitch, unpack,
-                                                    applySkipImages, &inputSkipBytes));
+                                                    index.usesTex3D(), &inputSkipBytes));
 
     const angle::Format &storageFormat = vkFormat.imageFormat();
 
@@ -2097,6 +2107,9 @@ angle::Result ImageHelper::stageSubresourceUpdate(ContextVk *contextVk,
     uint32_t bufferRowLength;
     uint32_t bufferImageHeight;
     size_t allocationSize;
+
+    LoadImageFunctionInfo loadFunctionInfo = vkFormat.textureLoadFunctions(type);
+    LoadImageFunction stencilLoadFunction  = nullptr;
 
     if (storageFormat.isBlock)
     {
@@ -2133,7 +2146,24 @@ angle::Result ImageHelper::stageSubresourceUpdate(ContextVk *contextVk,
     {
         ASSERT(storageFormat.pixelBytes != 0);
 
-        outputRowPitch   = storageFormat.pixelBytes * glExtents.width;
+        if (storageFormat.id == angle::FormatID::D24_UNORM_S8_UINT)
+        {
+            stencilLoadFunction = angle::LoadX24S8ToS8;
+        }
+        if (storageFormat.id == angle::FormatID::D32_FLOAT_S8X24_UINT)
+        {
+            // If depth is D32FLOAT_S8, we must pack D32F tightly (no stencil) for CopyBufferToImage
+            outputRowPitch = sizeof(float) * glExtents.width;
+
+            // The generic load functions don't handle tightly packing D32FS8 to D32F & S8 so call
+            // special case load functions.
+            loadFunctionInfo.loadFunction = angle::LoadD32FS8X24ToD32F;
+            stencilLoadFunction           = angle::LoadX32S8ToS8;
+        }
+        else
+        {
+            outputRowPitch = storageFormat.pixelBytes * glExtents.width;
+        }
         outputDepthPitch = outputRowPitch * glExtents.height;
 
         bufferRowLength   = glExtents.width;
@@ -2160,26 +2190,35 @@ angle::Result ImageHelper::stageSubresourceUpdate(ContextVk *contextVk,
     ANGLE_TRY(mStagingBuffer.allocate(contextVk, allocationSize, &stagingPointer, &bufferHandle,
                                       &stagingOffset, nullptr));
 
-    const uint8_t *source = pixels + inputSkipBytes;
+    const uint8_t *source = pixels + static_cast<ptrdiff_t>(inputSkipBytes);
 
-    LoadImageFunctionInfo loadFunction = vkFormat.textureLoadFunctions(type);
-
-    loadFunction.loadFunction(glExtents.width, glExtents.height, glExtents.depth, source,
-                              inputRowPitch, inputDepthPitch, stagingPointer, outputRowPitch,
-                              outputDepthPitch);
+    loadFunctionInfo.loadFunction(glExtents.width, glExtents.height, glExtents.depth, source,
+                                  inputRowPitch, inputDepthPitch, stagingPointer, outputRowPitch,
+                                  outputDepthPitch);
 
     VkBufferImageCopy copy         = {};
     VkImageAspectFlags aspectFlags = GetFormatAspectFlags(vkFormat.imageFormat());
 
-    copy.bufferOffset                    = stagingOffset;
-    copy.bufferRowLength                 = bufferRowLength;
-    copy.bufferImageHeight               = bufferImageHeight;
-    copy.imageSubresource.mipLevel       = index.getLevelIndex();
-    copy.imageSubresource.baseArrayLayer = index.hasLayer() ? index.getLayerIndex() : 0;
-    copy.imageSubresource.layerCount     = index.getLayerCount();
+    copy.bufferOffset      = stagingOffset;
+    copy.bufferRowLength   = bufferRowLength;
+    copy.bufferImageHeight = bufferImageHeight;
+
+    copy.imageSubresource.mipLevel   = index.getLevelIndex();
+    copy.imageSubresource.layerCount = index.getLayerCount();
 
     gl_vk::GetOffset(offset, &copy.imageOffset);
     gl_vk::GetExtent(glExtents, &copy.imageExtent);
+
+    if (gl::IsArrayTextureType(index.getType()))
+    {
+        copy.imageSubresource.baseArrayLayer = offset.z;
+        copy.imageOffset.z                   = 0;
+        copy.imageExtent.depth               = 1;
+    }
+    else
+    {
+        copy.imageSubresource.baseArrayLayer = index.hasLayer() ? index.getLayerIndex() : 0;
+    }
 
     if (stencilAllocationSize > 0)
     {
@@ -2194,22 +2233,22 @@ angle::Result ImageHelper::stageSubresourceUpdate(ContextVk *contextVk,
         outputRowPitch   = glExtents.width;
         outputDepthPitch = outputRowPitch * glExtents.height;
 
-        angle::LoadX24S8ToS8(glExtents.width, glExtents.height, glExtents.depth, source,
-                             inputRowPitch, inputDepthPitch, stagingPointer, outputRowPitch,
-                             outputDepthPitch);
+        ASSERT(stencilLoadFunction != nullptr);
+        stencilLoadFunction(glExtents.width, glExtents.height, glExtents.depth, source,
+                            inputRowPitch, inputDepthPitch, stagingPointer, outputRowPitch,
+                            outputDepthPitch);
 
         VkBufferImageCopy stencilCopy = {};
 
         stencilCopy.bufferOffset                    = stagingOffset;
         stencilCopy.bufferRowLength                 = bufferRowLength;
         stencilCopy.bufferImageHeight               = bufferImageHeight;
-        stencilCopy.imageSubresource.mipLevel       = index.getLevelIndex();
-        stencilCopy.imageSubresource.baseArrayLayer = index.hasLayer() ? index.getLayerIndex() : 0;
-        stencilCopy.imageSubresource.layerCount     = index.getLayerCount();
-
-        gl_vk::GetOffset(offset, &stencilCopy.imageOffset);
-        gl_vk::GetExtent(glExtents, &stencilCopy.imageExtent);
-        stencilCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+        stencilCopy.imageSubresource.mipLevel       = copy.imageSubresource.mipLevel;
+        stencilCopy.imageSubresource.baseArrayLayer = copy.imageSubresource.baseArrayLayer;
+        stencilCopy.imageSubresource.layerCount     = copy.imageSubresource.layerCount;
+        stencilCopy.imageOffset                     = copy.imageOffset;
+        stencilCopy.imageExtent                     = copy.imageExtent;
+        stencilCopy.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_STENCIL_BIT;
         mSubresourceUpdates.emplace_back(bufferHandle, stencilCopy);
 
         aspectFlags &= ~VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -2372,15 +2411,33 @@ angle::Result ImageHelper::stageSubresourceUpdateFromFramebuffer(
 void ImageHelper::stageSubresourceUpdateFromImage(vk::ImageHelper *image,
                                                   const gl::ImageIndex &index,
                                                   const gl::Offset &destOffset,
-                                                  const gl::Extents &glExtents)
+                                                  const gl::Extents &glExtents,
+                                                  const VkImageType imageType)
 {
-    VkImageCopy copyToImage                   = {};
-    copyToImage.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    copyToImage.srcSubresource.layerCount     = index.getLayerCount();
-    copyToImage.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    copyToImage.dstSubresource.mipLevel       = index.getLevelIndex();
-    copyToImage.dstSubresource.baseArrayLayer = index.hasLayer() ? index.getLayerIndex() : 0;
-    copyToImage.dstSubresource.layerCount     = index.getLayerCount();
+    VkImageCopy copyToImage               = {};
+    copyToImage.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyToImage.srcSubresource.layerCount = index.getLayerCount();
+    copyToImage.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyToImage.dstSubresource.mipLevel   = index.getLevelIndex();
+
+    if (imageType == VK_IMAGE_TYPE_3D)
+    {
+        // These values must be set explicitly to follow the Vulkan spec:
+        // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkImageCopy.html
+        // If either of the calling command’s srcImage or dstImage parameters are of VkImageType
+        // VK_IMAGE_TYPE_3D, the baseArrayLayer and layerCount members of the corresponding
+        // subresource must be 0 and 1, respectively
+        copyToImage.dstSubresource.baseArrayLayer = 0;
+        copyToImage.dstSubresource.layerCount     = 1;
+        // Preserve the assumption that destOffset.z == "dstSubresource.baseArrayLayer"
+        ASSERT(destOffset.z == (index.hasLayer() ? index.getLayerIndex() : 0));
+    }
+    else
+    {
+        copyToImage.dstSubresource.baseArrayLayer = index.hasLayer() ? index.getLayerIndex() : 0;
+        copyToImage.dstSubresource.layerCount     = index.getLayerCount();
+    }
+
     gl_vk::GetOffset(destOffset, &copyToImage.dstOffset);
     gl_vk::GetExtent(glExtents, &copyToImage.extent);
 
@@ -2740,8 +2797,10 @@ angle::Result ShaderProgramHelper::getComputePipeline(Context *context,
     createInfo.basePipelineHandle = VK_NULL_HANDLE;
     createInfo.basePipelineIndex  = 0;
 
+    vk::PipelineCache *pipelineCache = nullptr;
+    ANGLE_TRY(renderer->getPipelineCache(&pipelineCache));
     ANGLE_VK_TRY(context, mComputePipeline.get().initCompute(context->getDevice(), createInfo,
-                                                             renderer->getPipelineCache()));
+                                                             *pipelineCache));
 
     *pipelineOut = &mComputePipeline;
     return angle::Result::Continue;

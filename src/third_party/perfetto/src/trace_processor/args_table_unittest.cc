@@ -15,12 +15,10 @@
  */
 
 #include "src/trace_processor/args_table.h"
-#include "src/trace_processor/scoped_db.h"
+#include "src/trace_processor/sqlite/scoped_db.h"
 #include "src/trace_processor/trace_processor_context.h"
 #include "src/trace_processor/trace_storage.h"
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "test/gtest_and_gmock.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -30,6 +28,7 @@ class ArgsTableUnittest : public ::testing::Test {
  public:
   ArgsTableUnittest() {
     sqlite3* db = nullptr;
+    PERFETTO_CHECK(sqlite3_initialize() == SQLITE_OK);
     PERFETTO_CHECK(sqlite3_open(":memory:", &db) == SQLITE_OK);
     db_.reset(db);
 
@@ -55,8 +54,6 @@ class ArgsTableUnittest : public ::testing::Test {
                           base::Optional<int64_t> int_value,
                           base::Optional<const char*> string_value,
                           base::Optional<double> real_value);
-
-  ~ArgsTableUnittest() override { context_.storage->ResetStorage(); }
 
  protected:
   TraceProcessorContext context_;
@@ -86,7 +83,7 @@ void ArgsTableUnittest::AssertArgRowValues(
     ASSERT_EQ(sqlite3_column_type(*stmt_, 4), SQLITE_NULL);
   }
   if (real_value.has_value()) {
-    ASSERT_EQ(sqlite3_column_double(*stmt_, 5), real_value.value());
+    ASSERT_DOUBLE_EQ(sqlite3_column_double(*stmt_, 5), real_value.value());
   } else {
     ASSERT_EQ(sqlite3_column_type(*stmt_, 5), SQLITE_NULL);
   }

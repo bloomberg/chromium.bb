@@ -29,12 +29,10 @@
     {
       name: "Accelerometer",
       feature_policy_name: "accelerometer",
-      depends_on: ["Sensor"],
     },
     {
       name: "AmbientLightSensor",
       feature_policy_name: "ambient-light-sensor",
-      depends_on: ["Sensor"],
     },
     {
       name: "Autoplay",
@@ -105,6 +103,11 @@
       depends_on: ["ClientHintsFeaturePolicy"],
     },
     {
+      name: "DocumentAccess",
+      feature_policy_name: "document-access",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
     },
@@ -163,7 +166,6 @@
     {
       name: "Gyroscope",
       feature_policy_name: "gyroscope",
-      depends_on: ["Sensor"],
     },
     {
       name: "Hid",
@@ -193,7 +195,6 @@
     {
       name: "Magnetometer",
       feature_policy_name: "magnetometer",
-      depends_on: ["Sensor"],
     },
     {
       name: "Microphone",
@@ -302,11 +303,16 @@
       feature_policy_name: "wake-lock",
       depends_on: ["WakeLock"],
     },
-    // The feature is added manually in feature_policy_helper.cc.
+    {
+      name: "WebXr",
+      feature_policy_name: "xr",
+      depends_on: ["WebXR"],
+    },
+    // TODO(crbug.com/960132): WebVR added manually in feature_policy_helper.cc.
     // {
     //   name: "WebVr",
     //   feature_policy_name: "vr",
-    //   depends_on: ["WebVR", "WebXR"],
+    //   depends_on: ["WebVR"],
     // },
   ],
 }

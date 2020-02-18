@@ -311,6 +311,10 @@ class CORE_EXPORT HTMLInputElement
 
   void ChildrenChanged(const ChildrenChange&) override;
 
+  PaintLayerScrollableArea* GetScrollableArea() const final;
+
+  void SetHasBeenPasswordField() { has_been_password_field_ = true; }
+
  protected:
   void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();

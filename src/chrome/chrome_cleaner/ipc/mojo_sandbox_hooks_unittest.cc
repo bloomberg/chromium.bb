@@ -11,10 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_task_environment.h"
-#include "chrome/chrome_cleaner/mojom/test_mojo_sandbox_hooks.mojom.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/test_mojo_sandbox_hooks.mojom.h"
 #include "chrome/chrome_cleaner/os/early_exit.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -38,7 +38,7 @@ class MojoSandboxHooksTest : public base::MultiProcessTest {
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // |TestMojoSandboxHooksImpl| runs and handles mojo requests in the sandbox
@@ -133,7 +133,7 @@ class TestSandboxTargetHooks : public MojoSandboxTargetHooks {
     (*impl_ptr).reset(new TestMojoSandboxHooksImpl(std::move(request)));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void RunEchoString(mojom::TestMojoSandboxHooksPtr* test_mojo_ptr,

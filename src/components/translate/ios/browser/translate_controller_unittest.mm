@@ -11,7 +11,7 @@
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "url/gurl.h"
@@ -63,7 +63,7 @@ class TranslateControllerTest : public PlatformTest,
     translation_time_ = translation_time;
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<web::TestWebState> test_web_state_;
   std::unique_ptr<web::TestBrowserState> test_browser_state_;
   web::FakeWebFrame fake_main_frame_;

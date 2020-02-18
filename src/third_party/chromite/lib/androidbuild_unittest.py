@@ -7,12 +7,14 @@
 
 from __future__ import print_function
 
+import os
+import pwd
+
 import apiclient
 import httplib2
 import mock
 import oauth2client
-import os
-import pwd
+from six.moves import builtins
 
 from chromite.lib import androidbuild
 from chromite.lib import cros_test_lib
@@ -154,15 +156,6 @@ class AndroidBuildTests(cros_test_lib.TestCase):
   def testFetchArtifact(self):
     """Checks that FetchArtifact makes the correct androidbuild API calls."""
     ab_client = mock.Mock()
-
-    # Import the 'builtins' module to be able to mock open(). The snippet below
-    # will work on either Python 2 or Python 3. The linter might not be able to
-    # access it, so pylint: disable=import-error
-    from sys import version_info
-    if version_info.major == 2:
-      import __builtin__ as builtins
-    else:
-      import builtins
 
     with mock.patch.object(apiclient.http, 'MediaIoBaseDownload') \
         as mock_download, \

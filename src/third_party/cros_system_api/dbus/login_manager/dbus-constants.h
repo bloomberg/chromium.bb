@@ -14,6 +14,13 @@ const char kSessionManagerEmitLoginPromptVisible[] = "EmitLoginPromptVisible";
 const char kSessionManagerEmitAshInitialized[] = "EmitAshInitialized";
 const char kSessionManagerEnableChromeTesting[] = "EnableChromeTesting";
 const char kSessionManagerSaveLoginPassword[] = "SaveLoginPassword";
+const char kSessionManagerLoginScreenStorageStore[] = "LoginScreenStorageStore";
+const char kSessionManagerLoginScreenStorageRetrieve[] =
+    "LoginScreenStorageRetrieve";
+const char kSessionManagerLoginScreenStorageListKeys[] =
+    "LoginScreenStorageListKeys";
+const char kSessionManagerLoginScreenStorageDelete[] =
+    "LoginScreenStorageDelete";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
@@ -27,6 +34,7 @@ const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
 const char kSessionManagerRetrievePrimarySession[] = "RetrievePrimarySession";
 const char kSessionManagerStartTPMFirmwareUpdate[] = "StartTPMFirmwareUpdate";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
+const char kSessionManagerStartRemoteDeviceWipe[] = "StartRemoteDeviceWipe";
 const char kSessionManagerClearForcedReEnrollmentVpd[] =
     "ClearForcedReEnrollmentVpd";
 const char kSessionManagerHandleSupervisedUserCreationStarting[] =

@@ -78,12 +78,11 @@ void CrostiniApps::ReInitializeForTesting(
 void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
                            apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  for (const std::string& app_id : registry_->GetRegisteredAppIds()) {
-    base::Optional<crostini::CrostiniRegistryService::Registration>
-        registration = registry_->GetRegistration(app_id);
-    if (registration.has_value()) {
-      apps.push_back(Convert(app_id, *registration, true));
-    }
+  for (const auto& pair : registry_->GetRegisteredApps()) {
+    const std::string& app_id = pair.first;
+    const crostini::CrostiniRegistryService::Registration& registration =
+        pair.second;
+    apps.push_back(Convert(app_id, registration, true));
   }
   subscriber->OnApps(std::move(apps));
   subscribers_.AddPtr(std::move(subscriber));
@@ -256,12 +255,16 @@ apps::mojom::AppPtr CrostiniApps::Convert(
 
   auto show = !registration.NoDisplay() ? apps::mojom::OptionalBool::kTrue
                                         : apps::mojom::OptionalBool::kFalse;
+  auto show_in_search = show;
   if (registration.is_terminal_app()) {
     show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
+    // The Crostini Terminal should appear in the app search, even when
+    // Crostini is not installed.
+    show_in_search = apps::mojom::OptionalBool::kTrue;
   }
   app->show_in_launcher = show;
-  app->show_in_search = show;
+  app->show_in_search = show_in_search;
   // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
   // Management.
   app->show_in_management = apps::mojom::OptionalBool::kFalse;

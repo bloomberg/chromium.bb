@@ -166,8 +166,8 @@ def SwarmingRetriableErrorCheck(exception):
         return True
     except (IndexError, KeyError) as e:
       logging.warning(
-          "Could not determine if exception is retriable. Exception: %s. "
-          "Error: %s. Swarming summary json: %s",
+          'Could not determine if exception is retriable. Exception: %s. '
+          'Error: %s. Swarming summary json: %s',
           str(exception), str(e),
           json.dumps(result.task_summary_json, indent=2))
       return False

@@ -23,7 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/version.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
@@ -102,6 +102,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
     *parameter = restrict_parameter_;
     return true;
   }
+  bool IsEnterprise() override { return false; }
 
   void set_restrict_parameter(const std::string& value) {
     restrict_parameter_ = value;
@@ -336,7 +337,7 @@ class VariationsServiceTest : public ::testing::Test {
   network::TestNetworkConnectionTracker* network_tracker_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<metrics::TestEnabledStateProvider> enabled_state_provider_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 

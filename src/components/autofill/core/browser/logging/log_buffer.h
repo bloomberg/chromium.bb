@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "url/gurl.h"
 
 // The desired pattern to generate log messages is to pass a scope, a log
@@ -73,19 +74,9 @@ struct Attrib {
 // An <br> HTML tag, note that this does not need to be closed.
 struct Br {};
 
-// A table row containing two cells. This generates
-// <tr><td>%1</td><td>%2</td></tr>
-template <typename T1, typename T2>
-struct Tr2Cells {
-  T1 cell1;
-  T2 cell2;
-};
-
-// Helper function to create Tr2Cells entries w/o specifying the type names.
-template <typename T1, typename T2>
-Tr2Cells<T1, T2> MakeTr2Cells(T1&& cell1, T2&& cell2) {
-  return Tr2Cells<T1, T2>{std::forward<T1>(cell1), std::forward<T2>(cell2)};
-}
+// A table row tag. This is syntactic sugar for logging data into a table.
+// See LogTableRowBuffer below.
+struct Tr {};
 
 // A buffer into which you can stream values. See the top of this header file
 // for samples.
@@ -112,13 +103,14 @@ class LogBuffer {
 
   // The stack of values being constructed. Each item is a dictionary with the
   // following attributes:
-  // - type: 'node' | 'text'
+  // - type: 'element' | 'fragment' | 'text'
   // - value: name of tag | text content
   // - children (opt): list of child nodes
   // - attributes (opt): dictionary of name/value pairs
   // The |buffer_| serves as a stack where the last element is being
   // constructed. Once it is read (i.e. closed via a CTag), it is popped from
   // the stack and attached as a child of the previously second last element.
+  // Only the first element of buffer_ is a 'fragment' and it is never closed.
   std::vector<base::Value> buffer_;
 
   bool active_ = true;
@@ -161,11 +153,69 @@ LogBuffer& operator<<(LogBuffer& buf, LogBuffer&& buffer);
 // reasons.
 LogBuffer& operator<<(LogBuffer& buf, const GURL& url);
 
-template <typename T1, typename T2>
-LogBuffer& operator<<(LogBuffer& buf, Tr2Cells<T1, T2>&& row) {
-  return buf << Tag{"tr"} << Tag{"td"} << std::move(row.cell1) << CTag{}
-             << Tag{"td"} << std::move(row.cell2) << CTag{} << CTag{};
+template <typename T>
+LogBuffer& operator<<(LogBuffer& buf,
+                      const ::google::protobuf::RepeatedField<T>& values) {
+  buf << "[";
+  for (int i = 0; i < values.size(); ++i) {
+    if (i)
+      buf << ", ";
+    buf << values.Get(i);
+  }
+  buf << "]";
+  return buf;
 }
+
+template <typename T>
+LogBuffer& operator<<(LogBuffer& buf, const std::vector<T>& values) {
+  buf << "[";
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (i)
+      buf << ", ";
+    buf << values.at(i);
+  }
+  buf << "]";
+  return buf;
+}
+
+// This is syntactic sugar for creating table rows in a LogBuffer. Each
+// value streamed into this LogTableRowBuffer is wrapped by a <td> element.
+// The entire row is wrapped by a <tr>.
+//
+// Here is an example:
+//   LogBuffer buf;
+//   buf << Tr{} << Attrib{"style", "color: red"} << "Foo" << "Bar";
+// This creates:
+//   <tr style="color: red"><td>Foo</td><td>Bar</td></tr>.
+class LogTableRowBuffer {
+ public:
+  explicit LogTableRowBuffer(LogBuffer* parent);
+  LogTableRowBuffer(LogTableRowBuffer&& buffer) noexcept;
+  ~LogTableRowBuffer();
+
+ private:
+  template <typename T>
+  friend LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, T&& value);
+  friend LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf,
+                                        Attrib&& attrib);
+
+  LogBuffer* parent_ = nullptr;
+};
+
+LogTableRowBuffer operator<<(LogBuffer& buf, Tr&& tr);
+
+template <typename T>
+LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, T&& value) {
+  *buf.parent_ << Tag{"td"} << std::forward<T>(value) << CTag{};
+  return std::move(buf);
+}
+
+LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, Attrib&& attrib);
+
+// Highlights the first |needle| in |haystack| by wrapping it in <b> tags.
+LogBuffer HighlightValue(base::StringPiece haystack, base::StringPiece needle);
+LogBuffer HighlightValue(base::StringPiece16 haystack,
+                         base::StringPiece16 needle);
 
 }  // namespace autofill
 

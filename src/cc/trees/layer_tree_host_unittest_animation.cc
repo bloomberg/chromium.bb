@@ -124,8 +124,6 @@ class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
     num_commits_++;
   }
 
-  void AfterTest() override {}
-
  private:
   int num_commits_;
 };
@@ -154,8 +152,6 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
     }
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   int num_begin_frames_;
@@ -245,8 +241,6 @@ class LayerTreeHostAnimationTestNoDamageAnimation
     finished_animating_ = true;
   }
 
-  void AfterTest() override {}
-
  private:
   bool started_animating_;
   bool finished_animating_;
@@ -286,8 +280,6 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws
                                    DrawResult draw_result) override {
     return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
-
-  void AfterTest() override {}
 
  private:
   bool started_animating_;
@@ -330,8 +322,6 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
     // a commit, so we need to schedule a commit.
     layer_tree_host()->SetNeedsCommit();
   }
-
-  void AfterTest() override {}
 
  private:
   bool started_animating_;
@@ -401,8 +391,6 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
 
     EndTest();
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> picture_;
@@ -494,8 +482,6 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
       animation_->RemoveKeyframeModel(keyframe_model->id());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -585,8 +571,6 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
                      base::TimeTicks monotonic_time) override {
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -832,8 +816,6 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     }
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> scroll_layer_;
@@ -892,8 +874,6 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
                                std::unique_ptr<AnimationCurve> curve) override {
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -1000,8 +980,6 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
       EndTest();
     }
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -1323,6 +1301,14 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers()
       : frame_count_with_pending_tree_(0) {}
 
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+    layer_ = Layer::Create();
+    layer_->SetBounds(gfx::Size(4, 4));
+    layer_tree_host()->root_layer()->AddChild(layer_);
+    layer_tree_host()->SetElementIdsForTesting();
+  }
+
   void BeginTest() override {
     AttachAnimationsToTimeline();
     PostSetNeedsCommitToMainThread();
@@ -1330,18 +1316,18 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
 
   void DidCommit() override {
     if (layer_tree_host()->SourceFrameNumber() == 1) {
-      animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
+      animation_->AttachElement(layer_->element_id());
       AddAnimatedTransformToAnimation(animation_.get(), 4, 1, 1);
     } else if (layer_tree_host()->SourceFrameNumber() == 2) {
       AddOpacityTransitionToAnimation(animation_.get(), 1, 0.f, 0.5f, true);
 
-      scoped_refptr<Layer> layer = Layer::Create();
-      layer_tree_host()->root_layer()->AddChild(layer);
+      scoped_refptr<Layer> child_layer = Layer::Create();
+      layer_->AddChild(child_layer);
 
       layer_tree_host()->SetElementIdsForTesting();
-      layer->SetBounds(gfx::Size(4, 4));
+      child_layer->SetBounds(gfx::Size(4, 4));
 
-      animation_child_->AttachElement(layer->element_id());
+      animation_child_->AttachElement(child_layer->element_id());
       animation_child_->set_animation_delegate(this);
       AddOpacityTransitionToAnimation(animation_child_.get(), 1, 0.f, 0.5f,
                                       true);
@@ -1409,9 +1395,8 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
+  scoped_refptr<Layer> layer_;
   int frame_count_with_pending_tree_;
 };
 
@@ -1487,8 +1472,6 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
                                                     false);
     EndTest();
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<Layer> layer_;
@@ -1589,8 +1572,6 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> layer_;
 };
@@ -1606,11 +1587,14 @@ class LayerTreeHostAnimationTestAddKeyframeModelAfterAnimating
     layer_ = Layer::Create();
     layer_->SetBounds(gfx::Size(4, 4));
     layer_tree_host()->root_layer()->AddChild(layer_);
+    child_layer_ = Layer::Create();
+    child_layer_->SetBounds(gfx::Size(4, 4));
+    layer_->AddChild(child_layer_);
 
     AttachAnimationsToTimeline();
 
-    animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
-    animation_child_->AttachElement(layer_->element_id());
+    animation_->AttachElement(layer_->element_id());
+    animation_child_->AttachElement(child_layer_->element_id());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -1665,10 +1649,9 @@ class LayerTreeHostAnimationTestAddKeyframeModelAfterAnimating
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> layer_;
+  scoped_refptr<Layer> child_layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -1769,8 +1752,6 @@ class LayerTreeHostAnimationTestRemoveKeyframeModel
       PostSetNeedsCommitToMainThread();
     }
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> layer_;
@@ -1883,8 +1864,6 @@ class LayerTreeHostAnimationTestIsAnimating
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> layer_;
   FakeContentLayerClient client_;
@@ -1954,8 +1933,6 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
       signalled_ = true;
     }
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> layer_;
@@ -2035,8 +2012,6 @@ class LayerTreeHostAnimationTestImplSideInvalidation
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> layer_;
   FakeContentLayerClient client_;
@@ -2070,8 +2045,6 @@ class LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit
       host_impl->RequestImplSideInvalidationForCheckerImagedTiles();
     }
   }
-
-  void AfterTest() override {}
 
  protected:
   scoped_refptr<Layer> layer_;
@@ -2295,9 +2268,14 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
+    layer_ = Layer::Create();
+    layer_->SetBounds(gfx::Size(4, 4));
+    layer_tree_host()->root_layer()->AddChild(layer_);
+
     AttachAnimationsToTimeline();
+
     timeline_->DetachAnimation(animation_child_.get());
-    animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
+    animation_->AttachElement(layer_->element_id());
 
     TransformOperations start;
     start.AppendTranslate(5.f, 5.f, 0.f);
@@ -2312,7 +2290,7 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
     PropertyTrees* property_trees = host_impl->sync_tree()->property_trees();
     TransformNode* node =
         property_trees->transform_tree.Node(host_impl->sync_tree()
-                                                ->root_layer_for_testing()
+                                                ->LayerById(layer_->id())
                                                 ->transform_tree_index());
     gfx::Transform translate;
     translate.Translate(5, 5);
@@ -2334,8 +2312,7 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
       timeline_->DetachAnimation(animation_.get());
       animation_ = nullptr;
       timeline_->AttachAnimation(animation_child_.get());
-      animation_child_->AttachElement(
-          layer_tree_host()->root_layer()->element_id());
+      animation_child_->AttachElement(layer_->element_id());
       AddAnimatedTransformToAnimation(animation_child_.get(), 1.0, 10, 10);
       KeyframeModel* keyframe_model =
           animation_child_->GetKeyframeModel(TargetProperty::TRANSFORM);
@@ -2345,7 +2322,8 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
     }
   }
 
-  void AfterTest() override {}
+ private:
+  scoped_refptr<Layer> layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -2469,8 +2447,6 @@ class LayerTreeHostAnimationTestRebuildPropertyTreesOnAnimationSetNeedsCommit
     if (host_impl->active_tree()->source_frame_number() >= 2)
       EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> layer_;

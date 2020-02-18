@@ -27,38 +27,52 @@ namespace send_tab_to_self {
 void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
-                    const GURL& link_url) {
+                    const GURL& link_url,
+                    bool show_notification) {
+  DCHECK(tab);
+
+  GURL shared_url = link_url;
+  std::string title = "";
+  base::Time navigation_time = base::Time();
+
   content::NavigationEntry* navigation_entry =
       tab->GetController().GetLastCommittedEntry();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  GURL url = navigation_entry->GetURL();
-  std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
-  base::Time navigation_time = navigation_entry->GetTimestamp();
 
+  // This should either be a valid link share or a valid tab share.
+  DCHECK(link_url.is_valid() || navigation_entry);
+
+  if (!link_url.is_valid()) {
+    // This is not link share, get the values from the last navigation entry.
+    shared_url = navigation_entry->GetURL();
+    title = base::UTF16ToUTF8(navigation_entry->GetTitle());
+    navigation_time = navigation_entry->GetTimestamp();
+  }
+
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(profile);
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel();
+  DCHECK(model);
 
   UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime",
                         model->IsReady());
   if (!model->IsReady()) {
-    DesktopNotificationHandler(profile).DisplayFailureMessage(url);
+    DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
     return;
   }
 
-  const SendTabToSelfEntry* entry;
-  if (link_url.is_valid()) {
-    // When share a link.
-    entry = model->AddEntry(link_url, "", base::Time(), target_device_guid);
-  } else {
-    // When share a tab.
-    entry = model->AddEntry(url, title, navigation_time, target_device_guid);
-  }
+  const SendTabToSelfEntry* entry =
+      model->AddEntry(shared_url, title, navigation_time, target_device_guid);
+
+  if (!show_notification)
+    return;
+
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(
         *entry, target_device_name);
   } else {
-    DesktopNotificationHandler(profile).DisplayFailureMessage(url);
+    DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
   }
 }
 
@@ -76,7 +90,7 @@ void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
 gfx::ImageSkia* GetImageSkia() {
   const ui::NativeTheme* native_theme =
       ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->SystemDarkModeEnabled();
+  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
   int resource_id = is_dark ? IDR_SEND_TAB_TO_SELF_ICON_DARK
                             : IDR_SEND_TAB_TO_SELF_ICON_LIGHT;
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);

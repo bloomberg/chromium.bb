@@ -27,16 +27,15 @@
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
 #include "ios/web/public/favicon/favicon_url.h"
-#import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#include "ios/web/public/service/web_state_interface_provider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/ui/context_menu_params.h"
+#import "ios/web/public/ui/java_script_dialog_presenter.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
@@ -340,42 +339,6 @@ WebInterstitial* WebStateImpl::GetWebInterstitial() const {
   return interstitial_;
 }
 
-net::HttpResponseHeaders* WebStateImpl::GetHttpResponseHeaders() const {
-  return http_response_headers_.get();
-}
-
-void WebStateImpl::OnHttpResponseHeadersReceived(
-    net::HttpResponseHeaders* response_headers,
-    const GURL& resource_url) {
-  // Store the headers in a map until the page finishes loading, as we do not
-  // know which URL corresponds to the main page yet.
-  // Remove the hash (if any) as it is sometimes altered by in-page navigations.
-  // TODO(crbug/551677): Simplify all this logic once UIWebView is no longer
-  // supported.
-  const GURL& url = GURLByRemovingRefFromGURL(resource_url);
-  response_headers_map_[url] = response_headers;
-}
-
-void WebStateImpl::UpdateHttpResponseHeaders(const GURL& url) {
-  // Reset the state.
-  http_response_headers_ = NULL;
-  mime_type_.clear();
-
-  // Discard all the response headers except the ones for |main_page_url|.
-  auto it = response_headers_map_.find(GURLByRemovingRefFromGURL(url));
-  if (it != response_headers_map_.end())
-    http_response_headers_ = it->second;
-  response_headers_map_.clear();
-
-  if (!http_response_headers_.get())
-    return;
-
-  // MIME type.
-  std::string mime_type;
-  http_response_headers_->GetMimeType(&mime_type);
-  mime_type_ = mime_type;
-}
-
 void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
   DCHECK(Configured());
   interstitial_ = interstitial;
@@ -527,27 +490,13 @@ void WebStateImpl::CommitPreviewingViewController(
 
 #pragma mark - RequestTracker management
 
-WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {
-  if (!web_state_interface_provider_) {
-    web_state_interface_provider_ =
-        std::make_unique<WebStateInterfaceProvider>();
-  }
-  return web_state_interface_provider_.get();
-}
-
 void WebStateImpl::DidChangeVisibleSecurityState() {
   for (auto& observer : observers_)
     observer.DidChangeVisibleSecurityState(this);
 }
 
-void WebStateImpl::BindInterfaceRequestFromMainFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (!GetWebStateInterfaceProvider()->registry()->TryBindInterface(
-          interface_name, &interface_pipe)) {
-    GetWebClient()->BindInterfaceRequestFromMainFrame(
-        this, interface_name, std::move(interface_pipe));
-  }
+WebState::InterfaceBinder* WebStateImpl::GetInterfaceBinderForMainFrame() {
+  return &interface_binder_;
 }
 
 #pragma mark - WebFrame management
@@ -729,7 +678,7 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
     if ([[web_controller_ nativeContentHolder].nativeController
             respondsToSelector:@selector(virtualURL)] ||
         item->error_retry_state_machine().state() ==
-            ErrorRetryState::kReadyToDisplayErrorForFailedNavigation) {
+            ErrorRetryState::kReadyToDisplayError) {
       // For native content, or when webView.URL is a placeholder URL,
       // |currentURLWithTrustLevel:| returns virtual URL if one is available.
       lastCommittedURL = item->GetVirtualURL();

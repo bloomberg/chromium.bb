@@ -249,8 +249,16 @@ below:
       <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-audio -->
+      <message name="IDS_AX_ROLE_AUDIO" desc="Accessible role description for audio">
+        audio
+      </message>
       <message name="IDS_AX_ROLE_BANNER" desc="Accessibility role description for banner">
         banner
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-color -->
+      <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
+        color picker
       </message>
       <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="Accessibility role description for complementary">
         complementary
@@ -265,7 +273,13 @@ below:
         checkbox
       </message>
       <message name="IDS_AX_ROLE_CONTENT_INFO" desc="Accessibility role description for credits and information about the content of the page, like copyrights and privacy statements">
-        content info
+        content information
+      </message>
+      <message name="IDS_AX_ROLE_DATE" desc="Accessibility role description for a date input">
+        date picker
+      </message>
+      <message name="IDS_AX_ROLE_DATE_TIME_LOCAL" desc="Accessibility role description for a datetime-local input">
+        local date and time picker
       </message>
       <message name="IDS_AX_ROLE_DEFINITION" desc="Accessibility role description for a definition">
         definition
@@ -275,6 +289,10 @@ below:
       </message>
       <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="Accessibility role description for description term (as in a description list)">
         term
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-details -->
+      <message name="IDS_AX_ROLE_DETAILS" desc="Accessibility role description for details">
+        details
       </message>
       <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
         disclosure triangle
@@ -417,6 +435,10 @@ below:
       <message name="IDS_AX_ROLE_GRAPHICS_SYMBOL" desc="Accessibility role description for graphics symbol">
         graphics symbol
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-email -->
+      <message name="IDS_AX_ROLE_EMAIL" desc="Accessibility role description for email input">
+        email
+      </message>
       <message name="IDS_AX_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup">
         Autofill
       </message>
@@ -443,23 +465,54 @@ below:
       <message name="IDS_AX_ROLE_MATH" desc="Accessibility role description for math">
         math
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-meter -->
+      <message name="IDS_AX_ROLE_METER" desc="Accessibility role description for a meter, for example a temperature indicator or progress bar">
+          meter
+      </message>
       <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="Accessibility role description for group of navigational links.">
         navigation
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-output -->
+      <message name="IDS_AX_ROLE_OUTPUT" desc="Accessibility role description for output">
+        output
       </message>
       <message name="IDS_AX_ROLE_REGION" desc="Accessibility role description for region">
         region
       </message>
-      <message name="IDS_AX_ROLE_SEARCH_BOX" desc="Accessibility role description for search text field">
-        search text field
-      </message>
+      <!-- https://www.w3.org/TR/core-aam-1.1/#role-map-searchbox -->
+      <if expr="is_win">
+        <message name="IDS_AX_ROLE_SEARCH_BOX" desc="UIA role description for search text field">
+          search box
+        </message>
+      </if>
+      <if expr="not is_win">
+        <message name="IDS_AX_ROLE_SEARCH_BOX" desc="Accessibility role description for search text field">
+          search text field
+        </message>
+      </if>
       <message name="IDS_AX_ROLE_STATUS" desc="Accessibility role description for status">
         status
       </message>
       <message name="IDS_AX_ROLE_SWITCH" desc="Accessibility role description for switch">
         switch
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-tel -->
+      <message name="IDS_AX_ROLE_TELEPHONE" desc="Accessibility role description for telephone number input">
+        telephone
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-time -->
+      <message name="IDS_AX_ROLE_TIME" desc="Accessibility role description for a time">
+        time
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-url -->
+      <message name="IDS_AX_ROLE_URL" desc="Accessibility role description for URL input">
+        url
+      </message>
       <message name="IDS_AX_ROLE_WEB_AREA" desc="Accessibility role description for web area">
         HTML content
+      </message>
+      <message name="IDS_AX_ROLE_WEEK" desc="Accessibility role description for a week input">
+        week picker
       </message>
       <if expr="is_android">
         <message name="IDS_AX_ROLE_ALERT" desc="Accessibility role description for an alert">
@@ -477,17 +530,11 @@ below:
         <message name="IDS_AX_ROLE_BUTTON" desc="Accessibility role description for a button">
           button
         </message>
-        <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
-          color picker
-        </message>
         <message name="IDS_AX_ROLE_COLUMN_HEADER" desc="Accessibility role description for a column header">
           column header
         </message>
         <message name="IDS_AX_ROLE_COMBO_BOX" desc="Accessibility role description for a combo box, an editable text control with an associated drop-down list">
           combo box
-        </message>
-        <message name="IDS_AX_ROLE_DATE" desc="Accessibility role description for a date picker">
-          date picker
         </message>
         <message name="IDS_AX_ROLE_DATE_TIME" desc="Accessibility role description for a date / time picker">
           date and time picker
@@ -534,9 +581,6 @@ below:
         <message name="IDS_AX_ROLE_MENU_ITEM" desc="Accessibility role description for a menu item">
           menu item
         </message>
-        <message name="IDS_AX_ROLE_METER" desc="Accessibility role description for a meter, for example a temperature indicator or progress bar">
-          meter
-        </message>
         <message name="IDS_AX_ROLE_NOTE" desc="Accessibility role description for a note">
           note
         </message>
@@ -581,9 +625,6 @@ below:
         </message>
         <message name="IDS_AX_ROLE_TAB_PANEL" desc="Accessibility role description for a tab panel, the part of the window that changes when selecting a new tab">
           tab panel
-        </message>
-        <message name="IDS_AX_ROLE_TIME" desc="Accessibility role description for a time">
-          time
         </message>
         <message name="IDS_AX_ROLE_TIMER" desc="Accessibility role description for a timer">
           timer

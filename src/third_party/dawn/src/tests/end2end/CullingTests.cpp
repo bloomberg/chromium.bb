@@ -36,8 +36,8 @@ class CullingTest : public DawnTest {
             void main() {
                 gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
             })";
-        pipelineDescriptor.cVertexStage.module =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs);
+        pipelineDescriptor.vertexStage.module =
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs);
 
         // gl_FragCoord of pixel(x, y) in framebuffer coordinate is (x + 0.5, y + 0.5). And we use
         // RGBA8 format for the back buffer. So (gl_FragCoord.xy - vec2(0.5)) / 255 in shader code
@@ -49,7 +49,7 @@ class CullingTest : public DawnTest {
                fragColor = vec4((gl_FragCoord.xy - vec2(0.5)) / 255, 0.0, 1.0);
             })";
         pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fs);
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
 
         // Set culling mode and front face according to the parameters
         pipelineDescriptor.cRasterizationState.frontFace = frontFace;
@@ -63,7 +63,7 @@ class CullingTest : public DawnTest {
         textureDescriptor.dimension = dawn::TextureDimension::e2D;
         textureDescriptor.format = format;
         textureDescriptor.usage =
-            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+            dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
         textureDescriptor.arrayLayerCount = 1;
         textureDescriptor.mipLevelCount = 1;
         textureDescriptor.sampleCount = 1;
@@ -77,7 +77,7 @@ class CullingTest : public DawnTest {
                 bool isCWTriangleCulled) {
         dawn::Texture colorTexture = Create2DTextureForTest(dawn::TextureFormat::RGBA8Unorm);
 
-        utils::ComboRenderPassDescriptor renderPassDescriptor({colorTexture.CreateDefaultView()});
+        utils::ComboRenderPassDescriptor renderPassDescriptor({colorTexture.CreateView()});
         renderPassDescriptor.cColorAttachmentsInfoPtr[0]->clearColor = {0.0, 0.0, 1.0, 1.0};
         renderPassDescriptor.cColorAttachmentsInfoPtr[0]->loadOp = dawn::LoadOp::Clear;
 

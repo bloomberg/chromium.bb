@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
@@ -76,7 +77,7 @@ std::unique_ptr<views::Label> CreateTitle(
   auto title = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(message_id, card_list_size));
   constexpr int kMigrationDialogTitleFontSize = 8;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   constexpr int kMigrationDialogTitleMarginTop = 0;
 #else
   constexpr int kMigrationDialogTitleMarginTop = 12;
@@ -88,9 +89,8 @@ std::unique_ptr<views::Label> CreateTitle(
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
                                             gfx::Font::Weight::NORMAL));
-  title->SetEnabledColor(dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
-                             ? gfx::kGoogleGrey200
-                             : gfx::kGoogleGrey900);
+  title->SetEnabledColor(dialog_view->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor));
   constexpr int kMigrationDialogTitleLineHeight = 20;
   title->SetMultiLine(true);
   title->SetLineHeight(kMigrationDialogTitleLineHeight);
@@ -104,9 +104,8 @@ std::unique_ptr<views::Label> CreateExplanationText(
     LocalCardMigrationDialogState view_state,
     int card_list_size,
     const base::string16& user_email) {
-  auto explanation_text =
-      std::make_unique<views::Label>(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                                     ChromeTextStyle::STYLE_SECONDARY);
+  auto explanation_text = std::make_unique<views::Label>(
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   switch (view_state) {
     case LocalCardMigrationDialogState::kOffered:
       DCHECK(!user_email.empty());
@@ -185,12 +184,12 @@ std::unique_ptr<views::View> CreateTip(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(container_insets),
       container_child_space));
   tip_text_container->SetBackground(views::CreateSolidBackground(
-      dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
+      dialog_view->GetNativeTheme()->ShouldUseDarkColors()
           ? gfx::kGoogleGrey800
           : gfx::kGoogleGrey050));
 
-  // If in dark mode, do not add the border.
-  if (!dialog_view->GetNativeTheme()->SystemDarkModeEnabled()) {
+  // Do not add the border if it is not using dark colors.
+  if (!dialog_view->GetNativeTheme()->ShouldUseDarkColors()) {
     constexpr int kTipValuePromptBorderThickness = 1;
     tip_text_container->SetBorder(views::CreateSolidBorder(
         kTipValuePromptBorderThickness, gfx::kGoogleGrey100));
@@ -200,21 +199,19 @@ std::unique_ptr<views::View> CreateTip(
   constexpr int kTipImageSize = 16;
   lightbulb_outline_image->SetImage(gfx::CreateVectorIcon(
       vector_icons::kLightbulbOutlineIcon, kTipImageSize,
-      dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
-          ? gfx::kGoogleYellow300
-          : gfx::kGoogleYellow700));
+      dialog_view->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityMedium)));
   lightbulb_outline_image->SetVerticalAlignment(
       views::ImageView::Alignment::kLeading);
   tip_text_container->AddChildView(lightbulb_outline_image);
 
   auto* tip = new views::Label(tip_message, CONTEXT_BODY_TEXT_SMALL,
-                               ChromeTextStyle::STYLE_SECONDARY);
+                               views::style::STYLE_SECONDARY);
   tip->SetMultiLine(true);
   // If it is in dark mode, set the font color to GG200 since it is on a lighter
   // shade of grey background.
-  if (dialog_view->GetNativeTheme()->SystemDarkModeEnabled()) {
+  if (dialog_view->GetNativeTheme()->ShouldUseDarkColors())
     tip->SetEnabledColor(gfx::kGoogleGrey200);
-  }
   tip->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   tip->SizeToFit(
       provider->GetDistanceMetric(DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH) -
@@ -481,19 +478,19 @@ void LocalCardMigrationDialogView::ConstructView() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   auto* image = new views::ImageView();
   constexpr int kImageBorderBottom = 8;
   image->SetBorder(views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
-      rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
+      rb.GetImageSkiaNamed(GetNativeTheme()->ShouldUseDarkColors()
                                ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
                                : IDR_AUTOFILL_MIGRATION_DIALOG_HEADER));
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   LocalCardMigrationDialogState view_state = controller_->GetViewState();
   AddChildView(CreateTitle(view_state, this, controller_->GetCardList().size())

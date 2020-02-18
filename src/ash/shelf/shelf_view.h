@@ -29,13 +29,13 @@
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
 namespace ui {
@@ -49,8 +49,6 @@ class Separator;
 }  // namespace views
 
 namespace ash {
-class HomeButton;
-class BackButton;
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
@@ -107,12 +105,11 @@ enum ShelfAlignmentUmaEnumValue {
 //      (for the main shelf)        last_visible_index = 7
 //
 
-class ASH_EXPORT ShelfView : public views::View,
+class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ShelfButtonDelegate,
                              public ShelfModelObserver,
                              public ShellObserver,
                              public views::ContextMenuController,
-                             public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost,
                              public ash::TabletModeObserver,
@@ -123,6 +120,11 @@ class ASH_EXPORT ShelfView : public views::View,
 
   Shelf* shelf() const { return shelf_; }
   ShelfModel* model() const { return model_; }
+
+  // Returns the size occupied by |count| app icons. If |with_overflow| is
+  // true, returns the size of |count| app icons followed by an overflow
+  // button.
+  static int GetSizeOfAppIcons(int count, bool with_overflow);
 
   // Initializes shelf view elements.
   void Init();
@@ -149,8 +151,6 @@ class ASH_EXPORT ShelfView : public views::View,
     owner_overflow_bubble_ = owner;
   }
 
-  HomeButton* GetHomeButton() const;
-  BackButton* GetBackButton() const;
   OverflowButton* GetOverflowButton() const;
 
   // Updates the union of all the shelf item bounds shown by this shelf view.
@@ -182,6 +182,7 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   FocusTraversable* GetPaneFocusTraversable() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
   const char* GetClassName() const override;
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -194,23 +195,24 @@ class ASH_EXPORT ShelfView : public views::View,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
 
-  // Overridden from FocusTraversable:
+  // FocusTraversable:
   views::FocusSearch* GetFocusSearch() override;
-  FocusTraversable* GetFocusTraversableParent() override;
-  View* GetFocusTraversableParentView() override;
 
-  // Overridden from app_list::ApplicationDragAndDropHost:
+  // AccessiblePaneView:
+  views::View* GetDefaultFocusableChild() override;
+
+  // app_list::ApplicationDragAndDropHost:
   void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
                            const gfx::ImageSkia& icon,
                            views::View* replaced_view,
                            const gfx::Vector2d& cursor_offset_from_center,
                            float scale_factor) override;
 
-  // Overridden from ash::TabletModeObserver:
+  // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // Overridden from VirtualKeyboardModel::Observer:
+  // VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
 
   // Returns true if |event| on the shelf item is going to activate the
@@ -281,6 +283,9 @@ class ASH_EXPORT ShelfView : public views::View,
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
 
+  // Handles the gesture event.
+  void HandleGestureEvent(ui::GestureEvent* event);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -298,6 +303,10 @@ class ASH_EXPORT ShelfView : public views::View,
     return IsShowingOverflowBubble()
                ? overflow_bubble_->bubble_view()->shelf_view()
                : nullptr;
+  }
+
+  void set_default_last_focusable_child(bool default_last_focusable_child) {
+    default_last_focusable_child_ = default_last_focusable_child;
   }
 
   const ShelfAppButton* drag_view() const { return drag_view_; }
@@ -359,9 +368,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns unowned pointer (view is owned by the view hierarchy).
   views::View* CreateViewForItem(const ShelfItem& item);
 
-  // Lays out control buttons background.
-  void LayoutAppListAndBackButtonHighlight();
-
   // Updates the visible range of overflow items in |overflow_view|.
   void UpdateOverflowRange(ShelfView* overflow_view) const;
 
@@ -373,8 +379,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
   int GetSeparatorIndex() const;
-
-  void CalculateBackAndHomeButtonsIdealBounds();
 
   // This method determines which centering strategy is adequate, returns that,
   // and sets the |first_visible_index_| and |last_visible_index_| fields
@@ -470,7 +474,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Overridden from ShelfModelObserver:
   void ShelfItemAdded(int model_index) override;
@@ -541,11 +544,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   bool CanPrepareForDrag(Pointer pointer, const ui::LocatedEvent& event);
 
-  // Updates the back button opacity and focus behavior based on tablet mode.
-  void UpdateBackButton();
-
   // Set background blur to the dragged image. |size| is the image size.
   void SetDragImageBlur(const gfx::Size& size, int blur_radius);
+
+  bool ShouldHandleGestures(const ui::GestureEvent& event) const;
 
   // The model; owned by Launcher.
   ShelfModel* model_;
@@ -571,8 +573,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
-  BackButton* back_button_ = nullptr;
-  HomeButton* home_button_ = nullptr;
   OverflowButton* overflow_button_ = nullptr;
 
   std::unique_ptr<OverflowBubble> overflow_bubble_;
@@ -596,10 +596,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // A reference to the view used as a separator between pinned and unpinned
   // items.
   views::Separator* separator_ = nullptr;
-
-  // A view to draw a background behind the app list and back buttons.
-  // Owned by the view hierarchy.
-  views::View* back_and_app_list_background_ = nullptr;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.
   gfx::Point drag_origin_;
@@ -705,7 +701,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // before the metric is recorded.
   bool recorded_home_launcher_shown_ = false;
 
-  base::WeakPtrFactory<ShelfView> weak_factory_;
+  // Whether this view should focus its last focusable child (instead of its
+  // first) when focused.
+  bool default_last_focusable_child_ = false;
+
+  base::WeakPtrFactory<ShelfView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

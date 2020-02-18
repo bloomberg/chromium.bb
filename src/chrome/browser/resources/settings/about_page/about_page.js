@@ -491,7 +491,7 @@ Polymer({
     // If Chrome OS has reached end of life, display a special icon and
     // ignore UpdateStatus.
     if (this.hasEndOfLife_) {
-      return 'settings:end-of-life';
+      return 'os-settings:end-of-life';
     }
     // </if>
 
@@ -631,6 +631,20 @@ Polymer({
         this.i18nAdvanced('aboutProductOsWithLinuxLicense') :
         this.i18nAdvanced('aboutProductOsLicense');
   },
+
+  // <if expr="chromeos">
+  /**
+   * @return {string}
+   * @private
+   */
+  getUpdateOsSettingsLink_: function() {
+    // Note: This string contains raw HTML and thus requires i18nAdvanced().
+    // Since the i18n template syntax (e.g., $i18n{}) does not include an
+    // "advanced" version, it's not possible to inline this link directly in the
+    // HTML.
+    return this.i18nAdvanced('aboutUpdateOsSettingsLink');
+  },
+  // </if>
 
   /**
    * @param {boolean} enabled True if Crostini is enabled.

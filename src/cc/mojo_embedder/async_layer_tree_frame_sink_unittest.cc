@@ -14,7 +14,6 @@
 #include "base/threading/thread.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
-#include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -23,7 +22,7 @@
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -80,7 +79,6 @@ TEST(AsyncLayerTreeFrameSinkTest,
   init_params.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager;
   init_params.pipes.compositor_frame_sink_info = std::move(sink_info);
   init_params.pipes.client_request = std::move(client_request);
-  init_params.enable_surface_synchronization = true;
   auto layer_tree_frame_sink = std::make_unique<AsyncLayerTreeFrameSink>(
       std::move(provider), nullptr, &init_params);
 
@@ -145,7 +143,6 @@ class AsyncLayerTreeFrameSinkSimpleTest : public testing::Test {
     init_params_.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager_;
     init_params_.pipes.compositor_frame_sink_info = std::move(sink_info);
     init_params_.pipes.client_request = std::move(client_request);
-    init_params_.enable_surface_synchronization = true;
     init_params_.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             /*should_ask_for_child_region=*/true, /*root_accepts_events=*/true);

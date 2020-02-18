@@ -253,6 +253,7 @@ enum class EntryPoint
     DrawArraysInstanced,
     DrawArraysInstancedANGLE,
     DrawArraysInstancedBaseInstance,
+    DrawArraysInstancedBaseInstanceANGLE,
     DrawArraysInstancedEXT,
     DrawBuffer,
     DrawBuffers,
@@ -265,6 +266,7 @@ enum class EntryPoint
     DrawElementsInstancedBaseInstance,
     DrawElementsInstancedBaseVertex,
     DrawElementsInstancedBaseVertexBaseInstance,
+    DrawElementsInstancedBaseVertexBaseInstanceANGLE,
     DrawElementsInstancedEXT,
     DrawPixels,
     DrawRangeElements,
@@ -335,6 +337,7 @@ enum class EntryPoint
     FramebufferTexture,
     FramebufferTexture1D,
     FramebufferTexture2D,
+    FramebufferTexture2DMultisampleEXT,
     FramebufferTexture2DOES,
     FramebufferTexture3D,
     FramebufferTexture3DOES,
@@ -728,12 +731,14 @@ enum class EntryPoint
     MultiDrawArraysIndirect,
     MultiDrawArraysIndirectCount,
     MultiDrawArraysInstancedANGLE,
+    MultiDrawArraysInstancedBaseInstanceANGLE,
     MultiDrawElements,
     MultiDrawElementsANGLE,
     MultiDrawElementsBaseVertex,
     MultiDrawElementsIndirect,
     MultiDrawElementsIndirectCount,
     MultiDrawElementsInstancedANGLE,
+    MultiDrawElementsInstancedBaseVertexBaseInstanceANGLE,
     MultiTexCoord1d,
     MultiTexCoord1dv,
     MultiTexCoord1f,
@@ -957,6 +962,7 @@ enum class EntryPoint
     RenderbufferStorage,
     RenderbufferStorageMultisample,
     RenderbufferStorageMultisampleANGLE,
+    RenderbufferStorageMultisampleEXT,
     RenderbufferStorageOES,
     RequestExtensionANGLE,
     ResumeTransformFeedback,
@@ -1362,5 +1368,7 @@ enum class EntryPoint
     WindowPos3s,
     WindowPos3sv
 };
+
+const char *GetEntryPointName(EntryPoint ep);
 }  // namespace gl
 #endif  // LIBANGLE_ENTRY_POINTS_ENUM_AUTOGEN_H_

@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "net/base/auth.h"
 #include "net/base/request_priority.h"
@@ -32,9 +33,10 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -119,7 +121,7 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestHttpJob);
 };
 
-class URLRequestHttpJobSetUpSourceTest : public TestWithScopedTaskEnvironment {
+class URLRequestHttpJobSetUpSourceTest : public TestWithTaskEnvironment {
  public:
   URLRequestHttpJobSetUpSourceTest() : context_(true) {
     test_job_interceptor_ = new TestJobInterceptor();
@@ -186,7 +188,7 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
   EXPECT_EQ("Test Content", delegate_.data_received());
 }
 
-class URLRequestHttpJobWithProxy : public WithScopedTaskEnvironment {
+class URLRequestHttpJobWithProxy : public WithTaskEnvironment {
  public:
   explicit URLRequestHttpJobWithProxy(
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
@@ -343,7 +345,7 @@ TEST(URLRequestHttpJobWithProxy,
       http_job_with_proxy.network_delegate_.total_network_bytes_received());
 }
 
-class URLRequestHttpJobTest : public TestWithScopedTaskEnvironment {
+class URLRequestHttpJobTest : public TestWithTaskEnvironment {
  protected:
   URLRequestHttpJobTest() : context_(true) {
     context_.set_http_transaction_factory(&network_layer_);
@@ -373,8 +375,7 @@ class URLRequestHttpJobTest : public TestWithScopedTaskEnvironment {
   std::unique_ptr<URLRequest> req_;
 };
 
-class URLRequestHttpJobWithMockSocketsTest
-    : public TestWithScopedTaskEnvironment {
+class URLRequestHttpJobWithMockSocketsTest : public TestWithTaskEnvironment {
  protected:
   URLRequestHttpJobWithMockSocketsTest()
       : context_(new TestURLRequestContext(true)) {
@@ -1397,8 +1398,92 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
   }
 }
 
-class URLRequestHttpJobWithBrotliSupportTest
-    : public TestWithScopedTaskEnvironment {
+TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectCallback) {
+  EmbeddedTestServer https_test(EmbeddedTestServer::TYPE_HTTPS);
+  https_test.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(https_test.Start());
+
+  TestURLRequestContext context;
+  context.transport_security_state()->AddHSTS(
+      "127.0.0.1", base::Time::Now() + base::TimeDelta::FromSeconds(10), true);
+  ASSERT_TRUE(
+      context.transport_security_state()->ShouldUpgradeToSSL("127.0.0.1"));
+
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("http");
+
+  {
+    GURL url(
+        https_test.GetURL("/echoheader").ReplaceComponents(replace_scheme));
+    TestDelegate delegate;
+    HttpRequestHeaders extra_headers;
+    extra_headers.SetHeader("X-HSTS-Test", "1");
+
+    HttpRawRequestHeaders raw_req_headers;
+
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetExtraRequestHeaders(extra_headers);
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+
+    r->Start();
+    delegate.RunUntilRedirect();
+
+    EXPECT_FALSE(raw_req_headers.headers().empty());
+    std::string value;
+    EXPECT_TRUE(raw_req_headers.FindHeaderForTest("X-HSTS-Test", &value));
+    EXPECT_EQ("1", value);
+    EXPECT_EQ("GET /echoheader HTTP/1.1\r\n", raw_req_headers.request_line());
+
+    raw_req_headers = HttpRawRequestHeaders();
+
+    r->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                              base::nullopt /* modified_headers */);
+    delegate.RunUntilComplete();
+
+    EXPECT_FALSE(raw_req_headers.headers().empty());
+  }
+
+  {
+    GURL url(https_test.GetURL("/echoheader?foo=bar")
+                 .ReplaceComponents(replace_scheme));
+    TestDelegate delegate;
+
+    HttpRawRequestHeaders raw_req_headers;
+
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+
+    r->Start();
+    delegate.RunUntilRedirect();
+
+    EXPECT_EQ("GET /echoheader?foo=bar HTTP/1.1\r\n",
+              raw_req_headers.request_line());
+  }
+
+  {
+    GURL url(
+        https_test.GetURL("/echoheader#foo").ReplaceComponents(replace_scheme));
+    TestDelegate delegate;
+
+    HttpRawRequestHeaders raw_req_headers;
+
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+
+    r->Start();
+    delegate.RunUntilRedirect();
+
+    EXPECT_EQ("GET /echoheader HTTP/1.1\r\n", raw_req_headers.request_line());
+  }
+}
+
+class URLRequestHttpJobWithBrotliSupportTest : public TestWithTaskEnvironment {
  protected:
   URLRequestHttpJobWithBrotliSupportTest()
       : context_(new TestURLRequestContext(true)) {
@@ -1525,7 +1610,7 @@ TEST_F(URLRequestHttpJobTest, AndroidCleartextPermittedTest) {
 
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
 
-class URLRequestHttpJobWebSocketTest : public TestWithScopedTaskEnvironment {
+class URLRequestHttpJobWebSocketTest : public TestWithTaskEnvironment {
  protected:
   URLRequestHttpJobWebSocketTest() : context_(true) {
     context_.set_network_delegate(&network_delegate_);

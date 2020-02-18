@@ -10,7 +10,6 @@ from __future__ import print_function
 import BaseHTTPServer
 import errno
 import itertools
-import mock
 import os
 import signal
 import socket
@@ -19,11 +18,14 @@ import sys
 import time
 import urllib2
 
+import mock
+
 # We specifically set up a local server to connect to, so make sure we
 # delete any proxy settings that might screw that up.  We also need to
 # do it here because modules that are imported below will implicitly
 # initialize with this proxy setting rather than dynamically pull it
 # on the fly :(.
+# pylint: disable=wrong-import-position
 os.environ.pop('http_proxy', None)
 
 from chromite.lib import constants
@@ -273,7 +275,7 @@ class UploadSymbolsHelpersTest(cros_test_lib.TestCase):
 
     # Prove that we are streaming the results, not generating them all at once.
     result = upload_symbols.BatchGenerator(itertools.repeat(0), 2)
-    self.assertEqual(result.next(), [0, 0])
+    self.assertEqual(next(result), [0, 0])
 
 
 class FindSymbolFilesTest(SymbolsTestBase):

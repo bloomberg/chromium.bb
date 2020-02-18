@@ -10,14 +10,17 @@ friendly to developers. It also provides import safety, in case ts_mon is not
 deployed with your code.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import collections
 import contextlib
 import datetime
-import Queue
 import ssl
 from functools import wraps
+
+import six
+from six.moves import queue as Queue
 
 from chromite.lib import cros_logging as logging
 
@@ -85,7 +88,7 @@ class ProxyMetric(object):
         except AttributeError:
           exit_code = None
         logging.warning(
-            "Flushing process has been closed (exit code %s),"
+            'Flushing process has been closed (exit code %s),'
             " skipped sending metric '%s'",
             exit_code,
             self.metric)
@@ -144,7 +147,7 @@ class FieldSpecAdapter(object):
       bool: ts_mon.BooleanField,
       int: ts_mon.IntegerField,
       str: ts_mon.StringField,
-      unicode: ts_mon.StringField,
+      six.text_type: ts_mon.StringField,
   }
 
   def __init__(self, metric_cls, *args, **kwargs):
@@ -371,7 +374,7 @@ def PercentageDistribution(
   """
   # The last bucket actually covers [100, 100 + 1.0/num_buckets), so it
   # corresponds to values that exactly match 100%.
-  bucket_width = 100.0 / num_buckets
+  bucket_width = 100 / num_buckets
   b = ts_mon.FixedWidthBucketer(bucket_width, num_buckets)
   return ts_mon.CumulativeDistributionMetric(
       name, bucketer=b,
@@ -390,7 +393,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
     # Time the doSomething() call, with field values that are independent of the
     # results of the operation.
     with SecondsTimer('timer/name', fields={'foo': 'bar'},
-                      description="My timer",
+                      description='My timer',
                       field_spec=[ts_mon.StringField('foo'),
                                   ts_mon.BooleanField('success')]):
       doSomething()
@@ -400,13 +403,13 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
     # is specified for these fields, in case an exception is thrown by
     # doSomethingElse()
     f = {'success': False, 'foo': 'bar'}
-    with SecondsTimer('timer/name', fields=f, description="My timer",
+    with SecondsTimer('timer/name', fields=f, description='My timer',
                       field_spec=[ts_mon.StringField('foo')]) as c:
       doSomethingElse()
       c['success'] = True
 
     # Incorrect Usage!
-    with SecondsTimer('timer/name', description="My timer") as c:
+    with SecondsTimer('timer/name', description='My timer') as c:
       doSomething()
       c['foo'] = bar # 'foo' is not a valid field, because no default
                      # value for it was specified in the context constructor.
@@ -419,7 +422,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
     scale: A float to scale the CumulativeSecondsDistribution buckets by.
     record_on_exception: Whether to record metrics if an exception is raised.
-    add_exception_field: Whether to add a BooleanField("encountered_exception")
+    add_exception_field: Whether to add a BooleanField('encountered_exception')
         to the FieldSpec provided, and set its value to True iff an exception
         was raised in the context.
   """
@@ -458,7 +461,7 @@ def SecondsTimerDecorator(name, fields=None, description=None,
 
   Examples:
     @SecondsTimerDecorator('timer/name', fields={'foo': 'bar'},
-                           description="My timer",
+                           description='My timer',
                            field_spec=[ts_mon.StringField('foo')])
     def Foo(bar):
       return doStuff()
@@ -467,7 +470,7 @@ def SecondsTimerDecorator(name, fields=None, description=None,
 
     def Foo(bar):
       with SecondsTimer('timer/name', fields={'foo': 'bar'},
-                        description="My timer",
+                        description='My timer',
                         field_spec=[ts_mon.StringField('foo')])
         return doStuff()
 
@@ -478,7 +481,7 @@ def SecondsTimerDecorator(name, fields=None, description=None,
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
     scale: A float to scale the distrubtion by
     record_on_exception: Whether to record metrics if an exception is raised.
-    add_exception_field: Whether to add a BooleanField("encountered_exception")
+    add_exception_field: Whether to add a BooleanField('encountered_exception')
         to the FieldSpec provided, and set its value to True iff an exception
         was raised in the context.
   """
@@ -512,7 +515,7 @@ def SecondsInstanceTimer(name, fields=None, description=None,
     # Time the doSomething() call, with field values that are independent of the
     # results of the operation.
     with SecondsInstanceTimer('timer/name', fields={'foo': 'bar'},
-                              description="My timer",
+                              description='My timer',
                               field_spec=[ts_mon.StringField('foo'),
                                           ts_mon.BooleanField('success')]):
       doSomething()
@@ -522,13 +525,13 @@ def SecondsInstanceTimer(name, fields=None, description=None,
     # is specified for these fields, in case an exception is thrown by
     # doSomethingElse()
     f = {'success': False, 'foo': 'bar'}
-    with SecondsInstanceTimer('timer/name', fields=f, description="My timer",
+    with SecondsInstanceTimer('timer/name', fields=f, description='My timer',
                               field_spec=[ts_mon.StringField('foo')]) as c:
       doSomethingElse()
       c['success'] = True
 
     # Incorrect Usage!
-    with SecondsInstanceTimer('timer/name', description="My timer") as c:
+    with SecondsInstanceTimer('timer/name', description='My timer') as c:
       doSomething()
       c['foo'] = bar # 'foo' is not a valid field, because no default
                      # value for it was specified in the context constructor.
@@ -540,7 +543,7 @@ def SecondsInstanceTimer(name, fields=None, description=None,
     description: A string description of the metric.
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
     record_on_exception: Whether to record metrics if an exception is raised.
-    add_exception_field: Whether to add a BooleanField("encountered_exception")
+    add_exception_field: Whether to add a BooleanField('encountered_exception')
         to the FieldSpec provided, and set its value to True iff an exception
         was raised in the context.
 
@@ -581,7 +584,7 @@ def SecondsInstanceTimerDecorator(name, fields=None, description=None,
 
   Examples:
     @SecondsInstanceTimerDecorator('timer/name', fields={'foo': 'bar'},
-                                   description="My timer",
+                                   description='My timer',
                                    field_spec=[ts_mon.StringField('foo'),
                                                ts_mon.BooleanField('success')]):
 
@@ -592,7 +595,7 @@ def SecondsInstanceTimerDecorator(name, fields=None, description=None,
 
     def Foo(bar):
       with SecondsInstanceTimer('timer/name', fields={'foo': 'bar'},
-                                description="My timer",
+                                description='My timer',
                                 field_spec=[ts_mon.StringField('foo'),
                                             ts_mon.BooleanField('success')]):
         return doStuff()
@@ -603,7 +606,7 @@ def SecondsInstanceTimerDecorator(name, fields=None, description=None,
     description: A string description of the metric.
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
     record_on_exception: Whether to record metrics if an exception is raised.
-    add_exception_field: Whether to add a BooleanField("encountered_exception")
+    add_exception_field: Whether to add a BooleanField('encountered_exception')
         to the FieldSpec provided, and set its value to True iff an exception
         was raised in the context.
 
@@ -669,7 +672,7 @@ class RuntimeBreakdownTimer(object):
 
   Examples:
     with RuntimeBreakdownTimer('timer/name', fields={'foo':'bar'},
-                               description="My timer",
+                               description='My timer',
                                field_spec=[ts_mon.StringField('foo')]) as timer:
       with timer.Step('first_step'):
         doFirstStep()
@@ -743,7 +746,7 @@ class RuntimeBreakdownTimer(object):
       fields['step_name'] = name
       # TODO(pprabhu): Convert _GetStepBreakdowns() to return ratios instead of
       # percentage when the old PercentageDistribution reporting is deleted.
-      Float('%s/duration_breakdown' % self._name).set(percent / 100.0,
+      Float('%s/duration_breakdown' % self._name).set(percent / 100,
                                                       fields=fields)
 
     unaccounted_metric = PercentageDistribution(
@@ -796,7 +799,7 @@ class RuntimeBreakdownTimer(object):
     """
     if not self._total_time_s:
       return {}
-    return {x.name: (x.time_s * 100.0) / self._total_time_s
+    return {x.name: (x.time_s * 100) / self._total_time_s
             for x in self._step_metrics}
 
   def _GetUnaccountedBreakdown(self):
@@ -814,7 +817,7 @@ class RuntimeBreakdownTimer(object):
     """
     reported = self._GetStepBreakdowns().values()
     reported.append(self._GetUnaccountedBreakdown())
-    bucket_width = 100.0 / self.PERCENT_BUCKET_COUNT
+    bucket_width = 100 / self.PERCENT_BUCKET_COUNT
     return sum(x % bucket_width for x in reported)
 
   def _RecordTotalTime(self):

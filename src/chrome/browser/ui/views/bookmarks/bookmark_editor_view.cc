@@ -243,9 +243,9 @@ void BookmarkEditorView::ShowContextMenuForViewImpl(
       (tree_model_->GetParent(tree_view_->GetSelectedNode()) ==
        tree_model_->GetRoot());
 
-  context_menu_runner_.reset(new views::MenuRunner(
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
       GetMenuModel(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
 
   context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                                   nullptr, gfx::Rect(point, gfx::Size()),
@@ -417,7 +417,7 @@ void BookmarkEditorView::Reset() {
   // tree_view will try to invoke something on the model we just deleted.
   tree_view_->SetModel(nullptr);
 
-  tree_model_.reset(new EditorTreeModel(CreateRootNode()));
+  tree_model_ = std::make_unique<EditorTreeModel>(CreateRootNode());
 
   tree_view_->SetModel(tree_model_.get());
   tree_view_->SetController(this);
@@ -431,7 +431,7 @@ void BookmarkEditorView::Reset() {
 GURL BookmarkEditorView::GetInputURL() const {
   if (details_.GetNodeType() == BookmarkNode::FOLDER)
     return GURL();
-  return url_formatter::FixupURL(base::UTF16ToUTF8(url_tf_->text()),
+  return url_formatter::FixupURL(base::UTF16ToUTF8(url_tf_->GetText()),
                                  std::string());
 }
 
@@ -549,7 +549,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  base::string16 new_title(title_tf_->text());
+  base::string16 new_title(title_tf_->GetText());
 
   if (!show_tree_) {
     BookmarkEditor::ApplyEditsWithNoFolderChange(
@@ -623,7 +623,7 @@ void BookmarkEditorView::UpdateExpandedNodes(
 
 ui::SimpleMenuModel* BookmarkEditorView::GetMenuModel() {
   if (!context_menu_model_.get()) {
-    context_menu_model_.reset(new ui::SimpleMenuModel(this));
+    context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
     context_menu_model_->AddItemWithStringId(IDS_EDIT, IDS_EDIT);
     context_menu_model_->AddItemWithStringId(IDS_DELETE, IDS_DELETE);
     context_menu_model_->AddItemWithStringId(
@@ -639,17 +639,3 @@ void BookmarkEditorView::EditorTreeModel::SetTitle(
   if (!title.empty())
     ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
 }
-
-namespace chrome {
-
-void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const BookmarkEditor::EditDetails& details,
-                             BookmarkEditor::Configuration configuration) {
-  DCHECK(profile);
-  BookmarkEditorView* editor = new BookmarkEditorView(
-      profile, details.parent_node, details, configuration);
-  editor->Show(parent_window);
-}
-
-}  // namespace chrome

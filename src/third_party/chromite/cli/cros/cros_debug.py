@@ -131,7 +131,8 @@ To debug a process by its pid:
         self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
         private_key=self.ssh_private_key) as device:
       self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                           override_board=self.options.board)
+                                           override_board=self.options.board,
+                                           strict=True)
       logging.info('Board is %s', self.board)
 
       self.gdb_cmd = [

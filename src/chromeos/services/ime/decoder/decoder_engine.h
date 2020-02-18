@@ -10,14 +10,9 @@
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace ime {
-
-// TODO(https://crbug.com/837156): Introduce a DecoderAPILibrary class/struct.
-// Inside, we define the shared function pointer types which are implemented
-// in the decoder shared library.
 
 // An enhanced implementation of the basic InputEngine which allows the input
 // engine to call a customized transliteration library (aka decoder) to provide
@@ -37,7 +32,11 @@ class DecoderEngine : public InputEngine {
                       ProcessMessageCallback callback) override;
 
  private:
-  // Returns whether the decoder supports this ime_spec.
+  // Try to load the decoding functions from some decoder shared library.
+  // Returns whether loading decoder is successful.
+  bool TryLoadDecoder();
+
+  // Returns whether the decoder shared library supports this ime_spec.
   bool IsImeSupportedByDecoder(const std::string& ime_spec);
 
   // Shared library handle of the implementation for input logic with decoders.

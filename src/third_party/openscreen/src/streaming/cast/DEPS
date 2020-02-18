@@ -4,6 +4,5 @@
 
 include_rules = [
     # BoringSSL includes
-    '-third_party/boringssl',
     '+openssl'
 ]

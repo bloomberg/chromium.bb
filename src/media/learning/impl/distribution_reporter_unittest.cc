@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/learning/common/learning_task.h"
 #include "media/learning/impl/distribution_reporter.h"
@@ -25,7 +25,7 @@ class DistributionReporterTest : public testing::Test {
     task_.target_description.ordering = LearningTask::Ordering::kNumeric;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 

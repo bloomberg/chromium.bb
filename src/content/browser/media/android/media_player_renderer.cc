@@ -45,8 +45,7 @@ MediaPlayerRenderer::MediaPlayerRenderer(
       routing_id_(routing_id),
       has_error_(false),
       volume_(kDefaultVolume),
-      renderer_extension_binding_(this, std::move(renderer_extension_request)),
-      weak_factory_(this) {
+      renderer_extension_binding_(this, std::move(renderer_extension_request)) {
   DCHECK_EQ(static_cast<RenderFrameHostImpl*>(
                 RenderFrameHost::FromID(process_id, routing_id))
                 ->delegate()
@@ -95,7 +94,7 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
     return;
   }
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaPlayerRenderer::CreateMediaPlayer,
                      weak_factory_.GetWeakPtr(),
@@ -124,10 +123,11 @@ void MediaPlayerRenderer::CreateMediaPlayer(
                                base::android::SDK_VERSION_KITKAT;
 
   media_player_.reset(new media::MediaPlayerBridge(
-      url_params.media_url, url_params.site_for_cookies, user_agent,
+      url_params.media_url, url_params.site_for_cookies,
+      url_params.top_frame_origin, user_agent,
       false,  // hide_url_log
       this,   // MediaPlayerBridge::Client
-      allow_credentials));
+      allow_credentials, url_params.is_hls));
 
   media_player_->Initialize();
   UpdateVolume();

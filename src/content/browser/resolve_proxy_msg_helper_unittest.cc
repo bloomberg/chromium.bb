@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/common/view_messages.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/proxy_info.h"
@@ -114,7 +114,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     return true;
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<TestResolveProxyMsgHelper> helper_;
   std::unique_ptr<PendingResult> pending_result_;

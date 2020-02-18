@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "pdf/document_layout.h"
 #include "pdf/document_loader.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
@@ -38,6 +39,7 @@
 namespace chrome_pdf {
 
 class PDFiumDocument;
+class PDFiumPermissions;
 
 namespace draw_utils {
 class ShadowMatrix;
@@ -92,6 +94,8 @@ class PDFiumEngine : public PDFEngine,
   bool CanRedo() override;
   void Undo() override;
   void Redo() override;
+  void HandleAccessibilityAction(
+      const PP_PdfAccessibilityActionData& action_data) override;
   std::string GetLinkAtPosition(const pp::Point& point) override;
   bool HasPermission(DocumentPermission permission) const override;
   void SelectAll() override;
@@ -109,16 +113,14 @@ class PDFiumEngine : public PDFEngine,
   int GetCharCount(int page_index) override;
   pp::FloatRect GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;
-  void GetTextRunInfo(int page_index,
-                      int start_char_index,
-                      uint32_t* out_len,
-                      double* out_font_size,
-                      pp::FloatRect* out_bounds) override;
+  base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
+      int page_index,
+      int start_char_index) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;
   bool GetPageSizeAndUniformity(pp::Size* size) override;
-  void AppendBlankPages(int num_pages) override;
+  void AppendBlankPages(size_t num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
   std::string GetMetadata(const std::string& key) override;
   std::vector<uint8_t> GetSaveData() override;
@@ -231,11 +233,14 @@ class PDFiumEngine : public PDFEngine,
   // If this has been run once, it will not notify the client again.
   void FinishLoadingDocument();
 
-  // Appends a PDFiumPage with |page_rect| to |pages_| or sets existing
-  // PDFiumPage for |page_index| to |page_rect|. |page_index| is 0-based.
-  void AppendPageRectToPages(const pp::Rect& page_rect,
-                             size_t page_index,
-                             bool reload);
+  // Applies the current layout to the PDFiumPage objects. This primarily
+  // involves updating the PDFiumPage rectangles from the corresponding layout
+  // page rectangles.
+  //
+  // TODO(kmoon): Conceivably, the PDFiumPages wouldn't need to store page
+  // rectangles at all, and we could get rid of this step. This is a pretty
+  // involved change, however.
+  void ApplyCurrentLayoutToPages(bool reload);
 
   // Loads information about the pages in the document and calculate the
   // document size.
@@ -515,7 +520,12 @@ class PDFiumEngine : public PDFEngine,
   static FPDF_BOOL Pause_NeedToPauseNow(IFSDK_PAUSE* param);
 
   PDFEngine::Client* const client_;
-  pp::Size document_size_;  // Size of document in pixels.
+
+  // The current document layout.
+  DocumentLayout layout_;
+
+  // The options for the desired document layout.
+  DocumentLayout::Options desired_layout_options_;
 
   // The scroll position in screen coordinates.
   pp::Point position_;
@@ -524,7 +534,6 @@ class PDFiumEngine : public PDFEngine,
   // The plugin size in screen coordinates.
   pp::Size plugin_size_;
   double current_zoom_ = 1.0;
-  unsigned int current_rotation_ = 0;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
   std::string url_;
@@ -553,7 +562,7 @@ class PDFiumEngine : public PDFEngine,
   std::vector<int> pending_pages_;
 
   // True if loading pages in two-up view layout. False if loading pages in
-  // single view layout.
+  // single view layout. Has to be in sync with |twoUpView_| in ViewportImpl.
   bool two_up_view_ = false;
 
   // During handling of input events we don't want to unload any pages in
@@ -606,11 +615,7 @@ class PDFiumEngine : public PDFEngine,
   // Where to resume searching. (0-based)
   base::Optional<size_t> resume_find_index_;
 
-  // Permissions bitfield.
-  unsigned long permissions_ = 0;
-
-  // Permissions security handler revision number. -1 for unknown.
-  int permissions_handler_revision_ = -1;
+  std::unique_ptr<PDFiumPermissions> permissions_;
 
   pp::Size default_page_size_;
 

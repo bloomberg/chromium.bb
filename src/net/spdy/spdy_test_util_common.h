@@ -25,9 +25,10 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_info.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
@@ -216,7 +217,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<SSLConfigService> ssl_config_service;
   std::unique_ptr<MockClientSocketFactory> socket_factory;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
-  std::unique_ptr<HttpServerPropertiesImpl> http_server_properties;
+  std::unique_ptr<HttpServerProperties> http_server_properties;
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<ReportingService> reporting_service;
   std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service;
@@ -227,6 +228,7 @@ struct SpdySessionDependencies {
   bool enable_quic;
   bool enable_server_push_cancellation;
   size_t session_max_recv_window_size;
+  int session_max_queued_capped_frames;
   spdy::SettingsMap http2_settings;
   SpdySession::TimeFunc time_func;
   bool enable_http2_alternative_service;
@@ -236,6 +238,7 @@ struct SpdySessionDependencies {
   bool http_09_on_non_default_ports_enabled;
   bool disable_idle_sockets_close_on_memory_pressure;
   bool enable_early_data;
+  HttpAuthPreferences::DefaultCredentials allow_default_credentials;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {

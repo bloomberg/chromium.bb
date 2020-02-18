@@ -91,6 +91,23 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     virtual void OnPathMtuIncreased(QuicPacketLength packet_size) = 0;
   };
 
+  // The retransmission timer is a single timer which switches modes depending
+  // upon connection state.
+  enum RetransmissionTimeoutMode {
+    // A conventional TCP style RTO.
+    RTO_MODE,
+    // A tail loss probe.  By default, QUIC sends up to two before RTOing.
+    TLP_MODE,
+    // Retransmission of handshake packets prior to handshake completion.
+    HANDSHAKE_MODE,
+    // Re-invoke the loss detection when a packet is not acked before the
+    // loss detection algorithm expects.
+    LOSS_MODE,
+    // A probe timeout. At least one probe packet must be sent when timer
+    // expires.
+    PTO_MODE,
+  };
+
   QuicSentPacketManager(Perspective perspective,
                         const QuicClock* clock,
                         QuicRandom* random,
@@ -183,8 +200,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
                     TransmissionType transmission_type,
                     HasRetransmittableData has_retransmittable_data);
 
-  // Called when the retransmission timer expires.
-  void OnRetransmissionTimeout();
+  // Called when the retransmission timer expires and returns the retransmission
+  // mode.
+  RetransmissionTimeoutMode OnRetransmissionTimeout();
 
   // Calculate the time until we can send the next packet to the wire.
   // Note 1: When kUnknownWaitTime is returned, there is no need to poll
@@ -283,9 +301,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
                           EncryptionLevel ack_decrypted_level);
 
   // Called to enable/disable letting session decide what to write.
-  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write) {
-    unacked_packets_.SetSessionDecideWhatToWrite(session_decides_what_to_write);
-  }
+  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
 
   void EnableMultiplePacketNumberSpacesSupport();
 
@@ -324,6 +340,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   size_t GetConsecutiveTlpCount() const { return consecutive_tlp_count_; }
 
+  size_t GetConsecutivePtoCount() const { return consecutive_pto_count_; }
+
   void OnApplicationLimited();
 
   const SendAlgorithmInterface* GetSendAlgorithm() const {
@@ -355,17 +373,11 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return pending_timer_transmission_count_;
   }
 
-  QuicTime::Delta local_max_ack_delay() const { return local_max_ack_delay_; }
-
-  void set_local_max_ack_delay(QuicTime::Delta local_max_ack_delay) {
-    // The delayed ack time should never be more than one half the min RTO time.
-    DCHECK_LE(local_max_ack_delay, (min_rto_timeout_ * 0.5));
-    local_max_ack_delay_ = local_max_ack_delay;
-  }
-
   QuicTime::Delta peer_max_ack_delay() const { return peer_max_ack_delay_; }
 
   void set_peer_max_ack_delay(QuicTime::Delta peer_max_ack_delay) {
+    // The delayed ack time should never be more than one half the min RTO time.
+    DCHECK_LE(peer_max_ack_delay, (min_rto_timeout_ * 0.5));
     peer_max_ack_delay_ = peer_max_ack_delay;
   }
 
@@ -383,6 +395,15 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Setting the send algorithm once the connection is underway is dangerous.
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm);
 
+  // Sends up to max_probe_packets_per_pto_ probe packets.
+  void MaybeSendProbePackets();
+
+  // Called to adjust pending_timer_transmission_count_ accordingly.
+  void AdjustPendingTimerTransmissions();
+
+  // Called to disable HANDSHAKE_MODE, and only PTO and LOSS modes are used.
+  void DisableHandshakeMode();
+
   bool supports_multiple_packet_number_spaces() const {
     return unacked_packets_.supports_multiple_packet_number_spaces();
   }
@@ -393,23 +414,13 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   bool fix_rto_retransmission() const { return fix_rto_retransmission_; }
 
+  bool pto_enabled() const { return pto_enabled_; }
+
+  bool handshake_mode_disabled() const { return handshake_mode_disabled_; }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
-
-  // The retransmission timer is a single timer which switches modes depending
-  // upon connection state.
-  enum RetransmissionTimeoutMode {
-    // A conventional TCP style RTO.
-    RTO_MODE,
-    // A tail loss probe.  By default, QUIC sends up to two before RTOing.
-    TLP_MODE,
-    // Retransmission of handshake packets prior to handshake completion.
-    HANDSHAKE_MODE,
-    // Re-invoke the loss detection when a packet is not acked before the
-    // loss detection algorithm expects.
-    LOSS_MODE,
-  };
 
   typedef QuicLinkedHashMap<QuicPacketNumber,
                             TransmissionType,
@@ -451,6 +462,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   const QuicTime::Delta GetRetransmissionDelay() const {
     return GetRetransmissionDelay(consecutive_rto_count_);
   }
+
+  // Returns the probe timeout.
+  const QuicTime::Delta GetProbeTimeoutDelay() const;
 
   // Returns the newest transmission associated with a packet.
   QuicPacketNumber GetNewestRetransmission(
@@ -615,10 +629,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicPacketNumber
       largest_packets_peer_knows_is_acked_[NUM_PACKET_NUMBER_SPACES];
 
-  // The local node's maximum ack delay time. This is the maximum amount of
-  // time to wait before sending an acknowledgement.
-  QuicTime::Delta local_max_ack_delay_;
-
   // The maximum ACK delay time that the peer uses. Initialized to be the
   // same as local_max_ack_delay_, may be changed via transport parameter
   // negotiation.
@@ -634,14 +644,28 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // OnAckRangeStart, and gradually moves in OnAckRange..
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
 
+  // Indicates whether PTO mode has been enabled. PTO mode unifies TLP and RTO
+  // modes.
+  bool pto_enabled_;
+
+  // Maximum number of probes to send when PTO fires.
+  size_t max_probe_packets_per_pto_;
+
+  // Number of times the PTO timer has fired in a row without receiving an ack.
+  size_t consecutive_pto_count_;
+
   // Latched value of quic_loss_removes_from_inflight.
   const bool loss_removes_from_inflight_;
 
   // Latched value of quic_ignore_tlpr_if_no_pending_stream_data.
   const bool ignore_tlpr_if_no_pending_stream_data_;
 
-  // Latched value of quic_fix_rto_retransmission.
-  const bool fix_rto_retransmission_;
+  // Latched value of quic_fix_rto_retransmission3 and
+  // session_decides_what_to_write.
+  bool fix_rto_retransmission_;
+
+  // True if HANDSHAKE mode has been disabled.
+  bool handshake_mode_disabled_;
 };
 
 }  // namespace quic

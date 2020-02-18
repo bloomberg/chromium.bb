@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -81,7 +81,7 @@ void SetFlagAndRunClosure(bool* flag, base::OnceClosure closure) {
 #define MAYBE_Basic Basic
 #endif
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   BackgroundServiceManager background_service_manager(GetTestManifests());
   mojom::ServicePtr service;
   ServiceImpl service_impl(mojo::MakeRequest(&service));

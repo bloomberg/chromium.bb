@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
@@ -62,8 +62,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
 
     // Wrap the fake proto DB with our interface.
     stats_db_ = base::WrapUnique(new VideoDecodeStatsDBImpl(
-        std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_),
-        base::FilePath(FILE_PATH_LITERAL("/fake/path"))));
+        std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_)));
   }
 
   int GetMaxFramesPerBuffer() {
@@ -86,7 +85,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     stats_db_->Initialize(base::BindOnce(
         &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
     EXPECT_CALL(*this, OnInitialize(true));
-    fake_db_->InitCallback(true);
+    fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
     testing::Mock::VerifyAndClearExpectations(this);
   }
 
@@ -158,7 +157,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   MOCK_METHOD0(MockClearStatsCb, void());
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   const VideoDescKey kStatsKeyVp9;
   const VideoDescKey kStatsKeyAvc;
@@ -180,7 +179,7 @@ TEST_F(VideoDecodeStatsDBImplTest, FailedInitialize) {
   stats_db_->Initialize(base::BindOnce(
       &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
   EXPECT_CALL(*this, OnInitialize(false));
-  fake_db_->InitCallback(false);
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
@@ -445,6 +444,43 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
       DecodeStatsEntry(GetMaxFramesPerBuffer(),
                        std::round(GetMaxFramesPerBuffer() * kDropRateC),
                        std::round(GetMaxFramesPerBuffer() * kEfficientRateC)));
+}
+
+// Overfilling an empty buffer triggers the codepath to compute weighted dropped
+// and power efficient ratios under a circumstance where the existing counts are
+// all zero. This test ensures that we don't do any dividing by zero with that
+// empty data.
+TEST_F(VideoDecodeStatsDBImplTest, OverfillEmptyBuffer) {
+  InitializeDB();
+
+  // Setup DB entry that overflows the buffer max (by 1) with 10% of frames
+  // dropped and 50% of frames power efficient.
+  const int kNumFramesOverfill = GetMaxFramesPerBuffer() + 1;
+  DecodeStatsEntry entryA(kNumFramesOverfill,
+                          std::round(0.1 * kNumFramesOverfill),
+                          std::round(0.5 * kNumFramesOverfill));
+
+  // Append entry to completely fill the buffer and verify read.
+  AppendStats(kStatsKeyVp9, entryA);
+  // Read-back stats should have same ratios, but scaled such that
+  // frames_decoded = GetMaxFramesPerBuffer().
+  DecodeStatsEntry readBackEntryA(GetMaxFramesPerBuffer(),
+                                  std::round(0.1 * GetMaxFramesPerBuffer()),
+                                  std::round(0.5 * GetMaxFramesPerBuffer()));
+  VerifyReadStats(kStatsKeyVp9, readBackEntryA);
+
+  // Append another entry that again overfills with different dropped and power
+  // efficient ratios. Verify that read-back only reflects latest entry.
+  DecodeStatsEntry entryB(kNumFramesOverfill,
+                          std::round(0.2 * kNumFramesOverfill),
+                          std::round(0.6 * kNumFramesOverfill));
+  AppendStats(kStatsKeyVp9, entryB);
+  // Read-back stats should have same ratios, but scaled such that
+  // frames_decoded = GetMaxFramesPerBuffer().
+  DecodeStatsEntry readBackEntryB(GetMaxFramesPerBuffer(),
+                                  std::round(0.2 * GetMaxFramesPerBuffer()),
+                                  std::round(0.6 * GetMaxFramesPerBuffer()));
+  VerifyReadStats(kStatsKeyVp9, readBackEntryB);
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, NoWriteDateReadAndExpire) {

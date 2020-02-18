@@ -46,6 +46,8 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/disable_reason.h"
@@ -71,15 +73,16 @@
 #include "chrome/common/pref_names.h"
 #endif
 
-using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 using extensions::AppSorting;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
 using extensions::ExtensionSyncData;
 using extensions::ExtensionSystem;
 using extensions::Manifest;
 using extensions::PermissionSet;
 using extensions::WebstorePrivateIsPendingCustodianApprovalFunction;
+using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
 using testing::Mock;
@@ -359,7 +362,8 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   ASSERT_EQ(3u, loaded_.size());
 
   // We start enabled.
-  const Extension* extension = service()->GetExtensionById(good0, true);
+  const Extension* extension =
+      registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
 
@@ -558,8 +562,10 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
                               extensions::disable_reason::DISABLE_USER_ACTION);
   ASSERT_FALSE(service()->IsExtensionEnabled(good2));
 
-  const Extension* extension0 = service()->GetExtensionById(good0, true);
-  const Extension* extension2 = service()->GetExtensionById(good2, true);
+  const Extension* extension0 =
+      registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
+  const Extension* extension2 =
+      registry()->GetExtensionById(good2, ExtensionRegistry::COMPATIBILITY);
   ASSERT_TRUE(extensions::sync_helper::IsSyncable(extension0));
   ASSERT_TRUE(extensions::sync_helper::IsSyncable(extension2));
 
@@ -617,7 +623,8 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   // any outgoing changes.
 
   {
-    const Extension* extension = service()->GetExtensionById(good0, true);
+    const Extension* extension =
+        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
     ASSERT_TRUE(extension);
 
     // Disable the extension.
@@ -632,7 +639,8 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   }
 
   {
-    const Extension* extension = service()->GetExtensionById(good0, true);
+    const Extension* extension =
+        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
     ASSERT_TRUE(extension);
 
     // Set incognito enabled to true.
@@ -647,7 +655,8 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   }
 
   {
-    const Extension* extension = service()->GetExtensionById(good0, true);
+    const Extension* extension =
+        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
     ASSERT_TRUE(extension);
 
     // Add another disable reason.
@@ -664,7 +673,8 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   }
 
   {
-    const Extension* extension = service()->GetExtensionById(good0, true);
+    const Extension* extension =
+        registry()->GetExtensionById(good0, ExtensionRegistry::COMPATIBILITY);
     ASSERT_TRUE(extension);
 
     // Uninstall the extension.
@@ -1071,20 +1081,24 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataUninstall) {
 
   // Should do nothing.
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_FALSE(service()->GetExtensionById(good_crx, true));
+  EXPECT_FALSE(
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
 
   // Install the extension.
   base::FilePath extension_path = data_dir().AppendASCII("good.crx");
   InstallCRX(extension_path, INSTALL_NEW);
-  EXPECT_TRUE(service()->GetExtensionById(good_crx, true));
+  EXPECT_TRUE(
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
 
   // Should uninstall the extension.
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_FALSE(service()->GetExtensionById(good_crx, true));
+  EXPECT_FALSE(
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
 
   // Should again do nothing.
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_FALSE(service()->GetExtensionById(good_crx, true));
+  EXPECT_FALSE(
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
 }
 
 TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
@@ -1095,7 +1109,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
   // Install the extension.
   base::FilePath extension_path = data_dir().AppendASCII("good.crx");
   InstallCRX(extension_path, INSTALL_NEW);
-  EXPECT_TRUE(service()->GetExtensionById(good_crx, true));
+  EXPECT_TRUE(
+      registry()->GetExtensionById(good_crx, ExtensionRegistry::COMPATIBILITY));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::AppSpecifics* app_specifics = specifics.mutable_app();
@@ -1113,7 +1128,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
 
     // Should do nothing
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_TRUE(service()->GetExtensionById(good_crx, true));
+    EXPECT_TRUE(registry()->GetExtensionById(good_crx,
+                                             ExtensionRegistry::COMPATIBILITY));
   }
 
   {
@@ -1124,7 +1140,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
 
     // Should again do nothing.
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
-    EXPECT_TRUE(service()->GetExtensionById(good_crx, false));
+    EXPECT_TRUE(
+        registry()->GetExtensionById(good_crx, ExtensionRegistry::ENABLED));
   }
 }
 
@@ -1758,6 +1775,13 @@ class ExtensionServiceTestSupervised
 
   void TearDown() override {
     supervised_user_service()->SetDelegate(nullptr);
+
+    if (profile()) {
+      auto* partition =
+          content::BrowserContext::GetDefaultStoragePartition(profile_.get());
+      if (partition)
+        partition->WaitForCodeCacheShutdownForTesting();
+    }
 
     ExtensionServiceSyncCustomGalleryTest::TearDown();
   }

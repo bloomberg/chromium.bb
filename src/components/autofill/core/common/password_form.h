@@ -209,6 +209,14 @@ struct PasswordForm {
   // When parsing an HTML form, this is not used.
   bool preferred = false;
 
+  // When the login was last used by the user to login to the site. Defaults to
+  // |date_created|, except for passwords that were migrated from the
+  // |preferred| flag. Their default is set when migrating the login database to
+  // have the "date_last_used" column.
+  //
+  // When parsing an HTML form, this is not used.
+  base::Time date_last_used;
+
   // When the login was saved (by chrome).
   //
   // When parsing an HTML form, this is not used.
@@ -305,10 +313,20 @@ struct PasswordForm {
   bool IsPossibleChangePasswordFormWithoutUsername() const;
 
   // Returns true if current password element is set.
+  bool HasUsernameElement() const;
+
+  // Returns true if current password element is set.
   bool HasPasswordElement() const;
+
+  // Returns true if current password element is set.
+  bool HasNewPasswordElement() const;
 
   // True iff |federation_origin| isn't empty.
   bool IsFederatedCredential() const;
+
+  // True if username element is set and password and new password elements are
+  // not set.
+  bool IsSingleUsername() const;
 
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;

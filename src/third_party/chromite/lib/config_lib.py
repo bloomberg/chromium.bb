@@ -39,7 +39,6 @@ DISPLAY_LABEL_FULL = 'full'
 DISPLAY_LABEL_CHROME_INFORMATIONAL = 'chrome_informational'
 DISPLAY_LABEL_INFORMATIONAL = 'informational'
 DISPLAY_LABEL_CQ = 'cq'
-DISPLAY_LABEL_POSTSUBMIT = 'postsubmit'
 DISPLAY_LABEL_RELEASE = 'release'
 DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
 DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
@@ -63,7 +62,6 @@ ALL_DISPLAY_LABEL = {
     DISPLAY_LABEL_CHROME_INFORMATIONAL,
     DISPLAY_LABEL_INFORMATIONAL,
     DISPLAY_LABEL_CQ,
-    DISPLAY_LABEL_POSTSUBMIT,
     DISPLAY_LABEL_RELEASE,
     DISPLAY_LABEL_CHROME_PFQ,
     DISPLAY_LABEL_MST_ANDROID_PFQ,
@@ -91,7 +89,6 @@ LUCI_BUILDER_INCREMENTAL = 'Incremental'
 LUCI_BUILDER_INFORMATIONAL = 'Informational'
 LUCI_BUILDER_INFRA = 'Infra'
 LUCI_BUILDER_INFRA_TESTING = 'InfraTesting'
-LUCI_BUILDER_LEGACY_POSTSUBMIT = 'LegacyPostsubmit'
 LUCI_BUILDER_LEGACY_RELEASE = 'LegacyRelease'
 LUCI_BUILDER_PFQ = 'PFQ'
 LUCI_BUILDER_PRECQ = 'PreCQ'
@@ -110,7 +107,6 @@ ALL_LUCI_BUILDER = {
     LUCI_BUILDER_INFORMATIONAL,
     LUCI_BUILDER_INFRA,
     LUCI_BUILDER_INFRA_TESTING,
-    LUCI_BUILDER_LEGACY_POSTSUBMIT,
     LUCI_BUILDER_LEGACY_RELEASE,
     LUCI_BUILDER_PFQ,
     LUCI_BUILDER_PRECQ,
@@ -606,7 +602,7 @@ class HWTestConfig(object):
                quota_account=None):
     """Constructor -- see members above."""
 
-    assert not async or not blocking, "%s is async and blocking" % suite
+    assert not async or not blocking, '%s is async and blocking' % suite
     assert not warn_only or not critical
     self.suite = suite
     self.pool = pool
@@ -660,7 +656,7 @@ class HWTestConfig(object):
 
   @property
   def timeout_mins(self):
-    return int(self.timeout / 60)
+    return self.timeout // 60
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
@@ -856,7 +852,15 @@ def DefaultSettings():
 
       # Generates AFDO data. Will capture a profile of chrome using a hwtest
       # to run a predetermined set of benchmarks.
+      # FIXME(tcwang): Keep this config during transition to async AFDO
       afdo_generate=False,
+
+      # Generates AFDO data asynchronously. Will capture a profile of chrome
+      # using a hwtest to run a predetermined set of benchmarks.
+      afdo_generate_async=False,
+
+      # Verify and publish kernel profiles.
+      kernel_afdo_verify=False,
 
       # Generate Chrome orderfile. Will build Chrome with C3 ordering and
       # generate an orderfile for uploading as a result.

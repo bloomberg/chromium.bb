@@ -41,7 +41,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
@@ -110,16 +109,16 @@
       UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
 
   self.NTPMediator = [[NTPHomeMediator alloc]
-      initWithWebStateList:self.webStateList
-        templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
-                               self.browserState)
-         urlLoadingService:urlLoadingService
-               authService:AuthenticationServiceFactory::GetForBrowserState(
-                               self.browserState)
-           identityManager:IdentityManagerFactory::GetForBrowserState(
-                               self.browserState)
-                logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                               self.browserState)];
+        initWithWebState:self.webState
+      templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
+                             self.browserState)
+       urlLoadingService:urlLoadingService
+             authService:AuthenticationServiceFactory::GetForBrowserState(
+                             self.browserState)
+         identityManager:IdentityManagerFactory::GetForBrowserState(
+                             self.browserState)
+              logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
+                             self.browserState)];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()
@@ -172,7 +171,6 @@
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
-  self.suggestionsViewController.containsToolbar = YES;
   self.suggestionsViewController.dispatcher = self.dispatcher;
 
   self.NTPMediator.consumer = self.headerController;
@@ -230,7 +228,7 @@
       [_dispatcher closeCurrentTab];
     } break;
     case OverscrollAction::REFRESH:
-      [self.contentSuggestionsMediator.dataSink reloadAllData];
+      [self reload];
       break;
     case OverscrollAction::NONE:
       NOTREACHED();
@@ -286,6 +284,10 @@
 
 - (void)willUpdateSnapshot {
   [self.suggestionsViewController clearOverscroll];
+}
+
+- (void)reload {
+  [self.contentSuggestionsMediator.dataSink reloadAllData];
 }
 
 @end

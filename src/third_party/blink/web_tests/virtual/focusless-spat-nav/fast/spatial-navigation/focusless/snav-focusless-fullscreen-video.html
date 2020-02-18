@@ -12,6 +12,9 @@
 <script>
   let video = document.getElementById("video");
   let button = document.getElementById("button");
+  let fullscreened = new Promise((resolve) => {
+    document.addEventListener('fullscreenchange', resolve);
+  });
 
   button.addEventListener('click', function() {
     video.requestFullscreen();
@@ -23,6 +26,15 @@
 
     await snavCallback();
 
+    await fullscreened;
+
+    // snav state racily may have changed once or twice when fullscreen state
+    // changes, so if it hasn't updated in response to video controls getting
+    // focused yet, wait for the next update.
+    if (!mockSnavService.hasDefaultVideoControls) {
+      await snavCallback();
+    }
+
     assert_equals(window.internals.interestedElement,
                   video,
                   "Video element should have interest.");
@@ -31,7 +43,7 @@
                   "Video element should be focused.");
 
     assert_true(mockSnavService.canExitFocus,
-                 "Should be able to exit focus.");
+                "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
     assert_false(mockSnavService.isFormFocused,

@@ -22,8 +22,8 @@
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video_capture_types.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -101,18 +101,21 @@ class MockVideoCaptureObserver final
   void Start() {
     media::mojom::VideoCaptureObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(0, 0, DefaultVideoCaptureParams(), std::move(observer));
+    host_->Start(device_id_, session_id_, DefaultVideoCaptureParams(),
+                 std::move(observer));
   }
 
-  void Stop() { host_->Stop(0); }
+  void Stop() { host_->Stop(device_id_); }
 
-  void RequestRefreshFrame() { host_->RequestRefreshFrame(0); }
+  void RequestRefreshFrame() { host_->RequestRefreshFrame(device_id_); }
 
  private:
   media::mojom::VideoCaptureHostPtr host_;
   mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
+  const base::UnguessableToken device_id_ = base::UnguessableToken::Create();
+  const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureObserver);
 };
@@ -267,10 +270,6 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
           last_alert_state_(chrome::GetTabAlertStateForContents(
               browser->tab_strip_model()->GetActiveWebContents())) {
       browser_->tab_strip_model()->AddObserver(this);
-    }
-
-    ~IndicatorChangeObserver() override {
-      browser_->tab_strip_model()->RemoveObserver(this);
     }
 
     TabAlertState last_alert_state() const { return last_alert_state_; }

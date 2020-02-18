@@ -649,7 +649,7 @@ jint WebContentsAccessibilityAndroid::GetEditableTextSelectionEnd(
 static size_t ActualUnignoredChildCount(const ui::AXNode* node) {
   size_t count = 0;
   for (const ui::AXNode* child : node->children()) {
-    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+    if (child->IsIgnored()) {
       count += ActualUnignoredChildCount(child);
     } else {
       ++count;

@@ -27,6 +27,7 @@ from chromite.lib import portage_util
 # where yaml may not be there, so we don't error on that since it's not needed
 # in that case.
 try:
+  # pylint: disable=wrong-import-order
   import yaml
 except ImportError:
   yaml = None
@@ -284,7 +285,7 @@ class PackageInfo(object):
     # A bad package can either raise a TypeError exception or return None.
     if not cpv:
       raise AssertionError(
-          'portage couldn\'t find %s, missing version number?' % fullnamerev)
+          "portage couldn't find %s, missing version number?" % fullnamerev)
 
     #
     # These define the package uniquely.
@@ -451,7 +452,7 @@ class PackageInfo(object):
 
       if not os.path.exists(src_dir):
         raise AssertionError(
-            'Unpack of %s didn\'t create %s. Version mismatch' %
+            "Unpack of %s didn't create %s. Version mismatch" %
             (self.fullnamerev, src_dir))
 
     # You may wonder how deep should we go?
@@ -582,7 +583,7 @@ being scraped currently).""",
     logging.debug('%s -> %s', ' '.join(args), path)
 
     if not os.access(path, os.F_OK):
-      raise AssertionError('Can\'t access %s', path)
+      raise AssertionError("Can't access %s", path)
 
     return path
 
@@ -648,7 +649,7 @@ being scraped currently).""",
           'BSD-Google' not in ebuild_license_names):
         license_name = 'BSD-Google'
         logging.warning(
-            'Fixed BSD->BSD-Google for %s because it\'s in chromeos-base. '
+            "Fixed BSD->BSD-Google for %s because it's in chromeos-base. "
             'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       new_license_names.append(license_name)
     ebuild_license_names = new_license_names
@@ -678,7 +679,7 @@ being scraped currently).""",
     # happens, error out to tell the programmer to do something.
     # dev-python/pycairo-1.10.0-r4: LGPL-3 || ( LGPL-2.1 MPL-1.1 )
     if '||' in ebuild_license_names[1:]:
-      logging.error('%s: Can\'t parse || in the middle of a license: %s',
+      logging.error("%s: Can't parse || in the middle of a license: %s",
                     self.fullnamerev, ' '.join(ebuild_license_names))
       raise PackageLicenseError()
 
@@ -713,7 +714,7 @@ being scraped currently).""",
                        self.fullnamerev, license_name,
                        ' '.join(ebuild_license_names))
         else:
-          logging.info('%s: can\'t use %s, will scan source code for copyright',
+          logging.info("%s: can't use %s, will scan source code for copyright",
                        self.fullnamerev, license_name)
           need_copyright_attribution = True
           scan_source_for_licenses = True
@@ -745,7 +746,7 @@ being scraped currently).""",
 
     # This shouldn't run, but leaving as sanity check.
     if not self.license_names and not self.license_text_scanned:
-      raise AssertionError('Didn\'t find usable licenses for %s' %
+      raise AssertionError("Didn't find usable licenses for %s" %
                            self.fullnamerev)
 
   def SaveLicenseDump(self, save_file):
@@ -1223,7 +1224,7 @@ def _BuildInfo(build_info_path, filename):
     bi = osutils.ReadFile(filename).rstrip()
   # Some properties like HOMEPAGE may be absent.
   except IOError:
-    bi = ""
+    bi = ''
   return bi
 
 

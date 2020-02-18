@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1036550831858290950">Desa la pestanya actual a les adreces d'interès</translation>
 <translation id="104962181688258143">Obre l'aplicació Fitxers</translation>
-<translation id="1098295134904615027">Activa l'escriptori virtual de la dreta</translation>
 <translation id="1122869341872663659">Es mostren <ph name="N" /> resultats de cerca per a <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Arrossega l'enllaç a la barra d'adreces de la pestanya</translation>
 <translation id="1204450209689312104">Obre una finestra nova en mode d'incògnit</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Maj</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Afegeix www. i .com al text de la barra d'adreces i obre la pàgina</translation>
+<translation id="1872219238824176091">Suprimeix l'escriptori actual</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Activa l'escriptori virtual de l'esquerra</translation>
 <translation id="1996162290124031907">Ves a la pestanya següent</translation>
 <translation id="2010818616644390445">Ves a l'última pestanya de la finestra</translation>
 <translation id="2040706009561734834">Obre/tanca el menú d'aplicacions</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">Canvia de finestra ràpidament</translation>
 <translation id="2454251766545114447">Redueix el contingut de la pantalla</translation>
 <translation id="2478303094958140141">Activa o desactiva ChromeVox (avisos de veu)</translation>
+<translation id="2488661730534396940">Activa l'escriptori de l'esquerra</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Desplaça la pàgina web cap avall</translation>
 <translation id="2574014812750545982">Restableix el nivell de zoom de la pàgina</translation>
 <translation id="2596078834055697711">Fa una captura de pantalla de la finestra</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="TAB" /> o <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">Desa la pàgina web actual a les adreces d'interès</translation>
 <translation id="2750942583782703988">Torna a carregar la pàgina actual</translation>
 <translation id="2764005613199379871">Situa el focus a la barra d'adreces</translation>
+<translation id="2774822903829597107">Crea un escriptori nou</translation>
 <translation id="2789868185375229787">Redueix la pàgina</translation>
 <translation id="2804480015716812239">Prem <ph name="ALT" /> i fes clic en un enllaç</translation>
 <translation id="2830827904629746450">Fixa una finestra a la dreta</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">Fes una captura de pantalla</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Mou el focus a la barra d'adreces</translation>
-<translation id="3165428420335997629">Crea un escriptori virtual nou</translation>
 <translation id="3256109297135787951">Deixa de destacar un element del prestatge</translation>
 <translation id="3288816184963444640">Tanca la finestra actual</translation>
 <translation id="3407560819924487926">Obre el gestor de tasques</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">Fes una captura de pantalla parcial</translation>
 <translation id="4698850295812410683">Mostra les eines del llapis òptic</translation>
 <translation id="4801989101741319327">Mou el cursor al final de la paraula següent</translation>
+<translation id="4866066940972151697">Activa l'escriptori de la dreta</translation>
 <translation id="4916163929714267752">Obre l'enllaç en una finestra nova</translation>
 <translation id="5030659775136592441">Mostra el gestor d'adreces d'interès</translation>
 <translation id="5034421018520995080">Ves a la part superior de la pàgina</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">Gira la pantalla 90 graus</translation>
 <translation id="8241665785394195545">claudàtor de tancament</translation>
 <translation id="8264941229485248811">Mostra o amaga l'inspector d'eines per a desenvolupadors</translation>
-<translation id="8355937569537581904">Suprimeix l'escriptori virtual actual</translation>
 <translation id="836869401750819675">Obre la pàgina Baixades</translation>
 <translation id="8388247778047144397">Arrossega l'enllaç a una àrea buida de la barra de pestanyes</translation>
 <translation id="8389638407792712197">Obre una finestra nova</translation>
@@ -205,7 +205,7 @@
 <translation id="906458777597946297">Maximitza la finestra</translation>
 <translation id="9091855755813503076">Ves al principi de la línia</translation>
 <translation id="9106898733795143799">Pàgina i navegador web</translation>
-<translation id="9162942292291287644">No hi ha resultats de cerca per a <ph name="QUERY" /></translation>
+<translation id="9162942292291287644">No hi ha cap resultat de cerca per a <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Dreceres populars</translation>
 <translation id="93603345341560814">Prem <ph name="SHIFT" /> i fes clic en un enllaç</translation>
 <translation id="945383118875625837">Arrossega l'enllaç a la barra d'adreces d'interès</translation>

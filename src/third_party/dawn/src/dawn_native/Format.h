@@ -27,7 +27,7 @@ namespace dawn_native {
 
     // The number of formats Dawn knows about. Asserts in BuildFormatTable ensure that this is the
     // exact number of known format.
-    static constexpr size_t kKnownFormatCount = 58;
+    static constexpr size_t kKnownFormatCount = 52;
 
     // A dawn::TextureFormat along with all the information about it necessary for validation.
     struct Format {
@@ -38,12 +38,20 @@ namespace dawn_native {
             DepthStencil,
         };
 
+        enum Type {
+            Float,
+            Sint,
+            Uint,
+            Other,
+        };
+
         dawn::TextureFormat format;
         bool isRenderable;
         bool isCompressed;
         // A format can be known but not supported because it is part of a disabled extension.
         bool isSupported;
         Aspect aspect;
+        Type type;
 
         uint32_t blockByteSize;
         uint32_t blockWidth;
@@ -53,6 +61,7 @@ namespace dawn_native {
         bool HasDepth() const;
         bool HasStencil() const;
         bool HasDepthOrStencil() const;
+        bool HasComponentType(dawn::TextureComponentType componentType) const;
 
         // The index of the format in the list of all known formats: a unique number for each format
         // in [0, kKnownFormatCount)

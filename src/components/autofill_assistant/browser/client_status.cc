@@ -62,8 +62,8 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::OTHER_ACTION_STATUS:
       out << "OTHER_ACTION_STATUS";
       break;
-    case ProcessedActionStatusProto::PAYMENT_REQUEST_ERROR:
-      out << "PAYMENT_REQUEST_ERROR";
+    case ProcessedActionStatusProto::COLLECT_USER_DATA_ERROR:
+      out << "COLLECT_USER_DATA_ERROR";
       break;
     case ProcessedActionStatusProto::UNSUPPORTED_ACTION:
       out << "UNSUPPORTED_ACTION";
@@ -120,6 +120,10 @@ std::ostream& operator<<(std::ostream& out,
 
     case ProcessedActionStatusProto::NAVIGATION_ERROR:
       out << "NAVIGATION_ERROR";
+      break;
+
+    case ProcessedActionStatusProto::AUTOFILL_INFO_NOT_AVAILABLE:
+      out << "AUTOFILL_INFO_NOT_AVAILABLE";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

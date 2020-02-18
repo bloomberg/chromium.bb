@@ -18,6 +18,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -197,20 +198,20 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void ExecuteJavaScriptInIsolatedWorld(
       const base::string16& javascript,
       JavaScriptResultCallback callback,
-      int world_id) = 0;
+      int32_t world_id) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
   virtual void ExecuteJavaScriptForTests(
       const base::string16& javascript,
       JavaScriptResultCallback callback,
-      int world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
+      int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
   // This version adds a fake UserGestureIndicator to test functionality that
   // requires such a user gesture. https://crbug.com/408426
   virtual void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript,
-      int world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
+      int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
   // Send a message to the RenderFrame to trigger an action on an
   // accessibility object.
@@ -339,7 +340,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // PauseSubresourceLoadingHandle that controls the pausing behavior.  As long
   // as this handle is live, pausing will continue until an internal
   // navigation happens in the frame.
-  virtual blink::mojom::PauseSubresourceLoadingHandlePtr
+  virtual mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
   PauseSubresourceLoading() = 0;
 
   // Run the given action on the media player location at the given point.

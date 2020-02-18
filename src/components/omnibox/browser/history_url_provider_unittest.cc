@@ -13,8 +13,9 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
@@ -165,6 +166,12 @@ struct TestURLInfo {
     {"https://www.wytih/page", "What you typed in history www page", 5, 5, 80},
     {"ftp://wytih/file", "What you typed in history ftp file", 6, 6, 80},
     {"https://www.wytih/file", "What you typed in history www file", 7, 7, 80},
+
+    // URLs containing whitespaces for inline autocompletion tests.
+    {"https://www.zebra.com/zebra", "zebra1", 7, 7, 80},
+    {"https://www.zebra.com/zebras", "zebra2", 7, 7, 80},
+    {"https://www.zebra.com/zebra s", "zebra3", 7, 7, 80},
+    {"https://www.zebra.com/zebra  s", "zebra4", 7, 7, 80},
 };
 
 }  // namespace
@@ -229,7 +236,7 @@ class HistoryURLProviderTest : public testing::Test,
                                 size_t expected_match_location,
                                 size_t expected_match_length);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ACMatches matches_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
@@ -275,7 +282,7 @@ bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
 void HistoryURLProviderTest::TearDown() {
   autocomplete_ = nullptr;
   client_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void HistoryURLProviderTest::FillData() {
@@ -320,8 +327,8 @@ void HistoryURLProviderTest::RunTest(
     for (auto i = matches_.begin(); i != matches_.end(); ++i) {
       i->ComputeStrippedDestinationURL(input, service);
     }
-    AutocompleteResult::SortAndDedupMatches(input.current_page_classification(),
-                                            &matches_);
+    AutocompleteResult::DeduplicateMatches(input.current_page_classification(),
+                                           &matches_);
     std::sort(matches_.begin(), matches_.end(),
               &AutocompleteMatch::MoreRelevant);
   }
@@ -743,20 +750,87 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
   RunTest(ASCIIToUTF16("this is a query"), std::string(), false, nullptr, 0);
 }
 
-TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
-  AutocompleteInput input(ASCIIToUTF16("slash "),
-                          metrics::OmniboxEventProto::OTHER,
-                          TestSchemeClassifier());
-  autocomplete_->Start(input, false);
-  if (!autocomplete_->done())
-    base::RunLoop().Run();
+TEST_F(HistoryURLProviderTest, AutocompleteOnTrailingWhitespace) {
+  struct AutocompletionExpectation {
+    std::string fill_into_edit;
+    std::string inline_autocompletion;
+    bool allowed_to_be_default_match;
+  };
 
-  // None of the matches should attempt to autocomplete.
-  matches_ = autocomplete_->matches();
-  for (size_t i = 0; i < matches_.size(); ++i) {
-    EXPECT_TRUE(matches_[i].inline_autocompletion.empty());
-    EXPECT_FALSE(matches_[i].allowed_to_be_default_match);
-  }
+  auto TestAutocompletion =
+      [this](std::string input_text, bool input_prevent_inline_autocomplete,
+             std::vector<AutocompletionExpectation> expectations) {
+        const std::string debug = base::StringPrintf(
+            "input text [%s], prevent inline [%d]", input_text.c_str(),
+            input_prevent_inline_autocomplete);
+
+        AutocompleteInput input(ASCIIToUTF16(input_text),
+                                metrics::OmniboxEventProto::OTHER,
+                                TestSchemeClassifier());
+        input.set_prevent_inline_autocomplete(
+            input_prevent_inline_autocomplete);
+        autocomplete_->Start(input, false);
+        if (!autocomplete_->done())
+          base::RunLoop().Run();
+
+        matches_ = autocomplete_->matches();
+        EXPECT_EQ(matches_.size(), expectations.size()) << debug;
+        for (size_t i = 0; i < matches_.size(); ++i) {
+          EXPECT_EQ(matches_[i].fill_into_edit,
+                    ASCIIToUTF16(expectations[i].fill_into_edit))
+              << debug;
+          if (matches_[i].allowed_to_be_default_match) {
+            EXPECT_EQ(matches_[i].inline_autocompletion,
+                      ASCIIToUTF16(expectations[i].inline_autocompletion))
+                << debug;
+          }
+          EXPECT_EQ(matches_[i].allowed_to_be_default_match,
+                    expectations[i].allowed_to_be_default_match)
+              << debug;
+        }
+      };
+
+  TestAutocompletion("zebra.com/zebra", false,
+                     {
+                         {"zebra.com/zebra", "", true},
+                         {"https://www.zebra.com/zebras", "s", true},
+                         {"https://www.zebra.com/zebra s", " s", true},
+                         {"https://www.zebra.com/zebra  s", "  s", true},
+                     });
+
+  TestAutocompletion("zebra.com/zebra ", false,
+                     {
+                         {"zebra.com/zebra", "", true},
+                         {"https://www.zebra.com/zebras", "", false},
+                         {"https://www.zebra.com/zebra s", "s", true},
+                         {"https://www.zebra.com/zebra  s", " s", true},
+                     });
+
+  TestAutocompletion("zebra.com/zebra  ", false,
+                     {
+                         {"zebra.com/zebra", "", true},
+                         {"https://www.zebra.com/zebras", "", false},
+                         {"https://www.zebra.com/zebra s", "", false},
+                         {"https://www.zebra.com/zebra  s", "s", true},
+                     });
+
+  TestAutocompletion("zebra.com/zebra", true,
+                     {
+                         {"zebra.com/zebra", "", true},
+                         {"https://www.zebra.com/zebras", "", false},
+                         {"https://www.zebra.com/zebra s", "", false},
+                         {"https://www.zebra.com/zebra  s", "", false},
+                     });
+
+  TestAutocompletion("zebra.com/zebras", false,
+                     {
+                         {"zebra.com/zebras", "", true},
+                     });
+
+  TestAutocompletion("zebra.com/zebra s", false,
+                     {
+                         {"zebra.com/zebra s", "", true},
+                     });
 }
 
 TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
@@ -1235,7 +1309,7 @@ std::unique_ptr<HistoryURLProviderParams> BuildHistoryURLProviderParams(
   history_match.url_info.set_url(GURL(url_text));
   history_match.match_in_scheme = match_in_scheme;
   auto params = std::make_unique<HistoryURLProviderParams>(
-      input, true, AutocompleteMatch(), nullptr, nullptr);
+      input, input, true, AutocompleteMatch(), nullptr, nullptr);
   params->matches.push_back(history_match);
 
   return params;

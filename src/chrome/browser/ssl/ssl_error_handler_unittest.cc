@@ -125,8 +125,7 @@ const char kCertWithoutOrganizationOrCommonName[] =
 std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
     const base::Closure& quit_closure,
     const net::test_server::HttpRequest& request) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           quit_closure);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure);
   return std::make_unique<net::test_server::HungResponse>();
 }
 
@@ -596,26 +595,26 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
  public:
   SSLErrorHandlerDateInvalidTest()
       : ChromeRenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+            content::BrowserTaskEnvironment::REAL_IO_THREAD),
         field_trial_test_(new network_time::FieldTrialTest()),
         clock_(new base::SimpleTestClock),
         tick_clock_(new base::SimpleTestTickClock),
         test_server_(new net::EmbeddedTestServer) {
     network_time::NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
+
+    field_trial_test()->SetNetworkQueriesWithVariationsService(
+        false, 0.0,
+        network_time::NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY);
   }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
 
-    field_trial_test()->SetNetworkQueriesWithVariationsService(
-        false, 0.0,
-        network_time::NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY);
-
     base::RunLoop run_loop;
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(CreateURLLoaderFactory, &url_loader_factory_info),
         run_loop.QuitClosure());
@@ -1058,7 +1057,13 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
       SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
 }
 
-TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
+// Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989128
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_TimeQueryStarted DISABLED_TimeQueryStarted
+#else
+#define MAYBE_TimeQueryStarted TimeQueryStarted
+#endif
+TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryStarted) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
@@ -1089,7 +1094,14 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
 
 // Tests that an SSL interstitial is shown if the accuracy of the system
 // clock can't be determined because network time is unavailable.
-TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
+
+// Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989225
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_NoTimeQueries DISABLED_NoTimeQueries
+#else
+#define MAYBE_NoTimeQueries NoTimeQueries
+#endif
+TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_NoTimeQueries) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
@@ -1109,7 +1121,14 @@ TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
 
 // Tests that an SSL interstitial is shown if determing the accuracy of
 // the system clock times out (e.g. because a network time query hangs).
-TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
+
+// Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989289
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_TimeQueryHangs DISABLED_TimeQueryHangs
+#else
+#define MAYBE_TimeQueryHangs TimeQueryHangs
+#endif
+TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryHangs) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;

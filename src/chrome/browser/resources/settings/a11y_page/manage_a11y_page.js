@@ -126,6 +126,18 @@ Polymer({
     },
 
     /**
+     * Whether this page shown as part of OS settings.
+     * TODO(crbug.com/986596): Remove this when SplitSettings is the default.
+     * @private
+     */
+    isOSSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isOSSettings');
+      },
+    },
+
+    /**
      * |hasKeyboard_|starts undefined so observers don't trigger
      * until it has been populated.
      * @private
@@ -200,7 +212,7 @@ Polymer({
 
   /** @private */
   onSwitchAccessSettingsTap_: function() {
-    chrome.send('showSwitchAccessSettings');
+    settings.navigateTo(settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS);
   },
 
   /** @private */
@@ -212,9 +224,16 @@ Polymer({
 
   /** @private */
   onAppearanceTap_: function() {
-    settings.navigateTo(
-        settings.routes.APPEARANCE,
-        /* dynamicParams */ null, /* removeSearch */ true);
+    if (loadTimeData.getBoolean('isOSSettings')) {
+      // Open browser appearance section in a new browser tab.
+      window.open('chrome://settings/appearance');
+    } else {
+      // Open browser appearance in this settings window.
+      // TODO(crbug.com/986596): Remove this when SplitSettings is the default.
+      settings.navigateTo(
+          settings.routes.APPEARANCE,
+          /* dynamicParams */ null, /* removeSearch */ true);
+    }
   },
 
   /** @private */

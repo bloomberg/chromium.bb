@@ -117,7 +117,7 @@ class PipWindowResizerTest : public AshTestBase,
     params.bounds = screen_bounds;
     params.z_order = ui::ZOrderLevel::kFloatingWindow;
     params.context = root_window;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }
@@ -526,7 +526,7 @@ TEST_P(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
 
 TEST_P(PipWindowResizerTest, PipWindowDoesNotChangeDisplayOnDrag) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  display::Display display = WindowState::Get(window())->GetDisplay();
+  const display::Display display = WindowState::Get(window())->GetDisplay();
   gfx::Rect rect_in_screen = window()->bounds();
   ::wm::ConvertRectToScreen(window()->parent(), &rect_in_screen);
   EXPECT_TRUE(display.bounds().Contains(rect_in_screen));

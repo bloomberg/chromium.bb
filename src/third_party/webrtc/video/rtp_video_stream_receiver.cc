@@ -56,7 +56,8 @@ std::unique_ptr<RtpRtcp> CreateRtpRtcpModule(
     ReceiveStatistics* receive_statistics,
     Transport* outgoing_transport,
     RtcpRttStats* rtt_stats,
-    RtcpPacketTypeCounterObserver* rtcp_packet_type_counter_observer) {
+    RtcpPacketTypeCounterObserver* rtcp_packet_type_counter_observer,
+    uint32_t local_ssrc) {
   RtpRtcp::Configuration configuration;
   configuration.clock = clock;
   configuration.audio = false;
@@ -66,6 +67,7 @@ std::unique_ptr<RtpRtcp> CreateRtpRtcpModule(
   configuration.rtt_stats = rtt_stats;
   configuration.rtcp_packet_type_counter_observer =
       rtcp_packet_type_counter_observer;
+  configuration.local_media_ssrc = local_ssrc;
 
   std::unique_ptr<RtpRtcp> rtp_rtcp = RtpRtcp::Create(configuration);
   rtp_rtcp->SetRTCPStatus(RtcpMode::kCompound);
@@ -183,7 +185,8 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
                                     rtp_receive_statistics_,
                                     transport,
                                     rtt_stats,
-                                    receive_stats_proxy)),
+                                    receive_stats_proxy,
+                                    config_.rtp.local_ssrc)),
       complete_frame_callback_(complete_frame_callback),
       keyframe_request_sender_(keyframe_request_sender),
       // TODO(bugs.webrtc.org/10336): Let |rtcp_feedback_buffer_| communicate
@@ -204,7 +207,6 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
   RTC_DCHECK(config_.rtp.remote_ssrc != config_.rtp.local_ssrc);
 
   rtp_rtcp_->SetRTCPStatus(config_.rtp.rtcp_mode);
-  rtp_rtcp_->SetSSRC(config_.rtp.local_ssrc);
   rtp_rtcp_->SetRemoteSSRC(config_.rtp.remote_ssrc);
 
   static const int kMaxPacketAgeToNack = 450;
@@ -225,7 +227,7 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     rtp_rtcp_->SetRtcpXrRrtrStatus(true);
 
   // Stats callback for CNAME changes.
-  rtp_rtcp_->RegisterRtcpStatisticsCallback(receive_stats_proxy);
+  rtp_rtcp_->RegisterRtcpCnameCallback(receive_stats_proxy);
 
   process_thread_->RegisterModule(rtp_rtcp_.get(), RTC_FROM_HERE);
 
@@ -723,7 +725,6 @@ void RtpVideoStreamReceiver::ParseAndHandleEncapsulatingHeader(
   if (packet.PayloadType() == config_.rtp.red_payload_type &&
       packet.payload_size() > 0) {
     if (packet.payload()[0] == config_.rtp.ulpfec_payload_type) {
-      rtp_receive_statistics_->FecPacketReceived(packet);
       // Notify video_receiver about received FEC packets to avoid NACKing these
       // packets.
       NotifyReceiverOfEmptyPacket(packet.SequenceNumber());
@@ -863,6 +864,11 @@ void RtpVideoStreamReceiver::UpdateHistograms() {
     RTC_HISTOGRAM_PERCENTAGE("WebRTC.Video.RecoveredMediaPacketsInPercentOfFec",
                              static_cast<int>(counter.num_recovered_packets *
                                               100 / counter.num_fec_packets));
+  }
+  if (config_.rtp.ulpfec_payload_type != -1) {
+    RTC_HISTOGRAM_COUNTS_10000(
+        "WebRTC.Video.FecBitrateReceivedInKbps",
+        static_cast<int>(counter.num_bytes * 8 / elapsed_sec / 1000));
   }
 }
 

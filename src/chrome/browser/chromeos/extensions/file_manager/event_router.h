@@ -209,8 +209,12 @@ class EventRouter
       const std::string& file_system_name,
       const std::string& full_path);
 
-  // Called when crostini is enabled/disabled.
-  void OnCrostiniEnabledChanged();
+  // Called for Crostini events when the specified pref value changes.
+  void OnCrostiniChanged(
+      const std::string& vm_name,
+      const std::string& pref_name,
+      extensions::api::file_manager_private::CrostiniEventType pref_true,
+      extensions::api::file_manager_private::CrostiniEventType pref_false);
 
   base::Time last_copy_progress_event_;
 
@@ -227,7 +231,7 @@ class EventRouter
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<EventRouter> weak_factory_;
+  base::WeakPtrFactory<EventRouter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };

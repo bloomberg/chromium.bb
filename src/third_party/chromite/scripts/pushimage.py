@@ -11,13 +11,14 @@ artifacts for signing (which a signing process will look for).
 
 from __future__ import print_function
 
-import ConfigParser
 import cStringIO
 import getpass
 import os
 import re
 import tempfile
 import textwrap
+
+from six.moves import configparser
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -86,7 +87,7 @@ class InputInsns(object):
     self.board = board
     self.buildroot = buildroot or constants.SOURCE_ROOT
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.readfp(open(self.GetInsnFile('DEFAULT')))
 
     # What pushimage internally refers to as 'recovery', are the basic signing
@@ -171,7 +172,7 @@ class InputInsns(object):
     for section in sections:
       try:
         keyset = self.cfg.get(section, 'keyset')
-      except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+      except (configparser.NoSectionError, configparser.NoOptionError):
         pass
 
     # We do not perturb the order (e.g. using sorted() or making a set())
@@ -200,7 +201,7 @@ class InputInsns(object):
     data.seek(0)
 
     # Create a new ConfigParser from the serialized data.
-    ret = ConfigParser.ConfigParser()
+    ret = configparser.ConfigParser()
     ret.readfp(data)
 
     return ret
@@ -387,7 +388,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
   # These variables are defined outside the loop so that the nested functions
   # below can access them without 'cell-var-from-loop' linter warning.
-  dst_path = ""
+  dst_path = ''
   files_to_sign = []
   for channel in channels:
     logging.debug('\n\n#### CHANNEL: %s ####\n', channel)

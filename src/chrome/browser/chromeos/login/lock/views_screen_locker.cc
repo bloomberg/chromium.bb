@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
@@ -35,6 +36,7 @@
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -105,19 +107,21 @@ void ViewsScreenLocker::Init() {
   input_method::InputMethodManager::Get()->GetImeKeyboard()->SetCapsLockEnabled(
       false);
 
-  // Enable pin for any users who can use it.
-  if (user_manager::UserManager::IsInitialized()) {
-    for (user_manager::User* user :
-         user_manager::UserManager::Get()->GetLoggedInUsers()) {
-      UpdatePinKeyboardState(user->GetAccountId());
-    }
-  }
-
   system_info_updater_->StartRequest();
 
   ash::LoginScreen::Get()->GetModel()->SetUserList(
       user_selection_screen_->UpdateAndReturnUserListForAsh());
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(false /*show_guest*/);
+
+  if (user_manager::UserManager::IsInitialized()) {
+    // Enable pin and challenge-response authentication for any users who can
+    // use them.
+    for (user_manager::User* user :
+         user_manager::UserManager::Get()->GetLoggedInUsers()) {
+      UpdatePinKeyboardState(user->GetAccountId());
+      UpdateChallengeResponseAuthAvailability(user->GetAccountId());
+    }
+  }
 
   user_selection_screen_->InitEasyUnlock();
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
@@ -202,6 +206,13 @@ void ViewsScreenLocker::HandleEnrollUserWithExternalBinary(
 void ViewsScreenLocker::HandleAuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
+}
+
+void ViewsScreenLocker::HandleAuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  ScreenLocker::default_screen_locker()->AuthenticateWithChallengeResponse(
+      account_id, std::move(callback));
 }
 
 void ViewsScreenLocker::HandleHardlockPod(const AccountId& account_id) {
@@ -313,6 +324,14 @@ void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
   quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
       account_id, base::BindOnce(&ViewsScreenLocker::OnPinCanAuthenticate,
                                  weak_factory_.GetWeakPtr(), account_id));
+}
+
+void ViewsScreenLocker::UpdateChallengeResponseAuthAvailability(
+    const AccountId& account_id) {
+  const bool enable_challenge_response =
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id);
+  ash::LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
+      account_id, enable_challenge_response);
 }
 
 void ViewsScreenLocker::OnAllowedInputMethodsChanged() {

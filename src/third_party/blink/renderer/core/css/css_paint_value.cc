@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -92,14 +93,20 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
     if (paint_off_thread_) {
+      // It is not necessary for a LayoutObject to always have RareData which
+      // contains the ElementId. If this |layout_object| doesn't have an
+      // ElementId, then create one for it.
+      layout_object.GetMutableForPainting().EnsureId();
+
       Vector<CSSPropertyID> native_properties =
           generator_->NativeInvalidationProperties();
       Vector<AtomicString> custom_properties =
           generator_->CustomInvalidationProperties();
       float zoom = layout_object.StyleRef().EffectiveZoom();
+      CompositorPaintWorkletInput::PropertyKeys input_property_keys;
       auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-          document, style, layout_object.GetNode(), native_properties,
-          custom_properties);
+          document, layout_object.UniqueId(), style, native_properties,
+          custom_properties, input_property_keys);
       paint_off_thread_ = style_data.has_value();
       if (paint_off_thread_) {
         Vector<std::unique_ptr<CrossThreadStyleValue>>
@@ -107,9 +114,10 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         BuildInputArgumentValues(cross_thread_input_arguments);
         scoped_refptr<PaintWorkletInput> input =
             base::MakeRefCounted<PaintWorkletInput>(
-                GetName(), target_size, zoom, generator_->WorkletId(),
-                std::move(style_data.value()),
-                std::move(cross_thread_input_arguments));
+                GetName(), target_size, zoom, device_scale_factor,
+                generator_->WorkletId(), std::move(style_data.value()),
+                std::move(cross_thread_input_arguments),
+                std::move(input_property_keys));
         return PaintWorkletDeferredImage::Create(std::move(input), target_size);
       }
     }
@@ -140,7 +148,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
     return true;
 
   DCHECK(generator_->IsImageGeneratorReady());
-  const Vector<CSSSyntaxDescriptor>& input_argument_types =
+  const Vector<CSSSyntaxDefinition>& input_argument_types =
       generator_->InputArgumentTypes();
   if (argument_variable_data_.size() != input_argument_types.size()) {
     input_arguments_invalid_ = true;

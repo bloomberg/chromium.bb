@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -25,6 +26,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "url/gurl.h"
@@ -39,10 +42,33 @@ using file_manager::file_tasks::FileTasksObserver;
 // Limits how frequently models are queried for ranking results.
 constexpr TimeDelta kMinSecondsBetweenFetches = TimeDelta::FromSeconds(1);
 
+// Limits how frequently results are logged, due to the possibility of multiple
+// ranking events occurring for each user action.
+constexpr TimeDelta kMinTimeBetweenLogs = TimeDelta::FromSeconds(2);
+
 constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 
+// Keep in sync with value in search_controller_factory.cc.
+constexpr float kBoostOfApps = 8.0f;
+
+// How many zero state results are shown in the results list.
+constexpr int kDisplayedZeroStateResults = 5;
+
+// For zero state, how many times a result can be shown before it is no longer
+// considered 'fresh' and can therefore override another result.
+constexpr int kMaxCacheCountForOverride = 3;
+
+// All ranking item types that appear in the zero-state results list. The
+// ordering of this list is important and should be changed with care: it has
+// some effect on scores of results. In particular, if the ranker is entirely
+// empty, it is warmed up by adding elements in this list with scores for later
+// elements slightly higher than earlier elements.
+constexpr RankingItemType kZeroStateTypes[] = {
+    RankingItemType::kOmniboxGeneric, RankingItemType::kZeroStateFile,
+    RankingItemType::kDriveQuickAccess};
+
 // Represents each model used within the SearchResultRanker.
-enum class Model { NONE, MIXED_TYPES };
+enum class Model { NONE, APPS, MIXED_TYPES };
 
 // Returns the model relevant for predicting launches for results with the given
 // |type|.
@@ -54,7 +80,13 @@ Model ModelForType(RankingItemType type) {
     case RankingItemType::kOmniboxDocument:
     case RankingItemType::kOmniboxHistory:
     case RankingItemType::kOmniboxSearch:
+    case RankingItemType::kZeroStateFile:
+    case RankingItemType::kDriveQuickAccess:
       return Model::MIXED_TYPES;
+    // Currently we don't rank arc app shortcuts. If this changes, add a case
+    // here.
+    case RankingItemType::kApp:
+      return Model::APPS;
     default:
       return Model::NONE;
   }
@@ -103,9 +135,23 @@ std::string NormalizeId(const std::string& id, RankingItemType type) {
         return SimplifyGoogleDocsUrlId(id);
       else
         return SimplifyUrlId(id);
+    case RankingItemType::kApp:
+      return NormalizeAppId(id);
     default:
       return id;
   }
+}
+
+// Linearly maps |score| to the range [min, max].
+// |score| is assumed to be within [0.0, 1.0]; if it's greater than 1.0
+// then max is returned; if it's less than 0.0, then min is returned.
+float ReRange(const float score, const float min, const float max) {
+  if (score >= 1.0f)
+    return max;
+  if (score <= 0.0f)
+    return min;
+
+  return min + score * (max - min);
 }
 
 }  // namespace
@@ -113,7 +159,7 @@ std::string NormalizeId(const std::string& id, RankingItemType type) {
 SearchResultRanker::SearchResultRanker(Profile* profile,
                                        history::HistoryService* history_service,
                                        service_manager::Connector* connector)
-    : config_converter_(connector),
+    : connector_(connector),
       history_service_observer_(this),
       profile_(profile),
       weak_factory_(this) {
@@ -166,12 +212,13 @@ void SearchResultRanker::InitializeRankers() {
       // Item ranker model.
       const std::string config_json = GetFieldTrialParamValueByFeature(
           app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
-      config_converter_.Convert(
-          config_json, "QueryBasedMixedTypes",
+      query_mixed_config_converter_ = JsonConfigConverter::Convert(
+          connector_, config_json, "QueryBasedMixedTypes",
           base::BindOnce(
               [](SearchResultRanker* ranker,
                  const RecurrenceRankerConfigProto& default_config,
                  base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+                ranker->query_mixed_config_converter_.reset();
                 if (ranker->json_config_parsed_for_testing_)
                   std::move(ranker->json_config_parsed_for_testing_).Run();
                 ranker->query_based_mixed_types_ranker_ =
@@ -188,26 +235,72 @@ void SearchResultRanker::InitializeRankers() {
   }
 
   if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
+    zero_state_item_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "item_coeff",
+        zero_state_item_coeff_);
+    zero_state_group_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "group_coeff",
+        zero_state_group_coeff_);
+    zero_state_paired_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "paired_coeff",
+        zero_state_paired_coeff_);
+
+    RecurrenceRankerConfigProto default_config;
+    default_config.set_min_seconds_between_saves(240u);
+    default_config.set_condition_limit(1u);
+    default_config.set_condition_decay(0.9f);
+    default_config.set_target_limit(5u);
+    default_config.set_target_decay(0.9f);
+    default_config.mutable_predictor()->mutable_default_predictor();
+    auto* predictor =
+        default_config.mutable_predictor()->mutable_frecency_predictor();
+    predictor->set_decay_coeff(0.9f);
+
+    const std::string config_json = GetFieldTrialParamValueByFeature(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "config");
+
+    zero_state_config_converter_ = JsonConfigConverter::Convert(
+        connector_, config_json, "ZeroStateGroups",
+        base::BindOnce(
+            [](SearchResultRanker* ranker,
+               const RecurrenceRankerConfigProto& default_config,
+               base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+              ranker->zero_state_config_converter_.reset();
+              if (ranker->json_config_parsed_for_testing_)
+                std::move(ranker->json_config_parsed_for_testing_).Run();
+              ranker->zero_state_group_ranker_ =
+                  std::make_unique<RecurrenceRanker>(
+                      "ZeroStateGroups",
+                      ranker->profile_->GetPath().AppendASCII(
+                          "zero_state_group_ranker.pb"),
+                      parsed_config ? parsed_config.value() : default_config,
+                      chromeos::ProfileHelper::IsEphemeralUserProfile(
+                          ranker->profile_));
+            },
+            base::Unretained(this), default_config));
+  }
+
+  app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
+
+  bool apps_enabled = app_list_features::IsAppRankerEnabled();
+  if (app_list_features::IsAggregatedMlAppRankingEnabled() ||
+      (apps_enabled &&
+       GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
+                                         "use_topcat_ranker", false))) {
+    using_aggregated_app_inference_ = true;
+    app_launch_event_logger_->CreateRankings();
+  } else if (apps_enabled) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(1u);
-    config.set_condition_decay(0.5f);
-
-    config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableZeroStateMixedTypesRanker, "target_limit",
-        200));
-    config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableZeroStateMixedTypesRanker, "target_decay",
-        0.8f));
-
-    // Despite not changing any fields, this sets the predictor to the default
-    // predictor.
+    config.set_condition_decay(0.5);
+    config.set_target_limit(200);
+    config.set_target_decay(0.8);
     config.mutable_predictor()->mutable_default_predictor();
 
-    zero_state_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
-        "ZeroStateMixedTypes",
-        profile_->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
-        config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
+    app_ranker_ = std::make_unique<RecurrenceRanker>(
+        "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
+        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
 }
 
@@ -219,6 +312,24 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   if (now - time_of_last_fetch_ < kMinSecondsBetweenFetches)
     return;
   time_of_last_fetch_ = now;
+  last_query_ = query;
+
+  if (query.empty() && zero_state_group_ranker_) {
+    zero_state_group_ranks_.clear();
+    zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
+
+    // If the zero state model is empty, warm it up by training once on each
+    // group. The order if |kZeroStateTypes| means that DriveQuickAccess will
+    // have a slightly higher score than ZeroStateFile, which will have a
+    // slightly higher score than Omnibox.
+    if (zero_state_group_ranks_.empty()) {
+      for (const auto type : kZeroStateTypes) {
+        zero_state_group_ranker_->Record(
+            base::NumberToString(static_cast<int>(type)));
+      }
+    }
+    zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
+  }
 
   if (results_list_group_ranker_) {
     group_ranks_.clear();
@@ -228,18 +339,38 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
     query_mixed_ranks_ =
         query_based_mixed_types_ranker_->Rank(base::UTF16ToUTF8(query));
   }
+
+  if (app_ranker_)
+    app_ranks_ = app_ranker_->Rank();
 }
 
 void SearchResultRanker::Rank(Mixer::SortedResults* results) {
   if (!results)
     return;
 
+  std::sort(results->begin(), results->end(),
+            [](const Mixer::SortData& a, const Mixer::SortData& b) {
+              return a.score > b.score;
+            });
+
+  std::map<std::string, float> ranking_map;
+  if (using_aggregated_app_inference_)
+    ranking_map = app_launch_event_logger_->RetrieveRankings();
+  int aggregated_app_rank_success_count = 0;
+  int aggregated_app_rank_fail_count = 0;
+
+  // Counts how many times a given type has been seen so far in the results
+  // list.
+  base::flat_map<RankingItemType, int> zero_state_type_counts;
   for (auto& result : *results) {
     const auto& type = RankingItemTypeFromSearchResult(*result.result);
     const auto& model = ModelForType(type);
 
     if (model == Model::MIXED_TYPES) {
-      if (results_list_group_ranker_) {
+      if (last_query_.empty() && zero_state_group_ranker_) {
+        LogZeroStateResultScore(type, result.score);
+        ScoreZeroStateItem(&result, type, &zero_state_type_counts);
+      } else if (results_list_group_ranker_) {
         const auto& rank_it =
             group_ranks_.find(base::NumberToString(static_cast<int>(type)));
         // The ranker only contains entries trained with types relating to files
@@ -262,26 +393,91 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
               3.0);
         }
       }
+    } else if (model == Model::APPS) {
+      if (using_aggregated_app_inference_) {
+        const std::string id = NormalizeAppId(result.result->id());
+
+        const auto& ranked = ranking_map.find(id);
+        if (ranked != ranking_map.end()) {
+          result.score =
+              kBoostOfApps + ReRange((ranked->second + 4.0) / 8.0, 0.67, 1.0);
+          ++aggregated_app_rank_success_count;
+        } else {
+          ++aggregated_app_rank_fail_count;
+        }
+      } else {
+        if (app_ranker_) {
+          const auto& it = app_ranks_.find(NormalizeAppId(result.result->id()));
+          if (it != app_ranks_.end()) {
+            result.score = kBoostOfApps + ReRange(it->second, 0.67, 1.0);
+          }
+        }
+      }
     }
   }
+  if (using_aggregated_app_inference_ &&
+      (aggregated_app_rank_success_count != 0 ||
+       aggregated_app_rank_fail_count != 0)) {
+    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankSuccess",
+                              aggregated_app_rank_success_count);
+    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankFail",
+                              aggregated_app_rank_fail_count);
+  }
+}
+
+void SearchResultRanker::ScoreZeroStateItem(
+    Mixer::SortData* result,
+    RankingItemType type,
+    base::flat_map<RankingItemType, int>* type_counts) const {
+  DCHECK(type == RankingItemType::kOmniboxGeneric ||
+         type == RankingItemType::kZeroStateFile ||
+         type == RankingItemType::kDriveQuickAccess);
+
+  const float item_score =
+      1.0f -
+      ((*type_counts)[type] / static_cast<float>(kDisplayedZeroStateResults));
+
+  const auto& rank_it = zero_state_group_ranks_.find(
+      base::NumberToString(static_cast<int>(type)));
+
+  const float group_score =
+      (rank_it != zero_state_group_ranks_.end()) ? rank_it->second : 0.0f;
+  const float score = zero_state_item_coeff_ * item_score +
+                      zero_state_group_coeff_ * group_score +
+                      zero_state_paired_coeff_ * item_score * group_score;
+  result->score = score / (zero_state_item_coeff_ + zero_state_group_coeff_ +
+                           zero_state_paired_coeff_);
+
+  ++(*type_counts)[type];
 }
 
 void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
   if (app_launch_data.launched_from ==
-      ash::AppListLaunchedFrom::kLaunchedFromGrid) {
+          ash::AppListLaunchedFrom::kLaunchedFromGrid &&
+      app_launch_event_logger_) {
     // Log the AppResult from the grid to the UKM system.
-    app_launch_event_logger_.OnGridClicked(app_launch_data.id);
+    app_launch_event_logger_->OnGridClicked(app_launch_data.id);
   } else if (app_launch_data.launch_type ==
-             ash::AppListLaunchType::kAppSearchResult) {
+                 ash::AppListLaunchType::kAppSearchResult &&
+             app_launch_event_logger_) {
     // Log the AppResult (either in the search result page, or in chip form in
     // AppsGridView) to the UKM system.
-    app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
+    app_launch_event_logger_->OnSuggestionChipOrSearchBoxClicked(
         app_launch_data.id, app_launch_data.suggestion_index,
         static_cast<int>(app_launch_data.launched_from));
   }
 
-  if (ModelForType(app_launch_data.ranking_item_type) == Model::MIXED_TYPES) {
-    if (results_list_group_ranker_) {
+  // Update rankings after logging the click.
+  if (using_aggregated_app_inference_)
+    app_launch_event_logger_->CreateRankings();
+
+  auto model = ModelForType(app_launch_data.ranking_item_type);
+  if (model == Model::MIXED_TYPES) {
+    if (app_launch_data.query.empty() && zero_state_group_ranker_) {
+      LogZeroStateLaunchType(app_launch_data.ranking_item_type);
+      zero_state_group_ranker_->Record(base::NumberToString(
+          static_cast<int>(app_launch_data.ranking_item_type)));
+    } else if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
     } else if (query_based_mixed_types_ranker_) {
@@ -289,15 +485,83 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
           NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type),
           app_launch_data.query);
     }
+  } else if (model == Model::APPS && app_ranker_) {
+    app_ranker_->Record(NormalizeAppId(app_launch_data.id));
+  }
+}
+
+void SearchResultRanker::ZeroStateResultsDisplayed(
+    const ash::SearchResultIdWithPositionIndices& results) {
+  for (auto& cache_item : zero_state_results_cache_) {
+    for (const auto& result : results) {
+      if (cache_item.second.first == result.id) {
+        ++cache_item.second.second;
+        break;
+      }
+    }
+  }
+}
+
+void SearchResultRanker::OverrideZeroStateResults(
+    Mixer::SortedResults* const results) {
+  // Construct a list of pointers filtered to contain all zero state results
+  // and sorted in decreasing order of score.
+  std::vector<Mixer::SortData*> result_ptrs;
+  for (auto& result : *results) {
+    if (ModelForType(RankingItemTypeFromSearchResult(*result.result)) ==
+        Model::MIXED_TYPES) {
+      result_ptrs.emplace_back(&result);
+    }
+  }
+  std::sort(result_ptrs.begin(), result_ptrs.end(),
+            [](const Mixer::SortData* const a, const Mixer::SortData* const b) {
+              return a->score > b->score;
+            });
+
+  // For each group, override a candidate in the displayed results if
+  // necessary. The ordering of the groups in the foreach means that if, there
+  // are multiple overrides necessary, a QuickAccess result is above a
+  // ZeroStateFile result is above an Omnibox result.
+  int next_modifiable_index = kDisplayedZeroStateResults - 1;
+  for (auto group : kZeroStateTypes) {
+    // Find the best result for the group.
+    int candidate_override_index = -1;
+    for (int i = 0; i < static_cast<int>(result_ptrs.size()); ++i) {
+      const auto& result = *result_ptrs[i];
+      if (RankingItemTypeFromSearchResult(*result.result) != group)
+        continue;
+
+      // This is the highest scoring result of this group. Reset the top-results
+      // cache if needed.
+      const auto& cache_it = zero_state_results_cache_.find(group);
+      if (cache_it == zero_state_results_cache_.end() ||
+          cache_it->second.first != result.result->id()) {
+        zero_state_results_cache_[group] = {result.result->id(), 0};
+      }
+      const auto& cache_count = zero_state_results_cache_[group].second;
+
+      if (i >= kDisplayedZeroStateResults &&
+          cache_count < kMaxCacheCountForOverride) {
+        candidate_override_index = i;
+      }
+      break;
+    }
+
+    // If a result from this group will already be displayed or there are no
+    // results in the group, we have nothing to do.
+    if (candidate_override_index == -1)
+      continue;
+
+    // Override the result at |next_modifiable_index| with
+    // |candidate_override_index| by swapping their scores.
+    std::swap(result_ptrs[candidate_override_index]->score,
+              result_ptrs[next_modifiable_index]->score);
+    --next_modifiable_index;
   }
 }
 
 void SearchResultRanker::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
-  if (zero_state_mixed_types_ranker_) {
-    for (const auto& file_open : file_opens)
-      zero_state_mixed_types_ranker_->Record(file_open.path.value());
-  }
   // Log the open type of file open events
   for (const auto& file_open : file_opens)
     UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,
@@ -342,6 +606,28 @@ void SearchResultRanker::OnURLsDeleted(
 void SearchResultRanker::SaveQueryMixedRankerAfterDelete() {
   query_based_mixed_types_ranker_->SaveToDisk();
   query_mixed_ranker_save_queued_ = false;
+}
+
+void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
+                                                 float score) {
+  const auto& now = Time::Now();
+  if (type == RankingItemType::kOmniboxGeneric ||
+      type == RankingItemType::kOmniboxSearch) {
+    if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
+      return;
+    time_of_last_omnibox_log_ = now;
+    LogZeroStateReceivedScore("OmniboxSearch", score);
+  } else if (type == RankingItemType::kZeroStateFile) {
+    if (now - time_of_last_local_file_log_ < kMinTimeBetweenLogs)
+      return;
+    time_of_last_local_file_log_ = now;
+    LogZeroStateReceivedScore("ZeroStateFile", score);
+  } else if (type == RankingItemType::kDriveQuickAccess) {
+    if (now - time_of_last_drive_log_ < kMinTimeBetweenLogs)
+      return;
+    time_of_last_drive_log_ = now;
+    LogZeroStateReceivedScore("DriveQuickAccess", score);
+  }
 }
 
 }  // namespace app_list

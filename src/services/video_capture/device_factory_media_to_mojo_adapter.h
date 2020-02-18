@@ -10,12 +10,10 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_system.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -41,8 +39,6 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
   ~DeviceFactoryMediaToMojoAdapter() override;
 
   // DeviceFactory implementation.
-  void SetServiceRef(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref) override;
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,
@@ -58,12 +54,6 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;
-
-#if defined(OS_CHROMEOS)
-  void BindCrosImageCaptureRequest(
-      cros::mojom::CrosImageCaptureRequest request) override;
-#endif  // defined(OS_CHROMEOS)
-
  private:
   struct ActiveDeviceEntry {
     ActiveDeviceEntry();
@@ -83,7 +73,6 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
                              CreateDeviceCallback callback);
   void OnClientConnectionErrorOrClose(const std::string& device_id);
 
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureSystem> capture_system_;
   std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
 
@@ -94,7 +83,7 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
 #endif  // defined(OS_CHROMEOS)
 
   bool has_called_get_device_infos_;
-  base::WeakPtrFactory<DeviceFactoryMediaToMojoAdapter> weak_factory_;
+  base::WeakPtrFactory<DeviceFactoryMediaToMojoAdapter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryMediaToMojoAdapter);
 };

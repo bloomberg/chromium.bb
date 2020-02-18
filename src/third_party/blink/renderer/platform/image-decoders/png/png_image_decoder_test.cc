@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/skia/include/core/SkImage.h"
 
 // web_tests/images/resources/png-animated-idat-part-of-animation.png
@@ -546,6 +546,69 @@ TEST(AnimatedPNGTests, fdatBeforeIdat) {
     decoder->SetData(modified_data3.get(), true);
     ExpectStatic(decoder.get());
   }
+}
+
+TEST(AnimatedPNGTests, FrameOverflowX) {
+  const char* png_file =
+      "/images/resources/"
+      "png-animated-idat-part-of-animation.png";
+  scoped_refptr<SharedBuffer> data = ReadFile(png_file);
+  ASSERT_FALSE(data->IsEmpty());
+
+  // Change the x_offset for frame 1
+  const size_t kFctlOffset = 172u;
+  scoped_refptr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kFctlOffset);
+  const size_t kFctlSize = 38u;
+  png_byte fctl[kFctlSize];
+  memcpy(fctl, data->Data() + kFctlOffset, kFctlSize);
+
+  // Set the x_offset to a value that will overflow
+  WriteUint32(4294967295, fctl + 20);
+  // Correct the crc
+  WriteUint32(689600712, fctl + 34);
+  modified_data->Append((const char*)fctl, kFctlSize);
+  const size_t kAfterFctl = kFctlOffset + kFctlSize;
+  modified_data->Append(data->Data() + kAfterFctl, data->size() - kAfterFctl);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(modified_data.get(), true);
+  for (size_t i = 0; i < decoder->FrameCount(); i++) {
+    decoder->DecodeFrameBufferAtIndex(i);
+  }
+  ASSERT_TRUE(decoder->Failed());
+}
+
+// This test is exactly the same as above, except it changes y_offset.
+TEST(AnimatedPNGTests, FrameOverflowY) {
+  const char* png_file =
+      "/images/resources/"
+      "png-animated-idat-part-of-animation.png";
+  scoped_refptr<SharedBuffer> data = ReadFile(png_file);
+  ASSERT_FALSE(data->IsEmpty());
+
+  // Change the y_offset for frame 1
+  const size_t kFctlOffset = 172u;
+  scoped_refptr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kFctlOffset);
+  const size_t kFctlSize = 38u;
+  png_byte fctl[kFctlSize];
+  memcpy(fctl, data->Data() + kFctlOffset, kFctlSize);
+
+  // Set the y_offset to a value that will overflow
+  WriteUint32(4294967295, fctl + 24);
+  // Correct the crc
+  WriteUint32(2094185741, fctl + 34);
+  modified_data->Append((const char*)fctl, kFctlSize);
+  const size_t kAfterFctl = kFctlOffset + kFctlSize;
+  modified_data->Append(data->Data() + kAfterFctl, data->size() - kAfterFctl);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(modified_data.get(), true);
+  for (size_t i = 0; i < decoder->FrameCount(); i++) {
+    decoder->DecodeFrameBufferAtIndex(i);
+  }
+  ASSERT_TRUE(decoder->Failed());
 }
 
 TEST(AnimatedPNGTests, IdatSizeMismatch) {
@@ -1395,6 +1458,16 @@ TEST(AnimatedPNGTests, TrnsMeansAlpha) {
   auto decoder = CreatePNGDecoderWithPngData(png_file);
   auto* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame->HasAlpha());
+}
+
+TEST(PNGTests, CriticalPrivateChunkBeforeIHDR) {
+  auto decoder = CreatePNGDecoder();
+  scoped_refptr<SharedBuffer> data =
+      ReadFile(kDecodersTestingDir, "private-critical-chunk-before-ihdr.png");
+  EXPECT_FALSE(data->IsEmpty());
+  decoder->SetData(data.get(), true);
+  EXPECT_FALSE(decoder->IsSizeAvailable());
+  EXPECT_TRUE(decoder->Failed());
 }
 
 }  // namespace blink

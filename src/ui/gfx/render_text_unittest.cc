@@ -21,7 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
@@ -362,8 +362,8 @@ class TestRectangleBuffer {
 class RenderTextTest : public testing::Test {
  public:
   RenderTextTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         render_text_(std::make_unique<RenderTextHarfBuzz>()),
         test_api_(new test::RenderTextTestApi(render_text_.get())),
         renderer_(canvas()) {}
@@ -434,7 +434,7 @@ class RenderTextTest : public testing::Test {
 
   void ResetRenderTextInstance() {
     render_text_ = std::make_unique<RenderTextHarfBuzz>();
-    test_api_.reset(new test::RenderTextTestApi(GetRenderText()));
+    test_api_ = std::make_unique<test::RenderTextTestApi>(GetRenderText());
   }
 
   void ResetCursorX() { test_api()->reset_cached_cursor_x(); }
@@ -536,7 +536,7 @@ class RenderTextTest : public testing::Test {
 
  private:
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<RenderTextHarfBuzz> render_text_;
   std::unique_ptr<test::RenderTextTestApi> test_api_;
@@ -2958,10 +2958,10 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   // kTestFontName, but on Android it does not.
   Font test_font(kTestFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
-            base::ToLowerASCII(test_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(test_font.GetActualFontName()));
   Font cjk_font(kCJKFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
-            base::ToLowerASCII(cjk_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(cjk_font.GetActualFontName()));
   // "a" should be rendered with the test font, not with the CJK font.
   const char* test_font_text = "a";
   // "円" (U+5168 Han character YEN) should render with the CJK font, not
@@ -3254,6 +3254,80 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
   Vector2d offset = render_text->GetLineOffset(0);
   EXPECT_EQ(kEnlargement, offset.x());
   SetRTL(was_rtl);
+}
+
+TEST_F(RenderTextTest, GetTextOffsetVerticalAignment) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("abcdefg"));
+  render_text->SetFontList(FontList("Arial, 13px"));
+
+  // Set display area's size equal to the font size.
+  const Size font_size(render_text->GetContentWidth(),
+                       render_text->font_list().GetHeight());
+  Rect display_rect(font_size);
+  render_text->SetDisplayRect(display_rect);
+
+  Vector2d offset = render_text->GetLineOffset(0);
+  EXPECT_TRUE(offset.IsZero());
+
+  const int kEnlargementY = 10;
+  display_rect.Inset(0, 0, 0, -kEnlargementY);
+  render_text->SetDisplayRect(display_rect);
+
+  // Check the default vertical alignment (ALIGN_MIDDLE).
+  offset = render_text->GetLineOffset(0);
+  // Because the line height may be odd, and because of the way this calculation
+  // is done, we will accept a result within 1 DIP of half:
+  EXPECT_NEAR(kEnlargementY / 2, offset.y(), 1);
+
+  // Check explicitly setting the vertical alignment.
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(0, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_MIDDLE);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_NEAR(kEnlargementY / 2, offset.y(), 1);
+  render_text->SetVerticalAlignment(ALIGN_BOTTOM);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY, offset.y());
+}
+
+TEST_F(RenderTextTest, GetTextOffsetVerticalAignment_Multiline) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(2);
+  render_text->SetText(UTF8ToUTF16("abcdefg hijklmn"));
+  render_text->SetFontList(FontList("Arial, 13px"));
+
+  // Set display area's size equal to the font size.
+  const Size font_size(render_text->GetContentWidth(),
+                       render_text->font_list().GetHeight());
+
+  // Force text onto two lines.
+  Rect display_rect(Size(font_size.width() * 2 / 3, font_size.height() * 2));
+  render_text->SetDisplayRect(display_rect);
+
+  Vector2d offset = render_text->GetLineOffset(0);
+  EXPECT_TRUE(offset.IsZero());
+
+  const int kEnlargementY = 10;
+  display_rect.Inset(0, 0, 0, -kEnlargementY);
+  render_text->SetDisplayRect(display_rect);
+
+  // Check the default vertical alignment (ALIGN_MIDDLE).
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY / 2, offset.y());
+
+  // Check explicitly setting the vertical alignment.
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(0, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_MIDDLE);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY / 2, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_BOTTOM);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY, offset.y());
 }
 
 TEST_F(RenderTextTest, SetDisplayOffset) {
@@ -4761,9 +4835,9 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2u, fonts.size());
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
-            base::ToLowerASCII(fonts[0].GetActualFontNameForTesting()));
+            base::ToLowerASCII(fonts[0].GetActualFontName()));
   ASSERT_EQ(base::ToLowerASCII(kSymbolFontName),
-            base::ToLowerASCII(fonts[1].GetActualFontNameForTesting()));
+            base::ToLowerASCII(fonts[1].GetActualFontName()));
 
   // "⊕" (U+2295, CIRCLED PLUS) should be rendered with Symbol rather than
   // falling back to some other font that's present on the system.

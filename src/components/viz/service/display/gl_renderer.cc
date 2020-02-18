@@ -59,6 +59,8 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "media/base/media_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -367,7 +369,9 @@ GLRenderer::GLRenderer(
       context_caps.blend_equation_advanced_coherent;
   use_occlusion_query_ = context_caps.occlusion_query;
   use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
-
+  prefer_draw_to_copy_ = output_surface_->context_provider()
+                             ->GetGpuFeatureInfo()
+                             .IsWorkaroundEnabled(gpu::PREFER_DRAW_TO_COPY);
   InitializeSharedObjects();
 }
 
@@ -782,6 +786,12 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
+  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
+    float max_pixel_movement = params->backdrop_filters->MaximumPixelMovement();
+    gfx::Rect scissor_rect(current_window_space_viewport_);
+    scissor_rect.Inset(-max_pixel_movement, -max_pixel_movement);
+    backdrop_rect.Intersect(scissor_rect);
+  }
 
   // The frame buffer flip is already included in the captured backdrop image,
   // and it is included in |contents_device_transform| (through
@@ -842,16 +852,42 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  *internal_format = GetFramebufferCopyTextureFormat();
-  // CopyTexImage2D requires inernalformat channels to be a subset of
-  // the channels of the source texture internalformat.
-  DCHECK(*internal_format == GL_RGB || *internal_format == GL_RGBA ||
-         *internal_format == GL_BGRA_EXT);
-  if (*internal_format == GL_BGRA_EXT)
-    *internal_format = GL_RGBA;
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.x(),
-                      window_rect.y(), window_rect.width(),
-                      window_rect.height(), 0);
+  // If there is a source texture |current_framebuffer_texture_| and the
+  // workaround |prefer_draw_to_copy_| is enabled, then do texture to texture
+  // copy via draw instead of glCopyTexImage2D.
+  if (prefer_draw_to_copy_ && current_framebuffer_texture_) {
+    // Copying from a non-root renderpass, so will use the format of the bound
+    // texture.
+    ResourceFormat resource_format = BackbufferFormat();
+
+    // Get gl_format, gl_type and internal_format.
+    DCHECK(GLSupportsFormat(resource_format));
+    *internal_format = GLInternalFormat(resource_format);
+    GLenum gl_format = GLDataFormat(resource_format);
+    GLenum gl_type = GLDataType(resource_format);
+
+    // Size the destination texture with empty data. This is required since
+    // CopySubTextureCHROMIUM() does not sizes the texture but CopyTexImage2D
+    // does.
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.width(),
+                    window_rect.height(), 0, gl_format, gl_type, nullptr);
+    gl_->CopySubTextureCHROMIUM(
+        current_framebuffer_texture_->id(), 0, GL_TEXTURE_2D, texture_id, 0, 0,
+        0, window_rect.x(), window_rect.y(), window_rect.width(),
+        window_rect.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+  } else {
+    *internal_format = GetFramebufferCopyTextureFormat();
+
+    // CopyTexImage2D requires inernalformat channels to be a subset of
+    // the channels of the source texture internalformat.
+    DCHECK(*internal_format == GL_RGB || *internal_format == GL_RGBA ||
+           *internal_format == GL_BGRA_EXT);
+    if (*internal_format == GL_BGRA_EXT)
+      *internal_format = GL_RGBA;
+    gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.x(),
+                        window_rect.y(), window_rect.width(),
+                        window_rect.height(), 0);
+  }
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   return texture_id;
 }
@@ -1016,7 +1052,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
                                /*unpack_premultiply_alpha=*/false,
                                /*unpack_unmultiply_alpha=*/false);
       mask_image = WrapTexture(dest_id, GL_TEXTURE_2D, quad->mask_texture_size,
-                               use_gr_context->context(), false,
+                               use_gr_context->context(),
+                               /*flip_texture=*/!FlippedFramebuffer(),
                                GlFormatToSkFormat(internalformat),
                                /*adopt_texture=*/true);
     } else {
@@ -2448,6 +2485,11 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       current_program_->tex_matrix_location(), false, gl_matrix);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        quad->shared_quad_state->rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
+  }
   gfx::Size texture_size = lock.size();
   gfx::RectF uv_visible_rect(quad->uv_top_left.x(), quad->uv_top_left.y(),
                              quad->uv_bottom_right.x() - quad->uv_top_left.x(),
@@ -2704,6 +2746,10 @@ void GLRenderer::FinishDrawingFrame() {
 
   gl_->Disable(GL_BLEND);
   blend_shadow_ = false;
+
+  // Schedule output surface as overlay first to preserve existing ordering
+  // semantics during overlay refactoring.
+  ScheduleOutputSurfaceAsOverlay();
 
   ScheduleCALayers();
   ScheduleDCLayers();
@@ -3413,24 +3459,21 @@ void GLRenderer::ScheduleCALayers() {
 void GLRenderer::ScheduleDCLayers() {
   for (DCLayerOverlay& dc_layer_overlay :
        current_frame()->dc_layer_overlay_list) {
-    ResourceId resource_ids[] = {dc_layer_overlay.y_resource_id,
-                                 dc_layer_overlay.uv_resource_id};
-    GLuint texture_ids[2] = {};
-    size_t i = 0;
-    for (ResourceId resource_id : resource_ids) {
-      DCHECK(resource_id);
+    DCHECK_EQ(DCLayerOverlay::kNumResources, 2u);
+    GLuint texture_ids[DCLayerOverlay::kNumResources] = {};
+    for (size_t i = 0; i < DCLayerOverlay::kNumResources; i++) {
+      ResourceId resource_id = dc_layer_overlay.resources[i];
+      if (resource_id == kInvalidResourceId)
+        break;
       pending_overlay_resources_.push_back(
           std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
               resource_provider_, resource_id));
-      texture_ids[i++] = pending_overlay_resources_.back()->texture_id();
+      texture_ids[i] = pending_overlay_resources_.back()->texture_id();
     }
-    GLuint y_texture_id = texture_ids[0];
-    GLuint uv_texture_id = texture_ids[1];
-    DCHECK(y_texture_id && uv_texture_id);
-
+    DCHECK(texture_ids[0]);
     // TODO(sunnyps): Set color space in renderer like we do for tiles.
     gl_->SetColorSpaceMetadataCHROMIUM(
-        y_texture_id,
+        texture_ids[0],
         reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
 
     int z_order = dc_layer_overlay.z_order;
@@ -3444,7 +3487,7 @@ void GLRenderer::ScheduleDCLayers() {
         static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 
     gl_->ScheduleDCLayerCHROMIUM(
-        y_texture_id, uv_texture_id, z_order, content_rect.x(),
+        texture_ids[0], texture_ids[1], z_order, content_rect.x(),
         content_rect.y(), content_rect.width(), content_rect.height(),
         quad_rect.x(), quad_rect.y(), quad_rect.width(), quad_rect.height(),
         transform.get(0, 0), transform.get(0, 1), transform.get(1, 0),
@@ -3460,16 +3503,10 @@ void GLRenderer::ScheduleOverlays() {
 
   OverlayCandidateList& overlays = current_frame()->overlay_list;
   for (const auto& overlay_candidate : overlays) {
-    unsigned texture_id = 0;
-    if (overlay_candidate.use_output_surface_for_resource) {
-      texture_id = output_surface_->GetOverlayTextureId();
-      DCHECK(texture_id || IsContextLost());
-    } else {
-      pending_overlay_resources_.push_back(
-          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
-              resource_provider_, overlay_candidate.resource_id));
-      texture_id = pending_overlay_resources_.back()->texture_id();
-    }
+    pending_overlay_resources_.push_back(
+        std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+            resource_provider_, overlay_candidate.resource_id));
+    unsigned texture_id = pending_overlay_resources_.back()->texture_id();
 
     context_support_->ScheduleOverlayPlane(
         overlay_candidate.plane_z_order, overlay_candidate.transform,
@@ -3477,6 +3514,25 @@ void GLRenderer::ScheduleOverlays() {
         overlay_candidate.uv_rect, !overlay_candidate.is_opaque,
         overlay_candidate.gpu_fence_id);
   }
+}
+
+void GLRenderer::ScheduleOutputSurfaceAsOverlay() {
+  if (!current_frame()->output_surface_plane)
+    return;
+
+  // Initialize correct values to use an output surface as overlay candidate.
+  auto& overlay_candidate = *(current_frame()->output_surface_plane);
+  unsigned texture_id = output_surface_->GetOverlayTextureId();
+  DCHECK(texture_id || IsContextLost());
+  // Output surface is also z-order 0.
+  int plane_z_order = 0;
+  // Output surface always uses the full texture.
+  gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
+
+  context_support_->ScheduleOverlayPlane(
+      plane_z_order, overlay_candidate.transform, texture_id,
+      ToNearestRect(overlay_candidate.display_rect), uv_rect,
+      overlay_candidate.enable_blending, overlay_candidate.gpu_fence_id);
 }
 
 // This function draws the RenderPassDrawQuad into a temporary

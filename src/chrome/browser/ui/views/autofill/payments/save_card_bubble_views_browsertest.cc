@@ -87,6 +87,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using base::Bucket;
@@ -675,12 +676,12 @@ class SaveCardBubbleViewsFullFormBrowserTest
   }
 
   SaveCardBubbleViews* GetSaveCardBubbleViews() {
-    SaveCardBubbleControllerImpl* save_card_bubble_controller_impl =
-        SaveCardBubbleControllerImpl::FromWebContents(GetActiveWebContents());
-    if (!save_card_bubble_controller_impl)
+    SaveCardBubbleController* save_card_bubble_controller =
+        SaveCardBubbleController::GetOrCreate(GetActiveWebContents());
+    if (!save_card_bubble_controller)
       return nullptr;
     SaveCardBubbleView* save_card_bubble_view =
-        save_card_bubble_controller_impl->save_card_bubble_view();
+        save_card_bubble_controller->GetSaveCardBubbleView();
     if (!save_card_bubble_view)
       return nullptr;
     return static_cast<SaveCardBubbleViews*>(save_card_bubble_view);
@@ -708,6 +709,39 @@ class SaveCardBubbleViewsFullFormBrowserTest
     }
 
     return icon_view;
+  }
+
+  void OpenSettingsFromManageCardsPrompt() {
+    FillForm();
+    SubmitFormAndWaitForCardLocalSaveBubble();
+
+    // Adding an event observer to the controller so we can wait for the bubble
+    // to show.
+    AddEventObserverToController();
+    ReduceAnimationTime();
+
+#if !defined(OS_CHROMEOS)
+    ResetEventWaiterForSequence(
+        {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+#endif
+
+    // Click [Save] should close the offer-to-save bubble and show "Card saved"
+    // animation -- followed by the sign-in promo (if not on Chrome OS).
+    ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+#if !defined(OS_CHROMEOS)
+    // Wait for and then close the promo.
+    WaitForObservedEvent();
+    ClickOnCloseButton();
+#endif
+
+    // Open up Manage Cards prompt.
+    ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+    ClickOnView(GetSaveCardIconView());
+    WaitForObservedEvent();
+
+    // Click on the redirect button.
+    ClickOnDialogViewWithId(DialogViewId::MANAGE_CARDS_BUTTON);
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -983,41 +1017,18 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                                       AutofillMetrics::MANAGE_CARDS_SHOWN, 1);
 }
 
+// TODO(crbug/950007): Remove this test when kSplitSettings is on by default
 // Tests the manage cards bubble. Ensures that clicking the [Manage cards]
 // button redirects properly.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ManageCardsButtonRedirects) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Adding an event observer to the controller so we can wait for the bubble to
-  // show.
-  AddEventObserverToController();
-  ReduceAnimationTime();
-
-#if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence(
-      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
 #endif
 
-  // Click [Save] should close the offer-to-save bubble and show "Card saved"
-  // animation -- followed by the sign-in promo (if not on Chrome OS).
-  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-
-#if !defined(OS_CHROMEOS)
-  // Wait for and then close the promo.
-  WaitForObservedEvent();
-  ClickOnCloseButton();
-#endif
-
-  // Open up Manage Cards prompt.
   base::HistogramTester histogram_tester;
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-  ClickOnView(GetSaveCardIconView());
-  WaitForObservedEvent();
-
-  // Click on the redirect button.
-  ClickOnDialogViewWithId(DialogViewId::MANAGE_CARDS_BUTTON);
+  OpenSettingsFromManageCardsPrompt();
 
 #if defined(OS_CHROMEOS)
   // ChromeOS should have opened up the settings window.
@@ -1028,6 +1039,28 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Otherwise, another tab should have opened.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 #endif
+
+  // Metrics should have been recorded correctly.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ManageCardsPrompt.Local"),
+      ElementsAre(Bucket(AutofillMetrics::MANAGE_CARDS_SHOWN, 1),
+                  Bucket(AutofillMetrics::MANAGE_CARDS_MANAGE_CARDS, 1)));
+}
+
+// Tests the manage cards bubble. Ensures that clicking the [Manage cards]
+// button redirects properly.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_ManageCardsButtonRedirects_WithSplitSettings) {
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+#endif
+
+  base::HistogramTester histogram_tester;
+  OpenSettingsFromManageCardsPrompt();
+
+  // Another tab should have opened.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Metrics should have been recorded correctly.
   EXPECT_THAT(
@@ -1254,13 +1287,27 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
     // signins. Also add wallet data type to the list of enabled types.
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillUpstream,
-                              features::kAutofillEnableAccountWalletStorage,
-                              switches::kSyncSupportSecondaryAccount},
+                              features::kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{});
     test_signin_client_factory_ =
         secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
 
     SaveCardBubbleViewsFullFormBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpForSyncTransportModeTest() {
+    // Signing in (without making the account Chrome's primary one or explicitly
+    // setting up Sync) causes the Sync machinery to start up in standalone
+    // transport mode.
+    secondary_account_helper::SignInSecondaryAccount(
+        browser()->profile(), test_url_loader_factory(), "user@gmail.com");
+    ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
+              harness_->service()->GetTransportState());
+
+    ASSERT_TRUE(harness_->AwaitSyncTransportActive());
+    ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+              harness_->service()->GetTransportState());
+    ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
   }
 
  private:
@@ -1275,19 +1322,7 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
 // to Google Payments.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
                        Upload_TransportMode_ClickingSaveClosesBubble) {
-  // Signing in (without making the account Chrome's primary one or explicitly
-  // setting up Sync) causes the Sync machinery to start up in standalone
-  // transport mode.
-  secondary_account_helper::SignInSecondaryAccount(
-      browser()->profile(), test_url_loader_factory(), "user@gmail.com");
-  ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
-            harness_->service()->GetTransportState());
-
-  ASSERT_TRUE(harness_->AwaitSyncTransportActive());
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            harness_->service()->GetTransportState());
-  ASSERT_FALSE(harness_->service()->IsSyncFeatureEnabled());
-
+  SetUpForSyncTransportModeTest();
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
 
@@ -1300,6 +1335,42 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+}
+
+// Tests the implicit sync state. Ensures that the (i) info icon appears for
+// upload save offers.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
+                       Upload_TransportMode_InfoTextIconExists) {
+  SetUpForSyncTransportModeTest();
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // As this is an upload save for a Butter-enabled user, there should be a
+  // hoverable (i) icon in the extra view explaining the functionality.
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
+}
+
+// Tests the implicit sync state. Ensures that the (i) info icon does not appear
+// for local save offers.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
+                       Local_TransportMode_InfoTextIconDoesNotExist) {
+  SetUpForSyncTransportModeTest();
+  FillForm();
+
+  // Declining upload save will fall back to local save.
+  SetUploadDetailsRpcPaymentsDeclines();
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  SubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
+
+  // Even though this is a Butter-enabled user, as this is a local save, there
+  // should NOT be a hoverable (i) icon in the extra view.
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
 }
 
 // Sets up Chrome with Sync-the-transport mode enabled, with the Wallet datatype
@@ -1319,8 +1390,7 @@ class
         // Enabled
         {features::kAutofillUpstream,
          features::kAutofillUpstreamEditableCardholderName,
-         features::kAutofillEnableAccountWalletStorage,
-         switches::kSyncSupportSecondaryAccount},
+         features::kAutofillEnableAccountWalletStorage},
         // Disabled
         {});
     test_signin_client_factory_ =
@@ -1366,11 +1436,28 @@ IN_PROC_BROWSER_TEST_F(
   // Account.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_EQ(cardholder_name_textfield->text(),
+  EXPECT_EQ(cardholder_name_textfield->GetText(),
             base::ASCIIToUTF16("John Smith"));
 }
 
-#endif
+#endif  // !OS_CHROMEOS
+
+// Tests the fully-syncing state. Ensures that the Butter (i) info icon does not
+// appear for fully-syncing users.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_NotTransportMode_InfoTextIconDoesNotExist) {
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
+
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Even though this is an upload save, as this is a fully-syncing user, there
+  // should NOT be a hoverable (i) icon in the extra view.
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
+}
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -1637,7 +1724,7 @@ IN_PROC_BROWSER_TEST_F(
   // user's Google Account should also be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_EQ(cardholder_name_textfield->text(),
+  EXPECT_EQ(cardholder_name_textfield->GetText(),
             base::ASCIIToUTF16("John Smith"));
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", true, 1);
@@ -1673,7 +1760,7 @@ IN_PROC_BROWSER_TEST_F(
   // name came from the user's Google Account should NOT be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_TRUE(cardholder_name_textfield->text().empty());
+  EXPECT_TRUE(cardholder_name_textfield->GetText().empty());
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", false, 1);
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
@@ -1783,7 +1870,7 @@ IN_PROC_BROWSER_TEST_F(
   // name came from the user's Google Account should NOT be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_TRUE(cardholder_name_textfield->text().empty());
+  EXPECT_TRUE(cardholder_name_textfield->GetText().empty());
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", false, 1);
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));

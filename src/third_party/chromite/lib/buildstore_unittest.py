@@ -218,7 +218,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.bb_client = mock.MagicMock()
     bs.GetBuildHistory(build_config, num_results, branch='master')
     bs.bb_client.GetBuildHistory.assert_called_once_with(
-        build_config, num_results, ending_build_id=None, end_date=None,
+        build_config, num_results, start_build_id=None, end_date=None,
         ignore_build_id=None, branch='master', start_date=None)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):

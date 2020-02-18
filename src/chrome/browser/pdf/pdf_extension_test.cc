@@ -24,6 +24,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -363,7 +364,7 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   int CountPDFProcesses() {
     int result = -1;
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PDFExtensionTest::CountPDFProcessesOnIOThread,
                        base::Unretained(this), base::Unretained(&result)),
@@ -427,7 +428,7 @@ class PDFAnnotationsTest : public PDFExtensionTest {
 #define MAYBE_Load Load
 #endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, MAYBE_Load) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Load private PDFs.
   LoadAllPdfsTest("pdf_private", GetParam());
 #endif
@@ -949,15 +950,17 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
 
 static const char kExpectedPDFAXTreePattern[] =
     "embeddedObject\n"
-    "  group\n"
+    "  document\n"
     "    region 'Page 1'\n"
     "      paragraph\n"
     "        staticText '1 First Section'\n"
     "          inlineTextBox '1 '\n"
     "          inlineTextBox 'First Section'\n"
     "      paragraph\n"
-    "        staticText 'This is the *rst section.1'\n"
+    "        staticText 'This is the *rst section.'\n"
     "          inlineTextBox 'This is the *rst section.'\n"
+    "      paragraph\n"
+    "        staticText '1'\n"
     "          inlineTextBox '1'\n"
     "    region 'Page 2'\n"
     "      paragraph\n"
@@ -965,8 +968,10 @@ static const char kExpectedPDFAXTreePattern[] =
     "          inlineTextBox '1.1 '\n"
     "          inlineTextBox 'First Subsection'\n"
     "      paragraph\n"
-    "        staticText 'This is the *rst subsection.2'\n"
+    "        staticText 'This is the *rst subsection.'\n"
     "          inlineTextBox 'This is the *rst subsection.'\n"
+    "      paragraph\n"
+    "        staticText '2'\n"
     "          inlineTextBox '2'\n"
     "    region 'Page 3'\n"
     "      paragraph\n"
@@ -1137,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
   EXPECT_EQ(ax::mojom::Role::kRegion, region->data().role);
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Test a particular PDF encountered in the wild that triggered a crash
 // when accessibility is enabled.  (http://crbug.com/668724)
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
@@ -1180,7 +1185,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   ASSERT_TRUE(content::ExecuteScript(
       guest_contents,
       "viewer.navigator_.navigate("
-      "    'www.example.com', Navigator.WindowOpenDisposition.CURRENT_TAB);"));
+      "    'www.example.com',"
+      "    PdfNavigator.WindowOpenDisposition.CURRENT_TAB);"));
   navigation_observer.Wait();
 
   EXPECT_FALSE(navigation_observer.last_navigation_url().is_empty());
@@ -1604,7 +1610,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // Checks the Linux selection clipboard by polling.
   void CheckSelectionClipboard(const std::string& expected) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    CheckClipboard(ui::ClipboardType::kSelection, expected);
+    CheckClipboard(ui::ClipboardBuffer::kSelection, expected);
 #endif
   }
 
@@ -1614,7 +1620,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
     content::RunAllPendingInMessageLoop();
     GetWebContentsForInputRouting()->Copy();
-    CheckClipboard(ui::ClipboardType::kCopyPaste, expected);
+    CheckClipboard(ui::ClipboardBuffer::kCopyPaste, expected);
   }
 
   content::WebContents* GetWebContentsForInputRouting() {
@@ -1624,26 +1630,26 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   }
 
  private:
-  // Waits and polls the clipboard of a given |clipboard_type| until its
+  // Waits and polls the clipboard of a given |clipboard_buffer| until its
   // contents reaches the length of |expected|. Then checks and see if the
   // clipboard contents matches |expected|.
   // TODO(thestig): Change this to avoid polling after https://crbug.com/755826
   // has been fixed.
-  void CheckClipboard(ui::ClipboardType clipboard_type,
+  void CheckClipboard(ui::ClipboardBuffer clipboard_buffer,
                       const std::string& expected) {
     auto* clipboard = ui::Clipboard::GetForCurrentThread();
     std::string clipboard_data;
-    const std::string& last_data = last_clipboard_data_[clipboard_type];
+    const std::string& last_data = last_clipboard_data_[clipboard_buffer];
     if (last_data.size() == expected.size()) {
       DCHECK_EQ(last_data, expected);
-      clipboard->ReadAsciiText(clipboard_type, &clipboard_data);
+      clipboard->ReadAsciiText(clipboard_buffer, &clipboard_data);
       EXPECT_EQ(expected, clipboard_data);
       return;
     }
 
     const bool expect_increase = last_data.size() < expected.size();
     while (true) {
-      clipboard->ReadAsciiText(clipboard_type, &clipboard_data);
+      clipboard->ReadAsciiText(clipboard_buffer, &clipboard_data);
       if (expect_increase) {
         if (clipboard_data.size() >= expected.size())
           break;
@@ -1656,10 +1662,10 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
     }
     EXPECT_EQ(expected, clipboard_data);
 
-    last_clipboard_data_[clipboard_type] = clipboard_data;
+    last_clipboard_data_[clipboard_buffer] = clipboard_data;
   }
 
-  std::map<ui::ClipboardType, std::string> last_clipboard_data_;
+  std::map<ui::ClipboardBuffer, std::string> last_clipboard_data_;
   WebContents* guest_contents_;
 };
 
@@ -1934,7 +1940,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
       embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+  content::WaitForHitTestData(guest_contents);
 
   gfx::Point point_in_parent(250, 25);
   gfx::Point point_in_pdf(250, 250);
@@ -1985,7 +1991,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
       embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+  content::WaitForHitTestData(guest_contents);
 
   content::RenderProcessHost* guest_process_host =
       guest_contents->GetMainFrame()->GetProcess();
@@ -2103,7 +2109,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
-  WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+  WaitForHitTestData(guest_contents);
 
   // Verify it's not focused.
   EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));
@@ -2218,6 +2224,163 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
   content::WaitForLoadStop(web_contents);
 }
 
+// This test suite does a simple text-extraction based on the accessibility
+// internals, breaking lines & paragraphs where appropriate.  Unlike
+// TreeDumpTests, this allows us to verify the kNextOnLine and kPreviousOnLine
+// relationships.
+class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
+ public:
+  PDFExtensionAccessibilityTextExtractionTest() = default;
+  ~PDFExtensionAccessibilityTextExtractionTest() override = default;
+
+  void RunTextExtractionTest(const base::FilePath::CharType* pdf_file) {
+    base::FilePath test_path = ui_test_utils::GetTestFilePath(
+        base::FilePath(FILE_PATH_LITERAL("pdf")),
+        base::FilePath(FILE_PATH_LITERAL("accessibility")));
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath pdf_path = test_path.Append(pdf_file);
+
+    RunTest(pdf_path, "pdf/accessibility");
+  }
+
+ private:
+  class TestExpectationsLocator
+      : public content::AccessibilityTestExpectationsLocator {
+   public:
+    TestExpectationsLocator() = default;
+    ~TestExpectationsLocator() override = default;
+
+    base::FilePath::StringType GetExpectedFileSuffix() override {
+      return FILE_PATH_LITERAL("-expected.txt");
+    }
+    base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() override {
+      return FILE_PATH_LITERAL("");
+    }
+  };
+
+  void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
+    // Load the expectation file.
+    TestExpectationsLocator locator;
+    content::DumpAccessibilityTestHelper test_helper(&locator);
+    base::Optional<base::FilePath> expected_file_path =
+        test_helper.GetExpectationFilePath(test_file_path);
+    ASSERT_TRUE(expected_file_path) << "No expectation file present.";
+
+    base::Optional<std::vector<std::string>> expected_lines =
+        test_helper.LoadExpectationFile(*expected_file_path);
+    ASSERT_TRUE(expected_lines) << "Couldn't load expectation file.";
+
+    // Enable accessibility and load the test file.
+    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    GURL test_pdf_url(embedded_test_server()->GetURL(
+        "/" + std::string(file_dir) + "/" +
+        test_file_path.BaseName().MaybeAsASCII()));
+    WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents);
+    WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+
+    // Extract the text content.
+    ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
+    auto actual_lines = CollectLines(ax_tree);
+
+    // Validate the dump against the expectation file.
+    EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
+        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+  }
+
+ private:
+  std::vector<std::string> CollectLines(ui::AXTreeUpdate ax_tree) {
+    std::vector<std::string> lines;
+
+    int previous_node_id = 0;
+    int previous_node_next_id = 0;
+    std::string line;
+    bool found_embedded_object = false;
+    for (const auto& node : ax_tree.nodes) {
+      // Ignore everything before the embedded object (the root of the PDF).
+      if (node.role == ax::mojom::Role::kEmbeddedObject)
+        found_embedded_object = true;
+      if (!found_embedded_object)
+        continue;
+
+      // StaticText begins a new paragraph.
+      if (node.role == ax::mojom::Role::kStaticText && !line.empty()) {
+        lines.push_back(line);
+        lines.push_back("\u00b6");  // pilcrow/paragraph mark, Alt+0182
+        line.clear();
+      }
+
+      // We collect all inline text boxes within the paragraph.
+      if (node.role != ax::mojom::Role::kInlineTextBox)
+        continue;
+
+      std::string name =
+          node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+      base::StringPiece trimmed_name =
+          base::TrimString(name, "\r\n", base::TRIM_TRAILING);
+      int prev_id =
+          node.GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
+      if (previous_node_next_id == node.id) {
+        // Previous node pointed to us, so we are part of the same line.
+        EXPECT_EQ(previous_node_id, prev_id)
+            << "Expect this node to point to previous node.";
+        trimmed_name.AppendToString(&line);
+      } else {
+        // Not linked with the previous node; this is a new line.
+        EXPECT_EQ(previous_node_next_id, 0)
+            << "Previous node pointed to something unexpected.";
+        EXPECT_EQ(prev_id, 0)
+            << "Our back pointer points to something unexpected.";
+        if (!line.empty())
+          lines.push_back(line);
+        line = trimmed_name.as_string();
+      }
+
+      previous_node_id = node.id;
+      previous_node_next_id =
+          node.GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
+    }
+    if (!line.empty())
+      lines.push_back(line);
+    return lines;
+  }
+};
+
+// Test that Previous/NextOnLineId attributes are present and properly linked on
+// InlineTextBoxes within a line.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       NextOnLine) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("next-on-line.pdf"));
+}
+
+// Test that a drop-cap is grouped with the correct line.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest, DropCap) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("drop-cap.pdf"));
+}
+
+// Test that simulated superscripts and subscripts don't cause a line break.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       SuperscriptSubscript) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("superscript-subscript.pdf"));
+}
+
+// Test that simple font and font-size changes in the middle of a line don't
+// cause line breaks.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       FontChange) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("font-change.pdf"));
+}
+
+// Test one property of pdf_private/accessibility_crash_2.pdf, where a page has
+// only whitespace characters.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       OnlyWhitespaceText) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("whitespace.pdf"));
+}
+
 class PDFExtensionAccessibilityTreeDumpTest
     : public PDFExtensionTest,
       public ::testing::WithParamInterface<size_t> {
@@ -2252,29 +2415,60 @@ class PDFExtensionAccessibilityTreeDumpTest
  private:
   using PropertyFilter = content::AccessibilityTreeFormatter::PropertyFilter;
 
+  //  See chrome/test/data/pdf/accessibility/readme.md for more info.
+  void ParsePdfForExtraDirectives(
+      const std::string& pdf_contents,
+      content::AccessibilityTreeFormatter* formatter,
+      std::vector<PropertyFilter>* property_filters) {
+    const char kCommentMark = '%';
+    for (const std::string& line : base::SplitString(
+             pdf_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      if (line.size() > 1 && line[0] == kCommentMark) {
+        // Remove first character since it's the comment mark.
+        std::string trimmed_line = line.substr(1);
+        const std::string& allow_str = formatter->GetAllowString();
+        if (base::StartsWith(trimmed_line, allow_str,
+                             base::CompareCase::SENSITIVE)) {
+          property_filters->push_back(PropertyFilter(
+              base::UTF8ToUTF16(trimmed_line.substr(allow_str.size())),
+              PropertyFilter::ALLOW));
+        }
+      }
+    }
+  }
+
   void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
-    // Set up the tree formatter.
+    std::string pdf_contents;
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::ReadFileToString(test_file_path, &pdf_contents));
+    }
+
+    // Set up the tree formatter. Parse filters and other directives in the test
+    // file.
     std::unique_ptr<content::AccessibilityTreeFormatter> formatter =
         test_pass_.create_formatter();
     std::vector<PropertyFilter> property_filters;
     formatter->AddDefaultFilters(&property_filters);
     AddDefaultFilters(&property_filters);
+    ParsePdfForExtraDirectives(pdf_contents, formatter.get(),
+                               &property_filters);
     formatter->SetPropertyFilters(property_filters);
 
     // Exit without running the test if we can't find an expectation file or if
     // the expectation file contains a skip marker.
     // This is used to skip certain tests on certain platforms.
     content::DumpAccessibilityTestHelper test_helper(formatter.get());
-    base::Optional<base::FilePath> expected_file_path =
+    base::FilePath expected_file_path =
         test_helper.GetExpectationFilePath(test_file_path);
-    if (!expected_file_path) {
+    if (expected_file_path.empty()) {
       LOG(INFO) << "No expectation file present, ignoring test on this "
                    "platform.";
       return;
     }
 
     base::Optional<std::vector<std::string>> expected_lines =
-        test_helper.LoadExpectationFile(*expected_file_path);
+        test_helper.LoadExpectationFile(expected_file_path);
     if (!expected_lines) {
       LOG(INFO) << "Skipping this test on this platform.";
       return;
@@ -2306,14 +2500,18 @@ class PDFExtensionAccessibilityTreeDumpTest
 
     // Validate the dump against the expectation file.
     EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
-        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+        test_file_path, expected_file_path, actual_lines, *expected_lines));
   }
 
   void AddDefaultFilters(std::vector<PropertyFilter>* property_filters) {
     AddPropertyFilter(property_filters, "value='*'");
     // The value attribute on the document object contains the URL of the
     // current page which will not be the same every time the test is run.
+    // The PDF plugin uses the 'chrome-extension' protocol, so block that as
+    // well.
     AddPropertyFilter(property_filters, "value='http*'", PropertyFilter::DENY);
+    AddPropertyFilter(property_filters, "value='chrome-extension*'",
+                      PropertyFilter::DENY);
     // Object attributes.value
     AddPropertyFilter(property_filters, "layout-guess:*",
                       PropertyFilter::ALLOW);
@@ -2323,6 +2521,7 @@ class PDFExtensionAccessibilityTreeDumpTest
     AddPropertyFilter(property_filters, "check*");
     AddPropertyFilter(property_filters, "horizontal");
     AddPropertyFilter(property_filters, "multiselectable");
+    AddPropertyFilter(property_filters, "isPageBreakingObject*");
 
     // Deny most empty values
     AddPropertyFilter(property_filters, "*=''", PropertyFilter::DENY);
@@ -2357,4 +2556,22 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, HelloWorld) {
   RunPDFTest(FILE_PATH_LITERAL("hello-world.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
+                       ParagraphsAndHeadingUntagged) {
+  RunPDFTest(FILE_PATH_LITERAL("paragraphs-and-heading-untagged.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MultiPage) {
+  RunPDFTest(FILE_PATH_LITERAL("multi-page.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
+                       DirectionalTextRuns) {
+  RunPDFTest(FILE_PATH_LITERAL("directional-text-runs.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextDirection) {
+  RunPDFTest(FILE_PATH_LITERAL("text-direction.pdf"));
 }

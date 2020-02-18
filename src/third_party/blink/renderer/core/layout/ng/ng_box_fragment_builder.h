@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -55,17 +56,15 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     layout_object_ = layout_object;
   }
 
-  NGBoxFragmentBuilder& SetInitialFragmentGeometry(
+  void SetInitialFragmentGeometry(
       const NGFragmentGeometry& initial_fragment_geometry) {
     initial_fragment_geometry_ = &initial_fragment_geometry;
     size_ = initial_fragment_geometry_->border_box_size;
     is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
-    return *this;
   }
 
-  NGBoxFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
+  void SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
-    return *this;
   }
   const NGBoxStrut& Borders() const {
     DCHECK(initial_fragment_geometry_);
@@ -84,53 +83,50 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     DCHECK(initial_fragment_geometry_);
     return initial_fragment_geometry_->border_box_size;
   }
-  // Remove all children.
-  void RemoveChildren();
 
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment.
-  NGBoxFragmentBuilder& AddBreakBeforeChild(NGLayoutInputNode child);
+  void AddBreakBeforeChild(NGLayoutInputNode child, bool is_forced_break);
 
   // Prepare for a break token before the specified line.
-  NGBoxFragmentBuilder& AddBreakBeforeLine(int line_number);
+  void AddBreakBeforeLine(int line_number);
 
-  NGBoxFragmentBuilder& AddResult(const NGLayoutResult&,
-                                  const LogicalOffset,
-                                  const LayoutInline* = nullptr);
+  // Add a layout result. This involves appending the fragment and its relative
+  // offset to the builder, but also keeping track of out-of-flow positioned
+  // descendants, propagating fragmentainer breaks, and more.
+  void AddResult(const NGLayoutResult&,
+                 const LogicalOffset,
+                 const LayoutInline* = nullptr);
+
+  void AddBreakToken(scoped_refptr<const NGBreakToken>);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGLogicalStaticPosition&,
                                    const LayoutInline* inline_container);
 
-  // Set how much of the block size we've used so far for this box.
-  NGBoxFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
-    used_block_size_ = used_block_size;
-    return *this;
-  }
+  // Set how much of the block-size we've used so far for this box. This will be
+  // the sum of the block-size of all previous fragments PLUS the one we're
+  // building now.
+  void SetConsumedBlockSize(LayoutUnit size) { consumed_block_size_ = size; }
 
   // Specify that we broke.
   //
   // This will result in a fragment which has an unfinished break token.
-  NGBoxFragmentBuilder& SetDidBreak() {
-    did_break_ = true;
-    return *this;
-  }
+  void SetDidBreak() { did_break_ = true; }
 
-  NGBoxFragmentBuilder& SetHasForcedBreak() {
+  void SetHasForcedBreak() {
     has_forced_break_ = true;
     minimal_space_shortage_ = LayoutUnit();
-    return *this;
   }
 
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
   // used by the column balancer to stretch columns.
-  NGBoxFragmentBuilder& PropagateSpaceShortage(LayoutUnit space_shortage) {
+  void PropagateSpaceShortage(LayoutUnit space_shortage) {
     DCHECK_GT(space_shortage, LayoutUnit());
     if (minimal_space_shortage_ > space_shortage)
       minimal_space_shortage_ = space_shortage;
-    return *this;
   }
 
   void SetInitialBreakBefore(EBreakBetween break_before) {
@@ -139,6 +135,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void SetPreviousBreakAfter(EBreakBetween break_after) {
     previous_break_after_ = break_after;
+  }
+
+  // Set when this subtree has modified the incoming margin-strut, such that it
+  // may change our final position.
+  void SetSubtreeModifiedMarginStrut() {
+    DCHECK(!BfcBlockOffset());
+    subtree_modified_margin_strut_ = true;
   }
 
   // Join/"collapse" the previous (stored) break-after value with the next
@@ -152,6 +155,14 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Call when we're setting an undersirable break. It may be possible to avoid
   // the break if we instead break at an earlier element.
   void SetHasLastResortBreak() { has_last_resort_break_ = true; }
+
+  // Set when we have iterated over all the children. This means that all
+  // children have been fully laid out, or have break tokens. No more children
+  // left to discover.
+  void SetHasSeenAllChildren() { has_seen_all_children_ = true; }
+
+  void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
+  bool FoundColumnSpanner() const { return !!column_spanner_; }
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
@@ -173,30 +184,24 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       NGLayoutResult::NGLayoutResultStatus);
 
   NGPhysicalFragment::NGBoxType BoxType() const;
-  NGBoxFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
+  void SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
     box_type_ = box_type;
-    return *this;
   }
-  NGBoxFragmentBuilder& SetIsFieldsetContainer() {
-    is_fieldset_container_ = true;
-    return *this;
-  }
-  NGBoxFragmentBuilder& SetIsLegacyLayoutRoot() {
-    is_legacy_layout_root_ = true;
-    return *this;
-  }
+  void SetIsFieldsetContainer() { is_fieldset_container_ = true; }
+  void SetIsLegacyLayoutRoot() { is_legacy_layout_root_ = true; }
 
   bool DidBreak() const { return did_break_; }
 
-  NGBoxFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
+  void SetBorderEdges(NGBorderEdges border_edges) {
     border_edges_ = border_edges;
-    return *this;
   }
 
   // Either this function or SetBoxType must be called before ToBoxFragment().
-  NGBoxFragmentBuilder& SetIsNewFormattingContext(bool is_new_fc) {
-    is_new_fc_ = is_new_fc;
-    return *this;
+  void SetIsNewFormattingContext(bool is_new_fc) { is_new_fc_ = is_new_fc; }
+
+  void SetCustomLayoutData(
+      scoped_refptr<SerializedScriptValue> custom_layout_data) {
+    custom_layout_data_ = std::move(custom_layout_data);
   }
 
   // Layout algorithms should call this function for each baseline request in
@@ -208,6 +213,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // This function should be called at most once for a given algorithm/baseline
   // type pair.
   void AddBaseline(NGBaselineRequest, LayoutUnit);
+
+  // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
+  NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
+  void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
+    items_builder_ = builder;
+  }
 
   // Inline containing block geometry is defined by two rectangles defined
   // by fragments generated by LayoutInline.
@@ -233,12 +244,16 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
  private:
   // Update whether we have fragmented in this flow.
-  NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
+  void PropagateBreak(const NGLayoutResult&);
 
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
   const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
   LayoutUnit intrinsic_block_size_;
+
+  NGFragmentItemsBuilder* items_builder_ = nullptr;
+
+  NGBlockNode column_spanner_ = nullptr;
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;
@@ -246,7 +261,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
-  LayoutUnit used_block_size_;
+  bool subtree_modified_margin_strut_ = false;
+  bool has_seen_all_children_ = false;
+  LayoutUnit consumed_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();
 
@@ -260,6 +277,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBaselineList baselines_;
 
   NGBorderEdges border_edges_;
+
+  scoped_refptr<SerializedScriptValue> custom_layout_data_;
 
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;

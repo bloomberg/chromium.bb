@@ -19,7 +19,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.webapps.WebApkInfo;
+import org.chromium.chrome.browser.webapps.WebApkDistributor;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -117,11 +117,6 @@ public class WebApkUma {
     private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN =
             "WebApk.Startup.Cold.ShellLaunchToSplashscreenHidden";
 
-    private static final int WEBAPK_OPEN_MAX = 3;
-    public static final int WEBAPK_OPEN_LAUNCH_SUCCESS = 0;
-    // Obsolete: WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
-    public static final int WEBAPK_OPEN_ACTIVITY_NOT_FOUND = 2;
-
     private static final long WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES =
             100 * (long) ConversionUtils.BYTES_PER_MEGABYTE; // 100 MB
 
@@ -215,7 +210,7 @@ public class WebApkUma {
 
     /** Records the duration of a WebAPK session (from launch/foreground to background). */
     public static void recordWebApkSessionDuration(
-            @WebApkInfo.WebApkDistributor int distributor, long duration) {
+            @WebApkDistributor int distributor, long duration) {
         RecordHistogram.recordLongTimesHistogram(
                 "WebApk.Session.TotalDuration2." + getWebApkDistributorUmaSuffix(distributor),
                 duration);
@@ -223,18 +218,17 @@ public class WebApkUma {
 
     /** Records the current Shell APK version. */
     public static void recordShellApkVersion(
-            int shellApkVersion, @WebApkInfo.WebApkDistributor int distributor) {
+            int shellApkVersion, @WebApkDistributor int distributor) {
         RecordHistogram.recordSparseHistogram(
                 "WebApk.ShellApkVersion2." + getWebApkDistributorUmaSuffix(distributor),
                 shellApkVersion);
     }
 
-    private static String getWebApkDistributorUmaSuffix(
-            @WebApkInfo.WebApkDistributor int distributor) {
+    private static String getWebApkDistributorUmaSuffix(@WebApkDistributor int distributor) {
         switch (distributor) {
-            case WebApkInfo.WebApkDistributor.BROWSER:
+            case WebApkDistributor.BROWSER:
                 return "Browser";
-            case WebApkInfo.WebApkDistributor.DEVICE_POLICY:
+            case WebApkDistributor.DEVICE_POLICY:
                 return "DevicePolicy";
             default:
                 return "Other";
@@ -419,17 +413,10 @@ public class WebApkUma {
         long minFreeBytes = 0;
 
         // Retrieve platform-appropriate values first
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            minFreePercent = Settings.Global.getInt(
-                    resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
-            minFreeBytes = Settings.Global.getLong(
-                    resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
-        } else {
-            minFreePercent = Settings.Secure.getInt(
-                    resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
-            minFreeBytes = Settings.Secure.getLong(
-                    resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
-        }
+        minFreePercent = Settings.Global.getInt(
+                resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
+        minFreeBytes = Settings.Global.getLong(
+                resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
 
         long minFreePercentInBytes = (partitionTotalBytes * minFreePercent) / 100;
 

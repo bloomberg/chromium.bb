@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "content/common/navigation_params.mojom.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
@@ -44,8 +45,10 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = mojo::MakeRequest(&client_ptr_);
     blink::WebNavigationParams navigation_params;
+    auto common_params = CreateCommonNavigationParams();
+    auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        CommonNavigationParams(), CommitNavigationParams(), 1 /* request_id */,
+        *common_params, *commit_params, 1 /* request_id */,
         network::ResourceResponseHead(),
         mojo::ScopedDataPipeConsumerHandle() /* response_body */,
         std::move(endpoints),
@@ -73,7 +76,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  void BodyCodeCacheReceived(base::span<const uint8_t>) override {}
+  void BodyCodeCacheReceived(mojo_base::BigBuffer data) override {}
 
   void BodyDataReceived(base::span<const char> data) override {
     ASSERT_TRUE(expecting_data_received_);
@@ -148,7 +151,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     }
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   static const MojoWriteDataFlags kNone = MOJO_WRITE_DATA_FLAG_NONE;
   network::mojom::URLLoaderClientPtr client_ptr_;
   std::unique_ptr<blink::WebNavigationBodyLoader> loader_;
@@ -308,13 +311,14 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
                                      &response.ssl_info->connection_status);
 
-  CommonNavigationParams common_params;
-  common_params.url = GURL("https://example.test");
+  auto common_params = CreateCommonNavigationParams();
+  common_params->url = GURL("https://example.test");
+  auto commit_params = CreateCommitNavigationParams();
 
   blink::WebNavigationParams navigation_params;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-      common_params, CommitNavigationParams(), 1 /* request_id */, response,
+      *common_params, *commit_params, 1 /* request_id */, response,
       mojo::ScopedDataPipeConsumerHandle() /* response_body */,
       std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),

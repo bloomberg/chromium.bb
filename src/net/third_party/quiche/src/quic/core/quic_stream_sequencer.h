@@ -86,10 +86,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // not been received yet or has already been consumed.
   bool PeekRegion(QuicStreamOffset offset, iovec* iov) const;
 
-  // Fills in one iovec with the next unread region.
-  // Returns false if no readable region is available.
-  bool PrefetchNextRegion(iovec* iov);
-
   // Copies the data into the iov_len buffers provided.  Returns the number of
   // bytes read.  Any buffered data no longer in use will be released.
   // TODO(rch): remove this method and instead implement it as a helper method
@@ -167,11 +163,13 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   void FlushBufferedFrames();
 
   // Wait until we've seen 'offset' bytes, and then terminate the stream.
-  void CloseStreamAtOffset(QuicStreamOffset offset);
+  // Returns true if |stream_| is still available to receive data, and false if
+  // |stream_| is reset.
+  bool CloseStreamAtOffset(QuicStreamOffset offset);
 
   // If we've received a FIN and have processed all remaining data, then inform
   // the stream of FIN, and clear buffers.
-  bool MaybeCloseStream();
+  void MaybeCloseStream();
 
   // Shared implementation between OnStreamFrame and OnCryptoFrame.
   void OnFrameData(QuicStreamOffset byte_offset,

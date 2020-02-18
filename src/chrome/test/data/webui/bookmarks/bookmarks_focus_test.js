@@ -19,7 +19,7 @@ BookmarksFocusTest.prototype = {
   extraLibraries: [
     ...PolymerInteractiveUITest.prototype.extraLibraries,
     '//ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
+    '../test_util.js',
     '../test_store.js',
     'test_command_manager.js',
     'test_store.js',
@@ -274,9 +274,9 @@ TEST_F('BookmarksFocusTest', 'All', function() {
      */
     async function doAndWait(fn) {
       fn();
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       // Focus is done asynchronously.
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
     }
 
     /** @param {string} id */

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
@@ -55,10 +56,9 @@ class Origin;
 
 namespace media {
 class VideoDecodePerfHistory;
+namespace learning {
+class LearningSession;
 }
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace storage {
@@ -304,15 +304,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // called once per context. It's valid to return nullptr.
   virtual BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() = 0;
 
-  // Creates the main net::URLRequestContextGetter. It's called only once.
-  virtual net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) = 0;
-
-  // Creates the main net::URLRequestContextGetter for media resources. It's
-  // called only once.
-  virtual net::URLRequestContextGetter* CreateMediaRequestContext() = 0;
-
   // Sets CORS origin access lists.
   virtual void SetCorsOriginAccessListForOrigin(
       const url::Origin& source_origin,
@@ -346,6 +337,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // have similar decode performance and stats are not exposed to the web
   // directly, so privacy is not compromised.
   virtual media::VideoDecodePerfHistory* GetVideoDecodePerfHistory();
+
+  // Returns a LearningSession associated with |this|. Used as the central
+  // source from which to retrieve LearningTaskControllers for media machine
+  // learning.
+  // Exposed here rather than StoragePartition because learnings will cover
+  // general media trends rather than SiteInstance specific behavior. The
+  // learnings are not exposed to the web.
+  virtual media::learning::LearningSession* GetLearningSession();
 
   // Retrieves the InProgressDownloadManager associated with this object if
   // available

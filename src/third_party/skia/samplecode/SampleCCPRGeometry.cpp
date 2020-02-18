@@ -47,7 +47,7 @@ class CCPRGeometryView : public Sample {
     void onOnceBeforeDraw() override { this->updateGpuData(); }
     void onDrawContent(SkCanvas*) override;
 
-    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey) override;
+    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, skui::ModifierKey) override;
     bool onClick(Sample::Click*) override;
     bool onChar(SkUnichar) override;
     SkString name() override { return SkString("CCPRGeometry"); }
@@ -184,9 +184,9 @@ void CCPRGeometryView::onDrawContent(SkCanvas* canvas) {
 
         GrOpMemoryPool* pool = ctx->priv().opMemoryPool();
 
-        sk_sp<GrRenderTargetContext> ccbuff = ctx->priv().makeDeferredRenderTargetContext(
-                SkBackingFit::kApprox, this->width(), this->height(), GrColorType::kAlpha_F16,
-                nullptr);
+        auto ccbuff = ctx->priv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
+                                                                  this->width(), this->height(),
+                                                                  GrColorType::kAlpha_F16, nullptr);
         SkASSERT(ccbuff);
         ccbuff->clear(nullptr, SK_PMColor4fTRANSPARENT,
                       GrRenderTargetContext::CanClearFullscreen::kYes);
@@ -417,7 +417,7 @@ private:
     int fPtIdx;
 };
 
-Sample::Click* CCPRGeometryView::onFindClickHandler(SkScalar x, SkScalar y, ModifierKey) {
+Sample::Click* CCPRGeometryView::onFindClickHandler(SkScalar x, SkScalar y, skui::ModifierKey) {
     for (int i = 0; i < 4; ++i) {
         if (PrimitiveType::kCubics != fPrimitiveType && 2 == i) {
             continue;

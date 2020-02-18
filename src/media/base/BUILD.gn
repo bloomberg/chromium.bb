@@ -28,6 +28,10 @@ jumbo_source_set("base") {
     visibility += [ "//media/base/mac" ]
   }
 
+  if (is_android) {
+    visibility += [ "//gpu/ipc/common:android_texture_owner_unittests" ]
+  }
+
   sources = [
     "android_overlay_config.cc",
     "android_overlay_config.h",
@@ -187,6 +191,7 @@ jumbo_source_set("base") {
     "media_types.h",
     "media_url_demuxer.cc",
     "media_url_demuxer.h",
+    "media_url_params.cc",
     "media_url_params.h",
     "media_util.cc",
     "media_util.h",
@@ -220,6 +225,7 @@ jumbo_source_set("base") {
     "reentrancy_checker.h",
     "renderer.cc",
     "renderer.h",
+    "renderer_client.cc",
     "renderer_client.h",
     "renderer_factory.cc",
     "renderer_factory.h",
@@ -238,6 +244,8 @@ jumbo_source_set("base") {
     "silent_sink_suspender.h",
     "simple_sync_token_client.cc",
     "simple_sync_token_client.h",
+    "simple_watch_timer.cc",
+    "simple_watch_timer.h",
     "sinc_resampler.cc",
     "sinc_resampler.h",
     "stream_parser.cc",
@@ -383,7 +391,7 @@ jumbo_source_set("base") {
     public_deps += [ "//media/base/win:d3d11" ]
   }
 
-  if (is_chromecast) {
+  if (is_chromecast || is_fuchsia) {
     sources += [ "demuxer_memory_limit_low.cc" ]
   } else if (is_android) {
     sources += [ "demuxer_memory_limit_android.cc" ]

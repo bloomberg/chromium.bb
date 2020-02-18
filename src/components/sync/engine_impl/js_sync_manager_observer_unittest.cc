@@ -8,7 +8,7 @@
 
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/connection_status.h"
@@ -34,7 +34,7 @@ class JsSyncManagerObserverTest : public testing::Test {
  private:
   // This must be destroyed after the member variables below in order
   // for WeakHandles to be destroyed properly.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  protected:
   StrictMock<MockJsEventHandler> mock_js_event_handler_;

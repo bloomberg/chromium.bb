@@ -135,6 +135,8 @@ jumbo_source_set("common_sources") {
     "content_features.h",
     "content_ipc_logging.h",
     "content_paths.h",
+    "content_switch_dependent_feature_overrides.cc",
+    "content_switch_dependent_feature_overrides.h",
     "content_switches.cc",
     "content_switches.h",
     "context_menu_params.cc",
@@ -204,14 +206,11 @@ jumbo_source_set("common_sources") {
     "three_d_api_types.h",
     "url_constants.cc",
     "url_constants.h",
-    "url_loader_throttle.cc",
-    "url_loader_throttle.h",
     "url_utils.cc",
     "url_utils.h",
     "use_zoom_for_dsf_policy.cc",
     "use_zoom_for_dsf_policy.h",
     "user_agent.h",
-    "was_activated_option.h",
     "web_preferences.cc",
     "web_preferences.h",
     "webplugininfo.cc",
@@ -250,12 +249,13 @@ jumbo_source_set("common_sources") {
   ]
   deps = [
     ":content_descriptor_keys",
+    "//build:branding_buildflags",
 
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.
     "//content/common:mojo_bindings",
     "//media",
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//ppapi/buildflags",
     "//ppapi/c",
     "//services/network/public/cpp",
@@ -329,23 +329,6 @@ source_set("resource_type_header") {
   ]
 }
 
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
-}
-
-source_set("feature_h264_with_openh264_ffmpeg") {
-  deps = [
-    ":buildflags",
-    "//base",
-    "//media:media_buildflags",
-  ]
-  sources = [
-    "feature_h264_with_openh264_ffmpeg.cc",
-    "feature_h264_with_openh264_ffmpeg.h",
-  ]
-}
-
 mojom("interfaces") {
   # We don't want Blink variants of these bindings to be generated.
   disable_variants = true
@@ -363,10 +346,10 @@ mojom("interfaces") {
   sources = [
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
-    "load_timing_info.mojom",
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
+    "was_activated_option.mojom",
     "webplugininfo.mojom",
     "window_container_type.mojom",
   ]

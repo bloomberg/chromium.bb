@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -47,8 +47,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
                             StatusCallback callback)
       : storage::RecursiveOperationDelegate(file_system_context),
         root_(root),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+        callback_(std::move(callback)) {}
   ~LoggingRecursiveOperation() override = default;
 
   const std::vector<LogEntry>& log_entries() const { return log_entries_; }
@@ -122,7 +121,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
   std::vector<LogEntry> log_entries_;
   FileSystemURL error_url_;
 
-  base::WeakPtrFactory<LoggingRecursiveOperation> weak_factory_;
+  base::WeakPtrFactory<LoggingRecursiveOperation> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LoggingRecursiveOperation);
 };
 
@@ -192,7 +191,7 @@ class RecursiveOperationDelegateTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;

@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_features.h"
@@ -72,6 +73,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -197,8 +199,6 @@ Tab::Tab(TabController* controller)
   tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
       this, close_button_, controller_);
 
-  set_context_menu_controller(this);
-
   title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
 
   // Enable keyboard focus.
@@ -242,13 +242,6 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
   controller_->CloseTab(this, source);
   if (event.type() == ui::ET_GESTURE_TAP)
     TouchUMA::RecordGestureAction(TouchUMA::kGestureTabCloseTap);
-}
-
-void Tab::ShowContextMenuForViewImpl(views::View* source,
-                                     const gfx::Point& point,
-                                     ui::MenuSourceType source_type) {
-  if (!closing_)
-    controller_->ShowContextMenuForTab(this, point, source_type);
 }
 
 bool Tab::GetHitTestMask(SkPath* mask) const {
@@ -322,19 +315,13 @@ void Tab::Layout() {
     close_x = std::max(contents_rect.right() - close_button_size.width(),
                        Center(width(), close_button_size.width()));
     const int left = std::min(after_title_padding, close_x);
-    close_button_->SetPosition(gfx::Point(close_x - left, 0));
     const int bottom = height() - close_button_size.height() - top;
     const int right =
         std::max(0, width() - (close_x + close_button_size.width()));
     close_button_->SetBorder(
         views::CreateEmptyBorder(top, left, bottom, right));
-    close_button_->SizeToPreferredSize();
-    // Re-layout the close button so it can recompute its focus ring if needed:
-    // SizeToPreferredSize() will not necessarily re-Layout the View if only its
-    // interior margins have changed (which this logic does), but the focus ring
-    // still needs to be updated because it doesn't want to encompass the
-    // interior margins.
-    close_button_->Layout();
+    close_button_->SetBoundsRect(
+        {gfx::Point(close_x - left, 0), close_button_->GetPreferredSize()});
   }
   close_button_->SetVisible(showing_close_button_);
 
@@ -643,11 +630,7 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
 }
 
 void Tab::OnPaint(gfx::Canvas* canvas) {
-  SkPath clip;
-  if (!controller_->ShouldPaintTab(this, canvas->image_scale(), &clip))
-    return;
-
-  tab_style()->PaintTab(canvas, clip);
+  tab_style()->PaintTab(canvas);
 }
 
 void Tab::AddedToWidget() {
@@ -668,6 +651,12 @@ void Tab::OnThemeChanged() {
   UpdateForegroundColors();
 }
 
+TabSizeInfo Tab::GetTabSizeInfo() const {
+  return {TabStyle::GetPinnedWidth(), TabStyleViews::GetMinimumActiveWidth(),
+          TabStyleViews::GetMinimumInactiveWidth(),
+          TabStyle::GetStandardWidth()};
+}
+
 void Tab::SetClosing(bool closing) {
   closing_ = closing;
   ActiveStateChanged();
@@ -685,15 +674,19 @@ void Tab::SetGroup(base::Optional<TabGroupId> group) {
   if (group_ == group)
     return;
   group_ = group;
-  UpdateForegroundColors();
-  SchedulePaint();
+  GroupColorChanged();
 }
 
 base::Optional<SkColor> Tab::GetGroupColor() const {
   return group_.has_value()
              ? base::make_optional(
-                   controller_->GetDataForGroup(group_.value())->color())
+                   controller_->GetVisualDataForGroup(group_.value())->color())
              : base::nullopt;
+}
+
+void Tab::GroupColorChanged() {
+  UpdateForegroundColors();
+  SchedulePaint();
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
@@ -701,7 +694,7 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
-    return button_color_;
+    return foreground_color_;
 
   switch (state) {
     case TabAlertState::AUDIO_PLAYING:
@@ -721,10 +714,10 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
     case TabAlertState::SERIAL_CONNECTED:
     case TabAlertState::NONE:
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
-      return button_color_;
+      return foreground_color_;
     default:
       NOTREACHED();
-      return button_color_;
+      return foreground_color_;
   }
 }
 
@@ -1007,16 +1000,13 @@ void Tab::UpdateTabIconNeedsAttentionBlocked() {
 void Tab::UpdateForegroundColors() {
   TabStyle::TabColors colors = tab_style_->CalculateColors();
 
-  icon_->SetBackgroundColor(colors.background_color);
-  title_->SetEnabledColor(colors.title_color);
+  title_->SetEnabledColor(colors.foreground_color);
 
-  close_button_->SetIconColors(
-      colors.button_icon_idle_color, colors.button_icon_hovered_color,
-      colors.button_icon_hovered_color, colors.button_background_hovered_color,
-      colors.button_background_pressed_color);
+  close_button_->SetIconColors(colors.foreground_color,
+                               colors.background_color);
 
-  if (button_color_ != colors.button_icon_idle_color) {
-    button_color_ = colors.button_icon_idle_color;
+  if (foreground_color_ != colors.foreground_color) {
+    foreground_color_ = colors.foreground_color;
     alert_indicator_->OnParentTabButtonColorChanged();
   }
 

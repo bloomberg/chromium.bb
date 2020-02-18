@@ -71,7 +71,7 @@ class ChromeScreenshotGrabberBrowserTest
   bool IsImageClipboardAvailable() {
     return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
         ui::ClipboardFormatType::GetBitmapType(),
-        ui::ClipboardType::kCopyPaste);
+        ui::ClipboardBuffer::kCopyPaste);
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -105,7 +105,6 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   auto notification =
       display_service_->GetNotification(std::string("screenshot"));
   ASSERT_TRUE(notification.has_value());
-  EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
   EXPECT_EQ(message_center::NotifierType::SYSTEM_COMPONENT,
             notification->notifier_id().type);
   EXPECT_EQ("ash.screenshot", notification->notifier_id().id);

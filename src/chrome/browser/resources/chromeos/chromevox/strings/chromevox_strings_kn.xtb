@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">ಈವೆಂಟ್ ಸ್ಟ್ರೀಮ್ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1088219014394087294">ಯಾವುದೇ ಶೀರ್ಷಿಕೆಗಳಿಲ್ಲ.</translation>
 <translation id="1106741348836243114">ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ (earcons) ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ.</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "ಆಲ್ಫಾ", "b": "ಬ್ರಾವೋ", "c": "ಚಾರ್ಲಿ", "d": "ಡೆಲ್ಟಾ", "e": "ಇಕೋ", "f": "ಫಾಕ್ಸ್‌ಟ್ರಾಟ್", "g": "ಗಾಲ್ಫ್", "h": "ಹೋಟೆಲ್", "i": "ಇಂಡಿಯಾ", "j": "ಜೂಲಿಯೆಟ್","k": "ಕಿಲೋ", "l": "ಲಿಮಾ", "m": "ಮೈಕ್", "n": "ನವೆಂಬರ್", "o": "ಆಸ್ಕರ್","p": "ಪಾಪಾ", "q": "ಕ್ವಿಬೆಕ್", "r": "ರೋಮಿಯೋ", "s": "ಸಿಯೆರಾ", "t": "ಟ್ಯಾಂಗೋ", "u": "ಯುನಿಫಾರ್ಮ್", "v": "ವಿಕ್ಟರ್", "w": "ವಿಸ್ಕಿ","x": "ಎಕ್ಸ್‌ರೇ", "y": "ಯಾಂಕೀ", "z": "ಜುಲು"}</translation>
 <translation id="1120938014254001895">ಎರಡು ಬೆರಳುಗಳಿಂದ ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="1124771028211010580">ಪ್ರಸ್ತುತ ಡಿಸ್‌ಪ್ಲೇ ಶೈಲಿ ಅಕ್ಕ ಪಕ್ಕ ಆಗಿದೆ.</translation>
 <translation id="1126928665165112660">ಇಟಾಲಿಕ್ ಅಲ್ಲ</translation>
@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1385214448885562192">ಸಮ್ಮತಿಸಲು enter ಒತ್ತಿರಿ ಅಥವಾ ರದ್ದುಗೊಳಿಸಲು escape ಒತ್ತಿರಿ, ಮುಂದಿನದ್ದಕ್ಕೆ ಹೋಗಲು ಕೆಳಕ್ಕೆ ಒತ್ತಿರಿ ಮತ್ತು ಹಿಂದಿನದ್ದಕ್ಕೆ ಹೋಗಲು ಮೇಲಕ್ಕೆ ಒತ್ತಿರಿ.</translation>
 <translation id="1396114365388024581">ಟ್ಯಾಬ್ ಪಟ್ಟಿ</translation>
-<translation id="139902759009894363">ರಿಚ್ ಪಠ್ಯ ಗುಣಲಕ್ಷಣಗಳನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="1405567553485452995">ತಿಳಿ ಹಸಿರು</translation>
 <translation id="1417889266572670458">ಕಡುನೀಲಿ</translation>
 <translation id="1431911867058218151">ಪ್ಲಮ್</translation>
@@ -170,6 +169,7 @@
 <translation id="2220529011494928058">ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ</translation>
 <translation id="2223693656926968778">ಪ್ರಸ್ತುತ ಐಟಂ ಕುರಿತು ಕ್ರಮ ಕೈಗೊಳ್ಳಿ</translation>
 <translation id="225732394367814946">ಮಾತಿನ ಪ್ರಮಾಣವನ್ನು ಹೆಚ್ಚಿಸಿ</translation>
+<translation id="2267538686624070261">ತಪ್ಪಾಗಿ ಬರೆದಿರುವ ಪದವನ್ನು ಬಿಟ್ಟುಬಿಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2267945578749931355">ಮುಂದಿನ ಅಕ್ಷರ</translation>
 <translation id="2278490101488436824">ಮೂರು ಬೆರಳುಗಳಿಂದ ಎಡಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="2281234842553884450">ಹಿಂದಿನ ಸ್ಲೈಡರ್</translation>
@@ -208,6 +208,7 @@
 <translation id="257674075312929031">ಗುಂಪು</translation>
 <translation id="2582407057977008361">ಹೊರತಾಗಿ</translation>
 <translation id="2592212930811759050">ಎಡಿಟಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
+<translation id="2598495320872286378">ವ್ಯಾಕರಣ ದೋಷ</translation>
 <translation id="2606210917827248971">ಜೊತೆ {COUNT,plural, =1{# ಐಟಂ}one{# ಐಟಂಗಳು}other{# ಐಟಂಗಳು}}</translation>
 <translation id="2614981083756825552">ಗಣಿತ ML ಲೇಔಟ್</translation>
 <translation id="2624431853467395961">ಕಲಿಕೆ ಮೋಡ್‌ ತೆರೆಯಿರಿ</translation>
@@ -423,7 +424,6 @@
 <translation id="4039983576244166038">ಖಾಲಿ ಸಾಲಿನ ಶಿರೋನಾಮೆ</translation>
 <translation id="4042843249978639960">ಮುಂದಿನ ಹಂತದಲ್ಲಿ 2 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="4043348641337972076">ಯಾವುದೇ ಹಿಂದಿನ ARIA ಹೆಗ್ಗುರುತಿಲ್ಲ.</translation>
-<translation id="4045764028670444336">ತಪ್ಪುಕಾಗುಣಿತ ಆರಂಭ</translation>
 <translation id="4047216625641135770">ಗುರುತು</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">ನಿಂಬೆ ಹಸಿರು</translation>
@@ -485,6 +485,7 @@
 <translation id="4372705107434148843">ಮಾತು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="4373197658375206385">ಹಿಂದಿನ ಯಾವುದೇ ಐಟಂ ಲಿಂಕ್ ಆಗಿಲ್ಲ</translation>
 <translation id="4376316291247992553">ಗ್ರಾಫಿಕ್ ಅನ್ನು ಬ್ರೈಲ್‌ನಂತೆ ವೀಕ್ಷಿಸಿ</translation>
+<translation id="437809255587011096">ಪಠ್ಯ ಶೈಲಿಯನ್ನು ಪ್ರಸಾರ ಮಾಡಿ</translation>
 <translation id="4378308539633073595">ಮುಂದಕ್ಕೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ</translation>
 <translation id="4384583879834880242">ಪ್ರಶ್ನೋತ್ತರ</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -505,7 +506,6 @@
 <translation id="4547556996012970016">ಮುಂದಿನ ಹಂತ 5 ಶಿರೋನಾಮೆ</translation>
 <translation id="4562381607973973258">ಶಿರೋಲೇಖ</translation>
 <translation id="4569941707103739422">ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಮೇಲಿನ ಬಾಣದ ಗುರುತು ಅಥವಾ ಕೆಳಗಿನ ಬಾಣದ ಗುರುತನ್ನು ಒತ್ತಿರಿ; ಸಕ್ರಿಯಗೊಳಿಸಲು ಎಂಟರ್ ಒತ್ತಿ.</translation>
-<translation id="4570424871453628777">ತಪ್ಪುಕಾಗುಣಿತ ಮುಕ್ತಾಯ</translation>
 <translation id="4591507479202817876">, ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="4597532268155981612">ಫಾರ್ಮ್</translation>
 <translation id="4597896406374528575">ಏಪ್ರಿಲ್</translation>
@@ -728,7 +728,6 @@
 <translation id="6037602951055904232">ಮುಂದಕ್ಕೆ ಪ್ಯಾನ್ ಮಾಡಿ</translation>
 <translation id="6042826534790431634">ಸಕ್ರಿಯಗೊಳಿಸಲು, ಹುಡುಕಾಟ+ಸ್ಪೇಸ್ ಕೀಲಿ ಒತ್ತಿರಿ.</translation>
 <translation id="6044160928851315051">ಡಾರ್ಕನ್ ಸ್ಕ್ರೀನ್</translation>
-<translation id="6065293622157674001">ವ್ಯಾಕರಣ ದೋಷಗಳ ಆರಂಭ</translation>
 <translation id="6082768461603900813">ಬೇಸಿಕ್ ನ್ಯಾವಿಗೇಶನ್</translation>
 <translation id="6118126368611144850">Chrome ಗಾಗಿ Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳು. ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ನೀವು Play ಸ್ಟೋರ್ ಅನ್ನು ಹೊಂದಿದ್ದರೆ, Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳೊಂದಿಗೆ ChromeVox ನಲ್ಲಿ ಸ್ನೀಕ್ ಪೀಕ್ ಅನ್ನು ಪಡೆದುಕೊಳ್ಳಿ. Play ಸ್ಟೋರ್‌ನಿಂದ Google Chrome Canary ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಮೂಲಕ ಪ್ರಾಯೋಗಿಕ ಬೆಂಬಲವನ್ನು ಬಳಸಿ ನೋಡಿ.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">ಮಬ್ಬು ಬೂದು</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ಬುಲೆಟ್}one{# ಬುಲೆಟ್‌ಗಳು}other{# ಬುಲೆಟ್‌ಗಳು}}</translation>
 <translation id="6355910664415701303">ಮುಂದಿನ ಯಾವುದೇ ಪಟ್ಟಿ ಐಟಂಯಿಲ್ಲ.</translation>
-<translation id="6360318852623800555">ರಿಚ್ ಪಠ್ಯದ ಗುಣಲಕ್ಷಣಗಳು</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ಹಿಂದಿನ ಶಿರೋನಾಮೆ</translation>
 <translation id="6376999910001533545">ಕಡುಗೆಂಪು</translation>
@@ -825,6 +823,7 @@
 <translation id="6833103209700200188">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="6858047746862060282">ಪೀಠಿಕೆ</translation>
 <translation id="6859876496651143278">ಒಂದು ಬೆರಳಿನಿಂದ ಎಡಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ</translation>
+<translation id="6865519907510167493">ತಪ್ಪಾಗಿ ಬರೆದಿರುವ ಪದ</translation>
 <translation id="6871161210040114857">ಕೇಸ್ ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="6877435256196695200">ಮುಂದಿನ ಗ್ರಾಫಿಕ್‌ಯಿಲ್ಲ.</translation>
 <translation id="6897341342232909480">ಎಡಕ್ಕೆ ಸೇರಿಸಿ</translation>
@@ -870,7 +869,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7143207342074048698">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7153618581592392745">ನಸು ಕೆನ್ನೀಲಿ</translation>
 <translation id="7157306005867877619">ಸಾರಾಂಶ</translation>
-<translation id="7161425887892204659">ಪಠ್ಯ ಹೊಂದಾಣಿಕೆ ಮುಕ್ತಾಯ</translation>
 <translation id="7161771961008409533">ಪಾಪ್-ಅಪ್ ಬಟನ್</translation>
 <translation id="7165714724802225287">ಪ್ರಸ್ತುತ ಡಿಸ್‌ಪ್ಲೇ ಶೈಲಿ ನಡುಪುಟ ಆಗಿದೆ.</translation>
 <translation id="7167657087543110">ಅಕ್ಷರ ಇಕೋ</translation>
@@ -908,7 +906,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">ಕೋಷ್ಟಕವನ್ನು ತೊರೆಯಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="738899727977260036">ಸ್ಲೇಟ್ ನೀಲಿ</translation>
-<translation id="7392145451309930991">ಪಠ್ಯ ಹೊಂದಾಣಿಕೆ ಆರಂಭ</translation>
 <translation id="739763518212184081">ಹಿಂದಿನ ಸಾಲು</translation>
 <translation id="7400575256015741911">ಕಾಗುಣಿತ ತಪ್ಪು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8153880621934657047">ಕೋಷ್ಟಕದ ಒಳಗೆ ಇಲ್ಲ.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ಅಂಡರ್‌ಸ್ಕೋರ್}one{# ಅಂಡರ್‌ಸ್ಕೋರ್‌ಗಳು}other{# ಅಂಡರ್‌ಸ್ಕೋರ್‌ಗಳು}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">ChromeVox ಭಾಷೆಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಪತ್ತೆಮಾಡಿ ಮತ್ತು ಬದಲಿಸಿ.</translation>
 <translation id="8184828902145951186">ಸಾಲು</translation>
 <translation id="8186185314313222077">ಪೂರ್ಣ ಪರದೆಯನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="8199231515320852133">ಪ್ರಸ್ತುತ ಸೆಲ್‌ನ ಶಿರೋನಾಮೆಗಳನ್ನು ಪ್ರಕಟಿಸಿ</translation>
@@ -1118,12 +1114,13 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8446884382197647889">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="8455868257606149352">ಗರಿಷ್ಟ <ph name="X" /></translation>
 <translation id="84575901236241018">ಪ್ರವೇಶ ಕೀ ಹೊಂದಿದೆ, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">ವ್ಯಾಕರಣ ದೋಷವನ್ನು ತೊರೆಯಲಾಗುತ್ತಿದೆ</translation>
 <translation id="847154984256717791">ಕಾರ್ಯನಿರತ</translation>
 <translation id="8476408756881832830">ChromeVox ಮಾತನಾಡುತ್ತಿರುವಾಗ ಪ್ಲೇಬ್ಯಾಕ್ ಅನ್ನು ವಿರಾಮಗೊಳಿಸಿ</translation>
 <translation id="8476508772960940536">ವಿಂಡೋ ಸಮಗ್ರ ನೋಟ</translation>
 <translation id="8503360654911991865">ನ್ಯಾವಿಗೇಶನ್ ರಚನೆಯನ್ನು ಇಳಿಸಿ</translation>
-<translation id="8504695234784218301">ವ್ಯಾಕರಣದ ದೋ‍ಷ ಮುಕ್ತಾಯ</translation>
 <translation id="8520472399088452386">ಸ್ಪಿನ್ ಬಟನ್</translation>
+<translation id="8534394844575788431">ಫಾರ್ಮ್ಯಾಟಿಂಗ್</translation>
 <translation id="8538744478902126321">ಪ್ರಸ್ತುತ ಸೆಲ್‌ನಲ್ಲಿರುವ ಶಿರೋನಾಮೆಯ ಬಗ್ಗೆ ಊಹೆ ಮಾಡಿ</translation>
 <translation id="8540054775867439484">ಮೇಲಕ್ಕೆ ಆವರಿಸಲಾಗಿದೆ</translation>
 <translation id="8542271685829952264">ಎಲ್ಲಾ ChromeVox ಆದೇಶಗಳು ಮತ್ತು ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಲು, ಹುಡುಕಾಟ + ವಿರಾಮ ಚಿಹ್ನೆಯನ್ನು ಒತ್ತಿ, ನಂತರ ಮೆನುಗಳನ್ನು ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಬಾಣದ ಕೀಲಿಗಳು ಮತ್ತು ಕಮಾಂಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು Enter ಅನ್ನು ಬಳಸಿ. ಹುಡುಕಾಟ+o ನಂತರ t ಒತ್ತುವ ಮೂಲಕ ಇಲ್ಲಿಗೆ ಹಿಂತಿರುಗಿ.</translation>
@@ -1203,6 +1200,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">ಟ್ಯಾಬ್</translation>
 <translation id="9151211641321628915">ಪ್ರಸ್ತುತ ಸ್ಥಾನದ ಸಂಕ್ಷಿಪ್ತ ವಿವರಣೆಯ ಪ್ರಕಟಣೆ</translation>
+<translation id="9151249085738989067">ಭಾಷೆಯ ಆಧಾರದ ಮೇಲೆ ChromeVox ಧ್ವನಿಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬದಲಾಯಿಸಿ</translation>
 <translation id="9153606228985488238">ಪಿಚ್‌ <ph name="PERCENT" /> ಶೇಕಡಾ ಹೊಂದಿದೆ</translation>
 <translation id="9160096769946561184">ಪ್ರಸ್ತುತ ಕಾಲಮ್‌ನ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="9173115498289768110">ಶೇಕಡಾ <ph name="PERCENT" /> ವಾಲ್ಯೂಮ್‌</translation>

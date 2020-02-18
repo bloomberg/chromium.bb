@@ -35,6 +35,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   using SurfaceIndexMap = base::flat_map<SurfaceId, uint64_t>;
   using FrameSinkIdMap = base::flat_map<FrameSinkId, LocalSurfaceId>;
 
+  // Interface that can modify the aggregated CompositorFrame to annotate it.
+  // For example it could add extra quads.
+  class FrameAnnotator {
+   public:
+    virtual ~FrameAnnotator() = default;
+
+    virtual void AnnotateAggregatedFrame(CompositorFrame* frame) = 0;
+  };
+
   SurfaceAggregator(SurfaceManager* manager,
                     DisplayResourceProvider* provider,
                     bool aggregate_only_damaged,
@@ -55,6 +64,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
+  // Only used with experimental de-jelly effect.
+  bool last_frame_had_jelly() const { return last_frame_had_jelly_; }
+
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
   void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
@@ -63,26 +75,14 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
 
+  void SetFrameAnnotator(std::unique_ptr<FrameAnnotator> frame_annotator);
+
  private:
-  struct ClipData {
-    ClipData() : is_clipped(false) {}
-    ClipData(bool is_clipped, const gfx::Rect& rect)
-        : is_clipped(is_clipped), rect(rect) {}
-
-    std::string ToString() const;
-
-    bool is_clipped;
-    gfx::Rect rect;
-  };
-
-  struct PrewalkResult {
-    PrewalkResult();
-    ~PrewalkResult();
-    // This is the set of Surfaces that were referenced by another Surface, but
-    // not included in a SurfaceDrawQuad.
-    base::flat_set<SurfaceId> undrawn_surfaces;
-    bool may_contain_video = false;
-  };
+  struct ClipData;
+  struct PrewalkResult;
+  struct RoundedCornerInfo;
+  struct ChildSurfaceInfo;
+  struct RenderPassMapEntry;
 
   struct RenderPassInfo {
     // This is the id the pass is mapped to.
@@ -91,19 +91,11 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     bool in_use = true;
   };
 
-  struct RoundedCornerInfo {
-    RoundedCornerInfo() : is_fast_rounded_corner(false) {}
-    // |target_transform| is the transform that maps |bounds| from its current
-    // space into the desired target space. It must be a scale+translation
-    // matrix.
-    RoundedCornerInfo(const gfx::RRectF& bounds,
-                      bool is_fast_rounded_corner,
-                      const gfx::Transform target_transform);
-
-    bool IsEmpty() const { return bounds.IsEmpty(); }
-    gfx::RRectF bounds;
-    bool is_fast_rounded_corner;
-  };
+  // Helper function that gets a list of render passes and returns a map from
+  // render pass ids to render passes.
+  static base::flat_map<RenderPassId, RenderPassMapEntry> GenerateRenderPassMap(
+      const RenderPassList& render_pass_list,
+      bool is_root_surface);
 
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
@@ -135,7 +127,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                           gfx::Rect* damage_rect_in_quad_space,
                           bool* damage_rect_in_quad_space_valid,
                           const RoundedCornerInfo& rounded_corner_info,
-                          bool is_reflection);
+                          bool is_reflection,
+                          bool allow_merge);
 
   void EmitDefaultBackgroundColorQuad(
       const SurfaceDrawQuad* surface_quad,
@@ -188,6 +181,33 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
 
+  // Helper function that uses backtracking on the render pass tree of a surface
+  // to find all surfaces embedded in it. If a surface is embedded multiple
+  // times (due to use of a MirrorLayer), it will be reachable via multiple
+  // paths from the root render pass. For each such a path the appropriate
+  // transform is calculated.
+  //  - |surface_id| specifies the surface to find all child surfaces of.
+  //  - |render_pass_map| is a pre-computed map from render pass id to some info
+  //    about the render pass, including the render pass itself and whether it
+  //    has pixel moving backdrop filter.
+  //  - |current_pass_entry| is the info about the current render pass to
+  //    process.
+  //  - |transform_to_root_target| is the accumulated transform of all render
+  //    passes along the way to the current render pass.
+  //  - |child_surfaces| is the main output of the function containing all child
+  //    surfaces found in the process.
+  //  - |pixel_moving_backdrop_filters_rect| is another output that is union of
+  //    bounds of render passes that have a pixel moving backdrop filter.
+  // TODO(mohsen): Consider refactoring this backtracking algorithm into a
+  // self-contained class.
+  void FindChildSurfaces(
+      SurfaceId surface_id,
+      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
+      RenderPassMapEntry* current_pass_entry,
+      const gfx::Transform& transform_to_root_target,
+      base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
+      gfx::Rect* pixel_moving_backdrop_filters_rect);
+
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
                         int parent_pass,
@@ -232,6 +252,41 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
                              const std::vector<ReturnedResource>& resources);
+
+  // De-Jelly Effect:
+  // HandleDeJelly applies a de-jelly transform to quads in the root render
+  // pass.
+  void HandleDeJelly(Surface* surface);
+  // CreateDeJellyRenderPassQuads promotes skewed quads from the root render
+  // pass into |render_pass|. Skew is applied when |render_pass| is drawn.
+  void CreateDeJellyRenderPassQuads(
+      cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+      const cc::ListContainer<DrawQuad>::Iterator& end,
+      const gfx::Rect& jelly_clip,
+      float skew,
+      RenderPass* render_pass);
+  // Appends quads directly to |root_pass|, applying |skew|.
+  void CreateDeJellyNormalQuads(
+      cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+      const cc::ListContainer<DrawQuad>::Iterator& end,
+      RenderPass* root_pass,
+      float skew);
+  // Appends |render_pass| to |root_pass|, applying |skew|, |jelly_clip|,
+  // |opacity|, and |blend_mode|.
+  void AppendDeJellyRenderPass(float skew,
+                               const gfx::Rect& jelly_clip,
+                               float opacity,
+                               SkBlendMode blend_mode,
+                               RenderPass* root_pass,
+                               std::unique_ptr<RenderPass> render_pass);
+  // Appends quads from |quad_iterator| to |render_pass| for |state|.
+  void AppendDeJellyQuadsForSharedQuadState(
+      cc::ListContainer<DrawQuad>::Iterator* quad_iterator,
+      const cc::ListContainer<DrawQuad>::Iterator& end,
+      RenderPass* render_pass,
+      const SharedQuadState* state);
+  // Update |last_frame_had_jelly_|, should be called once per frame.
+  void SetLastFrameHadJelly(bool had_jelly);
 
   SurfaceManager* manager_;
   DisplayResourceProvider* provider_;
@@ -326,8 +381,20 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // the display if they're damaged.
   base::flat_map<FrameSinkId, std::vector<SurfaceRange>> damage_ranges_;
 
+  // Used to annotate the aggregated frame for debugging.
+  std::unique_ptr<FrameAnnotator> frame_annotator_;
+
   int64_t display_trace_id_ = -1;
   base::flat_set<SurfaceId> undrawn_surfaces_;
+
+  // Variables used for de-jelly:
+  // Whether de-jelly may be active.
+  bool de_jelly_enabled_ = false;
+  // The set of surfacees being drawn for the first time. Used to determine if
+  // de-jelly skew should be applied to a surface.
+  base::flat_set<SurfaceId> new_surfaces_;
+  // Whether the last drawn frame had de-jelly skew applied.
+  bool last_frame_had_jelly_ = false;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 

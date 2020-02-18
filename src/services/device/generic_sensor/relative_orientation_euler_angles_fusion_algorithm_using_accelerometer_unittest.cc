@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.h"
@@ -55,7 +55,7 @@ class RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerTest
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<FakePlatformSensorFusion> fake_fusion_sensor_;
   RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer*
       fusion_algorithm_;

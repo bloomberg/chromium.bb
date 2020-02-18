@@ -6,7 +6,7 @@ ICUROOT="$(dirname "$0")/.."
 
 if [ $# -lt 3 ];
 then
-  echo "Usage: "$0" (android|cast|chromeos|common|flutter|ios) icubuilddir1 icubuilddir2" >&2
+  echo "Usage: "$0" (android|android_small|android_extra|cast|chromeos|common|flutter|ios) icubuilddir1 icubuilddir2" >&2
   echo "$0 compare data files of a particular build inside two icu build directory." >&2
   echo "These files were previously archived by backup_outdir in scripts/copy_data.sh." >&2
   echo "The first parameter indicate which build to be compared." >&2

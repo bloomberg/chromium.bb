@@ -45,8 +45,8 @@ struct DeviceScaleFactorDPIThreshold {
 // Update the list of zoom levels whenever a new device scale factor is added
 // here. See zoom level list in /ui/display/manager/display_util.cc
 const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
-    {270.0f, 2.25f}, {220.0f, 2.0f}, {180.0f, 1.6f},
-    {150.0f, 1.25f}, {0.0f, 1.0f},
+    {320.f, 2.5f},  {270.0f, 2.25f}, {220.0f, 2.0f},
+    {180.0f, 1.6f}, {150.0f, 1.25f}, {0.0f, 1.0f},
 };
 
 // Returns a list of display modes for the given |output| that doesn't exclude
@@ -331,6 +331,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   if (dpi)
     new_info.set_device_dpi(dpi);
   new_info.set_color_space(snapshot->color_space());
+  new_info.set_bits_per_channel(snapshot->bits_per_channel());
 
   new_info.set_refresh_rate(mode_info->refresh_rate());
   new_info.set_is_interlaced(mode_info->is_interlaced());

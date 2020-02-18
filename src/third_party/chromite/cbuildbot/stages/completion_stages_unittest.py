@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import sys
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
@@ -388,14 +389,14 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     no_stat = set(['not_scheduled_build_1'])
     stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_text.assert_called_once_with(
-        '%s wasn\'t scheduled by master.' % 'not_scheduled_build_1')
+        "%s wasn't scheduled by master." % 'not_scheduled_build_1')
 
     build_content = {
         'build': {
             'status': 'COMPLETED',
             'result': 'FAILURE',
             'url': 'dashboard_url',
-            "failure_reason": "BUILD_FAILURE",
+            'failure_reason': 'BUILD_FAILURE',
         }
     }
     self.PatchObject(
@@ -414,7 +415,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
             'status': 'COMPLETED',
             'result': 'CANCELED',
             'url': 'dashboard_url',
-            "cancelation_reason": "CANCELED_EXPLICITLY",
+            'cancelation_reason': 'CANCELED_EXPLICITLY',
         }
     }
     self.PatchObject(

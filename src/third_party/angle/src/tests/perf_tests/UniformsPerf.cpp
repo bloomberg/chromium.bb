@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 The ANGLE Project Authors. All rights reserved.
+// Copyright 2016 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -67,7 +67,7 @@ struct UniformsParams final : public RenderTestParams
         windowHeight = 720;
     }
 
-    std::string suffix() const override;
+    std::string story() const override;
     size_t numVertexUniforms   = 200;
     size_t numFragmentUniforms = 200;
 
@@ -79,15 +79,15 @@ struct UniformsParams final : public RenderTestParams
 
 std::ostream &operator<<(std::ostream &os, const UniformsParams &params)
 {
-    os << params.suffix().substr(1);
+    os << params.backendAndStory().substr(1);
     return os;
 }
 
-std::string UniformsParams::suffix() const
+std::string UniformsParams::story() const
 {
     std::stringstream strstr;
 
-    strstr << RenderTestParams::suffix();
+    strstr << RenderTestParams::story();
 
     if (eglParameters.deviceType == EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE)
     {
@@ -500,6 +500,8 @@ UniformsParams MatrixUniforms(const EGLPlatformParameters &egl,
 
 TEST_P(UniformsBenchmark, Run)
 {
+    // TODO(crbug.com/997674) crashes on Win10 FYI x64 Exp Release (Intel HD 630)
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel());
     run();
 }
 

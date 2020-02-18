@@ -120,7 +120,10 @@ cr.define('settings_passwords_section', function() {
     test('testPasswordsExtensionIndicator', function() {
       // Initialize with dummy prefs.
       const element = document.createElement('passwords-section');
-      element.prefs = {credentials_enable_service: {}};
+      element.prefs = {
+        credentials_enable_service: {},
+        profile: {password_manager_leak_detection: {}},
+      };
       document.body.appendChild(element);
 
       assertFalse(!!element.$$('#passwordsExtensionIndicator'));
@@ -559,17 +562,18 @@ cr.define('settings_passwords_section', function() {
       const passwordEntry = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [passwordEntry], []);
+      const toastManager = cr.toastManager.getInstance();
 
       // Click the remove button on the first password and assert that an undo
       // toast is shown.
       getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
       passwordsSection.$.menuRemovePassword.click();
-      assertTrue(passwordsSection.$.undoToast.open);
+      assertTrue(toastManager.isToastOpen);
 
       // Remove the passwords section from the DOM and check that this closes
       // the undo toast.
       document.body.removeChild(passwordsSection);
-      assertFalse(passwordsSection.$.undoToast.open);
+      assertFalse(toastManager.isToastOpen);
 
       done();
     });
@@ -842,6 +846,159 @@ cr.define('settings_passwords_section', function() {
       passwordManager.progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
       return wait;
+    });
+
+    test('hideLinkToPasswordManagerWhenEncrypted', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      syncPrefs.encryptAllData = true;
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      sync_test_util.simulateSyncStatus({signedIn: true});
+      Polymer.dom.flush();
+      assertTrue(passwordsSection.$.manageLink.hidden);
+    });
+
+    test('showLinkToPasswordManagerWhenNotEncrypted', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      syncPrefs.encryptAllData = false;
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      Polymer.dom.flush();
+      assertFalse(passwordsSection.$.manageLink.hidden);
+    });
+
+    test('showLinkToPasswordManagerWhenNotSignedIn', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      sync_test_util.simulateSyncStatus({signedIn: false});
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      Polymer.dom.flush();
+      assertFalse(passwordsSection.$.manageLink.hidden);
+    });
+
+    test('leakDetectionToggleSignedOutWithFalsePref', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+
+      passwordsSection.set(
+          'prefs.profile.password_manager_leak_detection.value', false);
+      sync_test_util.simulateSyncStatus({signedIn: false});
+      sync_test_util.simulateStoredAccounts([]);
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      Polymer.dom.flush();
+
+      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
+      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
+      assertEquals(
+          loadTimeData.getString(
+              'passwordsLeakDetectionSignedOutDisabledDescription'),
+          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+    });
+
+    test('leakDetectionToggleSignedOutWithTruePref', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+
+      sync_test_util.simulateSyncStatus({signedIn: false});
+      sync_test_util.simulateStoredAccounts([]);
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      Polymer.dom.flush();
+
+      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
+      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
+      assertEquals(
+          loadTimeData.getString(
+              'passwordsLeakDetectionSignedOutEnabledDescription'),
+          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+    });
+
+    if (!cr.isChromeOS) {
+      test('leakDetectionToggleSignedInNotSyncingWithFalsePref', function() {
+        const passwordsSection =
+            elementFactory.createPasswordsSection(passwordManager, [], []);
+        const syncPrefs = sync_test_util.getSyncAllPrefs();
+
+        passwordsSection.set(
+            'prefs.profile.password_manager_leak_detection.value', false);
+        sync_test_util.simulateSyncStatus({signedIn: false});
+        sync_test_util.simulateStoredAccounts([
+          {
+            fullName: 'testName',
+            givenName: 'test',
+            email: 'test@test.com',
+          },
+        ]);
+        cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+        Polymer.dom.flush();
+
+        assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
+        assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
+        assertEquals(
+            loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
+            passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+      });
+
+      test('leakDetectionToggleSignedInNotSyncingWithTruePref', function() {
+        const passwordsSection =
+            elementFactory.createPasswordsSection(passwordManager, [], []);
+        const syncPrefs = sync_test_util.getSyncAllPrefs();
+
+        sync_test_util.simulateSyncStatus({signedIn: false});
+        sync_test_util.simulateStoredAccounts([
+          {
+            fullName: 'testName',
+            givenName: 'test',
+            email: 'test@test.com',
+          },
+        ]);
+        cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+        Polymer.dom.flush();
+
+        assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
+        assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
+        assertEquals(
+            loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
+            passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+      });
+    }
+
+    test('leakDetectionToggleSignedInAndSyncingWithFalsePref', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+
+      passwordsSection.set(
+          'prefs.profile.password_manager_leak_detection.value', false);
+      sync_test_util.simulateSyncStatus({signedIn: true});
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      Polymer.dom.flush();
+
+      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
+      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
+      assertEquals(
+          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
+          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+    });
+
+    test('leakDetectionToggleSignedInAndSyncingWithTruePref', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+
+      sync_test_util.simulateSyncStatus({signedIn: true});
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      Polymer.dom.flush();
+
+      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
+      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
+      assertEquals(
+          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
+          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
     });
   });
 });

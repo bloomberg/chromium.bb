@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -1152,8 +1152,10 @@ TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
            network::mojom::ReferrerPolicy::kAlways);
 
   KURL preload_url("http://example.test/sheet.css");
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-      preload_url, WrappedResourceResponse(ResourceResponse()), "");
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |PageTestBase::dummy_page_holder_|.
+  url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
+      preload_url, "", WrappedResourceResponse(ResourceResponse()));
 
   ReferrerPolicyTestCase test_case = {
       "http://example.test",
@@ -1216,6 +1218,9 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisabledForSmallImages) {
       scoped_automatic_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+          false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1254,6 +1259,9 @@ TEST_F(HTMLPreloadScannerTest,
       scoped_automatic_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+          false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1274,8 +1282,6 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1295,6 +1301,9 @@ TEST_F(HTMLPreloadScannerTest,
       scoped_automatic_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+          false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   PreloadScannerTestCase test_cases[] = {
@@ -1335,8 +1344,6 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   PreloadScannerTestCase test_cases[] = {
@@ -1402,6 +1409,9 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisableMetadataFetch) {
     ScopedAutomaticLazyImageLoadingForTest
         scoped_automatic_lazy_image_loading_for_test(
             test_case.automatic_lazy_image_loading_enabled);
+    ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+        scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+            false);
     RunSetUp(kViewportEnabled);
     const std::string img_html = base::StringPrintf(
         "<img src='foo.jpg' loading='%s'>", test_case.loading_attr_value);

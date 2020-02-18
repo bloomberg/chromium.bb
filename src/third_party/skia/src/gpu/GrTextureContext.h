@@ -14,7 +14,6 @@
 class GrContext;
 class GrDrawingManager;
 class GrSurface;
-class GrTextureOpList;
 class GrTextureProxy;
 struct SkIPoint;
 struct SkIRect;
@@ -23,7 +22,7 @@ struct SkIRect;
  * A helper object to orchestrate commands (currently just copies) for GrSurfaces that are
  * GrTextures and not GrRenderTargets.
  */
-class SK_API GrTextureContext : public GrSurfaceContext {
+class GrTextureContext : public GrSurfaceContext {
 public:
     ~GrTextureContext() override;
 
@@ -50,13 +49,7 @@ protected:
 private:
     friend class GrDrawingManager; // for ctor
 
-    GrOpList* getOpList() override;
-
     sk_sp<GrTextureProxy>  fTextureProxy;
-
-    // In MDB-mode the GrOpList can be closed by some other renderTargetContext that has picked
-    // it up. For this reason, the GrOpList should only ever be accessed via 'getOpList'.
-    sk_sp<GrTextureOpList> fOpList;
 
     typedef GrSurfaceContext INHERITED;
 };

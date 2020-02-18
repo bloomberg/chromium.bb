@@ -6,9 +6,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<!-- TODO(crbug.com/986596): Don't use browser icons here. Fork them. -->
 <link rel="import" href="../../icons.html">
 <link rel="import" href="../../route.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../os_icons.html">
 
 <dom-module id="os-settings-menu">
   <template>
@@ -17,6 +19,10 @@
         --menu-link-color: var(--google-blue-600);
         --menu-text-color: var(--google-grey-refresh-700);
         --menu-icon-color: var(--google-grey-refresh-700);
+        /* The tap target extends slightly above each visible menu item. */
+        --tap-target-padding: 3px;
+        /* Width of the keyboard focus border. */
+        --focus-border-width: 1px;
         box-sizing: border-box;
         display: block;
         padding-bottom: 2px;
@@ -34,25 +40,37 @@
       }
 
       /* The <a> is the entire tap target, including the padding around the
-         visible icon and text. */
+       * visible icon and text. */
       a {
         background: transparent;
         display: block;
-        padding: 3px 0;
+        padding: var(--tap-target-padding) 0;
       }
 
       /* The "item" draws the icon, text, and rounded background. */
       a > .item {
         align-items: center;
-        border: 1px solid transparent;
+        border-block-end-width: var(--focus-border-width);
+        border-block-start-width: var(--focus-border-width);
+        /* Always apply border so item doesn't shift when focused. */
+        border-color: transparent;
+        border-inline-end-width: var(--focus-border-width);
+        /* No border on window edge (left in LTR, right in RTL). */
+        border-inline-start-width: 0;
         border-radius: 0 20px 20px 0;
+        border-style: solid;
         color: var(--menu-text-color);
         display: flex;
         font-weight: 500;
-        margin-inline-end: 2px;  /* Margin so selected outline is visible. */
+        margin-inline-end: 2px;
         min-height: 32px;
-        padding-inline-start: 24px;
+        padding-inline-start: 20px;
         pointer-events: none;
+      }
+
+      :host-context([dir=rtl]) a > .item {
+        /* Chrome doesn't support border-start-end-radius, so override. */
+        border-radius: 20px 0 0 20px;
       }
 
       a.iron-selected > .item {
@@ -70,7 +88,7 @@
 
       iron-icon {
         --iron-icon-fill-color: var(--menu-icon-color);
-        margin-inline-end: 24px;
+        margin-inline-end: 16px;
         pointer-events: none;
         vertical-align: top;
       }
@@ -79,7 +97,6 @@
         fill: var(--menu-link-color);
       }
 
-      /* TODO(crbug.com/950007): Finalize "Advanced" button style. */
       #advancedButton {
         --ink-color: var(--menu-text-color);
         align-items: center;
@@ -94,7 +111,7 @@
         margin-inline-end: 2px;
         margin-top: 8px;
         padding-inline-end: 0;
-        padding-inline-start: 24px;
+        padding-inline-start: 20px;
         text-transform: none;
       }
 
@@ -127,6 +144,13 @@
           border-bottom: var(--cr-separator-line);  /* override */
         }
       }
+
+      #aboutItem {
+        /* Reserve space so the last menu item isn't too close to the window
+         * bottom edge, 48px under the text baseline. */
+        margin-bottom: calc(
+            48px - calc(var(--tap-target-padding) + var(--focus-border-width)));
+      }
     </style>
     <iron-selector id="topMenu"
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
@@ -134,7 +158,7 @@
         role="navigation" on-click="onLinkClick_">
       <a href="/internet">
         <div class="item">
-          <iron-icon icon="settings:network-wifi"></iron-icon>
+          <iron-icon icon="os-settings:network-wifi"></iron-icon>
           $i18n{internetPageTitle}
         </div>
       </a>
@@ -145,29 +169,30 @@
         </div>
       </a>
       <a id="multidevice" href="/multidevice"
-          hidden="[[!pageVisibility.multidevice]]">
+          hidden="[[isGuestMode_]]">
         <div class="item">
-          <iron-icon icon="settings:multidevice-better-together-suite">
+          <iron-icon icon="os-settings:multidevice-better-together-suite">
           </iron-icon>
           $i18n{multidevicePageTitle}
         </div>
       </a>
-      <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
+      <a id="people" href="/people" hidden="[[isGuestMode_]]">
         <div class="item">
           <iron-icon icon="cr:person"></iron-icon>
           $i18n{peoplePageTitle}
         </div>
       </a>
-      <a id="personalization" href="/personalization">
-        <div class="item">
-          <iron-icon icon="settings:palette"></iron-icon>
-          $i18n{personalizationPageTitle}
-        </div>
-      </a>
       <a href="/device">
         <div class="item">
-          <iron-icon icon="settings:laptop-chromebook"></iron-icon>
+          <iron-icon icon="os-settings:laptop-chromebook"></iron-icon>
           $i18n{devicePageTitle}
+        </div>
+      </a>
+      <a id="personalization" href="/personalization"
+          hidden="[[isGuestMode_]]">
+        <div class="item">
+          <iron-icon icon="os-settings:paint-brush"></iron-icon>
+          $i18n{personalizationPageTitle}
         </div>
       </a>
       <a href="/search">
@@ -178,42 +203,40 @@
       </a>
       <a href="/apps" hidden="[[!showApps]]">
         <div class="item">
-          <iron-icon icon="settings:apps"></iron-icon>
+          <iron-icon icon="os-settings:apps"></iron-icon>
           $i18n{appsPageTitle}
         </div>
       </a>
       <a href="/androidApps" hidden="[[!showAndroidApps]]">
         <div class="item">
-          <iron-icon icon="settings:play-prism"></iron-icon>
+          <iron-icon icon="os-settings:play-prism"></iron-icon>
           $i18n{androidAppsPageTitle}
         </div>
       </a>
       <a href="/crostini" hidden="[[!showCrostini]]">
         <div class="item">
-          <iron-icon icon="settings:crostini-mascot"></iron-icon>
+          <iron-icon icon="os-settings:crostini-mascot"></iron-icon>
           $i18n{crostiniPageTitle}
         </div>
       </a>
       <a href="/pluginVm" hidden="[[!showPluginVm]]">
         <div class="item">
-          <iron-icon icon="settings:plugin-vm"></iron-icon>
+          <iron-icon icon="os-settings:plugin-vm"></iron-icon>
           $i18n{pluginVmPageTitle}
         </div>
       </a>
       <cr-button id="advancedButton" aria-active-attribute="aria-expanded"
-          on-click="onAdvancedButtonToggle_"
-          hidden="[[!pageVisibility.advancedSettings]]">
+          on-click="onAdvancedButtonToggle_">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">
         </iron-icon>
       </cr-button>
-      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
-          hidden="[[!pageVisibility.advancedSettings]]">
+      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
             role="navigation" on-click="onLinkClick_">
           <a href="/dateTime">
             <div class="item">
-              <iron-icon icon="settings:access-time"></iron-icon>
+              <iron-icon icon="os-settings:access-time"></iron-icon>
               $i18n{dateTimePageTitle}
             </div>
           </a>
@@ -229,9 +252,9 @@
               $i18n{osLanguagesPageTitle}
             </div>
           </a>
-          <a href="/files">
+          <a href="/files" hidden="[[isGuestMode_]]">
             <div class="item">
-              <iron-icon icon="cr:file-download"></iron-icon>
+              <iron-icon icon="os-settings:folder-outline"></iron-icon>
               $i18n{filesPageTitle}
             </div>
           </a>
@@ -247,7 +270,7 @@
               $i18n{a11yPageTitle}
             </div>
           </a>
-          <a id="reset" href="/reset" hidden="[[!pageVisibility.reset]]">
+          <a id="reset" href="/reset" hidden="[[!showReset]]">
             <div class="item">
               <iron-icon icon="settings:restore"></iron-icon>
               $i18n{resetPageTitle}
@@ -256,7 +279,7 @@
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
-      <a id="about-menu" href="/help">
+      <a id="aboutItem" href="/help">
         <div class="item">
           $i18n{aboutOsPageTitle}
         </div>

@@ -13,21 +13,23 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace net {
 struct SHA256HashValue;
-class URLRequestContextGetter;
 }
 
 namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace blink {
+class URLLoaderThrottle;
+}
+
 namespace content {
 
-class ResourceContext;
-class URLLoaderThrottle;
 class SignedExchangeLoader;
 class SignedExchangePrefetchMetricRecorder;
 
@@ -36,7 +38,7 @@ class SignedExchangePrefetchHandler final
     : public network::mojom::URLLoaderClient {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
   // This takes |network_loader| and |network_client| to set up the
   // SignedExchangeLoader (so that the loader can load data from the network).
@@ -51,8 +53,6 @@ class SignedExchangePrefetchHandler final
       network::mojom::URLLoaderClientRequest network_client_request,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter loader_throttles_getter,
-      ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       network::mojom::URLLoaderClient* forwarding_client,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
       const std::string& accept_langs);
@@ -81,9 +81,9 @@ class SignedExchangePrefetchHandler final
 
  private:
   // network::mojom::URLLoaderClient overrides:
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;

@@ -27,7 +27,7 @@ namespace content {
 
 namespace {
 
-void TerminateServiceWorkerOnIO(
+void TerminateServiceWorkerOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id) {
   if (ServiceWorkerContextCore* context = context_weak.get()) {
@@ -36,7 +36,7 @@ void TerminateServiceWorkerOnIO(
   }
 }
 
-void SetDevToolsAttachedOnIO(
+void SetDevToolsAttachedOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     bool attached) {
@@ -46,7 +46,7 @@ void SetDevToolsAttachedOnIO(
   }
 }
 
-void UpdateLoaderFactoriesOnIO(
+void UpdateLoaderFactoriesOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
@@ -111,9 +111,9 @@ void ServiceWorkerDevToolsAgentHost::Reload() {
 }
 
 bool ServiceWorkerDevToolsAgentHost::Close() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&TerminateServiceWorkerOnIO, context_weak_, version_id_));
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(&TerminateServiceWorkerOnCoreThread,
+                                       context_weak_, version_id_));
   return true;
 }
 
@@ -160,15 +160,14 @@ void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
-    blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
-    blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
+    mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+    mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   state_ = WORKER_READY;
-  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
-  agent_ptr.Bind(std::move(devtools_agent_ptr_info));
-  GetRendererChannel()->SetRendererAssociated(std::move(agent_ptr),
-                                              std::move(host_request),
-                                              worker_process_id_, nullptr);
+  GetRendererChannel()->SetRenderer(
+      std::move(agent_remote), std::move(host_receiver), worker_process_id_);
+  for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
+    inspector->TargetReloadedAfterCrash();
   if (!sessions().empty())
     UpdateIsAttached(true);
 }
@@ -179,8 +178,6 @@ void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
   state_ = WORKER_NOT_READY;
   worker_process_id_ = worker_process_id;
   worker_route_id_ = worker_route_id;
-  for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
-    inspector->TargetReloadedAfterCrash();
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
@@ -188,17 +185,16 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   state_ = WORKER_TERMINATED;
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
-  GetRendererChannel()->SetRendererAssociated(
-      nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
+  GetRendererChannel()->SetRenderer(mojo::NullRemote(), mojo::NullReceiver(),
+                                    ChildProcessHost::kInvalidUniqueID);
   if (!sessions().empty())
     UpdateIsAttached(false);
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateIsAttached(bool attached) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
-                     attached));
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(&SetDevToolsAttachedOnCoreThread,
+                                       context_weak_, version_id_, attached));
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
@@ -210,14 +206,25 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
   }
   const url::Origin origin = url::Origin::Create(url_);
   auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin);
+      rph, worker_route_id_, origin,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin);
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&UpdateLoaderFactoriesOnIO, context_weak_, version_id_,
-                     std::move(script_bundle), std::move(subresource_bundle)),
-      std::move(callback));
+      rph, worker_route_id_, origin,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
+
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    UpdateLoaderFactoriesOnCoreThread(context_weak_, version_id_,
+                                      std::move(script_bundle),
+                                      std::move(subresource_bundle));
+    std::move(callback).Run();
+  } else {
+    base::PostTaskAndReply(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&UpdateLoaderFactoriesOnCoreThread, context_weak_,
+                       version_id_, std::move(script_bundle),
+                       std::move(subresource_bundle)),
+        std::move(callback));
+  }
 }
 
 }  // namespace content

@@ -10,6 +10,7 @@
 
 #include "include/core/SkColor.h"
 #include "include/core/SkImageInfo.h"
+#include "include/core/SkTileMode.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkNx.h"
 #include "include/private/SkTArray.h"
@@ -40,7 +41,8 @@
     M(force_opaque) M(force_opaque_dst)                            \
     M(set_rgb) M(unbounded_set_rgb) M(swap_rb) M(swap_rb_dst)      \
     M(from_srgb) M(to_srgb)                                        \
-    M(black_color) M(white_color) M(uniform_color) M(unbounded_uniform_color) \
+    M(black_color) M(white_color)                                  \
+    M(uniform_color) M(unbounded_uniform_color) M(uniform_color_dst) \
     M(seed_shader) M(dither)                                       \
     M(load_a8)     M(load_a8_dst)   M(store_a8)    M(gather_a8)    \
     M(load_565)    M(load_565_dst)  M(store_565)   M(gather_565)   \
@@ -57,7 +59,7 @@
     M(load_16161616)                M(store_16161616)              \
     M(load_1010102) M(load_1010102_dst) M(store_1010102) M(gather_1010102) \
     M(alpha_to_gray) M(alpha_to_gray_dst) M(bt709_luminance_or_luma_to_alpha)         \
-    M(bilerp_clamp_8888)                                           \
+    M(bilerp_clamp_8888) M(bicubic_clamp_8888)                     \
     M(store_u16_be)                                                \
     M(load_src) M(store_src) M(load_dst) M(store_dst)              \
     M(scale_u8) M(scale_565) M(scale_1_float)                      \
@@ -78,6 +80,7 @@
     M(decal_x)    M(decal_y)   M(decal_x_and_y)                    \
     M(check_decal_mask)                                            \
     M(negate_x)                                                    \
+    M(bilinear) M(bicubic)                                         \
     M(bilinear_nx) M(bilinear_px) M(bilinear_ny) M(bilinear_py)    \
     M(bicubic_n3x) M(bicubic_n1x) M(bicubic_p1x) M(bicubic_p3x)    \
     M(bicubic_n3y) M(bicubic_n1y) M(bicubic_p1y) M(bicubic_p3y)    \
@@ -141,6 +144,12 @@ struct SkRasterPipeline_DecalTileCtx {
     float    limit_y;
 };
 
+struct SkRasterPipeline_SamplerCtx2 : public SkRasterPipeline_GatherCtx {
+    SkColorType ct;
+    SkTileMode tileX, tileY;
+    float invWidth, invHeight;
+};
+
 struct SkRasterPipeline_CallbackCtx {
     void (*fn)(SkRasterPipeline_CallbackCtx* self, int active_pixels/*<= SkRasterPipeline_kMaxStride*/);
 
@@ -194,8 +203,6 @@ struct SkRasterPipeline_EmbossCtx {
     SkRasterPipeline_MemoryCtx mul,
                                add;
 };
-
-
 
 class SkRasterPipeline {
 public:
@@ -258,7 +265,6 @@ public:
     void append_gamut_clamp_if_normalized(const SkImageInfo&);
 
     bool empty() const { return fStages == nullptr; }
-
 
 private:
     struct StageList {

@@ -47,7 +47,8 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
 
   void PaintScrollCorner(GraphicsContext&,
                          const DisplayItemClient&,
-                         const IntRect& corner_rect) override;
+                         const IntRect& corner_rect,
+                         WebColorScheme color_scheme) override;
 
   bool ShouldCenterOnThumb(const Scrollbar& scrollbar,
                            const WebMouseEvent& event) override {
@@ -70,10 +71,6 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
 
   void RegisterScrollbar(Scrollbar& scrollbar) override {
     return ScrollbarTheme::DeprecatedStaticGetTheme().RegisterScrollbar(
-        scrollbar);
-  }
-  void UnregisterScrollbar(Scrollbar& scrollbar) override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().UnregisterScrollbar(
         scrollbar);
   }
 

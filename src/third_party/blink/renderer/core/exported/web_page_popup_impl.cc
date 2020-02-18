@@ -128,7 +128,9 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       // (provided by WebViewTestProxy or WebWidgetTestProxy) runs the composite
       // step for the current popup. We don't run popup tests with a compositor
       // thread.
-      popup_->web_view_->WidgetClient()->ScheduleAnimation();
+      WebWidgetClient* widget_client =
+          popup_->web_view_->MainFrameImpl()->FrameWidgetImpl()->Client();
+      widget_client->ScheduleAnimation();
       return;
     }
     popup_->WidgetClient()->ScheduleAnimation();
@@ -300,7 +302,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
     cache->ChildrenChanged(&popup_client_->OwnerElement());
   }
 
-  page_->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_, nullptr);
+  page_->AnimationHostInitialized(*animation_host_, nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
@@ -311,12 +313,10 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   SetFocus(true);
 }
 
-void WebPagePopupImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
-                                        cc::AnimationHost* animation_host) {
+void WebPagePopupImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
   // The WebWidgetClient is given |this| as its WebWidget but it is set up
-  // before Initialize() is called on |this|. So we store the |layer_tree_view|
+  // before Initialize() is called on |this|. So we store the |animation_host_|
   // here, but finish setting it up in Initialize().
-  layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 }
 
@@ -328,7 +328,7 @@ void WebPagePopupImpl::PostMessageToPopup(const String& message) {
 }
 
 void WebPagePopupImpl::DestroyPage() {
-  page_->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+  page_->WillCloseAnimationHost(nullptr);
   page_->WillBeDestroyed();
   page_.Clear();
 }
@@ -505,7 +505,6 @@ void WebPagePopupImpl::Close() {
   }
 
   is_accelerated_compositing_active_ = false;
-  layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   web_page_popup_client_ = nullptr;
 

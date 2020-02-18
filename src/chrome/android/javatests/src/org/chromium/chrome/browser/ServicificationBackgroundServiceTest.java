@@ -119,7 +119,7 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @LargeTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add("force-fieldtrials=*Foo/Bar")
+    @CommandLineFlags.Add({"force-fieldtrials=*Foo/Bar", "enable-features=UMABackgroundSessions"})
     public void testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
         Assert.assertTrue(mSpareFile.exists());
@@ -134,7 +134,6 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @MediumTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add({"enable-features=NetworkService"})
     public void testFullBrowserStartsAfterServiceManager() {
         startServiceAndWaitForNative(mServicificationBackgroundService);
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();

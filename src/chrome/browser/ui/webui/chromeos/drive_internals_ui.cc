@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
+#include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -53,7 +54,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -297,8 +297,7 @@ void ZipLogs(Profile* profile,
 // Class to handle messages from chrome://drive-internals.
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
-  DriveInternalsWebUIHandler()
-      : last_sent_event_id_(-1), weak_ptr_factory_(this) {}
+  DriveInternalsWebUIHandler() : last_sent_event_id_(-1) {}
 
   ~DriveInternalsWebUIHandler() override {}
 
@@ -694,8 +693,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     // Propagate the amount of local free space in bytes.
     base::FilePath home_path;
     if (base::PathService::Get(base::DIR_HOME, &home_path)) {
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace, home_path),
           base::BindOnce(&DriveInternalsWebUIHandler::OnGetFreeDiskSpace,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -793,8 +794,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         "updateOtherServiceLogsUrl",
         base::Value(net::FilePathToFileURL(log_path.DirName()).spec()));
 
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetServiceLogContents, log_path,
                        service_log_file_inode_, last_sent_line_number_),
         base::BindOnce(&DriveInternalsWebUIHandler::OnServiceLogRead,
@@ -852,8 +855,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
     const base::FilePath root_path =
         drive::util::GetCacheRootPath(profile()).DirName();
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetGCacheContents, root_path),
         base::BindOnce(&DriveInternalsWebUIHandler::OnGetGCacheContents,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -966,7 +971,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Service log file is being parsed.
   bool service_log_file_is_processing_ = false;
 
-  base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
 
@@ -983,8 +988,10 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
         drive_internals_(std::move(drive_internals)) {}
 
   void Start() {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&LogsZipper::EnumerateLogFiles, logs_directory_,
                        zip_path_),
         base::BindOnce(&LogsZipper::ZipLogFiles, base::Unretained(this)));
@@ -997,7 +1004,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
     (new ZipFileCreator(
          base::BindRepeating(&LogsZipper::OnZipDone, base::Unretained(this)),
          logs_directory_, files, zip_path_))
-        ->Start(content::GetSystemConnector());
+        ->Start(LaunchFileUtilService());
   }
 
   static std::vector<base::FilePath> EnumerateLogFiles(
@@ -1040,8 +1047,9 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
   }
 
   void CleanUp() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), zip_path_,
                        false));
     download_notifier_.reset();

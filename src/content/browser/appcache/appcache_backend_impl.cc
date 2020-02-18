@@ -11,7 +11,6 @@
 
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -19,24 +18,21 @@
 namespace content {
 
 AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
-                                         int process_id)
-    : service_(service),
-      process_id_(process_id) {
+                                         int process_id,
+                                         int routing_id)
+    : service_(service), process_id_(process_id), routing_id_(routing_id) {
   DCHECK(service);
-  service_->RegisterBackend(this);
 }
 
-AppCacheBackendImpl::~AppCacheBackendImpl() {
-  service_->UnregisterBackend(this);
-}
+AppCacheBackendImpl::~AppCacheBackendImpl() = default;
 
 void AppCacheBackendImpl::RegisterHost(
     mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id) {
-  service_->RegisterHostInternal(
-      std::move(host_receiver), std::move(frontend_remote), host_id,
-      MSG_ROUTING_NONE, process_id_, mojo::GetBadMessageCallback());
+  service_->RegisterHost(std::move(host_receiver), std::move(frontend_remote),
+                         host_id, routing_id_, process_id_,
+                         mojo::GetBadMessageCallback());
 }
 
 }  // namespace content

@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -57,8 +57,8 @@ bool JsonHeaderEquals(base::StringPiece expected, base::StringPiece actual) {
 }  // namespace
 
 TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   // Create JSON for experimental options.
   base::DictionaryValue options;
@@ -290,8 +290,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
 }
 
 TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -343,8 +343,8 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
 }
 
 TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -396,8 +396,8 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
 }
 
 TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -457,8 +457,8 @@ TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
 #endif
 TEST(URLRequestContextConfigTest,
      MAYBE_SetQuicGoAwaySessionsOnIPChangeByDefault) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -519,8 +519,8 @@ TEST(URLRequestContextConfigTest,
 #endif
 TEST(URLRequestContextConfigTest,
      MAYBE_SetQuicGoAwaySessionsOnIPChangeViaExperimentOptions) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -581,8 +581,8 @@ TEST(URLRequestContextConfigTest,
 #endif
 TEST(URLRequestContextConfigTest,
      MAYBE_DisableQuicGoAwaySessionsOnIPChangeViaExperimentOptions) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -633,8 +633,8 @@ TEST(URLRequestContextConfigTest,
 }
 
 TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -659,7 +659,10 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
+      // Explicitly turn off "goaway_sessions_on_ip_change" which is default
+      // enabled on iOS but cannot be simultaneously set with migration option.
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
+      "\"goaway_sessions_on_ip_change\":false,"
       "\"migrate_sessions_early_v2\":true,"
       "\"retry_on_alternate_network_before_handshake\":true,"
       "\"migrate_idle_sessions\":true,"
@@ -707,8 +710,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
 }
 
 TEST(URLRequestContextConfigTest, SetQuicStaleDNSracing) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -758,8 +761,8 @@ TEST(URLRequestContextConfigTest, SetQuicStaleDNSracing) {
 }
 
 TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -805,13 +808,13 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_TRUE(base::Contains(params->quic_host_whitelist, "www.example.com"));
-  EXPECT_TRUE(base::Contains(params->quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(base::Contains(params->quic_host_allowlist, "www.example.com"));
+  EXPECT_TRUE(base::Contains(params->quic_host_allowlist, "www.example.org"));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -866,8 +869,8 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
 }
 
 TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -928,8 +931,8 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
 }
 
 TEST(URLURLRequestContextConfigTest, SetAcceptLanguageAndUserAgent) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   URLRequestContextConfig config(
       // Enable QUIC.

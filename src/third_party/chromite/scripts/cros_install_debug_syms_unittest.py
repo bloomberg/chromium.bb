@@ -30,7 +30,7 @@ class InstallDebugSymsTest(cros_test_lib.MockTestCase):
 
   def testGetLocalPackageIndex(self):
     """Check that local binhosts are fetched correctly."""
-    self.PatchObject(cros_install_debug_syms.binpkg, "GrabLocalPackageIndex",
+    self.PatchObject(cros_install_debug_syms.binpkg, 'GrabLocalPackageIndex',
                      return_value=SimpleIndex({}, {}))
     self.PatchObject(cros_install_debug_syms.os.path, 'isdir',
                      return_value=True)
@@ -39,7 +39,7 @@ class InstallDebugSymsTest(cros_test_lib.MockTestCase):
 
   def testGetRemotePackageIndex(self):
     """Check that remote binhosts are fetched correctly."""
-    self.PatchObject(cros_install_debug_syms.binpkg, "GrabRemotePackageIndex",
+    self.PatchObject(cros_install_debug_syms.binpkg, 'GrabRemotePackageIndex',
                      return_value=SimpleIndex({}, {}))
     for binhost in self.remote_binhosts:
       cros_install_debug_syms.GetPackageIndex(binhost)

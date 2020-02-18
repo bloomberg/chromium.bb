@@ -16,10 +16,12 @@
 #include <unistd.h>
 #include <zircon/processargs.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/base_paths_fuchsia.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
@@ -28,12 +30,16 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/engine/common.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
+#include "ui/gl/gl_switches.h"
 
 namespace {
 
@@ -55,27 +61,41 @@ zx::channel ValidateDirectoryAndTakeChannel(
   return zx::channel();
 }
 
-// Verifies that Vulkan loader service is provided by the specified service
-// directory.
-bool CheckVulkanSupport(
-    const fidl::InterfaceHandle<::fuchsia::io::Directory>& directory_handle,
-    bool* vulkan_supported) {
-  zx::channel dir_channel(fdio_service_clone(directory_handle.channel().get()));
-  if (!dir_channel)
-    return false;
+// Populates a CommandLine with content directory name/handle pairs.
+bool SetContentDirectoriesInCommandLine(
+    std::vector<fuchsia::web::ContentDirectoryProvider> directories,
+    base::CommandLine* command_line,
+    base::LaunchOptions* launch_options) {
+  DCHECK(command_line);
+  DCHECK(launch_options);
 
-  base::ScopedFD dir_fd;
-  zx_status_t status = fdio_fd_create(dir_channel.release(),
-                                      base::ScopedFD::Receiver(dir_fd).get());
-  if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "fdio_fd_create()";
-    return false;
+  std::vector<std::string> directory_pairs;
+  for (size_t i = 0; i < directories.size(); ++i) {
+    fuchsia::web::ContentDirectoryProvider& directory = directories[i];
+
+    if (directory.name().find('=') != std::string::npos ||
+        directory.name().find(',') != std::string::npos) {
+      DLOG(ERROR) << "Invalid character in directory name: "
+                  << directory.name();
+      return false;
+    }
+
+    if (!directory.directory().is_valid()) {
+      DLOG(ERROR) << "Service directory handle not valid for directory: "
+                  << directory.name();
+      return false;
+    }
+
+    uint32_t directory_handle_id = base::LaunchOptions::AddHandleToTransfer(
+        &launch_options->handles_to_transfer,
+        directory.mutable_directory()->TakeChannel().release());
+    directory_pairs.emplace_back(
+        base::StrCat({directory.name().c_str(), "=",
+                      base::NumberToString(directory_handle_id)}));
   }
 
-  struct stat statbuf;
-  int result =
-      fstatat(dir_fd.get(), "fuchsia.vulkan.loader.Loader", &statbuf, 0);
-  *vulkan_supported = result == 0;
+  command_line->AppendSwitchASCII(kContentDirectories,
+                                  base::JoinString(directory_pairs, ","));
 
   return true;
 }
@@ -102,17 +122,15 @@ void ContextProviderImpl::Create(
 
   fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory =
       std::move(*params.mutable_service_directory());
-
-  // Enable Vulkan if the Vulkan loader service is present in the service
-  // directory.
-  bool vulkan_supported = false;
-  if (!CheckVulkanSupport(service_directory, &vulkan_supported)) {
-    // TODO(crbug.com/934539): Add type epitaph.
+  if (!service_directory) {
     DLOG(WARNING) << "Invalid |service_directory| in CreateContextParams.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
 
   base::LaunchOptions launch_options;
+  launch_options.process_name_suffix = ":context";
+
   service_manager::SandboxPolicyFuchsia sandbox_policy;
   sandbox_policy.Initialize(service_manager::SANDBOX_TYPE_WEB_CONTEXT);
   sandbox_policy.SetServiceDirectory(std::move(service_directory));
@@ -178,18 +196,21 @@ void ContextProviderImpl::Create(
                                       base::JoinString(handles_ids, ","));
   }
 
-#if defined(WEB_ENGINE_ENABLE_VULKAN)
-  // Enable Vulkan when the Vulkan loader service is included in the service
-  // directory.
-  // TODO(https://crbug.com/962617): Enable Vulkan by default and remove this
-  // hack.
-  if (vulkan_supported) {
-    launch_command.AppendSwitchASCII(
-        "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
-    launch_command.AppendSwitch("--use-vulkan");
-    launch_command.AppendSwitchASCII("--use-gl", "stub");
+  fuchsia::web::ContextFeatureFlags features = {};
+  if (params.has_features())
+    features = params.features();
+
+  bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
+                       fuchsia::web::ContextFeatureFlags::VULKAN;
+
+  if (enable_vulkan) {
+    launch_command.AppendSwitch(switches::kUseVulkan);
+    launch_command.AppendSwitchASCII(switches::kEnableFeatures,
+                                     features::kUseSkiaRenderer.name);
+    launch_command.AppendSwitch(switches::kEnableOopRasterization);
+    launch_command.AppendSwitchASCII(switches::kUseGL,
+                                     gl::kGLImplementationStubName);
   }
-#endif  // WEB_ENGINE_ENABLE_VULKAN
 
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.
@@ -212,6 +233,14 @@ void ContextProviderImpl::Create(
                                       std::move(product_tag));
   } else if (params.has_user_agent_version()) {
     DLOG(ERROR) << "Embedder version without product.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  if (params.has_content_directories() &&
+      !SetContentDirectoriesInCommandLine(
+          std::move(*params.mutable_content_directories()), &launch_command,
+          &launch_options)) {
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }

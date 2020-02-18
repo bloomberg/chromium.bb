@@ -69,6 +69,10 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_GET_FAILED = 34;
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED = 35;
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_FINALIZE_FAILED = 36;
+  CRYPTOHOME_ERROR_UPDATE_USER_ACTIVITY_TIMESTAMP_FAILED = 37;
+  CRYPTOHOME_ERROR_FAILED_TO_READ_PCR = 38;
+  CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED = 39;
+  CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR = 40;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -668,12 +672,16 @@ message UpdateCurrentUserActivityTimestampRequest {
   // user activity.
   // For instance, if the unix timestamp now is x, if this value is 5,
   // then the last user activity happened at x-5 unix timestamp.
+  // Note that negative values for this parameter is reserved, and should not
+  // be used.
   int32 time_shift_sec = 1;
 }
 
 // Output parameters for UpdateCurrentUserActivityTimestamp()
 message UpdateCurrentUserActivityTimestampReply {
-  // Always successful.
+  // This will be set if there's a problem updating the user activity timestamp
+  // for any user.
+  CryptohomeErrorCode error = 1;
 }
 
 // Input parameters to GetSanitizedUsername()
@@ -697,11 +705,12 @@ message GetLoginStatusReply {
   // This will be set if there's a problem getting login status.
   CryptohomeErrorCode error = 1;
 
-  // This is set to false if device policy is loaded.
+  // This is set to true if an owner user is specified in the device policy.
   bool owner_user_exists = 2;
 
-  // Set to true if the bootlockbox for this user has been finalized.
-  bool boot_lockbox_finalized = 3;
+  // Note that |boot_lockbox_finalized| is not supplied because current version
+  // of bootlockbox doesn't support querying whether it's finalized. The
+  // previous version that does support that has been deprecated.
 }
 
 // Input parameters to GetStatusString()
@@ -713,3 +722,32 @@ message GetStatusStringReply {
   // install attributes status information.
   string status = 1;
 }
+
+// Input parameters to LockToSingleUserMountUntilReboot()
+// Lock the device to single user use.
+message LockToSingleUserMountUntilRebootRequest {
+  // This represents the "single user", whose mount we are going to lock to.
+  cryptohome.AccountIdentifier account_id = 1;
+}
+
+// Output parameters for LockToSingleUserMountUntilReboot()
+// Informs the caller whether the disabling succeeded, that is, whether we are
+// now locked to a single user mount.
+message LockToSingleUserMountUntilRebootReply {
+  // Indicates an error if |error| is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to GetRsuDeviceId()
+message GetRsuDeviceIdReply {
+  // This will be set if there's a problem getting device ID.
+  // Note that to be compliant with behaviours before the refactor, failure
+  // in this method call will be reported through DBus error.
+  CryptohomeErrorCode error = 1;
+
+  // Returns lookup key for Remote Server Unlock
+  bytes rsu_device_id = 2;
+}
+
+// Output parameters for GetRsuDeviceId()
+message GetRsuDeviceIdRequest {}

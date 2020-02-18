@@ -4,15 +4,15 @@
 
 import logging
 import os
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 
 @environment(file="../policy_test.asset.textpb")
 class UrlBlacklistTest(ChromeEnterpriseTestCase):
   """Test the URLBlacklist policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#URLBlacklist"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=URLBlacklist"""
 
   @before_all
   def setup(self):

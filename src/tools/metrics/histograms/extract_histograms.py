@@ -18,11 +18,14 @@ XML below will generate the following five histograms:
 <histograms>
 
 <histogram name="HistogramTime" units="milliseconds">
+  <owner>person@chromium.org</owner>
+  <owner>some-team@chromium.org</owner>
   <summary>A brief description.</summary>
   <details>This is a more thorough description of this histogram.</details>
 </histogram>
 
 <histogram name="HistogramEnum" enum="MyEnumType">
+  <owner>person@chromium.org</owner>
   <summary>This histogram sports an enum value type.</summary>
 </histogram>
 
@@ -40,7 +43,7 @@ XML below will generate the following five histograms:
 
 <histogram_suffixes_list>
 
-<histogram_suffixes name="BrowserType">
+<histogram_suffixes name="BrowserType" separator="_">
   <suffix name="Chrome"/>
   <suffix name="IE"/>
   <suffix name="Firefox"/>
@@ -50,18 +53,18 @@ XML below will generate the following five histograms:
 </histogram_suffixes_list>
 
 </histogram-configuration>
-
 """
 
-import HTMLParser
-import bisect
 import copy
 import datetime
+import HTMLParser
 import logging
 import re
 import xml.dom.minidom
 
-OWNER_FIELD_PLACEHOLDER = (
+BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
+
+OWNER_PLACEHOLDER = (
     'Please list the metric\'s owners. Add more owner tags as needed.')
 
 MAX_HISTOGRAM_SUFFIX_DEPENDENCY_DEPTH = 5
@@ -72,43 +75,74 @@ DEFAULT_BASE_HISTOGRAM_OBSOLETE_REASON = (
 EXPIRY_DATE_PATTERN = "%Y-%m-%d"
 EXPIRY_MILESTONE_RE = re.compile(r'M[0-9]{2,3}\Z')
 
+
 class Error(Exception):
   pass
 
 
-def _JoinChildNodes(tag):
-  """Join child nodes into a single text.
+def _GetTextFromChildNodes(node):
+  """Returns a string concatenation of the text of the given node's children.
 
-  Applicable to leafs like 'summary' and 'detail'. Removes any comment in the
-  node.
-
-  Args:
-    tag: parent node
-
-  Returns:
-    a string with concatenated nodes' text representation.
-  """
-  return ''.join(c.toxml()
-                 for c in tag.childNodes
-                 if c.nodeType != xml.dom.minidom.Node.COMMENT_NODE).strip()
-
-
-def _NormalizeString(s):
-  r"""Replaces all whitespace sequences with a single space.
-
-  The function properly handles multi-line strings and XML escaped characters.
+  Comments are ignored, consecutive lines of text are joined with a single
+  space, and paragraphs are maintained so that long text is more readable on
+  dashboards.
 
   Args:
-    s: The string to normalize, ('  \\n a  b c\\n d  ').
+    node: The DOM Element whose children's text is to be extracted, processed,
+      and returned.
+  """
+  paragraph_break = '\n\n'
+  text_parts = []
+
+  for child in node.childNodes:
+    if child.nodeType != xml.dom.minidom.Node.COMMENT_NODE:
+      child_text = child.toxml()
+      if not child_text:
+        continue
+
+      # If the given node has the below XML representation, then the text
+      # added to the list is 'Some words.\n\nWords.'
+      # <tag>
+      #   Some
+      #   words.
+      #
+      #   <!--Child comment node.-->
+      #
+      #   Words.
+      # </tag>
+
+      # In the case of the first child text node, raw_paragraphs would store
+      # ['\n  Some\n  words.', '  '], and in the case of the second,
+      # raw_paragraphs would store ['', '  Words.\n'].
+      raw_paragraphs = child_text.split(paragraph_break)
+
+      # In the case of the first child text node, processed_paragraphs would
+      # store ['Some words.', ''], and in the case of the second,
+      # processed_paragraphs would store ['Words.'].
+      processed_paragraphs = [NormalizeString(text)
+                              for text in raw_paragraphs
+                              if text]
+      text_parts.append(paragraph_break.join(processed_paragraphs))
+
+  return ''.join(text_parts).strip()
+
+
+def NormalizeString(text):
+  r"""Replaces all white space sequences with a single space.
+
+  Also, unescapes any HTML escaped characters, e.g. &quot; or &gt;.
+
+  Args:
+    text: The string to normalize, '\n\n a \n b&gt;c  '.
 
   Returns:
-    The normalized string (a b c d).
+    The normalized string 'a b>c'.
   """
-  singleline_value = ' '.join(s.split())
+  line = ' '.join(text.split())
 
   # Unescape using default ASCII encoding. Unescapes any HTML escaped character
   # like &quot; etc.
-  return HTMLParser.HTMLParser().unescape(singleline_value)
+  return HTMLParser.HTMLParser().unescape(line)
 
 
 def _NormalizeAllAttributeValues(node):
@@ -122,7 +156,7 @@ def _NormalizeAllAttributeValues(node):
   """
   if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
     for a in node.attributes.keys():
-      node.attributes[a].value = _NormalizeString(node.attributes[a].value)
+      node.attributes[a].value = NormalizeString(node.attributes[a].value)
 
   for c in node.childNodes:
     _NormalizeAllAttributeValues(c)
@@ -188,7 +222,7 @@ def _ExpandHistogramNameWithSuffixes(suffix_name, histogram_name,
 
 
 def ExtractEnumsFromXmlTree(tree):
-  """Extract all <enum> nodes in the tree into a dictionary."""
+  """Extracts all <enum> nodes in the tree into a dictionary."""
 
   enums = {}
   have_errors = False
@@ -219,7 +253,7 @@ def ExtractEnumsFromXmlTree(tree):
         have_errors = True
         continue
       value_dict['label'] = int_tag.getAttribute('label')
-      value_dict['summary'] = _JoinChildNodes(int_tag)
+      value_dict['summary'] = _GetTextFromChildNodes(int_tag)
       enum_dict['values'][int_value] = value_dict
 
     enum_int_values = sorted(enum_dict['values'].keys())
@@ -244,38 +278,45 @@ def ExtractEnumsFromXmlTree(tree):
 
     summary_nodes = enum.getElementsByTagName('summary')
     if summary_nodes:
-      enum_dict['summary'] = _NormalizeString(_JoinChildNodes(summary_nodes[0]))
+      enum_dict['summary'] = _GetTextFromChildNodes(summary_nodes[0])
 
     enums[name] = enum_dict
 
   return enums, have_errors
 
 
-def _ExtractOwners(xml_node):
-  """Extract owners information from owner tag under |xml_node|.
+def _ExtractOwners(histogram):
+  """Extracts owners information from the given histogram element.
 
   Args:
-    xml_node: The histogram node in histograms.xml.
+    histogram: A DOM Element corresponding to a histogram.
 
   Returns:
-    A tuple of owners information where the first element is a list of owners
-    extract from |xml_node| excluding the owner placeholder string, and the
-    second element is whether the owner tag is presented in |xml_node|
-    including the owner placeholder string.
-  """
-  owners = []
-  hasOwner = False
-  for owner_node in xml_node.getElementsByTagName('owner'):
-    owner_entry = _NormalizeString(_JoinChildNodes(owner_node))
-    hasOwner = True
-    if OWNER_FIELD_PLACEHOLDER not in owner_entry:
-      owners.append(owner_entry)
-  return owners, hasOwner
+    A tuple of owner-related info, e.g. (['alice@chromium.org'], True)
 
+    The first element is a list of the owners' email addresses, excluding the
+    owner placeholder string. The second element is a boolean indicating
+    whether the histogram has an owner. A histogram whose owner is the owner
+    placeholder string has an owner.
+  """
+  email_pattern = re.compile(BASIC_EMAIL_REGEXP)
+  owners = []
+  has_owner = False
+
+  for owner_node in histogram.getElementsByTagName('owner'):
+    owner_text = _GetTextFromChildNodes(owner_node)
+    is_email = email_pattern.match(owner_text)
+
+    if owner_text and (is_email or OWNER_PLACEHOLDER in owner_text):
+      has_owner = True
+      if is_email:
+        owners.append(owner_text)
+
+  return owners, has_owner
 
 
 def _ValidateDateString(date_str):
-  """Check if |date_str| matches 'YYYY-MM-DD'.
+  """Checks if |date_str| matches 'YYYY-MM-DD'.
 
   Args:
     date_str: string
@@ -302,7 +343,7 @@ def _ProcessBaseHistogramAttribute(node, histogram_entry):
 
 
 def _ExtractHistogramsFromXmlTree(tree, enums):
-  """Extract all <histogram> nodes in the tree into a dictionary."""
+  """Extracts all <histogram> nodes in the tree into a dictionary."""
 
   # Process the histograms. The descriptions can include HTML tags.
   histograms = {}
@@ -341,16 +382,16 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
 
     # Find <summary> tag.
     summary_nodes = histogram.getElementsByTagName('summary')
+
     if summary_nodes:
-      histogram_entry['summary'] = _NormalizeString(
-          _JoinChildNodes(summary_nodes[0]))
+      histogram_entry['summary'] = _GetTextFromChildNodes(summary_nodes[0])
     else:
       histogram_entry['summary'] = 'TBD'
 
     # Find <obsolete> tag.
     obsolete_nodes = histogram.getElementsByTagName('obsolete')
     if obsolete_nodes:
-      reason = _JoinChildNodes(obsolete_nodes[0])
+      reason = _GetTextFromChildNodes(obsolete_nodes[0])
       histogram_entry['obsolete'] = reason
 
     # Non-obsolete histograms should provide a <summary>.
@@ -370,8 +411,7 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     # Find <details> tag.
     details_nodes = histogram.getElementsByTagName('details')
     if details_nodes:
-      histogram_entry['details'] = _NormalizeString(
-          _JoinChildNodes(details_nodes[0]))
+      histogram_entry['details'] = _GetTextFromChildNodes(details_nodes[0])
 
     # Handle enum types.
     if histogram.hasAttribute('enum'):
@@ -387,18 +427,23 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
   return histograms, have_errors
 
 
-# Finds an <obsolete> node amongst |node|'s immediate children and returns its
-# content as a string. Returns None if no such node exists.
 def _GetObsoleteReason(node):
+  """If the node's histogram is obsolete, returns a string explanation.
+
+  Otherwise, returns None.
+
+  Args:
+    node: A DOM Element associated with a histogram.
+  """
   for child in node.childNodes:
     if child.localName == 'obsolete':
       # There can be at most 1 obsolete element per node.
-      return _JoinChildNodes(child)
+      return _GetTextFromChildNodes(child)
   return None
 
 
 def _UpdateHistogramsWithSuffixes(tree, histograms):
-  """Process <histogram_suffixes> tags and combine with affected histograms.
+  """Processes <histogram_suffixes> tags and combines with affected histograms.
 
   The histograms dictionary will be updated in-place by adding new histograms
   created by combining histograms themselves with histogram_suffixes targeting
@@ -551,7 +596,7 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
 
 
 def ExtractHistogramsFromDom(tree):
-  """Compute the histogram names and descriptions from the XML representation.
+  """Computes the histogram names and descriptions from the XML representation.
 
   Args:
     tree: A DOM tree of XML content.
@@ -571,7 +616,7 @@ def ExtractHistogramsFromDom(tree):
 
 
 def ExtractHistograms(filename):
-  """Load histogram definitions from a disk file.
+  """Loads histogram definitions from a disk file.
 
   Args:
     filename: a file path to load data from.

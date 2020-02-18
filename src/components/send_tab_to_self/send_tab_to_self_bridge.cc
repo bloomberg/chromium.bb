@@ -49,7 +49,7 @@ enum class UMAAddEntryStatus {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class UMANotifyLocalDevice {
-  // The addedentry was sent to the local machine.
+  // The added entry was sent to the local machine.
   LOCAL = 0,
   // The added entry was targeted at a different machine.
   REMOTE = 1,
@@ -716,7 +716,7 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       device_info_tracker_->GetAllDeviceInfo();
   number_of_devices_ = all_devices.size();
 
-  // Sort the DeviceInfo vector so the most recenly modified devices are first.
+  // Sort the DeviceInfo vector so the most recently modified devices are first.
   std::stable_sort(all_devices.begin(), all_devices.end(),
                    [](const std::unique_ptr<syncer::DeviceInfo>& device1,
                       const std::unique_ptr<syncer::DeviceInfo>& device2) {

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -39,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCallback,
                                                DecoderServiceHost.ImagesDecodedCallback {
     // The timeout (in seconds) to wait for the decoding.
-    private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(5);
+    private static final long WAIT_TIMEOUT_SECONDS = 5L;
 
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -144,14 +142,14 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertTrue(mLastDecodedPath.contains(fileName1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("00:00", mLastVideoDuration);
-        Assert.assertEquals(20, mLastFrameCount);
+        Assert.assertEquals(10, mLastFrameCount);
 
         // Remaining frames of video 2.
         waitForThumbnailDecode();
         Assert.assertTrue(mLastDecodedPath.contains(fileName2));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("00:00", mLastVideoDuration);
-        Assert.assertEquals(20, mLastFrameCount);
+        Assert.assertEquals(10, mLastFrameCount);
 
         host.unbind(mContext);
     }

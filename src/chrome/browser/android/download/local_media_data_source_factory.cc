@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace {
 
@@ -78,15 +78,14 @@ void ReadFile(const base::FilePath& file_path,
 class LocalMediaDataSource : public chrome::mojom::MediaDataSource {
  public:
   LocalMediaDataSource(
-      chrome::mojom::MediaDataSourcePtr* interface,
+      mojo::PendingReceiver<chrome::mojom::MediaDataSource> receiver,
       const base::FilePath& file_path,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner,
       MediaDataCallback media_data_callback)
       : file_path_(file_path),
         file_task_runner_(file_task_runner),
         media_data_callback_(media_data_callback),
-        binding_(this, mojo::MakeRequest(interface)),
-        weak_ptr_factory_(this) {}
+        receiver_(this, std::move(receiver)) {}
   ~LocalMediaDataSource() override = default;
 
  private:
@@ -124,8 +123,8 @@ class LocalMediaDataSource : public chrome::mojom::MediaDataSource {
   // Pass through callback that is used to send data across IPC channel.
   chrome::mojom::MediaDataSource::ReadCallback ipc_read_callback_;
 
-  mojo::Binding<chrome::mojom::MediaDataSource> binding_;
-  base::WeakPtrFactory<LocalMediaDataSource> weak_ptr_factory_;
+  mojo::Receiver<chrome::mojom::MediaDataSource> receiver_;
+  base::WeakPtrFactory<LocalMediaDataSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalMediaDataSource);
 };
@@ -141,8 +140,8 @@ LocalMediaDataSourceFactory::~LocalMediaDataSourceFactory() = default;
 
 std::unique_ptr<chrome::mojom::MediaDataSource>
 LocalMediaDataSourceFactory::CreateMediaDataSource(
-    chrome::mojom::MediaDataSourcePtr* request,
+    mojo::PendingReceiver<chrome::mojom::MediaDataSource> receiver,
     MediaDataCallback media_data_callback) {
   return std::make_unique<LocalMediaDataSource>(
-      request, file_path_, file_task_runner_, media_data_callback);
+      std::move(receiver), file_path_, file_task_runner_, media_data_callback);
 }

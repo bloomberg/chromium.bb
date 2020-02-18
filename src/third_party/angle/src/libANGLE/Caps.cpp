@@ -1,11 +1,12 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 
 #include "libANGLE/Caps.h"
 
+#include "anglebase/no_destructor.h"
 #include "common/angleutils.h"
 #include "common/debug.h"
 
@@ -722,6 +723,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_get_program_binary"] = enableableExtension(&Extensions::getProgramBinary);
         map["GL_OES_rgb8_rgba8"] = enableableExtension(&Extensions::rgb8rgba8);
         map["GL_EXT_texture_format_BGRA8888"] = enableableExtension(&Extensions::textureFormatBGRA8888);
+        map["GL_EXT_texture_type_2_10_10_10_REV"] = enableableExtension(&Extensions::textureFormat2101010REV);
         map["GL_EXT_read_format_bgra"] = esOnlyExtension(&Extensions::readFormatBGRA);
         map["GL_NV_pixel_buffer_object"] = enableableExtension(&Extensions::pixelBufferObject);
         map["GL_OES_mapbuffer"] = enableableExtension(&Extensions::mapBuffer);
@@ -770,6 +772,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_blend_minmax"] = enableableExtension(&Extensions::blendMinMax);
         map["GL_ANGLE_framebuffer_blit"] = enableableExtension(&Extensions::framebufferBlit);
         map["GL_ANGLE_framebuffer_multisample"] = enableableExtension(&Extensions::framebufferMultisample);
+        map["GL_EXT_multisampled_render_to_texture"] = enableableExtension(&Extensions::multisampledRenderToTexture);
         map["GL_ANGLE_instanced_arrays"] = enableableExtension(&Extensions::instancedArraysANGLE);
         map["GL_EXT_instanced_arrays"] = enableableExtension(&Extensions::instancedArraysEXT);
         map["GL_ANGLE_pack_reverse_row_order"] = enableableExtension(&Extensions::packReverseRowOrder);
@@ -795,6 +798,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_unpack_subimage"] = enableableExtension(&Extensions::unpackSubimage);
         map["GL_NV_pack_subimage"] = enableableExtension(&Extensions::packSubimage);
         map["GL_EXT_color_buffer_float"] = enableableExtension(&Extensions::colorBufferFloat);
+        map["GL_OES_vertex_half_float"] = enableableExtension(&Extensions::vertexHalfFloat);
         map["GL_OES_vertex_array_object"] = enableableExtension(&Extensions::vertexArrayObject);
         map["GL_KHR_debug"] = esOnlyExtension(&Extensions::debug);
         map["GL_OES_texture_border_clamp"] = enableableExtension(&Extensions::textureBorderClamp);
@@ -848,8 +852,8 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         return map;
     };
 
-    static const ExtensionInfoMap extensionInfo = buildExtensionInfoMap();
-    return extensionInfo;
+    static const angle::base::NoDestructor<ExtensionInfoMap> extensionInfo(buildExtensionInfoMap());
+    return *extensionInfo;
 }
 
 TypePrecision::TypePrecision() = default;
@@ -943,6 +947,9 @@ Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensi
         caps.maxShaderTextureImageUnits[ShaderType::Fragment] = 8;
         caps.maxFragmentUniformVectors                        = 16;
         caps.maxRenderbufferSize                              = 1;
+
+        // Table 3.35
+        caps.maxSamples = 4;
     }
 
     if (clientVersion >= Version(3, 0))
@@ -1011,9 +1018,6 @@ Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensi
         caps.maxTransformFeedbackInterleavedComponents = 64;
         caps.maxTransformFeedbackSeparateAttributes    = 4;
         caps.maxTransformFeedbackSeparateComponents    = 4;
-
-        // Table 3.35
-        caps.maxSamples = 4;
     }
 
     if (clientVersion >= Version(3, 1))

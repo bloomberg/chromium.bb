@@ -24,6 +24,7 @@
 #include "include/core/SkPathMeasure.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkPictureRecorder.h"
+#include "include/core/SkRRect.h"
 #include "include/core/SkScalar.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkString.h"
@@ -175,6 +176,11 @@ void ApplyAddArc(SkPath& orig, const SkRect& oval, SkScalar startAngle, SkScalar
     orig.addArc(oval, startAngle, sweepAngle);
 }
 
+void ApplyAddOval(SkPath& orig, const SkRect& oval, bool ccw, unsigned start) {
+    orig.addOval(oval, ccw ? SkPath::Direction::kCCW_Direction :
+                             SkPath::Direction::kCW_Direction, start);
+}
+
 void ApplyAddPath(SkPath& orig, const SkPath& newPath,
                    SkScalar scaleX, SkScalar skewX,  SkScalar transX,
                    SkScalar skewY,  SkScalar scaleY, SkScalar transY,
@@ -211,6 +217,13 @@ void ApplyArcTo(SkPath& p, SkScalar x1, SkScalar y1, SkScalar x2, SkScalar y2,
 
 void ApplyArcToAngle(SkPath& p, SkRect& oval, SkScalar startAngle, SkScalar sweepAngle, bool forceMoveTo) {
     p.arcTo(oval, startAngle, sweepAngle, forceMoveTo);
+}
+
+void ApplyAddArcToArcSize(SkPath& orig, SkScalar rx, SkScalar ry, SkScalar xAxisRotate,
+                          bool useSmallArc, bool ccw, SkScalar x, SkScalar y) {
+    auto arcSize = useSmallArc ? SkPath::ArcSize::kSmall_ArcSize : SkPath::ArcSize::kLarge_ArcSize;
+    auto sweep = ccw ? SkPath::Direction::kCCW_Direction : SkPath::Direction::kCW_Direction;
+    orig.arcTo(rx, ry, xAxisRotate, arcSize, sweep, x, y);
 }
 
 void ApplyClose(SkPath& p) {
@@ -542,7 +555,18 @@ struct PosTan {
     SkScalar px, py, tx, ty;
 };
 
-// These objects have private destructors / delete mthods - I don't think
+// SimpleRRect is simpler than passing a (complex) SkRRect over the wire to JS.
+struct SimpleRRect {
+    SkRect rect;
+    SkScalar rx;
+    SkScalar ry;
+};
+
+SkRRect toRRect(const SimpleRRect& r) {
+    return SkRRect::MakeRectXY(r.rect, r.rx, r.ry);
+}
+
+// These objects have private destructors / delete methods - I don't think
 // we need to do anything other than tell emscripten to do nothing.
 namespace emscripten {
     namespace internal {
@@ -754,6 +778,10 @@ EMSCRIPTEN_BINDINGS(Skia) {
             }
             self.drawAtlas(atlas, dstXforms, srcRects, colors, count, mode, nullptr, paint);
         }), allow_raw_pointers())
+        .function("drawCircle", select_overload<void (SkScalar, SkScalar, SkScalar, const SkPaint& paint)>(&SkCanvas::drawCircle))
+        .function("drawDRRect",optional_override([](SkCanvas& self, const SimpleRRect& o, const SimpleRRect& i, const SkPaint& paint) {
+            self.drawDRRect(toRRect(o), toRRect(i), paint);
+        }))
         .function("drawImage", select_overload<void (const sk_sp<SkImage>&, SkScalar, SkScalar, const SkPaint*)>(&SkCanvas::drawImage), allow_raw_pointers())
         .function("drawImageRect", optional_override([](SkCanvas& self, const sk_sp<SkImage>& image,
                                                         SkRect src, SkRect dst,
@@ -769,6 +797,9 @@ EMSCRIPTEN_BINDINGS(Skia) {
         // Of note, picture is *not* what is colloquially thought of as a "picture", what we call
         // a bitmap. An SkPicture is a series of draw commands.
         .function("drawPicture",  select_overload<void (const sk_sp<SkPicture>&)>(&SkCanvas::drawPicture))
+        .function("drawRRect",optional_override([](SkCanvas& self, const SimpleRRect& r, const SkPaint& paint) {
+            self.drawRRect(toRRect(r), paint);
+        }))
         .function("drawRect", &SkCanvas::drawRect)
         .function("drawRoundRect", &SkCanvas::drawRoundRect)
         .function("drawShadow", optional_override([](SkCanvas& self, const SkPath& path,
@@ -791,6 +822,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .function("drawTextBlob", select_overload<void (const sk_sp<SkTextBlob>&, SkScalar, SkScalar, const SkPaint&)>(&SkCanvas::drawTextBlob))
         .function("drawVertices", select_overload<void (const sk_sp<SkVertices>&, SkBlendMode, const SkPaint&)>(&SkCanvas::drawVertices))
         .function("flush", &SkCanvas::flush)
+        .function("getSaveCount", &SkCanvas::getSaveCount)
         .function("getTotalMatrix", optional_override([](const SkCanvas& self)->SimpleMatrix {
             SkMatrix m = self.getTotalMatrix();
             return toSimpleSkMatrix(m);
@@ -968,6 +1000,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .constructor<const SkPath&>()
         .function("_addArc", &ApplyAddArc)
         // interface.js has 3 overloads of addPath
+        .function("_addOval", &ApplyAddOval)
         .function("_addPath", &ApplyAddPath)
         // interface.js has 4 overloads of addRect
         .function("_addRect", &ApplyAddRect)
@@ -975,6 +1008,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .function("_addRoundRect", &ApplyAddRoundRect)
         .function("_arcTo", &ApplyArcTo)
         .function("_arcTo", &ApplyArcToAngle)
+        .function("_arcTo", &ApplyAddArcToArcSize)
         .function("_close", &ApplyClose)
         .function("_conicTo", &ApplyConicTo)
         .function("countPoints", &SkPath::countPoints)
@@ -1272,6 +1306,11 @@ EMSCRIPTEN_BINDINGS(Skia) {
         .field("fTop",    &SkRect::fTop)
         .field("fRight",  &SkRect::fRight)
         .field("fBottom", &SkRect::fBottom);
+
+    value_object<SimpleRRect>("SkRRect")
+        .field("rect", &SimpleRRect::rect)
+        .field("rx",   &SimpleRRect::rx)
+        .field("ry",   &SimpleRRect::ry);
 
     value_object<SkIRect>("SkIRect")
         .field("fLeft",   &SkIRect::fLeft)

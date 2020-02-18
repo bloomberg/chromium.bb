@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/base/load_flags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace predictors {
@@ -169,16 +168,7 @@ void PreconnectManager::PreconnectUrl(
   if (!network_context)
     return;
 
-  bool privacy_mode = false;
-  int load_flags = net::LOAD_NORMAL;
-
-  if (!allow_credentials) {
-    privacy_mode = true;
-    load_flags = net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
-
-  network_context->PreconnectSockets(num_sockets, url, load_flags, privacy_mode,
+  network_context->PreconnectSockets(num_sockets, url, allow_credentials,
                                      network_isolation_key);
 }
 
@@ -192,7 +182,7 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
   if (!network_context) {
     // Cannot invoke the callback right away because it would cause the
     // use-after-free after returning from this function.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect},
         base::BindOnce(std::move(callback), false));

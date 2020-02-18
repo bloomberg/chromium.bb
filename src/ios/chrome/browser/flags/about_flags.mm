@@ -70,8 +70,8 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/common/features.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/common/web_view_creation_util.h"
-#include "ios/web/public/user_agent.h"
 
 #if !defined(OFFICIAL_BUILD)
 #include "components/variations/variations_switches.h"
@@ -370,11 +370,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"app-launcher-refresh", flag_descriptions::kAppLauncherRefreshName,
      flag_descriptions::kAppLauncherRefreshDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kAppLauncherRefresh)},
-    {"sync-support-secondary-account",
-     flag_descriptions::kSyncSupportSecondaryAccountName,
-     flag_descriptions::kSyncSupportSecondaryAccountDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
@@ -402,9 +397,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
-    {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
-     flag_descriptions::kFCMInvalidationsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
@@ -489,10 +481,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
-    {"password-generation-suggestion",
-     flag_descriptions::kPasswordGenerationName,
-     flag_descriptions::kPasswordGenerationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(features::kPasswordGeneration)},
     {"new-omnibox-popup-layout", flag_descriptions::kNewOmniboxPopupLayoutName,
      flag_descriptions::kNewOmniboxPopupLayoutDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOmniboxPopupLayout)},
@@ -508,9 +496,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfShowSendingUIDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
-    {"translate-manual-trigger", flag_descriptions::kTranslateManualTriggerName,
-     flag_descriptions::kTranslateManualTriggerDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
     {"omnibox-use-default-search-engine-favicon",
      flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconName,
      flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
@@ -521,20 +506,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
-    {"enable-autofill-import-non-focusable-credit-card-forms",
-     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
-     flag_descriptions::
-         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
-    {"enable-autofill-do-not-upload-save-unsupported-cards",
-     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
     {"enable-send-tab-to-self-broadcast",
      flag_descriptions::kSendTabToSelfBroadcastName,
      flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,
@@ -583,6 +554,25 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCollectionsCardPresentationStyleName,
      flag_descriptions::kCollectionsCardPresentationStyleDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCollectionsCardPresentationStyle)},
+    {"enable-autofill-credit-card-upload-editable-cardholder-name",
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadEditableCardholderNameName,
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadEditableCardholderNameDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamEditableCardholderName)},
+    {"enable-autofill-credit-card-upload-editable-expiration-date",
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadEditableExpirationDateName,
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadEditableExpirationDateDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamEditableExpirationDate)},
+    {"credit-card-scanner", flag_descriptions::kCreditCardScannerName,
+     flag_descriptions::kCreditCardScannerDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCreditCardScanner)},
 };
 
 // Add all switches from experimental flags to |command_line|.

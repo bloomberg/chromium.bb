@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/declarative/deduping_factory.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
@@ -30,7 +29,6 @@
 #include "net/http/http_util.h"
 #include "third_party/re2/src/re2/re2.h"
 
-using content::ResourceRequestInfo;
 using extension_web_request_api_helpers::EventResponseDelta;
 
 namespace extensions {
@@ -118,7 +116,7 @@ scoped_refptr<const WebRequestAction> CallConstructorFactoryMethod(
     const base::Value* value,
     std::string* error,
     bool* bad_message) {
-  return scoped_refptr<const WebRequestAction>(new T);
+  return base::MakeRefCounted<T>();
 }
 
 scoped_refptr<const WebRequestAction> CreateRedirectRequestAction(

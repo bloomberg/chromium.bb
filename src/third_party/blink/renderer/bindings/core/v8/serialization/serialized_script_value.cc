@@ -66,9 +66,9 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -692,13 +692,13 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer = *it;
-    if (array_buffer->IsNeutered()) {
+    if (array_buffer->IsDetached()) {
       wtf_size_t index =
           static_cast<wtf_size_t>(std::distance(array_buffers.begin(), it));
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "ArrayBuffer at index " +
                                             String::Number(index) +
-                                            " is already neutered.");
+                                            " is already detached.");
       return ArrayBufferContentsArray();
     }
   }

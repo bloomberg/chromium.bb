@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -36,6 +37,12 @@ class SequencedTaskRunner;
 namespace content {
 class WebUI;
 }
+
+namespace identity {
+namespace mojom {
+class IdentityService;
+}  // namespace mojom
+}  // namespace identity
 
 namespace policy {
 class SchemaRegistryService;
@@ -142,10 +149,14 @@ class Profile : public content::BrowserContext {
   virtual base::FilePath GetPath() const = 0;
 
   // Return whether this context is off the record. Default is false.
-  // Note that for Chrome this does not imply Incognito as Guest sessions are
-  // also off the record.
+  // Note that for Chrome this covers BOTH Incognito mode and Guest sessions.
   bool IsOffTheRecord() override = 0;
   virtual bool IsOffTheRecord() const = 0;
+
+  // Returns the creation time of this profile. This will either be the creation
+  // time of the profile directory or, for ephemeral off-the-record profiles,
+  // the creation time of the profile object instance.
+  virtual base::Time GetCreationTime() const = 0;
 
   // Typesafe upcast.
   virtual TestingProfile* AsTestingProfile();
@@ -218,9 +229,6 @@ class Profile : public content::BrowserContext {
   // used even if there's no OTR profile at the moment
   // (i.e. HasOffTheRecordProfile is false).
   virtual PrefService* GetReadOnlyOffTheRecordPrefs();
-
-  // Returns the main request context.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
   // Returns the main URLLoaderFactory.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -371,6 +379,10 @@ class Profile : public content::BrowserContext {
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
+  // Exposes access to the profile's Identity Service instance. This may return
+  // null if the profile does not have a corresponding service instance.
+  virtual identity::mojom::IdentityService* GetIdentityService();
+
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of
   // Resume calls matches the number of Pause calls received.
@@ -412,6 +424,8 @@ class Profile : public content::BrowserContext {
 
   // Wipes all data for this profile.
   void Wipe();
+
+  virtual void SetCreationTimeForTesting(base::Time creation_time) = 0;
 
  protected:
   friend class OffTheRecordProfileIOData;

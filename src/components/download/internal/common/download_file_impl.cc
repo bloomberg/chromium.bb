@@ -27,8 +27,6 @@
 #include "crypto/sha2.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
-#include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -357,14 +355,14 @@ void DownloadFileImpl::RenameAndAnnotate(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
     const RenameCompletionCallback& callback) {
   std::unique_ptr<RenameParameters> parameters(new RenameParameters(
       ANNOTATE_WITH_SOURCE_INFORMATION, full_path, callback));
   parameters->client_guid = client_guid;
   parameters->source_url = source_url;
   parameters->referrer_url = referrer_url;
-  parameters->connector = std::move(connector);
+  parameters->remote_quarantine = std::move(remote_quarantine);
   RenameWithRetryInternal(std::move(parameters));
 }
 
@@ -484,7 +482,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
             download::features::kPreventDownloadsWithSamePath)) {
       file_.AnnotateWithSourceInformation(
           parameters->client_guid, parameters->source_url,
-          parameters->referrer_url, std::move(parameters->connector),
+          parameters->referrer_url, std::move(parameters->remote_quarantine),
           base::BindOnce(&DownloadFileImpl::OnRenameComplete,
                          weak_factory_.GetWeakPtr(), new_path,
                          parameters->completion_callback));
@@ -557,6 +555,8 @@ void DownloadFileImpl::Pause() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_paused_ = true;
   record_stream_bandwidth_ = false;
+  for (auto& stream : source_streams_)
+    stream.second->ClearDataReadyCallback();
 }
 
 void DownloadFileImpl::Resume() {
@@ -564,13 +564,10 @@ void DownloadFileImpl::Resume() {
   DCHECK(is_paused_);
   is_paused_ = false;
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   for (auto& stream : source_streams_) {
     SourceStream* source_stream = stream.second.get();
     if (!source_stream->is_finished()) {
-      StreamActive(source_stream, MOJO_RESULT_OK);
+      ActivateStream(source_stream);
     }
   }
 }
@@ -578,8 +575,7 @@ void DownloadFileImpl::Resume() {
 void DownloadFileImpl::StreamActive(SourceStream* source_stream,
                                     MojoResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      is_paused_)
+  if (is_paused_)
     return;
 
   base::TimeTicks start(base::TimeTicks::Now());
@@ -728,15 +724,19 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_stream->Initialize();
-  source_stream->RegisterDataReadyCallback(
-      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
-                 source_stream));
   // Truncate |source_stream|'s length if necessary.
   for (const auto& received_slice : received_slices_) {
     source_stream->TruncateLengthWithWrittenDataBlock(
         received_slice.offset, received_slice.received_bytes);
   }
   num_active_streams_++;
+  ActivateStream(source_stream);
+}
+
+void DownloadFileImpl::ActivateStream(SourceStream* source_stream) {
+  source_stream->RegisterDataReadyCallback(
+      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+                 source_stream));
   StreamActive(source_stream, MOJO_RESULT_OK);
 }
 

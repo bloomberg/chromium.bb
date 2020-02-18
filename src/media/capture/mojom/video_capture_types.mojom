@@ -8,10 +8,9 @@ import "gpu/ipc/common/mailbox_holder.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
-[EnableIf=is_chromeos]
-import "ui/gfx/mojo/buffer_types.mojom";
-import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 enum VideoCapturePixelFormat {
   UNKNOWN,
@@ -28,7 +27,6 @@ enum VideoCapturePixelFormat {
   XRGB,
   RGB24,
   MJPEG,
-  MT21,
   YUV420P9,
   YUV420P10,
   YUV422P9,
@@ -94,7 +92,6 @@ enum VideoCaptureBufferType {
 
   kMailboxHolder,
 
-  [EnableIf=is_chromeos]
   kGpuMemoryBuffer
 };
 
@@ -314,6 +311,5 @@ union VideoBufferHandle {
   mojo_base.mojom.ReadOnlySharedMemoryRegion read_only_shmem_region;
   SharedMemoryViaRawFileDescriptor shared_memory_via_raw_file_descriptor;
   MailboxBufferHandleSet mailbox_handles;
-  [EnableIf=is_chromeos]
   gfx.mojom.GpuMemoryBufferHandle gpu_memory_buffer_handle;
 };

@@ -80,16 +80,16 @@ void RunBitexactnessTest(
   const int samples_per_channel = rtc::CheckedDivExact(sample_rate_hz, 100);
   const StreamConfig render_config(sample_rate_hz, num_channels, false);
   AudioBuffer render_buffer(
-      render_config.num_frames(), render_config.num_channels(),
-      render_config.num_frames(), 1, render_config.num_frames());
+      render_config.sample_rate_hz(), render_config.num_channels(),
+      render_config.sample_rate_hz(), 1, render_config.sample_rate_hz(), 1);
   test::InputAudioFile render_file(
       test::GetApmRenderTestVectorFileName(sample_rate_hz));
   std::vector<float> render_input(samples_per_channel * num_channels);
 
   const StreamConfig capture_config(sample_rate_hz, num_channels, false);
   AudioBuffer capture_buffer(
-      capture_config.num_frames(), capture_config.num_channels(),
-      capture_config.num_frames(), 1, capture_config.num_frames());
+      capture_config.sample_rate_hz(), capture_config.num_channels(),
+      capture_config.sample_rate_hz(), 1, capture_config.sample_rate_hz(), 1);
   test::InputAudioFile capture_file(
       test::GetApmCaptureTestVectorFileName(sample_rate_hz));
   std::vector<float> capture_input(samples_per_channel * num_channels);
@@ -324,8 +324,8 @@ TEST(EchoCancellationBitExactnessTest,
      DISABLED_Stereo32kHz_HighLevel_NoDrift_StreamDelay0) {
 #endif
 #if defined(WEBRTC_MAC)
-  const float kOutputReference[] = {-0.000458f, 0.000244f, 0.000153f,
-                                    -0.000458f, 0.000244f, 0.000153f};
+  const float kOutputReference[] = {-0.000458f, 0.000214f, 0.000122f,
+                                    -0.000458f, 0.000214f, 0.000122f};
 #else
   const float kOutputReference[] = {-0.000427f, 0.000183f, 0.000183f,
                                     -0.000427f, 0.000183f, 0.000183f};

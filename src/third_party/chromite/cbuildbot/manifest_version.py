@@ -917,7 +917,7 @@ class BuildSpecsManager(object):
           side_effect_func=_PrintRemainingTime)
     except timeout_util.TimeoutError as e:
       logging.error('Not all builds finished before timeout (%d minutes)'
-                    ' reached.', int((timeout / 60) + 0.5))
+                    ' reached.', int((timeout / 60.0) + 0.5))
 
       if not ignore_timeout_exception:
         raise e

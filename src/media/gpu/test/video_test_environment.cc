@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "media/gpu/buildflags.h"
@@ -46,8 +46,8 @@ void VideoTestEnvironment::SetUp() {
   // thread and allow posting tasks to other threads. This is required for video
   // tests to function correctly.
   TestTimeouts::Initialize();
-  task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   // Perform all static initialization that is required when running video
   // decoders in a test environment.
@@ -60,7 +60,8 @@ void VideoTestEnvironment::SetUp() {
   // video decode acceleration.
   LOG(WARNING) << "Initializing Ozone Platform...\n"
                   "If this hangs indefinitely please call 'stop ui' first!";
-  ui::OzonePlatform::InitParams params = {.single_process = false};
+  ui::OzonePlatform::InitParams params;
+  params.single_process = false;
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
@@ -77,6 +78,12 @@ void VideoTestEnvironment::SetUp() {
 }
 
 void VideoTestEnvironment::TearDown() {
+  // Some implementations (like VideoDecoder) might be destroyed on a different
+  // thread from the thread that the client releases it on. Call RunUntilIdle()
+  // to ensure this kind of destruction is finished before |task_environment_|
+  // is destroyed.
+  task_environment_->RunUntilIdle();
+  task_environment_ = nullptr;
 }
 
 base::FilePath::StringType VideoTestEnvironment::GetTestName() const {

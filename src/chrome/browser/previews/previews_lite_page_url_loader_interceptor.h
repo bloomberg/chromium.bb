@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <set>
 
@@ -37,7 +38,6 @@ class PreviewsLitePageURLLoaderInterceptor
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
       content::BrowserContext* browser_context,
-      content::ResourceContext* resource_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback) override;
 
  private:
@@ -45,7 +45,6 @@ class PreviewsLitePageURLLoaderInterceptor
   void CreateRedirectLoader(
       const network::ResourceRequest& tentative_resource_request,
       content::BrowserContext* browser_context,
-      content::ResourceContext* resource_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback);
 
   // Creates a redirect URL loader that immediately serves a redirect to

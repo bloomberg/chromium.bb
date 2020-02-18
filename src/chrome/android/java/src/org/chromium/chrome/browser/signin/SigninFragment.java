@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -12,8 +13,10 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -134,13 +137,19 @@ public class SigninFragment extends SigninFragmentBase {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 true);
                         if (settingsClicked) {
-                            PreferencesLauncher.launchSettingsPageCompat(getActivity(),
+                            PreferencesLauncher.launchSettingsPage(getActivity(),
                                     SyncAndServicesPreferences.class,
                                     SyncAndServicesPreferences.createArguments(true));
+                        } else if (ChromeFeatureList.isEnabled(
+                                           ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+                            ProfileSyncService.get().setFirstSetupComplete();
                         }
 
                         recordSigninCompletedHistogramAccountInfo();
-                        getActivity().finish();
+
+                        Activity activity = getActivity();
+                        if (activity != null) activity.finish();
+
                         callback.run();
                     }
 

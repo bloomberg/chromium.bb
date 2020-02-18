@@ -22,10 +22,10 @@ class VertexInputTest : public ValidationTest {
     void CreatePipeline(bool success,
                         const utils::ComboVertexInputDescriptor& state,
                         std::string vertexSource) {
-        dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vertexSource.c_str());
+        dawn::ShaderModule vsModule = utils::CreateShaderModule(
+            device, utils::SingleShaderStage::Vertex, vertexSource.c_str());
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -34,7 +34,7 @@ class VertexInputTest : public ValidationTest {
             )");
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.cVertexStage.module = vsModule;
+        descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.vertexInput = &state;
         descriptor.cColorStates[0]->format = dawn::TextureFormat::RGBA8Unorm;
@@ -272,6 +272,30 @@ TEST_F(VertexInputTest, SetInputStrideOutOfBounds) {
 
     // Test input stride OOB
     state.cBuffers[0].stride = kMaxVertexBufferStride + 1;
+    CreatePipeline(false, state, R"(
+        #version 450
+        void main() {
+            gl_Position = vec4(0.0);
+        }
+    )");
+}
+
+// Check multiple of 4 bytes constraint on input stride
+TEST_F(VertexInputTest, SetInputStrideNotAligned) {
+    // Control case, setting input stride 4 bytes.
+    utils::ComboVertexInputDescriptor state;
+    state.bufferCount = 1;
+    state.cBuffers[0].stride = 4;
+    state.cBuffers[0].attributeCount = 1;
+    CreatePipeline(true, state, R"(
+        #version 450
+        void main() {
+            gl_Position = vec4(0.0);
+        }
+    )");
+
+    // Test input stride not multiple of 4 bytes
+    state.cBuffers[0].stride = 2;
     CreatePipeline(false, state, R"(
         #version 450
         void main() {

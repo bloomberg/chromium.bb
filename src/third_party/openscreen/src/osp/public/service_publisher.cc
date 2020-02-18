@@ -23,7 +23,8 @@ ServicePublisher::Metrics::~Metrics() = default;
 ServicePublisher::Config::Config() = default;
 ServicePublisher::Config::~Config() = default;
 
-ServicePublisher::ServicePublisher(Observer* observer) : observer_(observer) {}
+ServicePublisher::ServicePublisher(Observer* observer)
+    : state_(State::kStopped), observer_(observer) {}
 ServicePublisher::~ServicePublisher() = default;
 
 }  // namespace openscreen

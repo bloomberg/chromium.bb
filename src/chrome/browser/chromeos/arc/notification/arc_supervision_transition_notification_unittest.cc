@@ -18,7 +18,7 @@
 #include "components/arc/session/arc_supervision_transition.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -54,7 +54,7 @@ class ArcSupervisionTransitionNotificationTest
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   ArcAppTest arc_app_test_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupervisionTransitionNotificationTest);
 };

@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/internal/shared_proto_database.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
@@ -254,7 +254,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   // Sets the obsolete client list to given list, runs clean up tasks and waits
   // for them to complete.
   void DestroyObsoleteClientsAndWait(const ProtoDbType* client_list) {
-    SetObsoleteClientListForTesting(client_list);
+    SharedProtoDatabaseClient::SetObsoleteClientListForTesting(client_list);
     base::RunLoop wait_loop;
     Callbacks::UpdateCallback wait_callback = base::BindOnce(
         [](base::OnceClosure closure, bool success) {
@@ -263,12 +263,12 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         },
         wait_loop.QuitClosure());
 
-    DestroyObsoleteSharedProtoDatabaseClients(
+    SharedProtoDatabaseClient::DestroyObsoleteSharedProtoDatabaseClients(
         std::make_unique<ProtoLevelDBWrapper>(
             db_->database_task_runner_for_testing(), GetLevelDB()),
         std::move(wait_callback));
     wait_loop.Run();
-    SetObsoleteClientListForTesting(nullptr);
+    SharedProtoDatabaseClient::SetObsoleteClientListForTesting(nullptr);
   }
 
   void UpdateMetadataAsync(
@@ -282,13 +282,14 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         },
         wait_loop.QuitClosure());
     client->set_migration_status(migration_status);
-    UpdateClientMetadataAsync(client->parent_db_, client->prefix_,
-                              migration_status, std::move(wait_callback));
+    SharedProtoDatabaseClient::UpdateClientMetadataAsync(
+        client->parent_db_, client->prefix_, migration_status,
+        std::move(wait_callback));
     wait_loop.Run();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<SharedProtoDatabase> db_;
   std::unique_ptr<base::ScopedTempDir> temp_dir_;

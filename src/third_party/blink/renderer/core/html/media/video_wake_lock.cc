@@ -21,6 +21,7 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
       video_element_(video) {
   VideoElement().addEventListener(event_type_names::kPlaying, this, true);
   VideoElement().addEventListener(event_type_names::kPause, this, true);
+  VideoElement().addEventListener(event_type_names::kEmptied, this, true);
   VideoElement().addEventListener(event_type_names::kEnterpictureinpicture,
                                   this, true);
   VideoElement().addEventListener(event_type_names::kLeavepictureinpicture,
@@ -53,7 +54,11 @@ void VideoWakeLock::Trace(Visitor* visitor) {
 void VideoWakeLock::Invoke(ExecutionContext*, Event* event) {
   if (event->type() == event_type_names::kPlaying) {
     playing_ = true;
-  } else if (event->type() == event_type_names::kPause) {
+  } else if (event->type() == event_type_names::kPause ||
+             event->type() == event_type_names::kEmptied) {
+    // In 4.8.12.5 steps 6.6.1, the media element is paused when a new load
+    // happens without actually firing a pause event. Because of this, we need
+    // to listen to the emptied event.
     playing_ = false;
   } else {
     DCHECK(event->type() == event_type_names::kEnterpictureinpicture ||
@@ -99,7 +104,7 @@ bool VideoWakeLock::ShouldBeActive() const {
 }
 
 void VideoWakeLock::EnsureWakeLockService() {
-  if (wake_lock_service_ && wake_lock_service_.is_bound())
+  if (wake_lock_service_)
     return;
 
   LocalFrame* frame = VideoElement().GetDocument().GetFrame();
@@ -109,14 +114,14 @@ void VideoWakeLock::EnsureWakeLockService() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame->GetTaskRunner(TaskType::kMediaElementEvent);
 
-  blink::mojom::blink::WakeLockServicePtr service;
+  mojo::Remote<blink::mojom::blink::WakeLockService> service;
   frame->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&service, task_runner));
+      service.BindNewPipeAndPassReceiver(task_runner));
   service->GetWakeLock(device::mojom::WakeLockType::kPreventDisplaySleep,
                        device::mojom::blink::WakeLockReason::kVideoPlayback,
                        "Video Wake Lock",
-                       mojo::MakeRequest(&wake_lock_service_));
-  wake_lock_service_.set_connection_error_handler(
+                       wake_lock_service_.BindNewPipeAndPassReceiver());
+  wake_lock_service_.set_disconnect_handler(
       WTF::Bind(&VideoWakeLock::OnConnectionError, WrapWeakPersistent(this)));
 }
 

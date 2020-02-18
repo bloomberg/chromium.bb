@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -24,6 +25,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_identifiers.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_cell_favicon_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -38,7 +40,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/reload_type.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "net/base/network_change_notifier.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -116,14 +118,21 @@ ReadingListModel* GetReadingListModel() {
 
 // Scroll to the top of the Reading List.
 void ScrollToTop() {
-  NSError* error = nil;
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID([
-                                          [ReadingListTableViewController class]
-                                          accessibilityIdentifier])]
-      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
-                                                           0.5, 0.5)
-              error:&error];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // On iOS 13 the settings menu appears as a card that can be dismissed with a
+  // downward swipe, for this reason we need to swipe up programatically to
+  // avoid dismissing the VC.
+  GREYPerformBlock scrollToTopBlock =
+      ^BOOL(id element, __strong NSError** error) {
+        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
+        view.contentOffset = CGPointZero;
+        return YES;
+      };
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 }
 
 // Asserts that the "mark" toolbar button is visible and has the a11y label of
@@ -950,6 +959,38 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   // Verify the background string is displayed.
   [[EarlGrey selectElementWithMatcher:EmptyBackground()]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests that the VC can be dismissed by swiping down.
+- (void)testSwipeDownDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
+  }
+
+  GetReadingListModel()->AddEntry(GURL(kUnreadURL), std::string(kUnreadTitle),
+                                  reading_list::ADDED_VIA_CURRENT_APP);
+  OpenReadingList();
+
+  // Check that the TableView is presented.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      assertWithMatcher:grey_nil()];
 }
 
 @end

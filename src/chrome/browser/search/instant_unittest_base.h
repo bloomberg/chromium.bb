@@ -32,11 +32,6 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   // search_terms_replacement_key.
   void SetUserSelectedDefaultSearchProvider(const std::string& base_url);
 
-  // Simulates a Google Base URL change as would happen in event of
-  // search-domain-check. Note that the GoogleURLTrackerFactory is disabled for
-  // tests, so this is required.
-  void NotifyGoogleBaseURLUpdate(const std::string& new_google_base_url);
-
   InstantService* instant_service_;
   TemplateURLService* template_url_service_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;

@@ -82,7 +82,7 @@ class RunTest(quest.Quest):
     self._swarming_server = swarming_server
     self._dimensions = dimensions
     self._extra_args = extra_args
-    self._swarming_tags = swarming_tags
+    self._swarming_tags = {} if not swarming_tags else swarming_tags
 
     # We want subsequent executions use the same bot as the first one.
     self._canonical_executions = []
@@ -104,6 +104,17 @@ class RunTest(quest.Quest):
     self.__dict__ = state  # pylint: disable=attribute-defined-outside-init
     if not hasattr(self, '_swarming_tags'):
       self._swarming_tags = {}
+
+  def PropagateJob(self, job):
+    if not hasattr(self, '_swarming_tags'):
+      self._swarming_tags = {}
+    self._swarming_tags.update({
+        'pinpoint_job_id': job.job_id,
+        'url': job.url,
+        'comparison_mode': job.comparison_mode,
+        'pinpoint_task_kind': 'test',
+        'pinpoint_user': job.user,
+    })
 
   def Start(self, change, isolate_server, isolate_hash):
     return self._Start(change, isolate_server, isolate_hash, self._extra_args,
@@ -282,12 +293,30 @@ class _RunTestExecution(execution_module.Execution):
         'name': 'Pinpoint job',
         'user': 'Pinpoint',
         'priority': '100',
-        'expiration_secs': '86400',  # 1 day.
-        'properties': properties,
+        'task_slices': [{
+            'properties': properties,
+            'expiration_secs': '86400',  # 1 day.
+        }],
     }
     if self._swarming_tags:
-      body['tags'] = [
-          '%s:%s' % (k, self._swarming_tags[k]) for k in self._swarming_tags]
+      # This means we have additional information available about the Pinpoint
+      # tags, and we should add those to the Swarming Pub/Sub updates.
+      body.update({
+          'tags': ['%s:%s' % (k, v) for k, v in self._swarming_tags.items()],
+          # TODO(dberris): Consolidate constants in environment vars?
+          'pubsub_topic':
+              'projects/chromeperf/topics/pinpoint-swarming-updates',
+          'pubsub_auth_token':
+              'UNUSED',
+          'pubsub_userdata':
+              json.dumps({
+                  'job_id': self._swarming_tags.get('pinpoint_job_id'),
+                  'task': {
+                      'type': 'test',
+                      'id': self._swarming_tags.get('pinpoint_task_id'),
+                  },
+              }),
+      })
 
     logging.debug('Requesting swarming task with parameters: %s', body)
 

@@ -5,7 +5,7 @@
 #include "components/cronet/host_cache_persistence_manager.h"
 
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -80,7 +80,7 @@ class HostCachePersistenceManagerTest : public testing::Test {
 
   static const char kPrefName[];
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
 
   // The HostCache and PrefService have to outlive the

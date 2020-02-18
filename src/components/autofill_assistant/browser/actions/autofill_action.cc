@@ -24,7 +24,7 @@ namespace autofill_assistant {
 
 AutofillAction::AutofillAction(ActionDelegate* delegate,
                                const ActionProto& proto)
-    : Action(delegate, proto), weak_ptr_factory_(this) {
+    : Action(delegate, proto) {
   if (proto.has_use_address()) {
     is_autofill_card_ = false;
     prompt_ = proto.use_address().prompt();

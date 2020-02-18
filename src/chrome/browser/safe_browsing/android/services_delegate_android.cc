@@ -11,6 +11,7 @@
 #include "chrome/browser/safe_browsing/telemetry/android/android_telemetry_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,7 +37,7 @@ std::unique_ptr<ServicesDelegate> ServicesDelegate::CreateForTest(
 
 ServicesDelegateAndroid::ServicesDelegateAndroid(
     SafeBrowsingService* safe_browsing_service)
-    : safe_browsing_service_(safe_browsing_service) {
+    : ServicesDelegate(safe_browsing_service, /*services_creator=*/nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -54,7 +55,7 @@ ServicesDelegateAndroid::database_manager() const {
 
 void ServicesDelegateAndroid::Initialize() {
   if (!database_manager_set_for_tests_) {
-#if defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
     database_manager_ =
         base::WrapRefCounted(new RemoteSafeBrowsingDatabaseManager());
 #else
@@ -114,16 +115,6 @@ void ServicesDelegateAndroid::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-void ServicesDelegateAndroid::CreatePasswordProtectionService(
-    Profile* profile) {}
-void ServicesDelegateAndroid::RemovePasswordProtectionService(
-    Profile* profile) {}
-PasswordProtectionService*
-ServicesDelegateAndroid::GetPasswordProtectionService(Profile* profile) const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void ServicesDelegateAndroid::CreateTelemetryService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
@@ -149,6 +140,14 @@ TelemetryService* ServicesDelegateAndroid::GetTelemetryService() const {
 void ServicesDelegateAndroid::CreateVerdictCacheManager(Profile* profile) {}
 void ServicesDelegateAndroid::RemoveVerdictCacheManager(Profile* profile) {}
 VerdictCacheManager* ServicesDelegateAndroid::GetVerdictCacheManager(
+    Profile* profile) const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+void ServicesDelegateAndroid::CreateBinaryUploadService(Profile* profile) {}
+void ServicesDelegateAndroid::RemoveBinaryUploadService(Profile* profile) {}
+BinaryUploadService* ServicesDelegateAndroid::GetBinaryUploadService(
     Profile* profile) const {
   NOTIMPLEMENTED();
   return nullptr;

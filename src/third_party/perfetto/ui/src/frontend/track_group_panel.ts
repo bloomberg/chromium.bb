@@ -69,7 +69,7 @@ export class TrackGroupPanel extends Panel<Attrs> {
             {
               title: name,
             },
-            name + '\u200E'),
+            name),
           m('.fold-button',
             {
               onclick: (e: MouseEvent) => {
@@ -113,7 +113,7 @@ export class TrackGroupPanel extends Panel<Attrs> {
 
     ctx.translate(this.shellWidth, 0);
     if (this.summaryTrack) {
-      this.summaryTrack.renderCanvas(ctx);
+      this.summaryTrack.render(ctx);
     }
     ctx.restore();
 

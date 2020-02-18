@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
@@ -45,12 +46,12 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
       adapter_(adapter),
       queue_(GPUQueue::Create(this, GetProcs().deviceCreateQueue(GetHandle()))),
       error_callback_(
-          BindRepeatingDawnCallback(&GPUDevice::OnError,
+          BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
                                     WrapWeakPersistent(this),
                                     WrapWeakPersistent(execution_context))) {
-  GetProcs().deviceSetErrorCallback(GetHandle(),
-                                    error_callback_->UnboundRepeatingCallback(),
-                                    error_callback_->AsUserdata());
+  GetProcs().deviceSetUncapturedErrorCallback(
+      GetHandle(), error_callback_->UnboundRepeatingCallback(),
+      error_callback_->AsUserdata());
 }
 
 GPUDevice::~GPUDevice() {
@@ -60,9 +61,11 @@ GPUDevice::~GPUDevice() {
   GetProcs().deviceRelease(GetHandle());
 }
 
-void GPUDevice::OnError(ExecutionContext* execution_context,
-                        const char* message) {
+void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
+                                  DawnErrorType errorType,
+                                  const char* message) {
   if (execution_context) {
+    DCHECK_NE(errorType, DAWN_ERROR_TYPE_NO_ERROR);
     LOG(ERROR) << "GPUDevice: " << message;
     ConsoleMessage* console_message =
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
@@ -176,6 +179,11 @@ GPUComputePipeline* GPUDevice::createComputePipeline(
 GPUCommandEncoder* GPUDevice::createCommandEncoder(
     const GPUCommandEncoderDescriptor* descriptor) {
   return GPUCommandEncoder::Create(this, descriptor);
+}
+
+GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
+    const GPURenderBundleEncoderDescriptor* descriptor) {
+  return GPURenderBundleEncoder::Create(this, descriptor);
 }
 
 GPUQueue* GPUDevice::getQueue() {

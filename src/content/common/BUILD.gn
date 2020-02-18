@@ -93,9 +93,6 @@ source_set("common") {
     "cursors/webcursor_aurax11.cc",
     "cursors/webcursor_mac.mm",
     "cursors/webcursor_ozone.cc",
-    "dom_storage/dom_storage_map.cc",
-    "dom_storage/dom_storage_map.h",
-    "dom_storage/dom_storage_types.h",
     "drag_event_source_info.h",
     "drag_messages.h",
     "drag_traits.h",
@@ -104,7 +101,6 @@ source_set("common") {
     "fetch/fetch_api_request_proto.h",
     "fetch/fetch_request_type_converters.cc",
     "fetch/fetch_request_type_converters.h",
-    "fileapi/webblob_messages.h",
     "font_cache_dispatcher_win.cc",
     "font_list.cc",
     "font_list.h",
@@ -113,7 +109,6 @@ source_set("common") {
     "font_list_mac.mm",
     "font_list_win.cc",
     "frame_delete_intention.h",
-    "frame_message_enums.h",
     "frame_message_structs.cc",
     "frame_message_structs.h",
     "frame_messages.h",
@@ -140,10 +135,10 @@ source_set("common") {
     "input/input_event_ack.h",
     "input/input_event_ack_state.cc",
     "input/input_event_dispatch_type.h",
+    "input/input_event_mojom_traits.cc",
+    "input/input_event_mojom_traits.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
-    "input/input_event_struct_traits.cc",
-    "input/input_event_struct_traits.h",
     "input/input_param_traits.cc",
     "input/input_param_traits.h",
     "input/sync_compositor_messages.cc",
@@ -164,8 +159,8 @@ source_set("common") {
     "input/synthetic_tap_gesture_params.h",
     "input/synthetic_web_input_event_builders.cc",
     "input/synthetic_web_input_event_builders.h",
-    "input/touch_action_optional_struct_traits.cc",
-    "input/touch_action_optional_struct_traits.h",
+    "input/touch_action_optional_mojom_traits.cc",
+    "input/touch_action_optional_mojom_traits.h",
     "input/touch_event_stream_validator.cc",
     "input/touch_event_stream_validator.h",
     "input/web_mouse_wheel_event_traits.cc",
@@ -189,12 +184,10 @@ source_set("common") {
     "navigation_gesture.h",
     "navigation_params.cc",
     "navigation_params.h",
+    "navigation_params_mojom_traits.h",
+    "navigation_params_utils.h",
     "net/record_load_histograms.cc",
     "net/record_load_histograms.h",
-    "net/url_request_service_worker_data.cc",
-    "net/url_request_service_worker_data.h",
-    "net/url_request_user_data.cc",
-    "net/url_request_user_data.h",
     "origin_util.cc",
     "page_messages.h",
     "page_state_serialization.cc",
@@ -206,11 +199,6 @@ source_set("common") {
     "pepper_plugin_list.h",
     "pepper_renderer_instance_data.cc",
     "pepper_renderer_instance_data.h",
-    "possibly_associated_interface_ptr.h",
-    "possibly_associated_interface_ptr_info.h",
-    "possibly_associated_wrapper_shared_url_loader_factory.h",
-    "prefetched_signed_exchange_info.cc",
-    "prefetched_signed_exchange_info.h",
     "process_type.cc",
     "render_widget_surface_properties.cc",
     "render_widget_surface_properties.h",
@@ -276,6 +264,7 @@ source_set("common") {
     ":buildflags",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//build/util:webkit_version",
     "//components/discardable_memory/common",
     "//components/services/filesystem/public/mojom",
@@ -317,7 +306,7 @@ source_set("common") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/zygote:zygote_buildflags",
     "//services/video_capture/public/mojom",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia",
     "//storage/common",
     "//third_party/angle:angle_gpu_info_util",
@@ -329,7 +318,7 @@ source_set("common") {
     "//ui/events/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo:struct_traits",
+    "//ui/gfx/geometry/mojom:mojom_traits",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
@@ -337,6 +326,7 @@ source_set("common") {
     "//ui/gl",
     "//ui/gl/init",
     "//ui/latency/ipc",
+    "//ui/native_theme",
     "//ui/shell_dialogs",
     "//url",
     "//url/ipc:url_ipc",
@@ -442,6 +432,13 @@ source_set("common") {
     sources += [ "font_list_fuchsia.cc" ]
     deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
   }
+
+  if (use_clang_coverage) {
+    sources += [
+      "coverage_utils.cc",
+      "coverage_utils.h",
+    ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.
@@ -473,6 +470,7 @@ mojom("mojo_bindings") {
     "field_trial_recorder.mojom",
     "frame.mojom",
     "frame_messages.mojom",
+    "frame_proxy.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",
     "host_zoom.mojom",
@@ -486,6 +484,7 @@ mojom("mojo_bindings") {
     "navigation_client.mojom",
     "navigation_params.mojom",
     "page_state.mojom",
+    "prefetched_signed_exchange_info.mojom",
     "render_frame_metadata.mojom",
     "render_message_filter.mojom",
     "renderer.mojom",
@@ -500,6 +499,9 @@ mojom("mojo_bindings") {
   if (is_linux || is_chromeos) {
     enabled_features += [ "supports_thread_priorities" ]
   }
+  if (use_clang_coverage) {
+    enabled_features += [ "clang_coverage" ]
+  }
 
   import_dirs = [ "//mojo/services" ]
 
@@ -510,24 +512,24 @@ mojom("mojo_bindings") {
     "//content/public/common:resource_type_bindings",
     "//ipc:mojom_constants",
     "//media/capture/mojom:video_capture",
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//mojo/public/mojom/base",
     "//services/audio/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//services/video_capture/public/mojom",
-    "//services/viz/public/interfaces",
-    "//skia/public/interfaces",
+    "//services/viz/public/mojom",
+    "//skia/public/mojom",
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
-    "//ui/base/ime/mojo",
+    "//ui/base/ime/mojom",
     "//ui/base/mojom",
-    "//ui/events/mojo:interfaces",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/image/mojo:interfaces",
-    "//ui/gfx/mojo",
-    "//ui/gfx/range/mojo",
-    "//ui/latency/mojo:interfaces",
+    "//ui/events/mojom",
+    "//ui/gfx/geometry/mojom",
+    "//ui/gfx/image/mojom",
+    "//ui/gfx/mojom",
+    "//ui/gfx/range/mojom",
+    "//ui/latency/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

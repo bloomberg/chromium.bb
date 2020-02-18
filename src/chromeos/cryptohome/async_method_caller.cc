@@ -25,9 +25,7 @@ AsyncMethodCaller* g_async_method_caller = NULL;
 class AsyncMethodCallerImpl : public AsyncMethodCaller,
                               public chromeos::CryptohomeClient::Observer {
  public:
-  AsyncMethodCallerImpl() : weak_ptr_factory_(this) {
-    CryptohomeClient::Get()->AddObserver(this);
-  }
+  AsyncMethodCallerImpl() { CryptohomeClient::Get()->AddObserver(this); }
 
   ~AsyncMethodCallerImpl() override {
     CryptohomeClient::Get()->RemoveObserver(this);
@@ -104,10 +102,11 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       const std::string& device_id,
       chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
+      const std::string& key_name_for_spkac,
       const DataCallback& callback) override {
     CryptohomeClient::Get()->TpmAttestationSignEnterpriseChallenge(
         key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
-        key_name, domain, device_id, options, challenge,
+        key_name, domain, device_id, options, challenge, key_name_for_spkac,
         base::BindOnce(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
             weak_ptr_factory_.GetWeakPtr(), callback,
@@ -235,7 +234,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
 
   CallbackMap callback_map_;
   DataCallbackMap data_callback_map_;
-  base::WeakPtrFactory<AsyncMethodCallerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AsyncMethodCallerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AsyncMethodCallerImpl);
 };

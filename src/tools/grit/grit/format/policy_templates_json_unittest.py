@@ -17,10 +17,10 @@ if __name__ == '__main__':
 import grit.extern.tclib
 import tempfile
 import unittest
-import StringIO
+
+from six import StringIO
 
 from grit import grd_reader
-from grit import util
 from grit.tool import build
 
 
@@ -122,7 +122,7 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
         </structures>
       </release>
     </grit>''' % (xtb_file_path, json_file_path)
-    grd_string_io = StringIO.StringIO(grd_text)
+    grd_string_io = StringIO(grd_text)
 
     # Parse the grit tree and load the policies' JSON with a gatherer.
     grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name, defines={'_google_chrome': True})
@@ -140,7 +140,7 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
 
     grd.SetOutputLanguage(env_lang)
     grd.SetDefines(env_defs)
-    buf = StringIO.StringIO()
+    buf = StringIO()
     build.RcBuilder.ProcessNode(grd, DummyOutput('policy_templates', out_lang), buf)
     output = buf.getvalue()
 
@@ -151,13 +151,10 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
   "policy_definitions": [
     {
       "caption": "%s",
+      "desc": "Th\xefP\xefs p\xf4P\xf4l\xefP\xefc\xfdP\xfd d\xf4\xe9P\xf4\xe9s st\xfcP\xfcff.",
+      "example_value": true,
       "features": {"can_be_recommended": true, "dynamic_refresh": true},
       "name": "MainPolicy",
-      "tags": [],
-      "desc": "Th\xefP\xefs p\xf4P\xf4l\xefP\xefc\xfdP\xfd d\xf4\xe9P\xf4\xe9s st\xfcP\xfcff.",
-      "type": "main",
-      "example_value": true,
-      "supported_on": ["chrome_os:29-"],
       "schema": {
         "properties": {
           "default_launch_container": {
@@ -173,7 +170,10 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
           }
         },
         "type": "object"
-      }
+      },
+      "supported_on": ["chrome_os:29-"],
+      "tags": [],
+      "type": "main"
     }
   ],
   "policy_atomic_group_definitions": [

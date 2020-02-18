@@ -94,7 +94,7 @@ def CommandDecorator(command_name):
   """Decorator that sanity checks and adds class to list of usable commands."""
 
   def InnerCommandDecorator(original_class):
-    """"Inner Decorator that actually wraps the class."""
+    """Inner Decorator that actually wraps the class."""
     if not hasattr(original_class, '__doc__'):
       raise InvalidCommandError('All handlers must have docstrings: %s' %
                                 original_class)

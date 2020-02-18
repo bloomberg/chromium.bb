@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
@@ -64,7 +65,10 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  widget->Init(params);
+  // Use software compositing to avoid using unnecessary hardware resources
+  // which just amount to overkill for this UI.
+  params.force_software_compositing = true;
+  widget->Init(std::move(params));
   return widget;
 }
 
@@ -155,6 +159,11 @@ class TooltipAura::TooltipView : public views::View {
 
   gfx::RenderText* render_text_for_test() { return render_text_.get(); }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(render_text_->GetDisplayText());
+    node_data->role = ax::mojom::Role::kTooltip;
+  }
+
  private:
   void ResetDisplayRect() {
     render_text_->SetDisplayRect(gfx::Rect(0, 0, max_width_, 100000));
@@ -174,6 +183,10 @@ TooltipAura::~TooltipAura() {
 
 gfx::RenderText* TooltipAura::GetRenderTextForTest() {
   return tooltip_view_->render_text_for_test();
+}
+
+void TooltipAura::GetAccessibleNodeDataForTest(ui::AXNodeData* node_data) {
+  tooltip_view_->GetAccessibleNodeData(node_data);
 }
 
 gfx::Rect TooltipAura::GetTooltipBounds(const gfx::Point& mouse_pos,
@@ -248,13 +261,26 @@ void TooltipAura::Show() {
   if (widget_) {
     widget_->Show();
     widget_->StackAtTop();
+    tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipOpened,
+                                            true);
   }
 }
 
 void TooltipAura::Hide() {
   tooltip_window_ = nullptr;
-  if (widget_)
-    widget_->Hide();
+  if (widget_) {
+    // If we simply hide the widget there's a chance to briefly show outdated
+    // information on the next Show() because the text isn't updated until
+    // OnPaint() which happens asynchronously after the Show(). As a result,
+    // we can just destroy the widget and create a new one each time which
+    // guarantees we never show outdated information.
+    // TODO: Figure out why the old content is displayed despite the size
+    // change.
+    // http://crbug.com/998280
+    DestroyWidget();
+    tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipClosed,
+                                            true);
+  }
 }
 
 bool TooltipAura::IsVisible() {

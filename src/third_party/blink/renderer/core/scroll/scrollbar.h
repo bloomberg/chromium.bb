@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -37,6 +38,7 @@
 namespace blink {
 
 class CullRect;
+class Element;
 class GraphicsContext;
 class IntRect;
 class ChromeClient;
@@ -47,7 +49,6 @@ class WebMouseEvent;
 
 class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                               public DisplayItemClient {
-    USING_PRE_FINALIZER(Scrollbar, Dispose);
  public:
   // Theme object ownership remains with the caller and it must outlive the
   // scrollbar.
@@ -56,12 +57,13 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                                      ScrollbarControlSize size,
                                      ScrollbarTheme* theme) {
     return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
-                                           nullptr, theme);
+                                           nullptr, nullptr, theme);
   }
 
   Scrollbar(ScrollableArea*,
             ScrollbarOrientation,
             ScrollbarControlSize,
+            Element* style_source,
             ChromeClient* = nullptr,
             ScrollbarTheme* = nullptr);
   ~Scrollbar() override;
@@ -190,9 +192,16 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   CompositorElementId GetElementId();
 
-  // Promptly unregister from the theme manager + run finalizers of derived
-  // Scrollbars.
-  void Dispose();
+  float EffectiveZoom() const;
+  bool ContainerIsRightToLeft() const;
+
+  // The Element that supplies our style information. If the scrollbar is
+  // for a document, this is either the <body> or <html> element. Otherwise, it
+  // is the element that owns our PaintLayerScrollableArea.
+  Element* StyleSource() const { return style_source_.Get(); }
+
+  WebColorScheme UsedColorScheme() const;
+
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -246,6 +255,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   bool injected_gesture_scroll_begin_;
   IntRect visual_rect_;
   IntRect frame_rect_;
+  Member<Element> style_source_;
 };
 
 }  // namespace blink

@@ -18,7 +18,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/request_peer.h"
@@ -139,7 +139,7 @@ class ResourceDispatcherTest : public testing::Test,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
-        std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+        std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */);
     peer_context->request_id = request_id;
     return request_id;
@@ -158,7 +158,7 @@ class ResourceDispatcherTest : public testing::Test,
   std::vector<std::pair<network::mojom::URLLoaderRequest,
                         network::mojom::URLLoaderClientPtr>>
       loader_and_clients_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ResourceDispatcher> dispatcher_;
 };
 

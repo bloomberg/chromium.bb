@@ -41,45 +41,47 @@
 #include "src/trace_processor/variadic.h"
 #include "src/trace_processor/virtual_track_tracker.h"
 
-#include "perfetto/common/android_log_constants.pbzero.h"
-#include "perfetto/common/gpu_counter_descriptor.pbzero.h"
-#include "perfetto/common/trace_stats.pbzero.h"
 #include "perfetto/ext/base/string_writer.h"
-#include "perfetto/trace/android/android_log.pbzero.h"
-#include "perfetto/trace/android/packages_list.pbzero.h"
-#include "perfetto/trace/chrome/chrome_benchmark_metadata.pbzero.h"
-#include "perfetto/trace/clock_snapshot.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_stats.pbzero.h"
-#include "perfetto/trace/ftrace/generic.pbzero.h"
-#include "perfetto/trace/ftrace/kmem.pbzero.h"
-#include "perfetto/trace/ftrace/lowmemorykiller.pbzero.h"
-#include "perfetto/trace/ftrace/mm_event.pbzero.h"
-#include "perfetto/trace/ftrace/oom.pbzero.h"
-#include "perfetto/trace/ftrace/power.pbzero.h"
-#include "perfetto/trace/ftrace/raw_syscalls.pbzero.h"
-#include "perfetto/trace/ftrace/sched.pbzero.h"
-#include "perfetto/trace/ftrace/signal.pbzero.h"
-#include "perfetto/trace/ftrace/systrace.pbzero.h"
-#include "perfetto/trace/ftrace/task.pbzero.h"
-#include "perfetto/trace/gpu/gpu_counter_event.pbzero.h"
-#include "perfetto/trace/gpu/gpu_render_stage_event.pbzero.h"
-#include "perfetto/trace/interned_data/interned_data.pbzero.h"
-#include "perfetto/trace/perfetto/perfetto_metatrace.pbzero.h"
-#include "perfetto/trace/power/battery_counters.pbzero.h"
-#include "perfetto/trace/power/power_rails.pbzero.h"
-#include "perfetto/trace/profiling/profile_common.pbzero.h"
-#include "perfetto/trace/profiling/profile_packet.pbzero.h"
-#include "perfetto/trace/ps/process_stats.pbzero.h"
-#include "perfetto/trace/ps/process_tree.pbzero.h"
-#include "perfetto/trace/sys_stats/sys_stats.pbzero.h"
-#include "perfetto/trace/system_info.pbzero.h"
-#include "perfetto/trace/trace.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
-#include "perfetto/trace/track_event/debug_annotation.pbzero.h"
-#include "perfetto/trace/track_event/source_location.pbzero.h"
-#include "perfetto/trace/track_event/task_execution.pbzero.h"
+#include "protos/perfetto/common/android_log_constants.pbzero.h"
+#include "protos/perfetto/common/gpu_counter_descriptor.pbzero.h"
+#include "protos/perfetto/common/trace_stats.pbzero.h"
+#include "protos/perfetto/trace/android/android_log.pbzero.h"
+#include "protos/perfetto/trace/android/packages_list.pbzero.h"
+#include "protos/perfetto/trace/chrome/chrome_benchmark_metadata.pbzero.h"
+#include "protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "protos/perfetto/trace/clock_snapshot.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_event.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_stats.pbzero.h"
+#include "protos/perfetto/trace/ftrace/generic.pbzero.h"
+#include "protos/perfetto/trace/ftrace/kmem.pbzero.h"
+#include "protos/perfetto/trace/ftrace/lowmemorykiller.pbzero.h"
+#include "protos/perfetto/trace/ftrace/mm_event.pbzero.h"
+#include "protos/perfetto/trace/ftrace/oom.pbzero.h"
+#include "protos/perfetto/trace/ftrace/power.pbzero.h"
+#include "protos/perfetto/trace/ftrace/raw_syscalls.pbzero.h"
+#include "protos/perfetto/trace/ftrace/sched.pbzero.h"
+#include "protos/perfetto/trace/ftrace/signal.pbzero.h"
+#include "protos/perfetto/trace/ftrace/systrace.pbzero.h"
+#include "protos/perfetto/trace/ftrace/task.pbzero.h"
+#include "protos/perfetto/trace/gpu/gpu_counter_event.pbzero.h"
+#include "protos/perfetto/trace/gpu/gpu_render_stage_event.pbzero.h"
+#include "protos/perfetto/trace/interned_data/interned_data.pbzero.h"
+#include "protos/perfetto/trace/perfetto/perfetto_metatrace.pbzero.h"
+#include "protos/perfetto/trace/power/battery_counters.pbzero.h"
+#include "protos/perfetto/trace/power/power_rails.pbzero.h"
+#include "protos/perfetto/trace/profiling/profile_common.pbzero.h"
+#include "protos/perfetto/trace/profiling/profile_packet.pbzero.h"
+#include "protos/perfetto/trace/ps/process_stats.pbzero.h"
+#include "protos/perfetto/trace/ps/process_tree.pbzero.h"
+#include "protos/perfetto/trace/sys_stats/sys_stats.pbzero.h"
+#include "protos/perfetto/trace/system_info.pbzero.h"
+#include "protos/perfetto/trace/trace.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
+#include "protos/perfetto/trace/track_event/log_message.pbzero.h"
+#include "protos/perfetto/trace/track_event/source_location.pbzero.h"
+#include "protos/perfetto/trace/track_event/task_execution.pbzero.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -93,9 +95,9 @@ const char kKthreaddName[] = "kthreadd";
 
 using protozero::ProtoDecoder;
 
-HeapProfileTracker::SourceMapping MakeSourceMapping(
+StackProfileTracker::SourceMapping MakeSourceMapping(
     const protos::pbzero::Mapping::Decoder& entry) {
-  HeapProfileTracker::SourceMapping src_mapping{};
+  StackProfileTracker::SourceMapping src_mapping{};
   src_mapping.build_id = entry.build_id();
   src_mapping.exact_offset = entry.exact_offset();
   src_mapping.start_offset = entry.start_offset();
@@ -109,24 +111,24 @@ HeapProfileTracker::SourceMapping MakeSourceMapping(
   return src_mapping;
 }
 
-HeapProfileTracker::SourceFrame MakeSourceFrame(
+StackProfileTracker::SourceFrame MakeSourceFrame(
     const protos::pbzero::Frame::Decoder& entry) {
-  HeapProfileTracker::SourceFrame src_frame;
+  StackProfileTracker::SourceFrame src_frame;
   src_frame.name_id = entry.function_name_id();
   src_frame.mapping_id = entry.mapping_id();
   src_frame.rel_pc = entry.rel_pc();
   return src_frame;
 }
 
-HeapProfileTracker::SourceCallstack MakeSourceCallstack(
+StackProfileTracker::SourceCallstack MakeSourceCallstack(
     const protos::pbzero::Callstack::Decoder& entry) {
-  HeapProfileTracker::SourceCallstack src_callstack;
+  StackProfileTracker::SourceCallstack src_callstack;
   for (auto frame_it = entry.frame_ids(); frame_it; ++frame_it)
     src_callstack.emplace_back(frame_it->as_uint64());
   return src_callstack;
 }
 
-class ProfilePacketInternLookup : public HeapProfileTracker::InternLookup {
+class ProfilePacketInternLookup : public StackProfileTracker::InternLookup {
  public:
   ProfilePacketInternLookup(
       ProtoIncrementalState::PacketSequenceState* seq_state,
@@ -134,7 +136,7 @@ class ProfilePacketInternLookup : public HeapProfileTracker::InternLookup {
       : seq_state_(seq_state), storage_(storage) {}
 
   base::Optional<StringId> GetString(
-      HeapProfileTracker::SourceStringId iid) const override {
+      StackProfileTracker::SourceStringId iid) const override {
     base::Optional<StringId> res;
     auto* map =
         seq_state_->GetInternedDataMap<protos::pbzero::InternedString>();
@@ -150,9 +152,9 @@ class ProfilePacketInternLookup : public HeapProfileTracker::InternLookup {
     return res;
   }
 
-  base::Optional<HeapProfileTracker::SourceMapping> GetMapping(
-      HeapProfileTracker::SourceMappingId iid) const override {
-    base::Optional<HeapProfileTracker::SourceMapping> res;
+  base::Optional<StackProfileTracker::SourceMapping> GetMapping(
+      StackProfileTracker::SourceMappingId iid) const override {
+    base::Optional<StackProfileTracker::SourceMapping> res;
     auto* map = seq_state_->GetInternedDataMap<protos::pbzero::Mapping>();
     auto it = map->find(iid);
     if (it == map->end()) {
@@ -165,9 +167,9 @@ class ProfilePacketInternLookup : public HeapProfileTracker::InternLookup {
     return res;
   }
 
-  base::Optional<HeapProfileTracker::SourceFrame> GetFrame(
-      HeapProfileTracker::SourceFrameId iid) const override {
-    base::Optional<HeapProfileTracker::SourceFrame> res;
+  base::Optional<StackProfileTracker::SourceFrame> GetFrame(
+      StackProfileTracker::SourceFrameId iid) const override {
+    base::Optional<StackProfileTracker::SourceFrame> res;
     auto* map = seq_state_->GetInternedDataMap<protos::pbzero::Frame>();
     auto it = map->find(iid);
     if (it == map->end()) {
@@ -180,9 +182,9 @@ class ProfilePacketInternLookup : public HeapProfileTracker::InternLookup {
     return res;
   }
 
-  base::Optional<HeapProfileTracker::SourceCallstack> GetCallstack(
-      HeapProfileTracker::SourceCallstackId iid) const override {
-    base::Optional<HeapProfileTracker::SourceCallstack> res;
+  base::Optional<StackProfileTracker::SourceCallstack> GetCallstack(
+      StackProfileTracker::SourceCallstackId iid) const override {
+    base::Optional<StackProfileTracker::SourceCallstack> res;
     auto* map = seq_state_->GetInternedDataMap<protos::pbzero::Callstack>();
     auto it = map->find(iid);
     if (it == map->end()) {
@@ -211,6 +213,7 @@ constexpr int64_t kPendingThreadInstructionDelta = -1;
 
 ProtoTraceParser::ProtoTraceParser(TraceProcessorContext* context)
     : context_(context),
+      graphics_frame_event_parser_(new GraphicsFrameEventParser(context_)),
       utid_name_id_(context->storage->InternString("utid")),
       sched_wakeup_name_id_(context->storage->InternString("sched_wakeup")),
       sched_waking_name_id_(context->storage->InternString("sched_waking")),
@@ -254,6 +257,17 @@ ProtoTraceParser::ProtoTraceParser(TraceProcessorContext* context)
           context->storage->InternString("task.posted_from.file_name")),
       task_function_name_args_key_id_(
           context->storage->InternString("task.posted_from.function_name")),
+      task_line_number_args_key_id_(
+          context->storage->InternString("task.posted_from.line_number")),
+      log_message_body_key_id_(
+          context->storage->InternString("track_event.log_message")),
+      data_name_id_(context->storage->InternString("data")),
+      raw_chrome_metadata_event_id_(
+          context->storage->InternString("chrome_event.metadata")),
+      raw_chrome_legacy_system_trace_event_id_(
+          context->storage->InternString("chrome_event.legacy_system_trace")),
+      raw_chrome_legacy_user_trace_event_id_(
+          context->storage->InternString("chrome_event.legacy_user_trace")),
       raw_legacy_event_id_(
           context->storage->InternString("track_event.legacy_event")),
       legacy_event_category_key_id_(
@@ -409,14 +423,20 @@ void ProtoTraceParser::ParseTracePacket(
   if (packet.has_ftrace_stats())
     ParseFtraceStats(packet.ftrace_stats());
 
-  if (packet.has_clock_snapshot())
-    ParseClockSnapshot(packet.clock_snapshot());
-
   if (packet.has_android_log())
     ParseAndroidLogPacket(packet.android_log());
 
   if (packet.has_profile_packet())
     ParseProfilePacket(ts, ttp.packet_sequence_state, packet.profile_packet());
+
+  if (packet.has_streaming_profile_packet()) {
+    ParseStreamingProfilePacket(ttp.packet_sequence_state,
+                                packet.streaming_profile_packet());
+  }
+
+  if (packet.has_profiled_frame_symbols())
+    ParseProfiledFrameSymbols(ttp.packet_sequence_state,
+                              packet.profiled_frame_symbols());
 
   if (packet.has_system_info())
     ParseSystemInfo(packet.system_info());
@@ -428,6 +448,10 @@ void ProtoTraceParser::ParseTracePacket(
 
   if (packet.has_chrome_benchmark_metadata()) {
     ParseChromeBenchmarkMetadata(packet.chrome_benchmark_metadata());
+  }
+
+  if (packet.has_chrome_events()) {
+    ParseChromeEvents(packet.chrome_events());
   }
 
   if (packet.has_perfetto_metatrace()) {
@@ -444,6 +468,10 @@ void ProtoTraceParser::ParseTracePacket(
 
   if (packet.has_packages_list()) {
     ParseAndroidPackagesList(packet.packages_list());
+  }
+
+  if (packet.has_graphics_frame_event()) {
+    graphics_frame_event_parser_->ParseEvent(ts, packet.graphics_frame_event());
   }
 
   // TODO(lalitm): maybe move this to the flush method in the trace processor
@@ -1208,45 +1236,6 @@ void ProtoTraceParser::ParseTypedFtraceToRaw(uint32_t ftrace_id,
   }
 }
 
-void ProtoTraceParser::ParseClockSnapshot(ConstBytes blob) {
-  protos::pbzero::ClockSnapshot::Decoder evt(blob.data, blob.size);
-  int64_t clock_boottime = 0;
-  int64_t clock_monotonic = 0;
-  int64_t clock_realtime = 0;
-  for (auto it = evt.clocks(); it; ++it) {
-    protos::pbzero::ClockSnapshot::Clock::Decoder clk(it->data(), it->size());
-    if (clk.type() == protos::pbzero::ClockSnapshot::Clock::BOOTTIME) {
-      clock_boottime = static_cast<int64_t>(clk.timestamp());
-    } else if (clk.type() == protos::pbzero::ClockSnapshot::Clock::REALTIME) {
-      clock_realtime = static_cast<int64_t>(clk.timestamp());
-    } else if (clk.type() == protos::pbzero::ClockSnapshot::Clock::MONOTONIC) {
-      clock_monotonic = static_cast<int64_t>(clk.timestamp());
-    }
-  }
-
-  // Usually these snapshots come all together.
-  PERFETTO_DCHECK(clock_boottime > 0 && clock_monotonic > 0 &&
-                  clock_realtime > 0);
-
-  if (clock_boottime <= 0) {
-    PERFETTO_ELOG("ClockSnapshot has an invalid BOOTTIME (%" PRId64 ")",
-                  clock_boottime);
-    context_->storage->IncrementStats(stats::invalid_clock_snapshots);
-    return;
-  }
-
-  auto* ct = context_->clock_tracker.get();
-
-  // |clock_boottime| is used as the reference trace time.
-  ct->SyncClocks(ClockDomain::kBootTime, clock_boottime, clock_boottime);
-
-  if (clock_monotonic > 0)
-    ct->SyncClocks(ClockDomain::kMonotonic, clock_monotonic, clock_boottime);
-
-  if (clock_realtime > 0)
-    ct->SyncClocks(ClockDomain::kRealTime, clock_realtime, clock_boottime);
-}
-
 void ProtoTraceParser::ParseAndroidLogPacket(ConstBytes blob) {
   protos::pbzero::AndroidLogPacket::Decoder packet(blob.data, blob.size);
   for (auto it = packet.events(); it; ++it)
@@ -1298,13 +1287,13 @@ void ProtoTraceParser::ParseAndroidLogEvent(ConstBytes blob) {
     prio = protos::pbzero::AndroidLogPriority::PRIO_INFO;
 
   if (arg_str != &arg_msg[0]) {
-    PERFETTO_DCHECK(!msg_id);
+    PERFETTO_DCHECK(msg_id.is_null());
     // Skip the first space char (" foo=1 bar=2" -> "foo=1 bar=2").
     msg_id = context_->storage->InternString(&arg_msg[1]);
   }
   UniquePid utid = tid ? context_->process_tracker->UpdateThread(tid, pid) : 0;
-  base::Optional<int64_t> opt_trace_time =
-      context_->clock_tracker->ToTraceTime(ClockDomain::kRealTime, ts);
+  base::Optional<int64_t> opt_trace_time = context_->clock_tracker->ToTraceTime(
+      protos::pbzero::ClockSnapshot::Clock::REALTIME, ts);
   if (!opt_trace_time)
     return;
 
@@ -1389,6 +1378,9 @@ void ProtoTraceParser::ParseTraceStats(ConstBytes blob) {
                              static_cast<int64_t>(buf.readaheads_succeeded()));
     storage->SetIndexedStats(stats::traced_buf_readaheads_failed, buf_num,
                              static_cast<int64_t>(buf.readaheads_failed()));
+    storage->SetIndexedStats(
+        stats::traced_buf_trace_writer_packet_loss, buf_num,
+        static_cast<int64_t>(buf.trace_writer_packet_loss()));
   }
 }
 
@@ -1453,26 +1445,26 @@ void ProtoTraceParser::ParseProfilePacket(
     const char* str = reinterpret_cast<const char*>(entry.str().data);
     auto str_id = context_->storage->InternString(
         base::StringView(str, entry.str().size));
-    context_->heap_profile_tracker->AddString(entry.iid(), str_id);
+    context_->stack_profile_tracker->AddString(entry.iid(), str_id);
   }
 
   for (auto it = packet.mappings(); it; ++it) {
     protos::pbzero::Mapping::Decoder entry(it->data(), it->size());
-    HeapProfileTracker::SourceMapping src_mapping = MakeSourceMapping(entry);
-    context_->heap_profile_tracker->AddMapping(entry.iid(), src_mapping);
+    StackProfileTracker::SourceMapping src_mapping = MakeSourceMapping(entry);
+    context_->stack_profile_tracker->AddMapping(entry.iid(), src_mapping);
   }
 
   for (auto it = packet.frames(); it; ++it) {
     protos::pbzero::Frame::Decoder entry(it->data(), it->size());
-    HeapProfileTracker::SourceFrame src_frame = MakeSourceFrame(entry);
-    context_->heap_profile_tracker->AddFrame(entry.iid(), src_frame);
+    StackProfileTracker::SourceFrame src_frame = MakeSourceFrame(entry);
+    context_->stack_profile_tracker->AddFrame(entry.iid(), src_frame);
   }
 
   for (auto it = packet.callstacks(); it; ++it) {
     protos::pbzero::Callstack::Decoder entry(it->data(), it->size());
-    HeapProfileTracker::SourceCallstack src_callstack =
+    StackProfileTracker::SourceCallstack src_callstack =
         MakeSourceCallstack(entry);
-    context_->heap_profile_tracker->AddCallstack(entry.iid(), src_callstack);
+    context_->stack_profile_tracker->AddCallstack(entry.iid(), src_callstack);
   }
 
   for (auto it = packet.process_dumps(); it; ++it) {
@@ -1515,6 +1507,62 @@ void ProtoTraceParser::ParseProfilePacket(
   }
 }
 
+void ProtoTraceParser::ParseStreamingProfilePacket(
+    ProtoIncrementalState::PacketSequenceState* sequence_state,
+    ConstBytes blob) {
+  protos::pbzero::StreamingProfilePacket::Decoder packet(blob.data, blob.size);
+
+  ProcessTracker* procs = context_->process_tracker.get();
+  TraceStorage* storage = context_->storage.get();
+  StackProfileTracker* stack_profile_tracker =
+      context_->stack_profile_tracker.get();
+  ProfilePacketInternLookup intern_lookup(sequence_state, storage);
+
+  uint32_t pid = static_cast<uint32_t>(sequence_state->pid());
+  uint32_t tid = static_cast<uint32_t>(sequence_state->tid());
+  UniqueTid utid = procs->UpdateThread(tid, pid);
+
+  auto timestamp_it = packet.timestamp_delta_us();
+  for (auto callstack_it = packet.callstack_iid(); callstack_it;
+       ++callstack_it, ++timestamp_it) {
+    if (!timestamp_it) {
+      context_->storage->IncrementStats(stats::stackprofile_parser_error);
+      PERFETTO_ELOG(
+          "StreamingProfilePacket has less callstack IDs than timestamps!");
+      break;
+    }
+
+    auto maybe_callstack_id = stack_profile_tracker->FindCallstack(
+        callstack_it->as_uint64(), &intern_lookup);
+    if (!maybe_callstack_id) {
+      context_->storage->IncrementStats(stats::stackprofile_parser_error);
+      PERFETTO_ELOG("StreamingProfilePacket referencing invalid callstack!");
+      continue;
+    }
+
+    int64_t callstack_id = *maybe_callstack_id;
+
+    TraceStorage::CpuProfileStackSamples::Row sample_row{
+        sequence_state->IncrementAndGetTrackEventTimeNs(
+            timestamp_it->as_int64()),
+        callstack_id, utid};
+    storage->mutable_cpu_profile_stack_samples()->Insert(sample_row);
+  }
+}
+
+void ProtoTraceParser::ParseProfiledFrameSymbols(
+    ProtoIncrementalState::PacketSequenceState* sequence_state,
+    ConstBytes blob) {
+  protos::pbzero::ProfiledFrameSymbols::Decoder packet(blob.data, blob.size);
+  ProfilePacketInternLookup intern_lookup(sequence_state,
+                                          context_->storage.get());
+  // We currently only keep the first function_name_id (given currently frames
+  // only map to a single name).
+  context_->stack_profile_tracker->SetFrameName(
+      packet.frame_iid(), packet.function_name_id()->as_uint64(),
+      &intern_lookup);
+}
+
 void ProtoTraceParser::ParseSystemInfo(ConstBytes blob) {
   protos::pbzero::SystemInfo::Decoder packet(blob.data, blob.size);
   if (packet.has_utsname()) {
@@ -1546,8 +1594,9 @@ void ProtoTraceParser::ParseTrackEvent(
 
   // TODO(eseckler): This legacy event field will eventually be replaced by
   // fields in TrackEvent itself.
-  if (PERFETTO_UNLIKELY(!legacy_event.has_phase())) {
-    PERFETTO_ELOG("TrackEvent without phase");
+  if (PERFETTO_UNLIKELY(!event.type() && !legacy_event.has_phase())) {
+    context_->storage->IncrementStats(stats::track_event_parser_errors);
+    PERFETTO_ELOG("TrackEvent without type or phase");
     return;
   }
 
@@ -1567,16 +1616,21 @@ void ProtoTraceParser::ParseTrackEvent(
   for (auto it = event.category_iids(); it; ++it) {
     category_iids.push_back(it->as_uint64());
   }
+  std::vector<protozero::ConstChars> category_strings;
+  for (auto it = event.categories(); it; ++it) {
+    category_strings.push_back(it->as_string());
+  }
 
   StringId category_id = 0;
 
   // If there's a single category, we can avoid building a concatenated
   // string.
-  if (PERFETTO_LIKELY(category_iids.size() == 1)) {
+  if (PERFETTO_LIKELY(category_iids.size() == 1 && category_strings.empty())) {
     auto* map =
         sequence_state->GetInternedDataMap<protos::pbzero::EventCategory>();
     auto cat_view_it = map->find(category_iids[0]);
     if (cat_view_it == map->end()) {
+      context_->storage->IncrementStats(stats::track_event_tokenizer_errors);
       PERFETTO_ELOG("Could not find category interning entry for ID %" PRIu64,
                     category_iids[0]);
     } else {
@@ -1592,7 +1646,9 @@ void ProtoTraceParser::ParseTrackEvent(
                 protos::pbzero::EventCategory>{category_id};
       }
     }
-  } else if (category_iids.size() > 1) {
+  } else if (category_iids.empty() && category_strings.size() == 1) {
+    category_id = storage->InternString(category_strings[0]);
+  } else if (category_iids.size() + category_strings.size() > 1) {
     auto* map =
         sequence_state->GetInternedDataMap<protos::pbzero::EventCategory>();
     // We concatenate the category strings together since we currently only
@@ -1602,6 +1658,7 @@ void ProtoTraceParser::ParseTrackEvent(
     for (uint64_t iid : category_iids) {
       auto cat_view_it = map->find(iid);
       if (cat_view_it == map->end()) {
+        context_->storage->IncrementStats(stats::track_event_tokenizer_errors);
         PERFETTO_ELOG("Could not find category interning entry for ID %" PRIu64,
                       iid);
         continue;
@@ -1612,21 +1669,31 @@ void ProtoTraceParser::ParseTrackEvent(
         categories.append(",");
       categories.append(name.data(), name.size());
     }
+    for (const protozero::ConstChars& cat : category_strings) {
+      if (!categories.empty())
+        categories.append(",");
+      categories.append(cat.data, cat.size);
+    }
     if (!categories.empty())
       category_id = storage->InternString(base::StringView(categories));
   } else {
+    context_->storage->IncrementStats(stats::track_event_parser_errors);
     PERFETTO_ELOG("TrackEvent without category");
   }
 
   StringId name_id = 0;
 
-  if (PERFETTO_LIKELY(legacy_event.name_iid())) {
-    auto* map =
-        sequence_state->GetInternedDataMap<protos::pbzero::LegacyEventName>();
-    auto name_view_it = map->find(legacy_event.name_iid());
+  uint64_t name_iid = event.name_iid();
+  if (!name_iid)
+    name_iid = legacy_event.name_iid();
+
+  if (PERFETTO_LIKELY(name_iid)) {
+    auto* map = sequence_state->GetInternedDataMap<protos::pbzero::EventName>();
+    auto name_view_it = map->find(name_iid);
     if (name_view_it == map->end()) {
+      context_->storage->IncrementStats(stats::track_event_tokenizer_errors);
       PERFETTO_ELOG("Could not find event name interning entry for ID %" PRIu64,
-                    legacy_event.name_iid());
+                    name_iid);
     } else {
       // If the name is already in the pool, no need to decode it again.
       if (name_view_it->second.storage_refs) {
@@ -1636,13 +1703,15 @@ void ProtoTraceParser::ParseTrackEvent(
         name_id = storage->InternString(event_name.name());
         // Avoid having to decode & look up the name again in the future.
         name_view_it->second.storage_refs =
-            ProtoIncrementalState::StorageReferences<
-                protos::pbzero::LegacyEventName>{name_id};
+            ProtoIncrementalState::StorageReferences<protos::pbzero::EventName>{
+                name_id};
       }
     }
+  } else if (event.has_name()) {
+    name_id = storage->InternString(event.name());
   }
 
-  auto args_callback = [this, &event, &sequence_state](
+  auto args_callback = [this, &event, &sequence_state, ts, utid](
                            ArgsTracker* args_tracker, RowId row_id) {
     for (auto it = event.debug_annotations(); it; ++it) {
       ParseDebugAnnotationArgs(it->as_bytes(), sequence_state, args_tracker,
@@ -1652,6 +1721,11 @@ void ProtoTraceParser::ParseTrackEvent(
     if (event.has_task_execution()) {
       ParseTaskExecutionArgs(event.task_execution(), sequence_state,
                              args_tracker, row_id);
+    }
+
+    if (event.has_log_message()) {
+      ParseLogMessage(event.log_message(), sequence_state, ts, utid,
+                      args_tracker, row_id);
     }
   };
 
@@ -1675,7 +1749,26 @@ void ProtoTraceParser::ParseTrackEvent(
     id_scope = storage->InternString(legacy_event.id_scope());
   }
 
-  int32_t phase = legacy_event.phase();
+  int32_t phase = 0;
+  if (legacy_event.has_phase()) {
+    phase = legacy_event.phase();
+  } else {
+    switch (event.type()) {
+      case protos::pbzero::TrackEvent::TYPE_SLICE_BEGIN:
+        phase = 'B';
+        break;
+      case protos::pbzero::TrackEvent::TYPE_SLICE_END:
+        phase = 'E';
+        break;
+      case protos::pbzero::TrackEvent::TYPE_INSTANT:
+        phase = 'i';
+        break;
+      default:
+        PERFETTO_FATAL("unexpected event type %d", event.type());
+        return;
+    }
+  }
+
   switch (static_cast<char>(phase)) {
     case 'B': {  // TRACE_EVENT_PHASE_BEGIN.
       auto opt_slice_id = slice_tracker->Begin(
@@ -1875,8 +1968,11 @@ void ProtoTraceParser::ParseLegacyEventAsRawEvent(
               legacy_event_category_key_id_, Variadic::String(category_id));
   args.AddArg(row_id, legacy_event_name_key_id_, legacy_event_name_key_id_,
               Variadic::String(name_id));
+
+  std::string phase_string(1, static_cast<char>(legacy_event.phase()));
+  StringId phase_id = context_->storage->InternString(phase_string.c_str());
   args.AddArg(row_id, legacy_event_phase_key_id_, legacy_event_phase_key_id_,
-              Variadic::Integer(legacy_event.phase()));
+              Variadic::String(phase_id));
 
   if (legacy_event.has_duration_us()) {
     args.AddArg(row_id, legacy_event_duration_ns_key_id_,
@@ -1971,6 +2067,9 @@ void ProtoTraceParser::ParseLegacyEventAsRawEvent(
                 legacy_event_flow_direction_key_id_, Variadic::String(value));
   }
 
+  // No need to parse legacy_event.instant_event_scope() because we import
+  // instant events into the slice table.
+
   args_callback(&args, row_id);
 }
 
@@ -1979,41 +2078,49 @@ void ProtoTraceParser::ParseDebugAnnotationArgs(
     ProtoIncrementalState::PacketSequenceState* sequence_state,
     ArgsTracker* args_tracker,
     RowId row_id) {
+  TraceStorage* storage = context_->storage.get();
+
   protos::pbzero::DebugAnnotation::Decoder annotation(debug_annotation.data,
                                                       debug_annotation.size);
-  uint64_t iid = annotation.name_iid();
-  if (!iid)
-    return;
 
-  auto* map =
-      sequence_state->GetInternedDataMap<protos::pbzero::DebugAnnotationName>();
-  auto name_view_it = map->find(iid);
-  if (name_view_it == map->end()) {
-    PERFETTO_ELOG(
-        "Could not find debug annotation name interning entry for ID %" PRIu64,
-        iid);
-    return;
-  }
-
-  TraceStorage* storage = context_->storage.get();
 
   StringId name_id = 0;
 
-  // If the name is already in the pool, no need to decode it again.
-  if (name_view_it->second.storage_refs) {
-    name_id = name_view_it->second.storage_refs->name_id;
+  uint64_t name_iid = annotation.name_iid();
+  if (PERFETTO_LIKELY(name_iid)) {
+    auto* map = sequence_state
+                    ->GetInternedDataMap<protos::pbzero::DebugAnnotationName>();
+    auto name_view_it = map->find(name_iid);
+    if (name_view_it == map->end()) {
+      context_->storage->IncrementStats(stats::track_event_tokenizer_errors);
+      PERFETTO_ELOG(
+          "Could not find debug annotation name interning entry for ID "
+          "%" PRIu64,
+          name_iid);
+      return;
+    }
+
+    // If the name is already in the pool, no need to decode it again.
+    if (name_view_it->second.storage_refs) {
+      name_id = name_view_it->second.storage_refs->name_id;
+    } else {
+      // TODO(khokhlov): If there are dots or brackets in argument names, they
+      // will confuse the JSON exporter. Either introduce escape sequences (both
+      // here and in export_json.cc), or find another way to encode such names.
+      auto name = name_view_it->second.CreateDecoder();
+      std::string name_prefixed = "debug." + name.name().ToStdString();
+      name_id = storage->InternString(base::StringView(name_prefixed));
+      // Avoid having to decode & look up the name again in the future.
+      name_view_it->second.storage_refs =
+          ProtoIncrementalState::StorageReferences<
+              protos::pbzero::DebugAnnotationName>{name_id};
+    }
+  } else if (annotation.has_name()) {
+    name_id = storage->InternString(annotation.name());
   } else {
-    // TODO(khokhlov): If there are dots or brackets in argument names,
-    // they will confuse the JSON exporter. Either introduce escape
-    // sequences (both here and in export_json.cc), or find another way
-    // to encode such names.
-    auto name = name_view_it->second.CreateDecoder();
-    std::string name_prefixed = "debug." + name.name().ToStdString();
-    name_id = storage->InternString(base::StringView(name_prefixed));
-    // Avoid having to decode & look up the name again in the future.
-    name_view_it->second.storage_refs =
-        ProtoIncrementalState::StorageReferences<
-            protos::pbzero::DebugAnnotationName>{name_id};
+    context_->storage->IncrementStats(stats::track_event_parser_errors);
+    PERFETTO_ELOG("Debug annotation without name");
+    return;
   }
 
   if (annotation.has_bool_value()) {
@@ -2118,6 +2225,7 @@ void ProtoTraceParser::ParseTaskExecutionArgs(
       sequence_state->GetInternedDataMap<protos::pbzero::SourceLocation>();
   auto location_view_it = map->find(iid);
   if (location_view_it == map->end()) {
+    context_->storage->IncrementStats(stats::track_event_tokenizer_errors);
     PERFETTO_ELOG(
         "Could not find source location interning entry for ID %" PRIu64, iid);
     return;
@@ -2125,20 +2233,24 @@ void ProtoTraceParser::ParseTaskExecutionArgs(
 
   StringId file_name_id = 0;
   StringId function_name_id = 0;
+  uint32_t line_number = 0;
 
   // If the names are already in the pool, no need to decode them again.
   if (location_view_it->second.storage_refs) {
     file_name_id = location_view_it->second.storage_refs->file_name_id;
     function_name_id = location_view_it->second.storage_refs->function_name_id;
+    line_number = location_view_it->second.storage_refs->line_number;
   } else {
     TraceStorage* storage = context_->storage.get();
     auto location = location_view_it->second.CreateDecoder();
     file_name_id = storage->InternString(location.file_name());
     function_name_id = storage->InternString(location.function_name());
+    line_number = location.line_number();
     // Avoid having to decode & look up the names again in the future.
     location_view_it->second.storage_refs =
         ProtoIncrementalState::StorageReferences<
-            protos::pbzero::SourceLocation>{file_name_id, function_name_id};
+            protos::pbzero::SourceLocation>{file_name_id, function_name_id,
+                                            line_number};
   }
 
   args_tracker->AddArg(row, task_file_name_args_key_id_,
@@ -2147,6 +2259,59 @@ void ProtoTraceParser::ParseTaskExecutionArgs(
   args_tracker->AddArg(row, task_function_name_args_key_id_,
                        task_function_name_args_key_id_,
                        Variadic::String(function_name_id));
+
+  args_tracker->AddArg(row, task_line_number_args_key_id_,
+                       task_line_number_args_key_id_,
+                       Variadic::UnsignedInteger(line_number));
+}
+
+void ProtoTraceParser::ParseLogMessage(
+    ConstBytes blob,
+    ProtoIncrementalState::PacketSequenceState* sequence_state,
+    int64_t ts,
+    uint32_t utid,
+    ArgsTracker* args_tracker,
+    RowId row) {
+  protos::pbzero::LogMessage::Decoder message(blob.data, blob.size);
+
+  TraceStorage* storage = context_->storage.get();
+
+  StringId log_message_id = 0;
+
+  auto* map =
+      sequence_state->GetInternedDataMap<protos::pbzero::LogMessageBody>();
+  auto message_body_entry = map->find(message.body_iid());
+  if (message_body_entry == map->end()) {
+    context_->storage->IncrementStats(stats::track_event_tokenizer_errors);
+    PERFETTO_ELOG(
+        "Could not find source location interning entry for ID %" PRIu64,
+        message.body_iid());
+    return;
+  }
+  if (message_body_entry->second.storage_refs) {
+    log_message_id = message_body_entry->second.storage_refs->body_id;
+  } else {
+    auto body = message_body_entry->second.CreateDecoder();
+    log_message_id = storage->InternString(body.body());
+
+    // Avoid having to decode & look up the name again in the future.
+    message_body_entry->second.storage_refs =
+        ProtoIncrementalState::StorageReferences<
+            protos::pbzero::LogMessageBody>{log_message_id};
+  }
+
+  // TODO(nicomazz): LogMessage also contains the source of the message (file
+  // and line number). Android logs doesn't support this so far.
+  context_->storage->mutable_android_log()->AddLogEvent(
+      ts, utid,
+      /*priority*/ 0,
+      /*tag_id*/ 0,  // TODO(nicomazz): Abuse tag_id to display
+                     // "file_name:line_number".
+      log_message_id);
+
+  args_tracker->AddArg(row, log_message_body_key_id_, log_message_body_key_id_,
+                       Variadic::String(log_message_id));
+  // TODO(nicomazz): Add the source location as an argument.
 }
 
 void ProtoTraceParser::ParseChromeBenchmarkMetadata(ConstBytes blob) {
@@ -2195,6 +2360,66 @@ void ProtoTraceParser::ParseChromeBenchmarkMetadata(ConstBytes blob) {
   }
 }
 
+void ProtoTraceParser::ParseChromeEvents(ConstBytes blob) {
+  TraceStorage* storage = context_->storage.get();
+  protos::pbzero::ChromeEventBundle::Decoder bundle(blob.data, blob.size);
+  ArgsTracker args(context_);
+  if (bundle.has_metadata()) {
+    RowId row_id = storage->mutable_raw_events()->AddRawEvent(
+        0, raw_chrome_metadata_event_id_, 0, 0);
+
+    // Metadata is proxied via a special event in the raw table to JSON export.
+    for (auto it = bundle.metadata(); it; ++it) {
+      protos::pbzero::ChromeMetadata::Decoder metadata(it->as_bytes().data,
+                                                       it->as_bytes().size);
+      StringId name_id = storage->InternString(metadata.name());
+      Variadic value;
+      if (metadata.has_string_value()) {
+        value =
+            Variadic::String(storage->InternString(metadata.string_value()));
+      } else if (metadata.has_int_value()) {
+        value = Variadic::Integer(metadata.int_value());
+      } else if (metadata.has_bool_value()) {
+        value = Variadic::Integer(metadata.bool_value());
+      } else if (metadata.has_json_value()) {
+        value = Variadic::Json(storage->InternString(metadata.json_value()));
+      } else {
+        PERFETTO_FATAL("Empty ChromeMetadata message");
+      }
+      args.AddArg(row_id, name_id, name_id, value);
+    }
+  }
+
+  if (bundle.has_legacy_ftrace_output()) {
+    RowId row_id = storage->mutable_raw_events()->AddRawEvent(
+        0, raw_chrome_legacy_system_trace_event_id_, 0, 0);
+
+    std::string data;
+    for (auto it = bundle.legacy_ftrace_output(); it; ++it) {
+      data += it->as_string().ToStdString();
+    }
+    Variadic value =
+        Variadic::String(storage->InternString(base::StringView(data)));
+    args.AddArg(row_id, data_name_id_, data_name_id_, value);
+  }
+
+  if (bundle.has_legacy_json_trace()) {
+    for (auto it = bundle.legacy_json_trace(); it; ++it) {
+      protos::pbzero::ChromeLegacyJsonTrace::Decoder legacy_trace(
+          it->as_bytes().data, it->as_bytes().size);
+      if (legacy_trace.type() !=
+          protos::pbzero::ChromeLegacyJsonTrace::USER_TRACE) {
+        continue;
+      }
+      RowId row_id = storage->mutable_raw_events()->AddRawEvent(
+          0, raw_chrome_legacy_user_trace_event_id_, 0, 0);
+      Variadic value =
+          Variadic::Json(storage->InternString(legacy_trace.data()));
+      args.AddArg(row_id, data_name_id_, data_name_id_, value);
+    }
+  }
+}
+
 void ProtoTraceParser::ParseMetatraceEvent(int64_t ts, ConstBytes blob) {
   protos::pbzero::PerfettoMetatrace::Decoder event(blob.data, blob.size);
   auto utid = context_->process_tracker->GetOrCreateThread(event.thread_id());
@@ -2232,10 +2457,12 @@ void ProtoTraceParser::ParseMetatraceEvent(int64_t ts, ConstBytes blob) {
 void ProtoTraceParser::ParseGpuCounterEvent(int64_t ts, ConstBytes blob) {
   protos::pbzero::GpuCounterEvent::Decoder event(blob.data, blob.size);
 
-  protos::pbzero::GpuCounterDescriptor::Decoder desc(event.counter_descriptor());
+  protos::pbzero::GpuCounterDescriptor::Decoder descriptor(
+      event.counter_descriptor());
   // Add counter spec to ID map.
-  for (auto it = desc.specs(); it; ++it) {
-    protos::pbzero::GpuCounterDescriptor_GpuCounterSpec::Decoder spec(it->data(), it->size());
+  for (auto it = descriptor.specs(); it; ++it) {
+    protos::pbzero::GpuCounterDescriptor_GpuCounterSpec::Decoder spec(
+        it->data(), it->size());
     if (!spec.has_counter_id()) {
       PERFETTO_ELOG("Counter spec missing counter id");
       context_->storage->IncrementStats(stats::gpu_counters_invalid_spec);
@@ -2249,21 +2476,49 @@ void ProtoTraceParser::ParseGpuCounterEvent(int64_t ts, ConstBytes blob) {
     auto counter_id = spec.counter_id();
     auto name = spec.name();
     if (gpu_counter_ids_.find(counter_id) == gpu_counter_ids_.end()) {
-      gpu_counter_ids_.emplace(
-          counter_id,
-          context_->storage->InternString(name));
+      auto desc = spec.description();
+
+      StringId unit_id = 0;
+      if (spec.has_numerator_units() || spec.has_denominator_units()) {
+        char buffer[1024];
+        base::StringWriter unit(buffer, sizeof(buffer));
+        for (auto numer = spec.numerator_units(); numer; ++numer) {
+          if (unit.pos()) {
+            unit.AppendChar(':');
+          }
+          unit.AppendInt(numer->as_int64());
+        }
+        char sep = '/';
+        for (auto denom = spec.denominator_units(); denom; ++denom) {
+          unit.AppendChar(sep);
+          unit.AppendInt(denom->as_int64());
+          sep = ':';
+        }
+        unit_id = context_->storage->InternString(unit.GetStringView());
+      }
+
+      auto name_id = context_->storage->InternString(name);
+      auto desc_id = context_->storage->InternString(desc);
+      auto* definitions = context_->storage->mutable_counter_definitions();
+      auto defn_id = definitions->AddCounterDefinition(name_id,
+                                                       0,
+                                                       RefType::kRefGpuId,
+                                                       desc_id,
+                                                       unit_id);
+      gpu_counter_ids_.emplace(counter_id, defn_id);
     } else {
       // Either counter spec was repeated or it came after counter data.
       PERFETTO_ELOG("Duplicated counter spec found. (counter_id=%d, name=%s)",
-          counter_id,
-          name.ToStdString().c_str());
+                    counter_id, name.ToStdString().c_str());
       context_->storage->IncrementStats(stats::gpu_counters_invalid_spec);
     }
   }
 
   for (auto it = event.counters(); it; ++it) {
-    protos::pbzero::GpuCounterEvent_GpuCounter::Decoder counter(it->data(), it->size());
-    if (counter.has_counter_id() && (counter.has_int_value() || counter.has_double_value())) {
+    protos::pbzero::GpuCounterEvent_GpuCounter::Decoder counter(it->data(),
+                                                                it->size());
+    if (counter.has_counter_id() &&
+        (counter.has_int_value() || counter.has_double_value())) {
       auto counter_id = counter.counter_id();
       // Check missing counter_id
       if (gpu_counter_ids_.find(counter_id) == gpu_counter_ids_.end()) {
@@ -2272,17 +2527,20 @@ void ProtoTraceParser::ParseGpuCounterEvent(int64_t ts, ConstBytes blob) {
         writer.AppendString("gpu_counter(");
         writer.AppendUnsignedInt(counter_id);
         writer.AppendString(")");
-        gpu_counter_ids_.emplace(
-            counter_id,
-            context_->storage->InternString(writer.GetStringView()));
+        auto name_id = context_->storage->InternString(writer.GetStringView());
+        auto* definitions = context_->storage->mutable_counter_definitions();
+        auto defn_id = definitions->AddCounterDefinition(name_id,
+                                                         0,
+                                                         RefType::kRefGpuId);
+        gpu_counter_ids_.emplace(counter_id, defn_id);
         context_->storage->IncrementStats(stats::gpu_counters_missing_spec);
       }
       if (counter.has_int_value()) {
-        context_->event_tracker->PushCounter(
-            ts, counter.int_value(), gpu_counter_ids_[counter_id], 0, RefType::kRefGpuId);
+        context_->event_tracker->PushCounter(ts, counter.int_value(),
+                                             gpu_counter_ids_[counter_id]);
       } else {
-        context_->event_tracker->PushCounter(
-            ts, counter.double_value(), gpu_counter_ids_[counter_id], 0, RefType::kRefGpuId);
+        context_->event_tracker->PushCounter(ts, counter.double_value(),
+                                             gpu_counter_ids_[counter_id]);
       }
     }
   }
@@ -2313,6 +2571,18 @@ void ProtoTraceParser::ParseGpuRenderStageEvent(int64_t ts, ConstBytes blob) {
     }
   }
 
+  auto args_callback = [this, &event](
+                           ArgsTracker* args_tracker, RowId row_id) {
+    for (auto it = event.extra_data(); it; ++it) {
+      protos::pbzero::GpuRenderStageEvent_ExtraData_Decoder
+          datum(it->data(), it->size());
+      StringId name_id = context_->storage->InternString(datum.name());
+      StringId value = context_->storage->InternString(
+          datum.has_value() ? datum.value() : base::StringView());
+      args_tracker->AddArg(row_id, name_id, name_id, Variadic::String(value));
+    }
+  };
+
   if (event.has_event_id()) {
     size_t stage_id = static_cast<size_t>(event.stage_id());
     StringId stage_name;
@@ -2325,7 +2595,7 @@ void ProtoTraceParser::ParseGpuRenderStageEvent(int64_t ts, ConstBytes blob) {
     }
     context_->slice_tracker->Scoped(
         ts, event.hw_queue_id(), RefType::kRefGpuId, 0, /* cat */
-        stage_name, static_cast<int64_t>(event.duration()));
+        stage_name, static_cast<int64_t>(event.duration()), args_callback);
   }
 }
 

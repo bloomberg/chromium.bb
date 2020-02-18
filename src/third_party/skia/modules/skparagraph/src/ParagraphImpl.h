@@ -2,14 +2,17 @@
 #ifndef ParagraphImpl_DEFINED
 #define ParagraphImpl_DEFINED
 
-#include <include/private/SkMutex.h>
-#include "FontResolver.h"
+#include <unicode/brkiter.h>
+#include <unicode/ubidi.h>
+#include <unicode/unistr.h>
+#include <unicode/urename.h>
 #include "include/core/SkPicture.h"
+#include "include/private/SkMutex.h"
 #include "include/private/SkTHash.h"
 #include "modules/skparagraph/include/Paragraph.h"
 #include "modules/skparagraph/include/ParagraphStyle.h"
 #include "modules/skparagraph/include/TextStyle.h"
-#include "modules/skparagraph/src/ParagraphCache.h"
+#include "modules/skparagraph/src/FontResolver.h"
 #include "modules/skparagraph/src/Run.h"
 #include "modules/skparagraph/src/TextLine.h"
 
@@ -39,18 +42,60 @@ struct StyleBlock {
     TStyle fStyle;
 };
 
+class TextBreaker {
+public:
+    TextBreaker() : fInitialized(false), fPos(-1) {}
+
+    bool initialize(SkSpan<const char> text, UBreakIteratorType type);
+
+    bool initialized() const { return fInitialized; }
+
+    size_t first() {
+        fPos = ubrk_first(fIterator.get());
+        return eof() ? fSize : fPos;
+    }
+
+    size_t next() {
+        fPos = ubrk_next(fIterator.get());
+        return eof() ? fSize : fPos;
+    }
+
+    size_t preceding(size_t offset) {
+        auto pos = ubrk_preceding(fIterator.get(), offset);
+        return eof() ? 0 : pos;
+    }
+
+    size_t following(size_t offset) {
+        auto pos = ubrk_following(fIterator.get(), offset);
+        return eof() ? fSize : pos;
+    }
+
+    int32_t status() { return ubrk_getRuleStatus(fIterator.get()); }
+
+    bool eof() { return fPos == icu::BreakIterator::DONE; }
+
+private:
+    std::unique_ptr<UBreakIterator, SkFunctionWrapper<decltype(ubrk_close), ubrk_close>> fIterator;
+    bool fInitialized;
+    int32_t fPos;
+    size_t fSize;
+};
+
 class ParagraphImpl final : public Paragraph {
+
 public:
 
     ParagraphImpl(const SkString& text,
                   ParagraphStyle style,
                   SkTArray<Block, true> blocks,
+                  SkTArray<Placeholder, true> placeholders,
                   sk_sp<FontCollection> fonts);
 
     ParagraphImpl(const std::u16string& utf16text,
-                    ParagraphStyle style,
-                    SkTArray<Block, true> blocks,
-                    sk_sp<FontCollection> fonts);
+                  ParagraphStyle style,
+                  SkTArray<Block, true> blocks,
+                  SkTArray<Placeholder, true> placeholders,
+                  sk_sp<FontCollection> fonts);
     ~ParagraphImpl() override;
 
     void layout(SkScalar width) override;
@@ -59,6 +104,7 @@ public:
                                           unsigned end,
                                           RectHeightStyle rectHeightStyle,
                                           RectWidthStyle rectWidthStyle) override;
+    std::vector<TextBox> GetRectsForPlaceholders() override;
     PositionWithAffinity getGlyphPositionAtCoordinate(SkScalar dx, SkScalar dy) override;
     SkRange<size_t> getWordBoundary(unsigned offset) override;
     bool didExceedMaxLines() override {
@@ -68,18 +114,20 @@ public:
     size_t lineNumber() override { return fLines.size(); }
 
     TextLine& addLine(SkVector offset, SkVector advance, TextRange text, TextRange textWithSpaces,
-                      ClusterRange clusters, LineMetrics sizes);
+                      ClusterRange clusters, ClusterRange clustersWithGhosts, SkScalar AddLineToParagraph,
+                      LineMetrics sizes);
 
-    SkSpan<const char> text() const { return fTextSpan; }
+    SkSpan<const char> text() const { return SkSpan<const char>(fText.c_str(), fText.size()); }
     InternalState state() const { return fState; }
     SkSpan<Run> runs() { return SkSpan<Run>(fRuns.data(), fRuns.size()); }
-    SkTArray<FontDescr>& switches() { return fFontResolver.switches(); }
+    const SkTArray<FontDescr>& switches() const { return fFontResolver.switches(); }
     SkSpan<Block> styles() {
         return SkSpan<Block>(fTextStyles.data(), fTextStyles.size());
     }
     SkSpan<TextLine> lines() { return SkSpan<TextLine>(fLines.data(), fLines.size()); }
-    ParagraphStyle paragraphStyle() const { return fParagraphStyle; }
+    const ParagraphStyle& paragraphStyle() const { return fParagraphStyle; }
     SkSpan<Cluster> clusters() { return SkSpan<Cluster>(fClusters.begin(), fClusters.size()); }
+    sk_sp<FontCollection> fontCollection() const { return fFontCollection; }
     void formatLines(SkScalar maxWidth);
 
     void shiftCluster(ClusterIndex index, SkScalar shift) {
@@ -100,6 +148,9 @@ public:
     bool strutEnabled() const { return paragraphStyle().getStrutStyle().getStrutEnabled(); }
     bool strutForceHeight() const {
         return paragraphStyle().getStrutStyle().getForceStrutHeight();
+    }
+    bool strutHeightOverride() const {
+        return paragraphStyle().getStrutStyle().getHeightOverride();
     }
     LineMetrics strutMetrics() const { return fStrutMetrics; }
 
@@ -126,14 +177,18 @@ public:
     SkSpan<Cluster> clusters(ClusterRange clusterRange);
     Cluster& cluster(ClusterIndex clusterIndex);
     Run& run(RunIndex runIndex);
+    Run& runByCluster(ClusterIndex clusterIndex);
     SkSpan<Block> blocks(BlockRange blockRange);
     Block& block(BlockIndex blockIndex);
 
     void markDirty() override { fState = kUnknown; }
-    void turnOnCache(bool on) { fParagraphCacheOn = on; }
+    FontResolver& getResolver() { return fFontResolver; }
     void setState(InternalState state);
-    void resetCache() { fParagraphCache.reset(); }
     sk_sp<SkPicture> getPicture() { return fPicture; }
+
+    using ShapeVisitor =
+            std::function<SkScalar(SkSpan<const char>, SkSpan<Block>, SkScalar&, size_t)>;
+    bool iterateThroughShapingRegions(ShapeVisitor shape);
 
     void resetContext();
     void resolveStrut();
@@ -150,8 +205,12 @@ private:
     friend class ParagraphCacheValue;
     friend class ParagraphCache;
 
+    friend class TextWrapper;
+
     BlockRange findAllBlocks(TextRange textRange);
     void extractStyles();
+
+    void markGraphemes();
 
     // Input
     SkTArray<StyleBlock<SkScalar>> fLetterSpaceStyles;
@@ -161,13 +220,15 @@ private:
     SkTArray<StyleBlock<std::vector<TextShadow>>> fShadowStyles;
     SkTArray<StyleBlock<Decoration>> fDecorationStyles;
     SkTArray<Block, true> fTextStyles; // TODO: take out only the font stuff
+    SkTArray<Placeholder, true> fPlaceholders;
     SkString fText;
-    SkSpan<const char> fTextSpan;
 
     // Internal structures
     InternalState fState;
     SkTArray<Run> fRuns;                // kShaped
     SkTArray<Cluster, true> fClusters;  // kClusterized (cached: text, word spacing, letter spacing, resolved fonts)
+    SkTArray<Grapheme, true> fGraphemes;
+    SkTArray<Codepoint, true> fCodePoints;
 
     SkTArray<RunShifts, true> fRunShifts;
     SkTArray<TextLine, true> fLines;    // kFormatted   (cached: width, max lines, ellipsis, text align)
@@ -178,10 +239,9 @@ private:
 
     SkScalar fOldWidth;
     SkScalar fOldHeight;
+    SkScalar fMaxWidthWithTrailingSpaces;
 
-    // Cache
-    bool fParagraphCacheOn;
-    static ParagraphCache fParagraphCache;
+    TextBreaker fWordBreaker;
 };
 }  // namespace textlayout
 }  // namespace skia

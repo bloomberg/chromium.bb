@@ -11,12 +11,21 @@
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "v8/include/v8.h"
 
+namespace v8 {
+
+template <typename T>
+struct TracedGlobalTrait<v8::TracedGlobal<T>> {
+  static constexpr bool kRequiresExplicitDestruction = false;
+};
+
+}  // namespace v8
+
 namespace blink {
 
 /**
  * TraceWrapperV8Reference is used to hold references from Blink to V8 that are
  * known to both garbage collectors. The reference is a regular traced reference
- * for wrapper tracing as well as unified heap garbage collections.
+ * for unified heap garbage collections.
  */
 template <typename T>
 class TraceWrapperV8Reference {
@@ -26,8 +35,6 @@ class TraceWrapperV8Reference {
   TraceWrapperV8Reference(v8::Isolate* isolate, v8::Local<T> handle) {
     InternalSet(isolate, handle);
   }
-
-  ~TraceWrapperV8Reference() { Clear(); }
 
   bool operator==(const TraceWrapperV8Reference& other) const {
     return handle_ == other.handle_;
@@ -60,14 +67,49 @@ class TraceWrapperV8Reference {
   }
 
   // Move support.
-  TraceWrapperV8Reference(TraceWrapperV8Reference&& other)
-      : handle_(std::move(other.handle_)) {
+  TraceWrapperV8Reference(TraceWrapperV8Reference&& other) noexcept {
+    *this = std::move(other);
+  }
+
+  template <class S>
+  TraceWrapperV8Reference(TraceWrapperV8Reference<S>&& other) noexcept {
+    *this = std::move(other);
+  }
+
+  TraceWrapperV8Reference& operator=(TraceWrapperV8Reference&& rhs) {
+    handle_ = std::move(rhs.handle_);
     WriteBarrier();
+    return *this;
   }
 
   template <class S>
   TraceWrapperV8Reference& operator=(TraceWrapperV8Reference<S>&& rhs) {
     handle_ = std::move(rhs.handle_);
+    WriteBarrier();
+    return *this;
+  }
+
+  // Copy support.
+  TraceWrapperV8Reference(const TraceWrapperV8Reference& other) noexcept {
+    *this = other;
+  }
+
+  template <class S>
+  TraceWrapperV8Reference(const TraceWrapperV8Reference<S>& other) noexcept {
+    *this = other;
+  }
+
+  TraceWrapperV8Reference& operator=(const TraceWrapperV8Reference& rhs) {
+    DCHECK_EQ(0, rhs.handle_.WrapperClassId());
+    handle_ = rhs.handle_;
+    WriteBarrier();
+    return *this;
+  }
+
+  template <class S>
+  TraceWrapperV8Reference& operator=(const TraceWrapperV8Reference<S>& rhs) {
+    DCHECK_EQ(0, rhs.handle_.WrapperClassId());
+    handle_ = rhs.handle_;
     WriteBarrier();
     return *this;
   }
@@ -83,8 +125,6 @@ class TraceWrapperV8Reference {
   }
 
   v8::TracedGlobal<T> handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(TraceWrapperV8Reference);
 };
 
 }  // namespace blink

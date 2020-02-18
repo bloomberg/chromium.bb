@@ -118,7 +118,7 @@ class IOSurfaceValidationTests : public IOSurfaceTestBase {
         descriptor.sampleCount = 1;
         descriptor.arrayLayerCount = 1;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+        descriptor.usage = dawn::TextureUsage::OutputAttachment;
     }
 
   protected:
@@ -248,18 +248,18 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
             textureDescriptor.sampleCount = 1;
             textureDescriptor.arrayLayerCount = 1;
             textureDescriptor.mipLevelCount = 1;
-            textureDescriptor.usage = dawn::TextureUsageBit::Sampled;
+            textureDescriptor.usage = dawn::TextureUsage::Sampled;
             dawn::Texture wrappingTexture = WrapIOSurface(&textureDescriptor, ioSurface, 0);
 
-            dawn::TextureView textureView = wrappingTexture.CreateDefaultView();
+            dawn::TextureView textureView = wrappingTexture.CreateView();
 
             dawn::SamplerDescriptor samplerDescriptor = utils::GetDefaultSamplerDescriptor();
             dawn::Sampler sampler = device.CreateSampler(&samplerDescriptor);
 
             bgl = utils::MakeBindGroupLayout(
                 device, {
-                            {0, dawn::ShaderStageBit::Fragment, dawn::BindingType::Sampler},
-                            {1, dawn::ShaderStageBit::Fragment, dawn::BindingType::SampledTexture},
+                            {0, dawn::ShaderStage::Fragment, dawn::BindingType::Sampler},
+                            {1, dawn::ShaderStage::Fragment, dawn::BindingType::SampledTexture},
                         });
 
             bindGroup = utils::MakeBindGroup(device, bgl, {{0, sampler}, {1, textureView}});
@@ -269,7 +269,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
         dawn::RenderPipeline pipeline;
         {
             dawn::ShaderModule vs =
-                utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+                utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 layout (location = 0) out vec2 o_texCoord;
                 void main() {
@@ -290,7 +290,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
                 }
             )");
             dawn::ShaderModule fs =
-                utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+                utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform sampler sampler0;
                 layout(set = 0, binding = 1) uniform texture2D texture0;
@@ -303,7 +303,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
             )");
 
             utils::ComboRenderPipelineDescriptor descriptor(device);
-            descriptor.cVertexStage.module = vs;
+            descriptor.vertexStage.module = vs;
             descriptor.cFragmentStage.module = fs;
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
             descriptor.cColorStates[0]->format = dawn::TextureFormat::RGBA8Unorm;
@@ -341,10 +341,10 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
         textureDescriptor.sampleCount = 1;
         textureDescriptor.arrayLayerCount = 1;
         textureDescriptor.mipLevelCount = 1;
-        textureDescriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+        textureDescriptor.usage = dawn::TextureUsage::OutputAttachment;
         dawn::Texture ioSurfaceTexture = WrapIOSurface(&textureDescriptor, ioSurface, 0);
 
-        dawn::TextureView ioSurfaceView = ioSurfaceTexture.CreateDefaultView();
+        dawn::TextureView ioSurfaceView = ioSurfaceTexture.CreateView();
 
         utils::ComboRenderPassDescriptor renderPassDescriptor({ioSurfaceView}, {});
         renderPassDescriptor.cColorAttachmentsInfoPtr[0]->clearColor = {1 / 255.0f, 2 / 255.0f,
@@ -407,7 +407,7 @@ TEST_P(IOSurfaceUsageTests, ClearRG8IOSurface) {
 }
 
 // Test sampling from a BGRA8 IOSurface
-TEST_P(IOSurfaceUsageTests, SampleFromBGRA8888IOSurface) {
+TEST_P(IOSurfaceUsageTests, SampleFromBGRA8IOSurface) {
     DAWN_SKIP_TEST_IF(UsesWire());
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'BGRA', 4);
 
@@ -423,6 +423,25 @@ TEST_P(IOSurfaceUsageTests, ClearBGRA8IOSurface) {
 
     uint32_t data = 0x04010203;
     DoClearTest(ioSurface.get(), dawn::TextureFormat::BGRA8Unorm, &data, sizeof(data));
+}
+
+// Test sampling from an RGBA8 IOSurface
+TEST_P(IOSurfaceUsageTests, SampleFromRGBA8IOSurface) {
+    DAWN_SKIP_TEST_IF(UsesWire());
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'RGBA', 4);
+
+    uint32_t data = 0x01020304;  // Stored as (A, B, G, R)
+    DoSampleTest(ioSurface.get(), dawn::TextureFormat::RGBA8Unorm, &data, sizeof(data),
+                 RGBA8(4, 3, 2, 1));
+}
+
+// Test clearing an RGBA8 IOSurface
+TEST_P(IOSurfaceUsageTests, ClearRGBA8IOSurface) {
+    DAWN_SKIP_TEST_IF(UsesWire());
+    ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'RGBA', 4);
+
+    uint32_t data = 0x04030201;
+    DoClearTest(ioSurface.get(), dawn::TextureFormat::RGBA8Unorm, &data, sizeof(data));
 }
 
 DAWN_INSTANTIATE_TEST(IOSurfaceValidationTests, MetalBackend);

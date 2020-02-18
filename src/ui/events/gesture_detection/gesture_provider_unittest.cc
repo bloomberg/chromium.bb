@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,8 +66,7 @@ gfx::RectF BoundsForSingleMockTouchAtLocation(float x, float y) {
 class GestureProviderTest : public testing::Test, public GestureProviderClient {
  public:
   GestureProviderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~GestureProviderTest() override {}
 
   static MockMotionEvent ObtainMotionEvent(base::TimeTicks event_time,
@@ -145,7 +144,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     EXPECT_EQ(GestureDeviceType::DEVICE_TOUCHSCREEN,
               gesture.details.device_type());
     if (gesture.type() == ET_GESTURE_SCROLL_BEGIN)
-      active_scroll_begin_event_.reset(new GestureEventData(gesture));
+      active_scroll_begin_event_ = std::make_unique<GestureEventData>(gesture);
     gestures_.push_back(gesture);
   }
 
@@ -154,7 +153,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   }
 
   void SetUpWithConfig(const GestureProvider::Config& config) {
-    gesture_provider_.reset(new GestureProvider(config, this));
+    gesture_provider_ = std::make_unique<GestureProvider>(config, this);
     gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
   }
 
@@ -438,7 +437,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   std::vector<GestureEventData> gestures_;
   std::unique_ptr<GestureProvider> gesture_provider_;
   std::unique_ptr<GestureEventData> active_scroll_begin_event_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool should_process_double_tap_events_ = true;
 };
 
@@ -680,6 +679,25 @@ TEST_F(GestureProviderTest, GestureCancelledOnDetectionReset) {
   event = ObtainMotionEvent(event_time + kOneMicrosecond * 2,
                             MotionEvent::Action::UP);
   EXPECT_FALSE(gesture_provider_->OnTouchEvent(event));
+}
+
+TEST_F(GestureProviderTest, TapPendingConfirmationCancelledOnCancelEvent) {
+  const base::TimeTicks event_time = TimeTicks::Now();
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::Action::DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  event =
+      ObtainMotionEvent(event_time + kOneMicrosecond, MotionEvent::Action::UP);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP_UNCONFIRMED, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond * 2,
+                            MotionEvent::Action::CANCEL);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetMostRecentGestureEventType());
 }
 
 TEST_F(GestureProviderTest, NoTapAfterScrollBegins) {

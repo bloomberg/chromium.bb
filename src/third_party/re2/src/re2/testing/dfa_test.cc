@@ -295,7 +295,7 @@ ReverseTest reverse_tests[] = {
 
 TEST(DFA, ReverseMatch) {
   int nfail = 0;
-  for (int i = 0; i < arraysize(reverse_tests); i++) {
+  for (size_t i = 0; i < arraysize(reverse_tests); i++) {
     const ReverseTest& t = reverse_tests[i];
     Regexp* re = Regexp::Parse(t.regexp, Regexp::LikePerl, NULL);
     ASSERT_TRUE(re != NULL);
@@ -350,7 +350,7 @@ CallbackTest callback_tests[] = {
 
 TEST(DFA, Callback) {
   int nfail = 0;
-  for (int i = 0; i < arraysize(callback_tests); i++) {
+  for (size_t i = 0; i < arraysize(callback_tests); i++) {
     const CallbackTest& t = callback_tests[i];
     Regexp* re = Regexp::Parse(t.regexp, Regexp::LikePerl, NULL);
     ASSERT_TRUE(re != NULL);
@@ -360,12 +360,12 @@ TEST(DFA, Callback) {
     prog->BuildEntireDFA(Prog::kLongestMatch, [&](const int* next, bool match) {
       ASSERT_TRUE(next != NULL);
       if (!dump.empty())
-        StringAppendF(&dump, " ");
-      StringAppendF(&dump, match ? "[[" : "[");
+        dump += " ";
+      dump += match ? "[[" : "[";
       for (int b = 0; b < prog->bytemap_range() + 1; b++)
-        StringAppendF(&dump, "%d,", next[b]);
+        dump += StringPrintf("%d,", next[b]);
       dump.pop_back();
-      StringAppendF(&dump, match ? "]]" : "]");
+      dump += match ? "]]" : "]";
     });
     if (dump != t.dump) {
       LOG(ERROR) << t.regexp << " bytemap:\n" << prog->DumpByteMap();

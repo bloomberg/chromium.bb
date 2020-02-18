@@ -60,18 +60,34 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     STATE_COUNT,
   };
 
-  // An enum describing the events on which a button should notify its listener.
-  enum NotifyAction {
-    NOTIFY_ON_PRESS,
-    NOTIFY_ON_RELEASE,
-  };
-
   // An enum describing the events on which a button should be clicked for a
   // given key event.
   enum KeyClickAction {
     CLICK_ON_KEY_PRESS,
     CLICK_ON_KEY_RELEASE,
     CLICK_NONE,
+  };
+
+  // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
+  class VIEWS_EXPORT DefaultButtonControllerDelegate
+      : public ButtonControllerDelegate {
+   public:
+    explicit DefaultButtonControllerDelegate(Button* button);
+    ~DefaultButtonControllerDelegate() override;
+
+    // views::ButtonControllerDelegate:
+    void RequestFocusFromEvent() override;
+    void NotifyClick(const ui::Event& event) override;
+    void OnClickCanceled(const ui::Event& event) override;
+    bool IsTriggerableEvent(const ui::Event& event) override;
+    bool ShouldEnterPushedState(const ui::Event& event) override;
+    bool ShouldEnterHoveredState() override;
+    InkDrop* GetInkDrop() override;
+    int GetDragOperations(const gfx::Point& press_pt) override;
+    bool InDrag() override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
   };
 
   static const Button* AsButton(const View* view);
@@ -132,13 +148,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void set_animate_on_state_change(bool value) {
     animate_on_state_change_ = value;
   }
-
-  // Sets the event on which the button should notify its listener.
-  void set_notify_action(NotifyAction notify_action) {
-    notify_action_ = notify_action;
-  }
-
-  NotifyAction notify_action() const { return notify_action_; }
 
   void set_hide_ink_drop_when_showing_context_menu(
       bool hide_ink_drop_when_showing_context_menu) {
@@ -209,30 +218,9 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     return button_controller_.get();
   }
 
+  void SetButtonController(std::unique_ptr<ButtonController> button_controller);
+
  protected:
-  // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
-  class DefaultButtonControllerDelegate : public ButtonControllerDelegate {
-   public:
-    explicit DefaultButtonControllerDelegate(Button* button);
-    ~DefaultButtonControllerDelegate() override;
-
-    // views::ButtonControllerDelegate:
-    void RequestFocusFromEvent() override;
-    void NotifyClick(const ui::Event& event) override;
-    void OnClickCanceled(const ui::Event& event) override;
-    bool IsTriggerableEvent(const ui::Event& event) override;
-    bool ShouldEnterPushedState(const ui::Event& event) override;
-    bool ShouldEnterHoveredState() override;
-    InkDrop* GetInkDrop() override;
-    int GetDragOperations(const gfx::Point& press_pt) override;
-    bool InDrag() override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
-  };
-
-  std::unique_ptr<ButtonControllerDelegate> CreateButtonControllerDelegate();
-
   // Construct the Button with a Listener. The listener can be null. This can be
   // true of buttons that don't have a listener - e.g. menubuttons where there's
   // no default action and checkboxes.
@@ -293,8 +281,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   FocusRing* focus_ring() { return focus_ring_.get(); }
 
-  void SetButtonController(std::unique_ptr<ButtonController> button_controller);
-
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;
 
@@ -351,9 +337,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   // See description above setter.
   bool request_focus_on_press_ = false;
-
-  // The event on which the button should notify its listener.
-  NotifyAction notify_action_ = NOTIFY_ON_RELEASE;
 
   // True when a button click should trigger an animation action on
   // ink_drop_delegate().

@@ -11,8 +11,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/base/buildflags.h"
@@ -254,9 +253,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // produce appropriate results.
   virtual int FindTextBoundary(AXTextBoundary boundary,
                                int offset,
-                               TextBoundaryDirection direction,
-                               ax::mojom::TextAffinity affinity =
-                                   ax::mojom::TextAffinity::kDownstream) const;
+                               AXTextBoundaryDirection direction,
+                               ax::mojom::TextAffinity affinity) const;
 
   enum ScrollType {
     TopLeft,
@@ -282,11 +280,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
  protected:
   bool IsDocument() const;
-  // Is in a focused textfield with a related suggestion popup available,
-  // such as for the Autofill feature. The suggestion popup can be either hidden
-  // and available or already visible. This indicates next down arrow key will
-  // navigate within the suggestion popup.
-  bool IsFocusedInputWithSuggestions() const;
   bool IsRichTextField() const;
   bool IsSelectionItemSupported() const;
 
@@ -298,6 +291,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Get the role description from the node data or from the image annotation
   // status.
   base::string16 GetRoleDescription() const;
+  base::string16 GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
+      const;
 
   // Cast a gfx::NativeViewAccessible to an AXPlatformNodeBase if it is one,
   // or return NULL if it's not an instance of this class.

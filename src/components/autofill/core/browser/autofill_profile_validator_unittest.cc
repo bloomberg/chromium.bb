@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -105,7 +105,7 @@ class AutofillProfileValidatorTest : public testing::Test {
       expected_validity_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_scheduler;
+  base::test::TaskEnvironment scoped_task_scheduler;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileValidatorTest);
 };

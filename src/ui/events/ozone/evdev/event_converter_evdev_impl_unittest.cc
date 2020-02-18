@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -68,7 +68,7 @@ class EventConverterEvdevImplTest : public testing::Test {
     base::ScopedFD events_in(evdev_io[0]);
     events_out_.reset(evdev_io[1]);
 
-    cursor_.reset(new ui::FakeCursorDelegateEvdev());
+    cursor_ = std::make_unique<ui::FakeCursorDelegateEvdev>();
 
     device_manager_ = ui::CreateDeviceManagerForTest();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
@@ -78,10 +78,10 @@ class EventConverterEvdevImplTest : public testing::Test {
                             base::Unretained(this)));
     dispatcher_ =
         ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
-    device_.reset(new ui::MockEventConverterEvdevImpl(
-        std::move(events_in), cursor_.get(), dispatcher_.get()));
+    device_ = std::make_unique<ui::MockEventConverterEvdevImpl>(
+        std::move(events_in), cursor_.get(), dispatcher_.get());
 
-    test_clock_.reset(new ui::test::ScopedEventTestTickClock());
+    test_clock_ = std::make_unique<ui::test::ScopedEventTestTickClock>();
   }
 
   void TearDown() override {
@@ -128,8 +128,8 @@ class EventConverterEvdevImplTest : public testing::Test {
     dispatched_events_.push_back(std::move(cloned_event));
   }
 
-  base::MessageLoopForUI ui_loop_;
-
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<ui::FakeCursorDelegateEvdev> cursor_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;

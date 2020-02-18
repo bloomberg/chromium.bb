@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -15,9 +16,12 @@
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace notifications {
 
-class DistributionPolicy;
 struct ClientState;
 struct NotificationEntry;
 struct SchedulerConfig;
@@ -34,17 +38,16 @@ class DisplayDecider {
   using Results = std::set<std::string>;
 
   // Creates the decider to determine notifications to show.
-  static std::unique_ptr<DisplayDecider> Create();
+  static std::unique_ptr<DisplayDecider> Create(
+      const SchedulerConfig* config,
+      std::vector<SchedulerClientType> clients,
+      base::Clock* clock);
 
   DisplayDecider() = default;
   virtual ~DisplayDecider() = default;
 
   // Finds notifications to show. Returns a list of notification guids.
   virtual void FindNotificationsToShow(
-      const SchedulerConfig* config,
-      std::vector<SchedulerClientType> clients,
-      std::unique_ptr<DistributionPolicy> distribution_policy,
-      SchedulerTaskTime task_start_time,
       Notifications notifications,
       ClientStates client_states,
       Results* results) = 0;

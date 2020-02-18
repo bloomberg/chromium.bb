@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -35,8 +36,6 @@ namespace {
 constexpr int kNormalButtonRadius = 4;
 constexpr int kSelectedButtonRadius = 5;
 constexpr int kInkDropRadius = 16;
-constexpr int kMaxButtonRadius = 16;
-constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
 constexpr SkScalar kStrokeWidth = SkIntToScalar(2);
 
 // Constants for the button strip that grows vertically.
@@ -81,7 +80,8 @@ class PageSwitcherButton : public views::Button {
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(kMaxButtonRadius * 2, kMaxButtonRadius * 2);
+    return gfx::Size(PageSwitcher::kMaxButtonRadius * 2,
+                     PageSwitcher::kMaxButtonRadius * 2);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -105,9 +105,10 @@ class PageSwitcherButton : public views::Button {
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
-    gfx::Rect bounds(center.x() - kMaxButtonRadius,
-                     center.y() - kMaxButtonRadius, 2 * kMaxButtonRadius,
-                     2 * kMaxButtonRadius);
+    gfx::Rect bounds(center.x() - PageSwitcher::kMaxButtonRadius,
+                     center.y() - PageSwitcher::kMaxButtonRadius,
+                     2 * PageSwitcher::kMaxButtonRadius,
+                     2 * PageSwitcher::kMaxButtonRadius);
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(), kVerticalInkDropRippleColor, 1.0f);
@@ -192,7 +193,6 @@ PageSwitcher::PageSwitcher(ash::PaginationModel* model,
       is_tablet_mode_(is_tablet_mode) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-
   if (vertical_) {
     buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -279,11 +279,5 @@ void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
   if (new_selected >= 0 && size_t{new_selected} < buttons_->children().size())
     GetButtonByIndex(buttons_, size_t{new_selected})->SetSelected(true);
 }
-
-void PageSwitcher::TransitionStarted() {}
-
-void PageSwitcher::TransitionChanged() {}
-
-void PageSwitcher::TransitionEnded() {}
 
 }  // namespace app_list

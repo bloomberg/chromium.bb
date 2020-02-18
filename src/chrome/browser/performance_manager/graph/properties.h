@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 
+#include <utility>
+
 namespace performance_manager {
 
 // TODO(chrisha): Deprecate the private observer type and have everyone use the
@@ -16,7 +18,6 @@ namespace performance_manager {
 // ObserverType pointers. This is templated on the observer type to allow
 // easy testing.
 template <typename NodeImplType,
-          typename ImplObserverType,
           typename NodeType,
           typename ObserverType>
 class ObservedPropertyImpl {
@@ -25,7 +26,6 @@ class ObservedPropertyImpl {
   // periodically, and for which a notification should be sent every time a
   // new sample is recorded, even if identical in value to the last.
   template <typename PropertyType,
-            void (ImplObserverType::*ImplNotifyFunctionPtr)(NodeImplType*),
             void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesAlways {
    public:
@@ -37,9 +37,7 @@ class ObservedPropertyImpl {
 
     // Sets the property and sends a notification.
     void SetAndNotify(NodeImplType* node, PropertyType value) {
-      value_ = value;
-      for (auto& observer : node->observers())
-        ((observer).*(ImplNotifyFunctionPtr))(node);
+      value_ = std::forward<PropertyType>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
     }
@@ -55,7 +53,6 @@ class ObservedPropertyImpl {
   // changes. Calls to SetAndMaybeNotify do not notify if the provided value is
   // the same as the current value.
   template <typename PropertyType,
-            void (ImplObserverType::*ImplNotifyFunctionPtr)(NodeImplType*),
             void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesOnlyOnChanges {
    public:
@@ -70,11 +67,41 @@ class ObservedPropertyImpl {
     bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
       if (value_ == value)
         return false;
-      value_ = value;
-      for (auto& observer : node->observers())
-        ((observer).*(ImplNotifyFunctionPtr))(node);
+      value_ = std::forward<PropertyType>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
+      return true;
+    }
+
+    const PropertyType& value() const { return value_; }
+
+   private:
+    PropertyType value_;
+  };
+
+  // Same as NotifiesOnlyOnChanges, but provides the previous value when
+  // notifying observers.
+  template <typename PropertyType,
+            void (ObserverType::*NotifyFunctionPtr)(
+                const NodeType*,
+                PropertyType previous_value)>
+  class NotifiesOnlyOnChangesWithPreviousValue {
+   public:
+    NotifiesOnlyOnChangesWithPreviousValue() {}
+    explicit NotifiesOnlyOnChangesWithPreviousValue(PropertyType initial_value)
+        : value_(initial_value) {}
+
+    ~NotifiesOnlyOnChangesWithPreviousValue() {}
+
+    // Sets the property and sends a notification if needed. Returns true if a
+    // notification was sent, false otherwise.
+    bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
+      if (value_ == value)
+        return false;
+      PropertyType previous_value = value_;
+      value_ = std::forward<PropertyType>(value);
+      for (auto* observer : node->GetObservers())
+        ((observer)->*(NotifyFunctionPtr))(node, previous_value);
       return true;
     }
 

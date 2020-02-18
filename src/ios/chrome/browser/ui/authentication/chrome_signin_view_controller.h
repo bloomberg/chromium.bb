@@ -12,7 +12,6 @@
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
 #import "ios/chrome/browser/signin/constants.h"
-#include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 
 @protocol ApplicationCommands;
 @class ChromeIdentity;
@@ -69,9 +68,11 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @end
 
 // ChromeSigninViewController is a view controller that handles all the
-// sign-in UI flow.
-@interface ChromeSigninViewController
-    : UIViewController<SigninConfirmationViewControllerDelegate>
+// sign-in UI flow. To support the swipe to dismiss feature, the init method of
+// this class uses the presentation controller. Therefore the presentation style
+// cannot be changed after the init. The style is set to
+// UIModalPresentationFormSheet by the init method.
+@interface ChromeSigninViewController : UIViewController
 
 @property(nonatomic, weak) id<ChromeSigninViewControllerDelegate> delegate;
 
@@ -80,9 +81,6 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
 @property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
-
-// Sign-in conformation view controller.
-@property(nonatomic, readonly) SigninConfirmationViewController* confirmationVC;
 
 // Designated initializer.
 // * |browserState| is the current browser state.
@@ -115,6 +113,7 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // Secondary button title used to skip the sign-in.
 @property(nonatomic, readonly) NSString* skipSigninButtonTitle;
 
+@property(nonatomic, readonly) UIColor* backgroundColor;
 @property(nonatomic, readonly) UIButton* primaryButton;
 @property(nonatomic, readonly) UIButton* secondaryButton;
 

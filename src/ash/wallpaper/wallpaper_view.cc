@@ -10,8 +10,6 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_utils.h"
 #include "cc/paint/render_surface_filters.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -68,56 +66,15 @@ class LayerControlView : public views::View {
 
 }  // namespace
 
-// This event handler receives events in the pre-target phase and takes care of
-// the following:
-//   - Disabling overview mode on touch release.
-//   - Disabling overview mode on mouse release.
-class PreEventDispatchHandler : public ui::EventHandler {
- public:
-  PreEventDispatchHandler() = default;
-  ~PreEventDispatchHandler() override = default;
-
- private:
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    if (event->type() == ui::ET_MOUSE_RELEASED)
-      HandleClickOrTap(event);
-  }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    if (event->type() == ui::ET_GESTURE_TAP)
-      HandleClickOrTap(event);
-  }
-
-  void HandleClickOrTap(ui::Event* event) {
-    CHECK_EQ(ui::EP_PRETARGET, event->phase());
-    OverviewController* controller = Shell::Get()->overview_controller();
-    if (!controller->InOverviewSession())
-      return;
-    // Events that happen while app list is sliding out during overview should
-    // be ignored to prevent overview from disappearing out from under the user.
-    if (!IsSlidingOutOverviewFromShelf())
-      controller->EndOverview();
-    event->StopPropagation();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(PreEventDispatchHandler);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // WallpaperView, public:
 
 WallpaperView::WallpaperView(int blur, float opacity)
-    : repaint_blur_(blur),
-      repaint_opacity_(opacity),
-      pre_dispatch_handler_(std::make_unique<PreEventDispatchHandler>()) {
+    : repaint_blur_(blur), repaint_opacity_(opacity) {
   set_context_menu_controller(this);
-  AddPreTargetHandler(pre_dispatch_handler_.get());
 }
 
-WallpaperView::~WallpaperView() {
-  RemovePreTargetHandler(pre_dispatch_handler_.get());
-}
+WallpaperView::~WallpaperView() = default;
 
 void WallpaperView::RepaintBlurAndOpacity(int repaint_blur,
                                           float repaint_opacity) {
@@ -219,7 +176,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window->GetChildById(container_id);
-  wallpaper_widget->Init(params);
+  wallpaper_widget->Init(std::move(params));
   // Owned by views.
   WallpaperView* wallpaper_view = new WallpaperView(blur, opacity);
   wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));

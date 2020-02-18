@@ -8,17 +8,16 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -62,7 +61,7 @@ std::unique_ptr<SignedExchangeValidityPinger>
 SignedExchangeValidityPinger::CreateAndStart(
     const GURL& validity_url,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     const base::Optional<base::UnguessableToken>& throttling_profile_id,
     base::OnceClosure callback) {
   auto pinger = base::WrapUnique<SignedExchangeValidityPinger>(
@@ -79,7 +78,7 @@ SignedExchangeValidityPinger::SignedExchangeValidityPinger(
 void SignedExchangeValidityPinger::Start(
     const GURL& validity_url,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     const base::Optional<base::UnguessableToken>& throttling_profile_id) {
   DCHECK(
       base::FeatureList::IsEnabled(features::kSignedHTTPExchangePingValidity));
@@ -91,7 +90,7 @@ void SignedExchangeValidityPinger::Start(
       static_cast<int>(ResourceType::kSubResource);
   // Set empty origin as the initiator and attach no cookies.
   resource_request->request_initiator = url::Origin();
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   // Always hit the network as it's meant to be a liveliness check.
   // (While we don't check the result yet)
   resource_request->load_flags |=
@@ -101,7 +100,7 @@ void SignedExchangeValidityPinger::Start(
 
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(url_loader_factory), std::move(throttles), 0 /* routing_id */,
-      ResourceDispatcherHostImpl::Get()->MakeRequestID() /* request_id */,
+      signed_exchange_utils::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request.get(), this,
       kValidityPingerTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }
@@ -109,11 +108,11 @@ void SignedExchangeValidityPinger::Start(
 SignedExchangeValidityPinger::~SignedExchangeValidityPinger() = default;
 
 void SignedExchangeValidityPinger::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {}
+    network::mojom::URLResponseHeadPtr head) {}
 
 void SignedExchangeValidityPinger::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK(callback_);
   // Currently it doesn't support redirects, so just bail out.
   url_loader_.reset();

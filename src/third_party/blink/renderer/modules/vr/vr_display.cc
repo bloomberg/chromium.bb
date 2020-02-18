@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -107,17 +106,16 @@ class VRDisplayFrameRequestCallback
 SessionClientBinding::SessionClientBinding(
     VRDisplay* display,
     SessionClientBinding::SessionBindingType immersive,
-    device::mojom::blink::XRSessionClientRequest request)
+    mojo::PendingReceiver<device::mojom::blink::XRSessionClient> receiver)
     : display_(display),
       is_immersive_(immersive ==
                     SessionClientBinding::SessionBindingType::kImmersive),
-      client_binding_(this, std::move(request)) {}
+      client_receiver_(this, std::move(receiver)) {}
 
 SessionClientBinding::~SessionClientBinding() = default;
 
 void SessionClientBinding::Close() {
-  DCHECK(client_binding_);
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 void SessionClientBinding::OnChanged(
     device::mojom::blink::VRDisplayInfoPtr ptr) {
@@ -136,24 +134,10 @@ void SessionClientBinding::Trace(blink::Visitor* visitor) {
   visitor->Trace(display_);
 }
 
-VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
-                     device::mojom::blink::XRDevicePtr device)
+VRDisplay::VRDisplay(NavigatorVR* navigator_vr)
     : ContextLifecycleStateObserver(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
-      capabilities_(MakeGarbageCollected<VRDisplayCapabilities>()),
-      device_ptr_(std::move(device)),
-      display_client_binding_(this) {
-  // Request a non-immersive session immediately as WebVR 1.1 expects to be able
-  // to get non-immersive poses as soon as the display is returned.
-  device::mojom::blink::XRSessionOptionsPtr options =
-      device::mojom::blink::XRSessionOptions::New();
-  options->immersive = false;
-  options->is_legacy_webvr = true;
-  device_ptr_->RequestSession(
-      std::move(options),
-      WTF::Bind(&VRDisplay::OnNonImmersiveSessionRequestReturned,
-                WrapPersistent(this)));
-}
+      capabilities_(MakeGarbageCollected<VRDisplayCapabilities>()) {}
 
 VRDisplay::~VRDisplay() = default;
 
@@ -269,7 +253,7 @@ void VRDisplay::RequestVSync() {
   if (!pending_vrdisplay_raf_)
     return;
   Document* doc = navigator_vr_->GetDocument();
-  if (!doc || !device_ptr_)
+  if (!doc)
     return;
   if (display_blurred_)
     return;
@@ -525,7 +509,7 @@ ScriptPromise VRDisplay::requestPresent(
     // original request returns.
     pending_present_resolvers_.push_back(resolver);
   } else if (first_present) {
-    if (!device_ptr_) {
+    if (!Controller()->Service()) {
       ForceExitPresent();
       auto* exception = MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
@@ -543,7 +527,7 @@ ScriptPromise VRDisplay::requestPresent(
     options->immersive = true;
     options->is_legacy_webvr = true;
 
-    device_ptr_->RequestSession(
+    Controller()->Service()->RequestSession(
         std::move(options),
         WTF::Bind(&VRDisplay::OnRequestImmersiveSessionReturned,
                   WrapPersistent(this)));
@@ -609,7 +593,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
   }
 }
 
-void VRDisplay::OnNonImmersiveSessionRequestReturned(
+void VRDisplay::SetNonImmersiveSession(
     device::mojom::blink::RequestSessionResultPtr result) {
   device::mojom::blink::XRSessionPtr session =
       result->is_session() ? std::move(result->get_session()) : nullptr;
@@ -643,13 +627,13 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
     return promise;
   }
 
-  if (!device_ptr_) {
+  if (!Controller()->Service()) {
     auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRService is not available.");
     resolver->Reject(exception);
     return promise;
   }
-  device_ptr_->ExitPresent();
+  Controller()->Service()->ExitPresent();
 
   resolver->Resolve();
 
@@ -730,14 +714,14 @@ void VRDisplay::BeginPresent() {
 
 // Need to close service if exists and then free rendering context.
 void VRDisplay::ForceExitPresent() {
-  if (device_ptr_) {
-    device_ptr_->ExitPresent();
+  if (Controller()->Service()) {
+    Controller()->Service()->ExitPresent();
   }
   StopPresenting();
 }
 
 void VRDisplay::UpdateLayerBounds() {
-  if (!device_ptr_)
+  if (!Controller()->Service())
     return;
 
   // Left eye defaults
@@ -796,7 +780,7 @@ scoped_refptr<Image> VRDisplay::GetFrameImage(
 void VRDisplay::submitFrame() {
   DVLOG(2) << __FUNCTION__;
 
-  if (!device_ptr_)
+  if (!Controller()->Service())
     return;
   TRACE_EVENT1("gpu", "submitFrame", "frame", vr_frame_id_);
 
@@ -885,15 +869,12 @@ Document* VRDisplay::GetDocument() {
   return navigator_vr_->GetDocument();
 }
 
-device::mojom::blink::VRDisplayClientPtr VRDisplay::GetDisplayClient() {
-  display_client_binding_.Close();
-  device::mojom::blink::VRDisplayClientPtr client;
+mojo::PendingRemote<device::mojom::blink::VRDisplayClient>
+VRDisplay::GetDisplayClient() {
+  display_client_receiver_.reset();
   // See https://bit.ly/2S0zRAS for task types.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  display_client_binding_.Bind(mojo::MakeRequest(&client, task_runner),
-                               task_runner);
-  return client;
+  return display_client_receiver_.BindNewPipeAndPassRemote(
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
 void VRDisplay::OnPresentChange() {

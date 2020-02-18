@@ -111,21 +111,34 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
   ConfigureImpl(Intersection(desired_types, allowed_types), context);
 }
 
-void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
-  if (!UpdateUnreadyTypeError(type)) {
+void DataTypeManagerImpl::DataTypePreconditionChanged(ModelType type) {
+  if (!UpdatePreconditionError(type)) {
     // Nothing changed.
     return;
   }
 
-  if (data_type_status_table_.GetUnreadyErrorTypes().Has(type)) {
-    model_association_manager_.StopDatatype(
-        type, DISABLE_SYNC,
-        SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
-                  "Data type is unready.", type));
-  } else if (last_requested_types_.Has(type)) {
-    // Only reconfigure if the type is both ready and desired. This will
-    // internally also update ready state of all other requested types.
-    ForceReconfiguration();
+  switch (controllers_->find(type)->second->GetPreconditionState()) {
+    case DataTypeController::PreconditionState::kPreconditionsMet:
+      if (last_requested_types_.Has(type)) {
+        // Only reconfigure if the type is both ready and desired. This will
+        // internally also update ready state of all other requested types.
+        ForceReconfiguration();
+      }
+      break;
+
+    case DataTypeController::PreconditionState::kMustStopAndClearData:
+      model_association_manager_.StopDatatype(
+          type, DISABLE_SYNC,
+          SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
+                    "Datatype preconditions not met.", type));
+      break;
+
+    case DataTypeController::PreconditionState::kMustStopAndKeepData:
+      model_association_manager_.StopDatatype(
+          type, STOP_SYNC,
+          SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                    "Data type is unready.", type));
+      break;
   }
 }
 
@@ -192,10 +205,19 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
       // successfully. Such types shouldn't be in an error state at the same
       // time.
       DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
-      dtc->RegisterWithBackend(
-          base::Bind(&DataTypeManagerImpl::SetTypeDownloaded,
-                     base::Unretained(this), dtc->type()),
-          configurer_);
+      switch (dtc->RegisterWithBackend(configurer_)) {
+        case DataTypeController::REGISTRATION_IGNORED:
+          break;
+        case DataTypeController::TYPE_ALREADY_DOWNLOADED:
+          downloaded_types_.Put(type);
+          break;
+        case DataTypeController::TYPE_NOT_YET_DOWNLOADED:
+          downloaded_types_.Remove(type);
+          break;
+      }
+      if (force_redownload_types_.Has(type)) {
+        downloaded_types_.Remove(type);
+      }
     }
   }
 }
@@ -292,7 +314,7 @@ void DataTypeManagerImpl::Restart() {
     data_type_status_table_.ResetCryptoErrors();
   }
 
-  UpdateUnreadyTypeErrors(last_requested_types_);
+  UpdatePreconditionErrors(last_requested_types_);
 
   last_enabled_types_ = GetEnabledTypes();
   last_restart_time_ = base::Time::Now();
@@ -360,37 +382,50 @@ TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
   return result;
 }
 
-void DataTypeManagerImpl::UpdateUnreadyTypeErrors(
+void DataTypeManagerImpl::UpdatePreconditionErrors(
     const ModelTypeSet& desired_types) {
   for (ModelType type : desired_types) {
-    UpdateUnreadyTypeError(type);
+    UpdatePreconditionError(type);
   }
 }
 
-bool DataTypeManagerImpl::UpdateUnreadyTypeError(ModelType type) {
+bool DataTypeManagerImpl::UpdatePreconditionError(ModelType type) {
   const auto& iter = controllers_->find(type);
   if (iter == controllers_->end())
     return false;
 
-  const DataTypeController* dtc = iter->second.get();
-  bool unready_status =
-      data_type_status_table_.GetUnreadyErrorTypes().Has(type);
-  if (dtc->ReadyForStart() == (unready_status == false))
-    return false;
+  switch (iter->second->GetPreconditionState()) {
+    case DataTypeController::PreconditionState::kPreconditionsMet: {
+      const bool data_type_policy_error_changed =
+          data_type_status_table_.ResetDataTypePolicyErrorFor(type);
+      const bool unready_status_changed =
+          data_type_status_table_.ResetUnreadyErrorFor(type);
+      if (!data_type_policy_error_changed && !unready_status_changed) {
+        // Nothing changed.
+        return false;
+      }
+      // If preconditions are newly met, the datatype should be immediately
+      // redownloaded as part of the datatype configuration (most relevant for
+      // the UNREADY_ERROR case which usually won't clear sync metadata).
+      force_redownload_types_.Put(type);
+      return true;
+    }
 
-  // Adjust data_type_status_table_ if unready state in it doesn't match
-  // DataTypeController::ReadyForStart().
-  if (dtc->ReadyForStart()) {
-    data_type_status_table_.ResetUnreadyErrorFor(type);
-  } else {
-    SyncError error(FROM_HERE, SyncError::UNREADY_ERROR,
-                    "Datatype not ready at config time.", type);
-    std::map<ModelType, SyncError> errors;
-    errors[type] = error;
-    data_type_status_table_.UpdateFailedDataTypes(errors);
+    case DataTypeController::PreconditionState::kMustStopAndClearData: {
+      return data_type_status_table_.UpdateFailedDataType(
+          type, SyncError(FROM_HERE, SyncError::DATATYPE_POLICY_ERROR,
+                          "Datatype preconditions not met.", type));
+    }
+
+    case DataTypeController::PreconditionState::kMustStopAndKeepData: {
+      return data_type_status_table_.UpdateFailedDataType(
+          type, SyncError(FROM_HERE, SyncError::UNREADY_ERROR,
+                          "Datatype not ready at config time.", type));
+    }
   }
 
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 void DataTypeManagerImpl::ProcessReconfigure() {
@@ -563,6 +598,8 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   if (!types_to_download.Empty())
     types_to_download.Put(NIGORI);
 
+  force_redownload_types_.RemoveAll(types_to_download);
+
   // TODO(sync): crbug.com/137550.
   // It's dangerous to configure types that have progress markers. Types with
   // progress markers can trigger a MIGRATION_DONE response. We are not
@@ -683,9 +720,7 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
   c_it->second->DeactivateDataType(configurer_);
 
   if (error.IsSet()) {
-    DataTypeStatusTable::TypeErrorMap failed_types;
-    failed_types[type] = error;
-    data_type_status_table_.UpdateFailedDataTypes(failed_types);
+    data_type_status_table_.UpdateFailedDataType(type, error);
 
     // Unrecoverable errors will shut down the entire backend, so no need to
     // reconfigure.
@@ -888,14 +923,6 @@ DataTypeManager::State DataTypeManagerImpl::state() const {
 ModelTypeSet DataTypeManagerImpl::GetEnabledTypes() const {
   return Difference(last_requested_types_,
                     data_type_status_table_.GetFailedTypes());
-}
-
-void DataTypeManagerImpl::SetTypeDownloaded(ModelType type, bool downloaded) {
-  if (downloaded) {
-    downloaded_types_.Put(type);
-  } else {
-    downloaded_types_.Remove(type);
-  }
 }
 
 }  // namespace syncer

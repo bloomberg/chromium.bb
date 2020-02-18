@@ -40,6 +40,7 @@ namespace {
 const size_t kMaxDeviceNameLength = 248;
 const char kDeviceNameTooLong[] =
     "A device name can't be longer than 248 bytes.";
+const char kInactiveDocumentError[] = "Document not active";
 }  // namespace
 
 static void CanonicalizeFilter(
@@ -139,6 +140,27 @@ static void ConvertRequestDeviceOptions(
   }
 }
 
+ScriptPromise Bluetooth::getAvailability(ScriptState* script_state) {
+  ExecutionContext* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed()) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), kInactiveDocumentError));
+  }
+
+  CHECK(context->IsSecureContext());
+  EnsureServiceConnection();
+
+  // Subsequent steps are handled in the browser process.
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  service_->GetAvailability(
+      WTF::Bind([](ScriptPromiseResolver* resolver,
+                   bool result) { resolver->Resolve(result); },
+                WrapPersistent(resolver)));
+  return promise;
+}
+
 void Bluetooth::RequestDeviceCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
@@ -183,7 +205,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   if (!frame) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Document not active"));
+                          script_state->GetIsolate(), kInactiveDocumentError));
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
@@ -194,11 +216,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  if (!service_) {
-      // See https://bit.ly/2S0zRAS for task types.
-      frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  }
+  EnsureServiceConnection();
 
   // In order to convert the arguments from service names and aliases to just
   // UUIDs, do the following substeps:
@@ -303,7 +321,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   if (!frame) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Document not active"));
+                          script_state->GetIsolate(), kInactiveDocumentError));
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
@@ -314,11 +332,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  if (!service_) {
-    // See https://bit.ly/2S0zRAS for task types.
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-        &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  }
+  EnsureServiceConnection();
 
   auto scan_options = mojom::blink::WebBluetoothRequestLEScanOptions::New();
   ConvertRequestLEScanOptions(options, scan_options, exception_state);
@@ -384,8 +398,16 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
   DispatchEvent(*event);
 }
 
+void Bluetooth::PageVisibilityChanged() {
+  client_bindings_.CloseAllBindings();
+}
+
 void Bluetooth::CancelScan(mojo::BindingId id) {
   client_bindings_.RemoveBinding(id);
+}
+
+bool Bluetooth::IsScanActive(mojo::BindingId id) const {
+  return client_bindings_.HasBinding(id);
 }
 
 const WTF::AtomicString& Bluetooth::InterfaceName() const {
@@ -404,10 +426,12 @@ void Bluetooth::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_instance_map_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
 }
 
 Bluetooth::Bluetooth(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {}
+    : ContextLifecycleObserver(context),
+      PageVisibilityObserver(To<Document>(context)->GetPage()) {}
 
 Bluetooth::~Bluetooth() {
   DCHECK(client_bindings_.empty());
@@ -425,6 +449,18 @@ BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
     DCHECK(result.is_new_entry);
   }
   return device;
+}
+
+void Bluetooth::EnsureServiceConnection() {
+  if (!service_) {
+    // See https://bit.ly/2S0zRAS for task types.
+    auto* context = GetExecutionContext();
+    DCHECK(context);
+
+    auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
+    context->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&service_, task_runner));
+  }
 }
 
 }  // namespace blink

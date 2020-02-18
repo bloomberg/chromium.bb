@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
@@ -46,7 +46,7 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   void Sync();
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   wl::TestWaylandServerThread server_;
   wl::MockSurface* surface_;

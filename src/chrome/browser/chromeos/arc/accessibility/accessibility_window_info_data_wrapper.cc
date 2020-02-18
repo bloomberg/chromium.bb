@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "components/exo/wm_helper.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 
 namespace arc {
@@ -100,7 +102,8 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   // Bounds.
   exo::WMHelper* wm_helper =
       exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance() : nullptr;
-  if (tree_source_->GetRoot()->GetId() != -1 && wm_helper) {
+  if (tree_source_->GetRoot()->GetId() != ui::AXNode::kInvalidAXID &&
+      wm_helper) {
     aura::Window* active_window = (tree_source_->is_notification() ||
                                    tree_source_->is_input_method_window())
                                       ? nullptr

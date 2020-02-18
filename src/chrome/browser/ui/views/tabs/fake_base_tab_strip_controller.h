@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "ui/base/models/list_selection_model.h"
 
@@ -56,7 +56,10 @@ class FakeBaseTabStripController : public TabStripController {
   void StackedLayoutMaybeChanged() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
-  const TabGroupData* GetDataForGroup(TabGroupId group_id) const override;
+  const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group_id) const override;
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override;
   std::vector<int> ListTabsInGroup(TabGroupId group_id) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
@@ -67,9 +70,8 @@ class FakeBaseTabStripController : public TabStripController {
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  int GetTabBackgroundResourceId(
-      BrowserNonClientFrameView::ActiveState active_state,
-      bool* has_custom_image) const override;
+  base::Optional<int> GetCustomBackgroundId(
+      BrowserNonClientFrameView::ActiveState active_state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
 
@@ -81,7 +83,7 @@ class FakeBaseTabStripController : public TabStripController {
   int num_tabs_ = 0;
   int active_index_ = -1;
 
-  TabGroupData fake_group_data_;
+  TabGroupVisualData fake_group_data_;
   std::vector<base::Optional<TabGroupId>> tab_groups_;
 
   ui::ListSelectionModel selection_model_;

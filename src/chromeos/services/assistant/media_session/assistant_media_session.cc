@@ -8,8 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "services/media_session/public/cpp/features.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace assistant {
@@ -25,12 +23,9 @@ const char kAudioFocusSourceName[] = "assistant";
 }  // namespace
 
 AssistantMediaSession::AssistantMediaSession(
-    service_manager::Connector* connector,
+    mojom::Client* client,
     AssistantManagerServiceImpl* assistant_manager)
-    : assistant_manager_service_(assistant_manager),
-      connector_(connector),
-      binding_(this),
-      weak_factory_(this) {}
+    : assistant_manager_service_(assistant_manager), client_(client) {}
 
 AssistantMediaSession::~AssistantMediaSession() {
   AbandonAudioFocusIfNeeded();
@@ -97,9 +92,9 @@ void AssistantMediaSession::RequestAudioFocus(AudioFocusType audio_focus_type) {
     return;
   }
 
-  if (request_client_ptr_.is_bound()) {
+  if (request_client_remote_.is_bound()) {
     // We have an existing request so we should request an updated focus type.
-    request_client_ptr_->RequestAudioFocus(
+    request_client_remote_->RequestAudioFocus(
         GetMediaSessionInfoInternal(), audio_focus_type,
         base::BindOnce(&AssistantMediaSession::FinishAudioFocusRequest,
                        base::Unretained(this), audio_focus_type));
@@ -109,12 +104,11 @@ void AssistantMediaSession::RequestAudioFocus(AudioFocusType audio_focus_type) {
   EnsureServiceConnection();
 
   // Create a mojo interface pointer to our media session.
-  media_session::mojom::MediaSessionPtr media_session;
-  binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&media_session));
-  audio_focus_ptr_->RequestAudioFocus(
-      mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
-      GetMediaSessionInfoInternal(), audio_focus_type,
+  receiver_.reset();
+  audio_focus_remote_->RequestAudioFocus(
+      request_client_remote_.BindNewPipeAndPassReceiver(),
+      receiver_.BindNewPipeAndPassRemote(), GetMediaSessionInfoInternal(),
+      audio_focus_type,
       base::BindOnce(&AssistantMediaSession::FinishInitialAudioFocusRequest,
                      base::Unretained(this), audio_focus_type));
 }
@@ -130,12 +124,12 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
 
   SetAudioFocusInfo(State::INACTIVE, audio_focus_type_);
 
-  if (!request_client_ptr_.is_bound())
+  if (!request_client_remote_.is_bound())
     return;
 
-  request_client_ptr_->AbandonAudioFocus();
-  request_client_ptr_.reset();
-  audio_focus_ptr_.reset();
+  request_client_remote_->AbandonAudioFocus();
+  request_client_remote_.reset();
+  audio_focus_remote_.reset();
   internal_audio_focus_id_ = base::UnguessableToken::Null();
 }
 
@@ -143,18 +137,20 @@ void AssistantMediaSession::EnsureServiceConnection() {
   DCHECK(base::FeatureList::IsEnabled(
       media_session::features::kMediaSessionService));
 
-  if (audio_focus_ptr_.is_bound() && !audio_focus_ptr_.encountered_error())
+  if (audio_focus_remote_.is_bound() && audio_focus_remote_.is_connected())
     return;
 
-  audio_focus_ptr_.reset();
-  connector_->BindInterface(media_session::mojom::kServiceName,
-                            mojo::MakeRequest(&audio_focus_ptr_));
-  audio_focus_ptr_->SetSourceName(kAudioFocusSourceName);
+  audio_focus_remote_.reset();
+
+  client_->RequestAudioFocusManager(
+      audio_focus_remote_.BindNewPipeAndPassReceiver());
+  audio_focus_remote_->SetSource(base::UnguessableToken::Create(),
+                                 kAudioFocusSourceName);
 }
 
 void AssistantMediaSession::FinishAudioFocusRequest(
     AudioFocusType audio_focus_type) {
-  DCHECK(request_client_ptr_.is_bound());
+  DCHECK(request_client_remote_.is_bound());
 
   SetAudioFocusInfo(State::ACTIVE, audio_focus_type);
 }
@@ -227,8 +223,8 @@ void AssistantMediaSession::NotifyMediaSessionInfoChanged() {
   if (current_info == session_info_)
     return;
 
-  if (request_client_ptr_.is_bound())
-    request_client_ptr_->MediaSessionInfoChanged(current_info.Clone());
+  if (request_client_remote_.is_bound())
+    request_client_remote_->MediaSessionInfoChanged(current_info.Clone());
 
   for (auto& observer : observers_)
     observer->MediaSessionInfoChanged(current_info.Clone());

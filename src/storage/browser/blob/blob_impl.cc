@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
@@ -22,7 +23,7 @@ namespace {
 
 class ReaderDelegate : public MojoBlobReader::Delegate {
  public:
-  ReaderDelegate(blink::mojom::BlobReaderClientPtr client)
+  ReaderDelegate(mojo::PendingRemote<blink::mojom::BlobReaderClient> client)
       : client_(std::move(client)) {}
 
   MojoBlobReader::Delegate::RequestSideData DidCalculateSize(
@@ -39,7 +40,7 @@ class ReaderDelegate : public MojoBlobReader::Delegate {
   }
 
  private:
-  blink::mojom::BlobReaderClientPtr client_;
+  mojo::Remote<blink::mojom::BlobReaderClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(ReaderDelegate);
 };
@@ -80,24 +81,26 @@ class DataPipeGetterReaderDelegate : public MojoBlobReader::Delegate {
 }  // namespace
 
 // static
-base::WeakPtr<BlobImpl> BlobImpl::Create(std::unique_ptr<BlobDataHandle> handle,
-                                         blink::mojom::BlobRequest request) {
-  return (new BlobImpl(std::move(handle), std::move(request)))
+base::WeakPtr<BlobImpl> BlobImpl::Create(
+    std::unique_ptr<BlobDataHandle> handle,
+    mojo::PendingReceiver<blink::mojom::Blob> receiver) {
+  return (new BlobImpl(std::move(handle), std::move(receiver)))
       ->weak_ptr_factory_.GetWeakPtr();
 }
 
-void BlobImpl::Clone(blink::mojom::BlobRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void BlobImpl::Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void BlobImpl::AsDataPipeGetter(network::mojom::DataPipeGetterRequest request) {
   data_pipe_getter_bindings_.AddBinding(this, std::move(request));
 }
 
-void BlobImpl::ReadRange(uint64_t offset,
-                         uint64_t length,
-                         mojo::ScopedDataPipeProducerHandle handle,
-                         blink::mojom::BlobReaderClientPtr client) {
+void BlobImpl::ReadRange(
+    uint64_t offset,
+    uint64_t length,
+    mojo::ScopedDataPipeProducerHandle handle,
+    mojo::PendingRemote<blink::mojom::BlobReaderClient> client) {
   MojoBlobReader::Create(
       handle_.get(),
       (length == std::numeric_limits<uint64_t>::max())
@@ -106,8 +109,9 @@ void BlobImpl::ReadRange(uint64_t offset,
       std::make_unique<ReaderDelegate>(std::move(client)), std::move(handle));
 }
 
-void BlobImpl::ReadAll(mojo::ScopedDataPipeProducerHandle handle,
-                       blink::mojom::BlobReaderClientPtr client) {
+void BlobImpl::ReadAll(
+    mojo::ScopedDataPipeProducerHandle handle,
+    mojo::PendingRemote<blink::mojom::BlobReaderClient> client) {
   MojoBlobReader::Create(handle_.get(), net::HttpByteRange(),
                          std::make_unique<ReaderDelegate>(std::move(client)),
                          std::move(handle));
@@ -184,27 +188,32 @@ void BlobImpl::Read(mojo::ScopedDataPipeProducerHandle handle,
 }
 
 void BlobImpl::FlushForTesting() {
-  bindings_.FlushForTesting();
+  auto weak_self = weak_ptr_factory_.GetWeakPtr();
+  receivers_.FlushForTesting();
+  if (!weak_self)
+    return;
   data_pipe_getter_bindings_.FlushForTesting();
-  if (bindings_.empty() && data_pipe_getter_bindings_.empty())
+  if (!weak_self)
+    return;
+  if (receivers_.empty() && data_pipe_getter_bindings_.empty())
     delete this;
 }
 
 BlobImpl::BlobImpl(std::unique_ptr<BlobDataHandle> handle,
-                   blink::mojom::BlobRequest request)
-    : handle_(std::move(handle)), weak_ptr_factory_(this) {
+                   mojo::PendingReceiver<blink::mojom::Blob> receiver)
+    : handle_(std::move(handle)) {
   DCHECK(handle_);
-  bindings_.AddBinding(this, std::move(request));
-  bindings_.set_connection_error_handler(base::BindRepeating(
-      &BlobImpl::OnConnectionError, base::Unretained(this)));
-  data_pipe_getter_bindings_.set_connection_error_handler(base::BindRepeating(
-      &BlobImpl::OnConnectionError, base::Unretained(this)));
+  receivers_.Add(this, std::move(receiver));
+  receivers_.set_disconnect_handler(
+      base::BindRepeating(&BlobImpl::OnMojoDisconnect, base::Unretained(this)));
+  data_pipe_getter_bindings_.set_connection_error_handler(
+      base::BindRepeating(&BlobImpl::OnMojoDisconnect, base::Unretained(this)));
 }
 
 BlobImpl::~BlobImpl() = default;
 
-void BlobImpl::OnConnectionError() {
-  if (!bindings_.empty())
+void BlobImpl::OnMojoDisconnect() {
+  if (!receivers_.empty())
     return;
   if (!data_pipe_getter_bindings_.empty())
     return;

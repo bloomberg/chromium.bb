@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Вредност мора да буде <ph name="MINIMUM_DATE_OR_TIME" /> или новија.</translation>
 <translation id="2759744352195237655">искачуће дугме</translation>
 <translation id="2761667185364618470">Потврдите избор у овом пољу за потврду уколико желите да наставите.</translation>
+<translation id="2844350028562914727">детаљи</translation>
 <translation id="2896972712917208084">група дугмади за избор</translation>
 <translation id="2908441821576996758">Унесите листу имејл адреса раздвојених зарезима.</translation>
 <translation id="2940813599313844715">објекат</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3557673793733683882">заглавље <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">бирач недеља</translation>
 <translation id="3685101356851116974">Неозначена слика</translation>
 <translation id="3706100364254443312">прекидач</translation>
 <translation id="3732799496749320381">мм</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">трака за померање</translation>
 <translation id="4103419683916926126">Милисекунде</translation>
 <translation id="4151657705144244502">графички елемент</translation>
+<translation id="4160057747563657758">број телефона</translation>
 <translation id="4193965531860883258">предговор</translation>
 <translation id="4201051445878709314">Прикажи претходни месец</translation>
 <translation id="421884353938374759">бирач боја</translation>
 <translation id="4248100235867064564">трака са менијима</translation>
-<translation id="4254339807215791271">информације о садржају</translation>
 <translation id="4360991593054037559">Унесите важећу вредност. Две најближе важеће вредности су <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Питања и одговори</translation>
 <translation id="4413860115965805769">дугме менија</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Искључено</translation>
 <translation id="588258955323874662">Цеo екран</translation>
 <translation id="5888666972993069672">Тренутно се пребацује на <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">оквир за претрагу</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="5966707198760109579">Недеља</translation>
 <translation id="5987525920412732405">дугме за промену вредности</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6209276755895393898">Изгледа да је ово: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">речник термина</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Изађи из режима слике у слици</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Изаберите захтевани формат.</translation>
 <translation id="7118469954320184356">Опис није доступан.</translation>
 <translation id="7139483182332611405">предговор</translation>
+<translation id="7214187073215825913">информације о садржају</translation>
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
 <translation id="727747134524199931">заглавље колоне</translation>
 <translation id="7320576522385648310">баферовање</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Преузима се опис...</translation>
 <translation id="8117451130807776954">Ова недеља</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8208673686607688524">бирач локалног датума и времена</translation>
 <translation id="8261464734335370856">Нетачан правопис</translation>
 <translation id="8284326494547611709">Титл</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">садржај</translation>
 <translation id="8613126697340063924">контролишите репродукцију на удаљеном уређају</translation>
 <translation id="862370744433916922">титл</translation>
+<translation id="8711688047404765493">излаз</translation>
 <translation id="8750798805984357768">Изаберите неку од ових опција.</translation>
 <translation id="8808573423886751634">поглавље</translation>
 <translation id="8845239796550121995">Тренутно се пребацује на ТВ</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">актуелно време у секундама</translation>
+<translation id="901834265349196618">имејл</translation>
 <translation id="9048119486235211610">навигација</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9062307380734144336">изаберите да бисте пуштали/паузирали</translation>

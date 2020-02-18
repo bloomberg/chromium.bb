@@ -73,12 +73,6 @@ class VIEWS_EXPORT Textfield : public View,
  public:
   METADATA_HEADER(Textfield);
 
-  // An enum giving different model properties unique keys for the
-  // OnPropertyChanged call.
-  enum ModelPropertyKey {
-    kTextProperty = 1,
-  };
-
   // Returns the text cursor blink time, or 0 for no blinking.
   static base::TimeDelta GetCaretBlinkInterval();
 
@@ -94,7 +88,7 @@ class VIEWS_EXPORT Textfield : public View,
   }
 
   // Gets/Sets whether or not the Textfield is read-only.
-  bool read_only() const { return read_only_; }
+  bool GetReadOnly() const;
   void SetReadOnly(bool read_only);
 
   // Sets the input type; displays only asterisks for TEXT_INPUT_TYPE_PASSWORD.
@@ -107,7 +101,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Gets the text for the Textfield.
   // NOTE: Call sites should take care to not reveal the text for a password
   // textfield.
-  const base::string16& text() const { return model_->text(); }
+  const base::string16& GetText() const;
 
   // Sets the text currently displayed in the Textfield.  This doesn't
   // change the cursor position if the current cursor is within the
@@ -182,11 +176,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Sets the minimum width of the text control. See minimum_width_in_chars_.
   void SetMinimumWidthInChars(int minimum_width);
 
-  // Sets the text to display when empty.
-  void set_placeholder_text(const base::string16& text) {
-    placeholder_text_ = text;
-  }
+  // Gets/Sets the text to display when empty.
   base::string16 GetPlaceholderText() const;
+  void SetPlaceholderText(const base::string16& text);
 
   void set_placeholder_text_color(SkColor color) {
     placeholder_text_color_ = color;
@@ -200,9 +192,9 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_draw_flags_ = flags;
   }
 
-  // Sets whether to indicate the textfield has invalid content.
+  // Gets/Sets whether to indicate the textfield has invalid content.
+  bool GetInvalid() const;
   void SetInvalid(bool invalid);
-  bool invalid() const { return invalid_; }
 
   // Get or set the horizontal alignment used for the button from the underlying
   // RenderText object.
@@ -219,7 +211,7 @@ class VIEWS_EXPORT Textfield : public View,
   const gfx::Range& GetSelectedRange() const;
 
   // Selects the specified logical text range.
-  void SelectRange(const gfx::Range& range);
+  void SetSelectedRange(const gfx::Range& range);
 
   // Gets the text selection model.
   const gfx::SelectionModel& GetSelectionModel() const;
@@ -244,10 +236,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Clears Edit history.
   void ClearEditHistory();
 
-  // Set the accessible name of the text field. If the textfield has a visible
-  // label, use SetAssociatedLabel() instead.
+  // Get/Set the accessible name of the text field. If the textfield has a
+  // visible label, use SetAssociatedLabel() instead.
+  base::string16 GetAccessibleName() const;
   void SetAccessibleName(const base::string16& name);
-  const base::string16& accessible_name() const { return accessible_name_; }
 
   // If the accessible name should be the same as the labelling view's text,
   // use this. It will set the accessible label relationship and copy the
@@ -424,6 +416,11 @@ class VIEWS_EXPORT Textfield : public View,
   // override this to customize when the placeholder text is shown.
   virtual bool ShouldShowPlaceholderText() const;
 
+ protected:
+  // Like RequestFocus, but explicitly states that the focus is triggered by
+  // a pointer event.
+  void RequestFocusWithPointer(ui::EventPointerType pointer_type);
+
  private:
   friend class TextfieldTestApi;
 
@@ -454,6 +451,12 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Updates the border per the state of |invalid_|.
   void UpdateBorder();
+
+  // Updates the selection text color.
+  void UpdateSelectionTextColor();
+
+  // Updates the selection background color.
+  void UpdateSelectionBackgroundColor();
 
   // Does necessary updates when the text and/or cursor position changes.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);
@@ -525,10 +528,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Callback for the cursor blink timer. Called every
   // Textfield::GetCaretBlinkMs().
   void OnCursorBlinkTimerFired();
-
-  // Like RequestFocus, but explicitly states that the focus is triggered by
-  // a pointer event.
-  void RequestFocusWithPointer(ui::EventPointerType pointer_type);
 
   // Returns the color to use for the FocusRing, if one is present.
   SkColor GetFocusRingColor() const;

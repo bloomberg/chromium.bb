@@ -27,6 +27,8 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/paint/discardable_image_map.h"
 #include "cc/paint/paint_worklet_job.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
@@ -37,7 +39,8 @@
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
-#include "cc/trees/frame_sequence_tracker.h"
+#include "cc/trees/animated_paint_worklet_tracker.h"
+#include "cc/trees/de_jelly_state.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -196,8 +199,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     FrameData& operator=(const FrameData&) = delete;
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
-    uint32_t frame_token = 0;
     // frame_token is populated by the LayerTreeHostImpl when submitted.
+    uint32_t frame_token = 0;
+
+    bool has_missing_content = false;
 
     std::vector<viz::SurfaceId> activation_dependencies;
     base::Optional<uint32_t> deadline_in_frames;
@@ -211,10 +216,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     // The original BeginFrameArgs that triggered the latest update from the
     // main thread.
     viz::BeginFrameArgs origin_begin_main_frame_args;
-
-    // Union of visible rects of MirrorLayers in the frame, used to force damage
-    // on the surface.
-    gfx::Rect mirror_rect;
   };
 
   // A struct of data for a single UIResource, including the backing
@@ -327,8 +328,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
-  void UpdateViewportContainerSizes();
-
   void set_resourceless_software_draw_for_testing() {
     resourceless_software_draw_ = true;
   }
@@ -403,6 +402,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                               ElementListType list_type,
                               float maximum_scale,
                               float starting_scale) override;
+  void OnCustomPropertyMutated(
+      ElementId element_id,
+      const std::string& custom_property_name,
+      PaintWorkletInput::PropertyValue custom_property_value) override;
 
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(
@@ -794,6 +797,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void set_pending_tree_fully_painted_for_testing(bool painted) {
     pending_tree_fully_painted_ = painted;
   }
+  AnimatedPaintWorkletTracker& paint_worklet_tracker() {
+    return paint_worklet_tracker_;
+  }
 
  protected:
   LayerTreeHostImpl(
@@ -866,7 +872,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Returns a job map for all 'dirty' PaintWorklets, e.g. PaintWorkletInputs
   // that do not map to a PaintRecord.
-  PaintWorkletJobMap GatherDirtyPaintWorklets() const;
+  PaintWorkletJobMap GatherDirtyPaintWorklets(PaintImageIdFlatSet*) const;
 
   // Called when all PaintWorklet results are ready (i.e. have been painted) for
   // the current pending tree.
@@ -1055,6 +1061,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool did_lock_scrolling_layer_ = false;
   bool touch_scrolling_ = false;
   bool wheel_scrolling_ = false;
+  bool middle_click_autoscrolling_ = false;
   bool scroll_affects_scroll_handler_ = false;
   ElementId scroll_element_id_mouse_currently_over_;
   ElementId scroll_element_id_mouse_currently_captured_;
@@ -1240,11 +1247,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<ScrollbarController> scrollbar_controller_;
 
   FrameSequenceTrackerCollection frame_trackers_;
-  std::unique_ptr<FrameSequenceTracker> pinch_frame_tracker_;
-  std::unique_ptr<FrameSequenceTracker> scroll_frame_tracker_;
-  std::unique_ptr<FrameSequenceTracker> compositor_animation_frame_tracker_;
-  std::unique_ptr<FrameSequenceTracker> request_animation_frame_tracker_;
-  std::unique_ptr<FrameSequenceTracker> main_thread_animation_frame_tracker_;
 
   // Set to true when a scroll gesture being handled on the compositor has
   // ended. i.e. When a GSE has arrived and any ongoing scroll animation has
@@ -1269,6 +1271,15 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // painted and cannot be rastered or activated. This boolean tracks whether or
   // not we are in that state.
   bool pending_tree_fully_painted_ = false;
+
+  // Provides support for PaintWorklets which depend on input properties that
+  // are being animated by the compositor (aka 'animated' PaintWorklets).
+  // Responsible for storing animated custom property values and for
+  // invalidating PaintWorklets as the property values change.
+  AnimatedPaintWorkletTracker paint_worklet_tracker_;
+
+  // Helper for de-jelly logic.
+  DeJellyState de_jelly_state_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

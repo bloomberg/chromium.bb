@@ -49,7 +49,7 @@ public class LocationBarPhone extends LocationBarLayout {
         delegateArea.left -= ACTION_BUTTON_TOUCH_OVERFLOW_LEFT;
         TouchDelegate touchDelegate = new TouchDelegate(delegateArea, mUrlActionContainer);
         assert mUrlActionContainer.getParent() == this;
-        setTouchDelegate(touchDelegate);
+        mCompositeTouchDelegate.addDelegateForDescendantView(touchDelegate);
     }
 
     /**
@@ -65,7 +65,7 @@ public class LocationBarPhone extends LocationBarLayout {
         if (mShouldShowSearchEngineLogo) {
             mFirstVisibleFocusedView = findViewById(R.id.location_bar_status);
         }
-        mStatusViewCoordinator.setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
+        setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
     }
 
     /**
@@ -168,6 +168,12 @@ public class LocationBarPhone extends LocationBarLayout {
     @Override
     public void updateShouldAnimateIconChanges() {
         notifyShouldAnimateIconChanges(isUrlBarFocused() || isUrlFocusChangeInProgress());
+    }
+
+    @Override
+    public void setShowIconsWhenUrlFocused(boolean showIcon) {
+        super.setShowIconsWhenUrlFocused(showIcon);
+        mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
     }
 
     /**

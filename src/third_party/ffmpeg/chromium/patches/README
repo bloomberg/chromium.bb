@@ -208,16 +208,6 @@ Affects:
     libavutil/x86/x86inc.asm
 
 ------------------------------------------------------------------
-commit bd4eee53ada8fab27217d37c2ca881dae3bb3ba4
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Tue Sep 15 18:37:44 2015 -0700
-
-    Restore removal of const EbmlSyntax to fix Windows compile error.
-
-Affects:
-    libavformat/matroskadec.c
-
-------------------------------------------------------------------
 commit 703d465a5e4ffd326abb7b68e8541df370a26d55
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Wed Sep 16 15:08:49 2015 -0700
@@ -381,7 +371,6 @@ Date:   Tue Jan 17 17:44:18 2017 -0800
 
 Affects:
     compat/atomics/win32/stdatomic.h
-    libavformat/matroskadec.c
 
 ------------------------------------------------------------------
 commit f058fa86bb0e7e43d4208eb05a71c8ce46487611
@@ -829,40 +818,10 @@ Affects:
     libavcodec/libopusdec.c
 
 ------------------------------------------------------------------
-commit feb5456cf973a819ace9a5001256f168631b6788
-Merge: 464c195d8b 81d3d7dd44
-Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Fri Jul 12 15:20:19 2019 -0700
+commit f1852b173307290afdd17851c2d76ab261b02d68
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Thu Aug 22 10:49:16 2019 -0700
 
-    Merge remote-tracking branch 'upstream/master' into sushi-2019-07-12-14-09-15
+    Fail matroska parsing with an error rather than assert.
 
-    Manually resolved conflicts:
-            .gitignore
-            configure
-            libavformat/matroskadec.c
-
-Affects:
-    libavformat/matroskadec.c
-
-------------------------------------------------------------------
-commit dfc85c1198d09a2e3c3e3aa6cba330894d8a94c4
-Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Wed Jul 24 16:28:05 2019 -0700
-
-    wavdec: Fail bext parsing on incomplete reads
-
-    avio_read can successfully return even when less than the requested
-    amount of input was read. wavdec's bext parsing mistakenly assumed a
-    successful avio_read always read the full amount that was requested.
-    The result could be dictionary tags populated with partially
-    uninitialized values.
-
-    This change also fixes a broken assertion in wav_parse_bext_string that
-    was off-by-one, though no known current usage of that method hits that
-    broken case.
-
-    BUG=987270
-
-Affects:
-    libavformat/wavdec.c
-
+    Bug: 995706

@@ -7,14 +7,15 @@
 
 from __future__ import print_function
 
-import cPickle
+import pickle
 import datetime
 import itertools
 import json
-import mock
 import os
 import time
 import tempfile
+
+import mock
 
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
@@ -448,7 +449,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   def ReloadPool(self):
     """Save the pool to disk and reload it."""
     with tempfile.NamedTemporaryFile() as f:
-      cPickle.dump(self.sync_stage.pool, f)
+      pickle.dump(self.sync_stage.pool, f)
       f.flush()
       self._run.options.validation_pool = f.name
       self.sync_stage = sync_stages.CommitQueueSyncStage(

@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -52,7 +52,7 @@ class BundledExchangesParserFactoryTest : public testing::Test {
 
  private:
   std::unique_ptr<BundledExchangesParserFactory> factory_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BundledExchangesParserFactoryTest, GetSize) {
@@ -159,43 +159,43 @@ TEST_F(BundledExchangesParserFactoryTest, GetParserForFile) {
   {
     base::RunLoop run_loop;
     parser->ParseMetadata(base::BindLambdaForTesting(
-        [&metadata, &run_loop](mojom::BundleMetadataPtr metadata_ptr,
-                               const base::Optional<std::string>& error) {
-          metadata = std::move(metadata_ptr);
+        [&metadata, &run_loop](mojom::BundleMetadataPtr parsed_metadata,
+                               mojom::BundleMetadataParseErrorPtr error) {
+          metadata = std::move(parsed_metadata);
           run_loop.QuitClosure().Run();
         }));
     run_loop.Run();
   }
   ASSERT_TRUE(metadata);
-  ASSERT_EQ(metadata->index.size(), 4u);
+  ASSERT_EQ(metadata->requests.size(), 4u);
 
-  const auto& index = metadata->index;
-
-  std::vector<mojom::BundleResponsePtr> responses;
-  for (size_t i = 0; i < index.size(); i++) {
+  std::map<std::string, mojom::BundleResponsePtr> responses;
+  for (const auto& item : metadata->requests) {
+    ASSERT_TRUE(item.second->variants_value.empty());
+    ASSERT_EQ(item.second->response_locations.size(), 1u);
     base::RunLoop run_loop;
-    parser->ParseResponse(
-        index[i]->response_offset, index[i]->response_length,
-        base::BindLambdaForTesting(
-            [&responses, &run_loop](mojom::BundleResponsePtr response,
-                                    const base::Optional<std::string>& error) {
-              ASSERT_TRUE(response);
-              ASSERT_FALSE(error);
-              responses.push_back(std::move(response));
-              run_loop.QuitClosure().Run();
-            }));
+    parser->ParseResponse(item.second->response_locations[0]->offset,
+                          item.second->response_locations[0]->length,
+                          base::BindLambdaForTesting(
+                              [&item, &responses, &run_loop](
+                                  mojom::BundleResponsePtr response,
+                                  mojom::BundleResponseParseErrorPtr error) {
+                                ASSERT_TRUE(response);
+                                ASSERT_FALSE(error);
+                                responses[item.first.spec()] =
+                                    std::move(response);
+                                run_loop.QuitClosure().Run();
+                              }));
     run_loop.Run();
   }
-  EXPECT_EQ(index[0]->request_url, "https://test.example.org/");
-  EXPECT_EQ(index[0]->request_method, "GET");
-  EXPECT_EQ(index[0]->request_headers.size(), 0u);
-  EXPECT_EQ(responses[0]->response_code, 200);
-  EXPECT_EQ(responses[0]->response_headers["content-type"],
-            "text/html; charset=utf-8");
-  EXPECT_EQ(index[1]->request_url, "https://test.example.org/index.html");
-  EXPECT_EQ(index[2]->request_url,
-            "https://test.example.org/manifest.webmanifest");
-  EXPECT_EQ(index[3]->request_url, "https://test.example.org/script.js");
+  ASSERT_TRUE(responses["https://test.example.org/"]);
+  EXPECT_EQ(responses["https://test.example.org/"]->response_code, 200);
+  EXPECT_EQ(
+      responses["https://test.example.org/"]->response_headers["content-type"],
+      "text/html; charset=utf-8");
+  EXPECT_TRUE(responses["https://test.example.org/index.html"]);
+  EXPECT_TRUE(responses["https://test.example.org/manifest.webmanifest"]);
+  EXPECT_TRUE(responses["https://test.example.org/script.js"]);
 }
 
 }  // namespace data_decoder

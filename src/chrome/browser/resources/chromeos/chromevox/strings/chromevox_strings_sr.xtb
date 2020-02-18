@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Сакриј филтере стрима догађаја</translation>
 <translation id="1088219014394087294">Нема заглавља.</translation>
 <translation id="1106741348836243114">Укључивање или искључивање звучних повратних информација (звучна обавештења).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"а": "авала", "б": "београд", "ц": "цетиње", "д": "дрина", "е": "европа", "ф": "футог", "г": "голија", "х": "херој", "и": "игало", "ј": "јадран", "к": "косово", "л": "ловћен", "м": "морава", "н": "ниш", "о": "обилић", "п": "пирот", "q": "кворум", "р": "рума", "с": "сава", "т": "тимок", "у": "ужице", "в": "ваљево", "w": "дупло ве", "x": "ксилофон", "y": "ипсилон", "з": "земун", "ћ": "ћуприја", "ч": "чачак", "џ": "џеп", "ђ": "ђаковица", "љ": "љубовија", "њ": "његош", "ш": "шабац", "ж": "жабљак"}</translation>
 <translation id="1120938014254001895">Превлачите нагоре помоћу два прста</translation>
 <translation id="1124771028211010580">Актуелни стил приказа је „упоредо“.</translation>
 <translation id="1126928665165112660">Није курзив</translation>
@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1385214448885562192">Притисните enter да бисте прихватили или escape да бисте отказали, стрелицу надоле за следеће и стрелицу нагоре за претходно.</translation>
 <translation id="1396114365388024581">листа картица</translation>
-<translation id="139902759009894363">Описуј атрибуте обогаћеног текста</translation>
 <translation id="1405567553485452995">Светлозелена</translation>
 <translation id="1417889266572670458">Морнарскоплава</translation>
 <translation id="1431911867058218151">Плавољубичаста</translation>
@@ -170,6 +169,7 @@
 <translation id="2220529011494928058">Пријави проблем</translation>
 <translation id="2223693656926968778">Предузимање радње за актуелну ставку</translation>
 <translation id="225732394367814946">Повећавање брзине говора</translation>
+<translation id="2267538686624070261">Остављате погрешно написану реч</translation>
 <translation id="2267945578749931355">Следећи знак</translation>
 <translation id="2278490101488436824">Превлачите налево помоћу три прста</translation>
 <translation id="2281234842553884450">Претходни клизач</translation>
@@ -208,6 +208,7 @@
 <translation id="257674075312929031">Група</translation>
 <translation id="2582407057977008361">Додатно</translation>
 <translation id="2592212930811759050">Двапут додирните да бисте почели да мењате</translation>
+<translation id="2598495320872286378">Граматичка грешка</translation>
 <translation id="2606210917827248971">са {COUNT,plural, =1{# ставком}one{# ставком}few{# ставке}other{# ставки}}</translation>
 <translation id="2614981083756825552">Math ML распоред</translation>
 <translation id="2624431853467395961">Отвара режим за учење</translation>
@@ -423,7 +424,6 @@
 <translation id="4039983576244166038">Празно заглавље реда</translation>
 <translation id="4042843249978639960">Нема следећег заглавља 2. нивоа.</translation>
 <translation id="4043348641337972076">Нема претходног ARIA обележја.</translation>
-<translation id="4045764028670444336">Почетак погрешно написане речи</translation>
 <translation id="4047216625641135770">Ознака</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Отворенозелена</translation>
@@ -485,6 +485,7 @@
 <translation id="4372705107434148843">Заустављање говора</translation>
 <translation id="4373197658375206385">Нема претходне ставке која није линк.</translation>
 <translation id="4376316291247992553">Прикажи графику као Брајеву азбуку</translation>
+<translation id="437809255587011096">Описуј стил текста</translation>
 <translation id="4378308539633073595">Помера унапред</translation>
 <translation id="4384583879834880242">Питања и одговори</translation>
 <translation id="4391478986194775161">информације о садржају</translation>
@@ -505,7 +506,6 @@
 <translation id="4547556996012970016">Следеће заглавље 5. нивоа</translation>
 <translation id="4562381607973973258">Заглавље</translation>
 <translation id="4569941707103739422">Притисните стрелицу нагоре или надоле да бисте се кретали. Да бисте активирали, притисните Enter.</translation>
-<translation id="4570424871453628777">Крај погрешно написане речи</translation>
 <translation id="4591507479202817876">, изабрано</translation>
 <translation id="4597532268155981612">образац</translation>
 <translation id="4597896406374528575">април</translation>
@@ -728,7 +728,6 @@
 <translation id="6037602951055904232">Померање унапред</translation>
 <translation id="6042826534790431634">За активирање притисните тастер за претрагу + тастер за размак.</translation>
 <translation id="6044160928851315051">Затамни екран</translation>
-<translation id="6065293622157674001">Почетак граматичке грешке</translation>
 <translation id="6082768461603900813">Основно кретање</translation>
 <translation id="6118126368611144850">Android апликације за Chrome. Ако имате Play продавницу на уређају, погледајте ChromeVox са Android апликацијама пре званичног објављивања. Испробајте експерименталну подршку тако што ћете преузети Google Chrome Canary из Play продавнице.</translation>
 <translation id="611827076493383239">посећено</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">Затвореносива</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{знак за набрајање}one{# знак за набрајање}few{# знака за набрајање}other{# знакова за набрајање}}</translation>
 <translation id="6355910664415701303">Нема претходне ставке листе.</translation>
-<translation id="6360318852623800555">Атрибути обогаћеног текста</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Претходно заглавље</translation>
 <translation id="6376999910001533545">Црвенкастобраон</translation>
@@ -825,6 +823,7 @@
 <translation id="6833103209700200188">Подножје</translation>
 <translation id="6858047746862060282">Пролог</translation>
 <translation id="6859876496651143278">Превлачите налево једним прстом</translation>
+<translation id="6865519907510167493">Погрешно је написано</translation>
 <translation id="6871161210040114857">Занемарује велика и мала слова.</translation>
 <translation id="6877435256196695200">Нема следеће слике.</translation>
 <translation id="6897341342232909480">Померање улево</translation>
@@ -870,7 +869,6 @@
 <translation id="7143207342074048698">Повезивање</translation>
 <translation id="7153618581592392745">Светлољубичаста</translation>
 <translation id="7157306005867877619">Сажетак</translation>
-<translation id="7161425887892204659">Крај текстуалног подударања</translation>
 <translation id="7161771961008409533">Искачуће дугме</translation>
 <translation id="7165714724802225287">Актуелни стил приказа је „преклапање“.</translation>
 <translation id="7167657087543110">одјек знакова</translation>
@@ -908,7 +906,6 @@
 <translation id="737396357417333429">клик</translation>
 <translation id="7374104575779636480">Напуштање табеле.</translation>
 <translation id="738899727977260036">Сивоплава</translation>
-<translation id="7392145451309930991">Почетак текстуалног подударања</translation>
 <translation id="739763518212184081">Претходни ред</translation>
 <translation id="7400575256015741911">Откривена је грешка у куцању</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@
 <translation id="8153880621934657047">Нисте унутар табеле.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{доња црта}one{# доња црта}few{# доње црте}other{# доњих црта}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">Аутоматски откривај и мењај језик ChromeVox-а.</translation>
 <translation id="8184828902145951186">ред</translation>
 <translation id="8186185314313222077">укључи/искључи цео екран</translation>
 <translation id="8199231515320852133">Објављивање заглавља актуелне ћелије</translation>
@@ -1118,12 +1114,13 @@
 <translation id="8446884382197647889">Сазнајте више</translation>
 <translation id="8455868257606149352">Највише <ph name="X" /></translation>
 <translation id="84575901236241018">има приступну шифру, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Остављате граматичку грешку</translation>
 <translation id="847154984256717791">заузето</translation>
 <translation id="8476408756881832830">Паузирај репродукцију док ChromeVox говори</translation>
 <translation id="8476508772960940536">преглед прозора</translation>
 <translation id="8503360654911991865">Смањивање грануларности навигације</translation>
-<translation id="8504695234784218301">Крај граматичке грешке</translation>
 <translation id="8520472399088452386">Дугме за промену вредности</translation>
+<translation id="8534394844575788431">Форматирање</translation>
 <translation id="8538744478902126321">Предвиђање наслова реда актуелне ћелије</translation>
 <translation id="8540054775867439484">Пребачено на врх</translation>
 <translation id="8542271685829952264">Да бисте истражили све ChromeVox команде и пречице, притисните тастер за претрагу + тастер са тачком, па се крећите кроз меније помоћу тастера са стрелицама и притисните Enter да бисте активирали команду. Вратите се овде тако што ћете притиснути тастер за претрагу + o, па онда t.</translation>
@@ -1203,6 +1200,7 @@
 <translation id="9149560530563164529">одељак</translation>
 <translation id="9150735707954472829">Картица</translation>
 <translation id="9151211641321628915">Објављује кратак опис актуелног положаја</translation>
+<translation id="9151249085738989067">Аутоматски промени ChromeVox глас на основу језика</translation>
 <translation id="9153606228985488238">Регистар у процентима: <ph name="PERCENT" /></translation>
 <translation id="9160096769946561184">Прелазак на крај актуелне колоне</translation>
 <translation id="9173115498289768110">Јачина звука у процентима: <ph name="PERCENT" /></translation>

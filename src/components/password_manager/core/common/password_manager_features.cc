@@ -20,6 +20,11 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a second, Gaia-account-scoped password store for users who are signed
+// in but not syncing.
+const base::Feature kEnablePasswordsAccountStorage = {
+    "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
@@ -48,26 +53,6 @@ const base::Feature kLeakDetection = {"PasswordLeakDetection",
 const base::Feature kManualPasswordGenerationAndroid{
     "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Performs a one-off migration (with retries) from a native backend into
-// logindb. Passwords are served from the new location.
-const base::Feature kMigrateLinuxToLoginDB = {"migrate-linux-to-logindb",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables new password form parsing mechanism for filling passwords, details in
-// https://goo.gl/QodPH1
-const base::Feature kNewPasswordFormParsing = {
-    "new-password-form-parsing", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables new password form parsing mechanism for saving passwords, details in
-// https://goo.gl/QodPH1
-const base::Feature kNewPasswordFormParsingForSaving = {
-    "new-password-form-parsing-for-saving", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables new password form parsing mechanism for saving passwords and disables
-// the old parser, details in https://goo.gl/QodPH1
-const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {
     "PasswordEditingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -93,6 +78,10 @@ const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
 // Enables support of filling and saving on username first flow.
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Makes the password managaer save/update bubble sticky.
+const base::Feature kStickyBubble{"PasswordManagerStickyBubble",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =

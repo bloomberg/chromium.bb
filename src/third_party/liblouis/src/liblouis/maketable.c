@@ -40,7 +40,7 @@ isLetter(widechar c) {
 	static unsigned long int hash;
 	static TranslationTableOffset offset;
 	static TranslationTableCharacter *character;
-	hash = (unsigned long int)c % HASHNUM;
+	hash = _lou_charHash(c);
 	offset = table->characters[hash];
 	while (offset) {
 		character = (TranslationTableCharacter *)&table->ruleArea[offset];
@@ -52,11 +52,9 @@ isLetter(widechar c) {
 
 extern widechar
 toLowercase(widechar c) {
-	static unsigned long int hash;
 	static TranslationTableOffset offset;
 	static TranslationTableCharacter *character;
-	hash = (unsigned long int)c % HASHNUM;
-	offset = table->characters[hash];
+	offset = table->characters[_lou_charHash(c)];
 	while (offset) {
 		character = (TranslationTableCharacter *)&table->ruleArea[offset];
 		if (character->realchar == c) return character->lowercase;
@@ -118,7 +116,6 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 static int
 find_matching_rules(widechar *text, int text_len, widechar *braille, int braille_len,
 		char *data, int clear_data) {
-	unsigned long int hash;
 	TranslationTableOffset offset;
 	TranslationTableRule *rule;
 	TranslationTableCharacter *character;
@@ -160,14 +157,10 @@ find_matching_rules(widechar *text, int text_len, widechar *braille, int braille
 		switch (hash_len) {
 		case 2:
 			if (text_len < 2) break;
-			hash = (unsigned long int)toLowercase(text[0]) << 8;
-			hash += (unsigned long int)toLowercase(text[1]);
-			hash %= HASHNUM;
-			offset = table->forRules[hash];
+			offset = table->forRules[_lou_stringHash(text, 1, table)];
 			break;
 		case 1:
-			hash = (unsigned long int)text[0] % HASHNUM;
-			offset = table->characters[hash];
+			offset = table->characters[_lou_charHash(text[0])];
 			while (offset) {
 				character = (TranslationTableCharacter *)&table->ruleArea[offset];
 				if (character->realchar == text[0]) {
@@ -379,7 +372,6 @@ suggestChunks(widechar *text, widechar *braille, char *hyphen_string) {
 extern void
 findRelevantRules(widechar *text, widechar **rules_str) {
 	int text_len, rules_len;
-	unsigned long int hash;
 	TranslationTableOffset offset;
 	TranslationTableCharacter *character;
 	TranslationTableRule *rule;
@@ -398,14 +390,10 @@ findRelevantRules(widechar *text, widechar **rules_str) {
 			switch (hash_len) {
 			case 2:
 				if (text_len - n < 2) break;
-				hash = (unsigned long int)toLowercase(text[n]) << 8;
-				hash += (unsigned long int)toLowercase(text[n + 1]);
-				hash %= HASHNUM;
-				offset = table->forRules[hash];
+				offset = table->forRules[_lou_stringHash(&text[n], 1, table)];
 				break;
 			case 1:
-				hash = (unsigned long int)text[n] % HASHNUM;
-				offset = table->characters[hash];
+				offset = table->characters[_lou_charHash(text[n])];
 				while (offset) {
 					character = (TranslationTableCharacter *)&table->ruleArea[offset];
 					if (character->realchar == text[0]) {

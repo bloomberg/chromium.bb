@@ -142,6 +142,7 @@ class FifoSchedulerTest(test.TestCase):
     self.assertNotIn('queued_jobs', stats)
     self.assertNotIn('running_jobs', stats)
     self.assertNotEquals(len(stats['queue_time_samples']), 0)
+    self.assertEquals(len(stats['queue_time_samples'][0]), 2)
 
   def testJobStuckInRunning(self):
     self.skipTest('Not implemented yet.')
@@ -184,3 +185,19 @@ class FifoSchedulerTest(test.TestCase):
     self.assertEqual(response.status_code, 200)
     self.ExecuteDeferredTasks('default')
     self.assertFalse(j.Start.called)
+
+  def testJobSamplesCapped(self):
+    for _ in range(51):
+      j = job.Job.New((), (),
+                      arguments={'configuration': 'mock'},
+                      comparison_mode='performance')
+      scheduler.Schedule(j)
+      j.Start = mock.MagicMock(
+          side_effect=j._Complete)  # pylint: disable=invalid-name
+      response = self.testapp.get('/cron/fifo-scheduler')
+      self.assertEqual(response.status_code, 200)
+
+    self.ExecuteDeferredTasks('default')
+
+    stats = scheduler.QueueStats('mock')
+    self.assertLessEqual(len(stats.get('queue_time_samples')), 50)

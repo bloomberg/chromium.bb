@@ -37,13 +37,13 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -81,7 +81,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -387,8 +387,9 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
   // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
+  // Focus the home button.
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  shelf->shelf_focus_cycler()->FocusNavigation(false /* lastElement */);
 }
 
 views::Widget* FindPipWidget() {
@@ -798,15 +799,11 @@ bool CanHandleShowStylusTools() {
 }
 
 bool CanHandleStartAmbientMode() {
-  return chromeos::switches::IsAmbientModeEnabled();
+  return chromeos::features::IsAmbientModeEnabled();
 }
 
 void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
   Shell::Get()->ambient_controller()->Toggle();
-}
-
-bool CanHandleStartVoiceInteraction() {
-  return chromeos::switches::IsAssistantEnabled();
 }
 
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
@@ -825,7 +822,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  switch (VoiceInteractionController::Get()->allowed_state().value_or(
+  switch (AssistantState::Get()->allowed_state().value_or(
       mojom::AssistantAllowedState::ALLOWED)) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
@@ -860,11 +857,6 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
-      return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
-      ShowToast(kVoiceInteractionErrorToastId,
-                l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
       // supervised user is deprecated, wait for the code clean up.
@@ -1577,7 +1569,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case START_AMBIENT_MODE:
       return CanHandleStartAmbientMode();
     case START_VOICE_INTERACTION:
-      return CanHandleStartVoiceInteraction();
+      return true;
     case SWAP_PRIMARY_DISPLAY:
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case SWITCH_IME:

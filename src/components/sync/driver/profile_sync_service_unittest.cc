@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -70,7 +70,7 @@ class FakeDataTypeManager : public DataTypeManager {
     configure_called_.Run(context.reason);
   }
 
-  void ReadyForStartChanged(ModelType type) override {}
+  void DataTypePreconditionChanged(ModelType type) override {}
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(ModelTypeSet undesired_types) override {}
   void Stop(ShutdownReason reason) override {}
@@ -316,7 +316,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<ProfileSyncService> service_;
 };

@@ -55,6 +55,9 @@ ConstantFoldingRule FoldExtractWithConstants() {
       auto cc = c->AsCompositeConstant();
       assert(cc != nullptr);
       auto components = cc->GetComponents();
+      // Protect against invalid IR.  Refuse to fold if the index is out
+      // of bounds.
+      if (element_index >= components.size()) return nullptr;
       c = components[element_index];
     }
     return c;
@@ -408,6 +411,28 @@ UnaryScalarFoldingRule FoldIToFOp() {
   };
 }
 
+// This defines a |UnaryScalarFoldingRule| that performs |OpQuantizeToF16|.
+UnaryScalarFoldingRule FoldQuantizeToF16Scalar() {
+  return [](const analysis::Type* result_type, const analysis::Constant* a,
+            analysis::ConstantManager* const_mgr) -> const analysis::Constant* {
+    assert(result_type != nullptr && a != nullptr);
+    const analysis::Float* float_type = a->type()->AsFloat();
+    assert(float_type != nullptr);
+    if (float_type->width() != 32) {
+      return nullptr;
+    }
+
+    float fa = a->GetFloat();
+    utils::HexFloat<utils::FloatProxy<float>> orignal(fa);
+    utils::HexFloat<utils::FloatProxy<utils::Float16>> quantized(0);
+    utils::HexFloat<utils::FloatProxy<float>> result(0.0f);
+    orignal.castTo(quantized, utils::round_direction::kToZero);
+    quantized.castTo(result, utils::round_direction::kToZero);
+    std::vector<uint32_t> words = {result.getBits()};
+    return const_mgr->GetConstant(result_type, words);
+  };
+}
+
 // This macro defines a |BinaryScalarFoldingRule| that applies |op|.  The
 // operator |op| must work for both float and double, and use syntax "f1 op f2".
 #define FOLD_FPARITH_OP(op)                                                \
@@ -438,6 +463,9 @@ UnaryScalarFoldingRule FoldIToFOp() {
 // Define the folding rule for conversion between floating point and integer
 ConstantFoldingRule FoldFToI() { return FoldFPUnaryOp(FoldFToIOp()); }
 ConstantFoldingRule FoldIToF() { return FoldFPUnaryOp(FoldIToFOp()); }
+ConstantFoldingRule FoldQuantizeToF16() {
+  return FoldFPUnaryOp(FoldQuantizeToF16Scalar());
+}
 
 // Define the folding rules for subtraction, addition, multiplication, and
 // division for floating point values.
@@ -582,13 +610,17 @@ ConstantFoldingRule FoldOpDotWithConstants() {
     std::vector<uint32_t> words = result.GetWords();
     const analysis::Constant* result_const =
         const_mgr->GetConstant(float_type, words);
-    for (uint32_t i = 0; i < a_components.size(); ++i) {
+    for (uint32_t i = 0; i < a_components.size() && result_const != nullptr;
+         ++i) {
       if (a_components[i] == nullptr || b_components[i] == nullptr) {
         return nullptr;
       }
 
       const analysis::Constant* component = FOLD_FPARITH_OP(*)(
           new_type, a_components[i], b_components[i], const_mgr);
+      if (component == nullptr) {
+        return nullptr;
+      }
       result_const =
           FOLD_FPARITH_OP(+)(new_type, result_const, component, const_mgr);
     }
@@ -777,9 +809,62 @@ ConstantFoldingRule FoldFClampFeedingCompare(uint32_t cmp_opcode) {
   };
 }
 
+ConstantFoldingRule FoldFMix() {
+  return [](IRContext* context, Instruction* inst,
+            const std::vector<const analysis::Constant*>& constants)
+             -> const analysis::Constant* {
+    analysis::ConstantManager* const_mgr = context->get_constant_mgr();
+    assert(inst->opcode() == SpvOpExtInst &&
+           "Expecting an extended instruction.");
+    assert(inst->GetSingleWordInOperand(0) ==
+               context->get_feature_mgr()->GetExtInstImportId_GLSLstd450() &&
+           "Expecting a GLSLstd450 extended instruction.");
+    assert(inst->GetSingleWordInOperand(1) == GLSLstd450FMix &&
+           "Expecting and FMix instruction.");
+
+    if (!inst->IsFloatingPointFoldingAllowed()) {
+      return nullptr;
+    }
+
+    // Make sure all FMix operands are constants.
+    for (uint32_t i = 1; i < 4; i++) {
+      if (constants[i] == nullptr) {
+        return nullptr;
+      }
+    }
+
+    const analysis::Constant* one;
+    if (constants[1]->type()->AsFloat()->width() == 32) {
+      one = const_mgr->GetConstant(constants[1]->type(),
+                                   utils::FloatProxy<float>(1.0f).GetWords());
+    } else {
+      one = const_mgr->GetConstant(constants[1]->type(),
+                                   utils::FloatProxy<double>(1.0).GetWords());
+    }
+
+    const analysis::Constant* temp1 =
+        FOLD_FPARITH_OP(-)(constants[1]->type(), one, constants[3], const_mgr);
+    if (temp1 == nullptr) {
+      return nullptr;
+    }
+
+    const analysis::Constant* temp2 = FOLD_FPARITH_OP(*)(
+        constants[1]->type(), constants[1], temp1, const_mgr);
+    if (temp2 == nullptr) {
+      return nullptr;
+    }
+    const analysis::Constant* temp3 = FOLD_FPARITH_OP(*)(
+        constants[2]->type(), constants[2], constants[3], const_mgr);
+    if (temp3 == nullptr) {
+      return nullptr;
+    }
+    return FOLD_FPARITH_OP(+)(temp2->type(), temp2, temp3, const_mgr);
+  };
+}
+
 }  // namespace
 
-ConstantFoldingRules::ConstantFoldingRules() {
+void ConstantFoldingRules::AddFoldingRules() {
   // Add all folding rules to the list for the opcodes to which they apply.
   // Note that the order in which rules are added to the list matters. If a rule
   // applies to the instruction, the rest of the rules will not be attempted.
@@ -844,6 +929,15 @@ ConstantFoldingRules::ConstantFoldingRules() {
   rules_[SpvOpVectorTimesScalar].push_back(FoldVectorTimesScalar());
 
   rules_[SpvOpFNegate].push_back(FoldFNegate());
+  rules_[SpvOpQuantizeToF16].push_back(FoldQuantizeToF16());
+
+  // Add rules for GLSLstd450
+  FeatureManager* feature_manager = context_->get_feature_mgr();
+  uint32_t ext_inst_glslstd450_id =
+      feature_manager->GetExtInstImportId_GLSLstd450();
+  if (ext_inst_glslstd450_id != 0) {
+    ext_rules_[{ext_inst_glslstd450_id, GLSLstd450FMix}].push_back(FoldFMix());
+  }
 }
 }  // namespace opt
 }  // namespace spvtools

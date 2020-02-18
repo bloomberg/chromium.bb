@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 
 namespace blink {
+class FileSystemCreateWriterOptions;
 
 class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
   DEFINE_WRAPPERTYPEINFO();
@@ -21,7 +22,8 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
 
   bool isFile() const override { return true; }
 
-  ScriptPromise createWriter(ScriptState*);
+  ScriptPromise createWriter(ScriptState*,
+                             const FileSystemCreateWriterOptions* options);
   ScriptPromise getFile(ScriptState*);
 
   mojom::blink::NativeFileSystemTransferTokenPtr Transfer() override;
@@ -36,7 +38,8 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
   void RequestPermissionImpl(
       bool writable,
-      base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
+      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
+                              mojom::blink::PermissionStatus)>) override;
 
   RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle> mojo_ptr_;
 };

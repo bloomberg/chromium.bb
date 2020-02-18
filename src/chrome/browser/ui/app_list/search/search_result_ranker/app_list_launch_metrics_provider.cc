@@ -156,8 +156,7 @@ AppListLaunchMetricsProvider::AppListLaunchMetricsProvider(
     : get_profile_dir_callback_(get_profile_dir_callback),
       init_state_(InitState::DISABLED),
       secret_(base::nullopt),
-      user_id_(base::nullopt),
-      weak_factory_(this) {}
+      user_id_(base::nullopt) {}
 
 AppListLaunchMetricsProvider::AppListLaunchMetricsProvider()
     : AppListLaunchMetricsProvider(base::BindRepeating(GetProfileDir)) {}
@@ -198,8 +197,8 @@ void AppListLaunchMetricsProvider::Initialize() {
   const base::FilePath& proto_filepath = profile_dir.value().AppendASCII(
       AppListLaunchMetricsProvider::kStateProtoFilename);
 
-  PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&LoadStateFromDisk, proto_filepath),
       base::BindOnce(&AppListLaunchMetricsProvider::OnStateLoaded,
                      weak_factory_.GetWeakPtr(), proto_filepath));
@@ -220,9 +219,8 @@ void AppListLaunchMetricsProvider::OnStateLoaded(
     LogMetricsProviderError(MetricsProviderError::kNoStateProto);
 
     AppListLaunchRecorderStateProto new_proto = GenerateStateProto();
-    PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&SaveStateToDisk, proto_filepath, new_proto));
+    PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+             base::BindOnce(&SaveStateToDisk, proto_filepath, new_proto));
 
     secret_ = GetSecretFromProto(new_proto);
     user_id_ = new_proto.recurrence_ranker_user_id();
@@ -292,6 +290,7 @@ void AppListLaunchMetricsProvider::CreateLaunchEvent(
   event->set_hour(now.hour);
   event->set_search_query_length(launch_info.query.size());
   event->set_launch_type(launch_info.launch_type);
+  event->set_search_provider_type(launch_info.search_provider_type);
 
   // Hashed data.
   event->set_hashed_target(HashWithSecret(launch_info.target, secret_.value()));

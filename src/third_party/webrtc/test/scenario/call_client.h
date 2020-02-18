@@ -16,15 +16,15 @@
 #include <utility>
 #include <vector>
 
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "call/call.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "modules/congestion_controller/goog_cc/test/goog_cc_printer.h"
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "test/logging/log_writer.h"
 #include "test/network/network_emulation.h"
+#include "test/rtp_header_parser.h"
 #include "test/scenario/column_printer.h"
 #include "test/scenario/network_node.h"
 #include "test/scenario/scenario_config.h"
@@ -107,6 +107,7 @@ class CallClient : public EmulatedNetworkReceiverInterface {
     return DataRate::bps(GetStats().send_bandwidth_bps);
   }
   DataRate target_rate() const;
+  DataRate stable_target_rate() const;
   DataRate link_capacity() const;
   DataRate padding_rate() const;
 

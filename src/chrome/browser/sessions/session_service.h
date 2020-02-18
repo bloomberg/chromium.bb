@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/token.h"
@@ -27,6 +28,7 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_service_commands.h"
 #include "components/sessions/core/tab_restore_service_client.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
 class Profile;
@@ -66,12 +68,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
                        public BrowserListObserver {
   friend class SessionServiceTestHelper;
  public:
-  // Used to distinguish an application from a ordinary content window.
-  enum AppType {
-    TYPE_APP,
-    TYPE_NORMAL
-  };
-
   // Creates a SessionService for the specified profile.
   explicit SessionService(Profile* profile);
   // For testing.
@@ -125,10 +121,19 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
                            const SessionID& tab_id,
                            int new_index);
 
-  // Sets a tab's group ID, if any.
+  // Sets a tab's group ID, if any. Note that a group can't be split between
+  // multiple windows.
   void SetTabGroup(const SessionID& window_id,
                    const SessionID& tab_id,
                    base::Optional<base::Token> group);
+
+  // Updates the metadata associated with a tab group. |window_id| should be the
+  // window where the group currently resides. Note that a group can't be split
+  // between multiple windows.
+  void SetTabGroupMetadata(const SessionID& window_id,
+                           const base::Token& group_id,
+                           const base::string16& title,
+                           SkColor color);
 
   // Sets the pinned state of the tab.
   void SetPinnedState(const SessionID& window_id,
@@ -162,9 +167,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // Sets the type of window. In order for the contents of a window to be
   // tracked SetWindowType must be invoked with a type we track
   // (ShouldRestoreOfWindowType returns true).
-  void SetWindowType(const SessionID& window_id,
-                     Browser::Type type,
-                     AppType app_type);
+  void SetWindowType(const SessionID& window_id, Browser::Type type);
 
   // Sets the application name of the specified window.
   void SetWindowAppName(const SessionID& window_id,
@@ -240,10 +243,10 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   void Init();
 
-  // Returns true if a window of given |window_type| and |app_type| should get
+  // Returns true if a window of given |window_type| should get
   // restored upon session restore.
-  bool ShouldRestoreWindowOfType(sessions::SessionWindow::WindowType type,
-                                 AppType app_type) const;
+  bool ShouldRestoreWindowOfType(
+      sessions::SessionWindow::WindowType type) const;
 
   // Removes unrestorable windows from the previous windows list.
   void RemoveUnusedRestoreWindows(

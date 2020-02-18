@@ -5,7 +5,6 @@
 #include "ash/wm/lock_layout_manager.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state.h"
@@ -19,8 +18,7 @@ namespace ash {
 LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
     : WmDefaultLayoutManager(),
       window_(window),
-      root_window_(window->GetRootWindow()),
-      shelf_observer_(this) {
+      root_window_(window->GetRootWindow()) {
   Shell::Get()->AddShellObserver(this);
   root_window_->AddObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
@@ -95,7 +93,8 @@ void LockLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& new_bounds,
                                               ui::PropertyChangeReason reason) {
   if (root_window_ == window) {
-    const WMEvent wm_event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const DisplayMetricsChangedWMEvent wm_event(
+        display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
     AdjustWindowsForWorkAreaChange(&wm_event);
   }
 }

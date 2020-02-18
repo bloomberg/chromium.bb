@@ -22,8 +22,10 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_messages.mojom.h"
+#include "content/common/throttling_url_loader.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -99,9 +101,9 @@ class FakeNavigationClient : public mojom::NavigationClient {
  private:
   // mojom::NavigationClientPtr implementation:
   void CommitNavigation(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& request_params,
-      const network::ResourceResponseHead& response_head,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -119,8 +121,8 @@ class FakeNavigationClient : public mojom::NavigationClient {
     std::move(callback).Run(nullptr, nullptr);
   }
   void CommitFailedNavigation(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
@@ -192,8 +194,8 @@ ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint() {}
 ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint(
     ServiceWorkerRemoteProviderEndpoint&& other)
     : navigation_client_(std::move(other.navigation_client_)),
-      host_ptr_(std::move(other.host_ptr_)),
-      client_request_(std::move(other.client_request_)) {}
+      host_remote_(std::move(other.host_remote_)),
+      client_receiver_(std::move(other.client_receiver_)) {}
 
 ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
 
@@ -202,7 +204,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
   // We establish a message pipe for connecting |navigation_client_| to a fake
   // navigation client, then simulate sending the navigation commit IPC which
   // carries a service worker provider info over it, then the provider info
-  // received there gets its |host_ptr_info| and |client_request| associated
+  // received there gets its |host_remote| and |client_receiver| associated
   // with a message pipe so that their users later can make Mojo calls without
   // crash.
   blink::mojom::ServiceWorkerProviderInfoForClientPtr received_info;
@@ -218,7 +220,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
           loop.QuitClosure(), &received_info)),
       mojo::MakeRequest(&navigation_client_));
   navigation_client_->CommitNavigation(
-      CommonNavigationParams(), CommitNavigationParams(),
+      CreateCommonNavigationParams(), CreateCommitNavigationParams(),
       network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
       nullptr, nullptr, base::nullopt, nullptr, std::move(info),
       mojo::NullRemote(), base::UnguessableToken::Create(),
@@ -229,13 +231,13 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
                  interface_params) {}));
   loop.Run();
 
-  client_request_ = std::move(received_info->client_request);
-  host_ptr_.Bind(std::move(received_info->host_ptr_info));
+  client_receiver_ = std::move(received_info->client_receiver);
+  host_remote_.Bind(std::move(received_info->host_remote));
 }
 
 void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  host_ptr_.Bind(std::move(info->host_ptr_info));
+  host_remote_.Bind(std::move(info->host_remote));
 }
 
 ServiceWorkerProviderHostAndInfo::ServiceWorkerProviderHostAndInfo(
@@ -266,15 +268,17 @@ std::unique_ptr<ServiceWorkerProviderHostAndInfo>
 CreateProviderHostAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure) {
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+      client_remote;
+  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+      host_receiver;
   auto info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
-  info->client_request = mojo::MakeRequest(&client_ptr_info);
-  host_request = mojo::MakeRequest(&(info->host_ptr_info));
+  info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
+  host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
   return std::make_unique<ServiceWorkerProviderHostAndInfo>(
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           context, are_ancestors_secure, FrameTreeNode::kFrameTreeNodeInvalidId,
-          std::move(host_request), std::move(client_ptr_info)),
+          std::move(host_receiver), std::move(client_remote)),
       std::move(info));
 }
 
@@ -306,7 +310,8 @@ CreateProviderHostForServiceWorkerContext(
           &provider_info);
 
   host->CompleteStartWorkerPreparation(
-      process_id, mojo::MakeRequest(&provider_info->interface_provider));
+      process_id, mojo::MakeRequest(&provider_info->interface_provider),
+      provider_info->browser_interface_broker.InitWithNewPipeAndPassReceiver());
   output_endpoint->BindForServiceWorker(std::move(provider_info));
   return host;
 }
@@ -621,16 +626,14 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
 std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
 ServiceWorkerUpdateCheckTestUtils::CreateUpdateCheckerPausedState(
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
-    ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-    ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+    ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+    ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
     mojo::ScopedDataPipeConsumerHandle network_consumer) {
-  network::mojom::URLLoaderPtr network_loader;
   network::mojom::URLLoaderClientPtr network_loader_client;
-  mojo::MakeRequest(&network_loader);
   network::mojom::URLLoaderClientRequest network_loader_client_request =
       mojo::MakeRequest(&network_loader_client);
   return std::make_unique<ServiceWorkerSingleScriptUpdateChecker::PausedState>(
-      std::move(cache_writer), std::move(network_loader),
+      std::move(cache_writer), /*network_loader=*/nullptr,
       std::move(network_loader_client_request), std::move(network_consumer),
       network_loader_state, body_writer_state);
 }
@@ -643,9 +646,16 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
         paused_state,
     ServiceWorkerVersion* version) {
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo> info_map;
-  info_map[script_url] = ServiceWorkerUpdateChecker::ComparedScriptInfo(
-      resource_id, compare_result, std::move(paused_state));
-  version->set_compared_script_info_map(std::move(info_map));
+  info_map.emplace(script_url,
+                   ServiceWorkerUpdateChecker::ComparedScriptInfo(
+                       resource_id, compare_result, std::move(paused_state),
+                       /*failure_info=*/nullptr));
+  version->PrepareForUpdate(
+      std::move(info_map),
+      (compare_result ==
+       ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
+          ? script_url
+          : GURL());
 }
 
 void ServiceWorkerUpdateCheckTestUtils::
@@ -657,8 +667,8 @@ void ServiceWorkerUpdateCheckTestUtils::
         int64_t old_resource_id,
         int64_t new_resource_id,
         EmbeddedWorkerTestHelper* worker_test_helper,
-        ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-        ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+        ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+        ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
         mojo::ScopedDataPipeConsumerHandle network_consumer,
         ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
         ServiceWorkerVersion* version) {

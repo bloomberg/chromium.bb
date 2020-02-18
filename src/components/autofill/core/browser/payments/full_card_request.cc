@@ -89,8 +89,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                          card.ShouldUpdateExpiration(AutofillClock::Now()));
   if (should_unmask_card_) {
     payments_client_->Prepare();
-    request_->billing_customer_number = GetBillingCustomerId(
-        personal_data_manager_, /*should_log_validity=*/true);
+    request_->billing_customer_number =
+        GetBillingCustomerId(personal_data_manager_);
   }
 
   request_->fido_assertion_info = std::move(fido_assertion_info);
@@ -114,23 +114,25 @@ bool FullCardRequest::IsGettingFullCard() const {
   return !!request_;
 }
 
-void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
-  if (!response.exp_month.empty())
-    request_->card.SetRawInfo(CREDIT_CARD_EXP_MONTH, response.exp_month);
+void FullCardRequest::OnUnmaskPromptAccepted(
+    const UserProvidedUnmaskDetails& user_response) {
+  if (!user_response.exp_month.empty())
+    request_->card.SetRawInfo(CREDIT_CARD_EXP_MONTH, user_response.exp_month);
 
-  if (!response.exp_year.empty())
-    request_->card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, response.exp_year);
+  if (!user_response.exp_year.empty())
+    request_->card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                              user_response.exp_year);
 
   if (request_->card.record_type() == CreditCard::LOCAL_CARD &&
       !request_->card.guid().empty() &&
-      (!response.exp_month.empty() || !response.exp_year.empty())) {
+      (!user_response.exp_month.empty() || !user_response.exp_year.empty())) {
     personal_data_manager_->UpdateCreditCard(request_->card);
   }
 
   if (!should_unmask_card_) {
     if (result_delegate_)
       result_delegate_->OnFullCardRequestSucceeded(*this, request_->card,
-                                                   response.cvc);
+                                                   user_response.cvc);
     if (ui_delegate_)
       ui_delegate_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
     Reset();
@@ -138,7 +140,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
     return;
   }
 
-  request_->user_response = response;
+  request_->user_response = user_response;
   if (!request_->risk_data.empty())
     SendUnmaskCardRequest();
 }
@@ -164,8 +166,9 @@ void FullCardRequest::SendUnmaskCardRequest() {
                                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                                      const std::string& real_pan) {
+void FullCardRequest::OnDidGetRealPan(
+    AutofillClient::PaymentsRpcResult result,
+    payments::PaymentsClient::UnmaskResponseDetails& response_details) {
   AutofillMetrics::LogRealPanDuration(
       AutofillClock::Now() - real_pan_request_timestamp_, result);
 
@@ -188,14 +191,19 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
     }
 
     case AutofillClient::SUCCESS: {
-      DCHECK(!real_pan.empty());
+      DCHECK(!response_details.real_pan.empty());
       request_->card.set_record_type(CreditCard::FULL_SERVER_CARD);
-      request_->card.SetNumber(base::UTF8ToUTF16(real_pan));
+      request_->card.SetNumber(base::UTF8ToUTF16(response_details.real_pan));
       request_->card.SetServerStatus(CreditCard::OK);
 
       if (request_->user_response.should_store_pan)
         personal_data_manager_->UpdateServerCreditCard(request_->card);
 
+      // TODO(crbug/949269): Once |fido_opt_in| is added to
+      // UserProvidedUnmaskDetails, clear out |creation_options| from
+      // |response_details_| if |user_response.fido_opt_in| was not set to true
+      // to avoid an unwanted registration prompt.
+      unmask_response_details_ = response_details;
       if (result_delegate_)
         result_delegate_->OnFullCardRequestSucceeded(
             *this, request_->card, request_->user_response.cvc);
@@ -216,6 +224,7 @@ void FullCardRequest::Reset() {
   ui_delegate_ = nullptr;
   request_.reset();
   should_unmask_card_ = false;
+  unmask_response_details_ = payments::PaymentsClient::UnmaskResponseDetails();
 }
 
 }  // namespace payments

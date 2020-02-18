@@ -6,13 +6,19 @@
 
 #include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/content_settings/core/test/content_settings_mock_provider.h"
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/features.h"
+#include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -22,9 +28,8 @@ namespace {
 
 class CookieSettingsObserver : public CookieSettings::Observer {
  public:
-  CookieSettingsObserver(CookieSettings* settings)
-      : settings_(settings), scoped_observer(this) {
-    scoped_observer.Add(settings);
+  CookieSettingsObserver(CookieSettings* settings) : settings_(settings) {
+    scoped_observer_.Add(settings);
   }
 
   void OnThirdPartyCookieBlockingChanged(
@@ -39,7 +44,8 @@ class CookieSettingsObserver : public CookieSettings::Observer {
  private:
   CookieSettings* settings_;
   bool last_value_ = false;
-  ScopedObserver<CookieSettings, CookieSettingsObserver> scoped_observer;
+  ScopedObserver<CookieSettings, CookieSettings::Observer> scoped_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieSettingsObserver);
 };
@@ -55,21 +61,29 @@ class CookieSettingsTest : public testing::Test {
         kDomain("example.com"),
         kDotDomain(".example.com"),
         kSubDomain("www.example.com"),
+        kOtherDomain("www.not-example.com"),
+        kDomainWildcardPattern("[*.]example.com"),
         kHttpSite("http://example.com"),
         kHttpsSite("https://example.com"),
         kHttpsSubdomainSite("https://www.example.com"),
         kHttpsSite8080("https://example.com:8080"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
+  }
+
+  ~CookieSettingsTest() override { settings_map_->ShutdownOnUIThread(); }
+
+  void SetUp() override {
+    ContentSettingsRegistry::GetInstance()->ResetForTest();
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
-    cookie_settings_ =
-        new CookieSettings(settings_map_.get(), &prefs_, "chrome-extension");
+    cookie_settings_ = new CookieSettings(settings_map_.get(), &prefs_, false,
+                                          "chrome-extension");
+    cookie_settings_incognito_ = new CookieSettings(
+        settings_map_.get(), &prefs_, true, "chrome-extension");
   }
-
-  ~CookieSettingsTest() override { settings_map_->ShutdownOnUIThread(); }
 
  protected:
   bool ShouldDeleteCookieOnExit(const std::string& domain, bool is_https) {
@@ -81,11 +95,12 @@ class CookieSettingsTest : public testing::Test {
 
   // There must be a valid ThreadTaskRunnerHandle in HostContentSettingsMap's
   // scope.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<CookieSettings> cookie_settings_;
+  scoped_refptr<CookieSettings> cookie_settings_incognito_;
   const GURL kBlockedSite;
   const GURL kAllowedSite;
   const GURL kFirstPartySite;
@@ -94,6 +109,8 @@ class CookieSettingsTest : public testing::Test {
   const std::string kDomain;
   const std::string kDotDomain;
   const std::string kSubDomain;
+  const std::string kOtherDomain;
+  const std::string kDomainWildcardPattern;
   const GURL kHttpSite;
   const GURL kHttpsSite;
   const GURL kHttpsSubdomainSite;
@@ -130,24 +147,63 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
-TEST_F(CookieSettingsTest, CookiesControlsEnabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kImprovedCookieControls);
-  ASSERT_TRUE(
+// Test fixture with ImprovedCookieControls enabled.
+class ImprovedCookieControlsCookieSettingsTest : public CookieSettingsTest {
+ public:
+  ImprovedCookieControlsCookieSettingsTest() : CookieSettingsTest() {
+    feature_list_.InitAndEnableFeature(kImprovedCookieControls);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsDefault) {
+  EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
-  prefs_.SetBoolean(prefs::kCookieControlsEnabled, true);
+  EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsEnabled) {
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kOn));
   EXPECT_FALSE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsDisabled) {
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kOff));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest,
+       CookiesControlsEnabledForIncognito) {
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kIncognitoOnly));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesControlsEnabledButFeatureDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(kImprovedCookieControls);
-  ASSERT_TRUE(
-      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
-  prefs_.SetBoolean(prefs::kCookieControlsEnabled, true);
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kOn));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {
@@ -414,6 +470,182 @@ TEST_F(CookieSettingsTest, ThirdPartySettingObserver) {
   EXPECT_FALSE(observer.last_value());
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_TRUE(observer.last_value());
+}
+
+TEST_F(CookieSettingsTest, LegacyCookieAccessAllowAll) {
+  settings_map_->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      net::CookieAccessSemantics::LEGACY,
+      cookie_settings_->GetCookieAccessSemanticsForDomain(
+          net::cookie_util::CookieOriginToURL(kDomain, true /* is_https */)));
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            cookie_settings_->GetCookieAccessSemanticsForDomain(
+                net::cookie_util::CookieOriginToURL(kDotDomain,
+                                                    true /* is_https */)));
+}
+
+TEST_F(CookieSettingsTest, LegacyCookieAccessBlockAll) {
+  settings_map_->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(
+      net::CookieAccessSemantics::NONLEGACY,
+      cookie_settings_->GetCookieAccessSemanticsForDomain(
+          net::cookie_util::CookieOriginToURL(kDomain, true /* is_https */)));
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            cookie_settings_->GetCookieAccessSemanticsForDomain(
+                net::cookie_util::CookieOriginToURL(kDotDomain,
+                                                    false /* is_https */)));
+}
+
+// Test SameSite-by-default disabled (default semantics is LEGACY)
+// TODO(crbug.com/953306): Remove this when legacy code path is removed.
+TEST_F(CookieSettingsTest,
+       LegacyCookieAccessAllowDomainPattern_SameSiteByDefaultDisabled) {
+  // Override the policy provider for this test, since the legacy cookie access
+  // setting can only be set by policy.
+  TestUtils::OverrideProvider(
+      settings_map_.get(), std::make_unique<MockProvider>(),
+      HostContentSettingsMap::ProviderType::POLICY_PROVIDER);
+  settings_map_->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString(kDomain),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, std::string(),
+      CONTENT_SETTING_BLOCK);
+  const struct {
+    net::CookieAccessSemantics status;
+    std::string cookie_domain;
+  } kTestCases[] = {
+      // These two test cases are NONLEGACY because they match the setting.
+      {net::CookieAccessSemantics::NONLEGACY, kDomain},
+      {net::CookieAccessSemantics::NONLEGACY, kDotDomain},
+      // These two test cases default into LEGACY.
+      // Subdomain does not match pattern.
+      {net::CookieAccessSemantics::LEGACY, kSubDomain},
+      {net::CookieAccessSemantics::LEGACY, kOtherDomain}};
+  for (const auto& test : kTestCases) {
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, true /* is_https */)));
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, false /* is_https */)));
+  }
+}
+
+// Test SameSite-by-default disabled (default semantics is LEGACY)
+// TODO(crbug.com/953306): Remove this when legacy code path is removed.
+TEST_F(CookieSettingsTest,
+       LegacyCookieAccessAllowDomainWildcardPattern_SameSiteByDefaultDisabled) {
+  // Override the policy provider for this test, since the legacy cookie access
+  // setting can only be set by policy.
+  TestUtils::OverrideProvider(
+      settings_map_.get(), std::make_unique<MockProvider>(),
+      HostContentSettingsMap::ProviderType::POLICY_PROVIDER);
+  settings_map_->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString(kDomainWildcardPattern),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, std::string(),
+      CONTENT_SETTING_BLOCK);
+  const struct {
+    net::CookieAccessSemantics status;
+    std::string cookie_domain;
+  } kTestCases[] = {
+      // These three test cases are NONLEGACY because they match the setting.
+      {net::CookieAccessSemantics::NONLEGACY, kDomain},
+      {net::CookieAccessSemantics::NONLEGACY, kDotDomain},
+      // Subdomain matches pattern.
+      {net::CookieAccessSemantics::NONLEGACY, kSubDomain},
+      // This test case defaults into LEGACY.
+      {net::CookieAccessSemantics::LEGACY, kOtherDomain}};
+  for (const auto& test : kTestCases) {
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, true /* is_https */)));
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, false /* is_https */)));
+  }
+}
+
+// Test fixture with SameSiteByDefaultCookies enabled.
+class SameSiteByDefaultCookieSettingsTest : public CookieSettingsTest {
+ public:
+  SameSiteByDefaultCookieSettingsTest() : CookieSettingsTest() {
+    feature_list_.InitAndEnableFeature(
+        net::features::kSameSiteByDefaultCookies);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test SameSite-by-default enabled (default semantics is NONLEGACY)
+TEST_F(SameSiteByDefaultCookieSettingsTest,
+       LegacyCookieAccessAllowDomainPattern_SameSiteByDefaultEnabled) {
+  // Override the policy provider for this test, since the legacy cookie access
+  // setting can only be set by policy.
+  TestUtils::OverrideProvider(
+      settings_map_.get(), std::make_unique<MockProvider>(),
+      HostContentSettingsMap::ProviderType::POLICY_PROVIDER);
+  settings_map_->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString(kDomain),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, std::string(),
+      CONTENT_SETTING_ALLOW);
+  const struct {
+    net::CookieAccessSemantics status;
+    std::string cookie_domain;
+  } kTestCases[] = {
+      // These two test cases are LEGACY because they match the setting.
+      {net::CookieAccessSemantics::LEGACY, kDomain},
+      {net::CookieAccessSemantics::LEGACY, kDotDomain},
+      // These two test cases default into NONLEGACY.
+      // Subdomain does not match pattern.
+      {net::CookieAccessSemantics::NONLEGACY, kSubDomain},
+      {net::CookieAccessSemantics::NONLEGACY, kOtherDomain}};
+  for (const auto& test : kTestCases) {
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, true /* is_https */)));
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, false /* is_https */)));
+  }
+}
+
+// Test SameSite-by-default enabled (default semantics is NONLEGACY)
+TEST_F(SameSiteByDefaultCookieSettingsTest,
+       LegacyCookieAccessAllowDomainWildcardPattern_SameSiteByDefaultEnabled) {
+  // Override the policy provider for this test, since the legacy cookie access
+  // setting can only be set by policy.
+  TestUtils::OverrideProvider(
+      settings_map_.get(), std::make_unique<MockProvider>(),
+      HostContentSettingsMap::ProviderType::POLICY_PROVIDER);
+  settings_map_->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString(kDomainWildcardPattern),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, std::string(),
+      CONTENT_SETTING_ALLOW);
+  const struct {
+    net::CookieAccessSemantics status;
+    std::string cookie_domain;
+  } kTestCases[] = {
+      // These three test cases are LEGACY because they match the setting.
+      {net::CookieAccessSemantics::LEGACY, kDomain},
+      {net::CookieAccessSemantics::LEGACY, kDotDomain},
+      // Subdomain matches pattern.
+      {net::CookieAccessSemantics::LEGACY, kSubDomain},
+      // This test case defaults into NONLEGACY.
+      {net::CookieAccessSemantics::NONLEGACY, kOtherDomain}};
+  for (const auto& test : kTestCases) {
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, true /* is_https */)));
+    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
+                               net::cookie_util::CookieOriginToURL(
+                                   test.cookie_domain, false /* is_https */)));
+  }
 }
 
 }  // namespace

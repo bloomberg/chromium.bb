@@ -35,6 +35,10 @@ class WebMouseWheelEvent : public WebMouseEvent {
     // A wheel event with phase may begin shows that a scrolling sequence may
     // start.
     kPhaseMayBegin = 1 << 5,
+    // A wheel event with momentum phase blocked shows that a scrolling sequence
+    // will not be followed by a momentum fling. This should only ever be set on
+    // the momentum phase of an event.
+    kPhaseBlocked = 1 << 6,
   };
 
   // A hint at the outcome of a wheel event should it not get canceled.
@@ -127,6 +131,17 @@ class WebMouseWheelEvent : public WebMouseEvent {
   bool IsCancelable() const { return dispatch_type == kBlocking; }
 #endif
 };
+
+inline bool operator==(const WebMouseWheelEvent& a,
+                       const WebMouseWheelEvent& b) {
+  return memcmp(&a, &b, a.size()) == 0;
+}
+
+inline bool operator!=(const WebMouseWheelEvent& a,
+                       const WebMouseWheelEvent& b) {
+  return !(a == b);
+}
+
 #pragma pack(pop)
 
 }  // namespace blink

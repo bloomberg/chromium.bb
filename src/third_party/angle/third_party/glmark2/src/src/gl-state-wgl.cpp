@@ -21,6 +21,7 @@
 //
 #include "gl-state-wgl.h"
 
+#include <glad/wgl.h>
 #include "gl-headers.h"
 #include "log.h"
 #include "options.h"
@@ -90,6 +91,11 @@ GLStateWGL::init_display(void* native_display, GLVisualConfig& /*visual_config*/
     }
 
     if (gladLoadGLUserPtr(load_proc, this) == 0) {
+        Log::error("Failed to load GL entry points\n");
+        return false;
+    }
+
+    if (gladLoadWGLUserPtr(hdc_, load_proc, this) == 0) {
         Log::error("Failed to load WGL entry points\n");
         return false;
     }
@@ -114,6 +120,10 @@ GLStateWGL::init_gl_extensions()
 bool
 GLStateWGL::valid()
 {
+    if (!wglSwapIntervalEXT || wglSwapIntervalEXT(0) == FALSE) {
+        Log::info("** Failed to set swap interval. Results may be bounded above by refresh rate.\n");
+    }
+
     return wgl_context_ != nullptr;
 }
 
@@ -133,7 +143,7 @@ GLStateWGL::swap()
 }
 
 bool
-GLStateWGL::gotNativeConfig(int& vid)
+GLStateWGL::gotNativeConfig(intptr_t& vid)
 {
     vid = 1;
     return true;
@@ -155,7 +165,7 @@ GLStateWGL::getVisualConfig(GLVisualConfig& vc)
  * Private methods *
  *******************/
 
-GLStateWGL::api_proc GLStateWGL::load_proc(const char *name, void *userptr)
+GLStateWGL::api_proc GLStateWGL::load_proc(void *userptr, const char *name)
 {
     GLStateWGL* state = reinterpret_cast<GLStateWGL*>(userptr);
     auto get_proc_addr = reinterpret_cast<decltype(&wglGetProcAddress)>(state->get_proc_addr_);

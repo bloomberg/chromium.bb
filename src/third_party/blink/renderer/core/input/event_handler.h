@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -202,7 +201,6 @@ class CORE_EXPORT EventHandler final
   // Handle the provided scroll gesture event, propagating down to child frames
   // as necessary.
   WebInputEventResult HandleGestureScrollEvent(const WebGestureEvent&);
-  WebInputEventResult HandleGestureScrollEnd(const WebGestureEvent&);
   bool IsScrollbarHandlingGestures() const;
 
   bool BestClickableNodeForHitTestResult(const HitTestLocation& location,

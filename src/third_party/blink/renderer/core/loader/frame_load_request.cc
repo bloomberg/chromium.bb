@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -37,8 +38,7 @@ static void SetReferrerForRequest(Document* origin_document,
 
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request.SetHttpReferrer(
-      referrer, ResourceRequest::SetHttpReferrerLocation::kFrameLoadRequest);
+  request.SetHttpReferrer(referrer);
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 
@@ -67,12 +67,12 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     DCHECK(!resource_request_.RequestorOrigin());
     resource_request_.SetRequestorOrigin(origin_document->GetSecurityOrigin());
 
-    if (resource_request.Url().ProtocolIs("blob") &&
-        BlobUtils::MojoBlobURLsEnabled()) {
+    if (resource_request.Url().ProtocolIs("blob")) {
       blob_url_token_ = base::MakeRefCounted<
-          base::RefCountedData<mojom::blink::BlobURLTokenPtr>>();
+          base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>();
       origin_document->GetPublicURLManager().Resolve(
-          resource_request.Url(), MakeRequest(&blob_url_token_->data));
+          resource_request.Url(),
+          blob_url_token_->data.BindNewPipeAndPassReceiver());
     }
 
     SetReferrerForRequest(origin_document_, resource_request_);

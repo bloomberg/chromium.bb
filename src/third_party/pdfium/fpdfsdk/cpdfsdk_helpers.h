@@ -12,6 +12,7 @@
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "public/fpdf_doc.h"
+#include "public/fpdf_ext.h"
 #include "public/fpdfview.h"
 
 #ifdef PDF_ENABLE_XFA
@@ -39,14 +40,9 @@ class CPDF_TextPage;
 class CPDF_TextPageFind;
 class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_InteractiveForm;
-class IPDFSDK_PauseAdapter;
+class CPDFSDK_PauseAdapter;
 class FX_PATHPOINT;
-
-#ifdef PDF_ENABLE_XFA
-class CPDFXFA_Context;
-class CPDFXFA_Page;
-class CXFA_FFWidget;
-#endif  // PDF_ENABLE_XFA
+struct CPDF_JavaScript;
 
 // Conversions to/from underlying types.
 IPDF_Page* IPDFPageFromFPDFPage(FPDF_PAGE page);
@@ -56,8 +52,8 @@ FPDF_DOCUMENT FPDFDocumentFromCPDFDocument(CPDF_Document* doc);
 CPDF_Document* CPDFDocumentFromFPDFDocument(FPDF_DOCUMENT doc);
 
 // Conversions to/from incomplete FPDF_ API types.
-inline FPDF_ACTION FPDFActionFromCPDFDictionary(CPDF_Dictionary* action) {
-  return reinterpret_cast<FPDF_ACTION>(action);
+inline FPDF_ACTION FPDFActionFromCPDFDictionary(const CPDF_Dictionary* action) {
+  return reinterpret_cast<FPDF_ACTION>(const_cast<CPDF_Dictionary*>(action));
 }
 inline CPDF_Dictionary* CPDFDictionaryFromFPDFAction(FPDF_ACTION action) {
   return reinterpret_cast<CPDF_Dictionary*>(action);
@@ -86,8 +82,10 @@ inline CFX_DIBitmap* CFXDIBitmapFromFPDFBitmap(FPDF_BITMAP bitmap) {
   return reinterpret_cast<CFX_DIBitmap*>(bitmap);
 }
 
-inline FPDF_BOOKMARK FPDFBookmarkFromCPDFDictionary(CPDF_Dictionary* bookmark) {
-  return reinterpret_cast<FPDF_BOOKMARK>(bookmark);
+inline FPDF_BOOKMARK FPDFBookmarkFromCPDFDictionary(
+    const CPDF_Dictionary* bookmark) {
+  return reinterpret_cast<FPDF_BOOKMARK>(
+      const_cast<CPDF_Dictionary*>(bookmark));
 }
 inline CPDF_Dictionary* CPDFDictionaryFromFPDFBookmark(FPDF_BOOKMARK bookmark) {
   return reinterpret_cast<CPDF_Dictionary*>(bookmark);
@@ -100,8 +98,8 @@ inline CPDF_ClipPath* CPDFClipPathFromFPDFClipPath(FPDF_CLIPPATH path) {
   return reinterpret_cast<CPDF_ClipPath*>(path);
 }
 
-inline FPDF_DEST FPDFDestFromCPDFArray(CPDF_Array* dest) {
-  return reinterpret_cast<FPDF_DEST>(dest);
+inline FPDF_DEST FPDFDestFromCPDFArray(const CPDF_Array* dest) {
+  return reinterpret_cast<FPDF_DEST>(const_cast<CPDF_Array*>(dest));
 }
 inline CPDF_Array* CPDFArrayFromFPDFDest(FPDF_DEST dest) {
   return reinterpret_cast<CPDF_Array*>(dest);
@@ -112,6 +110,15 @@ inline FPDF_FONT FPDFFontFromCPDFFont(CPDF_Font* font) {
 }
 inline CPDF_Font* CPDFFontFromFPDFFont(FPDF_FONT font) {
   return reinterpret_cast<CPDF_Font*>(font);
+}
+
+inline FPDF_JAVASCRIPT_ACTION FPDFJavaScriptActionFromCPDFJavaScriptAction(
+    CPDF_JavaScript* javascript) {
+  return reinterpret_cast<FPDF_JAVASCRIPT_ACTION>(javascript);
+}
+inline CPDF_JavaScript* CPDFJavaScriptActionFromFPDFJavaScriptAction(
+    FPDF_JAVASCRIPT_ACTION javascript) {
+  return reinterpret_cast<CPDF_JavaScript*>(javascript);
 }
 
 inline FPDF_LINK FPDFLinkFromCPDFDictionary(CPDF_Dictionary* link) {
@@ -208,17 +215,9 @@ CPDFSDKFormFillEnvironmentFromFPDFFormHandle(FPDF_FORMHANDLE handle) {
 CPDFSDK_InteractiveForm* FormHandleToInteractiveForm(FPDF_FORMHANDLE hHandle);
 
 ByteString ByteStringFromFPDFWideString(FPDF_WIDESTRING wide_string);
-
 WideString WideStringFromFPDFWideString(FPDF_WIDESTRING wide_string);
 
 #ifdef PDF_ENABLE_XFA
-inline FPDF_WIDGET FPDFWidgetFromCXFAFFWidget(CXFA_FFWidget* widget) {
-  return reinterpret_cast<FPDF_WIDGET>(widget);
-}
-inline CXFA_FFWidget* CXFAFFWidgetFromFPDFWidget(FPDF_WIDGET widget) {
-  return reinterpret_cast<CXFA_FFWidget*>(widget);
-}
-
 // Layering prevents fxcrt from knowing about FPDF_FILEHANDLER, so this can't
 // be a static method of IFX_SeekableStream.
 RetainPtr<IFX_SeekableStream> MakeSeekableStream(
@@ -258,8 +257,8 @@ unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
                                                    void* buffer,
                                                    unsigned long buflen);
 
-void FSDK_SetSandBoxPolicy(FPDF_DWORD policy, FPDF_BOOL enable);
-FPDF_BOOL FSDK_IsSandBoxPolicyEnabled(FPDF_DWORD policy);
+void SetPDFSandboxPolicy(FPDF_DWORD policy, FPDF_BOOL enable);
+FPDF_BOOL IsPDFSandboxPolicyEnabled(FPDF_DWORD policy);
 
 // TODO(dsinclair): Where should this live?
 void RenderPageWithContext(CPDF_PageRenderContext* pContext,
@@ -271,16 +270,12 @@ void RenderPageWithContext(CPDF_PageRenderContext* pContext,
                            int rotate,
                            int flags,
                            bool bNeedToRestore,
-                           IPDFSDK_PauseAdapter* pause);
+                           CPDFSDK_PauseAdapter* pause);
 
+void SetPDFUnsupportInfo(UNSUPPORT_INFO* unsp_info);
+UNSUPPORT_INFO* GetPDFUnssuportInto();
 void ReportUnsupportedFeatures(CPDF_Document* pDoc);
 void CheckForUnsupportedAnnot(const CPDF_Annot* pAnnot);
-
-#if !defined(OS_WIN)
-void SetLastError(int err);
-int GetLastError();
-#endif
-
 void ProcessParseError(CPDF_Parser::Error err);
 
 #endif  // FPDFSDK_CPDFSDK_HELPERS_H_

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/media_drm_storage.h"
-#include "media/mojo/interfaces/media_drm_storage.mojom.h"
+#include "media/mojo/mojom/media_drm_storage.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {
@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT MojoMediaDrmStorage : public MediaDrmStorage {
       mojom::SessionDataPtr session_data);
 
   mojom::MediaDrmStoragePtr media_drm_storage_ptr_;
-  base::WeakPtrFactory<MojoMediaDrmStorage> weak_factory_;
+  base::WeakPtrFactory<MojoMediaDrmStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoMediaDrmStorage);
 };

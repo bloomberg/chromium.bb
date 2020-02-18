@@ -7,20 +7,22 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
-#include "base/callback_list.h"
-#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "google_apis/gaia/core_account_id.h"
-#include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
+
+struct CoreAccountId;
+struct CoreAccountInfo;
 
 namespace signin {
 struct AccessTokenInfo;
 }
 
 namespace identity {
+struct AccountState;
 
 class IdentityAccessorImpl : public mojom::IdentityAccessor,
                              public signin::IdentityManager::Observer {
@@ -59,7 +61,7 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
 
   // Notified when there is a change in the state of the account
   // corresponding to |account_id|.
-  void OnAccountStateChange(const std::string& account_id);
+  void OnAccountStateChange(const CoreAccountId& account_id);
 
   // Gets the current state of the account represented by |account_info|.
   AccountState GetStateOfAccount(const CoreAccountInfo& account_info);

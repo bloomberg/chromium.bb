@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
-import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,31 +50,30 @@ public class RevampedContextMenuCoordinatorTest {
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_NEW_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_INCOGNITO_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.SAVE_LINK_AS));
-        groupOne.add(new ShareContextMenuItem(0, R.string.contextmenu_share_link,
+        groupOne.add(new ShareContextMenuItem(R.string.contextmenu_share_link,
                 org.chromium.chrome.R.id.contextmenu_share_link, true));
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
         // Image Items
         List<ContextMenuItem> groupTwo = new ArrayList<>();
         groupTwo.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
         groupTwo.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
-        groupTwo.add(new ShareContextMenuItem(0, R.string.contextmenu_share_image,
+        groupTwo.add(new ShareContextMenuItem(R.string.contextmenu_share_image,
                 org.chromium.chrome.R.id.contextmenu_share_image, false));
         rawItems.add(new Pair<>(ContextMenuGroup.IMAGE, groupTwo));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        List<Pair<Integer, PropertyModel>> itemList =
-                mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
 
-        assertThat(itemList.get(0).first, equalTo(ListItemType.HEADER));
-        assertThat(itemList.get(1).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(2).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(3).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(4).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(5).first, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
-        assertThat(itemList.get(6).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(7).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(8).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(9).first, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
+        assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
+        assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(2).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(3).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(4).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(5).type, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
+        assertThat(itemList.get(6).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(7).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(8).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(9).type, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
     }
 
     @Test
@@ -91,20 +90,19 @@ public class RevampedContextMenuCoordinatorTest {
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_NEW_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_INCOGNITO_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.SAVE_LINK_AS));
-        groupOne.add(new ShareContextMenuItem(0, R.string.contextmenu_share_link,
+        groupOne.add(new ShareContextMenuItem(R.string.contextmenu_share_link,
                 org.chromium.chrome.R.id.contextmenu_share_link, true));
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        List<Pair<Integer, PropertyModel>> itemList =
-                mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
 
-        assertThat(itemList.get(0).first, equalTo(ListItemType.HEADER));
-        assertThat(itemList.get(1).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(2).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(3).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(4).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(5).first, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
+        assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
+        assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(2).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(3).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(4).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(5).type, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
     }
 
     @Test
@@ -118,11 +116,10 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        List<Pair<Integer, PropertyModel>> itemList =
-                mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
 
-        assertThat(itemList.get(0).first, equalTo(ListItemType.HEADER));
-        assertThat(itemList.get(1).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(2).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
+        assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(2).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
     }
 }

@@ -39,6 +39,7 @@ class PortFactory(object):
     PORT_CLASSES = (
         'android.AndroidPort',
         'fuchsia.FuchsiaPort',
+        'ios.IOSPort',
         'linux.LinuxPort',
         'mac.MacPort',
         'mock_drt.MockDRTPort',
@@ -128,6 +129,15 @@ def configuration_options():
                              help='Set the configuration to Release'),
         optparse.make_option('--no-xvfb', action='store_false', dest='use_xvfb', default=True,
                              help='Do not run tests with Xvfb'),
+    ]
+
+
+def wpt_options():
+    return [
+        optparse.make_option('--no-manifest-update', dest='manifest_update',
+                             action='store_false', default=True,
+                             help=('Do not update the web-platform-tests '
+                                   'MANIFEST.json unless it does not exist.')),
     ]
 
 

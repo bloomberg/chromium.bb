@@ -21,6 +21,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/page_transition_types.h"
 
 namespace net {
@@ -52,8 +53,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
-                      int32_t widget_routing_id,
-                      int flags);
+                      int32_t widget_routing_id);
   ~TestRenderFrameHost() override;
 
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
@@ -118,7 +118,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // DEPRECATED: use NavigationSimulator instead.
   void SimulateNavigationCommit(const GURL& url);
 
-  // PlzNavigate: this method simulates receiving a BeginNavigation IPC.
+  // This method simulates receiving a BeginNavigation IPC.
+  // DEPRECATED: use NavigationSimulator instead.
   void SendRendererInitiatedNavigationRequest(const GURL& url,
                                               bool has_user_gesture);
 
@@ -135,10 +136,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   }
 
   // Advances the RenderFrameHost (and through it the RenderFrameHostManager) to
-  // a state where a new navigation can be committed by a renderer. Currently,
-  // this simulates a BeforeUnload ACK from the renderer.
-  // PlzNavigate: this simulates a BeforeUnload ACK from the renderer, and the
-  // interaction with the IO thread up until the response is ready to commit.
+  // a state where a new navigation can be committed by a renderer. This
+  // simulates a BeforeUnload ACK from the renderer, and the interaction with
+  // the IO thread up until the response is ready to commit.
   void PrepareForCommit();
 
   // Like PrepareForCommit, but with the socket address when needed.
@@ -159,10 +159,12 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_content_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_blink_request,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_content_receiver,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_blink_receiver,
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker_receiver,
       bool same_document);
 
   // Send a message with the sandbox flags and feature policy
@@ -184,10 +186,15 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   static service_manager::mojom::InterfaceProviderRequest
   CreateStubInterfaceProviderRequest();
 
-  // Returns a pending DocumentInterfaceBrokerRequest that is safe to bind to an
-  // implementation, but will never receive any interface requests.
-  static blink::mojom::DocumentInterfaceBrokerRequest
-  CreateStubDocumentInterfaceBrokerRequest();
+  // Returns a pending PendingReceiver<DocumentInterfaceBroker> that is safe to
+  // bind to an implementation, but will never receive any interface requests.
+  static mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  CreateStubDocumentInterfaceBrokerReceiver();
+
+  // Returns a PendingReceiver<BrowserInterfaceBroker> that is safe to bind to
+  // an implementation, but will never receive any interface requests.
+  static mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  CreateStubBrowserInterfaceBrokerReceiver();
 
   // This simulates aborting a cross document navigation.
   // Will abort the navigation with the given |navigation_id|.
@@ -203,8 +210,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      const content::CommonNavigationParams& common_params,
-      const content::CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -221,8 +228,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendCommitFailedNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      const content::CommonNavigationParams& common_params,
-      const content::CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
       const base::Optional<std::string>& error_page_content,

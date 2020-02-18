@@ -44,7 +44,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/nss_util_internal.h"
@@ -458,7 +458,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     auth_->SetOwnerState(owner_check_finished, check_result);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   UserContext user_context_;
   UserContext user_context_with_transformed_key_;

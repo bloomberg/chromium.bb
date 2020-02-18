@@ -11,7 +11,6 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/pickle.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
@@ -19,7 +18,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -328,9 +326,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      web_data_backend_(web_data_backend),
-      scoped_observer_(this),
-      track_wallet_data_(false) {
+      web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 
@@ -341,11 +337,6 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void AutofillWalletMetadataSyncBridge::OnWalletDataTrackingStateChanged(
-    bool is_tracking) {
-  track_wallet_data_ = is_tracking;
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
@@ -475,26 +466,10 @@ void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   for (const auto& it : addresses_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::ADDRESS, it.first)] = it.second;
-    // TODO(crbug.com/949034): Consider adding standard functions for recording
-    // large times in seconds/minutes.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Autofill.WalletUseDateInMinutes.Address",
-        /*sample=*/(AutofillClock::Now() - it.second.use_date).InMinutes(),
-        /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
-        /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
-        /*bucket_count=*/50);
   }
   for (const auto& it : cards_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::CARD, it.first)] = it.second;
-    // TODO(crbug.com/949034): Consider adding standard functions for recording
-    // large times in seconds/minutes.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Autofill.WalletUseDateInMinutes.Card",
-        /*sample=*/(AutofillClock::Now() - it.second.use_date).InMinutes(),
-        /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
-        /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
-        /*bucket_count=*/50);
   }
 
   // Load the metadata and send to the processor.
@@ -548,7 +523,6 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
     return;
   }
 
-  int deleted_count = 0;
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
   for (const std::string storage_key : old_orphan_keys) {
@@ -558,11 +532,8 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
                              parsed_storage_key.metadata_id)) {
       cache_.erase(storage_key);
       change_processor()->Delete(storage_key, metadata_change_list.get());
-      ++deleted_count;
     }
   }
-  UMA_HISTOGRAM_COUNTS_100("Sync.WalletMetadata.DeletedOldOrphans",
-                           deleted_count);
 
   // Commit the transaction to make sure the data and the metadata is written
   // down (especially on Android where we cannot rely on committing transactions

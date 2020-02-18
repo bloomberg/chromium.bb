@@ -14,8 +14,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -46,10 +45,6 @@ class AssistantScreenContextControllerTest : public AshTestBase {
   ~AssistantScreenContextControllerTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kAssistantFeature);
-    ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
-
     AshTestBase::SetUp();
 
     controller_ =
@@ -60,8 +55,6 @@ class AssistantScreenContextControllerTest : public AshTestBase {
   ash::AssistantScreenContextController* controller() { return controller_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   AssistantScreenContextController* controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantScreenContextControllerTest);

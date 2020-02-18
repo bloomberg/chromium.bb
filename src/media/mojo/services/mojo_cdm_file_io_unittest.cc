@@ -5,7 +5,7 @@
 #include "media/mojo/services/mojo_cdm_file_io.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -91,7 +91,7 @@ class MojoCdmFileIOTest : public testing::Test, public MojoCdmFileIO::Delegate {
 
   void ReportFileReadSize(int file_size_bytes) override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MojoCdmFileIO> file_io_;
   std::unique_ptr<MockFileIOClient> client_;
   mojom::CdmStoragePtr cdm_storage_ptr_;

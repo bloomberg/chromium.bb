@@ -21,24 +21,24 @@
 namespace dawn_native { namespace metal {
 
     namespace {
-        bool UsageNeedsTextureView(dawn::TextureUsageBit usage) {
-            constexpr dawn::TextureUsageBit kUsageNeedsTextureView =
-                dawn::TextureUsageBit::Storage | dawn::TextureUsageBit::Sampled;
+        bool UsageNeedsTextureView(dawn::TextureUsage usage) {
+            constexpr dawn::TextureUsage kUsageNeedsTextureView =
+                dawn::TextureUsage::Storage | dawn::TextureUsage::Sampled;
             return usage & kUsageNeedsTextureView;
         }
 
-        MTLTextureUsage MetalTextureUsage(dawn::TextureUsageBit usage) {
+        MTLTextureUsage MetalTextureUsage(dawn::TextureUsage usage) {
             MTLTextureUsage result = MTLTextureUsageUnknown;  // This is 0
 
-            if (usage & (dawn::TextureUsageBit::Storage)) {
+            if (usage & (dawn::TextureUsage::Storage)) {
                 result |= MTLTextureUsageShaderWrite | MTLTextureUsageShaderRead;
             }
 
-            if (usage & (dawn::TextureUsageBit::Sampled)) {
+            if (usage & (dawn::TextureUsage::Sampled)) {
                 result |= MTLTextureUsageShaderRead;
             }
 
-            if (usage & (dawn::TextureUsageBit::OutputAttachment)) {
+            if (usage & (dawn::TextureUsage::OutputAttachment)) {
                 result |= MTLTextureUsageRenderTarget;
             }
 
@@ -109,6 +109,8 @@ namespace dawn_native { namespace metal {
 
         ResultOrError<dawn::TextureFormat> GetFormatEquivalentToIOSurfaceFormat(uint32_t format) {
             switch (format) {
+                case 'RGBA':
+                    return dawn::TextureFormat::RGBA8Unorm;
                 case 'BGRA':
                     return dawn::TextureFormat::BGRA8Unorm;
                 case '2C08':
@@ -132,10 +134,6 @@ namespace dawn_native { namespace metal {
             case dawn::TextureFormat::R8Sint:
                 return MTLPixelFormatR8Sint;
 
-            case dawn::TextureFormat::R16Unorm:
-                return MTLPixelFormatR16Unorm;
-            case dawn::TextureFormat::R16Snorm:
-                return MTLPixelFormatR16Snorm;
             case dawn::TextureFormat::R16Uint:
                 return MTLPixelFormatR16Uint;
             case dawn::TextureFormat::R16Sint:
@@ -157,10 +155,6 @@ namespace dawn_native { namespace metal {
                 return MTLPixelFormatR32Sint;
             case dawn::TextureFormat::R32Float:
                 return MTLPixelFormatR32Float;
-            case dawn::TextureFormat::RG16Unorm:
-                return MTLPixelFormatRG16Unorm;
-            case dawn::TextureFormat::RG16Snorm:
-                return MTLPixelFormatRG16Snorm;
             case dawn::TextureFormat::RG16Uint:
                 return MTLPixelFormatRG16Uint;
             case dawn::TextureFormat::RG16Sint:
@@ -192,10 +186,6 @@ namespace dawn_native { namespace metal {
                 return MTLPixelFormatRG32Sint;
             case dawn::TextureFormat::RG32Float:
                 return MTLPixelFormatRG32Float;
-            case dawn::TextureFormat::RGBA16Unorm:
-                return MTLPixelFormatRGBA16Unorm;
-            case dawn::TextureFormat::RGBA16Snorm:
-                return MTLPixelFormatRGBA16Snorm;
             case dawn::TextureFormat::RGBA16Uint:
                 return MTLPixelFormatRGBA16Uint;
             case dawn::TextureFormat::RGBA16Sint:

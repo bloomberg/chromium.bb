@@ -10,9 +10,11 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
@@ -37,9 +39,9 @@ class MimeHandlerStreamManager : public KeyedService,
   ~MimeHandlerStreamManager() override;
   static MimeHandlerStreamManager* Get(content::BrowserContext* context);
 
-  // The |frame_tree_node_id| parameter is used for PlzNavigate for the top
-  // level plugins case. (PDF, etc). If this parameter has a valid value then
-  // it overrides the |render_process_id| and |render_frame_id| parameters.
+  // The |frame_tree_node_id| parameter is used for the top level plugins case
+  // (PDF, etc). If this parameter has a valid value then it overrides the
+  // |render_process_id| and |render_frame_id| parameters.
   // The |render_process_id| is the id of the renderer process.
   // The |render_frame_id| is the routing id of the RenderFrameHost.
   void AddStream(const std::string& view_id,
@@ -73,7 +75,9 @@ class MimeHandlerStreamManager : public KeyedService,
   std::map<std::string, std::unique_ptr<EmbedderObserver>> embedder_observers_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(MimeHandlerStreamManager);
 };
 
 }  // namespace extensions

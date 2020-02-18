@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,7 +64,7 @@ class LameCaptureOverlayChromeOSTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 };
 
 TEST_F(LameCaptureOverlayChromeOSTest, UnsetImageNotRenderedOnFrame) {

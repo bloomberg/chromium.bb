@@ -95,7 +95,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
       base::RepeatingCallback<void(ash::WindowStateType current_state,
                                    ash::WindowStateType requested_state,
                                    int64_t display_id,
-                                   const gfx::Rect& bounds,
+                                   const gfx::Rect& bounds_in_display,
                                    bool is_resize,
                                    int bounds_change)>;
   void set_bounds_changed_callback(
@@ -301,6 +301,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   ash::ClientControlledState* client_controlled_state_ = nullptr;
 
   ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
+
+  bool pending_always_on_top_ = false;
 
   ash::WindowPinType current_pin_;
 

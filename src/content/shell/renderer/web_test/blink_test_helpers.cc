@@ -72,7 +72,6 @@ namespace content {
 void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
                                       WebPreferences* to) {
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
-  to->xss_auditor_enabled = from.xss_auditor_enabled;
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
   to->default_font_size = from.default_font_size;
   to->minimum_font_size = from.minimum_font_size;
@@ -105,7 +104,6 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
   prefs->xslt_enabled = true;
-  prefs->xss_auditor_enabled = false;
 #if defined(OS_MACOSX)
   prefs->editing_behavior = EDITING_BEHAVIOR_MAC;
 #else
@@ -141,7 +139,6 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
       command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
   prefs->mock_scrollbars_enabled = false;
   prefs->smart_insert_delete_enabled = true;
-  prefs->minimum_accelerated_2d_canvas_size = 0;
   prefs->viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
   prefs->default_minimum_page_scale_factor = 1.f;
   prefs->default_maximum_page_scale_factor = 4.f;

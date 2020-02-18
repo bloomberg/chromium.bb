@@ -56,9 +56,10 @@ class QpackSendStreamTest : public QuicTestWithParam<TestParams> {
             SupportedVersions(GetParam().version))),
         session_(connection_) {
     session_.Initialize();
-    qpack_send_stream_ = QuicMakeUnique<QpackSendStream>(
-        QuicSpdySessionPeer::GetNextOutgoingUnidirectionalStreamId(&session_),
-        &session_, kQpackEncoderStream);
+
+    qpack_send_stream_ =
+        QuicSpdySessionPeer::GetQpackDecoderSendStream(&session_);
+
     ON_CALL(session_, WritevData(_, _, _, _, _))
         .WillByDefault(Invoke(MockQuicSession::ConsumeData));
   }
@@ -69,7 +70,7 @@ class QpackSendStreamTest : public QuicTestWithParam<TestParams> {
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
-  std::unique_ptr<QpackSendStream> qpack_send_stream_;
+  QpackSendStream* qpack_send_stream_;
 };
 
 INSTANTIATE_TEST_SUITE_P(Tests,
@@ -89,6 +90,8 @@ TEST_P(QpackSendStreamTest, WriteStreamTypeOnlyFirstTime) {
 
   EXPECT_CALL(session_, WritevData(_, _, data.length(), _, _));
   qpack_send_stream_->WriteStreamData(QuicStringPiece(data));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(0);
+  qpack_send_stream_->MaybeSendStreamType();
 }
 
 TEST_P(QpackSendStreamTest, ResetQpackStream) {

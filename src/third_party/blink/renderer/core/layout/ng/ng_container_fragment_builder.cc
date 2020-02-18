@@ -24,7 +24,7 @@ bool IsInlineContainerForNode(const NGBlockNode& node,
 
 }  // namespace
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
+void NGContainerFragmentBuilder::AddChild(
     const NGPhysicalContainerFragment& child,
     const LogicalOffset& child_offset,
     const LayoutInline* inline_container) {
@@ -84,13 +84,14 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     has_descendant_that_depends_on_percentage_block_size_ = true;
 
   // The |may_have_descendant_above_block_start_| flag is used to determine if
-  // a fragment can be re-used when floats are present. We only are about:
-  //  - Inflow children who are positioned above our block-start edge.
-  //  - Any inflow descendants (within the same formatting-context) that *may*
-  //    be positioned above our block-start edge.
+  // a fragment can be re-used when preceding floats are present. This is
+  // relatively rare, and is true if:
+  //  - An inflow child is positioned above our block-start edge.
+  //  - Any inflow descendants (within the same formatting-context) which *may*
+  //    have a child positioned above our block-start edge.
   if ((child_offset.block_offset < LayoutUnit() &&
        !child.IsOutOfFlowPositioned()) ||
-      (!child.IsBlockFormattingContextRoot() &&
+      (!child.IsBlockFormattingContextRoot() && !child.IsLineBox() &&
        child.MayHaveDescendantAboveBlockStart()))
     may_have_descendant_above_block_start_ = true;
 
@@ -105,31 +106,43 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  // Collect any (block) break tokens.
-  NGBreakToken* child_break_token = child.BreakToken();
-  if (child_break_token && has_block_fragmentation_) {
-    switch (child.Type()) {
-      case NGPhysicalFragment::kFragmentBox:
-      case NGPhysicalFragment::kFragmentRenderedLegend:
-        if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
-          has_last_resort_break_ = true;
-        child_break_tokens_.push_back(child_break_token);
-        break;
-      case NGPhysicalFragment::kFragmentLineBox:
-        // NGInlineNode produces multiple line boxes in an anonymous box. We
-        // won't know up front which line box to insert a fragment break before
-        // (due to widows), so keep them all until we know.
-        inline_break_tokens_.push_back(child_break_token);
-        break;
-      case NGPhysicalFragment::kFragmentText:
-      default:
-        NOTREACHED();
-        break;
+  // The |has_adjoining_object_descendants_| is used to determine if a fragment
+  // can be re-used when preceding floats are present.
+  // If a fragment doesn't have any adjoining object descendants, and is
+  // self-collapsing, it can be "shifted" anywhere.
+  if (!has_adjoining_object_descendants_) {
+    if (!child.IsBlockFormattingContextRoot() &&
+        child.HasAdjoiningObjectDescendants())
+      has_adjoining_object_descendants_ = true;
+  }
+
+  // Collect any (block) break tokens, unless this is a fragmentation context
+  // root. Break tokens should only escape a fragmentation context at the
+  // discretion of the fragmentation context.
+  if (has_block_fragmentation_ && !is_fragmentation_context_root_) {
+    if (const NGBreakToken* child_break_token = child.BreakToken()) {
+      switch (child.Type()) {
+        case NGPhysicalFragment::kFragmentBox:
+        case NGPhysicalFragment::kFragmentRenderedLegend:
+          if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
+            has_last_resort_break_ = true;
+          child_break_tokens_.push_back(child_break_token);
+          break;
+        case NGPhysicalFragment::kFragmentLineBox:
+          // NGInlineNode produces multiple line boxes in an anonymous box. We
+          // won't know up front which line box to insert a fragment break
+          // before (due to widows), so keep them all until we know.
+          inline_break_tokens_.push_back(child_break_token);
+          break;
+        case NGPhysicalFragment::kFragmentText:
+        default:
+          NOTREACHED();
+          break;
+      }
     }
   }
 
   AddChildInternal(&child, child_offset);
-  return *this;
 }
 
 void NGContainerFragmentBuilder::AddChildInternal(
@@ -172,8 +185,7 @@ LogicalOffset NGContainerFragmentBuilder::GetChildOffset(
   return LogicalOffset();
 }
 
-NGContainerFragmentBuilder&
-NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
+void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
     const LogicalOffset& child_offset,
     base::Optional<TextDirection> container_direction) {
@@ -194,14 +206,11 @@ NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
           IsLtr(direction) ? NGLogicalStaticPosition::InlineEdge::kInlineStart
                            : NGLogicalStaticPosition::InlineEdge::kInlineEnd,
           NGLogicalStaticPosition::BlockEdge::kBlockStart});
-
-  return *this;
 }
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddOutOfFlowDescendant(
+void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
     const NGLogicalOutOfFlowPositionedNode& descendant) {
   oof_positioned_descendants_.push_back(descendant);
-  return *this;
 }
 
 void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(

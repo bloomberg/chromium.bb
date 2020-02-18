@@ -3,15 +3,15 @@
 # found in the LICENSE file.
 
 import os
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 
 @environment(file="../policy_test.asset.textpb")
 class AppsShortcutEnabledTest(ChromeEnterpriseTestCase):
   """Test the ShowAppsShortcutInBookmarkBar policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#ShowAppsShortcutInBookmarkBar"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ShowAppsShortcutInBookmarkBar"""
 
   Policy = 'ShowAppsShortcutInBookmarkBar'
 

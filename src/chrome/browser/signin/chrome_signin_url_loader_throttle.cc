@@ -7,6 +7,7 @@
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace signin {
 
@@ -16,8 +17,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
                          const net::HttpRequestHeaders& original_headers,
                          net::HttpRequestHeaders* modified_headers,
                          std::vector<std::string>* headers_to_remove)
-      : ChromeRequestAdapter(nullptr),
-        throttle_(throttle),
+      : throttle_(throttle),
         original_headers_(original_headers),
         modified_headers_(modified_headers),
         headers_to_remove_(headers_to_remove) {}
@@ -25,8 +25,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
   ~ThrottleRequestAdapter() override = default;
 
   // ChromeRequestAdapter
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const override {
+  content::WebContents::Getter GetWebContentsGetter() const override {
     return throttle_->web_contents_getter_;
   }
 
@@ -80,13 +79,12 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
  public:
   ThrottleResponseAdapter(URLLoaderThrottle* throttle,
                           net::HttpResponseHeaders* headers)
-      : ResponseAdapter(nullptr), throttle_(throttle), headers_(headers) {}
+      : throttle_(throttle), headers_(headers) {}
 
   ~ThrottleResponseAdapter() override = default;
 
   // ResponseAdapter
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const override {
+  content::WebContents::Getter GetWebContentsGetter() const override {
     return throttle_->web_contents_getter_;
   }
 
@@ -128,7 +126,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 std::unique_ptr<URLLoaderThrottle> URLLoaderThrottle::MaybeCreate(
     std::unique_ptr<HeaderModificationDelegate> delegate,
     content::NavigationUIData* navigation_ui_data,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
+    content::WebContents::Getter web_contents_getter) {
   if (!delegate->ShouldInterceptNavigation(navigation_ui_data))
     return nullptr;
 
@@ -200,7 +198,7 @@ void URLLoaderThrottle::WillProcessResponse(
 
 URLLoaderThrottle::URLLoaderThrottle(
     std::unique_ptr<HeaderModificationDelegate> delegate,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter)
+    content::WebContents::Getter web_contents_getter)
     : delegate_(std::move(delegate)),
       web_contents_getter_(std::move(web_contents_getter)) {}
 

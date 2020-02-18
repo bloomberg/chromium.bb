@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -26,7 +26,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -168,6 +167,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    // Needs to destroyed before ash::Shell keyboard.
+    chrome_keyboard_controller_client_test_helper_.reset();
+
     BrowserWithTestWindowTest::TearDown();
 
     ui::ShutdownInputMethodForTesting();
@@ -176,9 +178,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     candidate_window_controller_ = nullptr;
     keyboard_ = nullptr;
     manager_.reset();
-
-    // Needs to destroyed after ash::Shell keyboard.
-    chrome_keyboard_controller_client_test_helper_.reset();
   }
 
   scoped_refptr<InputMethodManagerImpl::StateImpl> GetActiveIMEState() {
@@ -362,7 +361,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     ime_list_.push_back(ext2);
   }
 
-  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       chrome_keyboard_controller_client_test_helper_;
   std::unique_ptr<InputMethodManagerImpl> manager_;

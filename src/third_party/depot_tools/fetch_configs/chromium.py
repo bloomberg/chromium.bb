@@ -27,10 +27,6 @@ class Chromium(config_util.Config):
     if ast.literal_eval(props.get('internal', 'False')):
       solution['custom_vars']['checkout_src_internal'] = True
 
-      # TODO(jbudorick): Remove this once crbug.com/803846 and
-      # crbug.com/856278 are complete.
-      solution['custom_vars']['checkout_mobile_internal'] = True
-
       if not ast.literal_eval(props.get('flash', 'False')):
         solution['custom_deps'].update({
             'src/third_party/adobe/flash/binaries/ppapi/linux': None,

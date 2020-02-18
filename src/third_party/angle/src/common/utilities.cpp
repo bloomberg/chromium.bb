@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright 2002 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -422,6 +422,20 @@ bool IsSamplerType(GLenum type)
     return false;
 }
 
+bool IsSamplerCubeType(GLenum type)
+{
+    switch (type)
+    {
+        case GL_SAMPLER_CUBE:
+        case GL_INT_SAMPLER_CUBE:
+        case GL_UNSIGNED_INT_SAMPLER_CUBE:
+        case GL_SAMPLER_CUBE_SHADOW:
+            return true;
+    }
+
+    return false;
+}
+
 bool IsImageType(GLenum type)
 {
     switch (type)
@@ -768,6 +782,13 @@ std::string ParseResourceName(const std::string &name, std::vector<unsigned int>
     }
 
     return name.substr(0, baseNameLength);
+}
+
+std::string StripLastArrayIndex(const std::string &name)
+{
+    size_t strippedNameLength = name.find_last_of('[');
+    ASSERT(strippedNameLength != std::string::npos && name.back() == ']');
+    return name.substr(0, strippedNameLength);
 }
 
 const sh::ShaderVariable *FindShaderVarField(const sh::ShaderVariable &var,

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+
 import mock
 
 from chromite.lib import auth
@@ -35,7 +36,6 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
   MASTER_CIDB_ID = 'master_cidb_id'
   MASTER_BUILDBUCKET_ID = 'master_bb_id'
   TEST_BUCKET = 'luci.chromeos.general'  # Use Prod bucket for network test.
-  POSTSUBMIT_CONFIG = 'caroline-postsubmit'
 
   def _CreateJobMin(self):
     return request_build.RequestBuild(build_config=self.BUILD_CONFIG_MIN)
@@ -62,16 +62,6 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
         extra_args=(),
         user_email='default_email',
         master_buildbucket_id=None)
-
-  def _CreateJobPostsubmit(self):
-    return request_build.RequestBuild(
-        build_config=self.POSTSUBMIT_CONFIG,
-        display_label=self.DISPLAY_LABEL,
-        branch='master',
-        extra_args=('--buildbot', '--cbb_snapshot_revision', 'hash1234',
-                    '--cbb_build_packages',
-                    'sys-apps/mosys media-libs/cros-camera-libcbm'),
-        user_email='default_email')
 
 
 class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
@@ -224,40 +214,6 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
     # it's format hasn't changed. Since there are scripts that parse it via
     # regex, the later is important.
     self.assertEqual(msg, expected)
-
-  def testPostsubmitRequestBody(self):
-    """Verify our request body with postsubmit options."""
-    body = self._CreateJobPostsubmit()._GetRequestBody()
-
-    self.assertEqual(body, {
-        'parameters_json': mock.ANY,
-        'bucket': 'luci.chromeos.general',
-        'tags': [
-            'cbb_branch:master',
-            'cbb_config:caroline-postsubmit',
-            'cbb_display_label:display',
-            'cbb_email:default_email',
-        ]
-    })
-
-    parameters_parsed = json.loads(body['parameters_json'])
-
-    self.assertEqual(parameters_parsed, {
-        u'builder_name': u'LegacyPostsubmit',
-        u'email_notify': [{u'email': u'default_email',
-                           u'template': u'default'}],
-        u'properties': {
-            u'cbb_branch': u'master',
-            u'cbb_config': u'caroline-postsubmit',
-            u'cbb_display_label': u'display',
-            u'cbb_email': u'default_email',
-            u'cbb_extra_args': [u'--buildbot',
-                                u'--cbb_snapshot_revision',
-                                u'hash1234',
-                                u'--cbb_build_packages',
-                                u'sys-apps/mosys media-libs/cros-camera-libcbm']
-        }
-    })
 
 
 class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):

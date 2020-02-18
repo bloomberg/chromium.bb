@@ -8,9 +8,10 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -45,15 +46,11 @@ int main(int argc, char** argv) {
 
   // Build UI thread task executor. This is used by platform
   // implementations for event polling & running background tasks.
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("SkiaDemo");
 
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-  params.using_mojo = ui::OzonePlatform::EnsureInstance()
-                          ->GetPlatformProperties()
-                          .requires_mojo;
   ui::OzonePlatform::InitializeForUI(params);
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
@@ -62,7 +59,9 @@ int main(int argc, char** argv) {
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
-  if (!params.using_mojo) {
+  if (!ui::OzonePlatform::GetInstance()
+           ->GetPlatformProperties()
+           .requires_mojo) {
     // OzoneGpuTestHelper transports Chrome IPC messages between host & gpu code
     // in single process mode. We don't use both Chrome IPC and mojo, so only
     // initialize it for non-mojo platforms.

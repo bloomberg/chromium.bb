@@ -41,9 +41,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSignOperation
   void Cancel() override;
 
  private:
+  void WinkAndTrySign();
   void TrySign();
   void OnSignResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);
+  void WinkAndTryFakeEnrollment();
   void TryFakeEnrollment();
   void OnEnrollmentResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);
@@ -54,7 +56,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSignOperation
   // primary value) or an RP-provided U2F AppID.
   ApplicationParameterType app_param_type_ = ApplicationParameterType::kPrimary;
   bool canceled_ = false;
-  base::WeakPtrFactory<U2fSignOperation> weak_factory_;
+  base::WeakPtrFactory<U2fSignOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(U2fSignOperation);
 };

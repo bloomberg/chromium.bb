@@ -22,10 +22,11 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -213,7 +214,6 @@ class MCSProbe {
   net::NetLog net_log_;
   std::unique_ptr<net::FileNetLogObserver> logger_;
   MCSProbeAuthPreferences http_auth_preferences_;
-  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
 
   FakeGCMStatsRecorder recorder_;
   std::unique_ptr<GCMStore> gcm_store_;
@@ -339,15 +339,13 @@ void MCSProbe::InitializeNetworkState() {
     logger_->StartObserving(&net_log_, capture_mode);
   }
 
-  http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-      &http_auth_preferences_, std::vector<std::string>{net::kBasicAuthScheme});
-
   net::URLRequestContextBuilder builder;
   builder.set_net_log(&net_log_);
   builder.set_host_resolver(
       net::HostResolver::CreateStandaloneResolver(&net_log_));
-  builder.set_shared_http_auth_handler_factory(
-      http_auth_handler_factory_.get());
+  builder.SetHttpAuthHandlerFactory(net::HttpAuthHandlerRegistryFactory::Create(
+      &http_auth_preferences_,
+      std::vector<std::string>{net::kBasicAuthScheme}));
   builder.set_proxy_resolution_service(
       net::ProxyResolutionService::CreateDirect());
 
@@ -446,7 +444,7 @@ int MCSProbeMain(int argc, char* argv[]) {
 
   mojo::core::Init();
 
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("MCSProbe");
 
   const base::CommandLine& command_line =

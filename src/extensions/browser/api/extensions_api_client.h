@@ -15,6 +15,7 @@
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/common/api/clipboard.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 
 class GURL;
@@ -108,6 +109,19 @@ class ExtensionsAPIClient {
   virtual void NotifyWebRequestWithheld(int render_process_id,
                                         int render_frame_id,
                                         const ExtensionId& extension_id);
+
+  // Updates an extension's matched action count stored in an ExtensionAction
+  // and optionally clears the extension's explicitly set badge text for the
+  // tab specified by |tab_id|.
+  virtual void UpdateActionCount(content::BrowserContext* context,
+                                 const ExtensionId& extension_id,
+                                 int tab_id,
+                                 int action_count,
+                                 bool clear_badge_text);
+
+  // Clears an extension's matched action count stored in an ExtensionAction.
+  virtual void ClearActionCount(content::BrowserContext* context,
+                                const Extension& extension);
 
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;

@@ -7,15 +7,13 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
-#include "ash/public/interfaces/ime_controller.mojom.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
+#include "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom.h"
 
 namespace views {
 class ImageView;
@@ -104,7 +102,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool is_handwriting_enabled_;
   bool is_voice_enabled_;
 
-  base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_;
+  base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };

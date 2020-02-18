@@ -12,6 +12,8 @@
 #include "osp/impl/quic/quic_connection_factory.h"
 #include "osp/impl/quic/quic_service_common.h"
 #include "osp/public/protocol_connection_server.h"
+#include "platform/api/task_runner.h"
+#include "platform/api/time.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
@@ -32,7 +34,8 @@ class QuicServer final : public ProtocolConnectionServer,
   QuicServer(const ServerConfig& config,
              MessageDemuxer* demuxer,
              std::unique_ptr<QuicConnectionFactory> connection_factory,
-             ProtocolConnectionServer::Observer* observer);
+             ProtocolConnectionServer::Observer* observer,
+             platform::TaskRunner* task_runner);
   ~QuicServer() override;
 
   // ProtocolConnectionServer overrides.
@@ -40,7 +43,6 @@ class QuicServer final : public ProtocolConnectionServer,
   bool Stop() override;
   bool Suspend() override;
   bool Resume() override;
-  void RunTasks() override;
   std::unique_ptr<ProtocolConnection> CreateProtocolConnection(
       uint64_t endpoint_id) override;
 
@@ -67,6 +69,10 @@ class QuicServer final : public ProtocolConnectionServer,
       const IPEndpoint& source) override;
   void OnIncomingConnection(
       std::unique_ptr<QuicConnection> connection) override;
+
+  // Deletes dead QUIC connections then returns the time interval before this
+  // method should be run again.
+  absl::optional<platform::Clock::duration> Cleanup();
 
   const std::vector<IPEndpoint> connection_endpoints_;
   std::unique_ptr<QuicConnectionFactory> connection_factory_;

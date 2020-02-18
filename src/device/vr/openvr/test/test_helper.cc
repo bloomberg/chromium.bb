@@ -136,10 +136,10 @@ static const std::map<device::XrButtonId, vr::EVRButtonId>
         {device::XrButtonId::kA, vr::EVRButtonId::k_EButton_A},
         {device::XrButtonId::kProximitySensor,
          vr::EVRButtonId::k_EButton_ProximitySensor},
-        {device::XrButtonId::kAxisPrimary, vr::EVRButtonId::k_EButton_Axis0},
+        {device::XrButtonId::kAxisTrackpad, vr::EVRButtonId::k_EButton_Axis0},
         {device::XrButtonId::kAxisTrigger,
          vr::EVRButtonId::k_EButton_SteamVR_Trigger},
-        {device::XrButtonId::kAxisSecondary, vr::EVRButtonId::k_EButton_Axis2},
+        {device::XrButtonId::kAxisThumbstick, vr::EVRButtonId::k_EButton_Axis2},
         {device::XrButtonId::kAxisTertiary, vr::EVRButtonId::k_EButton_Axis3},
         {device::XrButtonId::kAxisQuaternary, vr::EVRButtonId::k_EButton_Axis4},
 };
@@ -331,9 +331,7 @@ bool TestHelper::GetControllerState(unsigned int index,
     controller_state->ulButtonTouched =
         TranslateButtonMask(controller_data.buttons_touched);
     for (unsigned int i = 0; i < device::kMaxNumAxes; ++i) {
-      // Invert the y axis because gamepad and the rest of Chrome follows the
-      // convention that -1 is up, but WMR reports -1 as down.
-      // TODO(https://crbug.com/966060): Revisit this if the convention changes.
+      // Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
       controller_state->rAxis[i].x = controller_data.axis_data[i].x;
       controller_state->rAxis[i].y = -controller_data.axis_data[i].y;
     }

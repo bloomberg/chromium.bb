@@ -40,7 +40,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,7 +115,7 @@ class NativeMessagingTest : public ::testing::Test,
  protected:
   NativeMessagingTest()
       : current_channel_(version_info::Channel::DEV),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         channel_closed_(false) {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
@@ -177,7 +177,7 @@ class NativeMessagingTest : public ::testing::Test,
   ScopedCurrentChannel current_channel_;
   std::unique_ptr<NativeMessageHost> native_message_host_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   std::string last_message_;
@@ -315,6 +315,10 @@ TEST_F(NativeMessagingTest, EchoConnect) {
   const base::Value* args = nullptr;
   ASSERT_TRUE(last_message_parsed_->Get("args", &args));
   EXPECT_TRUE(args->is_none());
+
+  const base::Value* connect_id_value = nullptr;
+  ASSERT_TRUE(last_message_parsed_->Get("connect_id", &connect_id_value));
+  EXPECT_TRUE(connect_id_value->is_none());
 }
 
 // Test send message with a real client. The args passed when launching the
@@ -425,6 +429,10 @@ TEST_F(NativeMessagingTest, ReconnectArgsIfNativeConnectionDisallowed) {
   const base::Value* args_value = nullptr;
   ASSERT_TRUE(last_message_parsed_->Get("args", &args_value));
   EXPECT_TRUE(args_value->is_none());
+
+  const base::Value* connect_id_value = nullptr;
+  ASSERT_TRUE(last_message_parsed_->Get("connect_id", &connect_id_value));
+  EXPECT_TRUE(connect_id_value->is_none());
 }
 
 TEST_F(NativeMessagingTest, UserLevel) {

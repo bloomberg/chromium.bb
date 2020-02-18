@@ -253,7 +253,7 @@ enum VmToolsState {
 };
 
 // Signals change of state of hypervisor agent in a VM.
-message VmiToolsStateChangedSignal {
+message VmToolsStateChangedSignal {
   // The owner of the VM.
   string owner_id = 1;
 

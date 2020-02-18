@@ -18,7 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_isolation_key.h"
@@ -35,7 +35,7 @@
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,11 +53,10 @@ const char kHttpsProxyHost[] = "httpsproxy.example.test";
 }  // namespace
 
 class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
-                                public WithScopedTaskEnvironment {
+                                public WithTaskEnvironment {
  protected:
   HttpProxyConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         field_trial_list_(nullptr) {
     // Used a mock HostResolver that does not have a cache.
     session_deps_.host_resolver = std::make_unique<MockHostResolver>();

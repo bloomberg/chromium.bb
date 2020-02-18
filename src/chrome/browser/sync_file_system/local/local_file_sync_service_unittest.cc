@@ -31,7 +31,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,7 +108,7 @@ class LocalFileSyncServiceTest
       public LocalFileSyncService::Observer {
  protected:
   LocalFileSyncServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         num_changes_(0) {}
 
   void SetUp() override {
@@ -117,8 +117,9 @@ class LocalFileSyncServiceTest
 
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), in_memory_env_.get(),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-        base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+        base::CreateSingleThreadTaskRunner(
+            {base::ThreadPool(), base::MayBlock()})));
 
     local_service_ = LocalFileSyncService::CreateForTesting(
         &profile_, in_memory_env_.get());
@@ -196,7 +197,7 @@ class LocalFileSyncServiceTest
     return file_system_->backend()->change_tracker()->num_changes();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
@@ -300,8 +301,9 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   CannedSyncableFileSystem file_system2(
       GURL(kOrigin2), in_memory_env_.get(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool(), base::MayBlock()}));
   file_system2.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
   base::RunLoop run_loop;

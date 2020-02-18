@@ -283,6 +283,7 @@ Generating results...
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
 Version: 5.2.0
+TestedAsMobileDevice: true
 
 
 accesskeys: notApplicable
@@ -301,7 +302,7 @@ button-name: notApplicable
 bypass: notApplicable
 canonical: notApplicable
 color-contrast: notApplicable
-content-width: flaky
+content-width: fail
 critical-request-chains: notApplicable
 custom-controls-labels: manual
 custom-controls-roles: manual

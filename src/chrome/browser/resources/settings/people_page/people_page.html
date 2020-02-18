@@ -28,6 +28,7 @@
 
 <if expr="chromeos">
 <link rel="import" href="account_manager.html">
+<link rel="import" href="account_manager_browser_proxy.html">
 <link rel="import" href="change_picture.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html">
 <link rel="import" href="fingerprint_list.html">
@@ -52,6 +53,11 @@
         margin-inline-start: 20px;
       }
 
+      .sync-row {
+        align-items: center;
+        flex: auto;
+      }
+
       #profile-icon {
         background: center / cover no-repeat;
         border-radius: 20px;
@@ -60,29 +66,29 @@
         width: 40px;
       }
 
-      iron-icon[icon='cr:sync'] {
-        --iron-icon-fill-color: var(--google-green-refresh-700);
+      #sync-status.no-error {
+        --cr-link-row-start-icon-color: var(--google-green-refresh-700);
       }
 
       @media (prefers-color-scheme: dark) {
-        iron-icon[icon='cr:sync'] {
-          --iron-icon-fill-color: var(--google-green-refresh-300);
+        #sync-status.no-error {
+          --cr-link-row-start-icon-color: var(--google-green-refresh-300);
         }
       }
 
-      #sync-status[actionable] iron-icon[icon='settings:sync-problem'] {
-        --iron-icon-fill-color: var(--settings-error-color);
+      #sync-setup {
+        --cr-secondary-text: {
+          color: var(--settings-error-color);
+        }
       }
 
-      #sync-status[actionable].auth-error
-          iron-icon[icon='settings:sync-disabled'] {
-        --iron-icon-fill-color: var(--google-blue-500);
+      #sync-status[actionable].auth-error {
+        --cr-link-row-start-icon-color: var(--google-blue-500);
       }
 
       @media (prefers-color-scheme: dark) {
-        #sync-status[actionable].auth-error
-            iron-icon[icon='settings:sync-disabled'] {
-          --iron-icon-fill-color: var(--google-blue-refresh-300);
+        #sync-status[actionable].auth-error {
+          --cr-link-row-start-icon-color: var(--google-blue-refresh-300);
         }
       }
 
@@ -95,8 +101,11 @@
         border-top: var(--cr-separator-line);
       }
 
-      .settings-box[actionable].sync-error #syncSecondary {
-        color: var(--settings-error-color);
+      #sync-status[actionable].sync-error {
+        --cr-link-row-start-icon-color: var(--settings-error-color);
+        --cr-secondary-text: {
+          color: var(--settings-error-color);
+        }
       }
 
       .icon-container {
@@ -151,12 +160,15 @@
 </if>
           <div id="picture-subpage-trigger" class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
-              <div id="profile-icon" on-click="onProfileTap_" actionable
+              <div id="profile-icon" on-click="onProfileTap_"
+                  actionable$="[[isProfileActionable_]]"
                   style="background-image: [[getIconImageSet_(
                       profileIconUrl_)]]">
               </div>
-              <div class="middle two-line no-min-width" on-click="onProfileTap_"
-                  actionable>
+              <div class="middle two-line no-min-width"
+                  id="profile-row"
+                  on-click="onProfileTap_"
+                  actionable$="[[isProfileActionable_]]">
                 <div class="flex text-elide settings-box-text">
                   <span id="profile-name">[[profileName_]]</span>
                   <div class="secondary" hidden="[[!syncStatus.signedIn]]">
@@ -169,8 +181,10 @@
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
 <if expr="chromeos">
-                <cr-icon-button class="subpage-arrow"
-                    aria-label="$i18n{changePictureTitle}"
+                <cr-icon-button class$="[[profileRowIconClass_]]"
+                    id="profile-subpage-arrow"
+                    hidden="[[!isProfileActionable_]]"
+                    aria-label$="[[profileRowIconAriaLabel_]]"
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
@@ -217,29 +231,21 @@
         <template is="dom-if"
             if="[[isPreUnifiedConsentAdvancedSyncSettingsVisible_(
                 syncStatus, unifiedConsentEnabled_)]]">
-          <div class$="settings-box two-line
-                  [[getSyncStatusClass_(syncStatus)]]"
-              on-click="onSyncTap_" id="sync-status"
+          <cr-link-row id="sync-status"
+              class$="[[getSyncStatusClass_(syncStatus)]]"
+              label="$i18n{syncAndNonPersonalizedServices}"
+              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
+              on-click="onSyncTap_" start-icon="[[getSyncIcon_(syncStatus)]]"
               actionable$="[[isSyncStatusActionable_(syncStatus)]]">
-            <div class="icon-container">
-              <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
-              </iron-icon>
-            </div>
-            <div class="middle settings-box-text">
-              $i18n{sync}
-              <div class="secondary" id="syncSecondary">
-                [[syncStatus.statusText]]
-              </div>
-            </div>
-            <cr-icon-button class="subpage-arrow" aria-label="$i18n{sync}"
-                aria-describedby="syncSecondary"></cr-icon-button>
-          </div>
+          </cr-link-row>
         </template>
 
         <template is="dom-if" if="[[unifiedConsentEnabled_]]">
           <cr-link-row id="sync-setup"
               label="$i18n{syncAndNonPersonalizedServices}"
-              on-click="onSyncTap_"></cr-link-row>
+              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
+              on-click="onSyncTap_">
+          </cr-link-row>
         </template>
 
 <if expr="not chromeos">
@@ -268,8 +274,7 @@
                 prefs.settings.enable_screen_lock.value)]]"
             hidden="[[!pageVisibility.people.lockScreen]]"></cr-link-row>
 
-        <template is="dom-if" if="[[shouldShowAccountManager_(
-            isAccountManagerEnabled_, pageVisibility.people.googleAccounts)]]">
+        <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
           <cr-link-row id="account-manager-subpage-trigger" class="hr"
               on-click="onAccountManagerTap_"
               label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
@@ -283,8 +288,7 @@
             hidden="[[!pageVisibility.people.manageUsers]]">
         </cr-link-row>
 
-        <template is="dom-if" if="[[shouldShowKerberos_(
-            isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
+        <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
               label="$i18n{kerberosAccountsSubMenuLabel}">
@@ -371,8 +375,7 @@
           <settings-change-picture></settings-change-picture>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[shouldShowAccountManager_(
-          isAccountManagerEnabled_, pageVisibility.people.googleAccounts)]]">
+      <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
         <template is="dom-if" route-path="/accountManager">
           <settings-subpage
               associated-control="[[$$('#account-manager-subpage-trigger')]]"
@@ -381,8 +384,7 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" if="[[shouldShowKerberos_(
-          isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
+      <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
         <template is="dom-if" route-path="/kerberosAccounts">
           <settings-subpage
               associated-control="[[$$('#kerberos-accounts-subpage-trigger')]]"

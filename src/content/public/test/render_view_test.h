@@ -12,7 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string16.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -180,7 +180,6 @@ class RenderViewTest : public testing::Test {
                                          const std::string& new_value);
 
   // These are all methods from RenderViewImpl that we expose to testing code.
-  bool OnMessageReceived(const IPC::Message& msg);
   void OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                 bool is_new_navigation);
   blink::WebWidget* GetWebWidget();
@@ -205,7 +204,7 @@ class RenderViewTest : public testing::Test {
   // Install a fake URL loader factory for the RenderFrameImpl.
   void CreateFakeWebURLLoaderFactory();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<CompositorDependencies> compositor_deps_;
   std::unique_ptr<MockRenderProcess> mock_process_;

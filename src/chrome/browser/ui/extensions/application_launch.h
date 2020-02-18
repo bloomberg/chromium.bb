@@ -54,17 +54,4 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
 // chrome.app.runtime.onLaunched event.
 bool CanLaunchViaEvent(const extensions::Extension* extension);
 
-// Reparents |contents| into a new app browser for |extension|.
-Browser* ReparentWebContentsIntoAppBrowser(
-    content::WebContents* contents,
-    const extensions::Extension* extension);
-
-// Reparents contents to a new app browser when entering the Focus Mode.
-Browser* ReparentWebContentsForFocusMode(content::WebContents* contents);
-
-// Reparents the active tab into a new app browser for the PWA that has the
-// tab's URL in its scope. Does nothing if the tab is not secure or there is no
-// applicable PWA.
-Browser* ReparentSecureActiveTabIntoPwaWindow(Browser* browser);
-
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_

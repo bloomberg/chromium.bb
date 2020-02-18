@@ -225,14 +225,6 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
 
   enum State { kNew, kActive, kStopped };
 
-  // Returns last rendered frame for stream if there is one or nullptr
-  // otherwise.
-  VideoFrame* GetLastRenderedFrame(const std::string& stream_label)
-      RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  void SetLastRenderedFrame(const std::string& stream_label,
-                            const VideoFrame& frame)
-      RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
   void AddComparison(absl::optional<VideoFrame> captured,
                      absl::optional<VideoFrame> rendered,
                      bool dropped,
@@ -275,6 +267,13 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
       RTC_GUARDED_BY(lock_);
   std::map<uint16_t, FrameStats> frame_stats_ RTC_GUARDED_BY(lock_);
   std::map<std::string, StreamState> stream_states_ RTC_GUARDED_BY(lock_);
+
+  // Stores history mapping between stream labels and frame ids. Updated when
+  // frame id overlap. It required to properly return stream label after 1st
+  // frame from simulcast streams was already rendered and last is still
+  // encoding.
+  std::map<std::string, std::set<uint16_t>> stream_to_frame_id_history_
+      RTC_GUARDED_BY(lock_);
 
   rtc::CriticalSection comparison_lock_;
   std::map<std::string, StreamStats> stream_stats_

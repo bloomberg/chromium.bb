@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -29,15 +30,9 @@
         flex: auto;
       }
 
-      #networkTitleText {
-        color: #333;
-        font-weight: 500;
-      }
-
       #networkState {
         color: var(--cr-secondary-text-color);
         font-size: inherit;
-        font-weight: 400;
       }
     </style>
     <div id="outerBox" class="settings-box two-line">
@@ -60,12 +55,12 @@
         </div>
 
         <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
-          <network-siminfo on-click="doNothing_">
+          <network-siminfo device-state="[[deviceState]]" on-click="doNothing_">
           </network-siminfo>
         </template>
 
         <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
-          <cr-policy-indicator indicator-type="[[getIndicatorTypeForSourceMojo(
+          <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
               activeNetworkState.source)]]" on-click="doNothing_">
           </cr-policy-indicator>
         </template>

@@ -8,13 +8,19 @@ option optimize_for = LITE_RUNTIME;
 
 package content.proto;
 
+message ContentIconDefinition {
+  optional string src = 1;
+  optional string sizes = 2;
+  optional string type = 3;
+}
+
 // Stores all fields of the developer provided content description.
 message ContentDescription {
   optional string id = 1;
   optional string title = 2;
   optional string description = 3;
   optional int32 category = 4;
-  optional string icon_url = 5;
+  repeated ContentIconDefinition icons = 5;
   optional string launch_url = 6;
 }
 
@@ -30,4 +36,13 @@ message ContentEntry {
   // |description.launch_url()| since that field is developer-provided, and
   // can be an absolute or relative path without the host.
   optional string launch_url = 3;
+}
+
+// Wrapper to store all the serialized icons.
+message SerializedIcons {
+  // Create a sub-message in case we want to store metadata with the
+  // serialized icon.
+  message SerializedIcon { optional string icon = 1; }
+
+  repeated SerializedIcon icons = 1;
 }

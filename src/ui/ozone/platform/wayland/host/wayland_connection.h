@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_loop/message_pump_for_ui.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -25,6 +25,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_touch.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
 
@@ -35,7 +36,7 @@ class WaylandZwpLinuxDmabuf;
 class WaylandShm;
 
 class WaylandConnection : public PlatformEventSource,
-                          public base::MessagePumpLibevent::FdWatcher {
+                          public base::MessagePumpForUI::FdWatcher {
  public:
   WaylandConnection();
   ~WaylandConnection() override;
@@ -58,16 +59,6 @@ class WaylandConnection : public PlatformEventSource,
     return text_input_manager_v1_.get();
   }
 
-  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
-  WaylandWindow* GetWindowWithLargestBounds() const;
-  WaylandWindow* GetCurrentFocusedWindow() const;
-  WaylandWindow* GetCurrentKeyboardFocusedWindow() const;
-  // TODO(crbug.com/971525): remove this in favor of targeted subscription of
-  // windows to their outputs.
-  std::vector<WaylandWindow*> GetWindowsOnOutput(uint32_t output_id);
-  void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
-  void RemoveWindow(gfx::AcceleratedWidget widget);
-
   void set_serial(uint32_t serial) { serial_ = serial; }
   uint32_t serial() const { return serial_; }
 
@@ -78,6 +69,9 @@ class WaylandConnection : public PlatformEventSource,
 
   // Returns the current pointer, which may be null.
   WaylandPointer* pointer() const { return pointer_.get(); }
+
+  // Returns the current touch, which may be null.
+  WaylandTouch* touch() const { return touch_.get(); }
 
   WaylandClipboard* clipboard() const { return clipboard_.get(); }
 
@@ -101,6 +95,10 @@ class WaylandConnection : public PlatformEventSource,
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
 
   WaylandShm* shm() const { return shm_.get(); }
+
+  WaylandWindowManager* wayland_window_manager() {
+    return &wayland_window_manager_;
+  }
 
   std::vector<gfx::BufferFormat> GetSupportedBufferFormats();
 
@@ -141,12 +139,15 @@ class WaylandConnection : public PlatformEventSource,
   // PlatformEventSource
   void OnDispatcherListChanged() override;
 
-  // base::MessagePumpLibevent::FdWatcher
+  // base::MessagePumpForUI::FdWatcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // Make sure data device is properly initialized
   void EnsureDataDevice();
+
+  bool BeginWatchingFd(base::WatchableIOMessagePumpPosix::Mode mode);
+  void MaybePrepareReadQueue();
 
   // wl_registry_listener
   static void Global(void* data,
@@ -165,8 +166,6 @@ class WaylandConnection : public PlatformEventSource,
 
   // xdg_shell_listener
   static void Ping(void* data, xdg_shell* shell, uint32_t serial);
-
-  base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
 
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;
@@ -191,9 +190,13 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
 
+  // Manages Wayland windows.
+  WaylandWindowManager wayland_window_manager_;
+
   bool scheduled_flush_ = false;
   bool watching_ = false;
-  base::MessagePumpLibevent::FdWatchController controller_;
+  bool prepared_ = false;
+  base::MessagePumpForUI::FdWatchController controller_;
 
   uint32_t serial_ = 0;
 

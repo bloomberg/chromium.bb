@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
@@ -62,7 +62,6 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
         &mock_source_provider_, mojo::MakeRequest(&source_provider_));
     service_connection_ = base::MakeRefCounted<RefCountedVideoSourceProvider>(
         std::move(source_provider_),
-        video_capture::mojom::DeviceFactoryProviderPtr(),
         release_connection_cb_.Get());
 
     launcher_ = std::make_unique<ServiceVideoCaptureDeviceLauncher>(
@@ -118,7 +117,7 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   void RunConnectionLostAfterSuccessfulStartTest(
       base::OnceClosure close_connection_cb);
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   MockVideoCaptureDeviceLauncherCallbacks mock_callbacks_;
   video_capture::mojom::VideoSourceProviderPtr source_provider_;
   video_capture::MockVideoSourceProvider mock_source_provider_;

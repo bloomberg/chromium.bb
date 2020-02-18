@@ -29,14 +29,14 @@ void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
 }  // namespace
 
 class ThrottlingURLLoader::ForwardingThrottleDelegate
-    : public URLLoaderThrottle::Delegate {
+    : public blink::URLLoaderThrottle::Delegate {
  public:
   ForwardingThrottleDelegate(ThrottlingURLLoader* loader,
-                             URLLoaderThrottle* throttle)
+                             blink::URLLoaderThrottle* throttle)
       : loader_(loader), throttle_(throttle) {}
   ~ForwardingThrottleDelegate() override = default;
 
-  // URLLoaderThrottle::Delegate:
+  // blink::URLLoaderThrottle::Delegate:
   void CancelWithError(int error_code,
                        base::StringPiece custom_reason) override {
     if (!loader_)
@@ -63,11 +63,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
   }
 
   void UpdateDeferredRequestHeaders(
-      const net::HttpRequestHeaders& modified_request_headers) override {
+      const net::HttpRequestHeaders& modified_request_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_request_headers)
+      override {
     if (!loader_)
       return;
     ScopedDelegateCall scoped_delegate_call(this);
-    loader_->UpdateDeferredRequestHeaders(modified_request_headers);
+    loader_->UpdateDeferredRequestHeaders(modified_request_headers,
+                                          modified_cors_exempt_request_headers);
   }
 
   void UpdateDeferredResponseHead(
@@ -117,6 +120,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->RestartWithFlags(additional_load_flags);
   }
 
+  void RestartWithURLResetAndFlags(int additional_load_flags) override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->RestartWithURLResetAndFlags(additional_load_flags);
+  }
+
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -146,7 +157,7 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
   };
 
   ThrottlingURLLoader* loader_;
-  URLLoaderThrottle* const throttle_;
+  blink::URLLoaderThrottle* const throttle_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingThrottleDelegate);
 };
@@ -190,7 +201,7 @@ ThrottlingURLLoader::PriorityInfo::~PriorityInfo() = default;
 // static
 std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -220,31 +231,6 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
   }
 }
 
-void ThrottlingURLLoader::FollowRedirect(
-    const std::vector<std::string>& removed_headers,
-    const net::HttpRequestHeaders& modified_headers) {
-  MergeRemovedHeaders(&removed_headers_, removed_headers);
-  modified_headers_.MergeFrom(modified_headers);
-
-  if (!throttle_will_start_redirect_url_.is_empty()) {
-    throttle_will_start_redirect_url_ = GURL();
-    // This is a synthesized redirect, so no need to tell the URLLoader.
-    StartNow();
-    return;
-  }
-
-  if (url_loader_) {
-    base::Optional<GURL> new_url;
-    if (!throttle_will_redirect_redirect_url_.is_empty())
-      new_url = throttle_will_redirect_redirect_url_;
-    url_loader_->FollowRedirect(removed_headers_, modified_headers_, new_url);
-    throttle_will_redirect_redirect_url_ = GURL();
-  }
-
-  removed_headers_.clear();
-  modified_headers_.Clear();
-}
-
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   url_loader_.reset();
   client_binding_.Close();
@@ -272,6 +258,31 @@ void ThrottlingURLLoader::RestartWithFactory(
   StartNow();
 }
 
+void ThrottlingURLLoader::FollowRedirect(
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
+  MergeRemovedHeaders(&removed_headers_, removed_headers);
+  modified_headers_.MergeFrom(modified_headers);
+
+  if (!throttle_will_start_redirect_url_.is_empty()) {
+    throttle_will_start_redirect_url_ = GURL();
+    // This is a synthesized redirect, so no need to tell the URLLoader.
+    StartNow();
+    return;
+  }
+
+  if (url_loader_) {
+    base::Optional<GURL> new_url;
+    if (!throttle_will_redirect_redirect_url_.is_empty())
+      new_url = throttle_will_redirect_redirect_url_;
+    url_loader_->FollowRedirect(removed_headers_, modified_headers_, new_url);
+    throttle_will_redirect_redirect_url_ = GURL();
+  }
+
+  removed_headers_.clear();
+  modified_headers_.Clear();
+}
+
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
                                       int32_t intra_priority_value) {
   if (!url_loader_) {
@@ -292,13 +303,21 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
   url_loader_->SetPriority(priority, intra_priority_value);
 }
 
+void ThrottlingURLLoader::PauseReadingBodyFromNet() {
+  PauseReadingBodyFromNet(/*throttle=*/nullptr);
+}
+
+void ThrottlingURLLoader::ResumeReadingBodyFromNet() {
+  ResumeReadingBodyFromNet(/*throttle=*/nullptr);
+}
+
 network::mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {
   return network::mojom::URLLoaderClientEndpoints::New(
       url_loader_.PassInterface(), client_binding_.Unbind());
 }
 
 ThrottlingURLLoader::ThrottlingURLLoader(
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
@@ -322,16 +341,16 @@ void ThrottlingURLLoader::Start(
   bool deferred = false;
   DCHECK(deferring_throttles_.empty());
   if (!throttles_.empty()) {
+    original_url_ = url_request->url;
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      GURL original_url = url_request->url;
       throttle->WillStartRequest(url_request, &throttle_deferred);
-      if (original_url != url_request->url) {
+      if (original_url_ != url_request->url) {
         DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
-        if (original_url.SchemeIsHTTPOrHTTPS() &&
+        if (original_url_.SchemeIsHTTPOrHTTPS() &&
             !url_request->url.SchemeIsHTTPOrHTTPS() &&
             !throttle->makes_unsafe_redirect()) {
           NOTREACHED() << "A URLLoaderThrottle can't redirect from http(s) to "
@@ -341,7 +360,7 @@ void ThrottlingURLLoader::Start(
         }
         // Restore the original URL so that all throttles see the same original
         // URL.
-        url_request->url = original_url;
+        url_request->url = original_url_;
       }
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
@@ -359,6 +378,10 @@ void ThrottlingURLLoader::Start(
 
 void ThrottlingURLLoader::StartNow() {
   DCHECK(start_info_);
+  if (throttle_will_start_original_url_) {
+    throttle_will_start_redirect_url_ = original_url_;
+    throttle_will_start_original_url_ = false;
+  }
   if (!throttle_will_start_redirect_url_.is_empty()) {
     auto first_party_url_policy =
         start_info_->url_request.update_first_party_url_on_redirect
@@ -460,9 +483,10 @@ void ThrottlingURLLoader::RestartWithFlagsNow() {
   StartNow();
 }
 
-bool ThrottlingURLLoader::HandleThrottleResult(URLLoaderThrottle* throttle,
-                                               bool throttle_deferred,
-                                               bool* should_defer) {
+bool ThrottlingURLLoader::HandleThrottleResult(
+    blink::URLLoaderThrottle* throttle,
+    bool throttle_deferred,
+    bool* should_defer) {
   DCHECK(!deferring_throttles_.count(throttle));
   if (loader_completed_)
     return false;
@@ -473,7 +497,7 @@ bool ThrottlingURLLoader::HandleThrottleResult(URLLoaderThrottle* throttle,
 }
 
 void ThrottlingURLLoader::StopDeferringForThrottle(
-    URLLoaderThrottle* throttle) {
+    blink::URLLoaderThrottle* throttle) {
   if (deferring_throttles_.find(throttle) == deferring_throttles_.end())
     return;
 
@@ -487,8 +511,15 @@ void ThrottlingURLLoader::RestartWithFlags(int additional_load_flags) {
   has_pending_restart_ = true;
 }
 
+void ThrottlingURLLoader::RestartWithURLResetAndFlags(
+    int additional_load_flags) {
+  pending_restart_flags_ |= additional_load_flags;
+  throttle_will_start_original_url_ = true;
+  has_pending_restart_ = true;
+}
+
 void ThrottlingURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
@@ -545,7 +576,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
 void ThrottlingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
@@ -562,16 +593,11 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       throttle->WillRedirectRequest(&redirect_info_copy, response_head,
                                     &throttle_deferred, &removed_headers,
                                     &modified_headers);
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-          redirect_info_copy.new_url != redirect_info.new_url) {
+      if (redirect_info_copy.new_url != redirect_info.new_url) {
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
         throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
-      } else {
-        CHECK_EQ(redirect_info_copy.new_url, redirect_info.new_url)
-            << "Non-network service path doesn't support modifying a redirect "
-               "URL";
       }
 
       if (!weak_ptr)
@@ -608,7 +634,8 @@ void ThrottlingURLLoader::OnReceiveRedirect(
   // redirect or if it will be cancelled. FollowRedirect would be a more
   // suitable place to set this URL but there we do not have the data.
   response_url_ = redirect_info.new_url;
-  forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
+  forwarding_client_->OnReceiveRedirect(redirect_info,
+                                        std::move(response_head));
 }
 
 void ThrottlingURLLoader::OnUploadProgress(
@@ -765,11 +792,17 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority) {
 }
 
 void ThrottlingURLLoader::UpdateDeferredRequestHeaders(
-    const net::HttpRequestHeaders& modified_request_headers) {
+    const net::HttpRequestHeaders& modified_request_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_request_headers) {
   if (deferred_stage_ == DEFERRED_START) {
     start_info_->url_request.headers.MergeFrom(modified_request_headers);
+    start_info_->url_request.cors_exempt_headers.MergeFrom(
+        modified_cors_exempt_request_headers);
   } else if (deferred_stage_ == DEFERRED_REDIRECT) {
     modified_headers_.MergeFrom(modified_request_headers);
+    // TODO(juke): Figure out if we need to support |cors_exempt_headers| in
+    // DEFERRED_REDIRECT case.
+    modified_headers_.MergeFrom(modified_cors_exempt_request_headers);
   } else {
     NOTREACHED()
         << "Can only update headers of a request before it's sent out.";
@@ -783,7 +816,8 @@ void ThrottlingURLLoader::UpdateDeferredResponseHead(
   response_info_->response_head = new_response_head;
 }
 
-void ThrottlingURLLoader::PauseReadingBodyFromNet(URLLoaderThrottle* throttle) {
+void ThrottlingURLLoader::PauseReadingBodyFromNet(
+    blink::URLLoaderThrottle* throttle) {
   if (pausing_reading_body_from_net_throttles_.empty() && url_loader_)
     url_loader_->PauseReadingBodyFromNet();
 
@@ -791,7 +825,7 @@ void ThrottlingURLLoader::PauseReadingBodyFromNet(URLLoaderThrottle* throttle) {
 }
 
 void ThrottlingURLLoader::ResumeReadingBodyFromNet(
-    URLLoaderThrottle* throttle) {
+    blink::URLLoaderThrottle* throttle) {
   auto iter = pausing_reading_body_from_net_throttles_.find(throttle);
   if (iter == pausing_reading_body_from_net_throttles_.end())
     return;
@@ -835,7 +869,7 @@ void ThrottlingURLLoader::DisconnectClient(base::StringPiece custom_reason) {
 
 ThrottlingURLLoader::ThrottleEntry::ThrottleEntry(
     ThrottlingURLLoader* loader,
-    std::unique_ptr<URLLoaderThrottle> the_throttle)
+    std::unique_ptr<blink::URLLoaderThrottle> the_throttle)
     : delegate(
           std::make_unique<ForwardingThrottleDelegate>(loader,
                                                        the_throttle.get())),

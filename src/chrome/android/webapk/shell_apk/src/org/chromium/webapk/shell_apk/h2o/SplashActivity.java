@@ -11,8 +11,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
@@ -20,16 +22,17 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
+import org.chromium.webapk.shell_apk.HostBrowserUtils;
 import org.chromium.webapk.shell_apk.LaunchHostBrowserSelector;
 import org.chromium.webapk.shell_apk.WebApkUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /** Displays splash screen. */
 public class SplashActivity extends Activity {
-    private static final String SAVED_INSTANCE_STATE_WAS_BROWSER_LAUNCHED = "wasBrowserLaunched";
-
     /** Whether {@link mSplashView} was laid out. */
     private boolean mSplashViewLaidOut;
 
@@ -37,28 +40,48 @@ public class SplashActivity extends Activity {
     @SuppressWarnings("NoAndroidAsyncTaskCheck")
     private android.os.AsyncTask mScreenshotSplashTask;
 
+    @IntDef({ActivityResult.NONE, ActivityResult.CANCELED, ActivityResult.IGNORE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ActivityResult {
+        int NONE = 0;
+        int CANCELED = 1;
+        int IGNORE = 2;
+    }
+
     private View mSplashView;
     private HostBrowserLauncherParams mParams;
-    private boolean mWasBrowserLaunched;
-    private boolean mFinishOnResume;
+    private @ActivityResult int mResult;
+    private boolean mResumed;
+    private boolean mPendingLaunch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final long activityStartTimeMs = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState != null) {
-            // The activity was killed by the Android OOM killer. If the activity was recreated as a
-            // result of getting a deep link intent, onNewIntent() will be called prior to
-            // onResume(). Otherwise, assume that the activity was recreated as a result of the
-            // browser activity finishing.
-            mFinishOnResume = true;
-            mWasBrowserLaunched =
-                    savedInstanceState.getBoolean(SAVED_INSTANCE_STATE_WAS_BROWSER_LAUNCHED);
+        showSplashScreen();
+
+        // On Android O+, if:
+        // - Chrome is translucent
+        // AND
+        // - Both the WebAPK and Chrome have been killed by the Android out-of-memory killer
+        // both the SplashActivity and the browser activity are created when the user selects the
+        // WebAPK in Android Recents.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && !new ComponentName(this, SplashActivity.class)
+                            .equals(WebApkUtils.fetchTopActivityComponent(this, getTaskId()))) {
+            return;
         }
 
-        showSplashScreen();
+        mPendingLaunch = true;
         selectHostBrowser(activityStartTimeMs);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (mResult != ActivityResult.IGNORE && resultCode == Activity.RESULT_CANCELED) {
+            mResult = ActivityResult.CANCELED;
+        }
     }
 
     @Override
@@ -66,7 +89,13 @@ public class SplashActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
 
-        mFinishOnResume = false;
+        // Clear flag set by SplashActivity#onActivityResult()
+        // The host browser activity is killed - triggering SplashActivity#onActivityResult()
+        // - when SplashActivity gets a new intent because SplashActivity has launchMode
+        // "singleTask".
+        mResult = ActivityResult.IGNORE;
+
+        mPendingLaunch = true;
 
         selectHostBrowser(-1);
     }
@@ -74,12 +103,20 @@ public class SplashActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-
-        if (mFinishOnResume && mWasBrowserLaunched) {
-            WebApkUtils.finishAndRemoveTask(this);
+        mResumed = true;
+        if (mResult == ActivityResult.CANCELED) {
+            finish();
             return;
         }
-        mFinishOnResume = true;
+
+        mResult = ActivityResult.NONE;
+        maybeScreenshotSplashAndLaunch();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mResumed = false;
     }
 
     @Override
@@ -90,11 +127,6 @@ public class SplashActivity extends Activity {
             mScreenshotSplashTask = null;
         }
         super.onDestroy();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(SAVED_INSTANCE_STATE_WAS_BROWSER_LAUNCHED, mWasBrowserLaunched);
     }
 
     private void selectHostBrowser(final long activityStartTimeMs) {
@@ -137,7 +169,7 @@ public class SplashActivity extends Activity {
 
                         mSplashView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                         mSplashViewLaidOut = true;
-                        maybeScreenshotSplash();
+                        maybeScreenshotSplashAndLaunch();
                     }
                 });
         setContentView(mSplashView);
@@ -152,8 +184,8 @@ public class SplashActivity extends Activity {
 
         Context appContext = getApplicationContext();
 
-        if (!H2OLauncher.shouldIntentLaunchSplashActivity(params)) {
-            HostBrowserLauncher.launch(appContext, params);
+        if (!HostBrowserUtils.shouldIntentLaunchSplashActivity(params)) {
+            HostBrowserLauncher.launch(this, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, H2OMainActivity.class),
                     new ComponentName(appContext, H2OOpaqueMainActivity.class));
@@ -162,7 +194,7 @@ public class SplashActivity extends Activity {
         }
 
         mParams = params;
-        maybeScreenshotSplash();
+        maybeScreenshotSplashAndLaunch();
     }
 
     /**
@@ -171,8 +203,11 @@ public class SplashActivity extends Activity {
      * AND
      * - splash view was laid out
      */
-    private void maybeScreenshotSplash() {
-        if (mParams == null || !mSplashViewLaidOut) return;
+    private void maybeScreenshotSplashAndLaunch() {
+        // If Activity#onActivityResult() will be called, it will be called prior to the
+        // activity being resumed.
+        if (mParams == null || !mSplashViewLaidOut || !mResumed || !mPendingLaunch) return;
+        mPendingLaunch = false;
 
         screenshotAndEncodeSplashInBackground();
     }
@@ -184,7 +219,6 @@ public class SplashActivity extends Activity {
     private void launch(byte[] splashPngEncoded) {
         SplashContentProvider.cache(
                 this, splashPngEncoded, mSplashView.getWidth(), mSplashView.getHeight());
-        mWasBrowserLaunched = true;
         H2OLauncher.launch(this, mParams);
         mParams = null;
     }

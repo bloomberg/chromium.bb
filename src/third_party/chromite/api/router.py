@@ -19,6 +19,7 @@ from google.protobuf import symbol_database
 
 from chromite.api import controller
 from chromite.api import field_handler
+from chromite.api.gen.chromite.api import android_pb2
 from chromite.api.gen.chromite.api import api_pb2
 from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.api.gen.chromite.api import binhost_pb2
@@ -124,7 +125,7 @@ class Router(object):
 
     return sorted(services)
 
-  def Route(self, service_name, method_name, input_path, output_path):
+  def Route(self, service_name, method_name, input_path, output_path, config):
     """Dispatch the request.
 
     Args:
@@ -132,6 +133,7 @@ class Router(object):
       method_name (str): The name of the method being called.
       input_path (str): The path to the input message file.
       output_path (str): The path where the output message should be written.
+      config (api_config.ApiConfig): The optional call configs.
 
     Returns:
       int: The return code.
@@ -179,7 +181,7 @@ class Router(object):
       # Run inside the chroot instead.
       logging.info('Re-executing the endpoint inside the chroot.')
       return self._ReexecuteInside(input_msg, output_msg, output_path,
-                                   service_name, method_name)
+                                   service_name, method_name, config)
 
     # Allow proto-based method name override.
     if method_options.HasField('implementation_name'):
@@ -189,7 +191,7 @@ class Router(object):
     method_impl = self._GetMethod(module_name, method_name)
 
     # Successfully located; call and return.
-    return_code = method_impl(input_msg, output_msg)
+    return_code = method_impl(input_msg, output_msg, config)
     if return_code is None:
       return_code = controller.RETURN_CODE_SUCCESS
 
@@ -230,7 +232,7 @@ class Router(object):
     return False
 
   def _ReexecuteInside(self, input_msg, output_msg, output_path, service_name,
-                       method_name):
+                       method_name, config):
     """Re-execute the service inside the chroot.
 
     Args:
@@ -239,13 +241,13 @@ class Router(object):
       output_path (str): The path for the serialized output.
       service_name (str): The name of the service to run.
       method_name (str): The name of the method to run.
+      config (api_config.ApiConfig): The optional call configs.
     """
     # Parse the chroot and clear the chroot field in the input message.
     chroot = field_handler.handle_chroot(input_msg)
 
-    base_dir = os.path.join(chroot.path, 'tmp')
-    with field_handler.handle_paths(input_msg, base_dir, prefix=chroot.path):
-      with osutils.TempDir(base_dir=base_dir) as tempdir:
+    with field_handler.copy_paths_in(input_msg, chroot.tmp, prefix=chroot.path):
+      with chroot.tempdir() as tempdir:
         new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
         chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
         new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)
@@ -257,6 +259,9 @@ class Router(object):
 
         cmd = ['build_api', '%s/%s' % (service_name, method_name),
                '--input-json', chroot_input, '--output-json', chroot_output]
+
+        if config.validate_only:
+          cmd.append('--validate-only')
 
         try:
           result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
@@ -277,44 +282,11 @@ class Router(object):
         output_content = osutils.ReadFile(new_output)
         if output_content:
           json_format.Parse(output_content, output_msg)
-          field_handler.handle_result_paths(input_msg, output_msg, chroot)
+          field_handler.extract_results(input_msg, output_msg, chroot)
 
         osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
 
         return result.returncode
-
-  def _GetChrootArgs(self, chroot):
-    """Translate a Chroot message to chroot enter args.
-
-    Args:
-      chroot (chromiumos.Chroot): A chroot message.
-
-    Returns:
-      list[str]: The cros_sdk args for the chroot.
-    """
-    args = []
-    if chroot.path:
-      args.extend(['--chroot', chroot.path])
-    if chroot.cache_dir:
-      args.extend(['--cache-dir', chroot.cache_dir])
-
-    return args
-
-  def _GetChrootEnv(self, chroot):
-    """Get chroot environment variables that need to be set."""
-    use_flags = [u.flag for u in chroot.env.use_flags]
-    features = [f.feature for f in chroot.env.features]
-
-    env = {}
-    if use_flags:
-      env['USE'] = ' '.join(use_flags)
-
-    # TODO(saklein) Remove the default when fully integrated in recipes.
-    env['FEATURES'] = 'separatedebug'
-    if features:
-      env['FEATURES'] = ' '.join(features)
-
-    return env
 
   def _GetMethod(self, module_name, method_name):
     """Get the implementation of the method for the service module.
@@ -346,6 +318,7 @@ def RegisterServices(router):
   Args:
     router (Router): The router.
   """
+  router.Register(android_pb2)
   router.Register(api_pb2)
   router.Register(artifacts_pb2)
   router.Register(binhost_pb2)

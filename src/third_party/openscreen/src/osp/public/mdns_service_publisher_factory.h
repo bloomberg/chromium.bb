@@ -8,14 +8,19 @@
 #include <memory>
 
 #include "osp/public/service_publisher.h"
+#include "platform/api/network_runner.h"
 
 namespace openscreen {
+namespace platform {
+class NetworkRunner;
+}  // namespace platform
 
 class MdnsServicePublisherFactory {
  public:
   static std::unique_ptr<ServicePublisher> Create(
       const ServicePublisher::Config& config,
-      ServicePublisher::Observer* observer);
+      ServicePublisher::Observer* observer,
+      platform::NetworkRunner* network_runner);
 };
 
 }  // namespace openscreen

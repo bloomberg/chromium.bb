@@ -143,6 +143,13 @@ uint16_t DefaultVideoQualityAnalyzer::OnFrameCaptured(
     captured_frames_in_flight_.at(frame_id).set_id(frame_id);
     frame_stats_.insert(std::pair<uint16_t, FrameStats>(
         frame_id, FrameStats(stream_label, /*captured_time=*/Now())));
+
+    // Update history stream<->frame mapping
+    for (auto it = stream_to_frame_id_history_.begin();
+         it != stream_to_frame_id_history_.end(); ++it) {
+      it->second.erase(frame_id);
+    }
+    stream_to_frame_id_history_[stream_label].insert(frame_id);
   }
   return frame_id;
 }
@@ -331,8 +338,17 @@ void DefaultVideoQualityAnalyzer::Stop() {
 std::string DefaultVideoQualityAnalyzer::GetStreamLabel(uint16_t frame_id) {
   rtc::CritScope crit1(&lock_);
   auto it = frame_stats_.find(frame_id);
-  RTC_DCHECK(it != frame_stats_.end()) << "Unknown frame_id=" << frame_id;
-  return it->second.stream_label;
+  if (it != frame_stats_.end()) {
+    return it->second.stream_label;
+  }
+  for (auto hist_it = stream_to_frame_id_history_.begin();
+       hist_it != stream_to_frame_id_history_.end(); ++hist_it) {
+    auto hist_set_it = hist_it->second.find(frame_id);
+    if (hist_set_it != hist_it->second.end()) {
+      return hist_it->first;
+    }
+  }
+  RTC_CHECK(false) << "Unknown frame_id=" << frame_id;
 }
 
 std::set<std::string> DefaultVideoQualityAnalyzer::GetKnownVideoStreams()
@@ -619,16 +635,21 @@ void DefaultVideoQualityAnalyzer::ReportResults(
                stats.time_between_freezes_ms, "ms");
   ReportResult("freeze_time_ms", test_case_name, stats.freeze_time_ms, "ms");
   ReportResult("pixels_per_frame", test_case_name,
-               stats.resolution_of_rendered_frame, "unitless");
+               stats.resolution_of_rendered_frame, "count");
   test::PrintResult("min_psnr", "", test_case_name,
                     stats.psnr.IsEmpty() ? 0 : stats.psnr.GetMin(), "dB",
                     /*important=*/false);
   ReportResult("decode_time", test_case_name, stats.decode_time_ms, "ms");
   test::PrintResult("dropped_frames", "", test_case_name,
-                    frame_counters.dropped, "unitless",
+                    frame_counters.dropped, "count",
+                    /*important=*/false);
+  test::PrintResult("frames_in_flight", "", test_case_name,
+                    frame_counters.captured - frame_counters.rendered -
+                        frame_counters.dropped,
+                    "count",
                     /*important=*/false);
   ReportResult("max_skipped", test_case_name, stats.skipped_between_rendered,
-               "unitless");
+               "count");
 }
 
 void DefaultVideoQualityAnalyzer::ReportResult(

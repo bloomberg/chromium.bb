@@ -149,7 +149,7 @@ class AutofillAction : public Action {
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   ProcessActionCallback process_action_callback_;
-  base::WeakPtrFactory<AutofillAction> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAction);
 };

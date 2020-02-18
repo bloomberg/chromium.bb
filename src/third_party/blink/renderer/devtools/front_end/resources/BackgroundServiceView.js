@@ -266,6 +266,33 @@ Resources.BackgroundServiceView = class extends UI.VBox {
   }
 
   /**
+   * @return {!Element}
+   */
+  _createLearnMoreLink() {
+    let url =
+        'https://developers.google.com/web/tools/chrome-devtools/javascript/background-services?utm_source=devtools';
+
+    switch (this._serviceName) {
+      case Protocol.BackgroundService.ServiceName.BackgroundFetch:
+        url += '#fetch';
+        break;
+      case Protocol.BackgroundService.ServiceName.BackgroundSync:
+        url += '#sync';
+        break;
+      case Protocol.BackgroundService.ServiceName.PushMessaging:
+        url += '#push';
+        break;
+      case Protocol.BackgroundService.ServiceName.Notifications:
+        url += '#notifications';
+        break;
+      default:
+        break;
+    }
+
+    return UI.XLink.create(url, ls`Learn more`);
+  }
+
+  /**
    * @param {?Resources.BackgroundServiceView.EventDataNode} dataNode
    */
   _showPreview(dataNode) {
@@ -303,9 +330,12 @@ Resources.BackgroundServiceView = class extends UI.VBox {
       recordKey.textContent =
           UI.shortcutRegistry.shortcutDescriptorsForAction('background-service.toggle-recording')[0].name;
 
-      centered.createChild('p').appendChild(UI.formatLocalized(
-          'Click the record button %s or hit %s to start recording.',
-          [UI.createInlineButton(landingRecordButton), recordKey]));
+      const inlineButton = UI.createInlineButton(landingRecordButton);
+      inlineButton.classList.add('background-service-record-inline-button');
+      centered.createChild('p').appendChild(
+          UI.formatLocalized('Click the record button %s or hit %s to start recording.', [inlineButton, recordKey]));
+
+      centered.appendChild(this._createLearnMoreLink());
     }
 
     this._preview.show(this._previewPanel.contentElement);

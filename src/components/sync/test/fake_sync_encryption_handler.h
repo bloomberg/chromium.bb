@@ -39,25 +39,28 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
-  PassphraseType GetPassphraseType(
-      syncable::BaseTransaction* const trans) const override;
   base::Time GetKeystoreMigrationTime() const override;
-  Cryptographer* GetCryptographerUnsafe() override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
-  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implemenation.
   bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
+  const Cryptographer* GetCryptographer(
+      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
+  PassphraseType GetPassphraseType(
+      const syncable::BaseTransaction* const trans) const override;
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
   bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
+
+  // Own method, used in some tests to manipulate cryptographer directly.
+  Cryptographer* GetMutableCryptographer();
 
  private:
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;

@@ -20,7 +20,7 @@
 #include "p2p/base/ice_transport_internal.h"
 #include "p2p/base/no_op_dtls_transport.h"
 #include "p2p/base/port.h"
-#include "pc/datagram_dtls_adaptor.h"
+#include "pc/datagram_rtp_transport.h"
 #include "pc/srtp_filter.h"
 #include "rtc_base/bind.h"
 #include "rtc_base/checks.h"
@@ -151,8 +151,10 @@ MediaTransportConfig JsepTransportController::GetMediaTransportConfig(
     media_transport = jsep_transport->media_transport();
   }
 
-  DatagramTransportInterface* datagram_transport =
-      jsep_transport->datagram_transport();
+  DatagramTransportInterface* datagram_transport = nullptr;
+  if (config_.use_datagram_transport) {
+    datagram_transport = jsep_transport->datagram_transport();
+  }
 
   // Media transport and datagram transports can not be used together.
   RTC_DCHECK(!media_transport || !datagram_transport);
@@ -167,15 +169,20 @@ MediaTransportConfig JsepTransportController::GetMediaTransportConfig(
   }
 }
 
-MediaTransportInterface*
-JsepTransportController::GetMediaTransportForDataChannel(
+DataChannelTransportInterface* JsepTransportController::GetDataChannelTransport(
     const std::string& mid) const {
   auto jsep_transport = GetJsepTransportForMid(mid);
-  if (!jsep_transport || !config_.use_media_transport_for_data_channels) {
+  if (!jsep_transport) {
     return nullptr;
   }
 
-  return jsep_transport->media_transport();
+  if (config_.use_media_transport_for_data_channels) {
+    return jsep_transport->media_transport();
+  } else if (config_.use_datagram_transport_for_data_channels) {
+    return jsep_transport->datagram_transport();
+  }
+  // Not configured to use a data channel transport.
+  return nullptr;
 }
 
 MediaTransportState JsepTransportController::GetMediaTransportState(
@@ -437,7 +444,8 @@ void JsepTransportController::SetActiveResetSrtpParams(
 void JsepTransportController::SetMediaTransportSettings(
     bool use_media_transport_for_media,
     bool use_media_transport_for_data_channels,
-    bool use_datagram_transport) {
+    bool use_datagram_transport,
+    bool use_datagram_transport_for_data_channels) {
   RTC_DCHECK(use_media_transport_for_media ==
                  config_.use_media_transport_for_media ||
              jsep_transports_by_name_.empty())
@@ -454,6 +462,8 @@ void JsepTransportController::SetMediaTransportSettings(
   config_.use_media_transport_for_data_channels =
       use_media_transport_for_data_channels;
   config_.use_datagram_transport = use_datagram_transport;
+  config_.use_datagram_transport_for_data_channels =
+      use_datagram_transport_for_data_channels;
 }
 
 std::unique_ptr<cricket::IceTransportInternal>
@@ -482,12 +492,8 @@ JsepTransportController::CreateDtlsTransport(
   std::unique_ptr<cricket::DtlsTransportInternal> dtls;
 
   if (datagram_transport) {
-    RTC_DCHECK(config_.use_datagram_transport);
-
-    // Create DTLS wrapper around DatagramTransportInterface.
-    dtls = absl::make_unique<cricket::DatagramDtlsAdaptor>(
-        content_info.media_description()->rtp_header_extensions(), ice,
-        datagram_transport, config_.crypto_options, config_.event_log);
+    RTC_DCHECK(config_.use_datagram_transport ||
+               config_.use_datagram_transport_for_data_channels);
   } else if (config_.media_transport_factory &&
              config_.use_media_transport_for_media &&
              config_.use_media_transport_for_data_channels) {
@@ -535,6 +541,8 @@ JsepTransportController::CreateDtlsTransport(
       this, &JsepTransportController::OnTransportStateChanged_n);
   dtls->ice_transport()->SignalIceTransportStateChanged.connect(
       this, &JsepTransportController::OnTransportStateChanged_n);
+  dtls->ice_transport()->SignalCandidatePairChanged.connect(
+      this, &JsepTransportController::OnTransportCandidatePairChanged_n);
   return dtls;
 }
 
@@ -865,12 +873,13 @@ bool JsepTransportController::SetTransportForMid(
   mid_to_transport_[mid] = jsep_transport;
   return config_.transport_observer->OnTransportChanged(
       mid, jsep_transport->rtp_transport(), jsep_transport->RtpDtlsTransport(),
-      jsep_transport->media_transport());
+      jsep_transport->media_transport(), jsep_transport->datagram_transport(),
+      NegotiationState::kInitial);
 }
 
 void JsepTransportController::RemoveTransportForMid(const std::string& mid) {
-  bool ret = config_.transport_observer->OnTransportChanged(mid, nullptr,
-                                                            nullptr, nullptr);
+  bool ret = config_.transport_observer->OnTransportChanged(
+      mid, nullptr, nullptr, nullptr, nullptr, NegotiationState::kFinal);
   // Calling OnTransportChanged with nullptr should always succeed, since it is
   // only expected to fail when adding media to a transport (not removing).
   RTC_DCHECK(ret);
@@ -1079,7 +1088,8 @@ JsepTransportController::MaybeCreateDatagramTransport(
     return nullptr;
   }
 
-  if (!config_.use_datagram_transport) {
+  if (!(config_.use_datagram_transport ||
+        config_.use_datagram_transport_for_data_channels)) {
     return nullptr;
   }
 
@@ -1162,11 +1172,8 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
 
   std::unique_ptr<DatagramTransportInterface> datagram_transport =
       MaybeCreateDatagramTransport(content_info, description, local);
-  std::unique_ptr<cricket::DtlsTransportInternal> datagram_dtls_transport;
   if (datagram_transport) {
     datagram_transport->Connect(ice.get());
-    datagram_dtls_transport =
-        CreateDtlsTransport(content_info, ice.get(), datagram_transport.get());
   }
 
   std::unique_ptr<cricket::DtlsTransportInternal> rtp_dtls_transport =
@@ -1176,7 +1183,7 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
   std::unique_ptr<RtpTransport> unencrypted_rtp_transport;
   std::unique_ptr<SrtpTransport> sdes_transport;
   std::unique_ptr<DtlsSrtpTransport> dtls_srtp_transport;
-  std::unique_ptr<RtpTransport> datagram_rtp_transport;
+  std::unique_ptr<RtpTransportInternal> datagram_rtp_transport;
 
   std::unique_ptr<cricket::IceTransportInternal> rtcp_ice;
   if (config_.rtcp_mux_policy !=
@@ -1189,7 +1196,9 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
                                               /*datagram_transport=*/nullptr);
   }
 
-  if (datagram_transport) {
+  // Only create a datagram RTP transport if the datagram transport should be
+  // used for RTP.
+  if (datagram_transport && config_.use_datagram_transport) {
     // TODO(sukhanov): We use unencrypted RTP transport over DatagramTransport,
     // because MediaTransport encrypts. In the future we may want to
     // implement our own version of RtpTransport over MediaTransport, because
@@ -1200,8 +1209,9 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
     RTC_LOG(LS_INFO) << "Creating UnencryptedRtpTransport, because datagram "
                         "transport is used.";
     RTC_DCHECK(!rtcp_dtls_transport);
-    datagram_rtp_transport = CreateUnencryptedRtpTransport(
-        content_info.name, datagram_dtls_transport.get(), nullptr);
+    datagram_rtp_transport = absl::make_unique<DatagramRtpTransport>(
+        content_info.media_description()->rtp_header_extensions(), ice.get(),
+        datagram_transport.get());
   }
 
   if (config_.disable_encryption) {
@@ -1225,13 +1235,14 @@ RTCError JsepTransportController::MaybeCreateJsepTransport(
           std::move(unencrypted_rtp_transport), std::move(sdes_transport),
           std::move(dtls_srtp_transport), std::move(datagram_rtp_transport),
           std::move(rtp_dtls_transport), std::move(rtcp_dtls_transport),
-          std::move(datagram_dtls_transport), std::move(media_transport),
-          std::move(datagram_transport));
+          std::move(media_transport), std::move(datagram_transport));
 
   jsep_transport->SignalRtcpMuxActive.connect(
       this, &JsepTransportController::UpdateAggregateStates_n);
   jsep_transport->SignalMediaTransportStateChanged.connect(
       this, &JsepTransportController::OnMediaTransportStateChanged_n);
+  jsep_transport->SignalDataChannelTransportNegotiated.connect(
+      this, &JsepTransportController::OnDataChannelTransportNegotiated_n);
   SetTransportForMid(content_info.name, jsep_transport.get());
 
   jsep_transports_by_name_[content_info.name] = std::move(jsep_transport);
@@ -1262,8 +1273,9 @@ void JsepTransportController::DestroyAllJsepTransports_n() {
   RTC_DCHECK(network_thread_->IsCurrent());
 
   for (const auto& jsep_transport : jsep_transports_by_name_) {
-    config_.transport_observer->OnTransportChanged(jsep_transport.first,
-                                                   nullptr, nullptr, nullptr);
+    config_.transport_observer->OnTransportChanged(
+        jsep_transport.first, nullptr, nullptr, nullptr, nullptr,
+        NegotiationState::kFinal);
   }
 
   jsep_transports_by_name_.clear();
@@ -1401,6 +1413,12 @@ void JsepTransportController::OnTransportCandidatesRemoved_n(
       RTC_FROM_HERE, signaling_thread_,
       [this, candidates] { SignalIceCandidatesRemoved(candidates); });
 }
+void JsepTransportController::OnTransportCandidatePairChanged_n(
+    const cricket::CandidatePairChangeEvent& event) {
+  invoker_.AsyncInvoke<void>(RTC_FROM_HERE, signaling_thread_, [this, event] {
+    SignalIceCandidatePairChanged(event);
+  });
+}
 
 void JsepTransportController::OnTransportRoleConflict_n(
     cricket::IceTransportInternal* transport) {
@@ -1431,6 +1449,21 @@ void JsepTransportController::OnTransportStateChanged_n(
 void JsepTransportController::OnMediaTransportStateChanged_n() {
   SignalMediaTransportStateChanged();
   UpdateAggregateStates_n();
+}
+
+void JsepTransportController::OnDataChannelTransportNegotiated_n(
+    cricket::JsepTransport* transport,
+    DataChannelTransportInterface* data_channel_transport,
+    bool provisional) {
+  for (auto it : mid_to_transport_) {
+    if (it.second == transport) {
+      config_.transport_observer->OnTransportChanged(
+          it.first, transport->rtp_transport(), transport->RtpDtlsTransport(),
+          transport->media_transport(), data_channel_transport,
+          provisional ? NegotiationState::kProvisional
+                      : NegotiationState::kFinal);
+    }
+  }
 }
 
 void JsepTransportController::UpdateAggregateStates_n() {
@@ -1478,28 +1511,33 @@ void JsepTransportController::UpdateAggregateStates_n() {
     ice_state_counts[dtls->ice_transport()->GetIceTransportState()]++;
   }
 
-  for (auto it = jsep_transports_by_name_.begin();
-       it != jsep_transports_by_name_.end(); ++it) {
-    auto jsep_transport = it->second.get();
-    if (!jsep_transport->media_transport()) {
-      continue;
-    }
+  // Don't indicate that the call failed or isn't connected due to media
+  // transport state unless the media transport is used for media.  If it's only
+  // used for data channels, it will signal those separately.
+  if (config_.use_media_transport_for_media || config_.use_datagram_transport) {
+    for (auto it = jsep_transports_by_name_.begin();
+         it != jsep_transports_by_name_.end(); ++it) {
+      auto jsep_transport = it->second.get();
+      if (!jsep_transport->media_transport()) {
+        continue;
+      }
 
-    // There is no 'kIceConnectionDisconnected', so we only need to handle
-    // connected and completed.
-    // We treat kClosed as failed, because if it happens before shutting down
-    // media transports it means that there was a failure.
-    // MediaTransportInterface allows to flip back and forth between kWritable
-    // and kPending, but there does not exist an implementation that does that,
-    // and the contract of jsep transport controller doesn't quite expect that.
-    // When this happens, we would go from connected to connecting state, but
-    // this may change in future.
-    any_failed |= jsep_transport->media_transport_state() ==
-                  webrtc::MediaTransportState::kClosed;
-    all_completed &= jsep_transport->media_transport_state() ==
-                     webrtc::MediaTransportState::kWritable;
-    all_connected &= jsep_transport->media_transport_state() ==
-                     webrtc::MediaTransportState::kWritable;
+      // There is no 'kIceConnectionDisconnected', so we only need to handle
+      // connected and completed.
+      // We treat kClosed as failed, because if it happens before shutting down
+      // media transports it means that there was a failure.
+      // MediaTransportInterface allows to flip back and forth between kWritable
+      // and kPending, but there does not exist an implementation that does
+      // that, and the contract of jsep transport controller doesn't quite
+      // expect that. When this happens, we would go from connected to
+      // connecting state, but this may change in future.
+      any_failed |= jsep_transport->media_transport_state() ==
+                    webrtc::MediaTransportState::kClosed;
+      all_completed &= jsep_transport->media_transport_state() ==
+                       webrtc::MediaTransportState::kWritable;
+      all_connected &= jsep_transport->media_transport_state() ==
+                       webrtc::MediaTransportState::kWritable;
+    }
   }
 
   if (any_failed) {
@@ -1718,7 +1756,8 @@ JsepTransportController::GenerateOrGetLastMediaTransportOffer() {
 
 absl::optional<cricket::OpaqueTransportParameters>
 JsepTransportController::GetTransportParameters(const std::string& mid) {
-  if (!config_.use_datagram_transport) {
+  if (!(config_.use_datagram_transport ||
+        config_.use_datagram_transport_for_data_channels)) {
     return absl::nullopt;
   }
 

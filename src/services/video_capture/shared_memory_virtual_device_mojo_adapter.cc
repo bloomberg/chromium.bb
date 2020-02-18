@@ -29,11 +29,9 @@ void OnNewBufferAcknowleged(
 namespace video_capture {
 
 SharedMemoryVirtualDeviceMojoAdapter::SharedMemoryVirtualDeviceMojoAdapter(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     mojom::ProducerPtr producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors)
-    : service_ref_(std::move(service_ref)),
-      producer_(std::move(producer)),
+    : producer_(std::move(producer)),
       send_buffer_handles_to_producer_as_raw_file_descriptors_(
           send_buffer_handles_to_producer_as_raw_file_descriptors),
       buffer_pool_(new media::VideoCaptureBufferPoolImpl(
@@ -90,8 +88,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
       media::mojom::VideoBufferHandlePtr buffer_handle =
           media::mojom::VideoBufferHandle::New();
       buffer_handle->set_shared_buffer_handle(
-          buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                        true /*read_only*/));
+          buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
       receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     }
     known_buffer_ids_.push_back(buffer_id);
@@ -105,8 +102,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
               buffer_id));
     } else {
       buffer_handle->set_shared_buffer_handle(
-          buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                        true /*read_only*/));
+          buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
     }
     // Invoke the response back only after the producer have acked
     // that it has received the newly created buffer. This is need
@@ -163,8 +159,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::Start(
     media::mojom::VideoBufferHandlePtr buffer_handle =
         media::mojom::VideoBufferHandle::New();
     buffer_handle->set_shared_buffer_handle(
-        buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                      true /*read_only*/));
+        buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
   }
 }

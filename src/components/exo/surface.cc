@@ -92,7 +92,6 @@ bool FormatHasAlpha(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
       return false;
     default:
       return true;
@@ -225,6 +224,15 @@ const std::string& GetApplicationId(aura::Window* window) {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
 
+ScopedSurface::ScopedSurface(Surface* surface, SurfaceObserver* observer)
+    : surface_(surface), observer_(observer) {
+  surface_->AddSurfaceObserver(observer_);
+}
+
+ScopedSurface::~ScopedSurface() {
+  surface_->RemoveSurfaceObserver(observer_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
 
@@ -265,11 +273,20 @@ Surface* Surface::AsSurface(const aura::Window* window) {
 }
 
 void Surface::Attach(Buffer* buffer) {
+  Attach(buffer, gfx::Vector2d());
+}
+
+void Surface::Attach(Buffer* buffer, gfx::Vector2d offset) {
   TRACE_EVENT2("exo", "Surface::Attach", "buffer_id",
                buffer ? buffer->gfx_buffer() : nullptr, "app_id",
                GetApplicationId(window_.get()));
   has_pending_contents_ = true;
   pending_buffer_.Reset(buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>());
+  pending_state_.offset = offset;
+}
+
+gfx::Vector2d Surface::GetBufferOffset() {
+  return state_.offset;
 }
 
 bool Surface::HasPendingAttachedBuffer() const {
@@ -351,9 +368,9 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
   TRACE_EVENT1("exo", "Surface::RemoveSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
 
-  window_->RemoveChild(sub_surface->window());
   if (sub_surface->window()->IsVisible())
     sub_surface->window()->Hide();
+  window_->RemoveChild(sub_surface->window());
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(

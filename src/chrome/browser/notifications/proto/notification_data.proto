@@ -21,6 +21,13 @@ enum ActionButtonType {
   UNHELPFUL = 2;
 }
 
+// Icon type.
+enum IconType {
+  UNKNOWN_ICON_TYPE = 0;
+  SMALL_ICON = 1;
+  LARGE_ICON = 2;
+}
+
 // Stores data used to display a notification in the UI.
 // Next tag: 6
 message NotificationData {
@@ -32,19 +39,24 @@ message NotificationData {
     optional string id = 3;
   }
 
+  message IconUuidBundle {
+    optional IconType type = 1;
+    optional string uuid = 2;
+  }
+
   // Title of the notification.
   optional string title = 1;
 
   // Body text of the notification.
   optional string message = 2;
 
-  // The unique identifiers of the icons on the notification. Each time we
-  // should only load icons asynchronously into memory.
-  repeated string icon_uuid = 3;
-
   // Custom data associated with a notification.
-  repeated CustomData custom_data = 4;
+  repeated CustomData custom_data = 3;
 
   // A list of buttons on the notification.
-  repeated Button buttons = 5;
+  repeated Button buttons = 4;
+
+  // A bundle of icons type and uuid, which must be loaded asynchronously into
+  // memory.
+  repeated IconUuidBundle icons_uuid = 5;
 }

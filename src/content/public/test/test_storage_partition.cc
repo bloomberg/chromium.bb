@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_storage_partition.h"
 
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -14,15 +15,6 @@ TestStoragePartition::~TestStoragePartition() {}
 
 base::FilePath TestStoragePartition::GetPath() {
   return file_path_;
-}
-
-net::URLRequestContextGetter* TestStoragePartition::GetURLRequestContext() {
-  return url_request_context_getter_;
-}
-
-net::URLRequestContextGetter*
-TestStoragePartition::GetMediaURLRequestContext() {
-  return media_url_request_context_getter_;
 }
 
 network::mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
@@ -55,7 +47,7 @@ void TestStoragePartition::CreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   NOTREACHED();
 }
 
@@ -123,6 +115,14 @@ ContentIndexContext* TestStoragePartition::GetContentIndexContext() {
   return content_index_context_;
 }
 
+leveldb_proto::ProtoDatabaseProvider*
+TestStoragePartition::GetProtoDatabaseProvider() {
+  return nullptr;
+}
+
+void TestStoragePartition::SetProtoDatabaseProvider(
+    std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider) {}
+
 #if !defined(OS_ANDROID)
 HostZoomMap* TestStoragePartition::GetHostZoomMap() {
   return host_zoom_map_;
@@ -160,12 +160,6 @@ void TestStoragePartition::ClearData(
     const base::Time end,
     base::OnceClosure callback) {}
 
-void TestStoragePartition::ClearHttpAndMediaCaches(
-    const base::Time begin,
-    const base::Time end,
-    const base::Callback<bool(const GURL&)>& url_matcher,
-    base::OnceClosure callback) {}
-
 void TestStoragePartition::ClearCodeCaches(
     const base::Time begin,
     const base::Time end,
@@ -181,5 +175,7 @@ void TestStoragePartition::ClearBluetoothAllowedDevicesMapForTesting() {}
 void TestStoragePartition::FlushNetworkInterfaceForTesting() {}
 
 void TestStoragePartition::WaitForDeletionTasksForTesting() {}
+
+void TestStoragePartition::WaitForCodeCacheShutdownForTesting() {}
 
 }  // namespace content

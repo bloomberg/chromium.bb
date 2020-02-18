@@ -51,7 +51,7 @@ class ChromeContentBrowserClientExtensionsPart
   static bool ShouldUseSpareRenderProcessHost(Profile* profile,
                                               const GURL& site_url);
   static bool DoesSiteRequireDedicatedProcess(
-      content::BrowserOrResourceContext browser_or_resource_context,
+      content::BrowserContext* browser_context,
       const GURL& effective_site_url);
   static bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                                  const GURL& effective_site_url);
@@ -68,10 +68,15 @@ class ChromeContentBrowserClientExtensionsPart
       content::SiteInstance* site_instance,
       const GURL& current_url,
       const GURL& new_url);
-  static bool AllowServiceWorker(const GURL& scope,
-                                 const GURL& first_party_url,
-                                 const GURL& script_url,
-                                 content::ResourceContext* context);
+  // TODO(crbug.com/824858): Remove the OnIO method.
+  static bool AllowServiceWorkerOnIO(const GURL& scope,
+                                     const GURL& first_party_url,
+                                     const GURL& script_url,
+                                     content::ResourceContext* context);
+  static bool AllowServiceWorkerOnUI(const GURL& scope,
+                                     const GURL& first_party_url,
+                                     const GURL& script_url,
+                                     content::BrowserContext* context);
   static void OverrideNavigationParams(
       content::SiteInstance* site_instance,
       ui::PageTransition* transition,
@@ -98,7 +103,8 @@ class ChromeContentBrowserClientExtensionsPart
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       const url::Origin& request_initiator);
 
   static bool IsBuiltinComponent(content::BrowserContext* browser_context,

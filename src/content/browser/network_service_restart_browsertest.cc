@@ -5,9 +5,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
+#include "base/test/scoped_environment_variable_override.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
@@ -21,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/browser/worker_host/test_shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -34,6 +38,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_test_support.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
@@ -41,7 +46,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -152,10 +156,7 @@ class ServiceWorkerStatusObserver : public ServiceWorkerContextCoreObserver {
 
 class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
  public:
-  NetworkServiceRestartBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
-  }
+  NetworkServiceRestartBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -304,7 +305,6 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
  private:
   mutable base::Lock last_request_lock_;
   std::string last_request_relative_url_ GUARDED_BY(last_request_lock_);
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceRestartBrowserTest);
 };
@@ -913,6 +913,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
+  InjectTestSharedWorkerService(partition);
+
   const GURL page_url =
       embedded_test_server()->GetURL("/workers/fetch_from_shared_worker.html");
   const GURL fetch_url = embedded_test_server()->GetURL("/echo");
@@ -926,10 +928,12 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
   EXPECT_EQ("Echo", EvalJs(shell(), script));
 
   // There should be one worker host. We will later wait for it to terminate.
-  SharedWorkerServiceImpl* service = partition->GetSharedWorkerService();
+  TestSharedWorkerServiceImpl* service =
+      static_cast<TestSharedWorkerServiceImpl*>(
+          partition->GetSharedWorkerService());
   EXPECT_EQ(1u, service->worker_hosts_.size());
   base::RunLoop loop;
-  service->SetWorkerTerminationCallbackForTesting(loop.QuitClosure());
+  service->SetWorkerTerminationCallback(loop.QuitClosure());
 
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
@@ -979,6 +983,52 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   network_usages = GetTotalNetworkUsages();
   EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
   EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id2));
+}
+
+// Make sure that kSSLKeyLogFileHistogram is correctly recorded when the
+// network service instance is started and the SSLKEYLOGFILE env var is set or
+// the "--ssl-key-log-file" arg is set.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, SSLKeyLogFileMetrics) {
+  if (IsInProcessNetworkService())
+    return;
+  // Actions on temporary files are blocking.
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  base::FilePath log_file_path;
+  base::CreateTemporaryFile(&log_file_path);
+
+#if defined(OS_WIN)
+  // On Windows, FilePath::value() returns base::string16, so convert.
+  std::string log_file_path_str = base::UTF16ToUTF8(log_file_path.value());
+#else
+  std::string log_file_path_str = log_file_path.value();
+#endif
+
+  // Test that env var causes the histogram to be recorded.
+  {
+    base::test::ScopedEnvironmentVariableOverride scoped_env("SSLKEYLOGFILE",
+                                                             log_file_path_str);
+    base::HistogramTester histograms;
+    // Restart network service to cause SSLKeyLogger to be re-initialized.
+    SimulateNetworkServiceCrash();
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kLogFileEnabled, 1);
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kEnvVarFound, 1);
+  }
+
+  // Test that the command-line switch causes the histogram to be recorded.
+  {
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchPath(
+        "ssl-key-log-file", log_file_path);
+    base::HistogramTester histograms;
+    // Restart network service to cause SSLKeyLogger to be re-initialized.
+    SimulateNetworkServiceCrash();
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kLogFileEnabled, 1);
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kSwitchFound, 1);
+  }
 }
 
 // Make sure |NetworkService::GetTotalNetworkUsages()| continues to work after

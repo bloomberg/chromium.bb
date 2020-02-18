@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/websockets/dom_websocket.h"
 
 #include <memory>
+#include <string>
 
 #include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/websockets/mock_websocket_channel.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -39,37 +41,6 @@ namespace {
 
 typedef testing::StrictMock<testing::MockFunction<void(int)>>
     Checkpoint;  // NOLINT
-
-class MockWebSocketChannel : public WebSocketChannel {
- public:
-  static MockWebSocketChannel* Create() {
-    return MakeGarbageCollected<testing::StrictMock<MockWebSocketChannel>>();
-  }
-
-  ~MockWebSocketChannel() override = default;
-
-  MOCK_METHOD2(Connect, bool(const KURL&, const String&));
-  MOCK_METHOD1(Send, void(const std::string&));
-  MOCK_METHOD3(Send, void(const DOMArrayBuffer&, unsigned, unsigned));
-  MOCK_METHOD1(SendMock, void(BlobDataHandle*));
-  void Send(scoped_refptr<BlobDataHandle> handle) override {
-    SendMock(handle.get());
-  }
-  MOCK_CONST_METHOD0(BufferedAmount, unsigned());
-  MOCK_METHOD2(Close, void(int, const String&));
-  MOCK_METHOD3(FailMock,
-               void(const String&,
-                    mojom::ConsoleMessageLevel,
-                    SourceLocation*));
-  void Fail(const String& reason,
-            mojom::ConsoleMessageLevel level,
-            std::unique_ptr<SourceLocation> location) override {
-    FailMock(reason, level, location.get());
-  }
-  MOCK_METHOD0(Disconnect, void());
-
-  MockWebSocketChannel() = default;
-};
 
 class DOMWebSocketWithMockChannel final : public DOMWebSocket {
  public:
@@ -335,31 +306,6 @@ TEST(DOMWebSocketTest, channelConnectFail) {
       "loaded over HTTPS.",
       scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
-}
-
-TEST(DOMWebSocketTest, isValidSubprotocolString) {
-  EXPECT_TRUE(DOMWebSocket::IsValidSubprotocolString("Helloworld!!"));
-  EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString("Hello, world!!"));
-  EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(String()));
-  EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(""));
-
-  const char kValidCharacters[] =
-      "!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`"
-      "abcdefghijklmnopqrstuvwxyz|~";
-  size_t length = strlen(kValidCharacters);
-  for (size_t i = 0; i < length; ++i) {
-    String s(kValidCharacters + i, 1u);
-    EXPECT_TRUE(DOMWebSocket::IsValidSubprotocolString(s));
-  }
-  for (size_t i = 0; i < 256; ++i) {
-    if (std::find(kValidCharacters, kValidCharacters + length,
-                  static_cast<char>(i)) != kValidCharacters + length) {
-      continue;
-    }
-    char to_check = char{i};
-    String s(&to_check, 1u);
-    EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(s));
-  }
 }
 
 TEST(DOMWebSocketTest, connectSuccess) {
@@ -705,7 +651,7 @@ TEST(DOMWebSocketTest, sendStringSuccess) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello"), _));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -728,7 +674,7 @@ TEST(DOMWebSocketTest, sendNonLatin1String) {
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(websocket_scope.Channel(),
-                Send(std::string("\xe7\x8b\x90\xe0\xa4\x94")));
+                Send(std::string("\xe7\x8b\x90\xe0\xa4\x94"), _));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -829,7 +775,7 @@ TEST(DOMWebSocketTest, sendArrayBufferSuccess) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(Ref(*view->buffer()), 0, 8));
+    EXPECT_CALL(websocket_scope.Channel(), Send(Ref(*view->buffer()), 0, 8, _));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -854,8 +800,8 @@ TEST(DOMWebSocketTest, bufferedAmountUpdated) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello")));
-    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("world")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello"), _));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("world"), _));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -884,7 +830,7 @@ TEST(DOMWebSocketTest, bufferedAmountUpdatedBeforeOnMessage) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello"), _));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());

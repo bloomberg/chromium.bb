@@ -90,10 +90,11 @@ class AudioOutputAuthorizationHandler::TraceScope {
     TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", event, this);
   }
 
-  void UsingSessionId(int session_id, const std::string& device_id) {
+  void UsingSessionId(const base::UnguessableToken& session_id,
+                      const std::string& device_id) {
     TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "Using session id", this,
-                                        "session id", session_id, "device id",
-                                        device_id);
+                                        "session id", session_id.ToString(),
+                                        "device id", device_id);
   }
 
   void CheckAccessStart(const std::string& device_id) {
@@ -144,7 +145,7 @@ AudioOutputAuthorizationHandler::~AudioOutputAuthorizationHandler() {
 
 void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
     int render_frame_id,
-    int session_id,
+    const base::UnguessableToken& session_id,
     const std::string& device_id,
     AuthorizationCompletedCallback cb) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -169,7 +170,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
       trace_scope->UsingSessionId(session_id, device->id);
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.
-      base::PostTaskWithTraitsAndReplyWithResult(
+      base::PostTaskAndReplyWithResult(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&GetMediaDeviceSaltAndOrigin, render_process_id_,
                          render_frame_id),
@@ -190,7 +191,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
 
   trace_scope->CheckAccessStart(device_id);
   // Check device permissions if nondefault device is requested.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckAccessOnUIThread, render_process_id_,
                      render_frame_id, override_permissions_,

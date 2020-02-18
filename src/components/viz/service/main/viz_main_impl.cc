@@ -9,12 +9,13 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/ui_devtools/buildflags.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -37,7 +38,7 @@ namespace {
 std::unique_ptr<base::Thread> CreateAndStartIOThread() {
   // TODO(sad): We do not need the IO thread once gpu has a separate process.
   // It should be possible to use |main_task_runner_| for doing IO tasks.
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
   // TODO(reveman): Remove this in favor of setting it explicitly for each
   // type of process.
   if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
@@ -81,8 +82,13 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   if (!dependencies_.io_thread_task_runner)
     io_thread_ = CreateAndStartIOThread();
   if (dependencies_.create_display_compositor) {
-    viz_compositor_thread_runner_ = std::make_unique<VizCompositorThreadRunner>(
-        gpu_init_->gpu_preferences().message_loop_type);
+    if (dependencies.viz_compositor_thread_runner) {
+      viz_compositor_thread_runner_ = dependencies.viz_compositor_thread_runner;
+    } else {
+      viz_compositor_thread_runner_impl_ =
+          std::make_unique<VizCompositorThreadRunnerImpl>();
+      viz_compositor_thread_runner_ = viz_compositor_thread_runner_impl_.get();
+    }
     if (delegate_) {
       delegate_->PostCompositorThreadCreated(
           viz_compositor_thread_runner_->task_runner());
@@ -115,11 +121,14 @@ VizMainImpl::~VizMainImpl() {
   // need to process commands from the host as it is shutting down.
   receiver_.reset();
 
-  // If the VizCompositorThread was started then this will block until the
-  // thread has been shutdown. All RootCompositorFrameSinks must be destroyed
-  // before now, otherwise the compositor thread will deadlock waiting for a
-  // response from the blocked GPU thread.
-  viz_compositor_thread_runner_.reset();
+  // If the VizCompositorThread was started and owned by VizMainImpl, then this
+  // will block until the thread has been shutdown. All RootCompositorFrameSinks
+  // must be destroyed before now, otherwise the compositor thread will deadlock
+  // waiting for a response from the blocked GPU thread.
+  // For the non-owned case for Android WebView, Viz does not communicate with
+  // this thread so there is no need to shutdown viz first.
+  viz_compositor_thread_runner_ = nullptr;
+  viz_compositor_thread_runner_impl_.reset();
 
   if (ukm_recorder_)
     ukm::DelegatingUkmRecorder::Get()->RemoveDelegate(ukm_recorder_.get());
@@ -267,7 +276,7 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
 }
 
 void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   viz_compositor_thread_runner_->CreateVizDevTools(std::move(params));
 #endif
 }

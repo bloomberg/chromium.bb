@@ -430,6 +430,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void RecalcInlineChildrenVisualOverflow();
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
+  PositionWithAffinity PositionForPoint(const LayoutObject& offset_parent,
+                                        const PhysicalOffset& offset) const;
 
   LayoutUnit LowestFloatLogicalBottom(EClear = EClear::kBoth) const;
 
@@ -443,10 +445,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   LayoutUnit LogicalHeightWithVisibleOverflow() const final;
 
-  // This function is only public so we can call it from NGBlockNode while we're
-  // still working on LayoutNG.
-  void UpdateIsSelfCollapsing() {
-    is_self_collapsing_ = CheckIfIsSelfCollapsingBlock();
+  void SetIsSelfCollapsingFromNG(bool is_self_collapsing) {
+    is_self_collapsing_ = is_self_collapsing;
   }
 
   // These functions are only public so we can call it from NGBlockNode while

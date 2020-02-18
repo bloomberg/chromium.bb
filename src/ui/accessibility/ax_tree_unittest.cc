@@ -1019,7 +1019,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("busy changed to true", change_log[3]);
   EXPECT_EQ("minValueForRange changed from 1 to 2", change_log[4]);
   EXPECT_EQ("maxValueForRange changed from 10 to 9", change_log[5]);
-  EXPECT_EQ("stepValueForRange changed from 3 to .5", change_log[6]);
+  EXPECT_EQ("stepValueForRange changed from 3 to 0.5", change_log[6]);
   EXPECT_EQ("scrollX changed from 5 to 6", change_log[7]);
   EXPECT_EQ("scrollXMin changed from 1 to 2", change_log[8]);
 
@@ -1051,7 +1051,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("busy changed to false", change_log2[3]);
   EXPECT_EQ("modal changed to true", change_log2[4]);
   EXPECT_EQ("minValueForRange changed from 2 to 0", change_log2[5]);
-  EXPECT_EQ("stepValueForRange changed from 3 to .5", change_log[6]);
+  EXPECT_EQ("stepValueForRange changed from 3 to 0.5", change_log[6]);
   EXPECT_EQ("valueForRange changed from 0 to 5", change_log2[7]);
   EXPECT_EQ("scrollXMin changed from 2 to 0", change_log2[8]);
   EXPECT_EQ("scrollX changed from 6 to 7", change_log2[9]);
@@ -1195,7 +1195,8 @@ TEST(AXTreeTest, GetBoundsWithTransform) {
   tree_update.nodes.resize(3);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 400, 300);
-  tree_update.nodes[0].relative_bounds.transform.reset(new gfx::Transform());
+  tree_update.nodes[0].relative_bounds.transform =
+      std::make_unique<gfx::Transform>();
   tree_update.nodes[0].relative_bounds.transform->Scale(2.0, 2.0);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[0].child_ids.push_back(3);
@@ -1203,7 +1204,8 @@ TEST(AXTreeTest, GetBoundsWithTransform) {
   tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(20, 10, 50, 5);
   tree_update.nodes[2].id = 3;
   tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(20, 30, 50, 5);
-  tree_update.nodes[2].relative_bounds.transform.reset(new gfx::Transform());
+  tree_update.nodes[2].relative_bounds.transform =
+      std::make_unique<gfx::Transform>();
   tree_update.nodes[2].relative_bounds.transform->Scale(2.0, 2.0);
 
   AXTree tree(tree_update);
@@ -1923,7 +1925,7 @@ TEST(AXTreeTest, UnignoredAccessors) {
   //     |      |   |
   //     13(i)  14  15
   //     |      |
-  //     16     17
+  //     16     17(i)
   tree_update.root_id = 1;
   tree_update.nodes.resize(17);
   tree_update.nodes[0].id = 1;
@@ -2230,9 +2232,9 @@ TEST(AXTreeTest, UnignoredSelection) {
   AXNodePosition::SetTree(&tree);
   AXTree::Selection unignored_selection = tree.GetUnignoredSelection();
 
-  EXPECT_EQ(-1, unignored_selection.anchor_object_id);
+  EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.anchor_object_id);
   EXPECT_EQ(-1, unignored_selection.anchor_offset);
-  EXPECT_EQ(-1, unignored_selection.focus_object_id);
+  EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.focus_object_id);
   EXPECT_EQ(-1, unignored_selection.focus_offset);
   struct SelectionData {
     int32_t anchor_id;
@@ -2958,6 +2960,8 @@ TEST(AXTreeTest, TestSetSizePosInSetRadioButtons) {
   tree_update.nodes.resize(13);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].child_ids = {2, 3, 4, 10, 13};
+  // This test passes because the root node is a kRadioGroup.
+  tree_update.nodes[0].role = ax::mojom::Role::kRadioGroup;  // Setsize = 5;
 
   // Radio buttons are not required to be contained within an ordered set.
   tree_update.nodes[1].id = 2;
@@ -3335,6 +3339,60 @@ TEST(AXTreeTest, TestSetSizePosInSetPopUpButton) {
   // that it wraps has a SetSize of 2.
   AXNode* popup_button_2 = tree.GetFromId(3);
   EXPECT_OPTIONAL_EQ(2, popup_button_2->GetSetSize());
+}
+
+// Tests that PosInSet and SetSize are still correctly calculated when there
+// are nodes with role of kUnknown layered between items and ordered set.
+TEST(AXTreeTest, TestSetSizePosInSetUnkown) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[0].role = ax::mojom::Role::kMenu;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kUnknown;
+  initial_state.nodes[1].child_ids = {3};
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kUnknown;
+  initial_state.nodes[2].child_ids = {4, 5};
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kMenuItem;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kMenuItem;
+  AXTree tree(initial_state);
+
+  AXNode* menu = tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(2, menu->GetSetSize());
+  AXNode* item1 = tree.GetFromId(4);
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item1->GetSetSize());
+  AXNode* item2 = tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(2, item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
+}
+
+TEST(AXTreeTest, TestSetSizePosInSetMenuItemValidChildOfMenuListPopup) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[0].role = ax::mojom::Role::kMenuListPopup;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kMenuItem;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kMenuListOption;
+  AXTree tree(initial_state);
+
+  AXNode* menu = tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(2, menu->GetSetSize());
+  AXNode* item1 = tree.GetFromId(2);
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item1->GetSetSize());
+  AXNode* item2 = tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(2, item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
 }
 
 TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {

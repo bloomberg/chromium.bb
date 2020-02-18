@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
 
@@ -45,7 +45,7 @@ class CheckActiveWebContentsMenuModel : public ui::MenuModel {
   }
   bool IsItemCheckedAt(int index) const override { return false; }
   int GetGroupIdAt(int index) const override { return 0; }
-  bool GetIconAt(int index, gfx::Image* icon) override { return false; }
+  bool GetIconAt(int index, gfx::Image* icon) const override { return false; }
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return nullptr;
   }
@@ -66,7 +66,7 @@ class TestParentView : public views::View {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = context;
     widget_ = std::make_unique<views::Widget>();
-    widget_->Init(params);
+    widget_->Init(std::move(params));
   }
   ~TestParentView() override = default;
 

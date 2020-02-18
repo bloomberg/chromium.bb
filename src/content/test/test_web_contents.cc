@@ -50,7 +50,8 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
       expect_set_history_offset_and_length_(false),
       expect_set_history_offset_and_length_history_length_(0),
       pause_subresource_loading_called_(false),
-      audio_group_id_(base::UnguessableToken::Create()) {
+      audio_group_id_(base::UnguessableToken::Create()),
+      is_connected_to_bluetooth_device_(false) {
   if (!RenderProcessHostImpl::get_render_process_host_factory_for_testing()) {
     // Most unit tests should prefer to create a generic MockRenderProcessHost
     // (instead of a real RenderProcessHostImpl).  Tests that need to use a
@@ -374,6 +375,7 @@ void TestWebContents::SetHttpResponseHeaders(
     NavigationHandle* navigation_handle,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
   static_cast<NavigationHandleImpl*>(navigation_handle)
+      ->navigation_request()
       ->set_response_headers_for_testing(response_headers);
 }
 
@@ -419,10 +421,11 @@ void TestWebContents::SaveFrameWithHeaders(
   suggested_filename_ = suggested_filename;
 }
 
-std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
 TestWebContents::PauseSubresourceLoading() {
   pause_subresource_loading_called_ = true;
-  return std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>();
+  return std::vector<
+      mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>();
 }
 
 bool TestWebContents::GetPauseSubresourceLoadingCalled() {
@@ -439,6 +442,16 @@ void TestWebContents::SetPageImportanceSignals(PageImportanceSignals signals) {
 
 void TestWebContents::SetLastActiveTime(base::TimeTicks last_active_time) {
   last_active_time_ = last_active_time;
+}
+
+void TestWebContents::SetIsConnectedToBluetoothDevice(
+    bool is_connected_to_bluetooth_device) {
+  is_connected_to_bluetooth_device_ = is_connected_to_bluetooth_device;
+}
+
+bool TestWebContents::IsConnectedToBluetoothDevice() {
+  return is_connected_to_bluetooth_device_ ||
+         WebContentsImpl::IsConnectedToBluetoothDevice();
 }
 
 base::UnguessableToken TestWebContents::GetAudioGroupId() {

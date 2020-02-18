@@ -156,8 +156,8 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for welcome page.">
     Connect to your phone
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chromebook; includes details on specific features that can be used and a link to an information page">
-    Your Chromebook and Android phone work better together. Connect them so you can text from your computer, share your internet connection, and unlock your Chromebook with your phone.<ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$2<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chrome OS device; includes details on specific features that can be used and a link to an information page">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> and Android phone work better together. Connect them so you can text from your computer, share your internet connection, and unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone.<ph name="FOOTNOTE_POINTER">$2<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$3<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE" desc="Footnote for multi-device feature setup page, which indicates that the exact set of features available to users differs according to the device model used.">
     <ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph>Features vary by device
@@ -169,7 +169,7 @@
     Select a device
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER" desc="Header to introduce a list of the features that the user is agreeing to in the multi-device setup.">
-    When you connect your devices, you agree that your Chromebook can:
+    When you connect your devices, you agree that your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can:
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION" desc="Description of a feature that shows text messages received by the user's phone as notification on their Chromebook and a link to an information page.">
     Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN">&lt;a href="$1<ex>https://support.google.com/chromebook/?p=messages</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
@@ -213,11 +213,26 @@
   <message name="IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry a step during cellular setup">
     Try again
   </message>
-  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE" desc="Title for first screen of cellular setup during which ChromeOS is preparing the cellular device for setup." translateable="false">
-    Sim Detect Page
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE" desc="Title for first screen of cellular setup during which ChromeOS is preparing the cellular device for setup.">
+    Preparing to setup your cellular device...
   </message>
-  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_TITLE" desc="Title for cellular setup step in which the user uses the embedded carrier provisioning portal to make payment and activate the device." translateable="false">
-    Provisioning Page
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_TITLE" desc="Title for cellular setup when Chrome OS encounters an error preparing the cellular device for setup.">
+    We couldn't detect your SIM card
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_MESSAGE" desc="Message displayed under title in cellular setup when Chrome OS encounters an error preparing the cellular device for setup. Prompts user to insert SIM and try again.">
+    Please insert your SIM and try again
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_LOADING_TITLE" desc="Title for cellular setup step which indicates that a connection is in progress to the user's mobile data provider (e.g., Verizon).">
+    Connecting to <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_TITLE" desc="Title for cellular setup step which indicates that the Chromebook was unable to establish a connection to the user's mobile data provider (e.g., Verizon).">
+    Couldn't connect to <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_MESSAGE" desc="Message for the cellular setup step which indicates that the Chromebook was unable to establish a connection to the user's mobile data provider (e.g., Verizon).">
+    Please try again. For technical support, contact <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ACTIVE_TITLE" desc="Title for cellular setup step which indicates that the Chromebook is in the process of connecting to a mobile network.">
+    Connect to mobile network
   </message>
   <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_TITLE" desc="Title for the final success screen of cellular setup that tells the user that setup is completed but service is being activated">
     Mobile data being activated
@@ -1038,176 +1053,8 @@
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
     You may also skip signing in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_TITLE" desc="Supervised user dialog, intro page, title">
-    What is a supervised user?
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_ALTERNATE_TEXT" desc="Supervised user dialog, intro page, first paragraph">
-    A supervised user can explore the web with your guidance. As the manager of a supervised user, you can
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>allow or prohibit<ph name="END_BOLD">&lt;/strong&gt;</ph> certain websites,
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>review<ph name="END_BOLD">&lt;/strong&gt;</ph> websites the supervised user has visited, and
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>manage<ph name="END_BOLD">&lt;/strong&gt;</ph> other settings.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_1" desc="Supervised user dialog, intro page, first paragraph">
-    A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_MANAGER_ITEM_1" desc="Supervised user dialog, intro page, options available to manager">
-    allow or prohibit certain websites,
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_MANAGER_ITEM_2" desc="Supervised user dialog, intro page, options available to manager">
-    review websites the supervised user has visited, and
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_MANAGER_ITEM_3" desc="Supervised user dialog, intro page, options available to manager">
-    manage other settings
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_2" desc="Supervised user dialog, intro page, second paragraph">
-    Creating a supervised user does not create a Google Account, and their settings
-    and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_INTRO_TEXT_3" desc="Supervised user dialog, intro page, third paragraph">
-    After you create a new supervised user, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PICK_MANAGER_TITLE" desc="Supervised user dialog, manager selection page, title of the page">
-    Choose the manager for this supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PICK_MANAGER_EXPLANATION" desc="Supervised user dialog, manager selection page, explanation of the page">
-    The manager will be able to configure restrictions and settings for this supervised user at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_MANAGER_PASSWORD_HINT" desc="Supervised user dialog, manager selection page, text shown as a hint in the user password field.">
-    Enter password
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SETUP_ACCESSIBLE_TITLE" desc="Text to be spoken on opening supervised user creation username and password set-up dialog.">
-    Set up new supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Supervised user dialog, new user page, title for name of new user">
-    Create a name -
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ACCOUNT_NAME_EXPLANATION" desc="Supervised user dialog, new user page, explanation for name of new user">
-    This supervised user will be managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ACCOUNT_NAME_HINT" desc="Text shown as a hint in the new user name field in supervised user creation dialog.">
-    Enter new name
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_TITLE" desc="Supervised user dialog, new user page, title for password for new user.">
-    Create a password -
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_EXPLANATION" desc="Supervised user dialog, new user page, explanation for password for new user.">
-    The supervised user will need to use this password to sign in, so choose a safe password and remember to discuss it with the supervised user.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_HINT" desc="Text shown as a hint in the password field in supervised user creation dialog.">
-    Enter password
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_CONFIRM_HINT" desc="Text shown as a hint in the password confirmation field in supervised user creation dialog.">
-    Confirm password
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_CONTINUE_BUTTON_TEXT" desc="Text shown on continue button in supervised user creation dialog.">
-    Continue
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_START_BUTTON_TEXT" desc="Text shown on start button in supervised user creation dialog.">
-    Create supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_NEXT_BUTTON_TEXT" desc="Text shown on next button in supervised user creation dialog.">
-    Next
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PREVIOUS_BUTTON_TEXT" desc="Text shown on previous button in supervised user creation dialog.">
-    Previous
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_1" desc="Supervised user dialog, getting started page 1, paragraph 1">
-    A supervised user named <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> has been created.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_2" desc="Supervised user dialog, getting started page 1, paragraph 2">
-    To set which websites the supervised user can view, you can configure restrictions
-    and settings by visiting <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
-    If you do not change the default settings, <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph>
-    can browse all sites on the web.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_3" desc="Supervised user dialog, getting started page 1, paragraph 3">
-    Please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_GOT_IT_BUTTON_TITLE" desc="Text for button on a screen with successful supervised user creation text">
-    Got it!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_HANDLE_ERROR_BUTTON_TEXT" desc="Text for button on an error screen that closes supervised user creation dialog">
-    Okay
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in supervised user creation dialog when local account with suggested name already exists on a device.">
-    Whoops, this name is already in use!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_ILLEGAL_USERNAME" desc="Error text shown in supervised user creation dialog when suggested name contains illegal characters (e.g. html tags).">
-    Whoops, illegal symbols in name!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_MISMATCH_ERROR" desc="Error text shown in supervised user creation dialog when typed passwords does not match.">
-    Whoops, passwords do not match!
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATE_PASSWORD_TOO_SHORT" desc="Error text shown in supervised user creation dialog when typed password is too short.">
-    Password is too short.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_PASSWORD_ERROR" desc="Error text shown in supervised user creation dialog when manager password is incorrect.">
-    Incorrect password.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE_TITLE" desc="Supervised user dialog, error page, manager account is in inconsistent state, title">
-    Oops, something went wrong
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE" desc="Supervised user dialog, error page, manager account is in inconsistent state, text">
-    To recover from this error, you will need to sign in to your Google Account
-    from the sign-in screen. You can then sign out of your Google Account and
-    try creating a supervised user again.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE_BUTTON" desc="Supervised user dialog, error page, manager account is in inconsistent state, button title">
-    OK, Take me back to sign-in screen
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR_TITLE" desc="Supervised user dialog, error page, tpm error during creation, title">
-    Oops, TPM error.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR" desc="Supervised user dialog, error page, tpm error during creation, text">
-    Something is wrong with device.  To recover from this error you will need to reboot device and try again.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR_BUTTON" desc="Supervised user dialog, error page, tpm error during creation, button title">
-    OK
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_TITLE" desc="Supervised user dialog, error page, secure module error during creation, title">
-    Oops, secure module error.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR" desc="Supervised user dialog, error page, secure module error during creation, text">
-    Something is wrong with device.  To recover from this error you will need to reboot device and try again.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_BUTTON" desc="Supervised user dialog, error page, secure module error during creation, button title">
-    OK
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE" desc="Supervised user dialog, error page, generic error during creation, title">
-    Oops, something went wrong
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR" desc="Supervised user dialog, error page, generic error during creation, text">
-    Due to an error, a supervised user was not created. Please try again later.
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON" desc="Supervised user dialog, error page, generic error during creation, button title">
-    OK
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE" desc="Text for button on an error reporting screen for supervised user creation, that is used to abort whole operation">
-    Cancel
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE" desc="Text for button on an error reporting screen for supervised user creation, that is used to retry failed operation">
-    Retry
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_AUTH_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon manager authentication.">
-    Authenticating
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_CREATION_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon supervised user creation.">
-    Creating supervised user
-  </message>
-  <message name="IDS_CREATE_SUPERVISED_USER_CREATION_CREATION_TIMEOUT_MESSAGE" desc="Text shown at the place of progess indicator if creation takes too long and should be cancelled.">
-    This is taking much longer than usual. You can keep waiting, or cancel and try again later.
-  </message>
   <message name="IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING" desc="Warning text that is shown on login screen trying to sign in as a supervised user that has expired token">
     This supervised user may have been deleted or disabled by the manager. Please contact the manager if you would like to continue signing in as this user.
-  </message>
-  <message name="IDS_SUPERVISED_USER_IMPORT_USER_EXIST" desc="In list of supervised users eligible for import, this text indicates that user already is already imported on device.">
-    <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> (already on this device)
-  </message>
-  <message name="IDS_SUPERVISED_USER_IMPORT_USERNAME_EXIST" desc="In list of supervised users eligible for import, this text indicates that another supervised user with same name already exists on device.">
-    <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> (name used on this device)
-  </message>
-  <message name="IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT" desc="Text shown in notification bubble when user enters name of user that can be imported.">
-    Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>import <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph> to this device<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>?
   </message>
   <!-- Supervised users deprecation notifications -->
   <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE" desc="Title of notification displayed on supervised user login indicating that the feature is expiring soon.">
@@ -1229,31 +1076,31 @@
     Battery isn't charging
   </message>
   <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE" desc="The message of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
-    To charge this Chromebook, use a battery from the same brand.
+    To charge this Chromebook, use a compatible Dell battery.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE" desc="The title of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
     Power adapter issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE" desc="The message of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
-    Please use a USB Type-C power adapter or an adapter from the same brand as your Chromebook.
+    To avoid charging and performance issues, use a compatible Dell or USB Type-C power adapter.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE" desc="The title of the notification shown to inform the user that attached dock is incompatible.">
-    Not all features on this dock are supported
+    Dock isn't fully compatible
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE" desc="The message of the notification shown to inform the user that attached dock is incompatible.">
-    Use a docking station designed to work with this Chromebook.
+    To get additional features, use a Dell docking station designed to work with this Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE" desc="The title of the notification shown to inform the user that attached dock presents hardware failures.">
-    Dock has an issue
+    Dock fan needs service
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE" desc="The message of the notification shown to inform the user that attached dock presents hardware failures.">
-    Your dock needs to be serviced. Without a working fan your dock will shut down.
+    Contact Dell for service. The dock will shut down if the fan isn't working.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE" desc="The title of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
-    Display connected to the dock has an issue
+    Dock video-port issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE" desc="The message of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
-    Your dock's HDMI port can't be used when the USB Type-C port is used for video output. Please use a different port for one of the displays.
+    HDMI and USB Type-C ports can't be used for video at the same time. Use a different video port.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE" desc="The title of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
     Thunderbolt is not supported
@@ -1387,6 +1234,12 @@
   </message>
   <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_MIGRATION_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view for Chrome OS Secondary Accounts that have not been migrated to Chrome OS Account Manager.">
     Account update required
+  </message>
+  <message name="IDS_CHALLENGE_RESPONSE_AUTH_MULTIPLE_CLIENT_CERTS_ERROR" desc="Error message shown when multiple client certificates were used during the challenge-response based authentication.">
+    Multiple client certificates are not supported
+  </message>
+  <message name="IDS_CHALLENGE_RESPONSE_AUTH_INVALID_CLIENT_CERT_ERROR" desc="Error message shown when client certificate attributes extraction failed during the challenge-response based authentication.">
+    Invalid client certificate
   </message>
 
   <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
@@ -1777,9 +1630,6 @@
   <message name="IDS_NETWORK_TYPE_METERED_WIFI" desc="Label for metered Wi-Fi networks (i.e., Wi-Fi networks which have resticted data usage such as a monthly limit).">
     metered Wi-Fi
   </message>
-  <message name="IDS_NETWORK_TYPE_WIMAX" desc="Label for WiMAX networks.">
-    WiMAX
-  </message>
   <message name="IDS_NETWORK_TYPE_BLUETOOTH" desc="Label for Bluetooth networks.">
     Bluetooth
   </message>
@@ -1856,10 +1706,10 @@
     Removable device detected
   </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to the Files app. If user clicks a button in the notification, the Files app opens.">
-    Explore the device's content in the Files app.
+    Explore the device’s content in the Files app.
   </message>
   <message name="IDS_REMOVABLE_DEVICE_ALLOW_PLAY_STORE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
-    Allow Play Store applications to access this device via Settings.
+    For device preferences, go to Settings.
   </message>
   <message name="IDS_REMOVABLE_DEVICE_PLAY_STORE_APPS_HAVE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
     Play Store applications have access to this device.
@@ -3252,16 +3102,13 @@
     Your Assistant is ready
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for Assistant ready screen.">
-    When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
+    When your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
   </message>
   <message name="IDS_ASSISTANT_DONE_BUTTON" desc="Done button for asssitant optin flow.">
     Done
-  </message>
-  <message name="IDS_ASSISTANT_HOTWORD_NOTIFICATION_TITLE" desc="Title for assistant hotword enable notification.">
-    Turn on 'Ok Google'
   </message>
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
@@ -3328,13 +3175,16 @@
   <message name="IDS_ASSISTANT_WAIT_MESSAGE" desc="Wait message for asssitant optin flow.">
     Please wait...
   </message>
+  <message name="IDS_ASSISTANT_OOBE_POPUP_OVERLAY_LOADING" desc="Loading message shown while the content of popup overlay is being downloaded.">
+    Loading...
+  </message>
 
   <!-- Supervision transition OOBE screen. -->
   <message name="IDS_REMOVING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when stopping supervision.">
     Stopping supervision...
   </message>
   <message name="IDS_ADDING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when adding supervision.">
-    Setting up supervision...
+    Setting up supervision
   </message>
   <message name="IDS_SUPERVISION_TRANSITION_MESSAGE" desc="Introduction message for the supervision transition OOBE screen.">
     Keep device turned on
@@ -3354,13 +3204,25 @@
     Print
   </message>
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">
-    Now printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Printing
   </message>
   <message name="IDS_PRINT_JOB_DONE_NOTIFICATION_TITLE" desc="Title of the successful printing notification.">
-    Successfully printed <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Printing complete
   </message>
   <message name="IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
-    Error printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Couldn't print. Check printer and try again.
+  </message>
+  <message name="IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Paper is jammed
+  </message>
+  <message name="IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Out of ink
+  </message>
+  <message name="IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Out of paper
+  </message>
+  <message name="IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Printer door open
   </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_MESSAGE" desc="Message of the print job notification.">
     <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
@@ -3370,12 +3232,6 @@
   </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button for the user to cancel the current print job.">
     Cancel printing
-  </message>
-  <message name="IDS_PRINT_JOB_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button for the user to pause the current print job.">
-    Pause printing
-  </message>
-  <message name="IDS_PRINT_JOB_NOTIFICATION_RESUME_BUTTON" desc="Text on the button for the user to resume the current print job.">
-    Resume printing
   </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_GET_HELP_BUTTON" desc="Text on the button for the user to get help about the current print job.">
     Get help
@@ -3537,10 +3393,7 @@
   <message name="IDS_CROSTINI_INSTALLER_ERROR_TITLE" desc="Title of the Crostini installer when an error occurs.">
     Error installing Linux...
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_COMPLETE" desc="Text shown in the Crostini installer dialog when installation is complete.">
-    Linux installation is complete.
-  </message>
-    <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM component is loading">
+  <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM component is loading">
     This process may take a few minutes. Downloading the virtual machine.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM service is starting">
@@ -3629,6 +3482,9 @@
   </message>
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE" desc="Source of the Notification for Linux package installation.">
     Linux installer
+  </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_QUEUED_TITLE" desc="Title of the Notification when an Linux application is queued waiting for other operations to finish.">
+    Install pending
   </message>
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_IN_PROGRESS_TITLE" desc="Title of the Notification for an in-progress Linux package installation.">
     Installation in progress
@@ -3723,8 +3579,14 @@
   <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING" desc="Title displayed in the notification while export (backup) of the Linux container is in progress.">
     Backing up Linux apps &amp; files
   </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLING" desc="Title displayed in the notification while export (backup) of the Linux container is being cancelled.">
+    Cancelling Linux backup
+  </message>
   <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE" desc="Title displayed in the notification when export (backup) of the Linux container is complete.">
     Backup complete
+  </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLED" desc="Title displayed in the notification when export (backup) of the Linux container has been cancelled.">
+    Linux backup cancelled
   </message>
   <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE" desc="Message displayed in the notification when export (backup) of the Linux container is complete.">
     Linux apps &amp; files have been successfully backed up
@@ -3741,8 +3603,14 @@
   <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING" desc="Title displayed in the notification while import (restore) of the Linux container is in progress.">
     Restoring Linux apps &amp; files
   </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLING" desc="Title displayed in the notification while import (restore) of the Linux container is being cancelled.">
+    Cancelling Linux restore
+  </message>
   <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE" desc="Title displayed in the notification when import (restore) of the Linux container is complete.">
     Restore complete
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLED" desc="Title displayed in the notification when import (restore) of the Linux container has been cancelled.">
+    Linux restore cancelled
   </message>
   <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE" desc="Message displayed in the notification when import (restore) of the Linux container is complete.">
     Linux apps &amp; files have been successfully replaced
@@ -4112,10 +3980,10 @@
     Add Supervision
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_HEADING" desc="Heading string shown in the Add Supervision page when the network is not available.">
-    Network not available
+    Can’t connect to the internet
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_DESCRIPTION" desc="Description shown in the Add Supervision page when the network is not available.">
-    Please check your network connection and retry.
+    Check your internet connection
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_BUTTON_LABEL" desc="Label of the button shown on the Add Supervision page when the network is not available.">
     Close
@@ -4123,13 +3991,15 @@
   <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_TITLE" desc="Title for the dialog shown when attempting to exit the Add Supervision screen.">
     Are you sure you want to exit?
   </message>
-  <!-- TODO(danan):  Add final string and remove untranslateable -->
-  <message translateable="false" name="IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY" desc="Body for the dialog shown when attempting to exit the Add Supervision screen.">
-    Supervision is already set up for <ph name="USER_FIRST_NAME">$1<ex>John</ex></ph>'s Google Account.
-You can always stop supervision from the Famly Link app. We've sent instructions to you in an email that explains how to install Family Link.
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_BODY" desc="Body for the dialog shown when attempting to exit the Add Supervision screen.">
+Supervision is set up for this Google Account. To set up more parental controls, select Continue.
+
+Otherwise, sign out now so that the changes to this account will be reflected on this device.
+
+You can manage this account’s settings by installing the Family Link app on your device.  We sent you instructions in an email.
   </message>
-  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL" desc="Label for the cancel button on the dialog shown when attempting to exit the Add Supervision screen.">
-    Cancel
+  <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL" desc="Label for the cancel button on the dialog shown when attempting to exit the Add Supervision screen. 'Continue' means to continue setting up supervision, rather than exiting the dialog">
+    Continue
   </message>
   <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_SIGNOUT_BUTTON_LABEL" desc="Label for the signout button on the dialog shown when attempting to exit the Add Supervision screen.">
     Sign out
@@ -4146,5 +4016,24 @@ You can always stop supervision from the Famly Link app. We've sent instructions
   <!-- Strings for login screen extension UI -->
   <message name="IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE" desc="Dialog title for windows opened from a login screen extension. These windows will be displayed over the login screen.">
     This authentication service is hosted by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
+  </message>
+
+  <!-- Strings for notifications about features which aren't supported in Crostini -->
+  <message name="IDS_CROSTINI_UNSUPPORTED_VIRTUAL_KEYBOARD" desc="Text for notification message shown when a user tries to use a virtual keyboard or tablet mode in a Linux app.">
+    The on-screen keyboard doesn’t work in Linux apps yet
+  </message>
+  <message name="IDS_CROSTINI_UNSUPPORTED_IME" desc="Text for notification message shown when a user tries to use an unsupported Input Method Editor (IME) in a Linux app.">
+    <ph name="IME_NAME">$1<ex>German NEO 2 keyboard</ex></ph> doesn’t work in Linux apps yet
+  </message>
+
+  <!-- Strings for the security token PIN dialog shown during SAML user sign-in. -->
+  <message name="IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TITLE" desc="Title on the security token PIN input dialog during the SAML user sign-in.">
+    Enter your PIN
+  </message>
+  <message name="IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_SUBTITLE" desc="Subtitle on the security token PIN input dialog during the SAML user sign-in.">
+    Provide the PIN that’s associated with your smart card.
+  </message>
+  <message name="IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TRY_AGAIN" desc="Message asking the user to try again in the security token PIN input dialog during the SAML sign-in.">
+    Please try again.
   </message>
 </grit-part>

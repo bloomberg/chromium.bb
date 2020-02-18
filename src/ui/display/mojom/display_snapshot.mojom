@@ -7,8 +7,8 @@ module display.mojom;
 import "mojo/public/mojom/base/file_path.mojom";
 import "ui/display/mojom/display_constants.mojom";
 import "ui/display/mojom/display_mode.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 // Corresponds to display::DisplaySnapshot.
 struct DisplaySnapshot {
@@ -21,9 +21,11 @@ struct DisplaySnapshot {
   bool has_color_correction_matrix;
   bool color_correction_in_linear_space;
   gfx.mojom.ColorSpace color_space;
+  uint32 bits_per_channel;
   string display_name;
   mojo_base.mojom.FilePath sys_path;
   array<display.mojom.DisplayMode> modes;
+  display.mojom.PanelOrientation panel_orientation;
   array<uint8> edid;
   uint64 current_mode_index;
   bool has_current_mode;

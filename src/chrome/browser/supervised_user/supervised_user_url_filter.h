@@ -15,17 +15,13 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
+#include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/safe_search_api/url_checker.h"
-#include "components/supervised_user_error_page/supervised_user_error_page.h"
 
 class GURL;
 class SupervisedUserBlacklist;
-
-namespace signin {
-class IdentityManager;
-}
 
 namespace base {
 class TaskRunner;
@@ -156,8 +152,7 @@ class SupervisedUserURLFilter {
 
   // Initializes the experimental asynchronous checker.
   void InitAsyncURLChecker(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      signin::IdentityManager* identity_manager);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Clears any asynchronous checker.
   void ClearAsyncURLChecker();

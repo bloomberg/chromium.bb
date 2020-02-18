@@ -88,8 +88,6 @@ base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
   }
   if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
-  if (chromeos::NetworkTypePattern::Wimax().MatchesType(type))
-    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIMAX);
   if (chromeos::NetworkTypePattern::Mobile().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_MOBILE_DATA);
   if (chromeos::NetworkTypePattern::VPN().MatchesType(type))
@@ -252,17 +250,17 @@ void VersionUpdaterCros::GetEolStatus(EolStatusCallback cb) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(cb)));
 }
 
-void VersionUpdaterCros::OnGetEolStatus(EolStatusCallback cb,
-                                        update_engine::EndOfLifeStatus status) {
+void VersionUpdaterCros::OnGetEolStatus(
+    EolStatusCallback cb,
+    update_engine::EndOfLifeStatus status,
+    base::Optional<int32_t> number_of_milestones) {
   std::move(cb).Run(status);
 }
 
 VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)
     : context_(web_contents ? web_contents->GetBrowserContext() : nullptr),
       last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
-      check_for_update_when_idle_(false),
-      weak_ptr_factory_(this) {
-}
+      check_for_update_when_idle_(false) {}
 
 VersionUpdaterCros::~VersionUpdaterCros() {
   UpdateEngineClient* update_engine_client =

@@ -21,7 +21,7 @@
 
 namespace chromeos {
 
-PluginVmServiceProvider::PluginVmServiceProvider() : weak_ptr_factory_(this) {}
+PluginVmServiceProvider::PluginVmServiceProvider() {}
 
 PluginVmServiceProvider::~PluginVmServiceProvider() = default;
 
@@ -81,7 +81,7 @@ void PluginVmServiceProvider::ShowSettingsPage(
 
   // Validate subpage path.
   if ((request.subpage_path() != chrome::kPluginVmDetailsSubPage) &&
-      (request.subpage_path() != chrome::kPluginVmSharedPathSubPage)) {
+      (request.subpage_path() != chrome::kPluginVmSharedPathsSubPage)) {
     constexpr char error_message[] = "Invalid subpage_path";
     LOG(ERROR) << error_message;
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(

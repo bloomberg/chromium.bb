@@ -38,10 +38,12 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
                                     : CanvasResourceProvider::ResourceUsage::
                                           kSoftwareCompositedResourceUsage;
 
-    CanvasResourceProvider::PresentationMode presentation_mode =
-        RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
-            ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-            : CanvasResourceProvider::kDefaultPresentationMode;
+    uint8_t presentation_mode =
+        CanvasResourceProvider::kDefaultPresentationMode;
+    if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
+      presentation_mode |=
+          CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+    }
 
     std::unique_ptr<CanvasResourceProvider> provider;
     if (provider_type_) {
@@ -51,7 +53,8 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
     } else {
       provider = CanvasResourceProvider::Create(
           size_, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-          CanvasColorParams(), presentation_mode, nullptr);
+          kLow_SkFilterQuality, CanvasColorParams(), presentation_mode,
+          nullptr);
     }
 
     ReplaceResourceProvider(std::move(provider));

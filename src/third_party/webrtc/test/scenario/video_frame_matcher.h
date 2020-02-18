@@ -76,6 +76,21 @@ class VideoFrameMatcher {
   TaskQueueForTest task_queue_;
 };
 
+class CapturedFrameTap : public rtc::VideoSinkInterface<VideoFrame> {
+ public:
+  CapturedFrameTap(Clock* clock, VideoFrameMatcher* matcher);
+  CapturedFrameTap(CapturedFrameTap&) = delete;
+  CapturedFrameTap& operator=(CapturedFrameTap&) = delete;
+
+  void OnFrame(const VideoFrame& frame) override;
+  void OnDiscardedFrame() override;
+
+ private:
+  Clock* const clock_;
+  VideoFrameMatcher* const matcher_;
+  int discarded_count_ = 0;
+};
+
 class ForwardingCapturedFrameTap
     : public rtc::VideoSinkInterface<VideoFrame>,
       public rtc::VideoSourceInterface<VideoFrame> {
@@ -99,7 +114,7 @@ class ForwardingCapturedFrameTap
   Clock* const clock_;
   VideoFrameMatcher* const matcher_;
   rtc::VideoSourceInterface<VideoFrame>* const source_;
-  VideoSinkInterface<VideoFrame>* sink_;
+  VideoSinkInterface<VideoFrame>* sink_ = nullptr;
   int discarded_count_ = 0;
 };
 

@@ -8,6 +8,7 @@
 #include <condition_variable>
 
 #include "platform/api/logging.h"
+#include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
 namespace platform {
@@ -34,9 +35,10 @@ Error NetworkReader::ReadRepeatedly(UdpSocket* socket, Callback callback) {
              : Error::None();
 }
 
-bool NetworkReader::CancelRead(UdpSocket* socket) {
+Error NetworkReader::CancelRead(UdpSocket* socket) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return read_callbacks_.erase(socket) != 0;
+  return read_callbacks_.erase(socket) != 0 ? Error::Code::kNone
+                                            : Error::Code::kOperationInvalid;
 }
 
 Error NetworkReader::WaitAndRead(Clock::duration timeout) {
@@ -67,7 +69,9 @@ Error NetworkReader::WaitAndRead(Clock::duration timeout) {
         continue;
       }
 
-      ErrorOr<UdpPacket> read_packet = mapped_socket->first->ReceiveMessage();
+      // TODO(rwkeane): Remove this unsafe cast.
+      UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(read);
+      ErrorOr<UdpPacket> read_packet = read_socket->ReceiveMessage();
       if (read_packet.is_error()) {
         error = read_packet.error();
         continue;

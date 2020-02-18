@@ -161,6 +161,13 @@ class AppListPresenterDelegateTest
   }
   ~AppListPresenterDelegateTest() override = default;
 
+ protected:
+  void SetAppListStateAndWait(AppListViewState new_state) {
+    GetAppListView()->SetState(new_state);
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(new_state);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -543,6 +550,129 @@ TEST_F(AppListPresenterDelegateTest, AppListWindowBounds) {
       GetAppListView()->GetWidget()->GetNativeView()->GetBoundsInScreen());
 }
 
+// Tests that the app list window's bounds and the search box bounds are updated
+// when the display bounds change.
+TEST_F(AppListPresenterDelegateTest, AppListBoundsChangeForDisplayChange) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
+// Tests that the app list window's bounds and the search box bounds in the half
+// state are updated when the display bounds change.
+TEST_F(AppListPresenterDelegateTest,
+       AppListBoundsChangeForDisplayChangeSearch) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  SetAppListStateAndWait(AppListViewState::kHalf);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
+// Tests that the app list window's bounds and the search box bounds in the
+// fullscreen state are updated when the display bounds change.
+TEST_F(AppListPresenterDelegateTest,
+       AppListBoundsChangeForDisplayChangeFullscreen) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  SetAppListStateAndWait(AppListViewState::kFullscreenAllApps);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
+// Tests that the app list window's bounds and the search box bounds in the
+// fullscreen search state are updated when the display bounds change.
+TEST_F(AppListPresenterDelegateTest,
+       AppListBoundsChangeForDisplayChangeFullscreenSearch) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  SetAppListStateAndWait(AppListViewState::kFullscreenAllApps);
+  SetAppListStateAndWait(AppListViewState::kFullscreenSearch);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
 // Tests that the app list is not draggable in side shelf alignment.
 TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentDragDisabled) {
   SetShelfAlignment(ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
@@ -776,6 +906,134 @@ TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
 
   // Add a window. It should be maximized because it is in tablet mode.
   auto window = CreateTestWindow();
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
+            shelf_layout_manager->GetShelfBackgroundType());
+}
+
+// Tests that app list understands shelf rounded corners state while animating
+// out and in, and that it keeps getting notified of shelf state changes if
+// close animation is interrupted by another show request.
+TEST_F(AppListPresenterDelegateTest, AppListShownWhileClosing) {
+  auto window = CreateTestWindow();
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  ShelfLayoutManager* shelf_layout_manager =
+      Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
+          ->shelf_layout_manager();
+
+  EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  // Enable animation to account for delay between app list starting to close
+  // and reporting visibility change (which happens when close animation
+  // finishes).
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  app_list::AppListView::SetShortAnimationForTesting(false);
+
+  // Dismiss and immediately show the app list (before close animation is done).
+  GetAppListTestHelper()->Dismiss();
+
+  EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  // Finish app list animations.
+  ASSERT_TRUE(
+      GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->is_animating());
+  GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->StopAnimating();
+
+  EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  // Verify that the app list still picks up shelf changes.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_TRUE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+}
+
+// Tests how shelf state is updated as app list state changes with a maximized
+// window open. It verifies that the app list knows that the maximized shelf had
+// no rounded corners.
+TEST_F(AppListPresenterDelegateTest, AppListWithMaximizedShelf) {
+  auto window = CreateTestWindow();
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  ShelfLayoutManager* shelf_layout_manager =
+      Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
+          ->shelf_layout_manager();
+
+  EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  // Enable animation to account for delay between app list starting to close
+  // and reporting visibility change (which happens when close animation
+  // finishes).
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  app_list::AppListView::SetShortAnimationForTesting(false);
+
+  // Start closing the app list view.
+  GetAppListTestHelper()->Dismiss();
+
+  EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  // Minimize the window, and verify that the shelf state changed from a
+  // maximized state, and that |shelf_has_rounded_corners()| value was updated.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+
+  EXPECT_TRUE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  // Stop app list hide animation.
+  ASSERT_TRUE(
+      GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->is_animating());
+  GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->StopAnimating();
+
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+            shelf_layout_manager->GetShelfBackgroundType());
+}
+
+// Verifies the shelf background state changes when a window is maximized while
+// app list is shown. Verifies that AppList::shelf_has_rounded_corners() is
+// updated.
+TEST_F(AppListPresenterDelegateTest, WindowMaximizedWithAppListShown) {
+  auto window = CreateTestWindow();
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  ShelfLayoutManager* shelf_layout_manager =
+      Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
+          ->shelf_layout_manager();
+
+  EXPECT_TRUE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  GetAppListTestHelper()->Dismiss();
+
   EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
             shelf_layout_manager->GetShelfBackgroundType());
 }
@@ -1392,6 +1650,169 @@ TEST_F(AppListPresenterDelegateTest, DragAppListViewFromPeeking) {
                                                          2, 1000),
       1000);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+}
+
+// Tests that the app list background corner radius remains constant during app
+// list drag if the shelf is not in maximized state.
+TEST_F(AppListPresenterDelegateTest, BackgroundCornerRadiusDuringDrag) {
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  const gfx::Point shelf_top = GetPrimaryShelf()
+                                   ->GetShelfViewForTesting()
+                                   ->GetBoundsInScreen()
+                                   .top_center();
+  const int background_radius =
+      app_list::AppListConfig::instance().background_radius();
+
+  app_list::AppListView* view = GetAppListView();
+  const views::View* const background_shield =
+      view->GetAppListBackgroundShieldForTest();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Start drag at the peeking height, and move to different
+  // positions relative to the shelf top.
+  // Verify that the app list background shield never changes.
+  const gfx::Point peeking_top = view->GetBoundsInScreen().top_center();
+  generator->MoveTouch(peeking_top);
+  generator->PressTouch();
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move above the shelf, with an offset less than the background radius.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius / 5));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to the top of the shelf.
+  generator->MoveTouch(shelf_top);
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to half rounded background radius height.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius / 2));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to the height just under the background radius.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius - 1));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to the height that equals the background radius.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to the height just over the background radius.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius + 1));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius + 5));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move above the peeking height.
+  generator->MoveTouch(gfx::Point(peeking_top.x(), peeking_top.y() + 5));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move back to peeking height, and end drag.
+  generator->MoveTouch(peeking_top);
+  generator->ReleaseTouch();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+}
+
+// Tests how app list background rounded corners are changed during a drag while
+// the shelf is in a maximized state (i.e. while a maximized window is shown).
+TEST_F(AppListPresenterDelegateTest,
+       BackgroundCornerRadiusDuringDragWithMaximizedShelf) {
+  auto window = CreateTestWindow();
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  const gfx::Point shelf_top = GetPrimaryShelf()
+                                   ->GetShelfViewForTesting()
+                                   ->GetBoundsInScreen()
+                                   .top_center();
+  const int background_radius =
+      app_list::AppListConfig::instance().background_radius();
+
+  app_list::AppListView* view = GetAppListView();
+  const views::View* const background_shield =
+      view->GetAppListBackgroundShieldForTest();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Start drag at the peeking app list top.
+  const gfx::Point peeking_top = view->GetBoundsInScreen().top_center();
+  generator->MoveTouch(peeking_top);
+  generator->PressTouch();
+
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move above the shelf, with an offset less than the background radius.
+  // Verify that current background corner radius matches the offset from the
+  // shelf.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius / 5));
+  EXPECT_EQ(
+      gfx::RoundedCornersF(background_radius / 5, background_radius / 5, 0, 0),
+      background_shield->layer()->rounded_corner_radii());
+
+  // Move to the shelf top - background should have no rounded corners.
+  generator->MoveTouch(shelf_top);
+  EXPECT_EQ(gfx::RoundedCornersF(),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to half background radius height - the background corner radius should
+  // match the offset from the shelf.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius / 2));
+  EXPECT_EQ(
+      gfx::RoundedCornersF(background_radius / 2, background_radius / 2, 0, 0),
+      background_shield->layer()->rounded_corner_radii());
+
+  // Move to the height just under the background radius - the current
+  // background corners should be equal to the offset from the shelf.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius - 1));
+  EXPECT_EQ(
+      gfx::RoundedCornersF(background_radius - 1, background_radius - 1, 0, 0),
+      background_shield->layer()->rounded_corner_radii());
+
+  // Move to the height that equals the background radius - the current
+  // background corners should be equal to the offset from the shelf.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move to the height just over the background radius - the background corner
+  // radius value should stay at the |background_radius| value.
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius + 1));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+  generator->MoveTouch(shelf_top - gfx::Vector2d(0, background_radius + 5));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move above the peeking height - the background radius should remain the
+  // same.
+  generator->MoveTouch(gfx::Point(peeking_top.x(), peeking_top.y() + 5));
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
+
+  // Move back to peeking height, and end drag.
+  generator->MoveTouch(peeking_top);
+  generator->ReleaseTouch();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
+            background_shield->layer()->rounded_corner_radii());
 }
 
 // Test a variety of behaviors for home launcher (app list in tablet mode).

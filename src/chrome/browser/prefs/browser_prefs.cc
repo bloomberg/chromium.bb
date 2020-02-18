@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -45,7 +45,6 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
-#include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/origin_trial_prefs.h"
@@ -337,11 +336,11 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #endif
@@ -468,6 +467,32 @@ const char kNtpActivateHideShortcutsFieldTrial[] =
     "ntp.activate_hide_shortcuts_field_trial";
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// Deprecated 7/2019
+// WebAuthn prefs were being erroneously stored on Android. They are registered
+// on other platforms.
+const char kWebAuthnLastTransportUsedPrefName[] =
+    "webauthn.last_transport_used";
+const char kWebAuthnBlePairedMacAddressesPrefName[] =
+    "webauthn.ble.paired_mac_addresses";
+#endif  // defined(OS_ANDROID)
+
+// Deprecated 7/2019
+const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
+const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
+#if defined(USE_X11)
+constexpr char kLocalProfileId[] = "profile.local_profile_id";
+#endif
+
+// Deprecated 8/2019
+const char kInsecureExtensionUpdatesEnabled[] =
+    "extension_updates.insecure_extension_updates_enabled";
+
+const char kLastStartupTimestamp[] = "startup_metric.last_startup_timestamp";
+
+// Deprecated 8/2019
+const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -528,6 +553,22 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kMediaCacheSize, 0);
 
   registry->RegisterInt64Pref(kSignedInTime, 0);
+
+#if defined(OS_ANDROID)
+  registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
+                               std::string());
+  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
+#endif  // defined(OS_ANDROID)
+
+  registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
+  registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
+#if defined(USE_X11)
+  registry->RegisterIntegerPref(kLocalProfileId, 0);
+#endif
+
+  registry->RegisterBooleanPref(kInsecureExtensionUpdatesEnabled, false);
+
+  registry->RegisterDictionaryPref(kHintLoadedCounts);
 }
 
 }  // namespace
@@ -554,6 +595,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileAttributesEntry::RegisterLocalStatePrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
+  ProfileNetworkContextService::RegisterLocalStatePrefs(registry);
   profiles::RegisterPrefs(registry);
   rappor::RapporServiceImpl::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);
@@ -653,7 +695,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::DMTokenStorage::RegisterPrefs(registry);
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
   policy::TPMAutoUpdateModePolicyHandler::RegisterPrefs(registry);
-  policy::WebUsbAllowDevicesForUrlsPolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
   UpgradeDetectorChromeos::RegisterPrefs(registry);
   syncer::PerUserTopicRegistrationManager::RegisterPrefs(registry);
@@ -668,12 +709,13 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(OS_WIN)
+  registry->RegisterBooleanPref(prefs::kRendererCodeIntegrityEnabled, true);
   component_updater::RegisterPrefsForSwReporter(registry);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(registry);
   ModuleDatabase::RegisterLocalStatePrefs(registry);
   ThirdPartyConflictsManager::RegisterLocalStatePrefs(registry);
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   registry->RegisterBooleanPref(kHasSeenWin10PromoPage, false);  // DEPRECATED
   registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
@@ -684,6 +726,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
 #endif  // !defined(OS_ANDROID)
+  registry->RegisterInt64Pref(kLastStartupTimestamp, 0);
 
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
@@ -694,7 +737,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
                           const std::string& locale) {
   TRACE_EVENT0("browser", "chrome::RegisterProfilePrefs");
-  SCOPED_UMA_HISTOGRAM_TIMER("Settings.RegisterProfilePrefsTime");
   // User prefs. Please keep this list alphabetized.
   AccessibilityLabelsService::RegisterProfilePrefs(registry);
   AccessibilityUIMessageHandler::RegisterProfilePrefs(registry);
@@ -702,7 +744,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   autofill::prefs::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
   certificate_transparency::prefs::RegisterPrefs(registry);
-  ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeSSLHostStateDelegate::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
@@ -835,6 +876,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if !defined(OS_ANDROID)
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
+  ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
   HatsService::RegisterProfilePrefs(registry);
   InstantService::RegisterProfilePrefs(registry);
@@ -1004,6 +1046,9 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 7/2019.
   local_state->ClearPref(kNtpActivateHideShortcutsFieldTrial);
 #endif  // !defined(OS_ANDROID)
+
+  // Added 8/2019.
+  local_state->ClearPref(kLastStartupTimestamp);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -1112,4 +1157,21 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   syncer::MigrateSyncSuppressedPref(profile_prefs);
   profile_prefs->ClearPref(kSignedInTime);
   syncer::ClearObsoleteMemoryPressurePrefs(profile_prefs);
+  profile_prefs->ClearPref(kLastKnownGoogleURL);
+  profile_prefs->ClearPref(kLastPromptedGoogleURL);
+
+#if defined(OS_ANDROID)
+  // Added 7/2019.
+  profile_prefs->ClearPref(kWebAuthnLastTransportUsedPrefName);
+  profile_prefs->ClearPref(kWebAuthnBlePairedMacAddressesPrefName);
+#endif  // defined(OS_ANDROID)
+
+  // Added 7/2019.
+#if defined(USE_X11)
+  profile_prefs->ClearPref(kLocalProfileId);
+#endif
+
+  // Added 8/2019
+  profile_prefs->ClearPref(kInsecureExtensionUpdatesEnabled);
+  profile_prefs->ClearPref(kHintLoadedCounts);
 }

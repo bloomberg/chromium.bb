@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -111,13 +112,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
   void DispatchUnloadEvent() override;
   void ExecuteScript(const WebScriptSource&) override;
-  void ExecuteScriptInIsolatedWorld(int world_id,
+  void ExecuteScriptInIsolatedWorld(int32_t world_id,
                                     const WebScriptSource&) override;
   WARN_UNUSED_RESULT v8::Local<v8::Value>
-  ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
+  ExecuteScriptInIsolatedWorldAndReturnValue(int32_t world_id,
                                              const WebScriptSource&) override;
-  void ClearIsolatedWorldCSPForTesting(int world_id) override;
-  void SetIsolatedWorldInfo(int world_id, const WebIsolatedWorldInfo&) override;
+  void ClearIsolatedWorldCSPForTesting(int32_t world_id) override;
+  void SetIsolatedWorldInfo(int32_t world_id,
+                            const WebIsolatedWorldInfo&) override;
   void Alert(const WebString& message) override;
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
@@ -136,7 +138,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                 v8::Local<v8::Value> argv[],
                                 WebScriptExecutionCallback*) override;
   void RequestExecuteScriptInIsolatedWorld(
-      int world_id,
+      int32_t world_id,
       const WebScriptSource* source_in,
       unsigned num_sources,
       bool user_gesture,
@@ -236,8 +238,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMMessageEvent&,
-      bool has_user_gesture) override;
+      const WebDOMMessageEvent&) override;
 
   WebRect GetSelectionBoundsRectForTesting() const override;
 
@@ -266,7 +267,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) override;
   bool IsLoading() const override;
-  bool IsNavigationScheduledWithin(double interval) const override;
+  bool IsNavigationScheduledWithin(base::TimeDelta interval) const override;
   void NotifyUserActivation() override;
   void BlinkFeatureUsageReport(
       const std::set<blink::mojom::WebFeature>& features) override;
@@ -304,7 +305,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                             WebString& clip_html,
                             WebRect& clip_rect) override;
   void AdvanceFocusInForm(WebFocusType) override;
-  bool TryToShowTouchToFillForFocusedElement() override;
+  bool ShouldSuppressKeyboardForFocusedElement() override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
   void OnPortalActivated(const base::UnguessableToken& portal_token,
@@ -323,7 +324,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool DispatchBeforeUnloadEvent(bool) override;
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+      base::OnceClosure call_before_attaching_new_document) override;
   blink::mojom::CommitResult CommitSameDocumentNavigation(
       const WebURL&,
       WebFrameLoadType,
@@ -458,6 +460,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool UsePrintingLayout() const;
 
   virtual void Trace(blink::Visitor*);
+
+  void SetAllowsCrossBrowsingInstanceFrameLookup() override;
 
  private:
   friend LocalFrameClientImpl;

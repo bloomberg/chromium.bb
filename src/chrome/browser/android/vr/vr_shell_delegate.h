@@ -58,7 +58,6 @@ class VrShellDelegate : public device::GvrDelegateProvider,
                         const base::android::JavaParamRef<jobject>& obj,
                         jboolean success);
   void RecordVrStartAction(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
                            jint start_action);
   void DisplayActivate(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
@@ -122,7 +121,7 @@ class VrShellDelegate : public device::GvrDelegateProvider,
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };

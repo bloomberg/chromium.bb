@@ -86,6 +86,9 @@ const int kYieldAfterDurationMilliseconds = 20;
 const spdy::SpdyStreamId kFirstStreamId = 1;
 const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
+// Maximum number of capped frames that can be queued at any time.
+const int kSpdySessionMaxQueuedCappedFrames = 10000;
+
 class NetLog;
 class NetworkQualityEstimator;
 class SpdyStream;
@@ -318,9 +321,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               const quic::ParsedQuicVersionVector& quic_supported_versions,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
+              bool is_http_enabled,
+              bool is_quic_enabled,
               bool support_ietf_format_quic_altsvc,
               bool is_trusted_proxy,
               size_t session_max_recv_window_size,
+              int session_max_queued_capped_frames,
               const spdy::SettingsMap& initial_settings,
               const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
                   greased_http2_frame,
@@ -1122,6 +1128,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // control is turned on.
   int32_t session_max_recv_window_size_;
 
+  // Maximum number of capped frames that can be queued at any time.
+  // Every time we try to enqueue a capped frame, we check that there aren't
+  // more than this amount already queued, and close the connection if so.
+  int session_max_queued_capped_frames_;
+
   // Sum of |session_unacked_recv_window_bytes_| and current receive window
   // size.  Zero unless session flow control is turned on.
   // TODO(bnc): Rename or change semantics so that |window_size_| is actual
@@ -1161,6 +1172,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Outside of tests, these should always be true.
   const bool enable_sending_initial_data_;
   const bool enable_ping_based_connection_checking_;
+
+  const bool is_http2_enabled_;
+  const bool is_quic_enabled_;
 
   // If true, alt-svc headers advertising QUIC in IETF format will be supported.
   const bool support_ietf_format_quic_altsvc_;

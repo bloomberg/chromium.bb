@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -174,7 +175,7 @@ void EmbeddedTestServer::StartAcceptingConnections() {
   DCHECK(!io_thread_.get())
       << "Server must not be started while server is running";
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessagePump::Type::IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   io_thread_ = std::make_unique<base::Thread>("EmbeddedTestServer IO Thread");
   CHECK(io_thread_->StartWithOptions(thread_options));
   CHECK(io_thread_->WaitUntilThreadStarted());
@@ -382,10 +383,10 @@ std::unique_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
 }
 
 void EmbeddedTestServer::DoAcceptLoop() {
-  while (
-      listen_socket_->Accept(&accepted_socket_,
-                             base::Bind(&EmbeddedTestServer::OnAcceptCompleted,
-                                        base::Unretained(this))) == OK) {
+  while (listen_socket_->Accept(
+             &accepted_socket_,
+             base::BindOnce(&EmbeddedTestServer::OnAcceptCompleted,
+                            base::Unretained(this))) == OK) {
     HandleAcceptResult(std::move(accepted_socket_));
   }
 }
@@ -433,8 +434,8 @@ void EmbeddedTestServer::HandleAcceptResult(
     SSLServerSocket* ssl_socket =
         static_cast<SSLServerSocket*>(http_connection->socket_.get());
     int rv = ssl_socket->Handshake(
-        base::Bind(&EmbeddedTestServer::OnHandshakeDone, base::Unretained(this),
-                   http_connection));
+        base::BindOnce(&EmbeddedTestServer::OnHandshakeDone,
+                       base::Unretained(this), http_connection));
     if (rv != ERR_IO_PENDING)
       OnHandshakeDone(http_connection, rv);
   } else {
@@ -444,9 +445,9 @@ void EmbeddedTestServer::HandleAcceptResult(
 
 void EmbeddedTestServer::ReadData(HttpConnection* connection) {
   while (true) {
-    int rv =
-        connection->ReadData(base::Bind(&EmbeddedTestServer::OnReadCompleted,
-                                        base::Unretained(this), connection));
+    int rv = connection->ReadData(
+        base::BindOnce(&EmbeddedTestServer::OnReadCompleted,
+                       base::Unretained(this), connection));
     if (rv == ERR_IO_PENDING)
       return;
     if (!HandleReadResult(connection, rv))

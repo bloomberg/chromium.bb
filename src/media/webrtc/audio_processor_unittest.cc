@@ -16,7 +16,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -152,7 +152,7 @@ class WebRtcAudioProcessorTest : public ::testing::Test {
     return settings;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   media::AudioParameters params_;
 };
 

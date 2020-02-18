@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -93,7 +93,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
 
  private:
   // Neeed to initialize the directory.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
 };
 

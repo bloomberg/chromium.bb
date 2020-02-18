@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -41,24 +40,22 @@ class HeapCompact::MovableObjectFixups final {
   // Adds a slot for compaction. Filters slots in dead objects.
   void AddOrFilter(MovableReference* slot);
 
-  // Adds a callback that is invoked when a given slot is compacted.
-  void AddFixupCallback(MovableReference* slot,
-                        MovingObjectCallback callback,
-                        void* callback_data);
-
   // Relocates a backing store |from| -> |to|.
   void Relocate(Address from, Address to);
 
   // Relocates interior slots in a backing store that is moved |from| -> |to|.
   void RelocateInteriorFixups(Address from, Address to, size_t size);
 
+  // Updates the collection of callbacks from the item pushed the worklist by
+  // marking visitors.
+  void UpdateCallbacks();
+
 #if DEBUG_HEAP_COMPACTION
   void dumpDebugStats() {
     LOG_HEAP_COMPACTION() << "Fixups: pages=" << relocatable_pages_.size()
                           << " objects=" << fixups_.size()
                           << " callbacks=" << fixup_callbacks_.size()
-                          << " interior-size="
-                          << interior_fixups_.size());
+                          << " interior-size=" << interior_fixups_.size();
   }
 #endif
 
@@ -71,10 +68,9 @@ class HeapCompact::MovableObjectFixups final {
   // slot pointing to it requires updating.
   HashMap<MovableReference, MovableReference*> fixups_;
 
-  // Map from movable reference to callbacks that need to be invoked
-  // when the object moves.
-  HashMap<MovableReference*, std::pair<void*, MovingObjectCallback>>
-      fixup_callbacks_;
+  // Map from movable regions to callbacks that need to be invoked
+  // when the region moves.
+  HashMap<MovableReference, MovingObjectCallback> fixup_callbacks_;
 
   // Map of interior slots to their final location. Needs to be an ordered map
   // as it is used to walk through slots starting at a given memory address.
@@ -101,15 +97,6 @@ class HeapCompact::MovableObjectFixups final {
 void HeapCompact::MovableObjectFixups::AddCompactingPage(BasePage* page) {
   DCHECK(!page->IsLargeObjectPage());
   relocatable_pages_.insert(page);
-}
-
-void HeapCompact::MovableObjectFixups::AddFixupCallback(
-    MovableReference* slot,
-    MovingObjectCallback callback,
-    void* callback_data) {
-  DCHECK(!fixup_callbacks_.Contains(slot));
-  fixup_callbacks_.insert(
-      slot, std::pair<void*, MovingObjectCallback>(callback_data, callback));
 }
 
 void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
@@ -177,7 +164,7 @@ void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
 
   auto interior_it = interior_fixups_.find(slot);
   CHECK(interior_fixups_.end() == interior_it);
-  interior_fixups_.insert({slot, nullptr});
+  interior_fixups_.emplace(slot, nullptr);
 #if DCHECK_IS_ON()
   interior_slot_to_object_.insert(slot, header->Payload());
 #endif  // DCHECK_IS_ON()
@@ -189,14 +176,22 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
     moved_objects_.insert(from);
 #endif  // DCHECK_IS_ON()
 
+    const HeapObjectHeader* header = HeapObjectHeader::FromPayload(to);
+    const size_t size = header->PayloadSize();
+
     // Interior slots always need to be processed for moved objects.
     // Consider an object A with slot A.x pointing to value B where A is
     // allocated on a movable page itself. When B is finally moved, it needs to
     // find the corresponding slot A.x. Object A may be moved already and the
     // memory may have been freed, which would result in a crash.
     if (!interior_fixups_.empty()) {
-      RelocateInteriorFixups(from, to,
-                             HeapObjectHeader::FromPayload(to)->PayloadSize());
+      RelocateInteriorFixups(from, to, size);
+    }
+
+    // Execute custom callback after interior fixups have been processed.
+    auto callback = fixup_callbacks_.find(from);
+    if (UNLIKELY(callback != fixup_callbacks_.end())) {
+      callback->value(from, to, size);
     }
 
     auto it = fixups_.find(from);
@@ -204,8 +199,9 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
     // This may happen because a mutator may change the slot to point to a
     // different backing store because e.g. incremental marking marked a backing
     // store as live that was later on replaced.
-    if (it == fixups_.end())
+    if (it == fixups_.end()) {
       return;
+    }
 
 #if DCHECK_IS_ON()
     BasePage* from_page = PageFromObject(from);
@@ -214,7 +210,7 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
 
     // If the object is referenced by a slot that is contained on a compacted
     // area itself, check whether it can be updated already.
-    MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
+    MovableReference* slot = it->value;
     auto interior_it = interior_fixups_.find(slot);
     if (interior_it != interior_fixups_.end()) {
       MovableReference* slot_location =
@@ -247,15 +243,6 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
 
     // Update the slots new value.
     *slot = to;
-
-    // Execute potential fixup callbacks.
-    MovableReference* callback_slot =
-        reinterpret_cast<MovableReference*>(it->value);
-    auto callback = fixup_callbacks_.find(callback_slot);
-    if (UNLIKELY(callback != fixup_callbacks_.end())) {
-      callback->value.second(callback->value.first, from, to,
-                             HeapObjectHeader::FromPayload(to)->PayloadSize());
-    }
 }
 
 void HeapCompact::MovableObjectFixups::RelocateInteriorFixups(Address from,
@@ -290,6 +277,15 @@ void HeapCompact::MovableObjectFixups::RelocateInteriorFixups(Address from,
     if (interior_it == interior_fixups_.end())
       return;
     offset = reinterpret_cast<Address>(interior_it->first) - from;
+  }
+}
+
+void HeapCompact::MovableObjectFixups::UpdateCallbacks() {
+  BackingStoreCallbackWorklist::View backing_store_callbacks(
+      heap_->GetBackingStoreCallbackWorklist(), WorklistTaskId::MainThread);
+  BackingStoreCallbackItem item;
+  while (backing_store_callbacks.Pop(&item)) {
+    fixup_callbacks_.insert(item.backing, item.callback);
   }
 }
 
@@ -384,21 +380,10 @@ void HeapCompact::Initialize(ThreadState* state) {
   force_for_next_gc_ = false;
 }
 
-bool HeapCompact::ShouldRegisterMovingObjectReference(MovableReference* slot) {
-  CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
+bool HeapCompact::ShouldRegisterMovingAddress(Address address) {
+  CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(address)));
 
   return do_compact_;
-}
-
-void HeapCompact::RegisterMovingObjectCallback(MovableReference* slot,
-                                               MovingObjectCallback callback,
-                                               void* callback_data) {
-  DCHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
-
-  if (!do_compact_)
-    return;
-
-  Fixups().AddFixupCallback(slot, callback, callback_data);
 }
 
 void HeapCompact::UpdateHeapResidency() {
@@ -450,6 +435,13 @@ void HeapCompact::Relocate(Address from, Address to) {
   Fixups().Relocate(from, to);
 }
 
+void HeapCompact::UpdateBackingStoreCallbacks() {
+  if (!do_compact_)
+    return;
+
+  Fixups().UpdateCallbacks();
+}
+
 void HeapCompact::FilterNonLiveSlots() {
   if (!do_compact_)
     return;
@@ -474,8 +466,8 @@ void HeapCompact::Finish() {
   if (fixups_)
     fixups_->dumpDebugStats();
 #endif
-  fixups_.reset();
   do_compact_ = false;
+  fixups_.reset();
 }
 
 void HeapCompact::Cancel() {
@@ -485,6 +477,7 @@ void HeapCompact::Cancel() {
   last_fixup_count_for_testing_ = 0;
   do_compact_ = false;
   heap_->GetMovableReferenceWorklist()->Clear();
+  heap_->GetBackingStoreCallbackWorklist()->Clear();
   fixups_.reset();
 }
 

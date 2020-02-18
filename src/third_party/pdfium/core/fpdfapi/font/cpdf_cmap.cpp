@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "core/fpdfapi/cmaps/cmap_int.h"
-#include "core/fpdfapi/font/cpdf_cmapmanager.h"
 #include "core/fpdfapi/font/cpdf_cmapparser.h"
 #include "core/fpdfapi/font/cpdf_fontglobals.h"
 #include "core/fpdfapi/parser/cpdf_simple_parser.h"
@@ -32,7 +31,7 @@ struct PredefinedCMap {
   ByteRange m_LeadingSegs[2];
 };
 
-const PredefinedCMap g_PredefinedCMaps[] = {
+constexpr PredefinedCMap kPredefinedCMaps[] = {
     {"GB-EUC",
      CIDSET_GB1,
      CIDCODING_GB,
@@ -182,6 +181,27 @@ const PredefinedCMap g_PredefinedCMaps[] = {
     {"UniKS-UTF16", CIDSET_KOREA1, CIDCODING_UTF16, CPDF_CMap::TwoBytes, 0, {}},
 };
 
+const PredefinedCMap* GetPredefinedCMap(const ByteString& bsPredefinedName) {
+  ByteString cmapid = bsPredefinedName;
+  if (cmapid.GetLength() > 2)
+    cmapid = cmapid.Left(cmapid.GetLength() - 2);
+  for (const auto& map : kPredefinedCMaps) {
+    if (cmapid == ByteStringView(map.m_pName))
+      return &map;
+  }
+  return nullptr;
+}
+
+std::vector<bool> LoadLeadingSegments(const PredefinedCMap& map) {
+  std::vector<bool> segments(256);
+  for (uint32_t i = 0; i < map.m_LeadingSegCount; ++i) {
+    const ByteRange& seg = map.m_LeadingSegs[i];
+    for (int b = seg.m_First; b <= seg.m_Last; ++b)
+      segments[b] = true;
+  }
+  return segments;
+}
+
 int CheckFourByteCodeRange(uint8_t* codes,
                            size_t size,
                            const std::vector<CPDF_CMap::CodeRange>& ranges) {
@@ -238,70 +258,44 @@ size_t GetFourByteCharSizeImpl(
 
 }  // namespace
 
-CPDF_CMap::CPDF_CMap()
-    : m_bLoaded(false),
-      m_bVertical(false),
-      m_Charset(CIDSET_UNKNOWN),
-      m_CodingScheme(TwoBytes),
-      m_Coding(CIDCODING_UNKNOWN),
-      m_pEmbedMap(nullptr) {}
-
-CPDF_CMap::~CPDF_CMap() {}
-
-void CPDF_CMap::LoadPredefined(CPDF_CMapManager* pMgr,
-                               const ByteString& bsName) {
-  m_PredefinedCMap = bsName;
-  if (m_PredefinedCMap == "Identity-H" || m_PredefinedCMap == "Identity-V") {
+CPDF_CMap::CPDF_CMap(const ByteString& bsPredefinedName)
+    : m_bVertical(bsPredefinedName.Last() == 'V') {
+  if (bsPredefinedName == "Identity-H" || bsPredefinedName == "Identity-V") {
     m_Coding = CIDCODING_CID;
-    m_bVertical = bsName.Last() == 'V';
     m_bLoaded = true;
     return;
   }
-  ByteString cmapid = m_PredefinedCMap;
-  m_bVertical = cmapid.Last() == 'V';
-  if (cmapid.GetLength() > 2) {
-    cmapid = cmapid.Left(cmapid.GetLength() - 2);
-  }
-  const PredefinedCMap* map = nullptr;
-  for (size_t i = 0; i < FX_ArraySize(g_PredefinedCMaps); ++i) {
-    if (cmapid == ByteStringView(g_PredefinedCMaps[i].m_pName)) {
-      map = &g_PredefinedCMaps[i];
-      break;
-    }
-  }
+
+  const PredefinedCMap* map = GetPredefinedCMap(bsPredefinedName);
   if (!map)
     return;
 
   m_Charset = map->m_Charset;
   m_Coding = map->m_Coding;
   m_CodingScheme = map->m_CodingScheme;
-  if (m_CodingScheme == MixedTwoBytes) {
-    m_MixedTwoByteLeadingBytes = std::vector<bool>(256);
-    for (uint32_t i = 0; i < map->m_LeadingSegCount; ++i) {
-      const ByteRange& seg = map->m_LeadingSegs[i];
-      for (int b = seg.m_First; b <= seg.m_Last; ++b)
-        m_MixedTwoByteLeadingBytes[b] = true;
-    }
-  }
+  if (m_CodingScheme == MixedTwoBytes)
+    m_MixedTwoByteLeadingBytes = LoadLeadingSegments(*map);
   m_pEmbedMap = FindEmbeddedCMap(
-      CPDF_FontGlobals::GetInstance()->GetEmbeddedCharset(m_Charset), bsName);
+      CPDF_FontGlobals::GetInstance()->GetEmbeddedCharset(m_Charset),
+      bsPredefinedName);
   if (!m_pEmbedMap)
     return;
 
   m_bLoaded = true;
 }
 
-void CPDF_CMap::LoadEmbedded(pdfium::span<const uint8_t> data) {
-  m_DirectCharcodeToCIDTable = std::vector<uint16_t>(65536);
+CPDF_CMap::CPDF_CMap(pdfium::span<const uint8_t> spEmbeddedData)
+    : m_DirectCharcodeToCIDTable(65536) {
   CPDF_CMapParser parser(this);
-  CPDF_SimpleParser syntax(data);
+  CPDF_SimpleParser syntax(spEmbeddedData);
   while (1) {
     ByteStringView word = syntax.GetWord();
-    if (word.IsEmpty()) {
+    if (word.IsEmpty())
       break;
-    }
+
     parser.ParseWord(word);
   }
+
   if (m_CodingScheme == MixedFourBytes && parser.HasAdditionalMappings()) {
     m_AdditionalCharcodeToCIDMappings = parser.TakeAdditionalMappings();
     std::sort(
@@ -312,6 +306,8 @@ void CPDF_CMap::LoadEmbedded(pdfium::span<const uint8_t> data) {
         });
   }
 }
+
+CPDF_CMap::~CPDF_CMap() = default;
 
 uint16_t CPDF_CMap::CIDFromCharCode(uint32_t charcode) const {
   if (m_Coding == CIDCODING_CID)
@@ -478,4 +474,8 @@ int CPDF_CMap::AppendChar(char* str, uint32_t charcode) const {
       return 4;
   }
   return 0;
+}
+
+void CPDF_CMap::SetMixedFourByteLeadingRanges(std::vector<CodeRange> ranges) {
+  m_MixedFourByteLeadingRanges = std::move(ranges);
 }

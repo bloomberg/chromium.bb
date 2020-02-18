@@ -19,7 +19,6 @@
 #include "chromeos/settings/timezone_settings.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }  // namespace base
 
@@ -161,9 +160,7 @@ struct State {
 // |usage_timestamp| when was |used_time| data collected. Usually differs from
 //                   |current_time| by milliseconds.
 // |previous_state| state previously returned by UsageTimeLimitProcessor.
-// TODO(agawronska): Passing unique_ptr by const ref is strange and advised
-// against by style guide. Probably should be refactorred.
-State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
+State GetState(const base::Value& time_limit,
                const base::Value* local_override,
                const base::TimeDelta& used_time,
                const base::Time& usage_timestamp,
@@ -175,11 +172,10 @@ State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
 // |time_limit| dictionary with UsageTimeLimit policy data.
 // |local_override| dictionary with data of the last local override (authorized
 //                  by parent access code).
-base::Time GetExpectedResetTime(
-    const std::unique_ptr<base::DictionaryValue>& time_limit,
-    const base::Value* local_override,
-    base::Time current_time,
-    const icu::TimeZone* const time_zone);
+base::Time GetExpectedResetTime(const base::Value& time_limit,
+                                const base::Value* local_override,
+                                base::Time current_time,
+                                const icu::TimeZone* const time_zone);
 
 // Returns the remaining time usage if the time usage limit is enabled.
 // |time_limit| dictionary with UsageTimeLimit policy data.
@@ -187,27 +183,24 @@ base::Time GetExpectedResetTime(
 //                  by parent access code).
 // |used_time| time used in the current day.
 base::Optional<base::TimeDelta> GetRemainingTimeUsage(
-    const std::unique_ptr<base::DictionaryValue>& time_limit,
+    const base::Value& time_limit,
     const base::Value* local_override,
     const base::Time current_time,
     const base::TimeDelta& used_time,
     const icu::TimeZone* const time_zone);
 
 // Returns time of the day when TimeUsageLimit policy is reset, represented by
-// the distance from midnight.
-base::TimeDelta GetTimeUsageLimitResetTime(
-    const std::unique_ptr<base::DictionaryValue>& time_limit);
+// the distance from midnight. |time_limit| needs to be a dictionary.
+base::TimeDelta GetTimeUsageLimitResetTime(const base::Value& time_limit);
 
 // Compares two Usage Time Limit policy dictionaries and returns which
 // PolicyTypes changed between the two versions. Changes on simple overrides are
 // not reported, but changes on override with durations are, the reason is that
 // this method is intended for notifications, and the former does not trigger
-// those while the latter does.
-//
-// TODO(crbug.com/956036): Remove const ref to unique_ptr.
-std::set<PolicyType> UpdatedPolicyTypes(
-    const std::unique_ptr<base::DictionaryValue>& old_policy,
-    const std::unique_ptr<base::DictionaryValue>& new_policy);
+// those while the latter does. |old_policy| and |new_policy| need to be
+// dictionaries.
+std::set<PolicyType> UpdatedPolicyTypes(const base::Value& old_policy,
+                                        const base::Value& new_policy);
 
 }  // namespace usage_time_limit
 }  // namespace chromeos

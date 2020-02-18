@@ -71,6 +71,7 @@ class ParseError(Exception):
 _PLATFORM_TOKENS_LIST = [
     'Android',
     'Fuchsia',
+    'IOS', 'IOS12.2', 'IOS13.0',
     'Linux',
     'Mac', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13',
     'Win', 'Win7', 'Win10'
@@ -1059,24 +1060,25 @@ class TestExpectations(object):
         if not expectations_dict:
             expectations_dict = port.expectations_dict()
 
-        # Always parse the generic expectations (the generic file is required
-        # to be the first one in the expectations_dict, which must be an OrderedDict).
-        generic_path, generic_exps = expectations_dict.items()[0]
-        expectations = self._parser.parse(generic_path, generic_exps)
-        self._add_expectations(expectations, self._model)
-        self._expectations += expectations
+        if expectations_dict:
+            # Always parse the generic expectations (the generic file is required
+            # to be the first one in the expectations_dict, which must be an OrderedDict).
+            generic_path, generic_exps = expectations_dict.items()[0]
+            expectations = self._parser.parse(generic_path, generic_exps)
+            self._add_expectations(expectations, self._model)
+            self._expectations += expectations
 
-        # Now add the overrides if so requested.
-        if include_overrides:
-            for path, contents in expectations_dict.items()[1:]:
-                expectations = self._parser.parse(path, contents)
-                model = TestExpectationsModel(self._shorten_filename)
-                self._add_expectations(expectations, model)
-                self._expectations += expectations
-                flag_specific_match = re.match('.*' + port.FLAG_EXPECTATIONS_PREFIX + '(.*)', path)
-                if flag_specific_match is not None:
-                    self._model.append_flag_name(flag_specific_match.group(1))
-                self._model.merge_model(model, flag_specific_match is not None)
+            # Now add the overrides if so requested.
+            if include_overrides:
+                for path, contents in expectations_dict.items()[1:]:
+                    expectations = self._parser.parse(path, contents)
+                    model = TestExpectationsModel(self._shorten_filename)
+                    self._add_expectations(expectations, model)
+                    self._expectations += expectations
+                    flag_specific_match = re.match('.*' + port.FLAG_EXPECTATIONS_PREFIX + '(.*)', path)
+                    if flag_specific_match is not None:
+                        self._model.append_flag_name(flag_specific_match.group(1))
+                    self._model.merge_model(model, flag_specific_match is not None)
 
         self.add_extra_skipped_tests(set(port.get_option('ignore_tests', [])))
         self.add_expectations_from_bot()

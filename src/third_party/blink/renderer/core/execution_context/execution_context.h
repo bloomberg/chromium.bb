@@ -35,7 +35,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
@@ -57,21 +59,10 @@ namespace service_manager {
 class InterfaceProvider;
 }
 
-namespace network {
-namespace mojom {
-enum class ReferrerPolicy : int32_t;
-}  // namespace mojom
-}  // namespace network
-
 namespace blink {
-
-namespace mojom {
-namespace blink {
-class DocumentInterfaceBroker;
-}  // namespace blink
-}  // namespace mojom
 
 class Agent;
+class BrowserInterfaceBrokerProxy;
 class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
@@ -195,7 +186,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual const SecurityContext& GetSecurityContext() const = 0;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
-  virtual const base::UnguessableToken& GetAgentClusterID() const = 0;
+  // TODO(dtapuska): Remove this virtual once all execution_contexts
+  // always have an agent. Worklets currently override this because
+  // they don't have agents.
+  virtual const base::UnguessableToken& GetAgentClusterID() const;
 
   bool IsSameAgentCluster(const base::UnguessableToken&) const;
 
@@ -230,9 +224,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void TasksWerePaused() {}
   virtual void TasksWereUnpaused() {}
 
-  bool IsContextPaused() const {
-    return lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
-  }
+  bool IsContextPaused() const;
   bool IsContextDestroyed() const { return is_context_destroyed_; }
   mojom::FrameLifecycleState ContextPauseState() const {
     return lifecycle_state_;
@@ -289,6 +281,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
+  virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
+
   virtual FrameOrWorkerScheduler* GetScheduler() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType) = 0;
@@ -339,8 +333,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool in_dispatch_error_event_;
   HeapVector<Member<ErrorEvent>> pending_exceptions_;
 
-  mojom::FrameLifecycleState lifecycle_state_ =
-      mojom::FrameLifecycleState::kRunning;
+  mojom::FrameLifecycleState lifecycle_state_;
   bool is_context_destroyed_;
 
   Member<PublicURLManager> public_url_manager_;
@@ -363,8 +356,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
-  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
-      parsed_feature_policies_;
+  // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
+  Vector<bool> parsed_feature_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
 };

@@ -15,6 +15,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/one_shot_event.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -421,8 +422,8 @@ void LogApiActivityOnUI(content::BrowserContext* browser_context,
   ActivityLog* activity_log = SafeGetActivityLog(browser_context);
   if (!activity_log || !activity_log->ShouldLog(extension_id))
     return;
-  scoped_refptr<Action> action =
-      new Action(extension_id, base::Time::Now(), type, activity_name);
+  auto action = base::MakeRefCounted<Action>(extension_id, base::Time::Now(),
+                                             type, activity_name);
   action->set_args(std::move(args));
   activity_log->LogAction(action);
 }
@@ -438,7 +439,7 @@ void LogApiActivity(content::BrowserContext* browser_context,
       state.IsWhitelistedId(extension_id))
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&LogApiActivityOnUI, browser_context, extension_id,
                        activity_name, args.CreateDeepCopy(), type));
@@ -478,7 +479,7 @@ void LogWebRequestActivityOnUI(content::BrowserContext* browser_context,
   ActivityLog* activity_log = SafeGetActivityLog(browser_context);
   if (!activity_log || !activity_log->ShouldLog(extension_id))
     return;
-  scoped_refptr<Action> action = new Action(
+  auto action = base::MakeRefCounted<Action>(
       extension_id, base::Time::Now(), Action::ACTION_WEB_REQUEST, api_call);
   action->set_page_url(url);
   action->set_page_incognito(is_incognito);
@@ -499,11 +500,10 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
       state.IsWhitelistedId(extension_id))
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&LogWebRequestActivityOnUI, browser_context,
-                       extension_id, url, is_incognito, api_call,
-                       std::move(details)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&LogWebRequestActivityOnUI, browser_context,
+                                  extension_id, url, is_incognito, api_call,
+                                  std::move(details)));
     return;
   }
   LogWebRequestActivityOnUI(browser_context, extension_id, url, is_incognito,
@@ -575,7 +575,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
   cached_consumer_count_ =
       profile_->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive);
 
-  observers_ = new base::ObserverListThreadSafe<Observer>;
+  observers_ = base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>();
 
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   CheckActive(true);  // use cached
@@ -768,10 +768,9 @@ void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
     // the call to tabs.executeScript will have already been logged anyway.
     if (!it->second.empty()) {
       scoped_refptr<Action> action;
-      action = new Action(extension->id(),
-                          base::Time::Now(),
-                          Action::ACTION_CONTENT_SCRIPT,
-                          "");  // no API call here
+      action = base::MakeRefCounted<Action>(extension->id(), base::Time::Now(),
+                                            Action::ACTION_CONTENT_SCRIPT,
+                                            "");  // no API call here
       action->set_page_url(on_url);
       action->set_page_title(base::UTF16ToUTF8(web_contents->GetTitle()));
       action->set_page_incognito(

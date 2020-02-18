@@ -101,7 +101,7 @@ static inline bool IsSpanWithoutAttributesOrUnstyledStyleSpan(
 bool IsEmptyFontTag(
     const Element* element,
     ShouldStyleAttributeBeEmpty should_style_attribute_be_empty) {
-  if (auto* font = ToHTMLFontElementOrNull(element)) {
+  if (auto* font = DynamicTo<HTMLFontElement>(element)) {
     return HasNoAttributeOrOnlyStyleAttribute(font,
                                               should_style_attribute_be_empty);
   }
@@ -904,7 +904,7 @@ void ApplyStyleCommand::FixRangeAndApplyInlineStyle(
 
   // FIXME: Callers should perform this operation on a Range that includes the
   // br if they want style applied to the empty line.
-  if (start == end && IsHTMLBRElement(*start.AnchorNode()))
+  if (start == end && IsA<HTMLBRElement>(*start.AnchorNode()))
     past_end_node = NodeTraversal::Next(*start.AnchorNode());
 
   // Start from the highest fully selected ancestor so that we can modify the
@@ -1034,7 +1034,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
     Node* sibling = node->nextSibling();
     while (sibling && sibling != past_end_node &&
            !sibling->contains(past_end_node) &&
-           (!IsEnclosingBlock(sibling) || IsHTMLBRElement(*sibling)) &&
+           (!IsEnclosingBlock(sibling) || IsA<HTMLBRElement>(*sibling)) &&
            !ContainsNonEditableRegion(*sibling)) {
       run_end = sibling;
       sibling = run_end->nextSibling();
@@ -1325,7 +1325,7 @@ void ApplyStyleCommand::ApplyInlineStyleToPushDown(
   node->GetDocument().UpdateStyleAndLayoutTree();
 
   if (!style || style->IsEmpty() || !node->GetLayoutObject() ||
-      IsHTMLIFrameElement(*node))
+      IsA<HTMLIFrameElement>(*node))
     return;
 
   EditingStyle* new_inline_style = style;
@@ -1407,7 +1407,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
           element->removeAttribute(html_names::kIdAttr);
-          if (IsHTMLAnchorElement(element))
+          if (IsA<HTMLAnchorElement>(element.Get()))
             element->removeAttribute(html_names::kNameAttr);
           SurroundNodeRangeWithElement(child, child, &wrapper, editing_state);
           if (editing_state->IsAborted())
@@ -1741,7 +1741,7 @@ bool ApplyStyleCommand::MergeEndWithNextIfIdentical(
     end_node = end.AnchorNode()->parentNode();
   }
 
-  if (!end_node->IsElementNode() || IsHTMLBRElement(*end_node))
+  if (!end_node->IsElementNode() || IsA<HTMLBRElement>(*end_node))
     return false;
 
   Node* next_sibling = end_node->nextSibling();
@@ -1905,7 +1905,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   HTMLElement* style_container = nullptr;
   for (Node* container = start_node; container && start_node == end_node;
        container = container->firstChild()) {
-    if (auto* font = ToHTMLFontElementOrNull(container))
+    if (auto* font = DynamicTo<HTMLFontElement>(container))
       font_container = font;
     bool style_container_is_not_span = !IsHTMLSpanElement(style_container);
     auto* container_element = DynamicTo<HTMLElement>(container);

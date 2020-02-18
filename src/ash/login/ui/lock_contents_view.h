@@ -22,7 +22,9 @@
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_observer.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -125,7 +127,9 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
-  void ShowParentAccessDialog(bool show);
+  void ShowParentAccessDialog();
+  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
+  void ClearSecurityTokenPinRequest();
 
   // views::View:
   void Layout() override;
@@ -140,6 +144,8 @@ class ASH_EXPORT LockContentsView
   void OnUserAvatarChanged(const AccountId& account_id,
                            const UserAvatar& avatar) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
+  void OnChallengeResponseAuthEnabledForUserChanged(const AccountId& user,
+                                                    bool enabled) override;
   void OnFingerprintStateChanged(const AccountId& account_id,
                                  FingerprintState state) override;
   void OnFingerprintAuthResult(const AccountId& account_id,
@@ -213,6 +219,7 @@ class ASH_EXPORT LockContentsView
 
     AccountId account_id;
     bool show_pin = false;
+    bool show_challenge_response_auth = false;
     bool enable_tap_auth = false;
     bool force_online_sign_in = false;
     bool disable_auth = false;
@@ -267,7 +274,7 @@ class ASH_EXPORT LockContentsView
   void SwapActiveAuthBetweenPrimaryAndSecondary(bool is_primary);
 
   // Called when an authentication check is complete.
-  void OnAuthenticate(bool auth_success);
+  void OnAuthenticate(bool auth_success, bool display_error_messages);
 
   // Tries to lookup the stored state for |user|. Returns an unowned pointer
   // that is invalidated whenver |users_| changes.
@@ -310,8 +317,10 @@ class ASH_EXPORT LockContentsView
   // Called when the easy unlock icon is tapped.
   void OnEasyUnlockIconTapped();
 
-  // Called when parent access validation finished.
-  void OnParentAccessValidationFinished(bool access_granted);
+  // Called when parent access validation finished for the user with
+  // |account_id|.
+  void OnParentAccessValidationFinished(const AccountId& account_id,
+                                        bool access_granted);
 
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
@@ -425,6 +434,8 @@ class ASH_EXPORT LockContentsView
   // the auto-login timer can be reset.
   std::unique_ptr<AutoLoginUserActivityHandler>
       auto_login_user_activity_handler_;
+
+  base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };

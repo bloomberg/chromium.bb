@@ -51,6 +51,10 @@ MetalWindowContext_mac::~MetalWindowContext_mac() {
 bool MetalWindowContext_mac::onInitializeContext() {
     SkASSERT(nil != fMainView);
 
+    fMetalLayer = [CAMetalLayer layer];
+    fMetalLayer.device = fDevice;
+    fMetalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+
     NSRect frameRect = [fMainView frame];
     fMetalLayer.drawableSize = frameRect.size;
     fMetalLayer.frame = frameRect;
@@ -87,10 +91,10 @@ void MetalWindowContext_mac::resize(int w, int h) {
 namespace sk_app {
 namespace window_context_factory {
 
-WindowContext* NewMetalForMac(const MacWindowInfo& info, const DisplayParams& params) {
-    WindowContext* ctx = new MetalWindowContext_mac(info, params);
+std::unique_ptr<WindowContext> MakeMetalForMac(const MacWindowInfo& info,
+                                               const DisplayParams& params) {
+    std::unique_ptr<WindowContext> ctx(new MetalWindowContext_mac(info, params));
     if (!ctx->isValid()) {
-        delete ctx;
         return nullptr;
     }
     return ctx;

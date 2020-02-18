@@ -16,6 +16,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/dns/address_sorter.h"
+#include "net/dns/dns_hosts.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
@@ -187,6 +188,7 @@ class MockTransaction : public DnsTransaction,
                   const std::string& hostname,
                   uint16_t qtype,
                   bool secure,
+                  DnsConfig::SecureDnsMode secure_dns_mode,
                   URLRequestContext* url_request_context,
                   DnsTransactionFactory::CallbackType callback)
       : result_(MockDnsClientRule::FAIL),
@@ -464,10 +466,11 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
       DnsTransactionFactory::CallbackType callback,
       const NetLogWithSource&,
       bool secure,
+      DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* url_request_context) override {
     std::unique_ptr<MockTransaction> transaction =
         std::make_unique<MockTransaction>(rules_, hostname, qtype, secure,
-                                          url_request_context,
+                                          secure_dns_mode, url_request_context,
                                           std::move(callback));
     if (transaction->delayed())
       delayed_transactions_.push_back(transaction->AsWeakPtr());
@@ -475,6 +478,19 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
   }
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override {}
+
+  base::TimeDelta GetDelayUntilNextProbeForTest(
+      unsigned doh_server_index) override {
+    NOTREACHED();
+    return base::TimeDelta();
+  }
+
+  void StartDohProbes(URLRequestContext* url_request_context,
+                      bool network_change) override {}
+
+  DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
+    return DnsConfig::SecureDnsMode::AUTOMATIC;
+  }
 
   void CompleteDelayedTransactions() {
     DelayedTransactionList old_delayed_transactions;
@@ -493,32 +509,108 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
   DelayedTransactionList delayed_transactions_;
 };
 
-MockDnsClient::MockDnsClient(const DnsConfig& config,
-                             MockDnsClientRuleList rules)
-    : config_(config),
+MockDnsClient::MockDnsClient(DnsConfig config, MockDnsClientRuleList rules)
+    : config_(std::move(config)),
       factory_(new MockTransactionFactory(std::move(rules))),
-      address_sorter_(new MockAddressSorter()) {}
+      address_sorter_(new MockAddressSorter()) {
+  effective_config_ = BuildEffectiveConfig();
+}
 
 MockDnsClient::~MockDnsClient() = default;
 
-void MockDnsClient::SetConfig(const DnsConfig& config) {
-  config_ = config;
+bool MockDnsClient::CanUseSecureDnsTransactions() const {
+  const DnsConfig* config = GetEffectiveConfig();
+  return config && config->IsValid() && !config->dns_over_https_servers.empty();
 }
 
-const DnsConfig* MockDnsClient::GetConfig() const {
-  return config_.IsValid() ? &config_ : nullptr;
+bool MockDnsClient::CanUseInsecureDnsTransactions() const {
+  const DnsConfig* config = GetEffectiveConfig();
+  return config && config->IsValid() && insecure_enabled_ &&
+         !config->dns_over_tls_active;
 }
+
+void MockDnsClient::SetInsecureEnabled(bool enabled) {
+  insecure_enabled_ = enabled;
+}
+
+bool MockDnsClient::FallbackFromSecureTransactionPreferred() const {
+  return !CanUseSecureDnsTransactions() || !doh_server_available_;
+}
+
+bool MockDnsClient::FallbackFromInsecureTransactionPreferred() const {
+  return !CanUseInsecureDnsTransactions() ||
+         fallback_failures_ >= max_fallback_failures_;
+}
+
+bool MockDnsClient::SetSystemConfig(base::Optional<DnsConfig> system_config) {
+  if (ignore_system_config_changes_)
+    return false;
+
+  base::Optional<DnsConfig> before = effective_config_;
+  config_ = std::move(system_config);
+  effective_config_ = BuildEffectiveConfig();
+  return before != effective_config_;
+}
+
+bool MockDnsClient::SetConfigOverrides(DnsConfigOverrides config_overrides) {
+  base::Optional<DnsConfig> before = effective_config_;
+  overrides_ = std::move(config_overrides);
+  effective_config_ = BuildEffectiveConfig();
+  return before != effective_config_;
+}
+
+const DnsConfig* MockDnsClient::GetEffectiveConfig() const {
+  return effective_config_.has_value() ? &effective_config_.value() : nullptr;
+}
+
+const DnsHosts* MockDnsClient::GetHosts() const {
+  const DnsConfig* config = GetEffectiveConfig();
+  if (!config)
+    return nullptr;
+
+  return &config->hosts;
+}
+
+void MockDnsClient::SetRequestContextForProbes(
+    URLRequestContext* url_request_context) {}
 
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {
-  return config_.IsValid() ? factory_.get() : nullptr;
+  return GetEffectiveConfig() ? factory_.get() : nullptr;
 }
 
 AddressSorter* MockDnsClient::GetAddressSorter() {
-  return address_sorter_.get();
+  return GetEffectiveConfig() ? address_sorter_.get() : nullptr;
 }
+
+void MockDnsClient::IncrementInsecureFallbackFailures() {
+  ++fallback_failures_;
+}
+
+void MockDnsClient::ClearInsecureFallbackFailures() {
+  fallback_failures_ = 0;
+}
+
+base::Optional<DnsConfig> MockDnsClient::GetSystemConfigForTesting() const {
+  return config_;
+}
+
+DnsConfigOverrides MockDnsClient::GetConfigOverridesForTesting() const {
+  return overrides_;
+}
+
+void MockDnsClient::SetProbeSuccessForTest(unsigned index, bool success) {}
 
 void MockDnsClient::CompleteDelayedTransactions() {
   factory_->CompleteDelayedTransactions();
+}
+
+base::Optional<DnsConfig> MockDnsClient::BuildEffectiveConfig() {
+  if (overrides_.OverridesEverything())
+    return overrides_.ApplyOverrides(DnsConfig());
+  if (!config_ || !config_.value().IsValid())
+    return base::nullopt;
+
+  return overrides_.ApplyOverrides(config_.value());
 }
 
 }  // namespace net

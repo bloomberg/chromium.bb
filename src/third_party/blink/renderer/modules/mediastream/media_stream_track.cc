@@ -28,6 +28,8 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -38,16 +40,19 @@
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_settings.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/mediastream/webaudio_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_web_audio_source.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -77,8 +82,12 @@ bool ConstraintSetHasImageCapture(
          constraint_set->hasColorTemperature() || constraint_set->hasIso() ||
          constraint_set->hasBrightness() || constraint_set->hasContrast() ||
          constraint_set->hasSaturation() || constraint_set->hasSharpness() ||
-         constraint_set->hasFocusDistance() || constraint_set->hasZoom() ||
-         constraint_set->hasTorch();
+         constraint_set->hasFocusDistance() ||
+         (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+          constraint_set->hasPan()) ||
+         (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+          constraint_set->hasTilt()) ||
+         constraint_set->hasZoom() || constraint_set->hasTorch();
 }
 
 bool ConstraintSetHasNonImageCapture(
@@ -137,6 +146,67 @@ bool ConstraintsHaveImageCapture(const MediaTrackConstraints* constraints) {
   return ConstraintsSatisfyCondition(ConstraintSetHasImageCapture, constraints);
 }
 
+// Caller must take the ownership of the returned |WebAudioSourceProvider|
+// object.
+std::unique_ptr<WebAudioSourceProvider>
+CreateWebAudioSourceFromMediaStreamTrack(const WebMediaStreamTrack& track,
+                                         int context_sample_rate) {
+  WebPlatformMediaStreamTrack* media_stream_track = track.GetPlatformTrack();
+  if (!media_stream_track) {
+    DLOG(ERROR) << "Native track missing for webaudio source.";
+    return nullptr;
+  }
+
+  WebMediaStreamSource source = track.Source();
+  DCHECK_EQ(source.GetType(), WebMediaStreamSource::kTypeAudio);
+
+  return std::make_unique<WebAudioMediaStreamAudioSink>(track,
+                                                        context_sample_rate);
+}
+
+void CloneNativeVideoMediaStreamTrack(const WebMediaStreamTrack& original,
+                                      WebMediaStreamTrack clone) {
+  DCHECK(!clone.GetPlatformTrack());
+  WebMediaStreamSource source = clone.Source();
+  DCHECK_EQ(source.GetType(), WebMediaStreamSource::kTypeVideo);
+  MediaStreamVideoSource* native_source =
+      MediaStreamVideoSource::GetVideoSource(source);
+  DCHECK(native_source);
+  MediaStreamVideoTrack* original_track =
+      MediaStreamVideoTrack::GetVideoTrack(original);
+  DCHECK(original_track);
+  clone.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+      native_source, original_track->adapter_settings(),
+      original_track->noise_reduction(), original_track->is_screencast(),
+      original_track->min_frame_rate(),
+      MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
+}
+
+void DidSetMediaStreamTrackEnabled(MediaStreamComponent* component) {
+  const WebMediaStreamTrack track(component);
+  auto* native_track = WebPlatformMediaStreamTrack::GetTrack(track);
+  if (native_track)
+    native_track->SetEnabled(component->Enabled());
+}
+
+void DidCloneMediaStreamTrack(const WebMediaStreamTrack& original,
+                              const WebMediaStreamTrack& clone) {
+  DCHECK(!clone.IsNull());
+  DCHECK(!clone.GetPlatformTrack());
+  DCHECK(!clone.Source().IsNull());
+
+  switch (clone.Source().GetType()) {
+    case WebMediaStreamSource::kTypeAudio:
+      // TODO(crbug.com/704136): Use per thread task runner.
+      MediaStreamUtils::CreateNativeAudioMediaStreamTrack(
+          clone, Thread::MainThread()->GetTaskRunner());
+      break;
+    case WebMediaStreamSource::kTypeVideo:
+      CloneNativeVideoMediaStreamTrack(original, clone);
+      break;
+  }
+}
+
 }  // namespace
 
 MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
@@ -148,17 +218,14 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : MediaStreamTrack(context,
                        component,
-                       component->Source()->GetReadyState(),
-                       false /* stopped */) {}
+                       component->Source()->GetReadyState()) {}
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component,
-                                   MediaStreamSource::ReadyState ready_state,
-                                   bool stopped)
-    : ContextLifecycleObserver(context),
-      ready_state_(ready_state),
-      stopped_(stopped),
-      component_(component) {
+                                   MediaStreamSource::ReadyState ready_state)
+    : ready_state_(ready_state),
+      component_(component),
+      execution_context_(context) {
   component_->Source()->AddObserver(this);
 
   // If the source is already non-live at this point, the observer won't have
@@ -209,8 +276,7 @@ void MediaStreamTrack::setEnabled(bool enabled) {
   component_->SetEnabled(enabled);
 
   if (!Ended())
-    MediaStreamCenter::Instance().DidSetMediaStreamTrackEnabled(
-        component_.Get());
+    DidSetMediaStreamTrackEnabled(component_.Get());
 }
 
 bool MediaStreamTrack::muted() const {
@@ -311,10 +377,8 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
 MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   MediaStreamComponent* cloned_component = Component()->Clone();
   MediaStreamTrack* cloned_track = MakeGarbageCollected<MediaStreamTrack>(
-      ExecutionContext::From(script_state), cloned_component, ready_state_,
-      stopped_);
-  MediaStreamCenter::Instance().DidCloneMediaStreamTrack(Component(),
-                                                         cloned_component);
+      ExecutionContext::From(script_state), cloned_component, ready_state_);
+  DidCloneMediaStreamTrack(Component(), cloned_component);
   return cloned_track;
 }
 
@@ -451,6 +515,10 @@ MediaTrackConstraints* MediaStreamTrack::getConstraints() const {
       image_capture_constraints->hasSaturation() ||
       image_capture_constraints->hasSharpness() ||
       image_capture_constraints->hasFocusDistance() ||
+      (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+       image_capture_constraints->hasPan()) ||
+      (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+       image_capture_constraints->hasTilt()) ||
       image_capture_constraints->hasZoom()) {
     // Add image capture constraints, if any, as another entry to advanced().
     vector.push_back(image_capture_constraints);
@@ -633,7 +701,8 @@ void MediaStreamTrack::applyConstraintsImageCapture(
 }
 
 bool MediaStreamTrack::Ended() const {
-  return stopped_ || (ready_state_ == MediaStreamSource::kReadyStateEnded);
+  return (execution_context_ && execution_context_->IsContextDestroyed()) ||
+         (ready_state_ == MediaStreamSource::kReadyStateEnded);
 }
 
 void MediaStreamTrack::SourceChangedState() {
@@ -667,10 +736,6 @@ void MediaStreamTrack::PropagateTrackEnded() {
   is_iterating_registered_media_streams_ = false;
 }
 
-void MediaStreamTrack::ContextDestroyed(ExecutionContext*) {
-  stopped_ = true;
-}
-
 bool MediaStreamTrack::HasPendingActivity() const {
   // If 'ended' listeners exist and the object hasn't yet reached
   // that state, keep the object alive.
@@ -689,8 +754,9 @@ bool MediaStreamTrack::HasPendingActivity() const {
 
 std::unique_ptr<AudioSourceProvider> MediaStreamTrack::CreateWebAudioSource(
     int context_sample_rate) {
-  return MediaStreamCenter::Instance().CreateWebAudioSourceFromMediaStreamTrack(
-      Component(), context_sample_rate);
+  return std::make_unique<MediaStreamWebAudioSource>(
+      CreateWebAudioSourceFromMediaStreamTrack(Component(),
+                                               context_sample_rate));
 }
 
 void MediaStreamTrack::RegisterMediaStream(MediaStream* media_stream) {
@@ -712,15 +778,15 @@ const AtomicString& MediaStreamTrack::InterfaceName() const {
 }
 
 ExecutionContext* MediaStreamTrack::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return execution_context_.Get();
 }
 
 void MediaStreamTrack::Trace(blink::Visitor* visitor) {
   visitor->Trace(registered_media_streams_);
   visitor->Trace(component_);
   visitor->Trace(image_capture_);
+  visitor->Trace(execution_context_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -14,10 +14,10 @@
 #include "base/containers/flat_map.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
-#include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
+#include "cc/trees/sticky_position_constraint.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -150,29 +150,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
-  void UpdateTransformChanged(TransformNode* node,
-                              TransformNode* parent_node,
-                              TransformNode* source_node);
+  void UpdateTransformChanged(TransformNode* node, TransformNode* parent_node);
   void UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       TransformNode* node,
       TransformNode* parent_node);
 
   void set_needs_update(bool needs_update) final;
-
-  // A TransformNode's source_to_parent value is used to account for the fact
-  // that fixed-position layers are positioned by Blink wrt to their layer tree
-  // parent (their "source"), but are parented in the transform tree by their
-  // fixed-position container. This value needs to be updated on main-thread
-  // property trees (for position changes initiated by Blink), but not on the
-  // compositor thread (since the offset from a node corresponding to a
-  // fixed-position layer to its fixed-position container is unaffected by
-  // compositor-driven effects).
-  void set_source_to_parent_updates_allowed(bool allowed) {
-    source_to_parent_updates_allowed_ = allowed;
-  }
-  bool source_to_parent_updates_allowed() const {
-    return source_to_parent_updates_allowed_;
-  }
 
   // We store the page scale factor on the transform tree so that it can be
   // easily be retrieved and updated in UpdatePageScale.
@@ -186,9 +169,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   float device_scale_factor() const { return device_scale_factor_; }
 
-  void SetRootTransformsAndScales(float device_scale_factor,
-                                  float page_scale_factor_for_root,
-                                  const gfx::Transform& device_transform);
+  void SetRootScaleAndTransform(float device_scale_factor,
+                                const gfx::Transform& device_transform);
   float device_transform_scale_factor() const {
     return device_transform_scale_factor_;
   }
@@ -220,7 +202,10 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return cached_data_;
   }
 
-  StickyPositionNodeData* StickyPositionData(int node_id);
+  const StickyPositionNodeData* GetStickyPositionData(int node_id) const {
+    return const_cast<TransformTree*>(this)->MutableStickyPositionData(node_id);
+  }
+  StickyPositionNodeData& EnsureStickyPositionData(int node_id);
 
   // Computes the combined transform between |source_id| and |dest_id|. These
   // two nodes must be on the same ancestor chain.
@@ -240,6 +225,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // |anc_id|.
   bool IsDescendant(int desc_id, int anc_id) const;
 
+  StickyPositionNodeData* MutableStickyPositionData(int node_id);
+  gfx::Vector2dF StickyPositionOffset(TransformNode* node);
   void UpdateLocalTransform(TransformNode* node);
   void UpdateScreenSpaceTransform(TransformNode* node,
                                   TransformNode* parent_node);
@@ -250,9 +237,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateNodeAndAncestorsHaveIntegerTranslations(
       TransformNode* node,
       TransformNode* parent_node);
-  bool NeedsSourceToParentUpdate(TransformNode* node);
 
-  bool source_to_parent_updates_allowed_;
   // When to_screen transform has perspective, the transform node's sublayer
   // scale is calculated using page scale factor, device scale factor and the
   // scale factor of device transform. So we need to store them explicitly.
@@ -266,7 +251,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
 struct StickyPositionNodeData {
   int scroll_ancestor;
-  LayerStickyPositionConstraint constraints;
+  StickyPositionConstraint constraints;
 
   // In order to properly compute the sticky offset, we need to know if we have
   // any sticky ancestors both between ourselves and our containing block and
@@ -351,8 +336,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
     return render_surfaces_[id].get();
   }
 
-  void UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl);
-
   bool ContributesToDrawnSurface(int id);
 
   void ResetChangeTracking();
@@ -418,6 +401,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   int CurrentlyScrollingNodeId() const;
 #endif
   void set_currently_scrolling_node(int scroll_node_id);
+  int currently_scrolling_node() const { return currently_scrolling_node_id_; }
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
   gfx::Vector2dF ClampScrollToMaxScrollOffset(ScrollNode* node, LayerTreeImpl*);

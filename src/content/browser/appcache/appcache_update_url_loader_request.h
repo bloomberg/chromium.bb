@@ -26,16 +26,13 @@ class HttpResponseInfo;
 
 namespace content {
 
-class URLLoaderFactoryGetter;
-
 // URLLoaderClient subclass for the UpdateRequestBase class. Provides
 // functionality to update the AppCache using functionality provided by the
 // network URL loader.
 class AppCacheUpdateJob::UpdateURLLoaderRequest
     : public network::mojom::URLLoaderClient {
  public:
-  UpdateURLLoaderRequest(URLLoaderFactoryGetter* loader_factory_getter,
-                         base::WeakPtr<StoragePartitionImpl> partition,
+  UpdateURLLoaderRequest(base::WeakPtr<StoragePartitionImpl> partition,
                          const GURL& url,
                          int buffer_size,
                          URLFetcher* fetcher);
@@ -93,10 +90,10 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // network::mojom::URLLoaderClient implementation.
   // These methods are called by the network loader.
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
@@ -116,11 +113,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   void MaybeStartReading();
 
   URLFetcher* fetcher_;
-  // Used to retrieve the network URLLoader interface to issue network
-  // requests
-  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
-  // If NavigationLoaderOnUI is enabled, |partition_| is used to get the network
-  // URLLoader.
+  // |partition_| is used to get the network URLLoader.
   base::WeakPtr<StoragePartitionImpl> partition_;
 
   network::ResourceRequest request_;

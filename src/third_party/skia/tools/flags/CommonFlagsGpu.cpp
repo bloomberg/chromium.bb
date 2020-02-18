@@ -29,8 +29,8 @@ static DEFINE_string(pr, "",
 static DEFINE_bool(disableDriverCorrectnessWorkarounds, false,
                    "Disables all GPU driver correctness workarounds");
 
-static DEFINE_bool(reduceOpListSplitting, false, "Improve opList sorting");
-static DEFINE_bool(dontReduceOpListSplitting, false, "Allow more opList splitting");
+static DEFINE_bool(reduceOpsTaskSplitting, false, "Improve opsTask sorting");
+static DEFINE_bool(dontReduceOpsTaskSplitting, false, "Allow more opsTask splitting");
 
 static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
     if (!strcmp(name, "none")) {
@@ -55,7 +55,6 @@ static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
         return GpuPathRenderers::kAll;
     }
     SK_ABORT(SkStringPrintf("error: unknown named path renderer \"%s\"\n", name).c_str());
-    return GpuPathRenderers::kNone;
 }
 
 static GpuPathRenderers collect_gpu_path_renderers_from_flags() {
@@ -90,10 +89,10 @@ void SetCtxOptionsFromCommonFlags(GrContextOptions* ctxOptions) {
     ctxOptions->fGpuPathRenderers                    = collect_gpu_path_renderers_from_flags();
     ctxOptions->fDisableDriverCorrectnessWorkarounds = FLAGS_disableDriverCorrectnessWorkarounds;
 
-    if (FLAGS_reduceOpListSplitting) {
-        SkASSERT(!FLAGS_dontReduceOpListSplitting);
-        ctxOptions->fReduceOpListSplitting = GrContextOptions::Enable::kYes;
-    } else if (FLAGS_dontReduceOpListSplitting) {
-        ctxOptions->fReduceOpListSplitting = GrContextOptions::Enable::kNo;
+    if (FLAGS_reduceOpsTaskSplitting) {
+        SkASSERT(!FLAGS_dontReduceOpsTaskSplitting);
+        ctxOptions->fReduceOpsTaskSplitting = GrContextOptions::Enable::kYes;
+    } else if (FLAGS_dontReduceOpsTaskSplitting) {
+        ctxOptions->fReduceOpsTaskSplitting = GrContextOptions::Enable::kNo;
     }
 }

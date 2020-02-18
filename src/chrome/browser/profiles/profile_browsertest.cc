@@ -24,7 +24,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -217,7 +217,7 @@ class ProfileBrowserTest : public InProcessBrowserTest {
     // This ensures the first request has reached the network stack.
     SimpleURLLoaderHelper simple_loader_helper2(
         factory, embedded_test_server()->GetURL("/echo?status=400"),
-        net::ERR_FAILED);
+        net::ERR_HTTP_RESPONSE_CODE_FAILURE);
     simple_loader_helper2.WaitForCompletion();
 
     // The first request should still be hung.
@@ -240,7 +240,7 @@ class ProfileBrowserTest : public InProcessBrowserTest {
     // This ensures the first request has reached the network stack.
     SimpleURLLoaderHelper simple_loader_helper2(
         factory, embedded_test_server->GetURL("/echo?status=400"),
-        net::ERR_FAILED);
+        net::ERR_HTTP_RESPONSE_CODE_FAILURE);
     simple_loader_helper2.WaitForCompletion();
 
     // The first request should still be hung.
@@ -585,13 +585,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
   ASSERT_TRUE(mock_user_data_dir.CreateUniqueTempDir());
   base::FilePath profile_path =
       mock_user_data_dir.GetPath().Append(profile_name);
-  ProfileImpl* profile_impl = static_cast<ProfileImpl*>(browser()->profile());
 
   {
     base::ScopedTempDir temp_disk_cache_dir;
     ASSERT_TRUE(temp_disk_cache_dir.CreateUniqueTempDir());
-    profile_impl->GetPrefs()->SetFilePath(prefs::kDiskCacheDir,
-                                          temp_disk_cache_dir.GetPath());
+    g_browser_process->local_state()->SetFilePath(
+        prefs::kDiskCacheDir, temp_disk_cache_dir.GetPath());
   }
 }
 
@@ -685,7 +684,7 @@ class FileDestructionWatcher {
   void WaitForDestruction() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!watcher_);
-    base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
+    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&FileDestructionWatcher::StartWatchingPath,
                                   base::Unretained(this)));

@@ -7,8 +7,10 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "build/build_config.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
@@ -20,6 +22,44 @@ namespace video_capture {
 // potentially multiple clients.
 class BroadcastingReceiver : public mojom::Receiver {
  public:
+  class BufferContext {
+   public:
+    BufferContext(int32_t buffer_id,
+                  media::mojom::VideoBufferHandlePtr buffer_handle);
+    ~BufferContext();
+    BufferContext(BufferContext&& other);
+    BufferContext& operator=(BufferContext&& other);
+    int32_t buffer_context_id() const { return buffer_context_id_; }
+    int32_t buffer_id() const { return buffer_id_; }
+    void set_access_permission(
+        mojom::ScopedAccessPermissionPtr access_permission) {
+      access_permission_ = std::move(access_permission);
+    }
+    void IncreaseConsumerCount();
+    void DecreaseConsumerCount();
+    bool IsStillBeingConsumed() const;
+    bool is_retired() const { return is_retired_; }
+    void set_retired() { is_retired_ = true; }
+    media::mojom::VideoBufferHandlePtr CloneBufferHandle(
+        media::VideoCaptureBufferType target_buffer_type);
+
+   private:
+    // If the source handle is shared_memory_via_raw_file_descriptor, we first
+    // have to unwrap it before we can clone it. Instead of unwrapping, cloning,
+    // and than wrapping back each time we need to clone it, we convert it to
+    // a regular shared memory and keep it in this form.
+    void ConvertRawFileDescriptorToSharedBuffer();
+
+    int32_t buffer_context_id_;
+    int32_t buffer_id_;
+    media::mojom::VideoBufferHandlePtr buffer_handle_;
+    // Indicates how many consumers are currently relying on
+    // |access_permission_|.
+    int32_t consumer_hold_count_;
+    bool is_retired_;
+    mojom::ScopedAccessPermissionPtr access_permission_;
+  };
+
   BroadcastingReceiver();
   ~BroadcastingReceiver() override;
 
@@ -96,44 +136,6 @@ class BroadcastingReceiver : public mojom::Receiver {
     bool on_started_using_gpu_decode_has_been_called_;
   };
 
-  class BufferContext {
-   public:
-    BufferContext(int32_t buffer_id,
-                  media::mojom::VideoBufferHandlePtr buffer_handle);
-    ~BufferContext();
-    BufferContext(BufferContext&& other);
-    BufferContext& operator=(BufferContext&& other);
-    int32_t buffer_context_id() const { return buffer_context_id_; }
-    int32_t buffer_id() const { return buffer_id_; }
-    void set_access_permission(
-        mojom::ScopedAccessPermissionPtr access_permission) {
-      access_permission_ = std::move(access_permission);
-    }
-    void IncreaseConsumerCount();
-    void DecreaseConsumerCount();
-    bool IsStillBeingConsumed() const;
-    bool is_retired() const { return is_retired_; }
-    void set_retired() { is_retired_ = true; }
-    media::mojom::VideoBufferHandlePtr CloneBufferHandle(
-        media::VideoCaptureBufferType target_buffer_type);
-
-   private:
-    // If the source handle is shared_memory_via_raw_file_descriptor, we first
-    // have to unwrap it before we can clone it. Instead of unwrapping, cloning,
-    // and than wrapping back each time we need to clone it, we convert it to
-    // a regular shared memory and keep it in this form.
-    void ConvertRawFileDescriptorToSharedBuffer();
-
-    int32_t buffer_context_id_;
-    int32_t buffer_id_;
-    media::mojom::VideoBufferHandlePtr buffer_handle_;
-    // Indicates how many consumers are currently relying on
-    // |access_permission_|.
-    int32_t consumer_hold_count_;
-    bool is_retired_;
-    mojom::ScopedAccessPermissionPtr access_permission_;
-  };
-
   void OnClientFinishedConsumingFrame(int32_t buffer_context_id);
   void OnClientDisconnected(int32_t client_id);
   std::vector<BufferContext>::iterator FindUnretiredBufferContextFromBufferId(
@@ -155,7 +157,7 @@ class BroadcastingReceiver : public mojom::Receiver {
   // for each client.
   int32_t next_client_id_;
 
-  base::WeakPtrFactory<BroadcastingReceiver> weak_factory_;
+  base::WeakPtrFactory<BroadcastingReceiver> weak_factory_{this};
 };
 
 }  // namespace video_capture

@@ -53,8 +53,9 @@ class ConsumerHost::StreamWriter {
   using Slices = std::vector<std::string>;
 
   static scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-    return base::CreateSequencedTaskRunnerWithTraits(
-        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT});
+    return base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                            base::WithBaseSyncPrimitives(),
+                                            base::TaskPriority::BEST_EFFORT});
   }
 
   StreamWriter(mojo::ScopedDataPipeProducerHandle stream,
@@ -447,7 +448,8 @@ void ConsumerHost::TracingSession::OnTraceStats(
   percent_full = std::min(std::max(0.0, percent_full), 1.0);
   bool data_loss = buf_stats.chunks_overwritten() > 0 ||
                    buf_stats.chunks_discarded() > 0 ||
-                   buf_stats.abi_violations() > 0;
+                   buf_stats.abi_violations() > 0 ||
+                   buf_stats.trace_writer_packet_loss() > 0;
   std::move(request_buffer_usage_callback_).Run(true, percent_full, data_loss);
 }
 

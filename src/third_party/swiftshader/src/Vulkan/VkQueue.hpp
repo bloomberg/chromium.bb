@@ -22,6 +22,11 @@
 
 #include "System/Synchronization.hpp"
 
+namespace yarn
+{
+	class Scheduler;
+}
+
 namespace sw
 {
 	class Context;
@@ -31,6 +36,7 @@ namespace sw
 namespace vk
 {
 
+class Device;
 class Fence;
 
 class Queue
@@ -38,7 +44,7 @@ class Queue
 	VK_LOADER_DATA loaderData = { ICD_LOADER_MAGIC };
 
 public:
-	Queue();
+	Queue(Device* device, yarn::Scheduler *scheduler);
 	~Queue();
 
 	operator VkQueue()
@@ -63,12 +69,12 @@ private:
 		Type type = SUBMIT_QUEUE;
 	};
 
-	static void TaskLoop(vk::Queue* queue);
-	void taskLoop();
+	void taskLoop(yarn::Scheduler* scheduler);
 	void garbageCollect();
 	void submitQueue(const Task& task);
 
-	sw::Renderer renderer;
+	Device* device;
+	std::unique_ptr<sw::Renderer> renderer;
 	sw::Chan<Task> pending;
 	sw::Chan<VkSubmitInfo*> toDelete;
 	std::thread queueThread;

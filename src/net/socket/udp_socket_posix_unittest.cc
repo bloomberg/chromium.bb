@@ -10,7 +10,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/datagram_socket.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,11 +126,11 @@ class MockUDPSocketPosix : public UDPSocketPosix {
   }
 };
 
-class UDPSocketPosixTest : public TestWithScopedTaskEnvironment {
+class UDPSocketPosixTest : public TestWithTaskEnvironment {
  public:
   UDPSocketPosixTest()
-      : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         socket_(DatagramSocket::DEFAULT_BIND, &client_log_, NetLogSource()),
         callback_fired_(false) {
     write_callback_ = base::BindRepeating(&UDPSocketPosixTest::OnWriteComplete,

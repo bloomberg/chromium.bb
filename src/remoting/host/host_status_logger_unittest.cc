@@ -5,7 +5,7 @@
 #include "remoting/host/host_status_logger.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/xmpp_log_to_server.h"
@@ -138,7 +138,7 @@ class HostStatusLoggerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockSignalStrategy signal_strategy_;
   std::unique_ptr<XmppLogToServer> log_to_server_;
   std::unique_ptr<HostStatusLogger> host_status_logger_;

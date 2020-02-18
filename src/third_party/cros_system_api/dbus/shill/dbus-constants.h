@@ -177,9 +177,9 @@ const char kForceWakeToScanTimerProperty[] = "ForceWakeToScanTimer";
 const char kInterfaceProperty[] = "Interface";
 const char kSelectedServiceProperty[] = "SelectedService";
 const char kIPConfigsProperty[] = "IPConfigs";
-const char kMACAddressRandomizationSupportedProperty[] =
+const char kMacAddressRandomizationSupportedProperty[] =
     "MACAddressRandomizationSupported";
-const char kMACAddressRandomizationEnabledProperty[] =
+const char kMacAddressRandomizationEnabledProperty[] =
     "MACAddressRandomizationEnabled";
 
 // Flimflam Cellular Device property names.
@@ -199,7 +199,6 @@ const char kManufacturerProperty[] = "Cellular.Manufacturer";
 const char kFirmwareRevisionProperty[] = "Cellular.FirmwareRevision";
 const char kHardwareRevisionProperty[] = "Cellular.HardwareRevision";
 const char kDeviceIdProperty[] = "Cellular.DeviceID";
-const char kPRLVersionProperty[] = "Cellular.PRLVersion";
 const char kSelectedNetworkProperty[] = "Cellular.SelectedNetwork";
 const char kSupportNetworkScanProperty[] = "Cellular.SupportNetworkScan";
 const char kFoundNetworksProperty[] = "Cellular.FoundNetworks";
@@ -216,7 +215,7 @@ const char kStateRedirectFound[] = "redirect-found";
 const char kStatePortalSuspected[] = "portal-suspected";
 const char kStateOffline[] = "offline";
 const char kStateOnline[] = "online";
-const char kStateDisconnect[] = "disconnect";
+const char kStateDisconnect[] = "disconnecting";
 const char kStateFailure[] = "failure";
 const char kStateActivationFailure[] = "activation-failure";
 
@@ -334,7 +333,6 @@ const char kMonitorPropertyChanged[] = "PropertyChanged";
 // Flimflam type options.
 const char kTypeEthernet[] = "ethernet";
 const char kTypeWifi[] = "wifi";
-const char kTypeWimax[] = "wimax";
 const char kTypeBluetooth[] = "bluetooth";
 const char kTypeCellular[] = "cellular";
 const char kTypeVPN[] = "vpn";
@@ -452,7 +450,6 @@ const char kTypeDHCP[] = "dhcp";
 const char kTypeBOOTP[] = "bootp";
 const char kTypeZeroConf[] = "zeroconf";
 const char kTypeDHCP6[] = "dhcp6";
-const char kTypePPP[] = "ppp";
 
 // Flimflam error options.
 const char kErrorAaaFailed[] = "aaa-failed";
@@ -575,6 +572,11 @@ const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
 
 // Technology types (augments "Flimflam type options" above).
 const char kTypeEthernetEap[] = "etherneteap";
+const char kTypeTunnel[] = "tunnel";
+const char kTypeLoopback[] = "loopback";
+const char kTypePPP[] = "ppp";
+const char kTypeGuestInterface[] = "guest_interface";
+const char kTypeUnknown[] = "unknown";
 
 // Error strings.
 const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
@@ -616,6 +618,7 @@ const char kL2tpIpsecXauthPasswordProperty[] = "L2TPIPsec.XauthPassword";
 const char kL2tpIpsecXauthUserProperty[] = "L2TPIPsec.XauthUser";
 const char kL2tpIpsecLcpEchoDisabledProperty[] = "L2TPIPsec.LCPEchoDisabled";
 const char kManagedCredentialsProperty[] = "ManagedCredentials";
+const char kMeteredProperty[] = "Metered";
 const char kOpenVPNCaCertPemProperty[] = "OpenVPN.CACertPEM";
 const char kOpenVPNCertProperty[] = "OpenVPN.Cert";
 const char kOpenVPNExtraCertPemProperty[] = "OpenVPN.ExtraCertPEM";

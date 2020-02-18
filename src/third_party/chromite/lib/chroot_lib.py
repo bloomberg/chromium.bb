@@ -23,7 +23,7 @@ class Chroot(object):
 
   def __init__(self, path=None, cache_dir=None, chrome_root=None, env=None):
     # Strip trailing / if present for consistency.
-    self.path = (path or constants.DEFAULT_CHROOT_PATH).rstrip('/')
+    self._path = (path or constants.DEFAULT_CHROOT_PATH).rstrip('/')
     self._is_default_path = not bool(path)
     self._env = env
     # String in proto are '' when not set, but testing and comparing is much
@@ -32,12 +32,19 @@ class Chroot(object):
     self.chrome_root = chrome_root or None
 
   def __eq__(self, other):
-    try:
+    if self.__class__ is other.__class__:
       return (self.path == other.path and self.cache_dir == other.cache_dir
               and self.chrome_root == other.chrome_root
               and self.env == other.env)
-    except AttributeError:
-      return False
+
+    return NotImplemented
+
+  def __hash__(self):
+    return hash(self.path)
+
+  @property
+  def path(self):
+    return self._path
 
   def exists(self):
     """Checks if the chroot exists."""
@@ -52,13 +59,13 @@ class Chroot(object):
     """Get a TempDir in the chroot's tmp dir."""
     return osutils.TempDir(base_dir=self.tmp)
 
-  def full_path(self, chroot_rel_path):
+  def full_path(self, *args):
     """Turn a chroot-relative path into an absolute path."""
-    return os.path.join(self.path, chroot_rel_path.lstrip(os.sep))
+    return os.path.join(self.path, *[part.lstrip(os.sep) for part in args])
 
-  def has_path(self, chroot_rel_path):
+  def has_path(self, *args):
     """Check if a chroot-relative path exists inside the chroot."""
-    return os.path.exists(self.full_path(chroot_rel_path))
+    return os.path.exists(self.full_path(*args))
 
   def GetEnterArgs(self):
     """Build the arguments to enter this chroot."""

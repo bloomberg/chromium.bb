@@ -33,7 +33,7 @@ void OnReadDirectoryOnIOThread(
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, result, std::move(entries), has_more));
 }
@@ -54,8 +54,8 @@ void OnGetMetadataOnIOThread(
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result, info));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result, info));
 }
 
 void GetMetadataOnIOThread(
@@ -79,8 +79,7 @@ RecentDiskSource::RecentDiskSource(std::string mount_point_name,
     : mount_point_name_(std::move(mount_point_name)),
       ignore_dotfiles_(ignore_dotfiles),
       max_depth_(max_depth),
-      uma_histogram_name_(std::move(uma_histogram_name)),
-      weak_ptr_factory_(this) {
+      uma_histogram_name_(std::move(uma_histogram_name)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -121,7 +120,7 @@ void RecentDiskSource::ScanDirectory(const base::FilePath& path, int depth) {
   storage::FileSystemURL url = BuildDiskURL(path);
 
   ++inflight_readdirs_;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &ReadDirectoryOnIOThread,
@@ -156,7 +155,7 @@ void RecentDiskSource::OnReadDirectory(
     } else {
       storage::FileSystemURL url = BuildDiskURL(subpath);
       ++inflight_stats_;
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &GetMetadataOnIOThread,

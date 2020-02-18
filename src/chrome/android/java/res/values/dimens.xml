@@ -56,7 +56,6 @@
 
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">258dp</dimen>
-    <dimen name="menu_negative_software_vertical_offset">0dp</dimen>
     <!-- The amount to fade the edges of the menu to indicate more content is available
          via scrolling. -->
     <dimen name="menu_vertical_fade_distance">15dp</dimen>
@@ -110,24 +109,34 @@
     <dimen name="infobar_translate_fade_edge_length">18dp</dimen>
     <dimen name="infobar_translate_menu_width">260dp</dimen>
 
-    <!-- Contextual search dimensions -->
+    <!-- Overlay Panel dimensions -->
+    <dimen name="overlay_panel_end_buttons_width">94dp</dimen>
+    <dimen name="overlay_panel_padded_button_width">41dp</dimen>
+    <dimen name="overlay_panel_text_layer_min_height">38dp</dimen>
+    <dimen name="overlay_panel_button_padding">12dp</dimen>
+    <dimen name="overlay_panel_caption_spacing">1.5dp</dimen>
+
+    <!-- Contextual Search dimensions -->
     <dimen name="contextual_search_bar_banner_padding">12dp</dimen>
     <dimen name="contextual_search_bar_image_size">36dp</dimen>
-    <!-- The following two dimensions were taking from the UI specs for contextual search, where
-    they were 36dp and 3dp respectively, but have been updated to allow for padding around
-    TextViews that we cannot get rid of. -->
-    <dimen name="contextual_search_text_layer_min_height">38dp</dimen>
-    <dimen name="contextual_search_term_caption_spacing">1.5dp</dimen>
-    <!-- This is the offset of the divider from the end of the bar. -->
-    <dimen name="contextual_search_end_button_width">48dp</dimen>
-    <!-- Width of multiple buttons at the end of the Bar. -->
-    <dimen name="contextual_search_end_buttons_width">96dp</dimen>
+    <dimen name="contextual_search_text_layer_min_height">
+        @dimen/overlay_panel_text_layer_min_height
+    </dimen>
+    <dimen name="contextual_search_term_caption_spacing">
+        @dimen/overlay_panel_caption_spacing
+    </dimen>
+    <dimen name="contextual_search_padded_button_width">
+      @dimen/overlay_panel_padded_button_width
+    </dimen>
     <dimen name="contextual_search_divider_line_width">1dp</dimen>
     <dimen name="contextual_search_divider_line_height">24dp</dimen>
+    <!-- Padding at the end of the Bar. -->
+    <dimen name="contextual_search_end_padding">7dp</dimen>
     <dimen name="contextual_search_bubble_y_inset">-3dp</dimen>
 
     <!-- Overlay panel dimensions -->
-    <dimen name="overlay_panel_bar_height">56dp</dimen>
+    <dimen name="overlay_panel_bar_height_legacy">56dp</dimen>
+    <dimen name="overlay_panel_bar_height">60dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>
@@ -146,6 +155,15 @@
 
     <!-- Password generation dialog dimensions -->
     <dimen name="password_generation_dialog_padding">24dp</dimen>
+
+    <!-- Password manager illustration dialogs -->
+    <dimen name="password_manager_dialog_padding">8dp</dimen>
+    <dimen name="password_manager_dialog_illustration_height">156dp</dimen>
+    <dimen name="password_manager_dialog_min_vertical_space_to_show_illustration">350dp</dimen>
+    <dimen name="password_manager_dialog_text_horizontal_padding">16dp</dimen>
+    <dimen name="password_manager_dialog_title_padding_top">16dp</dimen>
+    <dimen name="password_manager_dialog_details_padding_bottom">8dp</dimen>
+    <dimen name="password_manager_dialog_details_padding_top">12dp</dimen>
 
     <!-- Promo dialogs -->
     <dimen name="promo_dialog_illustration_margin">24dp</dimen>
@@ -207,6 +225,8 @@
     <!-- ModalDialogView dimensions -->
     <dimen name="modal_dialog_control_vertical_padding">2dp</dimen>
     <dimen name="modal_dialog_control_horizontal_padding">8dp</dimen>
+    <dimen name="modal_dialog_control_vertical_padding_filled">10dp</dimen>
+    <dimen name="modal_dialog_control_horizontal_padding_filled">16dp</dimen>
     <dimen name="tab_modal_scrim_vertical_margin">16dp</dimen>
 
     <!-- Tab Strip Dimensions -->
@@ -257,6 +277,7 @@
     <dimen name="location_bar_icon_width">28dp</dimen>
     <dimen name="location_bar_action_icon_width">48dp</dimen>
     <dimen name="location_bar_start_icon_width">28dp</dimen>
+    <dimen name="location_bar_start_icon_margin_end">4dp</dimen>
     <dimen name="location_bar_lateral_padding">10dp</dimen>
     <!--  When the url action container is shown, the location bar end padding is built in to its
     actions, so the action container itself uses a negative offset to properly align with the end
@@ -296,11 +317,7 @@
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
     <dimen name="omnibox_suggestion_first_line_text_size">16sp</dimen>
     <dimen name="omnibox_suggestion_second_line_text_size">14sp</dimen>
-    <dimen name="omnibox_suggestion_answer_line2_vertical_spacing">3dp</dimen>
     <dimen name="omnibox_suggestion_edit_url_min_height">60dp</dimen>
-    <!-- omnibox_suggestion_answer_line2_vertical_spacing + 2dp -->
-    <dimen name="omnibox_suggestion_answer_image_vertical_spacing">5dp</dimen>
-    <dimen name="omnibox_suggestion_answer_image_horizontal_spacing">4dp</dimen>
     <dimen name="omnibox_suggestion_start_offset_without_icon">18dp</dimen>
     <dimen name="omnibox_suggestion_start_offset_with_icon">56dp</dimen>
 
@@ -313,11 +330,12 @@
 
     <dimen name="omnibox_suggestion_refine_width">48dp</dimen>
     <dimen name="omnibox_suggestion_text_vertical_padding">5dp</dimen>
-    <dimen name="omnibox_suggestion_multiline_text_vertical_padding">10dp</dimen>
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
 
     <!-- Adding search engine logo to the omnibox. -->
-    <dimen name="omnibox_search_engine_logo_favicon_size">24dp</dimen>
+    <!-- Max size which will fit completely in the composed/rounded bg. -->
+    <dimen name="omnibox_search_engine_logo_favicon_size">17dp</dimen>
+    <dimen name="omnibox_search_engine_logo_composed_size">24dp</dimen>
 
     <!-- NTP dimensions -->
     <dimen name="tile_grid_layout_max_width">504dp</dimen>
@@ -540,7 +558,6 @@
     <dimen name="list_item_start_icon_width">36dp</dimen>
     <dimen name="list_item_start_icon_corner_radius">18dp</dimen>
     <dimen name="list_item_end_icon_width">56dp</dimen>
-    <dimen name="list_menu_width">180dp</dimen>
 
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_layout_row_padding">16dp</dimen>
@@ -555,6 +572,7 @@
     <!-- Bottom Sheet dimensions -->
     <dimen name="bottom_sheet_min_full_half_distance">140dp</dimen>
     <dimen name="bottom_sheet_peek_height">56dp</dimen>
+    <dimen name="bottom_sheet_toolbar_shadow_height">16dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>
@@ -630,11 +648,22 @@
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
 
     <!-- History Navigation UI Item -->
-    <dimen name="navigation_bubble_border_width">1dp</dimen>
-    <dimen name="navigation_bubble_default_height">32dp</dimen>
-    <dimen name="navigation_bubble_bg_vertical_inset">0dp</dimen>
-    <dimen name="navigation_bubble_vertical_padding">4dp</dimen>
-    <dimen name="navigation_bubble_horizontal_padding">8dp</dimen>
-    <dimen name="navigation_bubble_icon_size">20dp</dimen>
-    <dimen name="navigation_bubble_icon_leading_margin">8dp</dimen>
+    <dimen name="navigation_bubble_size">44dp</dimen>
+    <dimen name="navigation_bubble_radius">22dp</dimen>
+    <dimen name="navigation_bubble_shadow_padding">1dp</dimen>
+    <dimen name="navigation_bubble_arrow_size">32dp</dimen>
+    <dimen name="navigation_bubble_start_padding">2dp</dimen>
+    <dimen name="navigation_bubble_top_padding">4dp</dimen>
+    <dimen name="navigation_bubble_bottom_padding">4dp</dimen>
+    <dimen name="navigation_bubble_text_top_padding">3dp</dimen>
+    <dimen name="navigation_bubble_text_bottom_padding">5dp</dimen>
+    <dimen name="navigation_bubble_text_start_padding">2dp</dimen>
+    <dimen name="navigation_bubble_text_end_padding">8dp</dimen>
+    <dimen name="navigation_sheet_toolbar_bottom_padding">44dp</dimen>
+    <dimen name="navigation_sheet_content_top_padding">18dp</dimen>
+    <dimen name="navigation_sheet_content_bottom_padding">4dp</dimen>
+    <dimen name="navigation_sheet_content_wrap_padding">12dp</dimen>
+
+    <!-- ChromeTextInputLayout dimensions -->
+    <dimen name="text_input_layout_padding_start">3dp</dimen>
 </resources>

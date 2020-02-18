@@ -29,6 +29,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_popup_view.h"
@@ -386,6 +387,158 @@ TEST_F(AppListControllerImplTest,
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
+}
+
+// The test parameter indicates whether the shelf should auto-hide. In either
+// case the animation behaviors should be the same.
+class AppListAnimationTest : public AshTestBase,
+                             public testing::WithParamInterface<bool> {
+ public:
+  AppListAnimationTest() = default;
+  ~AppListAnimationTest() override = default;
+
+  void SetUp() override {
+    AshTestBase::SetUp();
+
+    Shelf* const shelf = AshTestBase::GetPrimaryShelf();
+    shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+
+    if (GetParam()) {
+      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+    }
+
+    // The shelf should be shown at this point despite auto hide behavior, given
+    // that no windows are shown.
+    shown_shelf_bounds_ = shelf->shelf_widget()->GetWindowBoundsInScreen();
+  }
+
+  int GetAppListCurrentTop() {
+    gfx::Point app_list_top =
+        GetAppListView()->GetBoundsInScreen().top_center();
+    GetAppListView()->GetWidget()->GetLayer()->transform().TransformPoint(
+        &app_list_top);
+    return app_list_top.y();
+  }
+
+  int GetAppListTargetTop() {
+    gfx::Point app_list_top =
+        GetAppListView()->GetBoundsInScreen().top_center();
+    GetAppListView()
+        ->GetWidget()
+        ->GetLayer()
+        ->GetTargetTransform()
+        .TransformPoint(&app_list_top);
+    return app_list_top.y();
+  }
+
+  int shown_shelf_top() const { return shown_shelf_bounds_.y(); }
+
+  // The offset that should be animated between kPeeking and kClosed app list
+  // view states - the vertical distance between shelf top (in shown state) and
+  // the app list top in peeking state.
+  int PeekingHeightOffset() const {
+    return shown_shelf_bounds_.y() - PeekingHeightTop();
+  }
+
+  // The app list view y coordinate in peeking state.
+  int PeekingHeightTop() const {
+    return shown_shelf_bounds_.bottom() -
+           app_list::AppListConfig::instance().peeking_app_list_height();
+  }
+
+ private:
+  // Set during setup.
+  gfx::Rect shown_shelf_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListAnimationTest);
+};
+
+INSTANTIATE_TEST_SUITE_P(AutoHideShelf, AppListAnimationTest, testing::Bool());
+
+// Tests app list animation to peeking state.
+TEST_P(AppListAnimationTest, AppListShowPeekingAnimation) {
+  // Set the normal transition duration so tests can easily determine intended
+  // animation length, and calculate expected app list position at different
+  // animation step points. Also, prevents the app list view to snapping to the
+  // final position.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  ShowAppListNow();
+
+  // Verify that the app list view's top matches the shown shelf top as the show
+  // animation starts.
+  EXPECT_EQ(shown_shelf_top(), GetAppListCurrentTop());
+  EXPECT_EQ(PeekingHeightTop(), GetAppListTargetTop());
+}
+
+// Tests app list animation from peeking to closed state.
+TEST_P(AppListAnimationTest, AppListCloseFromPeekingAnimation) {
+  ShowAppListNow();
+
+  // Set the normal transition duration so tests can easily determine intended
+  // animation length, and calculate expected app list position at different
+  // animation step points. Also, prevents the app list view to snapping to the
+  // final position.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Dismiss app list, initial app list position should be at peeking height.
+  const int offset_to_animate = PeekingHeightOffset();
+  DismissAppListNow();
+  EXPECT_EQ(shown_shelf_top() - offset_to_animate, GetAppListCurrentTop());
+  EXPECT_EQ(shown_shelf_top(), GetAppListTargetTop());
+}
+
+// Tests app list close animation when app list gets dismissed while animating
+// to peeking state.
+TEST_P(AppListAnimationTest, AppListDismissWhileShowingPeeking) {
+  // Set the normal transition duration so tests can easily determine intended
+  // animation length, and calculate expected app list position at different
+  // animation step points. Also, prevents the app list view to snapping to the
+  // final position.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  ShowAppListNow();
+
+  // Verify that the app list view's top matches the shown shelf top as the show
+  // animation starts.
+  EXPECT_EQ(shown_shelf_top(), GetAppListCurrentTop());
+  EXPECT_EQ(PeekingHeightTop(), GetAppListTargetTop());
+
+  // Start dismissing app list. Verify the new animation starts at the same
+  // point the show animation ended.
+  DismissAppListNow();
+
+  EXPECT_EQ(shown_shelf_top(), GetAppListTargetTop());
+}
+
+// Tests app list animation when show is requested while app list close
+// animation is in progress.
+TEST_P(AppListAnimationTest, AppListShowPeekingWhileClosing) {
+  // Show app list while animations are still instantanious.
+  ShowAppListNow();
+
+  // Set the normal transition duration so tests can easily determine intended
+  // animation length, and calculate expected app list position at different
+  // animation step points. Also, prevents the app list view to snapping to the
+  // final position.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  int offset_to_animate = PeekingHeightOffset();
+  DismissAppListNow();
+
+  // Verify that the app list view's top initially matches the peeking height.
+  EXPECT_EQ(shown_shelf_top() - offset_to_animate, GetAppListCurrentTop());
+  EXPECT_EQ(shown_shelf_top(), GetAppListTargetTop());
+
+  // Start showing the app list. Verify the new animation starts at the same
+  // point the show animation ended.
+  ShowAppListNow();
+
+  EXPECT_EQ(PeekingHeightTop(), GetAppListTargetTop());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {

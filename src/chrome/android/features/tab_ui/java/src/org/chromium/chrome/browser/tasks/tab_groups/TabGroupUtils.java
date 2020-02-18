@@ -9,7 +9,7 @@ import android.support.annotation.StringRes;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.R;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -135,5 +136,10 @@ public class TabGroupUtils {
         assert tabs != null && tabs.size() != 0;
 
         return tabModel.indexOf(tabs.get(tabs.size() - 1));
+    }
+
+    @VisibleForTesting
+    public static void triggerAssertionForTesting() {
+        assert false;
     }
 }

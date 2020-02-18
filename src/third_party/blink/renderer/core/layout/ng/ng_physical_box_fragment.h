@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -27,8 +28,16 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   scoped_refptr<const NGLayoutResult> CloneAsHiddenForPaint() const;
 
   ~NGPhysicalBoxFragment() {
+    if (has_fragment_items_)
+      ComputeItemsAddress()->~NGFragmentItems();
     for (const NGLink& child : Children())
       child.fragment->Release();
+  }
+
+  // Returns |NGFragmentItems| if this fragment has one.
+  bool HasItems() const { return has_fragment_items_; }
+  const NGFragmentItems* Items() const {
+    return has_fragment_items_ ? ComputeItemsAddress() : nullptr;
   }
 
   base::Optional<LayoutUnit> Baseline(const NGBaselineRequest& request) const {
@@ -82,6 +91,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   unsigned BorderEdges() const { return border_edge_; }
   NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
+  // Return true if this is the first fragment generated from a node.
+  bool IsFirstForNode() const { return is_first_for_node_; }
+
 #if DCHECK_IS_ON()
   void CheckSameForSimplifiedLayout(const NGPhysicalBoxFragment&,
                                     bool check_same_block_size) const;
@@ -93,17 +105,23 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         const NGPhysicalBoxStrut& padding,
                         WritingMode block_or_line_writing_mode);
 
+  const NGFragmentItems* ComputeItemsAddress() const {
+    DCHECK(has_fragment_items_ || has_borders_ || has_padding_);
+    const NGLink* children_end = children_ + Children().size();
+    return reinterpret_cast<const NGFragmentItems*>(children_end);
+  }
+
   const NGPhysicalBoxStrut* ComputeBordersAddress() const {
-    DCHECK(has_borders_);
-    return reinterpret_cast<const NGPhysicalBoxStrut*>(children_ +
-                                                       Children().size());
+    DCHECK(has_borders_ || has_padding_);
+    const NGFragmentItems* items = ComputeItemsAddress();
+    if (has_fragment_items_)
+      ++items;
+    return reinterpret_cast<const NGPhysicalBoxStrut*>(items);
   }
 
   const NGPhysicalBoxStrut* ComputePaddingAddress() const {
     DCHECK(has_padding_);
-    const NGPhysicalBoxStrut* address =
-        reinterpret_cast<const NGPhysicalBoxStrut*>(children_ +
-                                                    Children().size());
+    const NGPhysicalBoxStrut* address = ComputeBordersAddress();
     return has_borders_ ? address + 1 : address;
   }
 

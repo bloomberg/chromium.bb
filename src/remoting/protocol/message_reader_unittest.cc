@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_stream_socket.h"
@@ -79,7 +79,7 @@ class MessageReaderTest : public testing::Test {
     callback_.OnMessage();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<MessageReader> reader_;
   FakeStreamSocket socket_;
   MockMessageReceivedCallback callback_;

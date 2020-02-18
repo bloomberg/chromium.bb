@@ -37,6 +37,7 @@
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/caption_button_types.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -631,9 +632,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
                            public display::DisplayObserver {
  public:
   WaylandRemoteShell(Display* display, wl_resource* remote_shell_resource)
-      : display_(display),
-        remote_shell_resource_(remote_shell_resource),
-        weak_ptr_factory_(this) {
+      : display_(display), remote_shell_resource_(remote_shell_resource) {
     WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
     helper->AddTabletModeObserver(this);
     helper->AddActivationObserver(this);
@@ -679,6 +678,29 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       double default_device_scale_factor) {
     return display_->CreateInputMethodSurface(surface,
                                               default_device_scale_factor);
+  }
+
+  // TODO(mukai, oshima): rewrite this through delegate-style instead of
+  // creating callbacks.
+  ClientControlledShellSurface::BoundsChangedCallback
+  CreateBoundsChangedCallback(wl_resource* resource) {
+    return base::BindRepeating(
+        &WaylandRemoteShell::HandleRemoteSurfaceBoundsChangedCallback,
+        weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
+  }
+
+  ClientControlledShellSurface::StateChangedCallback CreateStateChangedCallback(
+      wl_resource* resource) {
+    return base::BindRepeating(
+        &WaylandRemoteShell::HandleRemoteSurfaceStateChangedCallback,
+        weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
+  }
+
+  ClientControlledShellSurface::GeometryChangedCallback
+  CreateGeometryChangedCallback(wl_resource* resource) {
+    return base::BindRepeating(
+        &WaylandRemoteShell::HandleRemoteSurfaceGeometryChangedCallback,
+        weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
   }
 
   // Overridden from display::DisplayObserver:
@@ -835,7 +857,20 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     }
 
     zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
-    wl_client_flush(wl_resource_get_client(remote_shell_resource_));
+
+    base::flat_set<wl_client*> clients;
+    clients.insert(wl_resource_get_client(remote_shell_resource_));
+
+    for (const auto& bounds_change : pending_bounds_changes_) {
+      SendBoundsChanged(bounds_change.first, bounds_change.second.display_id,
+                        bounds_change.second.bounds_in_display,
+                        bounds_change.second.reason);
+      clients.insert(wl_resource_get_client(bounds_change.first));
+    }
+    pending_bounds_changes_.clear();
+
+    for (auto* client : clients)
+      wl_client_flush(client);
   }
 
   void SendActivated(aura::Window* gained_active, aura::Window* lost_active) {
@@ -871,6 +906,140 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     wl_client_flush(client);
   }
 
+  void HandleRemoteSurfaceBoundsChangedCallback(
+      wl_resource* resource,
+      ash::WindowStateType current_state,
+      ash::WindowStateType requested_state,
+      int64_t display_id,
+      const gfx::Rect& bounds_in_display,
+      bool resize,
+      int bounds_change) {
+    zcr_remote_surface_v1_bounds_change_reason reason =
+        ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_RESIZE;
+    if (!resize) {
+      reason = current_state == ash::WindowStateType::kPip
+                   ? ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_MOVE_PIP
+                   : ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_MOVE;
+    }
+    if (bounds_change & ash::WindowResizer::kBoundsChange_Resizes) {
+      reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_DRAG_RESIZE;
+    } else if (bounds_change & ash::WindowResizer::kBoundsChange_Repositions) {
+      reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_DRAG_MOVE;
+    }
+    // Override the reason only if the window enters snapped mode. If the window
+    // resizes by dragging in snapped mode, we need to keep the original reason.
+    if (requested_state != current_state) {
+      if (requested_state == ash::WindowStateType::kLeftSnapped) {
+        reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_LEFT;
+      } else if (requested_state == ash::WindowStateType::kRightSnapped) {
+        reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_RIGHT;
+      }
+    }
+    if (wl_resource_get_version(resource) >= 22) {
+      if (needs_send_display_metrics_) {
+        pending_bounds_changes_.emplace(
+            std::make_pair<wl_resource*, BoundsChangeData>(
+                std::move(resource),
+                BoundsChangeData(display_id, bounds_in_display, reason)));
+        return;
+      }
+      SendBoundsChanged(resource, display_id, bounds_in_display, reason);
+    } else {
+      gfx::Rect bounds_in_screen = gfx::Rect(bounds_in_display);
+      display::Display display;
+      display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                            &display);
+      // The display ID should be valid.
+      DCHECK(display.is_valid());
+      if (display.is_valid())
+        bounds_in_screen.Offset(display.bounds().OffsetFromOrigin());
+      else
+        LOG(ERROR) << "Invalid Display in send_bounds_changed:" << display_id;
+
+      zcr_remote_surface_v1_send_bounds_changed(
+          resource, static_cast<uint32_t>(display_id >> 32),
+          static_cast<uint32_t>(display_id), bounds_in_screen.x(),
+          bounds_in_screen.y(), bounds_in_screen.width(),
+          bounds_in_screen.height(), reason);
+    }
+    wl_client_flush(wl_resource_get_client(resource));
+  }
+
+  void SendBoundsChanged(wl_resource* resource,
+                         int64_t display_id,
+                         const gfx::Rect& bounds_in_display,
+                         zcr_remote_surface_v1_bounds_change_reason reason) {
+    zcr_remote_surface_v1_send_bounds_changed(
+        resource, static_cast<uint32_t>(display_id >> 32),
+        static_cast<uint32_t>(display_id), bounds_in_display.x(),
+        bounds_in_display.y(), bounds_in_display.width(),
+        bounds_in_display.height(), reason);
+  }
+
+  void HandleRemoteSurfaceStateChangedCallback(
+      wl_resource* resource,
+      ash::WindowStateType old_state_type,
+      ash::WindowStateType new_state_type) {
+    DCHECK_NE(old_state_type, new_state_type);
+    LOG_IF(ERROR, pending_bounds_changes_.count(resource) > 0)
+        << "Sending window state while there is a pending bounds change. This "
+           "should not happen.";
+
+    uint32_t state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_NORMAL;
+    switch (new_state_type) {
+      case ash::WindowStateType::kMinimized:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED;
+        break;
+      case ash::WindowStateType::kMaximized:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED;
+        break;
+      case ash::WindowStateType::kFullscreen:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN;
+        break;
+      case ash::WindowStateType::kPinned:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
+        break;
+      case ash::WindowStateType::kTrustedPinned:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED;
+        break;
+      case ash::WindowStateType::kLeftSnapped:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_LEFT_SNAPPED;
+        break;
+      case ash::WindowStateType::kRightSnapped:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED;
+        break;
+      case ash::WindowStateType::kPip:
+        state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP;
+        break;
+      default:
+        break;
+    }
+
+    zcr_remote_surface_v1_send_state_type_changed(resource, state_type);
+    wl_client_flush(wl_resource_get_client(resource));
+  }
+
+  void HandleRemoteSurfaceGeometryChangedCallback(wl_resource* resource,
+                                                  const gfx::Rect& geometry) {
+    LOG_IF(ERROR, pending_bounds_changes_.count(resource) > 0)
+        << "Sending the new window geometry while there is a pending bounds "
+           "change. This should not happen.";
+    zcr_remote_surface_v1_send_window_geometry_changed(
+        resource, geometry.x(), geometry.y(), geometry.width(),
+        geometry.height());
+    wl_client_flush(wl_resource_get_client(resource));
+  }
+
+  struct BoundsChangeData {
+    int64_t display_id;
+    gfx::Rect bounds_in_display;
+    zcr_remote_surface_v1_bounds_change_reason reason;
+    BoundsChangeData(int64_t display_id,
+                     const gfx::Rect& bounds,
+                     zcr_remote_surface_v1_bounds_change_reason reason)
+        : display_id(display_id), bounds_in_display(bounds), reason(reason) {}
+  };
+
   // The exo display instance. Not owned.
   Display* const display_;
 
@@ -881,7 +1050,9 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
   int layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
-  base::WeakPtrFactory<WaylandRemoteShell> weak_ptr_factory_;
+  base::flat_map<wl_resource*, BoundsChangeData> pending_bounds_changes_;
+
+  base::WeakPtrFactory<WaylandRemoteShell> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WaylandRemoteShell);
 };
@@ -907,82 +1078,6 @@ void HandleRemoteSurfaceCloseCallback(wl_resource* resource) {
   wl_client_flush(wl_resource_get_client(resource));
 }
 
-void HandleRemoteSurfaceStateChangedCallback(
-    wl_resource* resource,
-    ash::WindowStateType old_state_type,
-    ash::WindowStateType new_state_type) {
-  DCHECK_NE(old_state_type, new_state_type);
-
-  uint32_t state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_NORMAL;
-  switch (new_state_type) {
-    case ash::WindowStateType::kMinimized:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED;
-      break;
-    case ash::WindowStateType::kMaximized:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED;
-      break;
-    case ash::WindowStateType::kFullscreen:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN;
-      break;
-    case ash::WindowStateType::kPinned:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
-      break;
-    case ash::WindowStateType::kTrustedPinned:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED;
-      break;
-    case ash::WindowStateType::kLeftSnapped:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_LEFT_SNAPPED;
-      break;
-    case ash::WindowStateType::kRightSnapped:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED;
-      break;
-    case ash::WindowStateType::kPip:
-      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP;
-      break;
-    default:
-      break;
-  }
-
-  zcr_remote_surface_v1_send_state_type_changed(resource, state_type);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
-void HandleRemoteSurfaceBoundsChangedCallback(
-    wl_resource* resource,
-    ash::WindowStateType current_state,
-    ash::WindowStateType requested_state,
-    int64_t display_id,
-    const gfx::Rect& bounds,
-    bool resize,
-    int bounds_change) {
-  zcr_remote_surface_v1_bounds_change_reason reason =
-      ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_RESIZE;
-  if (!resize) {
-    reason = current_state == ash::WindowStateType::kPip
-                 ? ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_MOVE_PIP
-                 : ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_MOVE;
-  }
-  if (bounds_change & ash::WindowResizer::kBoundsChange_Resizes) {
-    reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_DRAG_RESIZE;
-  } else if (bounds_change & ash::WindowResizer::kBoundsChange_Repositions) {
-    reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_DRAG_MOVE;
-  }
-  // Override the reason only if the window enters snapped mode. If the window
-  // resizes by dragging in snapped mode, we need to keep the original reason.
-  if (requested_state != current_state) {
-    if (requested_state == ash::WindowStateType::kLeftSnapped) {
-      reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_LEFT;
-    } else if (requested_state == ash::WindowStateType::kRightSnapped) {
-      reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_RIGHT;
-    }
-  }
-  zcr_remote_surface_v1_send_bounds_changed(
-      resource, static_cast<uint32_t>(display_id >> 32),
-      static_cast<uint32_t>(display_id), bounds.x(), bounds.y(), bounds.width(),
-      bounds.height(), reason);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
 void HandleRemoteSurfaceDragStartedCallback(wl_resource* resource,
                                             int component) {
   zcr_remote_surface_v1_send_drag_started(resource, ResizeDirection(component));
@@ -994,14 +1089,6 @@ void HandleRemoteSurfaceDragFinishedCallback(wl_resource* resource,
                                              int y,
                                              bool canceled) {
   zcr_remote_surface_v1_send_drag_finished(resource, x, y, canceled ? 1 : 0);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
-void HandleRemoteSurfaceGeometryChangedCallback(wl_resource* resource,
-                                                const gfx::Rect& geometry) {
-  zcr_remote_surface_v1_send_window_geometry_changed(
-      resource, geometry.x(), geometry.y(), geometry.width(),
-      geometry.height());
   wl_client_flush(wl_resource_get_client(resource));
 }
 
@@ -1036,18 +1123,15 @@ void remote_shell_get_remote_surface(wl_client* client,
       base::Bind(&HandleRemoteSurfaceCloseCallback,
                  base::Unretained(remote_surface_resource)));
   shell_surface->set_state_changed_callback(
-      base::Bind(&HandleRemoteSurfaceStateChangedCallback,
-                 base::Unretained(remote_surface_resource)));
+      shell->CreateStateChangedCallback(remote_surface_resource));
   shell_surface->set_geometry_changed_callback(
-      base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
-                          base::Unretained(remote_surface_resource)));
+      shell->CreateGeometryChangedCallback(remote_surface_resource));
   shell_surface->set_surface_destroyed_callback(base::BindOnce(
       &wl_resource_destroy, base::Unretained(remote_surface_resource)));
 
   DCHECK(wl_resource_get_version(remote_surface_resource) >= 10);
   shell_surface->set_bounds_changed_callback(
-      base::BindRepeating(&HandleRemoteSurfaceBoundsChangedCallback,
-                          base::Unretained(remote_surface_resource)));
+      shell->CreateBoundsChangedCallback(remote_surface_resource));
   shell_surface->set_drag_started_callback(
       base::BindRepeating(&HandleRemoteSurfaceDragStartedCallback,
                           base::Unretained(remote_surface_resource)));
@@ -1140,8 +1224,6 @@ gfx::Insets GetWorkAreaInsetsInClientPixel(
     float default_dsf,
     const gfx::Size& size_in_client_pixel,
     const gfx::Rect& work_area_in_dp) {
-  gfx::Rect work_area_in_display = display.work_area();
-  work_area_in_display.Offset(-display.bounds().x(), -display.bounds().y());
   gfx::Rect local_work_area_in_dp = work_area_in_dp;
   local_work_area_in_dp.Offset(-display.bounds().x(), -display.bounds().y());
   gfx::Rect work_area_in_client_pixel = ScaleBoundsToPixelSnappedToParent(

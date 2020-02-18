@@ -7,7 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -129,7 +129,7 @@ class WilcoDtcSupportdManagerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
   std::unique_ptr<TestUpstartClient> upstart_client_;
   FakeChromeUserManager* fake_user_manager_{new FakeChromeUserManager()};

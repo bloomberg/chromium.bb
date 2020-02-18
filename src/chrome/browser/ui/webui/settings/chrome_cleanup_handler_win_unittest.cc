@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -19,7 +20,7 @@ namespace settings {
 using safe_browsing::MockChromeCleanerProcess;
 
 TEST(ChromeCleanupHandlerTest, GetExtensionsNamesFromIds) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_(TestingBrowserProcess::GetGlobal());
 
   // Set up the testing profile to get the extensions registry from it.
@@ -35,7 +36,7 @@ TEST(ChromeCleanupHandlerTest, GetExtensionsNamesFromIds) {
   };
 
   std::set<base::string16> expected_names = {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Extension names are only available in Google-branded builds.
     MockChromeCleanerProcess::kInstalledExtensionName1,
     MockChromeCleanerProcess::kInstalledExtensionName2,

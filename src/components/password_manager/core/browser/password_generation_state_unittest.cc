@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -133,7 +133,7 @@ class PasswordGenerationStateTest : public testing::Test {
 
  private:
   // For the MockPasswordStore.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> mock_store_;
   // Test with the real form saver for better robustness.
   FormSaverImpl form_saver_;
@@ -387,6 +387,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenSaveAsNew) {
   pending.username_value = ASCIIToUTF16("edited_username");
   PasswordForm generated_with_date = pending;
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
+  generated_with_date.date_last_used = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
   state().CommitGeneratedPassword(pending, {} /* matches */,
@@ -428,6 +429,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenUpdate) {
   generated.username_value = ASCIIToUTF16("username");
   PasswordForm generated_with_date = generated;
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
+  generated_with_date.date_last_used = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(),
               UpdateLoginWithPrimaryKey(generated_with_date,

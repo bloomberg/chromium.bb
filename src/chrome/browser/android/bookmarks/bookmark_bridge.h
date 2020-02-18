@@ -8,7 +8,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
+#include "base/guid.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
@@ -36,11 +39,15 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   bool IsDoingExtensiveChanges(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean IsEditBookmarksEnabled(
+  jboolean IsEditBookmarksEnabled(JNIEnv* env);
+
+  void LoadEmptyPartnerBookmarkShimForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void LoadEmptyPartnerBookmarkShimForTesting(
+  // Loads a fake partner bookmarks shim for testing.
+  // This is used in BookmarkBridgeTest.java.
+  void LoadFakePartnerBookmarkShimForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

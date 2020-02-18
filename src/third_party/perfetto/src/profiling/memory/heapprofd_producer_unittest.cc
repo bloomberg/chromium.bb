@@ -16,14 +16,11 @@
 
 #include "src/profiling/memory/heapprofd_producer.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include "perfetto/ext/tracing/core/basic_types.h"
 #include "perfetto/ext/tracing/core/commit_data_request.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
-
 #include "src/base/test/test_task_runner.h"
+#include "test/gtest_and_gmock.h"
 
 namespace perfetto {
 namespace profiling {
@@ -42,7 +39,8 @@ class MockProducerEndpoint : public TracingService::ProducerEndpoint {
 
   MOCK_CONST_METHOD0(shared_memory, SharedMemory*());
   MOCK_CONST_METHOD0(shared_buffer_page_size_kb, size_t());
-  MOCK_METHOD1(CreateTraceWriter, std::unique_ptr<TraceWriter>(BufferID));
+  MOCK_METHOD2(CreateTraceWriter,
+               std::unique_ptr<TraceWriter>(BufferID, BufferExhaustedPolicy));
   MOCK_METHOD0(GetInProcessShmemArbiter, SharedMemoryArbiter*());
   MOCK_METHOD1(ActivateTriggers, void(const std::vector<std::string>&));
 

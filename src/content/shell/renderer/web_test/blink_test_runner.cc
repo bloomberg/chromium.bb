@@ -59,7 +59,6 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -639,10 +638,11 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     base::OnceCallback<void(bool)> callback) {
   app_banner_service_.reset(new test_runner::AppBannerService());
-  blink::mojom::AppBannerControllerRequest request =
-      mojo::MakeRequest(&app_banner_service_->controller());
   render_view()->GetMainRenderFrame()->BindLocalInterface(
-      blink::mojom::AppBannerController::Name_, request.PassMessagePipe());
+      blink::mojom::AppBannerController::Name_,
+      app_banner_service_->controller()
+          .BindNewPipeAndPassReceiver()
+          .PassPipe());
   app_banner_service_->SendBannerPromptRequest(event_platforms,
                                                std::move(callback));
 }
@@ -675,6 +675,12 @@ void BlinkTestRunner::RunIdleTasks(base::OnceClosure callback) {
 
 void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
   ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
+}
+
+void BlinkTestRunner::ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+    const std::string& scheme) {
+  Send(new WebTestHostMsg_ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      routing_id(), scheme));
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -751,8 +757,7 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
 mojom::WebTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
-    RenderThread::Get()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName,
+    RenderThread::Get()->BindHostReceiver(
         mojo::MakeRequest(&bluetooth_fake_adapter_setter_));
   }
   return *bluetooth_fake_adapter_setter_;

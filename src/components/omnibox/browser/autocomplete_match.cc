@@ -22,6 +22,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/document_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -142,6 +143,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer(match.answer),
       transition(match.transition),
       type(match.type),
+      parent_type(match.parent_type),
       has_tab_match(match.has_tab_match),
       subtype_identifier(match.subtype_identifier),
       associated_keyword(match.associated_keyword
@@ -194,6 +196,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer = match.answer;
   transition = match.transition;
   type = match.type;
+  parent_type = match.parent_type;
   has_tab_match = match.has_tab_match;
   subtype_identifier = match.subtype_identifier;
   associated_keyword.reset(
@@ -388,13 +391,57 @@ base::string16 AutocompleteMatch::GetWhyThisSuggestionText() const {
 }
 
 // static
-bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
-                                     const AutocompleteMatch& elem2) {
+bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& match1,
+                                     const AutocompleteMatch& match2) {
   // For equal-relevance matches, we sort alphabetically, so that providers
   // who return multiple elements at the same priority get a "stable" sort
   // across multiple updates.
-  return (elem1.relevance == elem2.relevance) ?
-      (elem1.contents < elem2.contents) : (elem1.relevance > elem2.relevance);
+  return (match1.relevance == match2.relevance)
+             ? (match1.contents < match2.contents)
+             : (match1.relevance > match2.relevance);
+}
+
+// static
+bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
+                                        const AutocompleteMatch& match2) {
+  // Prefer the Entity Match over the non-entity match, if they have the same
+  // |fill_into_edit| value.
+  if (match1.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match2.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match1.fill_into_edit == match2.fill_into_edit) {
+    return true;
+  }
+  if (match1.type != AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match2.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      match1.fill_into_edit == match2.fill_into_edit) {
+    return false;
+  }
+
+  // Prefer matches allowed to be the default match.
+  if (match1.allowed_to_be_default_match && !match2.allowed_to_be_default_match)
+    return true;
+  if (!match1.allowed_to_be_default_match && match2.allowed_to_be_default_match)
+    return false;
+
+  // Prefer document suggestions.
+  if (match1.type == AutocompleteMatchType::DOCUMENT_SUGGESTION &&
+      match2.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+    return true;
+  }
+  if (match1.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
+      match2.type == AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+    return false;
+  }
+
+  // By default, simply prefer the more relevant match.
+  return MoreRelevant(match1, match2);
+}
+
+// static
+bool AutocompleteMatch::BetterDuplicateByIterator(
+    const std::vector<AutocompleteMatch>::const_iterator it1,
+    const std::vector<AutocompleteMatch>::const_iterator it2) {
+  return BetterDuplicate(*it1, *it2);
 }
 
 // static
@@ -563,6 +610,13 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
+AutocompleteMatch::Type AutocompleteMatch::GetDemotionType() const {
+  if (!IsSubMatch())
+    return type;
+  else
+    return parent_type;
+}
+
 // static
 TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
     TemplateURLService* template_url_service,
@@ -723,6 +777,34 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
 }
 
 // static
+bool AutocompleteMatch::AllowedToBeDefault(const AutocompleteInput& input,
+                                           AutocompleteMatch& match) {
+  if (match.inline_autocompletion.empty())
+    return true;
+  if (input.prevent_inline_autocomplete())
+    return false;
+  if (input.text().empty() || !base::IsUnicodeWhitespace(input.text().back()))
+    return true;
+
+  // If we've reached here, the input ends in trailing whitespace. If the
+  // trailing whitespace prefixes |match.inline_autocompletion|, then allow the
+  // match to be default and remove the whitespace from
+  // |match.inline_autocompletion|.
+  size_t last_non_whitespace_pos =
+      input.text().find_last_not_of(base::kWhitespaceUTF16);
+  DCHECK_NE(last_non_whitespace_pos, std::string::npos);
+  auto whitespace_suffix = input.text().substr(last_non_whitespace_pos + 1);
+  if (base::StartsWith(match.inline_autocompletion, whitespace_suffix,
+                       base::CompareCase::SENSITIVE)) {
+    match.inline_autocompletion =
+        match.inline_autocompletion.substr(whitespace_suffix.size());
+    return true;
+  }
+
+  return false;
+}
+
+// static
 void AutocompleteMatch::LogSearchEngineUsed(
     const AutocompleteMatch& match,
     TemplateURLService* template_url_service) {
@@ -751,6 +833,12 @@ size_t AutocompleteMatch::GetNextFamilyID() {
 // static
 bool AutocompleteMatch::IsSameFamily(size_t lhs, size_t rhs) {
   return (lhs & FAMILY_SIZE_MASK) == (rhs & FAMILY_SIZE_MASK);
+}
+
+void AutocompleteMatch::SetSubMatch(size_t subrelevance,
+                                    AutocompleteMatch::Type parent_type) {
+  this->subrelevance = subrelevance;
+  this->parent_type = parent_type;
 }
 
 bool AutocompleteMatch::IsSubMatch() const {
@@ -813,7 +901,7 @@ AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
   copy.pedal = pedal;
   if (subrelevance == 0)
     subrelevance = GetNextFamilyID();
-  copy.subrelevance = subrelevance + PEDAL_FAMILY_ID;
+  copy.SetSubMatch(subrelevance + PEDAL_FAMILY_ID, copy.type);
   DCHECK(IsSameFamily(subrelevance, copy.subrelevance));
 
   copy.type = Type::PEDAL;
@@ -940,6 +1028,26 @@ bool AutocompleteMatch::IsVerbatimType() const {
       is_keyword_verbatim_match;
 }
 
+bool AutocompleteMatch::IsSearchProviderSearchSuggestion() const {
+  const bool from_search_provider =
+      (provider && provider->type() == AutocompleteProvider::TYPE_SEARCH);
+  return from_search_provider &&
+         type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+}
+
+bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
+  const bool from_on_device_provider =
+      (provider &&
+       provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD);
+  return from_on_device_provider && subtype_identifier == 271;
+}
+
+bool AutocompleteMatch::IsTrivialAutocompletion() const {
+  return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+         type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+         type == AutocompleteMatchType::SEARCH_OTHER_ENGINE;
+}
+
 bool AutocompleteMatch::SupportsDeletion() const {
   if (deletable)
     return true;
@@ -1013,12 +1121,36 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   return res;
 }
 
-bool AutocompleteMatch::ShouldShowTabMatch() const {
-  return has_tab_match && !associated_keyword;
+bool AutocompleteMatch::ShouldShowTabMatchButton() const {
+  return has_tab_match && !associated_keyword &&
+         !OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled();
 }
 
 bool AutocompleteMatch::ShouldShowButton() const {
-  return ShouldShowTabMatch();
+  return ShouldShowTabMatchButton();
+}
+
+bool AutocompleteMatch::IsTabSwitchSuggestion() const {
+  return (subrelevance & ~FAMILY_SIZE_MASK) == TAB_SWITCH_FAMILY_ID;
+}
+
+void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
+    const AutocompleteMatch& duplicate_match) {
+  // For Entity Matches, absorb the duplicate match's |allowed_to_be_default|
+  // and |inline_autocomplete| properties.
+  if (type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
+      fill_into_edit == duplicate_match.fill_into_edit &&
+      duplicate_match.allowed_to_be_default_match) {
+    allowed_to_be_default_match = true;
+    if (inline_autocompletion.empty())
+      inline_autocompletion = duplicate_match.inline_autocompletion;
+  }
+
+  // And always absorb the higher relevance score of duplicates.
+  if (duplicate_match.relevance > relevance) {
+    RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom, relevance);
+    relevance = duplicate_match.relevance;
+  }
 }
 
 #if DCHECK_IS_ON()

@@ -26,9 +26,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -132,7 +131,6 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
   request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
   request.resource_type = static_cast<int>(resource_type);
   request.is_main_frame = resource_type == content::ResourceType::kMainFrame;
-  request.allow_download = true;
   return request;
 }
 
@@ -169,7 +167,7 @@ class GetResult {
 class ExtensionProtocolsTestBase : public testing::Test {
  public:
   explicit ExtensionProtocolsTestBase(bool force_incognito)
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         rvh_test_enabler_(new content::RenderViewHostTestEnabler()),
         force_incognito_(force_incognito) {}
 
@@ -295,7 +293,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
     return web_contents()->GetMainFrame();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
   std::unique_ptr<network::mojom::URLLoaderFactory> loader_factory_;
   std::unique_ptr<TestingProfile> testing_profile_;

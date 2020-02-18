@@ -63,12 +63,12 @@ class ExceptionState;
 class PaintArtifactCompositor;
 class TreeScope;
 
-class CORE_EXPORT Animation final : public EventTargetWithInlineData,
-                                    public ActiveScriptWrappable<Animation>,
-                                    public ContextLifecycleObserver,
-                                    public CompositorAnimationDelegate,
-                                    public CompositorAnimationClient,
-                                    public AnimationEffectOwner {
+class CORE_EXPORT Animation : public EventTargetWithInlineData,
+                              public ActiveScriptWrappable<Animation>,
+                              public ContextLifecycleObserver,
+                              public CompositorAnimationDelegate,
+                              public CompositorAnimationClient,
+                              public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
 
@@ -76,7 +76,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   enum AnimationPlayState {
     kUnset,
     kIdle,
-    kPending,
+    kPending,  // TODO(crbug.com/958433) remove non-spec compliant state.
     kRunning,
     kPaused,
     kFinished
@@ -99,6 +99,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   ~Animation() override;
   void Dispose();
 
+  virtual bool IsCSSAnimation() const { return false; }
+  virtual bool IsCSSTransition() const { return false; }
+
   // Returns whether the animation is finished.
   bool Update(TimingUpdateReason);
 
@@ -109,10 +112,12 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   Animation* GetAnimation() override { return this; }
 
   // timeToEffectChange returns:
-  //  infinity  - if this animation is no longer in effect
-  //  0         - if this animation requires an update on the next frame
-  //  n         - if this animation requires an update after 'n' units of time
-  double TimeToEffectChange();
+  //  nullopt                  - if this animation is no longer in effect
+  //  AnimationTimeDelta()     - if this animation requires an update on the
+  //                             next frame
+  //  AnimationTimeDelta() > 0 - if this animation requires an update
+  //                             after 'n' units of time
+  base::Optional<AnimationTimeDelta> TimeToEffectChange();
 
   void cancel();
 
@@ -121,16 +126,11 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void setCurrentTime(double new_current_time,
                       bool is_null,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
-
-  double CurrentTimeInternal() const;
   double UnlimitedCurrentTimeInternal() const;
 
-  void SetCurrentTimeInternal(double new_current_time,
-                              TimingUpdateReason = kTimingUpdateOnDemand);
-  bool Paused() const { return paused_ && !is_paused_for_testing_; }
   static const char* PlayStateString(AnimationPlayState);
   String playState() const { return PlayStateString(animation_play_state_); }
-  AnimationPlayState PlayStateInternal() const;
+
   bool pending() const;
 
   void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -143,10 +143,24 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   ScriptPromise finished(ScriptState*);
   ScriptPromise ready(ScriptState*);
 
-  bool Playing() const override {
-    return !(PlayStateInternal() == kIdle || Limited() || paused_ ||
-             is_paused_for_testing_);
+  bool Paused() const {
+    return GetPlayState() == kPaused && !is_paused_for_testing_;
   }
+
+  bool Playing() const override {
+    return GetPlayState() == kRunning && !Limited() && !is_paused_for_testing_;
+  }
+
+  // Indicates if the animation is out of sync with the compositor. A change to
+  // the play state (running/paused) requires synchronization with the
+  // compositor.
+  bool NeedsCompositorTimeSync() const {
+    // TODO(crbug.com/958433): Eliminate need for pending play state.
+    return internal_play_state_ == kPending;
+  }
+
+  AnimationPlayState GetPlayState() const;
+
   bool Limited() const { return Limited(CurrentTimeInternal()); }
   bool FinishedInternal() const { return finished_; }
 
@@ -237,6 +251,15 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
+  // TODO(crbug.com/960944): Deprecate. This version of the play state is not to
+  // spec due to the inclusion of a 'pending' state. Whether or not an animation
+  // is pending is separate from the actual play state.
+  AnimationPlayState PlayStateInternal() const;
+
+  double CurrentTimeInternal() const;
+  void SetCurrentTimeInternal(double new_current_time,
+                              TimingUpdateReason = kTimingUpdateOnDemand);
+
   void ClearOutdated();
   void ForceServiceOnNextFrame();
 
@@ -352,7 +375,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   Member<Event> pending_cancelled_event_;
 
-  enum CompositorAction { kNone, kPause, kStart, kPauseThenStart };
+  // TODO(crbug.com/960944): Consider reintroducing kPause and cleanup use of
+  // mutually exclusive pending_play_ and pending_pause_ flags.
+  enum CompositorAction { kNone, kStart };
 
   class CompositorState {
     USING_FAST_MALLOC(CompositorState);

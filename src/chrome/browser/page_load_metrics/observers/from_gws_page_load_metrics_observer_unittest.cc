@@ -8,10 +8,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
@@ -542,13 +543,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   web_contents()->WasHidden();
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::PageLoadExtraInfo info =
-      GetPageLoadExtraInfoForCommittedLoad();
-
   // If the system clock is low resolution PageLoadTracker's background_time_
   // may be < timing.first_image_paint.
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_image_paint, info)) {
+          timing.paint_timing->first_image_paint,
+          GetDelegateForCommittedLoad())) {
     histogram_tester().ExpectTotalCount(
         internal::kHistogramFromGWSFirstImagePaint, 1);
     histogram_tester().ExpectBucketCount(

@@ -18,8 +18,6 @@
 
 #include <string.h>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/temp_file.h"
 #include "perfetto/ext/base/utils.h"
@@ -36,23 +34,30 @@
 #include "src/tracing/test/mock_consumer.h"
 #include "src/tracing/test/mock_producer.h"
 #include "src/tracing/test/test_shared_memory.h"
+#include "test/gtest_and_gmock.h"
 
-#include "perfetto/trace/test_event.pbzero.h"
-#include "perfetto/trace/trace.pb.h"
-#include "perfetto/trace/trace_packet.pb.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/test_event.pbzero.h"
+#include "protos/perfetto/trace/trace.pb.h"
+#include "protos/perfetto/trace/trace_packet.pb.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 using ::testing::_;
+using ::testing::AssertionFailure;
+using ::testing::AssertionResult;
+using ::testing::AssertionSuccess;
 using ::testing::Contains;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
+using ::testing::ExplainMatchResult;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::IsEmpty;
 using ::testing::Mock;
 using ::testing::Not;
 using ::testing::Property;
 using ::testing::StrictMock;
+using ::testing::StringMatchResultListener;
 
 namespace perfetto {
 
@@ -62,11 +67,11 @@ constexpr size_t kDefaultShmPageSizeKb =
     TracingServiceImpl::kDefaultShmPageSize / 1024;
 constexpr size_t kMaxShmSizeKb = TracingServiceImpl::kMaxShmSize / 1024;
 
-::testing::AssertionResult HasTriggerModeInternal(
+AssertionResult HasTriggerModeInternal(
     const std::vector<protos::TracePacket>& packets,
     protos::TraceConfig::TriggerConfig::TriggerMode mode) {
-  ::testing::StringMatchResultListener matcher_result_string;
-  bool contains = ::testing::ExplainMatchResult(
+  StringMatchResultListener matcher_result_string;
+  bool contains = ExplainMatchResult(
       Contains(Property(
           &protos::TracePacket::trace_config,
           Property(&protos::TraceConfig::trigger_config,
@@ -74,9 +79,9 @@ constexpr size_t kMaxShmSizeKb = TracingServiceImpl::kMaxShmSize / 1024;
                             Eq(mode))))),
       packets, &matcher_result_string);
   if (contains) {
-    return ::testing::AssertionSuccess();
+    return AssertionSuccess();
   }
-  return ::testing::AssertionFailure() << matcher_result_string.str();
+  return AssertionFailure() << matcher_result_string.str();
 }
 
 MATCHER_P(HasTriggerMode, mode, "") {
@@ -213,6 +218,8 @@ TEST_F(TracingServiceImplTest, AtMostOneConfig) {
 
   consumer_a->DisableTracing();
   consumer_a->WaitForTracingDisabled();
+
+  EXPECT_THAT(consumer_b->ReadBuffers(), IsEmpty());
 }
 
 TEST_F(TracingServiceImplTest, RegisterAndUnregister) {
@@ -364,7 +371,7 @@ TEST_F(TracingServiceImplTest, StartTracingTriggerTimeOut) {
 
   producer->WaitForDataSourceStop("ds_1");
   consumer->WaitForTracingDisabled();
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 }
 
 // Creates a tracing session with a START_TRACING trigger and checks that
@@ -412,7 +419,7 @@ TEST_F(TracingServiceImplTest, StartTracingTriggerDifferentProducer) {
 
   producer->WaitForDataSourceStop("ds_1");
   consumer->WaitForTracingDisabled();
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 }
 
 // Creates a tracing session with a START_TRACING trigger and checks that the
@@ -504,7 +511,7 @@ TEST_F(TracingServiceImplTest, StartTracingTriggerDifferentTrigger) {
 
   producer->WaitForDataSourceStop("ds_1");
   consumer->WaitForTracingDisabled();
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 }
 
 // Creates a tracing session with a START_TRACING trigger and checks that any
@@ -752,10 +759,8 @@ TEST_F(TracingServiceImplTest, EmitTriggersWithStartTracingTrigger) {
                  Eq(kServicePacketSequenceID))));
   };
   EXPECT_THAT(packets, expect_received_trigger("trigger_name"));
-  EXPECT_THAT(packets,
-              ::testing::Not(expect_received_trigger("trigger_name_2")));
-  EXPECT_THAT(packets,
-              ::testing::Not(expect_received_trigger("trigger_name_3")));
+  EXPECT_THAT(packets, Not(expect_received_trigger("trigger_name_2")));
+  EXPECT_THAT(packets, Not(expect_received_trigger("trigger_name_3")));
 }
 
 // Creates a tracing session with a START_TRACING trigger and checks that the
@@ -830,8 +835,7 @@ TEST_F(TracingServiceImplTest, EmitTriggersWithStopTracingTrigger) {
                  Eq(kServicePacketSequenceID))));
   };
   EXPECT_THAT(packets, expect_received_trigger("trigger_name"));
-  EXPECT_THAT(packets,
-              ::testing::Not(expect_received_trigger("trigger_name_2")));
+  EXPECT_THAT(packets, Not(expect_received_trigger("trigger_name_2")));
   EXPECT_THAT(packets, expect_received_trigger("trigger_name_3"));
 }
 
@@ -893,8 +897,7 @@ TEST_F(TracingServiceImplTest, EmitTriggersRepeatedly) {
                   &protos::TraceConfig::TriggerConfig::trigger_mode,
                   Eq(protos::TraceConfig::TriggerConfig::STOP_TRACING))))));
   EXPECT_THAT(packets, expect_received_trigger("trigger_name"));
-  EXPECT_THAT(packets,
-              ::testing::Not(expect_received_trigger("trigger_name_2")));
+  EXPECT_THAT(packets, Not(expect_received_trigger("trigger_name_2")));
 
   // Send a new trigger.
   producer->endpoint()->ActivateTriggers({"trigger_name_2"});
@@ -912,7 +915,7 @@ TEST_F(TracingServiceImplTest, EmitTriggersRepeatedly) {
 
   packets = consumer->ReadBuffers();
   // We don't rewrite the old trigger.
-  EXPECT_THAT(packets, ::testing::Not(expect_received_trigger("trigger_name")));
+  EXPECT_THAT(packets, Not(expect_received_trigger("trigger_name")));
   EXPECT_THAT(packets, expect_received_trigger("trigger_name_2"));
 }
 
@@ -950,7 +953,7 @@ TEST_F(TracingServiceImplTest, StopTracingTriggerTimeout) {
   producer->WaitForDataSourceStart("ds_1");
 
   // The trace won't return data until unless we send a trigger at this point.
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 
   auto writer = producer->CreateTraceWriter("ds_1");
   producer->WaitForFlush(writer.get());
@@ -959,7 +962,7 @@ TEST_F(TracingServiceImplTest, StopTracingTriggerTimeout) {
 
   producer->WaitForDataSourceStop("ds_1");
   consumer->WaitForTracingDisabled();
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 }
 
 // Creates a tracing session with a STOP_TRACING trigger and checks that the
@@ -994,7 +997,7 @@ TEST_F(TracingServiceImplTest, StopTracingTriggerRingBuffer) {
   producer->WaitForDataSourceStart("ds_1");
 
   // The trace won't return data until unless we send a trigger at this point.
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 
   // We write into the buffer a large packet which takes up the whole buffer. We
   // then add a bunch of smaller ones which causes the larger packet to be
@@ -1050,10 +1053,9 @@ TEST_F(TracingServiceImplTest, StopTracingTriggerRingBuffer) {
 
   // The large payload was overwritten before we trigger and ReadBuffers so it
   // should not be in the returned data.
-  EXPECT_THAT(packets,
-              ::testing::Not(Contains(Property(
-                  &protos::TracePacket::for_testing,
-                  Property(&protos::TestEvent::str, Eq(large_payload))))));
+  EXPECT_THAT(packets, Not(Contains(Property(&protos::TracePacket::for_testing,
+                                             Property(&protos::TestEvent::str,
+                                                      Eq(large_payload))))));
 }
 
 // Creates a tracing session with a STOP_TRACING trigger and checks that the
@@ -1090,7 +1092,7 @@ TEST_F(TracingServiceImplTest, StopTracingTriggerMultipleTriggers) {
   producer->WaitForDataSourceStart("ds_1");
 
   // The trace won't return data until unless we send a trigger at this point.
-  EXPECT_THAT(consumer->ReadBuffers(), ::testing::IsEmpty());
+  EXPECT_THAT(consumer->ReadBuffers(), IsEmpty());
 
   std::vector<std::string> req;
   req.push_back("trigger_name");
@@ -1580,7 +1582,7 @@ TEST_F(TracingServiceImplTest, BatchFlushes) {
   ASSERT_EQ(4u, GetNumPendingFlushes());
 
   // Make the producer reply only to the 3rd flush request.
-  testing::InSequence seq;
+  InSequence seq;
   producer->WaitForFlush(nullptr, /*reply=*/false);  // Do NOT reply to flush 1.
   producer->WaitForFlush(nullptr, /*reply=*/false);  // Do NOT reply to flush 2.
   producer->WaitForFlush(writer.get());              // Reply only to flush 3.
@@ -1898,7 +1900,7 @@ TEST_F(TracingServiceImplTest, SessionId) {
   producer2->Connect(svc.get(), "mock_producer2");
   producer2->RegisterDataSource("ds_2A");
 
-  testing::InSequence seq;
+  InSequence seq;
   TracingSessionID last_session_id = 0;
   for (int i = 0; i < 3; i++) {
     TraceConfig trace_config;
@@ -2769,6 +2771,63 @@ TEST_F(TracingServiceImplTest, ObserveEventsDataSourceInstances) {
   // Disabling should now no longer cause events to be sent to the consumer.
   consumer->DisableTracing();
   producer->WaitForDataSourceStop("data_source");
+  consumer->WaitForTracingDisabled();
+}
+
+TEST_F(TracingServiceImplTest, ObserveEventsDataSourceInstancesUnregister) {
+  std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
+  consumer->Connect(svc.get());
+
+  std::unique_ptr<MockProducer> producer = CreateMockProducer();
+  producer->Connect(svc.get(), "mock_producer");
+  producer->RegisterDataSource("data_source");
+
+  TraceConfig trace_config;
+  trace_config.add_buffers()->set_size_kb(128);
+  auto* ds_config = trace_config.add_data_sources()->mutable_config();
+  ds_config->set_name("data_source");
+
+  // Start tracing before the consumer is interested in events. The consumer's
+  // OnObservableEvents() should not be called yet.
+  consumer->EnableTracing(trace_config);
+  producer->WaitForTracingSetup();
+  producer->WaitForDataSourceSetup("data_source");
+  producer->WaitForDataSourceStart("data_source");
+
+  // Calling ObserveEvents should cause an event for the initial instance state.
+  consumer->ObserveEvents(TracingService::ConsumerEndpoint::
+                              ObservableEventType::kDataSourceInstances);
+  {
+    ObservableEvents event;
+    ObservableEvents::DataSourceInstanceStateChange* change =
+        event.add_instance_state_changes();
+    change->set_producer_name("mock_producer");
+    change->set_data_source_name("data_source");
+    change->set_state(ObservableEvents::DataSourceInstanceStateChange::
+                          DATA_SOURCE_INSTANCE_STATE_STARTED);
+    EXPECT_CALL(*consumer, OnObservableEvents(Eq(event)))
+        .WillOnce(InvokeWithoutArgs(
+            task_runner.CreateCheckpoint("data_source_started")));
+
+    task_runner.RunUntilCheckpoint("data_source_started");
+  }
+  {
+    ObservableEvents event;
+    ObservableEvents::DataSourceInstanceStateChange* change =
+        event.add_instance_state_changes();
+    change->set_producer_name("mock_producer");
+    change->set_data_source_name("data_source");
+    change->set_state(ObservableEvents::DataSourceInstanceStateChange::
+                          DATA_SOURCE_INSTANCE_STATE_STOPPED);
+    EXPECT_CALL(*consumer, OnObservableEvents(Eq(event)))
+        .WillOnce(InvokeWithoutArgs(
+            task_runner.CreateCheckpoint("data_source_stopped")));
+  }
+  producer->UnregisterDataSource("data_source");
+  producer->WaitForDataSourceStop("data_source");
+  task_runner.RunUntilCheckpoint("data_source_stopped");
+
+  consumer->DisableTracing();
   consumer->WaitForTracingDisabled();
 }
 

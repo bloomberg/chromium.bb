@@ -1305,6 +1305,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kInnerHtml:
         result += " inner_html=" + value;
         break;
+      case ax::mojom::StringAttribute::kInputType:
+        result += " input_type=" + value;
+        break;
       case ax::mojom::StringAttribute::kKeyShortcuts:
         result += " key_shortcuts=" + value;
         break;
@@ -1424,6 +1427,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::BoolAttribute::kIsLineBreakingObject:
         result += " is_line_breaking_object=" + value;
+        break;
+      case ax::mojom::BoolAttribute::kIsPageBreakingObject:
+        result += " is_page_breaking_object=" + value;
         break;
       case ax::mojom::BoolAttribute::kNone:
         break;

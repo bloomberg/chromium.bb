@@ -22,10 +22,12 @@ namespace internal {
 
 class EffectBuilder final : public SkNoncopyable {
 public:
-    EffectBuilder(const AnimationBuilder*, const SkSize&, AnimatorScope*);
+    EffectBuilder(const AnimationBuilder*, const SkSize&);
 
     sk_sp<sksg::RenderNode> attachEffects(const skjson::ArrayValue&,
                                           sk_sp<sksg::RenderNode>) const;
+
+    static const skjson::Value& GetPropValue(const skjson::ArrayValue& jprops, size_t prop_index);
 
 private:
     using EffectBuilderT = sk_sp<sksg::RenderNode>(EffectBuilder::*)(const skjson::ArrayValue&,
@@ -38,6 +40,8 @@ private:
     sk_sp<sksg::RenderNode> attachGaussianBlurEffect  (const skjson::ArrayValue&,
                                                        sk_sp<sksg::RenderNode>) const;
     sk_sp<sksg::RenderNode> attachGradientEffect      (const skjson::ArrayValue&,
+                                                       sk_sp<sksg::RenderNode>) const;
+    sk_sp<sksg::RenderNode> attachHueSaturationEffect (const skjson::ArrayValue&,
                                                        sk_sp<sksg::RenderNode>) const;
     sk_sp<sksg::RenderNode> attachLevelsEffect        (const skjson::ArrayValue&,
                                                        sk_sp<sksg::RenderNode>) const;
@@ -58,11 +62,8 @@ private:
 
     EffectBuilderT findBuilder(const skjson::ObjectValue&) const;
 
-    static const skjson::Value& GetPropValue(const skjson::ArrayValue& jprops, size_t prop_index);
-
     const AnimationBuilder*   fBuilder;
     const SkSize              fLayerSize;
-    AnimatorScope*            fScope;
 };
 
 

@@ -142,7 +142,8 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
-      const std::string& quic_error_details);
+      const std::string& quic_error_details,
+      uint64_t frame_type);
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectionClosePacket(
       uint64_t num,
       bool include_version,
@@ -183,11 +184,6 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      quic::QuicStringPiece data);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeHeadersDataPacket(
-      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStringPiece data);
@@ -383,11 +379,16 @@ class QuicTestPacketMaker {
 
   bool ShouldIncludeVersion(bool include_version) const;
 
-  quic::QuicStreamFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
-                                                bool fin,
-                                                quic::QuicStringPiece data);
+  // This mirrors quic_framer.cc::{anonymous namespace}::GenerateErrorString()
+  // behavior.
+  std::string MaybePrependErrorCode(const std::string& quic_error_details,
+                                    quic::QuicErrorCode quic_error_code) const;
 
-  std::vector<quic::QuicStreamFrame> GenerateNextStreamFrames(
+  quic::QuicFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
+                                          bool fin,
+                                          quic::QuicStringPiece data);
+
+  std::vector<quic::QuicFrame> GenerateNextStreamFrames(
       quic::QuicStreamId stream_id,
       bool fin,
       const std::vector<std::string>& data);
@@ -399,6 +400,15 @@ class QuicTestPacketMaker {
 
   quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
   quic::QuicConnectionIdIncluded HasSourceConnectionId() const;
+
+  quic::QuicStreamId GetFirstBidirectionalStreamId() const;
+  quic::QuicStreamId GetHeadersStreamId() const;
+
+  std::string GenerateHttp3SettingsData();
+  std::string GenerateHttp3PriorityData(spdy::SpdyPriority priority,
+                                        quic::QuicStreamId stream_id);
+
+  void MaybeAddHttp3SettingsFrames(quic::QuicFrames* frames);
 
   quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;

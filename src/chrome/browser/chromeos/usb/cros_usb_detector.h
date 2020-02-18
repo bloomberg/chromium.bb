@@ -15,7 +15,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
@@ -89,7 +91,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   ~CrosUsbDetector() override;
 
   void SetDeviceManagerForTesting(
-      device::mojom::UsbDeviceManagerPtr device_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager);
 
   // Connect to the device manager to be notified of connection/removal.
   // Used during browser startup, after connection errors and to setup a fake
@@ -104,15 +106,13 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device) override;
 
   // Attaches the device identified by |guid| into the VM identified by
-  // |vm_name|. Note that this may detach the device from the default VM
-  // (=ARCVM) beforehand.
+  // |vm_name|.
   void AttachUsbDeviceToVm(const std::string& vm_name,
                            const std::string& guid,
                            base::OnceCallback<void(bool success)> callback);
 
   // Detaches the device identified by |guid| from the VM identified by
-  // |vm_name|. Note that this may attach the device (back) into the default VM
-  // (=ARCVM) as a result.
+  // |vm_name|.
   void DetachUsbDeviceFromVm(const std::string& vm_name,
                              const std::string& guid,
                              base::OnceCallback<void(bool success)> callback);
@@ -131,16 +131,6 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::vector<CrosUsbDeviceInfo> GetDevicesSharableWithCrostini() const;
 
  private:
-  void AttachUsbDeviceToVmInternal(
-      const std::string& vm_name,
-      const std::string& guid,
-      base::OnceCallback<void(bool success)> callback);
-
-  void DetachUsbDeviceFromVmInternal(
-      const std::string& vm_name,
-      const std::string& guid,
-      base::OnceCallback<void(bool success)> callback);
-
   // Called after USB device access has been checked.
   void OnDeviceChecked(device::mojom::UsbDeviceInfoPtr device,
                        bool hide_notification,
@@ -178,9 +168,9 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   // Returns true when a device should show a notification when attached.
   bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
 
-  device::mojom::UsbDeviceManagerPtr device_manager_;
-  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
-      client_binding_;
+  mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
+  mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
+      client_receiver_{this};
 
   std::vector<device::mojom::UsbDeviceFilterPtr> guest_os_classes_blocked_;
   std::vector<device::mojom::UsbDeviceFilterPtr>
@@ -197,7 +187,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<CrosUsbDetector> weak_ptr_factory_;
+  base::WeakPtrFactory<CrosUsbDetector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosUsbDetector);
 };

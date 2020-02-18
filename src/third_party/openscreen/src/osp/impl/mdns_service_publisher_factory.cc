@@ -7,12 +7,16 @@
 #include "osp/impl/internal_services.h"
 
 namespace openscreen {
+namespace platform {
+class NetworkRunner;
+}  // namespace platform
 
 // static
 std::unique_ptr<ServicePublisher> MdnsServicePublisherFactory::Create(
     const ServicePublisher::Config& config,
-    ServicePublisher::Observer* observer) {
-  return InternalServices::CreatePublisher(config, observer);
+    ServicePublisher::Observer* observer,
+    platform::NetworkRunner* network_runner) {
+  return InternalServices::CreatePublisher(config, observer, network_runner);
 }
 
 }  // namespace openscreen

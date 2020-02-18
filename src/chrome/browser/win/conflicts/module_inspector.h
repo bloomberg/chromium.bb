@@ -48,7 +48,7 @@ class ModuleInspector : public ModuleDatabaseObserver {
 
   // Controls whether or not module inspection is done out of process.
   static constexpr base::Feature kWinOOPInspectModuleFeature = {
-      "WinOOPInspectModule", base::FEATURE_DISABLED_BY_DEFAULT};
+      "WinOOPInspectModule", base::FEATURE_ENABLED_BY_DEFAULT};
 
   // The amount of time before the |inspection_results_cache_| is flushed to
   // disk while the ModuleDatabase is not idle.
@@ -84,7 +84,7 @@ class ModuleInspector : public ModuleDatabaseObserver {
 
   void SetRemoteUtilWinForTesting(
       mojo::PendingRemote<chrome::mojom::UtilWin> remote) {
-    remote_util_win_.Bind(std::move(remote));
+    test_remote_util_win_.Bind(std::move(remote));
   }
 
  private:
@@ -135,6 +135,10 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // ongoing, and freed when no longer needed.
   mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;
 
+  // The test remote interface for the UtilWin service. This is kept alive for
+  // the duration of this instance's lifetime.
+  mojo::Remote<chrome::mojom::UtilWin> test_remote_util_win_;
+
   // The task runner where module inspections takes place. It originally starts
   // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
@@ -177,7 +181,7 @@ class ModuleInspector : public ModuleDatabaseObserver {
 
   // Weak pointers are used to safely post the inspection result back to the
   // ModuleInspector from the task scheduler.
-  base::WeakPtrFactory<ModuleInspector> weak_ptr_factory_;
+  base::WeakPtrFactory<ModuleInspector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModuleInspector);
 };

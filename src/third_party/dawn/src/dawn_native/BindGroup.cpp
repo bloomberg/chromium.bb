@@ -30,7 +30,7 @@ namespace dawn_native {
 
         MaybeError ValidateBufferBinding(const DeviceBase* device,
                                          const BindGroupBinding& binding,
-                                         dawn::BufferUsageBit requiredUsage) {
+                                         dawn::BufferUsage requiredUsage) {
             if (binding.buffer == nullptr || binding.sampler != nullptr ||
                 binding.textureView != nullptr) {
                 return DAWN_VALIDATION_ERROR("expected buffer binding");
@@ -63,15 +63,27 @@ namespace dawn_native {
 
         MaybeError ValidateTextureBinding(const DeviceBase* device,
                                           const BindGroupBinding& binding,
-                                          dawn::TextureUsageBit requiredUsage) {
+                                          dawn::TextureUsage requiredUsage,
+                                          bool multisampledBinding,
+                                          dawn::TextureComponentType requiredComponentType) {
             if (binding.textureView == nullptr || binding.sampler != nullptr ||
                 binding.buffer != nullptr) {
                 return DAWN_VALIDATION_ERROR("expected texture binding");
             }
             DAWN_TRY(device->ValidateObject(binding.textureView));
 
-            if (!(binding.textureView->GetTexture()->GetUsage() & requiredUsage)) {
+            TextureBase* texture = binding.textureView->GetTexture();
+
+            if (!(texture->GetUsage() & requiredUsage)) {
                 return DAWN_VALIDATION_ERROR("texture binding usage mismatch");
+            }
+
+            if (texture->IsMultisampledTexture() != multisampledBinding) {
+                return DAWN_VALIDATION_ERROR("texture multisampling mismatch");
+            }
+
+            if (!texture->GetFormat().HasComponentType(requiredComponentType)) {
+                return DAWN_VALIDATION_ERROR("texture component type usage mismatch");
             }
 
             return {};
@@ -127,14 +139,16 @@ namespace dawn_native {
             // Perform binding-type specific validation.
             switch (layoutInfo.types[bindingIndex]) {
                 case dawn::BindingType::UniformBuffer:
-                    DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsageBit::Uniform));
+                    DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsage::Uniform));
                     break;
                 case dawn::BindingType::StorageBuffer:
-                    DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsageBit::Storage));
+                    DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsage::Storage));
                     break;
                 case dawn::BindingType::SampledTexture:
                     DAWN_TRY(
-                        ValidateTextureBinding(device, binding, dawn::TextureUsageBit::Sampled));
+                        ValidateTextureBinding(device, binding, dawn::TextureUsage::Sampled,
+                                               layoutInfo.multisampled[bindingIndex],
+                                               layoutInfo.textureComponentTypes[bindingIndex]));
                     break;
                 case dawn::BindingType::Sampler:
                     DAWN_TRY(ValidateSamplerBinding(device, binding));

@@ -41,6 +41,8 @@ PaymentRequestState::PaymentRequestState(
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
+    base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+        sw_identity_observer,
     JourneyLogger* journey_logger)
     : is_ready_to_pay_(false),
       get_all_instruments_finished_(true),
@@ -60,7 +62,9 @@ PaymentRequestState::PaymentRequestState(
       selected_instrument_(nullptr),
       number_of_pending_sw_payment_instruments_(0),
       payment_request_delegate_(payment_request_delegate),
+      sw_identity_observer_(sw_identity_observer),
       profile_comparator_(app_locale, *spec) {
+  DCHECK(sw_identity_observer_);
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     DCHECK(web_contents);
     get_all_instruments_finished_ = false;
@@ -108,7 +112,8 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
         std::make_unique<ServiceWorkerPaymentInstrument>(
             web_contents->GetBrowserContext(), top_level_origin, frame_origin,
-            spec_, std::move(app.second), payment_request_delegate_);
+            spec_, std::move(app.second), payment_request_delegate_,
+            sw_identity_observer_);
     instrument->ValidateCanMakePayment(
         base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -120,7 +125,7 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
         std::make_unique<ServiceWorkerPaymentInstrument>(
             web_contents, top_level_origin, frame_origin, spec_,
             std::move(installable_app.second), installable_app.first.spec(),
-            payment_request_delegate_);
+            payment_request_delegate_, sw_identity_observer_);
     instrument->ValidateCanMakePayment(
         base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -158,8 +163,7 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
 
   // Fulfill the pending CanMakePayment call.
   if (can_make_payment_callback_) {
-    CheckCanMakePayment(can_make_payment_legacy_mode_,
-                        std::move(can_make_payment_callback_));
+    CheckCanMakePayment(std::move(can_make_payment_callback_));
   }
 
   // Fulfill the pending HasEnrolledInstrument call.
@@ -215,38 +219,22 @@ void PaymentRequestState::OnSpecUpdated() {
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
-void PaymentRequestState::CanMakePayment(bool legacy_mode,
-                                         StatusCallback callback) {
+void PaymentRequestState::CanMakePayment(StatusCallback callback) {
   if (!get_all_instruments_finished_) {
     DCHECK(!can_make_payment_callback_);
     can_make_payment_callback_ = std::move(callback);
-    can_make_payment_legacy_mode_ = legacy_mode;
     return;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PaymentRequestState::CheckCanMakePayment,
-                                weak_ptr_factory_.GetWeakPtr(), legacy_mode,
-                                std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(&PaymentRequestState::CheckCanMakePayment,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void PaymentRequestState::CheckCanMakePayment(bool legacy_mode,
-                                              StatusCallback callback) {
+void PaymentRequestState::CheckCanMakePayment(StatusCallback callback) {
   DCHECK(get_all_instruments_finished_);
-  if (!legacy_mode) {
-    std::move(callback).Run(are_requested_methods_supported_);
-    return;
-  }
-
-  // Legacy mode: fall back to also checking if an instrument is enrolled.
-  bool can_make_payment_value = false;
-  for (const auto& instrument : available_instruments_) {
-    if (instrument->IsValidForCanMakePayment()) {
-      can_make_payment_value = true;
-      break;
-    }
-  }
-  std::move(callback).Run(can_make_payment_value);
+  std::move(callback).Run(are_requested_methods_supported_);
 }
 
 void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
@@ -370,6 +358,8 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
   auto instrument = std::make_unique<AutofillPaymentInstrument>(
       basic_card_network, card, matches_merchant_card_type_exactly,
       shipping_profiles_, app_locale_, payment_request_delegate_);
+  instrument->set_is_requested_autofill_data_available(
+      is_requested_autofill_data_available_);
   available_instruments_.push_back(std::move(instrument));
 
   if (selected) {
@@ -559,6 +549,7 @@ void PaymentRequestState::PopulateProfileCache() {
         contact_profiles_.empty()
             ? false
             : profile_comparator()->IsContactInfoComplete(contact_profiles_[0]);
+    is_requested_autofill_data_available_ &= has_complete_contact;
     journey_logger_->SetNumberOfSuggestionsShown(
         JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size(),
         has_complete_contact);
@@ -568,6 +559,7 @@ void PaymentRequestState::PopulateProfileCache() {
         shipping_profiles_.empty()
             ? false
             : profile_comparator()->IsShippingComplete(shipping_profiles_[0]);
+    is_requested_autofill_data_available_ &= has_complete_shipping;
     journey_logger_->SetNumberOfSuggestionsShown(
         JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
         shipping_profiles_.size(), has_complete_shipping);

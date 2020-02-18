@@ -9,13 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
+#include "chrome/browser/chromeos/login/security_token_pin_dialog_host_ash_impl.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+#include "chromeos/login/auth/challenge_response_key.h"
 
 namespace chromeos {
 
@@ -103,6 +107,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
       base::OnceCallback<void(bool)> callback) override;
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
+  void HandleAuthenticateUserWithChallengeResponse(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) override;
   void HandleHardlockPod(const AccountId& account_id) override;
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
@@ -121,6 +128,14 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
  private:
   void LoadOobeDialog();
+
+  // Callback to be invoked when the |challenge_response_auth_keys_loader_|
+  // completes building the currently available challenge-response keys. Used
+  // only during the challenge-response authentication.
+  void OnChallengeResponseKeysPrepared(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> on_auth_complete_callback,
+      std::vector<ChallengeResponseKey> challenge_response_keys);
 
   // State associated with a pending authentication attempt.
   struct AuthState {
@@ -162,7 +177,11 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // first OnStartSigninScreen and remains true afterward.
   bool signin_screen_started_ = false;
 
-  base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
+  ChallengeResponseAuthKeysLoader challenge_response_auth_keys_loader_;
+
+  SecurityTokenPinDialogHostAshImpl security_token_pin_dialog_host_ash_impl_;
+
+  base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);
 };

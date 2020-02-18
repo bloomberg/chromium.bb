@@ -175,5 +175,17 @@ message PowerSupplyProperties {
   // battery's power has been used.
   optional int64 battery_cycle_count = 22;
 
-  // Next ID to use: 23
+  // Battery serial number reported in sysfs.
+  optional string battery_serial_number = 23;
+
+  // Battery design capacity measured in ampere-hours (Ah).
+  optional double battery_charge_full_design = 24;
+
+  // Battery full capacity measured in ampere-hours (Ah).
+  optional double battery_charge_full = 25;
+
+  // Battery voltage min design measured in V.
+  optional double battery_voltage_min_design = 26;
+
+  // Next ID to use: 27
 }

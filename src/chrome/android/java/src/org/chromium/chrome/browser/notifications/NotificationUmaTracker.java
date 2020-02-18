@@ -49,7 +49,9 @@ public class NotificationUmaTracker {
             SystemNotificationType.OFFLINE_CONTENT_SUGGESTION,
             SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES, SystemNotificationType.OFFLINE_PAGES,
             SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES,
-            SystemNotificationType.CLICK_TO_CALL})
+            SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD,
+            SystemNotificationType.PERMISSION_REQUESTS,
+            SystemNotificationType.PERMISSION_REQUESTS_HIGH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -71,8 +73,11 @@ public class NotificationUmaTracker {
         int SEND_TAB_TO_SELF = 15;
         int UPDATES = 16;
         int CLICK_TO_CALL = 17;
+        int SHARED_CLIPBOARD = 18;
+        int PERMISSION_REQUESTS = 19;
+        int PERMISSION_REQUESTS_HIGH = 20;
 
-        int NUM_ENTRIES = 18;
+        int NUM_ENTRIES = 21;
     }
 
     /*
@@ -110,8 +115,12 @@ public class NotificationUmaTracker {
         int WEB_APP_ACTION_OPEN_IN_CHROME = 8;
         // Setting button in offline content suggestion notification.
         int OFFLINE_CONTENT_SUGGESTION_SETTINGS = 9;
+        // Dismiss button on sharing notification.
+        int SHARING_DISMISS = 10;
+        // Try again button on sharing error notification.
+        int SHARING_TRY_AGAIN = 11;
 
-        int NUM_ENTRIES = 10;
+        int NUM_ENTRIES = 12;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
@@ -176,6 +185,10 @@ public class NotificationUmaTracker {
                 recordNotificationAgeHistogram(
                         "Mobile.SystemNotification.Content.Click.Age.ClickToCall", createTime);
                 break;
+            case SystemNotificationType.SHARED_CLIPBOARD:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Content.Click.Age.SharedClipboard", createTime);
+                break;
         }
     }
 
@@ -203,6 +216,10 @@ public class NotificationUmaTracker {
             case SystemNotificationType.CLICK_TO_CALL:
                 recordNotificationAgeHistogram(
                         "Mobile.SystemNotification.Dismiss.Age.ClickToCall", createTime);
+                break;
+            case SystemNotificationType.SHARED_CLIPBOARD:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Dismiss.Age.SharedClipboard", createTime);
                 break;
         }
     }
@@ -233,6 +250,10 @@ public class NotificationUmaTracker {
             case SystemNotificationType.CLICK_TO_CALL:
                 recordNotificationAgeHistogram(
                         "Mobile.SystemNotification.Action.Click.Age.ClickToCall", createTime);
+                break;
+            case SystemNotificationType.SHARED_CLIPBOARD:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Action.Click.Age.SharedClipboard", createTime);
                 break;
         }
     }

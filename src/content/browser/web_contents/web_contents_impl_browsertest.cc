@@ -24,7 +24,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -49,6 +48,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -66,7 +66,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -138,6 +137,11 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     return web_contents->current_fullscreen_frame_;
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowPreCommitInput);
   }
 
  private:
@@ -940,7 +944,7 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
       return http_response;
     }
 
-    // A basic worker that loads 3p.com/script
+    // A basic cacheable worker that loads 3p.com/script
     if (absolute_url.path() == "/worker.js") {
       auto http_response =
           std::make_unique<net::test_server::BasicHttpResponse>();
@@ -952,6 +956,7 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
       http_response->set_content(content);
       http_response->set_content_type("application/javascript");
+      http_response->AddCustomHeader("Cache-Control", "max-age=100000");
       return http_response;
     }
 
@@ -964,8 +969,8 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
       return http_response;
     }
 
-    // A worker that loads a nested /worker.js on an origin provided as a query
-    // param.
+    // A cacheable worker that loads a nested /worker.js on an origin provided
+    // as a query param.
     if (absolute_url.path() == "/embedding_worker.js") {
       auto http_response =
           std::make_unique<net::test_server::BasicHttpResponse>();
@@ -981,6 +986,7 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
       http_response->set_content(content);
       http_response->set_content_type("application/javascript");
+      http_response->AddCustomHeader("Cache-Control", "max-age=100000");
       return http_response;
     }
 
@@ -1038,39 +1044,21 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     RenderFrameHostImpl* main_frame =
         static_cast<RenderFrameHostImpl*>(host_to_load_resource);
 
-    // If there is supposed to be a sub-frame, create it.
+    // If there is supposed to be a subframe, create it.
     if (sub_frame.is_valid()) {
-      const char kLoadIframeScript[] = R"(
-        let iframe = document.createElement('iframe');
-        iframe.src = $1;
-        document.body.appendChild(iframe);
-      )";
-      EXPECT_TRUE(
-          ExecuteScript(shell(), JsReplace(kLoadIframeScript, sub_frame)));
-      EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-
-      host_to_load_resource =
-          static_cast<WebContentsImpl*>(shell()->web_contents())
-              ->GetFrameTree()
-              ->root()
-              ->child_at(0)
-              ->current_frame_host();
+      host_to_load_resource = CreateSubframe(sub_frame);
     }
 
     GURL resource = GenURL("3p.com", "/script");
 
+    // If there is supposed to be a worker to load this resource, create it.
+    // Otherwise, load the resource directly.
     if (worker.is_valid()) {
-      const char kLoadWorkerScript[] = R"(let w = new Worker($1);)";
-      EXPECT_TRUE(ExecuteScript(host_to_load_resource,
-                                JsReplace(kLoadWorkerScript, worker)));
+      EXPECT_TRUE(
+          ExecuteScript(host_to_load_resource, GetWorkerScript(worker)));
     } else {
-      const char kLoadResourceScript[] = R"(
-        let script = document.createElement('script');
-        script.src = $1;
-        document.body.appendChild(script);
-      )";
       EXPECT_TRUE(ExecuteScript(host_to_load_resource,
-                                JsReplace(kLoadResourceScript, resource)));
+                                GetLoadResourceScript(resource)));
     }
 
     observer.WaitForResourceCompletion(resource);
@@ -1140,6 +1128,79 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     return (*observer.FindResource(main_url))->was_cached;
   }
 
+  // Loads a dedicated worker script and checks to see whether or not the
+  // script was cached.
+  bool DedicatedWorkerScriptCached(const GURL& url,
+                                   const GURL& sub_frame,
+                                   const GURL& worker) {
+    DCHECK(url.is_valid());
+    DCHECK(worker.is_valid());
+
+    // Do a cross-process navigation to clear the in-memory cache.
+    // We assume that we don't start this call from "chrome://gpu", as
+    // otherwise it won't be a cross-process navigation. We are relying
+    // on this navigation to discard the old process.
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
+
+    // Observe network requests.
+    ResourceLoadObserver observer(shell());
+
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    RenderFrameHost* host_to_load_resource =
+        shell()->web_contents()->GetMainFrame();
+
+    // If there is supposed to be a subframe, create it.
+    if (sub_frame.is_valid()) {
+      host_to_load_resource = CreateSubframe(sub_frame);
+    }
+
+    EXPECT_TRUE(ExecuteScript(host_to_load_resource, GetWorkerScript(worker)));
+
+    observer.WaitForResourceCompletion(GenURL("3p.com", "/script"));
+
+    return (*observer.FindResource(worker))->was_cached;
+  }
+
+  // Gets script to create subframe.
+  std::string GetSubframeScript(const GURL& sub_frame) {
+    const char kLoadIframeScript[] = R"(
+        let iframe = document.createElement('iframe');
+        iframe.src = $1;
+        document.body.appendChild(iframe);
+      )";
+    return JsReplace(kLoadIframeScript, sub_frame);
+  }
+
+  // Gets script to create worker.
+  std::string GetWorkerScript(const GURL& worker) {
+    const char kLoadWorkerScript[] = "let w = new Worker($1);";
+    return JsReplace(kLoadWorkerScript, worker);
+  }
+
+  // Gets script to load resource.
+  std::string GetLoadResourceScript(const GURL& resource) {
+    const char kLoadResourceScript[] = R"(
+        let script = document.createElement('script');
+        script.src = $1;
+        document.body.appendChild(script);
+      )";
+    return JsReplace(kLoadResourceScript, resource);
+  }
+
+  // Creates and loads subframe, waits for load to stop, and then returns
+  // subframe from the web contents frame tree.
+  RenderFrameHost* CreateSubframe(const GURL& sub_frame) {
+    EXPECT_TRUE(ExecuteScript(shell(), GetSubframeScript(sub_frame)));
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+    return static_cast<WebContentsImpl*>(shell()->web_contents())
+        ->GetFrameTree()
+        ->root()
+        ->child_at(0)
+        ->current_frame_host();
+  }
+
   GURL GenURL(const std::string& host, const std::string& path) {
     return embedded_test_server()->GetURL(host, path);
   }
@@ -1170,16 +1231,10 @@ class WebContentsSplitCacheBrowserTestEnabled
     std::vector<base::Feature> enabled_features;
     enabled_features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
 
-    // When the test parameter is true and network service is available, we
-    // test the split cache with PlzDedicatedWorker enabled, which itself
-    // requires OffMainThreadWorkerScriptFetch to be enabled.  We cannot
-    // enable PlzDedicatedWorker without also enabling NetworkService.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        GetParam()) {
+    // When the test parameter is true, we test the split cache with
+    // PlzDedicatedWorker enabled.
+    if (GetParam())
       enabled_features.push_back(blink::features::kPlzDedicatedWorker);
-      enabled_features.push_back(
-          blink::features::kOffMainThreadDedicatedWorkerScriptFetch);
-    }
 
     feature_list.InitWithFeatures(enabled_features, {});
   }
@@ -1200,14 +1255,15 @@ class WebContentsSplitCacheBrowserTestDisabled
   base::test::ScopedFeatureList feature_list;
 };
 
-IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
+#if defined(THREAD_SANITIZER)
+// Flaky under TSan: https://crbug.com/995181
+#define MAYBE_SplitCache DISABLED_SplitCache
+#else
+#define MAYBE_SplitCache SplitCache
+#endif
 
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
+                       MAYBE_SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1272,13 +1328,6 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
                        SplitCache) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1353,13 +1402,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
                        SplitCacheDedicatedWorkers) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1394,13 +1436,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
                        NavigationResources) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Navigate for the first time, and it's not cached.
   EXPECT_FALSE(
       NavigationResourceCached(GenURL("a.com", "/title1.html"), GURL(), false));
@@ -1434,13 +1469,6 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
                        SubframeNavigationResources) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Navigate for the first time, and it's not cached.
   NavigationResourceCached(
       GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
@@ -1470,15 +1498,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
       GenURL("d.com", "/title1.html"), true);
 }
 
+// TODO(http://crbug.com/997808): Flaky on Linux ASAN.
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
+#else
+#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
+#endif
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       SplitCacheDedicatedWorkers) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
+                       MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1521,8 +1548,56 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
       GenURL("e.com", "/worker.js")));
 }
 
+// TODO(http://crbug.com/997732): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_SplitCacheDedicatedWorkerScripts \
+  DISABLED_SplitCacheDedicatedWorkersScripts
+#else
+#define MAYBE_SplitCacheDedicatedWorkerScripts \
+  SplitCacheDedicatedWorkersScripts
+#endif
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
+                       MAYBE_SplitCacheDedicatedWorkerScripts) {
+  // Load a.com's worker. The first time the worker script is loaded from the
+  // network and the second it's cached.
+  EXPECT_FALSE(DedicatedWorkerScriptCached(
+      GenURL("a.com", "/title1.html"), GURL(), GenURL("a.com", "/worker.js")));
+  EXPECT_TRUE(DedicatedWorkerScriptCached(
+      GenURL("a.com", "/title1.html"), GURL(), GenURL("a.com", "/worker.js")));
+
+  // Load a nested worker with a new top-frame origin. It's a cache miss for
+  // the embedding worker the first time, as it hasn't been loaded yet, and
+  // then the second time it's cached.
+  EXPECT_FALSE(
+      DedicatedWorkerScriptCached(GenURL("c.com", "/title1.html"), GURL(),
+                                  GenURL("c.com", "/embedding_worker.js?c")));
+  EXPECT_TRUE(
+      DedicatedWorkerScriptCached(GenURL("c.com", "/title1.html"), GURL(),
+                                  GenURL("c.com", "/embedding_worker.js?c")));
+
+  // Load a worker with a new top-frame origin and nested in a cross-origin
+  // iframe. It's a cache miss for the worker script the first time, then
+  // the second time it's cached.
+  EXPECT_FALSE(DedicatedWorkerScriptCached(GenURL("d.com", "/title1.html"),
+                                           GenURL("e.com", "/title1.html"),
+                                           GenURL("e.com", "/worker.js")));
+  EXPECT_TRUE(DedicatedWorkerScriptCached(GenURL("d.com", "/title1.html"),
+                                          GenURL("e.com", "/title1.html"),
+                                          GenURL("e.com", "/worker.js")));
+
+  // Load a worker with a new top-frame origin and nested in a cross-origin
+  // iframe whose URL has previously been loaded. Due to split caching it's a
+  // cache miss for the worker script the first time.
+  EXPECT_FALSE(DedicatedWorkerScriptCached(GenURL("f.com", "/title1.html"),
+                                           GenURL("e.com", "/title1.html"),
+                                           GenURL("e.com", "/worker.js")));
+  EXPECT_TRUE(DedicatedWorkerScriptCached(GenURL("f.com", "/title1.html"),
+                                          GenURL("e.com", "/title1.html"),
+                                          GenURL("e.com", "/worker.js")));
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
-                       SplitCacheDedicatedWorkers) {
+                       MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -2009,15 +2084,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
   NavigateToURL(shell(), kUrl);
 
-  ShellAddedObserver new_shell_observer;
+  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "Not allowed to load local resource: view-source:*");
+  shell()->web_contents()->SetDelegate(console_delegate.get());
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.open('" + kViewSourceURL.spec() + "');"));
-  Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
-  EXPECT_TRUE(new_shell->web_contents()->GetURL().spec().empty());
-  // No navigation should commit.
-  EXPECT_FALSE(
-      new_shell->web_contents()->GetController().GetLastCommittedEntry());
+  console_delegate->Wait();
+  // Original page shouldn't navigate away, no new tab should be opened.
+  EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
+  EXPECT_EQ(1u, Shell::windows().size());
 }
 
 // Test that a content initiated navigation to a view-source URL is blocked.
@@ -3145,7 +3221,7 @@ class LoadStateWaiter : public WebContentsDelegate {
 
 // TODO(csharrison,mmenke):  Beef up testing of LoadState a little. In
 // particular, check upload progress and check the LoadState param.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
   base::string16 a_host = url_formatter::IDNToUnicode("a.com");
   base::string16 b_host = url_formatter::IDNToUnicode("b.com");
   base::string16 paused_host = url_formatter::IDNToUnicode("paused.com");
@@ -3203,10 +3279,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   EXPECT_FALSE(frame_pauser.was_successful());
   // Note: the pausing only works for the non-network service path because of
   // http://crbug.com/791049.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
-  else
-    waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
+  waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
 
   load_resource(a_frame, "/a_img");
   a_response->WaitForRequest();
@@ -3228,13 +3301,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   a_response->Send(kPartialResponse);
   waiter.Wait(net::LOAD_STATE_READING_RESPONSE, a_host);
   a_response->Done();
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Now the only request in flight should be the delayed frame.
-    waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
-    frame_pauser.ResumeNavigation();
-    waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
-  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {
@@ -3372,8 +3438,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC) {
   EXPECT_TRUE(delete_rfh_c.deleted());
 }
 
+// http://crbug.com/990854
+#if defined(OS_ANDROID)
+#define MAYBE_PopupWindowBrowserNavResumeLoad \
+  DISABLED_PopupWindowBrowserNavResumeLoad
+#else
+#define MAYBE_PopupWindowBrowserNavResumeLoad PopupWindowBrowserNavResumeLoad
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       PopupWindowBrowserNavResumeLoad) {
+                       MAYBE_PopupWindowBrowserNavResumeLoad) {
   // This test verifies a pop up that requires navigation from browser side
   // works with a delegate that delays navigations of pop ups.
   // Create a file: scheme pop up from a file: scheme page, which requires

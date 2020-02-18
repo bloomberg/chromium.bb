@@ -15,6 +15,7 @@
 #include "dawn_native/Device.h"
 
 #include "dawn_native/Adapter.h"
+#include "dawn_native/AttachmentState.h"
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Buffer.h"
@@ -28,6 +29,7 @@
 #include "dawn_native/Instance.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/Queue.h"
+#include "dawn_native/RenderBundleEncoder.h"
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/Sampler.h"
 #include "dawn_native/ShaderModule.h"
@@ -47,6 +49,7 @@ namespace dawn_native {
         std::unordered_set<Object*, typename Object::HashFunc, typename Object::EqualityFunc>;
 
     struct DeviceBase::Caches {
+        ContentLessObjectCache<AttachmentStateBlueprint> attachmentStates;
         ContentLessObjectCache<BindGroupLayoutBase> bindGroupLayouts;
         ContentLessObjectCache<ComputePipelineBase> computePipelines;
         ContentLessObjectCache<PipelineLayoutBase> pipelineLayouts;
@@ -64,6 +67,10 @@ namespace dawn_native {
         mDynamicUploader = std::make_unique<DynamicUploader>(this);
         SetDefaultToggles();
 
+        if (descriptor != nullptr) {
+            ApplyExtensions(descriptor);
+        }
+
         mFormatTable = BuildFormatTable(this);
     }
 
@@ -71,17 +78,36 @@ namespace dawn_native {
         // Devices must explicitly free the uploader
         ASSERT(mDynamicUploader == nullptr);
         ASSERT(mDeferredCreateBufferMappedAsyncResults.empty());
+
+        ASSERT(mCaches->attachmentStates.empty());
+        ASSERT(mCaches->bindGroupLayouts.empty());
+        ASSERT(mCaches->computePipelines.empty());
+        ASSERT(mCaches->pipelineLayouts.empty());
+        ASSERT(mCaches->renderPipelines.empty());
+        ASSERT(mCaches->samplers.empty());
+        ASSERT(mCaches->shaderModules.empty());
     }
 
-    void DeviceBase::HandleError(const char* message) {
+    void DeviceBase::HandleError(dawn::ErrorType type, const char* message) {
         if (mErrorCallback) {
-            mErrorCallback(message, mErrorUserdata);
+            mErrorCallback(static_cast<DawnErrorType>(type), message, mErrorUserdata);
         }
     }
 
-    void DeviceBase::SetErrorCallback(dawn::DeviceErrorCallback callback, void* userdata) {
+    void DeviceBase::SetUncapturedErrorCallback(dawn::ErrorCallback callback, void* userdata) {
         mErrorCallback = callback;
         mErrorUserdata = userdata;
+    }
+
+    void DeviceBase::PushErrorScope(dawn::ErrorFilter filter) {
+        // TODO(crbug.com/dawn/153): Implement error scopes.
+        HandleError(dawn::ErrorType::Validation, "Error scopes not implemented");
+    }
+
+    bool DeviceBase::PopErrorScope(dawn::ErrorCallback callback, void* userdata) {
+        // TODO(crbug.com/dawn/153): Implement error scopes.
+        HandleError(dawn::ErrorType::Validation, "Error scopes not implemented");
+        return false;
     }
 
     MaybeError DeviceBase::ValidateObject(const ObjectBase* object) const {
@@ -96,6 +122,10 @@ namespace dawn_native {
 
     AdapterBase* DeviceBase::GetAdapter() const {
         return mAdapter;
+    }
+
+    dawn_platform::Platform* DeviceBase::GetPlatform() const {
+        return GetAdapter()->GetInstance()->GetPlatform();
     }
 
     FenceSignalTracker* DeviceBase::GetFenceSignalTracker() const {
@@ -249,6 +279,42 @@ namespace dawn_native {
         ASSERT(removedCount == 1);
     }
 
+    Ref<AttachmentState> DeviceBase::GetOrCreateAttachmentState(
+        AttachmentStateBlueprint* blueprint) {
+        auto iter = mCaches->attachmentStates.find(blueprint);
+        if (iter != mCaches->attachmentStates.end()) {
+            return static_cast<AttachmentState*>(*iter);
+        }
+
+        Ref<AttachmentState> attachmentState = new AttachmentState(this, *blueprint);
+        attachmentState->Release();
+        mCaches->attachmentStates.insert(attachmentState.Get());
+        return attachmentState;
+    }
+
+    Ref<AttachmentState> DeviceBase::GetOrCreateAttachmentState(
+        const RenderBundleEncoderDescriptor* descriptor) {
+        AttachmentStateBlueprint blueprint(descriptor);
+        return GetOrCreateAttachmentState(&blueprint);
+    }
+
+    Ref<AttachmentState> DeviceBase::GetOrCreateAttachmentState(
+        const RenderPipelineDescriptor* descriptor) {
+        AttachmentStateBlueprint blueprint(descriptor);
+        return GetOrCreateAttachmentState(&blueprint);
+    }
+
+    Ref<AttachmentState> DeviceBase::GetOrCreateAttachmentState(
+        const RenderPassDescriptor* descriptor) {
+        AttachmentStateBlueprint blueprint(descriptor);
+        return GetOrCreateAttachmentState(&blueprint);
+    }
+
+    void DeviceBase::UncacheAttachmentState(AttachmentState* obj) {
+        size_t removedCount = mCaches->attachmentStates.erase(obj);
+        ASSERT(removedCount == 1);
+    }
+
     // Object creation API methods
 
     BindGroupBase* DeviceBase::CreateBindGroup(const BindGroupDescriptor* descriptor) {
@@ -375,6 +441,16 @@ namespace dawn_native {
 
         return result;
     }
+    RenderBundleEncoderBase* DeviceBase::CreateRenderBundleEncoder(
+        const RenderBundleEncoderDescriptor* descriptor) {
+        RenderBundleEncoderBase* result = nullptr;
+
+        if (ConsumedError(CreateRenderBundleEncoderInternal(&result, descriptor))) {
+            return RenderBundleEncoderBase::MakeError(this);
+        }
+
+        return result;
+    }
     RenderPipelineBase* DeviceBase::CreateRenderPipeline(
         const RenderPipelineDescriptor* descriptor) {
         RenderPipelineBase* result = nullptr;
@@ -466,22 +542,36 @@ namespace dawn_native {
         }
     }
 
+    void DeviceBase::ApplyExtensions(const DeviceDescriptor* deviceDescriptor) {
+        ASSERT(deviceDescriptor);
+        ASSERT(GetAdapter()->SupportsAllRequestedExtensions(deviceDescriptor->requiredExtensions));
+
+        mEnabledExtensions = GetAdapter()->GetInstance()->ExtensionNamesToExtensionsSet(
+            deviceDescriptor->requiredExtensions);
+    }
+
+    std::vector<const char*> DeviceBase::GetEnabledExtensions() const {
+        return mEnabledExtensions.GetEnabledExtensionNames();
+    }
+
     std::vector<const char*> DeviceBase::GetTogglesUsed() const {
-        std::vector<const char*> togglesNameInUse(mTogglesSet.toggleBitset.count());
+        return mTogglesSet.GetEnabledToggleNames();
+    }
 
-        uint32_t index = 0;
-        for (uint32_t i : IterateBitSet(mTogglesSet.toggleBitset)) {
-            const char* toggleName =
-                GetAdapter()->GetInstance()->ToggleEnumToName(static_cast<Toggle>(i));
-            togglesNameInUse[index] = toggleName;
-            ++index;
-        }
-
-        return togglesNameInUse;
+    bool DeviceBase::IsExtensionEnabled(Extension extension) const {
+        return mEnabledExtensions.IsEnabled(extension);
     }
 
     bool DeviceBase::IsToggleEnabled(Toggle toggle) const {
         return mTogglesSet.IsEnabled(toggle);
+    }
+
+    size_t DeviceBase::GetLazyClearCountForTesting() {
+        return mLazyClearCountForTesting;
+    }
+
+    void DeviceBase::IncrementLazyClearCountForTesting() {
+        ++mLazyClearCountForTesting;
     }
 
     void DeviceBase::SetDefaultToggles() {
@@ -534,6 +624,14 @@ namespace dawn_native {
         return {};
     }
 
+    MaybeError DeviceBase::CreateRenderBundleEncoderInternal(
+        RenderBundleEncoderBase** result,
+        const RenderBundleEncoderDescriptor* descriptor) {
+        DAWN_TRY(ValidateRenderBundleEncoderDescriptor(this, descriptor));
+        *result = new RenderBundleEncoderBase(this, descriptor);
+        return {};
+    }
+
     MaybeError DeviceBase::CreateRenderPipelineInternal(
         RenderPipelineBase** result,
         const RenderPipelineDescriptor* descriptor) {
@@ -573,8 +671,10 @@ namespace dawn_native {
     MaybeError DeviceBase::CreateTextureViewInternal(TextureViewBase** result,
                                                      TextureBase* texture,
                                                      const TextureViewDescriptor* descriptor) {
-        DAWN_TRY(ValidateTextureViewDescriptor(this, texture, descriptor));
-        DAWN_TRY_ASSIGN(*result, CreateTextureViewImpl(texture, descriptor));
+        DAWN_TRY(ValidateObject(texture));
+        TextureViewDescriptor desc = GetTextureViewDescriptorWithDefaults(texture, descriptor);
+        DAWN_TRY(ValidateTextureViewDescriptor(texture, &desc));
+        DAWN_TRY_ASSIGN(*result, CreateTextureViewImpl(texture, &desc));
         return {};
     }
 
@@ -582,7 +682,7 @@ namespace dawn_native {
 
     void DeviceBase::ConsumeError(ErrorData* error) {
         ASSERT(error != nullptr);
-        HandleError(error->GetMessage().c_str());
+        HandleError(error->GetType(), error->GetMessage().c_str());
         delete error;
     }
 

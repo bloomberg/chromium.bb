@@ -40,12 +40,12 @@ class PartitionLibTest(cros_test_lib.RunCommandTempDirTestCase):
     block_count = 123
 
     self.PatchObject(cros_build_lib, 'RunCommand',
-                     return_value=cros_build_lib.CommandResult(output='''
+                     return_value=cros_build_lib.CommandResult(output="""
 Block size: %d
 Other thing: 123456798
 Not an integer: cdsad132csda
 Block count: %d
-''' % (block_size, block_count)))
+""" % (block_size, block_count)))
 
     size = partition_lib.Ext2FileSystemSize('/dev/null')
     self.assertEqual(size, block_size * block_count)
@@ -84,7 +84,7 @@ Block count: %d
 
     # Tests failure to identify.
     self.PatchObject(cros_build_lib, 'RunCommand',
-                     side_effect=cros_build_lib.RunCommandError("error", 1))
+                     side_effect=cros_build_lib.RunCommandError('error', 1))
     self.assertFalse(partition_lib.IsSquashfsImage(image))
 
   def testIsExt4Image(self):
@@ -101,7 +101,7 @@ Block count: %d
 
     # Tests failure to identify.
     self.PatchObject(cros_build_lib, 'RunCommand',
-                     side_effect=cros_build_lib.RunCommandError("error", 1))
+                     side_effect=cros_build_lib.RunCommandError('error', 1))
     self.assertFalse(partition_lib.IsExt4Image(image))
 
   def testIsGptImage(self):
@@ -114,7 +114,7 @@ Block count: %d
     part_info_mock.assert_called_once_with(image)
 
     # Tests failure to identify.
-    part_info_mock.side_effect = cros_build_lib.RunCommandError("error", 1)
+    part_info_mock.side_effect = cros_build_lib.RunCommandError('error', 1)
     part_info_mock.return_value = []
     self.assertFalse(partition_lib.IsGptImage(image))
 

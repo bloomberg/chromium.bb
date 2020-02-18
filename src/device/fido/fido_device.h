@@ -66,6 +66,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // call (i.e. hairpin) |callback|.
   virtual CancelToken DeviceTransact(std::vector<uint8_t> command,
                                      DeviceCallback callback) = 0;
+  // Attempt to make the device "wink", i.e. grab the attention of the user
+  // usually by flashing a light. |callback| is run after a successful wink or
+  // if the device does not support winking, in which case it may run
+  // immediately.
+  virtual void TryWink(base::OnceClosure callback);
   // Cancel attempts to cancel an enqueued request. If the request is currently
   // active it will be aborted if possible, which is expected to cause it to
   // complete with |kCtap2ErrKeepAliveCancel|. If the request is still enqueued
@@ -110,6 +115,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   }
 
   State state_for_testing() const { return state_; }
+  void SetStateForTesting(State state) { state_ = state; }
 
  protected:
   void OnDeviceInfoReceived(base::OnceClosure done,
@@ -119,6 +125,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   State state_ = State::kInit;
   ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
   base::Optional<AuthenticatorGetInfoResponse> device_info_;
+  // If `true`, the device needs to be sent a specific wink command to flash
+  // when user presence is required.
+  bool needs_explicit_wink_ = false;
   // next_cancel_token_ is the value of the next |CancelToken| returned by this
   // device. It starts at one so that zero can be used as an invalid value where
   // needed.

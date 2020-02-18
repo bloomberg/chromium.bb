@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
@@ -169,7 +170,10 @@ void DesktopWindowTreeHostWin::OnActiveWindowChanged(bool active) {}
 void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
-  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows))
+  bool force_legacy_tooltips =
+      (base::win::GetVersion() < base::win::Version::WIN8);
+  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows) &&
+      !force_legacy_tooltips)
     return std::make_unique<corewm::TooltipAura>();
 
   DCHECK(!tooltip_);
@@ -638,6 +642,11 @@ void DesktopWindowTreeHostWin::MoveCursorToScreenLocationInPixels(
   ::SetCursorPos(cursor_location.x, cursor_location.y);
 }
 
+std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+DesktopWindowTreeHostWin::RequestUnadjustedMovement() {
+  return message_handler_->RegisterUnadjustedMouseEvent();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, wm::AnimationHost implementation:
 
@@ -915,6 +924,7 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
   // with the event.
   if (window()->occlusion_state() == aura::Window::OcclusionState::OCCLUDED)
     UMA_HISTOGRAM_BOOLEAN("OccludedWindowMouseEvents", true);
+
   SendEventToSink(event);
   return event->handled();
 }
@@ -926,7 +936,9 @@ void DesktopWindowTreeHostWin::HandleKeyEvent(ui::KeyEvent* event) {
   // WM_SYSCHAR would trigger a beep when processed by the native event handler.
   if ((event->type() == ui::ET_KEY_PRESSED) &&
       (event->key_code() == ui::VKEY_SPACE) &&
-      (event->flags() & ui::EF_ALT_DOWN) && GetWidget()->non_client_view()) {
+      (event->flags() & ui::EF_ALT_DOWN) &&
+      !(event->flags() & ui::EF_CONTROL_DOWN) &&
+      GetWidget()->non_client_view()) {
     return;
   }
 

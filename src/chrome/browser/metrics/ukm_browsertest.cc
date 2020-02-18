@@ -334,9 +334,7 @@ class UkmBrowserTest : public UkmBrowserTestBase,
 
 class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
  public:
-  UkmBrowserTestWithSyncTransport() {
-    features_.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-  }
+  UkmBrowserTestWithSyncTransport() {}
 
   void SetUpInProcessBrowserTestFixture() override {
     // This is required to support (fake) secondary-account-signin (based on
@@ -355,8 +353,6 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList features_;
-
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
 
@@ -544,8 +540,13 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, OpenNonSyncCheck) {
 // Keep in sync with UkmTest.testMetricConsent in
 // chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/996823): Re-enable this test.
+#define MAYBE_MetricsConsentCheck DISABLED_MetricsConsentCheck
+#else
+#define MAYBE_MetricsConsentCheck MetricsConsentCheck
+#endif
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_MetricsConsentCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -575,7 +576,13 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
   CloseBrowserSynchronously(sync_browser);
 }
 
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/996823): Re-enable this test.
+#define MAYBE_LogProtoData DISABLED_LogProtoData
+#else
+#define MAYBE_LogProtoData LogProtoData
+#endif
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_LogProtoData) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -615,7 +622,16 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
 
 // Verifies that network provider attaches effective connection type correctly
 // to the UKM report.
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/996823): Re-enable this test.
+#define MAYBE_NetworkProviderPopulatesSystemProfile \
+  DISABLED_NetworkProviderPopulatesSystemProfile
+#else
+#define MAYBE_NetworkProviderPopulatesSystemProfile \
+  NetworkProviderPopulatesSystemProfile
+#endif
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest,
+                       MAYBE_NetworkProviderPopulatesSystemProfile) {
   // Override network quality to 2G. This should cause the
   // |max_effective_connection_type| in the system profile to be set to 2G.
   g_browser_process->network_quality_tracker()

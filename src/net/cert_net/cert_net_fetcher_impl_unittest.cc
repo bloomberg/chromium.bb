@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "net/cert/cert_net_fetcher.h"
@@ -18,10 +18,10 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/test/url_request/url_request_hanging_read_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_filter.h"
@@ -60,7 +60,7 @@ class RequestContext : public URLRequestContext {
     storage_.set_ssl_config_service(
         std::make_unique<SSLConfigServiceDefaults>());
     storage_.set_http_server_properties(
-        std::make_unique<HttpServerPropertiesImpl>());
+        std::make_unique<HttpServerProperties>());
 
     HttpNetworkSession::Context session_context;
     session_context.host_resolver = host_resolver();
@@ -178,7 +178,7 @@ class CertNetFetcherImplTest : public PlatformTest {
   void StartNetworkThread() {
     // Start the network thread.
     network_thread_.reset(new base::Thread("network thread"));
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     EXPECT_TRUE(network_thread_->StartWithOptions(options));
 
     // Initialize the URLRequestContext (and wait till it has completed).
@@ -232,7 +232,7 @@ class CertNetFetcherImplTest : public PlatformTest {
 // Installs URLRequestHangingReadJob handlers and clears them on teardown.
 class CertNetFetcherImplTestWithHangingReadHandler
     : public CertNetFetcherImplTest,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   void SetUp() override { URLRequestHangingReadJob::AddUrlHandler(); }
 
@@ -301,7 +301,7 @@ TEST_F(CertNetFetcherImplTest, HttpStatusCode) {
     GURL url = test_server_.GetURL("/404.html");
     std::unique_ptr<CertNetFetcher::Request> request =
         StartRequest(fetcher(), url);
-    VerifyFailure(ERR_FAILED, request.get());
+    VerifyFailure(ERR_HTTP_RESPONSE_CODE_FAILURE, request.get());
   }
 
   // Response was HTTP status 500.
@@ -309,7 +309,7 @@ TEST_F(CertNetFetcherImplTest, HttpStatusCode) {
     GURL url = test_server_.GetURL("/500.html");
     std::unique_ptr<CertNetFetcher::Request> request =
         StartRequest(fetcher(), url);
-    VerifyFailure(ERR_FAILED, request.get());
+    VerifyFailure(ERR_HTTP_RESPONSE_CODE_FAILURE, request.get());
   }
 }
 

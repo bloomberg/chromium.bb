@@ -22,8 +22,33 @@ const char kResourceTypesKey[] = "resourceTypes";
 const char kExcludedResourceTypesKey[] = "excludedResourceTypes";
 const char kDomainTypeKey[] = "domainType";
 const char kRuleActionTypeKey[] = "type";
-const char kRedirectUrlKey[] = "redirectUrl";
 const char kRemoveHeadersListKey[] = "removeHeadersList";
+const char kRedirectPath[] = "action.redirect";
+const char kExtensionPathPath[] = "action.redirect.extensionPath";
+const char kTransformSchemePath[] = "action.redirect.transform.scheme";
+const char kTransformPortPath[] = "action.redirect.transform.port";
+const char kTransformQueryPath[] = "action.redirect.transform.query";
+const char kTransformFragmentPath[] = "action.redirect.transform.fragment";
+const char kTransformQueryTransformPath[] =
+    "action.redirect.transform.queryTransform";
+const char kRedirectKey[] = "redirect";
+const char kExtensionPathKey[] = "extensionPath";
+const char kRedirectUrlKey[] = "url";
+const char kRedirectUrlPath[] = "action.redirect.url";
+const char kTransformKey[] = "transform";
+const char kTransformSchemeKey[] = "scheme";
+const char kTransformHostKey[] = "host";
+const char kTransformPortKey[] = "port";
+const char kTransformPathKey[] = "path";
+const char kTransformQueryKey[] = "query";
+const char kTransformQueryTransformKey[] = "queryTransform";
+const char kTransformFragmentKey[] = "fragment";
+const char kTransformUsernameKey[] = "username";
+const char kTransformPasswordKey[] = "password";
+const char kQueryTransformRemoveParamsKey[] = "removeParams";
+const char kQueryTransformAddReplaceParamsKey[] = "addOrReplaceParams";
+const char kQueryKeyKey[] = "key";
+const char kQueryValueKey[] = "value";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

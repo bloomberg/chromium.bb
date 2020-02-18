@@ -39,6 +39,10 @@ class PerfOutputCall {
   // Stop() is made virtual for mocks in testing.
   virtual void Stop();
 
+ protected:
+  // Exposed for mocking in unit test.
+  PerfOutputCall();
+
  private:
   // Internal callbacks.
   void OnIOComplete(base::Optional<std::string> data);
@@ -64,7 +68,7 @@ class PerfOutputCall {
   THREAD_CHECKER(thread_checker_);
 
   // To pass around the "this" pointer across threads safely.
-  base::WeakPtrFactory<PerfOutputCall> weak_factory_;
+  base::WeakPtrFactory<PerfOutputCall> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerfOutputCall);
 };

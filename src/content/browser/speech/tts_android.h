@@ -28,6 +28,8 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   void GetVoices(std::vector<VoiceData>* out_voices) override;
 
   // Methods called from Java via JNI.
+  void RequestTtsStop(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   void VoicesChanged(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
   void OnEndEvent(JNIEnv* env,
@@ -64,7 +66,7 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   int utterance_id_;
   std::string utterance_;
 
-  base::WeakPtrFactory<TtsPlatformImplAndroid> weak_factory_;
+  base::WeakPtrFactory<TtsPlatformImplAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplAndroid);
 };

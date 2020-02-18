@@ -7,11 +7,12 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import sys
 import time
 import unittest
+
+import mock
 
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib
@@ -28,17 +29,17 @@ class CrosTestCaseTest(cros_test_lib.TestCase):
   """Test the cros_test_lib.TestCase."""
 
   def testAssertStartsWith(self):
-    s = "abcdef"
-    prefix = "abc"
+    s = 'abcdef'
+    prefix = 'abc'
     self.assertStartsWith(s, prefix)
-    prefix = "def"
+    prefix = 'def'
     self.assertRaises(AssertionError, self.assertStartsWith, s, prefix)
 
   def testAssertEndsWith(self):
-    s = "abcdef"
-    suffix = "abc"
+    s = 'abcdef'
+    suffix = 'abc'
     self.assertRaises(AssertionError, self.assertEndsWith, s, suffix)
-    suffix = "def"
+    suffix = 'def'
     self.assertEndsWith(s, suffix)
 
 
@@ -55,9 +56,9 @@ class TruthTableTest(cros_test_lib.TestCase):
     # Check that more than one iterable can be used at once.
     iter1 = iter(tt)
     iter2 = iter(tt)
-    self.assertEquals(lines[0], iter1.next())
-    self.assertEquals(lines[0], iter2.next())
-    self.assertEquals(lines[1], iter2.next())
+    self.assertEquals(lines[0], next(iter1))
+    self.assertEquals(lines[0], next(iter2))
+    self.assertEquals(lines[1], next(iter2))
 
     # Check that iteration again works again.
     for ix, line in enumerate(tt):

@@ -269,7 +269,7 @@ BookmarkBubbleView::BookmarkBubbleView(
     Profile* profile,
     const GURL& url,
     bool newly_bookmarked)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), nullptr),
+    : LocationBarBubbleDelegateView(anchor_view, nullptr),
       observer_(observer),
       delegate_(std::move(delegate)),
       profile_(profile),
@@ -318,7 +318,7 @@ void BookmarkBubbleView::ApplyEdits() {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
   const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url_);
   if (node) {
-    const base::string16 new_title = name_field_->text();
+    const base::string16 new_title = name_field_->GetText();
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
       base::RecordAction(

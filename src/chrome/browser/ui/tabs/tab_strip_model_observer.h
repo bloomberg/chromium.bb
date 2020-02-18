@@ -10,10 +10,12 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
 
+class TabGroupVisualData;
 class TabStripModel;
 
 namespace content {
@@ -214,6 +216,12 @@ struct TabStripSelectionChange {
   int reason = 0;
 };
 
+// Forbid construction of ScopedObserver with TabStripModel:
+// TabStripModelObserver already implements ScopedObserver's functionality
+// natively.
+template <class U>
+class ScopedObserver<TabStripModel, U> {};
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TabStripModelObserver
@@ -258,6 +266,15 @@ class TabStripModelObserver {
                                       const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
 
+  // Called when the TabGroupVisualData associated with a group changes. |group|
+  // identifies which group changed. |visual_data| is a pointer to the new
+  // TabGroupVisualData and is valid until either the data associated with
+  // |group| changes again or |group| is destroyed.
+  virtual void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data);
+
   // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer
   // available by the time this message is delivered.
@@ -300,11 +317,39 @@ class TabStripModelObserver {
   // |attention| is true.
   virtual void SetTabNeedsAttentionAt(int index, bool attention);
 
+  // Called when an observed TabStripModel is beginning destruction.
+  virtual void OnTabStripModelDestroyed(TabStripModel* tab_strip_model);
+
+  static void StopObservingAll(TabStripModelObserver* observer);
+  static bool IsObservingAny(TabStripModelObserver* observer);
+  static int CountObservedModels(TabStripModelObserver* observer);
+
+  // A passkey for TabStripModel to access some methods on this class - see
+  // </docs/patterns/passkey.md>.
+  class ModelPasskey {
+   private:
+    friend class TabStripModel;
+    ModelPasskey() = default;
+    ~ModelPasskey() = default;
+  };
+
+  // These methods are used by TabStripModel to notify this class of lifecycle
+  // events on the TabStripModelObserver or the TabStripModel itself. The first
+  // two are used to allow TabStripModelObserver to track which models it is
+  // observing. The third is used to allow TabStripModelObserver to clean up
+  // when an observed TabStripModel is destroyed, and to send the
+  // OnTabStripModelDestroyed notification above.
+  void StartedObserving(ModelPasskey, TabStripModel* model);
+  void StoppedObserving(ModelPasskey, TabStripModel* model);
+  void ModelDestroyed(ModelPasskey, TabStripModel* model);
+
  protected:
   TabStripModelObserver();
-  virtual ~TabStripModelObserver() {}
+  virtual ~TabStripModelObserver();
 
  private:
+  std::set<TabStripModel*> observed_models_;
+
   DISALLOW_COPY_AND_ASSIGN(TabStripModelObserver);
 };
 

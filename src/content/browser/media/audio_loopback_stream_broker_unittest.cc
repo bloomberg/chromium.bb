@@ -9,8 +9,8 @@
 
 #include "base/sync_socket.h"
 #include "base/test/mock_callback.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "content/public/test/browser_task_environment.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -164,9 +164,9 @@ struct TestEnvironment {
         mute_source, deleter.Get(), renderer_factory_client.MakePtr());
   }
 
-  void RunUntilIdle() { thread_bundle.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment.RunUntilIdle(); }
 
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   MockDeleterCallback deleter;
   MockSource source;
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
@@ -179,7 +179,7 @@ struct TestEnvironment {
 
 TEST(AudioLoopbackStreamBrokerTest, StoresProcessAndFrameId) {
   InSequence seq;
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   MockDeleterCallback deleter;
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   MockSource source;

@@ -18,8 +18,9 @@ class NATIVE_THEME_EXPORT NativeThemeDarkAura : public NativeThemeAura {
   static NativeThemeDarkAura* instance();
 
   // NativeThemeAura:
-  SkColor GetSystemColor(ColorId color_id) const override;
-  bool SystemDarkModeEnabled() const override;
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override;
+  bool ShouldUseDarkColors() const override;
   PreferredColorScheme GetPreferredColorScheme() const override;
 
  private:

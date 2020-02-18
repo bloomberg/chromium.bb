@@ -45,10 +45,10 @@ class TestWebFrameClientImpl : public frame_test_helpers::TestWebFrameClient {
 
   WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
                                     WebMediaPlayerClient*,
+                                    blink::MediaInspectorContext*,
                                     WebMediaPlayerEncryptedMediaClient*,
                                     WebContentDecryptionModule*,
-                                    const WebString& sink_id,
-                                    WebLayerTreeView*) override {
+                                    const WebString& sink_id) override {
     return new MockWebMediaPlayerForContextMenu();
   }
 

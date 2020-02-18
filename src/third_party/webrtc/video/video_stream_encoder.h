@@ -31,6 +31,7 @@
 #include "rtc_base/critical_section.h"
 #include "rtc_base/event.h"
 #include "rtc_base/experiments/balanced_degradation_settings.h"
+#include "rtc_base/experiments/quality_scaler_settings.h"
 #include "rtc_base/experiments/rate_control_settings.h"
 #include "rtc_base/race_checker.h"
 #include "rtc_base/rate_statistics.h"
@@ -90,6 +91,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
       const VideoEncoder::LossNotification& loss_notification) override;
 
   void OnBitrateUpdated(DataRate target_bitrate,
+                        DataRate stable_target_bitrate,
                         DataRate target_headroom,
                         uint8_t fraction_lost,
                         int64_t round_trip_time_ms) override;
@@ -102,7 +104,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   // AdaptationObserverInterface implementation.
   // These methods are protected for easier testing.
   void AdaptUp(AdaptReason reason) override;
-  void AdaptDown(AdaptReason reason) override;
+  bool AdaptDown(AdaptReason reason) override;
 
  private:
   class VideoSourceProxy;
@@ -122,7 +124,8 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
     EncoderRateSettings(const VideoBitrateAllocation& bitrate,
                         double framerate_fps,
                         DataRate bandwidth_allocation,
-                        DataRate encoder_target);
+                        DataRate encoder_target,
+                        DataRate stable_encoder_target);
     bool operator==(const EncoderRateSettings& rhs) const;
     bool operator!=(const EncoderRateSettings& rhs) const;
 
@@ -133,6 +136,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
     // |using last_encoder_rate_setings_->bitrate.get_sum_bps()|, may trick it
     // into thinking the available bitrate has decreased since the last call.
     DataRate encoder_target;
+    DataRate stable_encoder_target;
   };
 
   void ConfigureEncoderOnTaskQueue(VideoEncoderConfig config,
@@ -238,6 +242,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   EncoderSink* sink_;
   const VideoStreamEncoderSettings settings_;
   const RateControlSettings rate_control_settings_;
+  const QualityScalerSettings quality_scaler_settings_;
 
   const std::unique_ptr<OveruseFrameDetector> overuse_detector_
       RTC_PT_GUARDED_BY(&encoder_queue_);
@@ -271,6 +276,9 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   int crop_width_ RTC_GUARDED_BY(&encoder_queue_);
   int crop_height_ RTC_GUARDED_BY(&encoder_queue_);
   uint32_t encoder_start_bitrate_bps_ RTC_GUARDED_BY(&encoder_queue_);
+  int set_start_bitrate_bps_ RTC_GUARDED_BY(&encoder_queue_);
+  int64_t set_start_bitrate_time_ms_ RTC_GUARDED_BY(&encoder_queue_);
+  bool has_seen_first_bwe_drop_ RTC_GUARDED_BY(&encoder_queue_);
   size_t max_data_payload_length_ RTC_GUARDED_BY(&encoder_queue_);
   absl::optional<EncoderRateSettings> last_encoder_rate_settings_
       RTC_GUARDED_BY(&encoder_queue_);

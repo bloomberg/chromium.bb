@@ -160,6 +160,8 @@ void ModuleEventSinkImpl::Create(
     mojom::ModuleEventSinkRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Process process = get_process.Run();
+  if (!process.IsValid())
+    return;
   auto module_event_sink_impl = std::make_unique<ModuleEventSinkImpl>(
       std::move(process), process_type, on_module_load_callback);
   mojo::MakeStrongBinding(std::move(module_event_sink_impl),
@@ -172,9 +174,9 @@ void ModuleEventSinkImpl::OnModuleEvents(
 
   for (uint64_t load_address : module_load_addresses) {
     // Handle the event on a background sequence.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
         base::BindOnce(&HandleModuleEvent, process_.Duplicate(), process_type_,
                        load_address, base::SequencedTaskRunnerHandle::Get(),

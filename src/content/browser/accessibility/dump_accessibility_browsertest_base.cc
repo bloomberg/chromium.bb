@@ -218,23 +218,22 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // flaky.
   BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting();
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Exit without running the test if we can't find an expectation file.
   // This is used to skip certain tests on certain platforms.
   // We have to check for this in advance in order to avoid waiting on a
   // WAIT-FOR directive in the source file that's looking for something not
   // supported on the current platform.
-  base::Optional<base::FilePath> expected_file =
-      test_helper.GetExpectationFilePath(file_path);
-  if (!expected_file) {
+  base::FilePath expected_file = test_helper.GetExpectationFilePath(file_path);
+  if (expected_file.empty()) {
     LOG(INFO) << "No expectation file present, ignoring test on this "
                  "platform.";
     return;
   }
 
   base::Optional<std::vector<std::string>> expected_lines =
-      test_helper.LoadExpectationFile(*expected_file);
+      test_helper.LoadExpectationFile(expected_file);
   if (!expected_lines) {
     LOG(INFO) << "Skipping this test on this platform.";
     return;
@@ -274,7 +273,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   if (enable_accessibility_after_navigating_ &&
       web_contents->GetAccessibilityMode().is_mode_off()) {
     // Load the url, then enable accessibility.
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
@@ -283,7 +282,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // "load complete" AX event.
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents, ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     accessibility_waiter.WaitForNotification();
   }
 
@@ -377,7 +376,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Validate against the expectation file.
   bool matches_expectation = test_helper.ValidateAgainstExpectation(
-      file_path, *expected_file, actual_lines, *expected_lines);
+      file_path, expected_file, actual_lines, *expected_lines);
   EXPECT_TRUE(matches_expectation);
   if (!matches_expectation)
     OnDiffFailed();

@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -176,11 +176,11 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
                                       target:self
                                       action:@selector(onVerify:)];
   [_verifyButton setTitleTextAttributes:@{
-    NSForegroundColorAttributeName : [[MDCPalette cr_bluePalette] tint600]
+    NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]
   }
                                forState:UIControlStateNormal];
   [_verifyButton setTitleTextAttributes:@{
-    NSForegroundColorAttributeName : [UIColor lightGrayColor]
+    NSForegroundColorAttributeName : [UIColor colorNamed:kDisabledTintColor]
   }
                                forState:UIControlStateDisabled];
   [_verifyButton setEnabled:NO];
@@ -361,10 +361,8 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   }
 
   if ([self inputExpirationIsValid:item]) {
-    item.showDateInputError = NO;
     item.errorMessage = @"";
   } else {
-    item.showDateInputError = NO;
     item.errorMessage = l10n_util::GetNSString(
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE);
   }
@@ -411,10 +409,11 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
     yearText = [@(inputYear) stringValue];
   }
 
-  controller->OnUnmaskResponse(base::SysNSStringToUTF16(_CVCItem.CVCText),
-                               base::SysNSStringToUTF16(_CVCItem.monthText),
-                               base::SysNSStringToUTF16(yearText),
-                               _storageSwitchItem.on);
+  controller->OnUnmaskPromptAccepted(
+      base::SysNSStringToUTF16(_CVCItem.CVCText),
+      base::SysNSStringToUTF16(_CVCItem.monthText),
+      base::SysNSStringToUTF16(yearText), _storageSwitchItem.on,
+      /*enable_fido_auth=*/false);
 }
 
 - (void)onCancel:(id)sender {
@@ -436,7 +435,6 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   _CVCItem.errorMessage = @"";
   _CVCItem.showDateInput = YES;
   _CVCItem.showNewCardButton = NO;
-  _CVCItem.showDateInputError = NO;
   _CVCItem.showCVCInputError = NO;
 
   [self reconfigureCellsForItems:@[ _CVCItem ]];
@@ -524,7 +522,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
           base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
       storageSwitchCell.textLabel.font = [MDCTypography body2Font];
       storageSwitchCell.textLabel.textColor =
-          [[MDCPalette greyPalette] tint500];
+          [UIColor colorNamed:kTextSecondaryColor];
       [storageSwitchCell.switchView addTarget:self
                                        action:@selector(onStorageSwitchChanged:)
                              forControlEvents:UIControlEventValueChanged];

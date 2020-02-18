@@ -257,6 +257,10 @@ public class PrefServiceBridge {
         return nativeGetPasswordManagerAutoSigninEnabled();
     }
 
+    public boolean isPasswordLeakDetectionEnabled() {
+        return nativeGetPasswordLeakDetectionEnabled();
+    }
+
     /**
      * @return Whether password storage is configured by policy
      */
@@ -266,6 +270,13 @@ public class PrefServiceBridge {
 
     public boolean isPasswordManagerAutoSigninManaged() {
         return nativeGetPasswordManagerAutoSigninManaged();
+    }
+
+    /**
+     * @return Whether leak detection is enabled/disabled by policy
+     */
+    public boolean isPasswordLeakDetectionManaged() {
+        return nativeGetPasswordLeakDetectionManaged();
     }
 
     /**
@@ -632,6 +643,10 @@ public class PrefServiceBridge {
         nativeSetPasswordManagerAutoSigninEnabled(enabled);
     }
 
+    public void setPasswordLeakDetectionEnabled(boolean enabled) {
+        nativeSetPasswordLeakDetectionEnabled(enabled);
+    }
+
     public void setNotificationsVibrateEnabled(boolean enabled) {
         nativeSetNotificationsVibrateEnabled(enabled);
     }
@@ -929,6 +944,15 @@ public class PrefServiceBridge {
     }
 
     /**
+     * Given an array of language codes, sets the order of the user's accepted languages to match.
+     *
+     * @param codes The new order for the user's accepted languages.
+     */
+    public void setLanguageOrder(String[] codes) {
+        nativeSetLanguageOrder(codes);
+    }
+
+    /**
      * @param languageCode A valid language code to check.
      * @return Whether the given language is blocked by the user.
      */
@@ -1073,8 +1097,10 @@ public class PrefServiceBridge {
     private native boolean nativeGetBlockThirdPartyCookiesManaged();
     private native boolean nativeGetRememberPasswordsEnabled();
     private native boolean nativeGetPasswordManagerAutoSigninEnabled();
+    private native boolean nativeGetPasswordLeakDetectionEnabled();
     private native boolean nativeGetRememberPasswordsManaged();
     private native boolean nativeGetPasswordManagerAutoSigninManaged();
+    private native boolean nativeGetPasswordLeakDetectionManaged();
     private native boolean nativeGetAllowLocationUserModifiable();
     private native boolean nativeGetLocationAllowedByPolicy();
     private native boolean nativeGetAllowLocationManagedByCustodian();
@@ -1120,6 +1146,7 @@ public class PrefServiceBridge {
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
+    private native void nativeSetPasswordLeakDetectionEnabled(boolean enabled);
     private native boolean nativeGetAllowLocationEnabled();
     private native boolean nativeGetNotificationsEnabled();
     private native boolean nativeGetNotificationsVibrateEnabled();
@@ -1171,6 +1198,7 @@ public class PrefServiceBridge {
     private native void nativeGetUserAcceptLanguages(List<String> list);
     private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
     private native void nativeMoveAcceptLanguage(String language, int offset);
+    private native void nativeSetLanguageOrder(String[] codes);
     private native boolean nativeIsBlockedLanguage(String language);
     private native void nativeSetLanguageBlockedState(String language, boolean blocked);
     private native String nativeGetDownloadDefaultDirectory();

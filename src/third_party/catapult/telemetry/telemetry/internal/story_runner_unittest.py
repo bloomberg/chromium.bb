@@ -29,13 +29,12 @@ from telemetry.internal.util import exception_formatter as ex_formatter_module
 from telemetry.page import page as page_module
 from telemetry.page import legacy_page_test
 from telemetry import story as story_module
+from telemetry.story import typ_expectations
 from telemetry.testing import fakes
 from telemetry.testing import options_for_unittests
 from telemetry.testing import system_stub
 from telemetry.util import wpr_modes
-from telemetry.value import improvement_direction
 from telemetry.value import list_of_scalar_values
-from telemetry.value import scalar
 from telemetry.value import summary as summary_module
 from telemetry.web_perf import story_test
 from telemetry.web_perf import timeline_based_measurement
@@ -158,14 +157,20 @@ class DummyPage(page_module.Page):
         page_set=page_set)
 
 
-class _DisableBenchmarkExpectations(
-    story_module.expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableBenchmark([story_module.expectations.ALL], 'crbug.com/123')
+class _DisableBenchmarkExpectations(typ_expectations.StoryExpectations):
+  def __init__(self, benchmark_name):
+    expectations = '# results: [ Skip ]\n%s/* [ Skip ]\n' % (
+        benchmark_name)
+    super(_DisableBenchmarkExpectations, self).__init__(benchmark_name)
+    self.GetBenchmarkExpectationsFromParser(expectations)
 
-class _DisableStoryExpectations(story_module.expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableStory('one', [story_module.expectations.ALL], 'crbug.com/123')
+
+class _DisableStoryExpectations(typ_expectations.StoryExpectations):
+  def __init__(self, benchmark_name, story_name):
+    expectations = '# results: [ Skip ]\n%s/%s [ Skip ]\n' % (
+        benchmark_name, story_name)
+    super(_DisableStoryExpectations, self).__init__(benchmark_name)
+    self.GetBenchmarkExpectationsFromParser(expectations)
 
 
 class FakeBenchmark(benchmark.Benchmark):
@@ -204,10 +209,10 @@ class FakeBenchmark(benchmark.Benchmark):
   @property
   def expectations(self):
     if self.story_disabled:
-      return _DisableStoryExpectations()
+      return _DisableStoryExpectations('fake', 'one')
     if self.disabled:
-      return _DisableBenchmarkExpectations()
-    return story_module.expectations.StoryExpectations()
+      return _DisableBenchmarkExpectations('fake')
+    return typ_expectations.StoryExpectations('fake')
 
 
 class FakeBenchmarkWithAStory(FakeBenchmark):
@@ -223,16 +228,13 @@ class FakeBenchmarkWithAStory(FakeBenchmark):
     story_set.AddStory(DummyPage(story_set, name='story'))
     return story_set
 
-
-def _GetOptionForUnittest():
-  options = options_for_unittests.GetCopy()
-  options.output_formats = ['none']
-  options.output_dir = tempfile.mkdtemp(prefix='story_runner_test')
-  parser = options.CreateParser()
-  story_runner.AddCommandLineArgs(parser)
-  options.MergeDefaultValues(parser.get_default_values())
-  story_runner.ProcessCommandLineArgs(parser, options)
-  return options
+  @property
+  def expectations(self):
+    if self.story_disabled:
+      return _DisableStoryExpectations('fake_with_a_story', 'story')
+    if self.disabled:
+      return _DisableBenchmarkExpectations('fake_with_a_story')
+    return typ_expectations.StoryExpectations('fake_with_a_story')
 
 
 class FakeExceptionFormatterModule(object):
@@ -257,59 +259,38 @@ class TestOnlyException(Exception):
 class _Measurement(legacy_page_test.LegacyPageTest):
   i = 0
   def RunPage(self, page, results):
+    del page  # Unused.
     self.i += 1
-    results.AddValue(scalar.ScalarValue(
-        page, 'metric', 'unit', self.i,
-        improvement_direction=improvement_direction.UP))
+    results.AddMeasurement('metric', 'unit', self.i)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page, tab  # Unused.
     self.i += 1
-    results.AddValue(scalar.ScalarValue(
-        page, 'metric', 'unit', self.i,
-        improvement_direction=improvement_direction.UP))
-
-
-def _GenerateFakeBrowserOptions(output_dir, options_callback=None):
-  options = fakes.CreateBrowserFinderOptions()
-  options.upload_results = False
-  options.upload_bucket = None
-  options.results_label = None
-  options.reset_results = False
-  options.use_live_sites = False
-  options.max_failures = 100
-  options.pause = None
-  options.pageset_repeat = 1
-  options.output_dir = output_dir
-  options.output_formats = ['chartjson']
-  options.run_disabled_tests = False
-
-  if options_callback:
-    options_callback(options)
-
-  parser = options.CreateParser()
-  story_runner.AddCommandLineArgs(parser)
-  options.MergeDefaultValues(parser.get_default_values())
-  story_runner.ProcessCommandLineArgs(parser, options)
-  return options
+    results.AddMeasurement('metric', 'unit', self.i)
 
 
 class StoryRunnerTest(unittest.TestCase):
   def setUp(self):
+    self.options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp())
+    self.results = results_options.CreateResults(self.options)
     self.fake_stdout = StringIO.StringIO()
     self.actual_stdout = sys.stdout
     sys.stdout = self.fake_stdout
-    self.options = _GetOptionForUnittest()
-    self.results = results_options.CreateResults(self.options)
     self._story_runner_logging_stub = None
 
   def tearDown(self):
     sys.stdout = self.actual_stdout
     self.RestoreExceptionFormatter()
+    self.results.Finalize()
     shutil.rmtree(self.options.output_dir)
 
-  def GetFakeBrowserOptions(self, options_callback=None):
-    return _GenerateFakeBrowserOptions(
-        self.options.output_dir, options_callback)
+  def GetFakeBrowserOptions(self, overrides=None):
+    options = options_for_unittests.GetRunOptions(
+        output_dir=self.options.output_dir,
+        fake_browser=True, overrides=overrides)
+    options.output_formats = ['chartjson']
+    return options
 
   def StubOutExceptionFormatting(self):
     """Fake out exception formatter to avoid spamming the unittest stdout."""
@@ -620,15 +601,12 @@ class StoryRunnerTest(unittest.TestCase):
     values = summary.interleaved_computed_per_page_values_and_summaries
 
     blank_value = list_of_scalar_values.ListOfScalarValues(
-        blank_story, 'metric', 'unit', [1, 3],
-        improvement_direction=improvement_direction.UP)
+        blank_story, 'metric', 'unit', [1, 3])
     green_value = list_of_scalar_values.ListOfScalarValues(
-        green_story, 'metric', 'unit', [2, 4],
-        improvement_direction=improvement_direction.UP)
+        green_story, 'metric', 'unit', [2, 4])
     merged_value = list_of_scalar_values.ListOfScalarValues(
         None, 'metric', 'unit',
-        [1, 3, 2, 4], std=math.sqrt(2),  # Pooled standard deviation.
-        improvement_direction=improvement_direction.UP)
+        [1, 3, 2, 4], std=math.sqrt(2))  # Pooled standard deviation.
 
     self.assertEquals(4, GetNumberOfSuccessfulPageRuns(self.results))
     self.assertFalse(self.results.had_failures)
@@ -661,7 +639,7 @@ class StoryRunnerTest(unittest.TestCase):
     story_set.AddStory(story_one)
 
     story_runner.Run(_Measurement(), story_set, self.options, self.results,
-                     expectations=_DisableStoryExpectations())
+                     expectations=_DisableStoryExpectations('fake', 'one'))
     summary = summary_module.Summary(self.results)
     values = summary.interleaved_computed_per_page_values_and_summaries
 
@@ -678,7 +656,7 @@ class StoryRunnerTest(unittest.TestCase):
     story_set.AddStory(story_two)
 
     story_runner.Run(_Measurement(), story_set, self.options, self.results,
-                     expectations=_DisableStoryExpectations())
+                     expectations=_DisableStoryExpectations('fake', 'one'))
     summary = summary_module.Summary(self.results)
     values = summary.interleaved_computed_per_page_values_and_summaries
 
@@ -694,7 +672,7 @@ class StoryRunnerTest(unittest.TestCase):
     self.options.run_disabled_tests = True
 
     story_runner.Run(_Measurement(), story_set, self.options, self.results,
-                     expectations=_DisableStoryExpectations())
+                     expectations=_DisableStoryExpectations('fake', 'one'))
     summary = summary_module.Summary(self.results)
     values = summary.interleaved_computed_per_page_values_and_summaries
 
@@ -1030,7 +1008,7 @@ class StoryRunnerTest(unittest.TestCase):
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
@@ -1047,7 +1025,7 @@ class StoryRunnerTest(unittest.TestCase):
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
         mock.call.state.RunStory(root_mock.results),
@@ -1064,7 +1042,7 @@ class StoryRunnerTest(unittest.TestCase):
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
@@ -1093,11 +1071,11 @@ class StoryRunnerTest(unittest.TestCase):
             root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
       self.assertListEqual(root_mock.method_calls, [
-          mock.call.results.CreateArtifact('logs'),
+          mock.call.results.CreateArtifact('logs.txt'),
           mock.call.test.WillRunStory(root_mock.state.platform),
           mock.call.state.WillRunStory(root_mock.story),
           mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
-          mock.call.results.CaptureArtifact('minidump'),
+          mock.call.results.CaptureArtifact('minidump.dmp'),
           mock.call.results.Fail(
               'Exception raised running %s' % root_mock.story.name),
           mock.call.test.DidRunStory(
@@ -1117,7 +1095,7 @@ class StoryRunnerTest(unittest.TestCase):
           root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
@@ -1136,7 +1114,7 @@ class StoryRunnerTest(unittest.TestCase):
     story_runner._RunStoryAndProcessErrorIfNeeded(
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
@@ -1156,7 +1134,7 @@ class StoryRunnerTest(unittest.TestCase):
           root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
         mock.call.results.Fail(
@@ -1176,7 +1154,7 @@ class StoryRunnerTest(unittest.TestCase):
           root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
@@ -1197,7 +1175,7 @@ class StoryRunnerTest(unittest.TestCase):
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
@@ -1220,7 +1198,7 @@ class StoryRunnerTest(unittest.TestCase):
           root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.DumpStateUponStoryRunFailure(root_mock.results),
@@ -1240,7 +1218,7 @@ class StoryRunnerTest(unittest.TestCase):
         root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.results.Skip('Unsupported page action: foo'),
         mock.call.test.DidRunStory(
@@ -1259,7 +1237,7 @@ class StoryRunnerTest(unittest.TestCase):
           root_mock.story, root_mock.results, root_mock.state, root_mock.test)
 
     self.assertEquals(root_mock.method_calls, [
-        mock.call.results.CreateArtifact('logs'),
+        mock.call.results.CreateArtifact('logs.txt'),
         mock.call.test.WillRunStory(root_mock.state.platform),
         mock.call.state.WillRunStory(root_mock.story),
         mock.call.state.CanRunStory(root_mock.story),
@@ -1280,14 +1258,17 @@ class StoryRunnerTest(unittest.TestCase):
       data = json.load(f)
     self.assertFalse(data['enabled'])
 
-  def testRunBenchmarkDisabledBenchmark(self):
+  def testRunBenchmark_DisabledWithExpectations(self):
     fake_benchmark = FakeBenchmarkWithAStory()
     fake_benchmark.disabled = True
     options = self.GetFakeBrowserOptions()
+    options.output_formats = ['json-test-results']
     story_runner.RunBenchmark(fake_benchmark, options)
-    with open(os.path.join(options.output_dir, 'results-chart.json')) as f:
+    with open(os.path.join(options.output_dir, 'test-results.json')) as f:
       data = json.load(f)
-    self.assertFalse(data['enabled'])
+    self.assertEqual(len(data['tests']['fake_with_a_story']), 1)
+    self.assertEqual(data['tests']['fake_with_a_story']['story']['actual'],
+                     'SKIP')
 
   def testRunBenchmarkDisabledBenchmarkCanOverriddenByCommandLine(self):
     fake_benchmark = FakeBenchmarkWithAStory()
@@ -1552,11 +1533,8 @@ class StoryRunnerTest(unittest.TestCase):
         story_set.AddStory(bar_page)
         return story_set
 
-    def options_callback(options):
-      options.story_tag_filter = 'foo'
-
     test_benchmark = TestBenchmark()
-    options = self.GetFakeBrowserOptions(options_callback)
+    options = self.GetFakeBrowserOptions(overrides={'story_tag_filter': 'foo'})
     options.output_formats = ['none']
     patch_method = 'py_utils.cloud_storage.GetFilesInDirectoryIfChanged'
     with mock.patch(patch_method) as cloud_patch:
@@ -1588,7 +1566,8 @@ class AbridgeableStorySetTest(unittest.TestCase):
 
   def setUp(self):
     self.benchmark = BenchmarkWithAbridgeableStorySet()
-    self.options = _GenerateFakeBrowserOptions(output_dir=tempfile.mkdtemp())
+    self.options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp(), fake_browser=True)
     self.options.output_formats = ['none']
 
   def tearDown(self):
@@ -1613,15 +1592,17 @@ class AbridgeableStorySetTest(unittest.TestCase):
 class BenchmarkJsonResultsTest(unittest.TestCase):
 
   def setUp(self):
-    self.options = _GenerateFakeBrowserOptions(output_dir=tempfile.mkdtemp())
+    self.options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp(), fake_browser=True)
     self.options.output_formats = ['json-test-results']
 
   def tearDown(self):
     shutil.rmtree(self.options.output_dir)
 
-  def GetFakeBrowserOptions(self, options_callback=None):
-    return _GenerateFakeBrowserOptions(
-        self.options.output_dir, options_callback)
+  def GetFakeBrowserOptions(self, overrides=None):
+    return options_for_unittests.GetRunOptions(
+        output_dir=self.options.output_dir,
+        fake_browser=True, overrides=overrides)
 
   def testArtifactLogsContainHandleableException(self):
 
@@ -1656,7 +1637,7 @@ class BenchmarkJsonResultsTest(unittest.TestCase):
       json_data = json.load(f)
     foo_artifacts = json_data['tests']['TestBenchmark']['foo']['artifacts']
     foo_artifact_log_path = os.path.join(
-        self.options.output_dir, foo_artifacts['logs'][0])
+        self.options.output_dir, foo_artifacts['logs.txt'][0])
     with open(foo_artifact_log_path) as f:
       foo_log = f.read()
 
@@ -1702,7 +1683,7 @@ class BenchmarkJsonResultsTest(unittest.TestCase):
 
     foo_artifacts = json_data['tests']['TestBenchmark']['foo']['artifacts']
     foo_artifact_log_path = os.path.join(
-        self.options.output_dir, foo_artifacts['logs'][0])
+        self.options.output_dir, foo_artifacts['logs.txt'][0])
     with open(foo_artifact_log_path) as f:
       foo_log = f.read()
 
@@ -1753,11 +1734,9 @@ class BenchmarkJsonResultsTest(unittest.TestCase):
     # Also set the filtering to only run from story 10 --> story 40
     stories_to_crash = set('story_%s' % i for i in range(30, 50))
 
-    def options_callback(options):
-      options.story_shard_begin_index = 10
-      options.story_shard_end_index = 41
-
-    options = self.GetFakeBrowserOptions(options_callback)
+    options = self.GetFakeBrowserOptions({
+        'story_shard_begin_index': 10,
+        'story_shard_end_index': 41})
     options.output_formats = ['json-test-results']
 
     unhandled_failure_benchmark = TestBenchmark()
@@ -1781,3 +1760,55 @@ class BenchmarkJsonResultsTest(unittest.TestCase):
 
     for i in range(31, 41):
       self.assertEquals(stories['story_%s' % i]['actual'], 'SKIP')
+
+
+class BenchmarkArtifactPathsTest(unittest.TestCase):
+
+  def setUp(self):
+    self._temp_dir = tempfile.mkdtemp()
+
+    self._real_output_dir = os.path.join(self._temp_dir, 'real', 'output')
+    os.makedirs(self._real_output_dir)
+
+    self._symlinked_output_dir = os.path.join(self._temp_dir, 'output')
+    os.symlink(self._real_output_dir, self._symlinked_output_dir)
+
+    self._options = options_for_unittests.GetRunOptions(
+        output_dir=self._symlinked_output_dir)
+    self._options.suppress_gtest_report = True
+    self._options.output_formats = ['json-test-results']
+    self._options.output_dir = self._symlinked_output_dir
+
+  def tearDown(self):
+    shutil.rmtree(self._temp_dir)
+
+  @decorators.Enabled('linux', 'mac')
+  def testArtifactLogsHaveProperPathWithSymlinkedTmp(self):
+    class TestBenchmark(benchmark.Benchmark):
+      test = DummyTest
+
+      @classmethod
+      def Name(cls):
+        return 'TestBenchmark'
+
+      def CreateStorySet(self, options):
+        story_set = story_module.StorySet()
+        story_set.AddStory(page_module.Page(
+            'http://foo', name='foo', shared_page_state_class=TestSharedState))
+        return story_set
+
+    self.assertTrue(os.path.exists(self._symlinked_output_dir))
+
+    test_benchmark = TestBenchmark()
+    return_code = story_runner.RunBenchmark(test_benchmark, self._options)
+    self.assertEquals(0, return_code)
+
+    json_data = {}
+    with open(os.path.join(self._options.output_dir,
+                           'test-results.json')) as f:
+      json_data = json.load(f)
+
+    foo_artifacts = json_data['tests']['TestBenchmark']['foo']['artifacts']
+    foo_artifact_log_path = os.path.join(
+        self._options.output_dir, foo_artifacts['logs.txt'][0])
+    assert os.path.isfile(foo_artifact_log_path)

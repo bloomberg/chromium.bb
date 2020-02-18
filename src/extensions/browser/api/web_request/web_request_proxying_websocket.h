@@ -16,8 +16,9 @@
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_delegate.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -45,7 +46,8 @@ class WebRequestProxyingWebSocket
   WebRequestProxyingWebSocket(
       WebSocketFactory factory,
       const network::ResourceRequest& request,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client,
       bool has_extra_headers,
       int process_id,
       int render_frame_id,
@@ -61,10 +63,12 @@ class WebRequestProxyingWebSocket
       network::mojom::WebSocketHandshakeRequestPtr request) override;
   void OnResponseReceived(
       network::mojom::WebSocketHandshakeResponsePtr response) override;
-  void OnConnectionEstablished(network::mojom::WebSocketPtr websocket,
-                               const std::string& selected_protocol,
-                               const std::string& extensions,
-                               uint64_t receive_quota_threshold) override;
+  void OnConnectionEstablished(
+      mojo::PendingRemote<network::mojom::WebSocket> websocket,
+      mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
+      const std::string& selected_protocol,
+      const std::string& extensions,
+      mojo::ScopedDataPipeConsumerHandle readable) override;
 
   // network::mojom::AuthenticationHandler method:
   void OnAuthRequired(const net::AuthChallengeInfo& auth_info,
@@ -83,7 +87,8 @@ class WebRequestProxyingWebSocket
       const GURL& url,
       const GURL& site_for_cookies,
       const base::Optional<std::string>& user_agent,
-      network::mojom::WebSocketHandshakeClientPtrInfo handshake_client,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client,
       bool has_extra_headers,
       int process_id,
       int render_frame_id,
@@ -112,11 +117,14 @@ class WebRequestProxyingWebSocket
 
   WebSocketFactory factory_;
   content::BrowserContext* const browser_context_;
-  network::mojom::WebSocketHandshakeClientPtr forwarding_handshake_client_;
-  mojo::Binding<network::mojom::WebSocketHandshakeClient>
-      binding_as_handshake_client_;
-  mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
-  mojo::Binding<network::mojom::TrustedHeaderClient> binding_as_header_client_;
+  mojo::Remote<network::mojom::WebSocketHandshakeClient>
+      forwarding_handshake_client_;
+  mojo::Receiver<network::mojom::WebSocketHandshakeClient>
+      receiver_as_handshake_client_{this};
+  mojo::Receiver<network::mojom::AuthenticationHandler>
+      receiver_as_auth_handler_{this};
+  mojo::Receiver<network::mojom::TrustedHeaderClient>
+      receiver_as_header_client_{this};
 
   net::HttpRequestHeaders request_headers_;
   network::ResourceResponseHead response_;
@@ -131,6 +139,7 @@ class WebRequestProxyingWebSocket
   GURL redirect_url_;
   bool is_done_ = false;
   bool waiting_for_header_client_headers_received_ = false;
+  bool has_extra_headers_;
 
   WebRequestInfo info_;
 

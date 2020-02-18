@@ -13,6 +13,8 @@
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "third_party/base/ptr_util.h"
 
+#define ISLATINWORD(u) (u != 0x20 && u <= 0x28FF)
+
 CPDF_TextObjectItem::CPDF_TextObjectItem() : m_CharCode(0) {}
 
 CPDF_TextObjectItem::~CPDF_TextObjectItem() = default;
@@ -40,10 +42,8 @@ void CPDF_TextObject::GetItemInfo(size_t index,
   if (pInfo->m_CharCode == CPDF_Font::kInvalidCharCode)
     return;
 
-  CPDF_Font* pFont = m_TextState.GetFont();
-  if (!pFont->IsCIDFont())
-    return;
-  if (!pFont->AsCIDFont()->IsVertWriting())
+  RetainPtr<CPDF_Font> pFont = m_TextState.GetFont();
+  if (!pFont->IsCIDFont() || !pFont->AsCIDFont()->IsVertWriting())
     return;
 
   uint16_t CID = pFont->AsCIDFont()->CIDFromCharCode(pInfo->m_CharCode);
@@ -101,6 +101,65 @@ void CPDF_TextObject::GetCharInfo(size_t index,
   }
 }
 
+int CPDF_TextObject::CountWords() const {
+  RetainPtr<CPDF_Font> pFont = GetFont();
+  if (!pFont)
+    return 0;
+
+  bool bInLatinWord = false;
+  int nWords = 0;
+  for (size_t i = 0, sz = CountChars(); i < sz; ++i) {
+    uint32_t charcode = CPDF_Font::kInvalidCharCode;
+    float unused_kerning;
+    GetCharInfo(i, &charcode, &unused_kerning);
+
+    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
+    uint16_t unicode = 0;
+    if (swUnicode.GetLength() > 0)
+      unicode = swUnicode[0];
+
+    bool bIsLatin = ISLATINWORD(unicode);
+    if (bIsLatin && bInLatinWord)
+      continue;
+
+    bInLatinWord = bIsLatin;
+    if (unicode != 0x20)
+      nWords++;
+  }
+
+  return nWords;
+}
+
+WideString CPDF_TextObject::GetWordString(int nWordIndex) const {
+  RetainPtr<CPDF_Font> pFont = GetFont();
+  if (!pFont)
+    return WideString();
+
+  WideString swRet;
+  int nWords = 0;
+  bool bInLatinWord = false;
+  for (size_t i = 0, sz = CountChars(); i < sz; ++i) {
+    uint32_t charcode = CPDF_Font::kInvalidCharCode;
+    float unused_kerning;
+    GetCharInfo(i, &charcode, &unused_kerning);
+
+    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
+    uint16_t unicode = 0;
+    if (swUnicode.GetLength() > 0)
+      unicode = swUnicode[0];
+
+    bool bIsLatin = ISLATINWORD(unicode);
+    if (!bIsLatin || !bInLatinWord) {
+      bInLatinWord = bIsLatin;
+      if (unicode != 0x20)
+        nWords++;
+    }
+    if (nWords - 1 == nWordIndex)
+      swRet += unicode;
+  }
+  return swRet;
+}
+
 std::unique_ptr<CPDF_TextObject> CPDF_TextObject::Clone() const {
   auto obj = pdfium::MakeUnique<CPDF_TextObject>();
   obj->CopyData(this);
@@ -150,7 +209,7 @@ void CPDF_TextObject::SetSegments(const ByteString* pStrs,
                                   size_t nSegs) {
   m_CharCodes.clear();
   m_CharPos.clear();
-  CPDF_Font* pFont = m_TextState.GetFont();
+  RetainPtr<CPDF_Font> pFont = m_TextState.GetFont();
   int nChars = 0;
   for (size_t i = 0; i < nSegs; ++i)
     nChars += pFont->CountChar(pStrs[i].AsStringView());
@@ -180,7 +239,7 @@ void CPDF_TextObject::SetText(const ByteString& str) {
 
 float CPDF_TextObject::GetCharWidth(uint32_t charcode) const {
   float fontsize = m_TextState.GetFontSize() / 1000;
-  CPDF_Font* pFont = m_TextState.GetFont();
+  RetainPtr<CPDF_Font> pFont = m_TextState.GetFont();
   bool bVertWriting = false;
   CPDF_CIDFont* pCIDFont = pFont->AsCIDFont();
   if (pCIDFont)
@@ -192,7 +251,7 @@ float CPDF_TextObject::GetCharWidth(uint32_t charcode) const {
   return pCIDFont->GetVertWidth(CID) * fontsize;
 }
 
-CPDF_Font* CPDF_TextObject::GetFont() const {
+RetainPtr<CPDF_Font> CPDF_TextObject::GetFont() const {
   return m_TextState.GetFont();
 }
 
@@ -206,7 +265,7 @@ CFX_PointF CPDF_TextObject::CalcPositionData(float horz_scale) {
   float max_x = -10000 * 1.0f;
   float min_y = 10000 * 1.0f;
   float max_y = -10000 * 1.0f;
-  CPDF_Font* pFont = m_TextState.GetFont();
+  RetainPtr<CPDF_Font> pFont = m_TextState.GetFont();
   bool bVertWriting = false;
   CPDF_CIDFont* pCIDFont = pFont->AsCIDFont();
   if (pCIDFont)

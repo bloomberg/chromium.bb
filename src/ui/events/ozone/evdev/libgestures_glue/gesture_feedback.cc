@@ -223,19 +223,23 @@ void DumpTouchEventLog(
   for (const auto& converter_pair : converters) {
     EventConverterEvdev* converter = converter_pair.second.get();
     if (converter->HasTouchscreen()) {
-      converter->DumpTouchEventLog(kInputEventsLogFile);
       std::string touch_evdev_log_filename = GenerateEventLogName(
           out_dir, "evdev_input_events_", now, converter->id());
+#if defined(OS_CHROMEOS)
+      converter->DumpTouchEventLog(touch_evdev_log_filename.c_str());
+#else
+      converter->DumpTouchEventLog(kInputEventsLogFile);
       base::Move(base::FilePath(kInputEventsLogFile),
                  base::FilePath(touch_evdev_log_filename));
+#endif  // defined(OS_CHROMEOS)
       log_paths.push_back(base::FilePath(touch_evdev_log_filename));
     }
   }
 
   // Compress touchpad/mouse logs asynchronously
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CompressDumpedLog,
                      base::Passed(&log_paths_to_be_compressed)),

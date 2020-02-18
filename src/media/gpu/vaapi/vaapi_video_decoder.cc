@@ -68,9 +68,11 @@ VaapiVideoDecoder::DecodeTask::DecodeTask(DecodeTask&&) = default;
 // static
 std::unique_ptr<VideoDecoder> VaapiVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool) {
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+    GetFramePoolCB get_pool_cb) {
   return base::WrapUnique<VideoDecoder>(new VaapiVideoDecoder(
-      std::move(client_task_runner), std::move(frame_pool)));
+      std::move(client_task_runner), std::move(decoder_task_runner),
+      std::move(get_pool_cb)));
 }
 
 // static
@@ -81,10 +83,11 @@ SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs() {
 
 VaapiVideoDecoder::VaapiVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool)
-    : frame_pool_(std::move(frame_pool)),
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+    GetFramePoolCB get_pool_cb)
+    : get_pool_cb_(std::move(get_pool_cb)),
       client_task_runner_(std::move(client_task_runner)),
-      decoder_thread_("VaapiDecoderThread"),
+      decoder_task_runner_(std::move(decoder_task_runner)),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
@@ -124,7 +127,6 @@ int VaapiVideoDecoder::GetMaxDecodeRequests() const {
   return kMaxDecodeRequests;
 }
 
-// TODO(dstaessens): Handle re-initialization.
 void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    bool low_delay,
                                    CdmContext* cdm_context,
@@ -150,15 +152,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!decoder_thread_.IsRunning() && !decoder_thread_.Start()) {
-    std::move(init_cb).Run(false);
-    return;
-  }
-
-  decoder_thread_task_runner_ = decoder_thread_.task_runner();
-  frame_pool_->set_parent_task_runner(decoder_thread_task_runner_);
-
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VaapiVideoDecoder::InitializeTask, weak_this_, config,
                      std::move(init_cb), std::move(output_cb)));
@@ -226,6 +220,9 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   }
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
 
+  // Get and initialize the frame pool.
+  frame_pool_ = get_pool_cb_.Run();
+
   visible_rect_ = config.visible_rect();
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   profile_ = profile;
@@ -242,12 +239,8 @@ void VaapiVideoDecoder::Destroy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   VLOGF(2);
 
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoDecoder::DestroyTask, weak_this_));
-  decoder_thread_.Stop();
-
-  delete this;
-  VLOGF(2) << "Destroying VAAPI VD done";
 }
 
 void VaapiVideoDecoder::DestroyTask() {
@@ -262,18 +255,17 @@ void VaapiVideoDecoder::DestroyTask() {
     decoder_ = nullptr;
   }
 
-  // Drop all video frame references. This will cause the frames to be
-  // destroyed once the decoder's client is done using them.
-  frame_pool_ = nullptr;
-
   weak_this_factory_.InvalidateWeakPtrs();
+
+  delete this;
+  VLOGF(2) << "Destroying VAAPI VD done";
 }
 
 void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoDecoder::QueueDecodeTask, weak_this_,
                                 std::move(buffer), std::move(decode_cb)));
 }
@@ -321,7 +313,7 @@ void VaapiVideoDecoder::ScheduleNextDecodeTask() {
                         *current_decode_task_->buffer_);
   }
 
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
 }
@@ -538,7 +530,7 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   vaapi_wrapper_->CreateContext(pic_size);
 
   // Retry the current decode task.
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
 }
@@ -555,8 +547,6 @@ void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
   // pool for reuse.
   size_t num_erased = output_frames_.erase(surface_id);
   DCHECK_EQ(num_erased, 1u);
-
-  // Releasing the |picture| here will also destroy the associated VASurface.
 }
 
 void VaapiVideoDecoder::NotifyFrameAvailableTask() {
@@ -567,7 +557,7 @@ void VaapiVideoDecoder::NotifyFrameAvailableTask() {
   if (state_ == State::kWaitingForOutput) {
     DCHECK(current_decode_task_);
     SetState(State::kDecoding);
-    decoder_thread_task_runner_->PostTask(
+    decoder_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
   }
@@ -607,7 +597,7 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DVLOGF(2);
 
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoDecoder::ResetTask, weak_this_,
                                 std::move(reset_cb)));
 }
@@ -629,7 +619,7 @@ void VaapiVideoDecoder::ResetTask(base::OnceClosure reset_cb) {
   SetState(State::kResetting);
 
   // Wait until any pending decode task has been aborted.
-  decoder_thread_task_runner_->PostTask(
+  decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoDecoder::ResetDoneTask, weak_this_,
                                 std::move(reset_cb)));
 }

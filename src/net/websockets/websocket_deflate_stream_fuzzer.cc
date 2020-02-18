@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <string>
 #include <vector>
 
@@ -21,7 +23,6 @@
 #include "net/websockets/websocket_extension.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_stream.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 
@@ -84,11 +85,15 @@ class WebSocketFuzzedStream final : public WebSocketStream {
         fuzzed_data_provider_->ConsumeIntegralInRange(0, 64);
     std::vector<char> payload =
         fuzzed_data_provider_->ConsumeBytes<char>(payload_length);
-    frame->data = base::MakeRefCounted<IOBufferWithSize>(payload.size());
-    memcpy(frame->data->data(), payload.data(), payload.size());
+    auto buffer = base::MakeRefCounted<IOBufferWithSize>(payload.size());
+    memcpy(buffer->data(), payload.data(), payload.size());
+    buffers_.push_back(buffer);
+    frame->data = buffer->data();
     frame->header.payload_length = payload.size();
     return frame;
   }
+
+  std::vector<scoped_refptr<IOBufferWithSize>> buffers_;
 
   FuzzedDataProvider* fuzzed_data_provider_;
 };

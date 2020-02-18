@@ -8,14 +8,16 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
+#include "services/tracing/public/cpp/trace_startup.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -50,14 +52,18 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
     DCHECK(base::ThreadPoolInstance::Get());
     initialized_thread_pool_ = true;
   }
+  tracing::InitTracingPostThreadPoolStartAndFeatureList();
 
   // We can't recover from failing to start the IO thread.
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
   thread_options.priority = io_thread_priority;
 #if defined(OS_ANDROID)
   // TODO(reveman): Remove this in favor of setting it explicitly for each type
   // of process.
-  thread_options.priority = base::ThreadPriority::DISPLAY;
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkCompositorUseDisplayThreadPriority)) {
+    thread_options.priority = base::ThreadPriority::DISPLAY;
+  }
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
 }

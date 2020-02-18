@@ -146,9 +146,9 @@ public class WebApkInfoTest {
         WebApkInfo info = WebApkInfo.create(intent);
 
         Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + WEBAPK_PACKAGE_NAME, info.id());
-        Assert.assertEquals(START_URL, info.uri().toString());
+        Assert.assertEquals(START_URL, info.url());
         Assert.assertTrue(info.shouldForceNavigation());
-        Assert.assertEquals(SCOPE, info.scopeUri().toString());
+        Assert.assertEquals(SCOPE, info.scopeUrl());
         Assert.assertEquals(NAME, info.name());
         Assert.assertEquals(SHORT_NAME, info.shortName());
         Assert.assertEquals(WebDisplayMode.MINIMAL_UI, info.displayMode());
@@ -161,7 +161,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(SHELL_APK_VERSION, info.shellApkVersion());
         Assert.assertEquals(MANIFEST_URL, info.manifestUrl());
         Assert.assertEquals(START_URL, info.manifestStartUrl());
-        Assert.assertEquals(WebApkInfo.WebApkDistributor.BROWSER, info.distributor());
+        Assert.assertEquals(WebApkDistributor.BROWSER, info.distributor());
 
         Assert.assertEquals(1, info.iconUrlToMurmur2HashMap().size());
         Assert.assertTrue(info.iconUrlToMurmur2HashMap().containsKey(ICON_URL));
@@ -171,9 +171,9 @@ public class WebApkInfoTest {
         Assert.assertEquals(
                 (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M), info.isSplashProvidedByWebApk());
 
-        Assert.assertEquals(null, info.icon());
-        Assert.assertEquals(null, info.badgeIcon());
-        Assert.assertEquals(null, info.splashIcon());
+        Assert.assertEquals(null, info.icon().bitmap());
+        Assert.assertEquals(null, info.badgeIcon().bitmap());
+        Assert.assertEquals(null, info.splashIcon().bitmap());
 
         WebApkInfo.ShareTarget shareTarget = info.shareTarget();
         Assert.assertNotNull(shareTarget);
@@ -184,7 +184,7 @@ public class WebApkInfoTest {
     }
 
     /**
-     * Test that {@link WebApkInfo#create()} populates {@link WebApkInfo#uri()} with the start URL
+     * Test that {@link WebApkInfo#create()} populates {@link WebApkInfo#url()} with the start URL
      * from the intent not the start URL in the WebAPK's meta data. When a WebAPK is launched via a
      * deep link from a URL within the WebAPK's scope, the WebAPK should open at the URL it was deep
      * linked from not the WebAPK's start URL.
@@ -203,7 +203,7 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
-        Assert.assertEquals(intentStartUrl, info.uri().toString());
+        Assert.assertEquals(intentStartUrl, info.url());
 
         // {@link WebApkInfo#manifestStartUrl()} should contain the start URL from the Android
         // Manifest.
@@ -235,7 +235,7 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
-        Assert.assertEquals(scopeFromManifestStartUrl, info.scopeUri().toString());
+        Assert.assertEquals(scopeFromManifestStartUrl, info.scopeUrl());
     }
 
     /**
@@ -370,10 +370,10 @@ public class WebApkInfoTest {
         String name = "WebAPK name";
         String shortName = "WebAPK short name";
         FakeResources res = new FakeResources();
-        res.addStringForTesting(WebApkInfo.RESOURCE_NAME, WebApkInfo.RESOURCE_STRING_TYPE,
-                WEBAPK_PACKAGE_NAME, 1, name);
-        res.addStringForTesting(WebApkInfo.RESOURCE_SHORT_NAME, WebApkInfo.RESOURCE_STRING_TYPE,
-                WEBAPK_PACKAGE_NAME, 2, shortName);
+        res.addStringForTesting(WebApkIntentDataProvider.RESOURCE_NAME,
+                WebApkIntentDataProvider.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 1, name);
+        res.addStringForTesting(WebApkIntentDataProvider.RESOURCE_SHORT_NAME,
+                WebApkIntentDataProvider.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 2, shortName);
         WebApkTestHelper.setResource(WEBAPK_PACKAGE_NAME, res);
 
         Intent intent = new Intent();
@@ -459,8 +459,8 @@ public class WebApkInfoTest {
 
     /**
      * Test when a distributor is not specified, the default distributor value for a WebAPK
-     * installed by Chrome is |WebApkInfo.WebApkDistributor.BROWSER|, while for an Unbound WebAPK is
-     * |WebApkInfo.WebApkDistributor.Other|.
+     * installed by Chrome is |WebApkDistributor.BROWSER|, while for an Unbound WebAPK is
+     * |WebApkDistributor.Other|.
      */
     @Test
     public void testWebApkDistributorDefaultValue() {
@@ -473,7 +473,7 @@ public class WebApkInfoTest {
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         WebApkInfo info = WebApkInfo.create(intent);
-        Assert.assertEquals(WebApkInfo.WebApkDistributor.BROWSER, info.distributor());
+        Assert.assertEquals(WebApkDistributor.BROWSER, info.distributor());
 
         // Test Case: Unbound WebAPK
         WebApkTestHelper.registerWebApkWithMetaData(
@@ -482,7 +482,7 @@ public class WebApkInfoTest {
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, UNBOUND_WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         info = WebApkInfo.create(intent);
-        Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
+        Assert.assertEquals(WebApkDistributor.OTHER, info.distributor());
     }
 
     /**

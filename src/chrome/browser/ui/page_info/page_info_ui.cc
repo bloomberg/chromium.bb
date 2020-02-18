@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -41,7 +42,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #endif
 
@@ -175,6 +176,8 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
 #if !defined(OS_ANDROID)
     {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
 #endif
+    {CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+     IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
     {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
   };
@@ -232,6 +235,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
+      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -261,17 +265,11 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
-    case PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
-      return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/false);
-#endif
-      NOTREACHED();
-      break;
+    case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
+    case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
-      return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/true);
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      return CreateSecurityDescriptionForPasswordReuse();
 #endif
       NOTREACHED();
       break;
@@ -279,6 +277,19 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_BILLING_SUMMARY,
                                        IDS_PAGE_INFO_BILLING_DETAILS);
+  }
+
+  switch (identity_info.safety_tip_status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kLookalike:
+      // TODO(jdeblasio): The BAD_REPUTATION string is generic enough to use for
+      // lookalikes too, but it probably deserves its own string.
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      break;
   }
 
   switch (identity_info.identity_status) {
@@ -298,8 +309,6 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
       FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
-      FALLTHROUGH;
-    case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
       FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       switch (identity_info.connection_status) {
@@ -465,9 +474,6 @@ int PageInfoUI::GetIdentityIconID(PageInfo::SiteIdentityStatus status) {
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
       resource_id = IDR_PAGEINFO_GOOD;
       break;
-    case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
-      resource_id = IDR_PAGEINFO_WARNING_MINOR;
-      break;
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
       resource_id = IDR_PAGEINFO_WARNING_MAJOR;
       break;
@@ -577,6 +583,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
 #endif
     case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
+      break;
+    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+      icon = &kSaveOriginalFileIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are

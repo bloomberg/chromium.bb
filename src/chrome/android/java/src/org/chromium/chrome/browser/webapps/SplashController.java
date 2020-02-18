@@ -157,9 +157,18 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         mParentView.addView(mSplashView);
     }
 
+    public boolean isSplashShowing() {
+        return mSplashView != null;
+    }
+
     @VisibleForTesting
     View getSplashScreenForTests() {
         return mSplashView;
+    }
+
+    @VisibleForTesting
+    public boolean wasSplashScreenHiddenForTests() {
+        return mSplashShownTimestamp > 0 && mSplashView == null;
     }
 
     @Override

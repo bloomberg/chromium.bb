@@ -52,7 +52,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -403,7 +403,7 @@ class GLRenderingVDAClient
   const std::unique_ptr<media::test::VideoFrameFileWriter> video_frame_writer_;
 
   base::WeakPtr<GLRenderingVDAClient> weak_this_;
-  base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_;
+  base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
@@ -442,8 +442,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
           std::move(encoded_data),
           config_.profile)),
       video_frame_validator_(std::move(video_frame_validator)),
-      video_frame_writer_(std::move(video_frame_writer)),
-      weak_this_factory_(this) {
+      video_frame_writer_(std::move(video_frame_writer)) {
   DCHECK_NE(config.profile, VIDEO_CODEC_PROFILE_UNKNOWN);
   LOG_ASSERT(config_.num_in_flight_decodes > 0);
   LOG_ASSERT(config_.num_play_throughs > 0);
@@ -539,15 +538,22 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
         texture_target_, g_test_import, pixel_format, dimensions);
     LOG_ASSERT(texture_ref);
     int32_t picture_buffer_id = next_picture_buffer_id_++;
-    int irrelevant_id = picture_buffer_id;
     LOG_ASSERT(
         active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
             .second);
 
-    PictureBuffer::TextureIds texture_ids(1, texture_ref->texture_id());
-    buffers.push_back(PictureBuffer(picture_buffer_id, dimensions,
-                                    PictureBuffer::TextureIds{irrelevant_id++},
-                                    texture_ids, texture_target, pixel_format));
+    if (g_test_import) {
+      // Texture ids are not needed in import mode. GpuArcVideoDecodeAccelerator
+      // actually doesn't pass them. This test code follows the implementation.
+      buffers.push_back(PictureBuffer(picture_buffer_id, dimensions));
+    } else {
+      int irrelevant_id = picture_buffer_id;
+      PictureBuffer::TextureIds texture_ids(1, texture_ref->texture_id());
+      buffers.push_back(
+          PictureBuffer(picture_buffer_id, dimensions,
+                        PictureBuffer::TextureIds{irrelevant_id++}, texture_ids,
+                        texture_target, pixel_format));
+    }
   }
   decoder_->AssignPictureBuffers(buffers);
 
@@ -1036,7 +1042,7 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
       LOG_ASSERT(base::StringToDouble(field, &video_file->min_fps_render));
     }
     if (!fields[6].empty()) {
-      std::string field(fields[5].begin(), fields[5].end());
+      std::string field(fields[6].begin(), fields[6].end());
       LOG_ASSERT(base::StringToDouble(field, &video_file->min_fps_no_render));
     }
     // Default to H264 baseline if no profile provided.
@@ -1227,6 +1233,14 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     LOG(WARNING) << "Skipping thumbnail test because GL is deactivated by "
                     "--disable_rendering";
     return;
+  }
+
+  if (render_as_thumbnails && g_test_import) {
+    // We cannot renderer a thumbnail in import mode because we don't assign
+    // texture id to PictureBuffer. Since the frame soundness should be ensured
+    // by frame validator in import mode. So this will not reduces the test
+    // coverage.
+    GTEST_SKIP();
   }
 
   if (test_video_files_.size() > 1)
@@ -1714,12 +1728,10 @@ class VDATestSuite : public base::TestSuite {
     // which uses COM. We need the thread to be a UI thread.
     // On Ozone, the backend initializes the event system using a UI
     // thread.
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::UI);
 #else
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 #endif  // OS_WIN || OS_CHROMEOS
 
     media::g_env =
@@ -1742,11 +1754,11 @@ class VDATestSuite : public base::TestSuite {
   }
 
   void Shutdown() override {
-    scoped_task_environment_.reset();
+    task_environment_.reset();
     base::TestSuite::Shutdown();
   }
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 }  // namespace

@@ -240,7 +240,7 @@ class WebLocalFrame : public WebFrame {
   bool IsLoading() const override = 0;
 
   // Returns true if there is a pending redirect or location change
-  // within specified interval (in seconds). This could be caused by:
+  // within specified interval. This could be caused by:
   // * an HTTP Refresh header
   // * an X-Frame-Options header
   // * the respective http-equiv meta tags
@@ -248,8 +248,7 @@ class WebLocalFrame : public WebFrame {
   // * CSP policy block
   // * reload
   // * form submission
-  virtual bool IsNavigationScheduledWithin(
-      double interval_in_seconds) const = 0;
+  virtual bool IsNavigationScheduledWithin(base::TimeDelta interval) const = 0;
 
   // Reports a list of Blink features used, performed or encountered by the
   // browser during the current page load happening on the frame.
@@ -316,24 +315,24 @@ class WebLocalFrame : public WebFrame {
   //
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
-  virtual void ExecuteScriptInIsolatedWorld(int world_id,
+  virtual void ExecuteScriptInIsolatedWorld(int32_t world_id,
                                             const WebScriptSource&) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
   WARN_UNUSED_RESULT virtual v8::Local<v8::Value>
-  ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
+  ExecuteScriptInIsolatedWorldAndReturnValue(int32_t world_id,
                                              const WebScriptSource&) = 0;
 
   // Clears the isolated world CSP stored for |world_id| by this frame's
   // Document.
-  virtual void ClearIsolatedWorldCSPForTesting(int world_id) = 0;
+  virtual void ClearIsolatedWorldCSPForTesting(int32_t world_id) = 0;
 
   // Sets up an isolated world by associating a |world_id| with |info|.
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
-  virtual void SetIsolatedWorldInfo(int world_id,
+  virtual void SetIsolatedWorldInfo(int32_t world_id,
                                     const WebIsolatedWorldInfo& info) = 0;
 
   // Executes script in the context of the current page and returns the value
@@ -387,7 +386,7 @@ class WebLocalFrame : public WebFrame {
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   virtual void RequestExecuteScriptInIsolatedWorld(
-      int world_id,
+      int32_t world_id,
       const WebScriptSource* source_in,
       unsigned num_sources,
       bool user_gesture,
@@ -609,8 +608,7 @@ class WebLocalFrame : public WebFrame {
   // Dispatches a message event on the current DOMWindow in this WebFrame.
   virtual void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMMessageEvent&,
-      bool has_user_gesture) = 0;
+      const WebDOMMessageEvent&) = 0;
 
   // TEMP: Usage count for chrome.loadtimes deprecation.
   // This will be removed following the deprecation.
@@ -724,9 +722,9 @@ class WebLocalFrame : public WebFrame {
   // checkbox, radio etc.)
   virtual void AdvanceFocusInForm(WebFocusType) = 0;
 
-  // Asks the active WebAutofillClient to show the touch to fill UI for the
-  // currently focused field. Returns whether this request succeeded.
-  virtual bool TryToShowTouchToFillForFocusedElement() = 0;
+  // Returns whether the keyboard should be suppressed for the currently focused
+  // element.
+  virtual bool ShouldSuppressKeyboardForFocusedElement() = 0;
 
   // Performance --------------------------------------------------------
 
@@ -768,6 +766,12 @@ class WebLocalFrame : public WebFrame {
 
   virtual void WasHidden() = 0;
   virtual void WasShown() = 0;
+
+  // Grants ability to lookup a named frame via the FindFrame
+  // WebLocalFrameClient API. Enhanced binding security checks that check the
+  // agent cluster will be enabled for windows that do not have this permission.
+  // This should only be used for extensions and the webview tag.
+  virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}

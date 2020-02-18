@@ -16,11 +16,12 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 
 namespace chromeos {
@@ -124,14 +125,14 @@ class ProcessOutputWatcherTest : public testing::Test {
     failed_ = !expectations_.CheckExpectations(output, type);
     if (failed_ || expectations_.IsDone()) {
       ASSERT_FALSE(test_case_done_callback_.is_null());
-      scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+      task_environment_.GetMainThreadTaskRunner()->PostTask(
           FROM_HERE, test_case_done_callback_);
       test_case_done_callback_.Reset();
     }
 
     ASSERT_FALSE(ack_callback.is_null());
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
-                                                                 ack_callback);
+    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                          ack_callback);
   }
 
  protected:
@@ -146,7 +147,7 @@ class ProcessOutputWatcherTest : public testing::Test {
     ASSERT_FALSE(output_watch_thread_started_);
     output_watch_thread_.reset(new base::Thread("ProcessOutpuWatchThread"));
     output_watch_thread_started_ = output_watch_thread_->StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     ASSERT_TRUE(output_watch_thread_started_);
 
     int pt_pipe[2];
@@ -192,7 +193,7 @@ class ProcessOutputWatcherTest : public testing::Test {
 
  private:
   base::Closure test_case_done_callback_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::Thread> output_watch_thread_;
   bool output_watch_thread_started_;
   bool failed_;

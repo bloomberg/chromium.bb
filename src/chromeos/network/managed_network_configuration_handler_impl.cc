@@ -88,7 +88,7 @@ const base::DictionaryValue* GetByGUID(const GuidToPolicyMap& policies,
                                        const std::string& guid) {
   auto it = policies.find(guid);
   if (it == policies.end())
-    return NULL;
+    return nullptr;
   return it->second.get();
 }
 
@@ -213,7 +213,9 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);
   const NetworkProfile* profile =
-      network_profile_handler_->GetProfileForPath(profile_path);
+      network_profile_handler_
+          ? network_profile_handler_->GetProfileForPath(profile_path)
+          : nullptr;
   if (!profile && !(network_state && network_state->IsNonProfileType())) {
     // Visible but unsaved (not known) networks will not have a profile.
     NET_LOG_DEBUG("No profile for service: " + profile_path, service_path);
@@ -354,11 +356,11 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   // Validate the ONC dictionary. We are liberal and ignore unknown field
   // names. User settings are only partial ONC, thus we ignore missing fields.
-  onc::Validator validator(false,   // Ignore unknown fields.
-                           false,   // Ignore invalid recommended field names.
-                           false,   // Ignore missing fields.
-                           false,   // This ONC does not come from policy.
-                           false);  // Don't log warnings.
+  onc::Validator validator(false,  // Ignore unknown fields.
+                           false,  // Ignore invalid recommended field names.
+                           false,  // Ignore missing fields.
+                           false,  // This ONC does not come from policy.
+                           true);  // Log warnings.
 
   onc::Validator::Result validation_result;
   std::unique_ptr<base::DictionaryValue> validated_user_settings =
@@ -370,7 +372,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     return;
   }
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
-    NET_LOG(ERROR) << "Validation of ONC user settings produced warnings.";
+    NET_LOG(USER) << "Validation of ONC user settings produced warnings.";
 
   // Don't allow AutoConnect=true for unmanaged wifi networks if
   // 'AllowOnlyPolicyNetworksToAutoconnect' policy is active.
@@ -550,7 +552,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   // |userhash| must be empty for device policies.
   DCHECK(onc_source != ::onc::ONC_SOURCE_DEVICE_POLICY ||
          userhash.empty());
-  Policies* policies = NULL;
+  Policies* policies = nullptr;
   if (base::Contains(policies_by_user_, userhash)) {
     policies = policies_by_user_[userhash].get();
   } else {
@@ -581,7 +583,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
 
   for (base::ListValue::const_iterator it = network_configs_onc.begin();
        it != network_configs_onc.end(); ++it) {
-    const base::DictionaryValue* network = NULL;
+    const base::DictionaryValue* network = nullptr;
     it->GetAsDictionary(&network);
     DCHECK(network);
 
@@ -796,7 +798,7 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGUID(
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 const GuidToPolicyMap*
@@ -804,7 +806,7 @@ ManagedNetworkConfigurationHandlerImpl::GetNetworkConfigsFromPolicy(
     const std::string& userhash) const {
   const Policies* policies = GetPoliciesForUser(userhash);
   if (!policies)
-    return NULL;
+    return nullptr;
 
   return &policies->per_network_config;
 }
@@ -814,7 +816,7 @@ ManagedNetworkConfigurationHandlerImpl::GetGlobalConfigFromPolicy(
     const std::string& userhash) const {
   const Policies* policies = GetPoliciesForUser(userhash);
   if (!policies)
-    return NULL;
+    return nullptr;
 
   return &policies->global_network_config;
 }
@@ -917,7 +919,7 @@ ManagedNetworkConfigurationHandlerImpl::GetPoliciesForUser(
     const std::string& userhash) const {
   UserToPoliciesMap::const_iterator it = policies_by_user_.find(userhash);
   if (it == policies_by_user_.end())
-    return NULL;
+    return nullptr;
   return it->second.get();
 }
 
@@ -929,14 +931,8 @@ ManagedNetworkConfigurationHandlerImpl::GetPoliciesForProfile(
   return GetPoliciesForUser(profile.userhash);
 }
 
-ManagedNetworkConfigurationHandlerImpl::ManagedNetworkConfigurationHandlerImpl()
-    : network_state_handler_(NULL),
-      network_profile_handler_(NULL),
-      network_configuration_handler_(NULL),
-      network_device_handler_(NULL),
-      user_policy_applied_(false),
-      device_policy_applied_(false),
-      weak_ptr_factory_(this) {
+ManagedNetworkConfigurationHandlerImpl::
+    ManagedNetworkConfigurationHandlerImpl() {
   CHECK(base::ThreadTaskRunnerHandle::IsSet());
 }
 
@@ -956,7 +952,8 @@ void ManagedNetworkConfigurationHandlerImpl::Init(
   network_profile_handler_ = network_profile_handler;
   network_configuration_handler_ = network_configuration_handler;
   network_device_handler_ = network_device_handler;
-  network_profile_handler_->AddObserver(this);
+  if (network_profile_handler_)
+    network_profile_handler_->AddObserver(this);
   prohibited_technologies_handler_ = prohibited_technologies_handler;
 }
 

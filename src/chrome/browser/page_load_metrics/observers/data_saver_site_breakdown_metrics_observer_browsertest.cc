@@ -226,6 +226,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
       {"/media/youtube.html", 5000, 20000},
   };
   ASSERT_TRUE(embedded_test_server()->Start());
+  WaitForDBToInitialize();
 
   for (const auto& test : tests) {
     GURL test_url(embedded_test_server()->GetURL(test.url));
@@ -255,6 +256,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   plaintext_server->RegisterRequestHandler(
       base::BindRepeating(&HandleResourceRequestWithPlaintextMimeType));
   ASSERT_TRUE(plaintext_server->Start());
+  WaitForDBToInitialize();
 
   GURL test_url(plaintext_server->GetURL("/page"));
 
@@ -298,8 +300,8 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   EXPECT_LE(
       10000,
       NavigateAndGetDataSavings(
-          "/lazyload/img.html",
-          5 /* main html, favicon and 2 placeholder images, 1 full image */));
+        "/lazyload/img.html",
+        10 /* main html, favicon, 8 images (2 eager, 4 placeholder, 2 full)*/));
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
@@ -307,8 +309,8 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   // Choose reasonable minimum, any savings is indicative of the mechanism
   // working.
   // TODO(rajendrant): Check why sometimes data savings goes negative.
-  EXPECT_GE(0, NavigateAndGetDataSavingsAfterScroll("/lazyload/img.html", 5,
-                                                    1 /* lazyloaded image */));
+  EXPECT_GE(0, NavigateAndGetDataSavingsAfterScroll("/lazyload/img.html", 10,
+                                                    2 /* lazyloaded image */));
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,

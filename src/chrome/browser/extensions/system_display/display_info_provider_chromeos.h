@@ -8,10 +8,10 @@
 #include <map>
 #include <memory>
 
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
 namespace service_manager {
@@ -21,7 +21,7 @@ class Connector;
 namespace extensions {
 
 class DisplayInfoProviderChromeOS : public DisplayInfoProvider,
-                                    public TabletModeClientObserver {
+                                    public ash::TabletModeObserver {
  public:
   explicit DisplayInfoProviderChromeOS(service_manager::Connector* connector);
   ~DisplayInfoProviderChromeOS() override;
@@ -57,8 +57,9 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider,
   void StartObserving() override;
   void StopObserving() override;
 
-  // TabletModeClientObserver implementation.
-  void OnTabletModeToggled(bool enabled) override;
+  // ash::TabletModeObserver implementation.
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
  private:
   void CallSetDisplayLayoutInfo(ash::mojom::DisplayLayoutInfoPtr layout_info,
@@ -75,7 +76,7 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider,
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_;
   std::string touch_calibration_target_id_;
-  base::WeakPtrFactory<DisplayInfoProviderChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayInfoProviderChromeOS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeOS);
 };

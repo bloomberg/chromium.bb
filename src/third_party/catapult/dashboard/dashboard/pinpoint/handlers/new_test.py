@@ -107,6 +107,14 @@ class NewTest(_NewTest):
         result['jobUrl'],
         'https://testbed.example.com/job/%s' % result['jobId'])
 
+  def testBadConfiguration(self):
+    request = dict(_BASE_REQUEST)
+    request.update(_CONFIGURATION_ARGUMENTS)
+    request['configuration'] = 'lalala'
+    response = self.Post('/api/new', request, status=400)
+    result = json.loads(response.body)
+    self.assertIn('error', result)
+
   def testBrowserOverride(self):
     request = dict(_BASE_REQUEST)
     request['browser'] = 'debug'
@@ -129,6 +137,20 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', request, status=200)
     job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual(job.comparison_mode, 'performance')
+
+  def testComparisonModeTry(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'try')
+
+  def testComparisonModeOmitted(self):
+    request = dict(_BASE_REQUEST)
+    self.assertFalse('comparison_mode' in request)
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'try')
 
   def testComparisonModeUnknown(self):
     request = dict(_BASE_REQUEST)

@@ -131,6 +131,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -528,8 +529,8 @@ bool Internals::isValidContentSelect(Element* insertion_point,
     return false;
   }
 
-  return IsHTMLContentElement(*insertion_point) &&
-         ToHTMLContentElement(*insertion_point).IsSelectValid();
+  auto* html_content_element = DynamicTo<HTMLContentElement>(insertion_point);
+  return html_content_element && html_content_element->IsSelectValid();
 }
 
 Node* Internals::treeScopeRootNode(Node* node) {
@@ -1830,7 +1831,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
   }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    auto* pac = document->View()->GetPaintArtifactCompositorForTesting();
+    auto* pac = document->View()->GetPaintArtifactCompositor();
     pac->EnableExtraDataForTesting();
     document->View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
@@ -2218,11 +2219,41 @@ DOMRectList* Internals::nonFastScrollableRects(
     return nullptr;
   }
 
-  // Update lifecycle to kPrePaintClean.  This includes the compositing update
-  // and ScrollingCoordinator::UpdateAfterPaint, which computes the non-fast
-  // scrollable region.
+  // Update lifecycle. This includes the compositing update and
+  // ScrollingCoordinator::UpdateAfterPaint, which computes the non-fast
+  // scrollable region. For CompositeAfterPaint, this includes running
+  // PaintArtifactCompositor which updates the non-fast regions.
   frame->View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
+
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    auto* pac = document->View()->GetPaintArtifactCompositor();
+    auto* layer_tree_host = pac->RootLayer()->layer_tree_host();
+    // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
+    layer_tree_host->UpdateLayers();
+
+    Vector<IntRect> layer_non_fast_scrollable_rects;
+    for (auto* layer : *layer_tree_host) {
+      const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
+      for (const gfx::Rect& non_fast_rect : non_fast_region) {
+        gfx::RectF layer_rect(non_fast_rect);
+
+        // Map |layer_rect| into screen space.
+        layer_rect.Offset(layer->offset_to_transform_parent());
+        auto& transform_tree =
+            layer->layer_tree_host()->property_trees()->transform_tree;
+        transform_tree.UpdateTransforms(layer->transform_tree_index());
+        const gfx::Transform& to_screen =
+            transform_tree.ToScreen(layer->transform_tree_index());
+        to_screen.TransformRect(&layer_rect);
+
+        layer_non_fast_scrollable_rects.push_back(
+            IntRect(ToEnclosingRect(layer_rect)));
+      }
+    }
+
+    return DOMRectList::Create(layer_non_fast_scrollable_rects);
+  }
 
   GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
   if (!layer)
@@ -2545,7 +2576,7 @@ void Internals::updateLayoutAndRunPostLayoutTasks(
     document = document_;
   } else if (IsA<Document>(node)) {
     document = To<Document>(node);
-  } else if (auto* iframe = ToHTMLIFrameElementOrNull(*node)) {
+  } else if (auto* iframe = DynamicTo<HTMLIFrameElement>(*node)) {
     document = iframe->contentDocument();
   }
 
@@ -3208,14 +3239,13 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
-  return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
-                                UseCounterHelper::CSSPropertyType::kDefault);
+  return document->IsPropertyCounted(unresolvedCSSPropertyID(property_name));
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
-  return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
-                                UseCounterHelper::CSSPropertyType::kAnimation);
+  return document->IsAnimatedPropertyCounted(
+      unresolvedCSSPropertyID(property_name));
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {
@@ -3448,6 +3478,23 @@ String Internals::resolveModuleSpecifier(const String& specifier,
   }
 
   return result.GetString();
+}
+
+String Internals::getParsedImportMap(Document* document,
+                                     ExceptionState& exception_state) {
+  Modulator* modulator =
+      Modulator::From(ToScriptStateForMainWorld(document->GetFrame()));
+
+  if (!modulator) {
+    V8ThrowException::ThrowTypeError(v8::Isolate::GetCurrent(), "No modulator");
+    return String();
+  }
+
+  const ImportMap* import_map = modulator->GetImportMapForTest();
+  if (!import_map)
+    return "{}";
+
+  return import_map->ToString();
 }
 
 void Internals::setDeviceEmulationScale(float scale,

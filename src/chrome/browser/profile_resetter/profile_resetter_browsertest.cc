@@ -13,7 +13,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace {
@@ -37,7 +39,7 @@ class RemoveCookieTester {
                  const std::string& value);
 
  private:
-  void GetCookieListCallback(const std::vector<net::CanonicalCookie>& cookies,
+  void GetCookieListCallback(const net::CookieStatusList& cookies,
                              const net::CookieStatusList& excluded_cookies);
   void SetCanonicalCookieCallback(
       net::CanonicalCookie::CookieInclusionStatus result);
@@ -48,7 +50,7 @@ class RemoveCookieTester {
   std::vector<net::CanonicalCookie> last_cookies_;
   bool waiting_callback_;
   Profile* profile_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
@@ -60,7 +62,8 @@ RemoveCookieTester::RemoveCookieTester(Profile* profile)
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetNetworkContext();
-  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+  network_context->GetCookieManager(
+      cookie_manager_.BindNewPipeAndPassReceiver());
 }
 
 RemoveCookieTester::~RemoveCookieTester() {}
@@ -104,15 +107,15 @@ void RemoveCookieTester::AddCookie(const std::string& host,
 }
 
 void RemoveCookieTester::GetCookieListCallback(
-    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
-  last_cookies_ = cookies;
+  last_cookies_ = net::cookie_util::StripStatuses(cookies);
   Notify();
 }
 
 void RemoveCookieTester::SetCanonicalCookieCallback(
     net::CanonicalCookie::CookieInclusionStatus result) {
-  ASSERT_TRUE(result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  ASSERT_TRUE(result.IsInclude());
   Notify();
 }
 

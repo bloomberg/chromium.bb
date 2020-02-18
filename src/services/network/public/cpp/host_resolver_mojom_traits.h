@@ -17,6 +17,7 @@
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/host_resolver.h"
@@ -75,6 +76,14 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static network::mojom::OptionalSecureDnsMode secure_dns_mode(
       const net::DnsConfigOverrides& overrides);
 
+  static network::mojom::DnsConfigOverrides::Tristate
+  allow_dns_over_https_upgrade(const net::DnsConfigOverrides& overrides);
+
+  static const base::Optional<std::vector<std::string>>&
+  disabled_upgrade_providers(const net::DnsConfigOverrides& overrides) {
+    return overrides.disabled_upgrade_providers;
+  }
+
   static bool Read(network::mojom::DnsConfigOverridesDataView data,
                    net::DnsConfigOverrides* out);
 };
@@ -103,6 +112,15 @@ struct EnumTraits<network::mojom::MdnsListenClient::UpdateType,
   static bool FromMojom(
       network::mojom::MdnsListenClient::UpdateType input,
       net::HostResolver::MdnsListener::Delegate::UpdateType* output);
+};
+
+template <>
+struct EnumTraits<network::mojom::SecureDnsMode,
+                  net::DnsConfig::SecureDnsMode> {
+  static network::mojom::SecureDnsMode ToMojom(
+      net::DnsConfig::SecureDnsMode secure_dns_mode);
+  static bool FromMojom(network::mojom::SecureDnsMode in,
+                        net::DnsConfig::SecureDnsMode* out);
 };
 
 }  // namespace mojo

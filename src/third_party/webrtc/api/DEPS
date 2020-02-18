@@ -9,7 +9,6 @@ include_rules = [
   "-call",
   "-common_audio",
   "-common_video",
-  "-crypto",
   "-data",
   "-examples",
   "-ios",
@@ -71,6 +70,10 @@ specific_include_rules = {
   "data_channel_interface\.h": [
     "+rtc_base/copy_on_write_buffer.h",
     "+rtc_base/ref_count.h",
+  ],
+
+  "data_channel_transport_interface\.h": [
+    "+rtc_base/copy_on_write_buffer.h",
   ],
 
   "dtls_transport_interface\.h": [

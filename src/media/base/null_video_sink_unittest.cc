@@ -8,8 +8,8 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/test_helpers.h"
@@ -37,7 +37,7 @@ class NullVideoSinkTest : public testing::Test,
     std::unique_ptr<NullVideoSink> new_sink(new NullVideoSink(
         clockless, interval,
         base::Bind(&NullVideoSinkTest::FrameReceived, base::Unretained(this)),
-        scoped_task_environment_.GetMainThreadTaskRunner()));
+        task_environment_.GetMainThreadTaskRunner()));
     new_sink->set_tick_clock_for_testing(&tick_clock_);
     return new_sink;
   }
@@ -62,7 +62,7 @@ class NullVideoSinkTest : public testing::Test,
   MOCK_METHOD1(FrameReceived, void(scoped_refptr<VideoFrame>));
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::SimpleTestTickClock tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(NullVideoSinkTest);

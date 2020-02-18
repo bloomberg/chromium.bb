@@ -83,8 +83,8 @@ class PackageInfraGoBinariesTest(generic_stages_unittest.AbstractStageTestCase,
   def _FakeRunBuildScript(self, buildroot, cmd, chromite_cmd=False, **kwargs):
     """Fake implemenation of commands.RunBuildScript."""
     del buildroot, chromite_cmd, kwargs
-    if (isinstance(cmd, list) or isinstance(cmd, tuple)) and \
-        len(cmd) >= 3 and cmd[0] == 'equery' and 'f' in cmd:
+    if (isinstance(cmd, (list, tuple)) and
+        len(cmd) >= 3 and cmd[0] == 'equery' and 'f' in cmd):
       files = self._portage_package_files.get(cmd[-1], [])
       return cros_build_lib.CommandResult(returncode=0, output='\n'.join(files))
 

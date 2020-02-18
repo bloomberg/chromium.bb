@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -49,6 +50,7 @@ class AnimationHost;
 namespace blink {
 class ChromeClient;
 class CompositorAnimationTimeline;
+class Document;
 class GraphicsLayer;
 class LayoutBox;
 class LayoutObject;
@@ -59,6 +61,8 @@ class ScrollAnimatorBase;
 struct SerializedAnchor;
 class SmoothScrollSequencer;
 struct WebScrollIntoViewParams;
+
+using MainThreadScrollingReasons = uint32_t;
 
 enum IncludeScrollbarsInRect {
   kExcludeScrollbars,
@@ -364,6 +368,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return kScrollBehaviorInstant;
   }
 
+  virtual WebColorScheme UsedColorScheme() const = 0;
+
   // Subtracts space occupied by this ScrollableArea's scrollbars.
   // Does nothing if overlay scrollbars are enabled.
   IntSize ExcludeScrollbars(const IntSize&) const;
@@ -383,7 +389,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                               const LayoutObject*,
                                               unsigned = 0) const;
 
-  virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPaintLayerScrollableArea() const { return false; }
   virtual bool IsRootFrameViewport() const { return false; }
 
@@ -416,7 +421,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollbarTheme& GetPageScrollbarTheme() const = 0;
 
-  virtual void MarkHoverStateDirty();
+  void OnScrollFinished();
 
   float ScrollStep(ScrollGranularity, ScrollbarOrientation) const;
 
@@ -466,6 +471,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void ScrollbarVisibilityChanged() {}
 
   bool HasBeenDisposed() const { return has_been_disposed_; }
+
+  virtual const Document* GetDocument() const;
+
+  MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,

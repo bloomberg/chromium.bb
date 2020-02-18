@@ -631,6 +631,29 @@ message StartLxdContainerRequest {
   string drivefs_mount_path = 5;
 }
 
+// OsRelease encapsulates a subset of the os-release info as documented
+// at https://www.freedesktop.org/software/systemd/man/os-release.html.
+message OsRelease {
+  // A pretty operating system name in a format suitable for presentation to the
+  // user. May or may not contain a release code name or OS version of some
+  // kind, as suitable. (e.g. "Debian GNU/Linux 10 (buster)").
+  string pretty_name = 1;
+
+  // A string identifying the operating system, without a version component,
+  // and suitable for presentation to the user (e.g. "Debian GNU/Linux").
+  string name = 2;
+
+  // String identifying OS version possibly including release codename.
+  // (e.g. "10 (buster)").
+  string version = 3;
+
+  // Lower case string (mostly numeric) identifying OS version (e.g. "10").
+  string version_id = 4;
+
+  // Lower case string identifying the operating system (e.g. "debian").
+  string id = 5;
+}
+
 // Response for starting an LXD container.
 message StartLxdContainerResponse {
   enum Status {
@@ -661,6 +684,9 @@ message StartLxdContainerResponse {
 
   // The failure_reason if the container could not be started.
   string failure_reason = 2;
+
+  // OS strings found in the container's /etc/os-release, e.g. "stretch".
+  OsRelease os_release = 3;
 }
 
 // Message used in the signal for when a container is starting.
@@ -694,6 +720,9 @@ message LxdContainerStartingSignal {
 
   // The failure_reason if the container was not successfully started.
   string failure_reason = 5;
+
+  // OS strings found in the container's /etc/os-release, e.g. "stretch".
+  OsRelease os_release = 6;
 }
 
 // Request for getting the primary user for an LXD container.
@@ -961,6 +990,9 @@ message ExportLxdContainerProgressSignal {
 
   // Size of the files in the input container that have been downloaded.
   uint64 input_bytes_streamed = 11;
+
+  // Number of compressed bytes that have been exported.
+  uint64 bytes_exported = 12;
 }
 
 message ImportLxdContainerRequest {
@@ -1105,4 +1137,109 @@ message PendingAppListUpdatesSignal {
 
   // Number of currently scheduled app list updates for this container.
   uint32 count = 3;
+}
+
+message ApplyAnsiblePlaybookRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Ansible playbook to be applied.
+  string playbook = 4;
+}
+
+message ApplyAnsiblePlaybookResponse {
+  enum Status {
+    UNKNOWN = 0;
+
+    // Application process was successfully started, all further updates will be
+    // sent via the ApplyAnsiblePlaybookProgress signal.
+    STARTED = 1;
+
+    // Failed to start up for a general reason, specific details are given in
+    // failure_reason.
+    FAILED = 2;
+  }
+  Status status = 1;
+
+  // Contains a textual reason for the failure in case of a FAILED status.
+  string failure_reason = 2;
+}
+
+message ApplyAnsiblePlaybookProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    UNKNOWN = 0;
+
+    // Application has completed and was successfull. No further signals will be
+    // sent after this one.
+    SUCCEEDED = 1;
+
+    // Application failed to complete, the specific reason will be in
+    // failure_details. No further signals will be sent after this one.
+    FAILED = 2;
+
+    // Ansible playbook is being currently applied.
+    IN_PROGRESS = 3;
+  }
+
+  // Current status of the application progress.
+  Status status = 4;
+
+  // Contains a textual reason for the failure in case of a FAILED status.
+  string failure_details = 5;
+}
+
+// Request for a container to create a tunnel to a prepared port on the host.
+message ConnectChunnelRequest {
+  // Name of the VM to tunnel traffic to.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Name of the container to tunnel traffic to.
+  // Target vsock port to forward traffic from. This port must be listening
+  // and ready to accept a connection from the chunnel client.
+  uint32 chunneld_port = 4;
+
+  // Target TCPv4 port to forward traffic to. Chunnel in the guest will connect
+  // to localhost:target_tcp4_port.
+  uint32 target_tcp4_port = 5;
+}
+
+// Response to ConnectChunnelRequest.
+message ConnectChunnelResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Chunnel was successfully launched in the container.
+    SUCCESS = 1;
+
+    // One or more steps failed and chunnel could not be connected.
+    FAILED = 2;
+  }
+
+  // Status of the request.
+  Status status = 1;
+
+  // If status is FAILED, contains the reason the request failed.
+  string failure_reason = 2;
 }

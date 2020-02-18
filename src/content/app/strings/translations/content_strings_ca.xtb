@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">El valor ha de ser <ph name="MINIMUM_DATE_OR_TIME" /> o posterior.</translation>
 <translation id="2759744352195237655">botó emergent</translation>
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
+<translation id="2844350028562914727">detalls</translation>
 <translation id="2896972712917208084">grup de botons d'opció</translation>
 <translation id="2908441821576996758">Introduïu una llista d'adreces electròniques separades per comes.</translation>
 <translation id="2940813599313844715">objecte</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">El valor ha de ser més petit o igual que <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definició</translation>
 <translation id="3557673793733683882">capçalera <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">selector setmanal</translation>
 <translation id="3685101356851116974">Imatge sense etiquetar</translation>
 <translation id="3706100364254443312">commutador</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">barra de desplaçament</translation>
 <translation id="4103419683916926126">Mil·lisegons</translation>
 <translation id="4151657705144244502">gràfic</translation>
+<translation id="4160057747563657758">telèfon</translation>
 <translation id="4193965531860883258">preàmbul</translation>
 <translation id="4201051445878709314">Mostra el mes anterior</translation>
 <translation id="421884353938374759">selector de color</translation>
 <translation id="4248100235867064564">barra de menús</translation>
-<translation id="4254339807215791271">informació sobre el contingut</translation>
 <translation id="4360991593054037559">Introduïu un valor vàlid. Els valors vàlids més propers són <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Preguntes</translation>
 <translation id="4413860115965805769">botó de menú</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5888666972993069672">S'està emetent a <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">quadre de cerca</translation>
 <translation id="5939518447894949180">Restableix</translation>
 <translation id="5966707198760109579">Setmana</translation>
 <translation id="5987525920412732405">botó de selecció de valors</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">cloenda</translation>
 <translation id="6209276755895393898">Sembla el següent: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossari</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Surt del mode de pantalla en pantalla</translation>
 <translation id="6398862346408813489">Mostra el tauler de la selecció de mes</translation>
 <translation id="6404546809543547843">barra de moment de l'àudio</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Feu servir el format sol·licitat.</translation>
 <translation id="7118469954320184356">No hi ha cap descripció disponible.</translation>
 <translation id="7139483182332611405">prefaci</translation>
+<translation id="7214187073215825913">informació sobre el contingut</translation>
 <translation id="7263440858009898357">Seleccioneu un element de la llista.</translation>
 <translation id="727747134524199931">capçalera de columna</translation>
 <translation id="7320576522385648310">s'estan emmagatzemant dades a la memòria intermèdia</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">S'està obtenint la descripció...</translation>
 <translation id="8117451130807776954">Aquesta setmana</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8208673686607688524">selector de data i hora local</translation>
 <translation id="8261464734335370856">L'ortografia no és vàlida</translation>
 <translation id="8284326494547611709">Subtítols</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>
@@ -229,11 +235,12 @@
 <translation id="8541249477527128034">control de mitjans</translation>
 <translation id="8550857728288566671">símbol gràfic</translation>
 <translation id="8583702881314752957">llista de definicions</translation>
-<translation id="8597182159515967513">Encapçalament</translation>
+<translation id="8597182159515967513">capçalera</translation>
 <translation id="8603553056539299761">dreta i esquerra per avançar i retrocedir</translation>
 <translation id="860475260694818407">taula de continguts</translation>
 <translation id="8613126697340063924">reproducció amb comandament</translation>
 <translation id="862370744433916922">subtítol</translation>
+<translation id="8711688047404765493">sortida</translation>
 <translation id="8750798805984357768">Seleccioneu una d'aquestes opcions.</translation>
 <translation id="8808573423886751634">capítol</translation>
 <translation id="8845239796550121995">S'està emetent al televisor</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">temps actual en segons</translation>
+<translation id="901834265349196618">correu electrònic</translation>
 <translation id="9048119486235211610">navegació</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9062307380734144336">selecciona aquesta opció per commutar entre reproduir i posar en pausa</translation>

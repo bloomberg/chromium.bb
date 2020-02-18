@@ -12,7 +12,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -32,8 +32,7 @@ class BookmarkUtilsTest : public testing::Test,
                           public BaseBookmarkModelObserver {
  public:
   BookmarkUtilsTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         grouped_changes_beginning_count_(0),
         grouped_changes_ended_count_(0) {}
 
@@ -74,7 +73,7 @@ class BookmarkUtilsTest : public testing::Test,
   }
 
   // Clipboard requires a message loop.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   int grouped_changes_beginning_count_;
   int grouped_changes_ended_count_;
@@ -270,7 +269,7 @@ TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
 
   // Write blank text to clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(base::string16());
   }
   // Now we shouldn't be able to paste from the clipboard.
@@ -278,7 +277,7 @@ TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
 
   // Write some valid url to the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(url_text);
   }
   // Now we should be able to paste from the clipboard.
@@ -309,7 +308,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
   // Write some text to the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteText(ASCIIToUTF16("foo"));
   }
 

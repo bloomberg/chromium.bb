@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_variant.h"
@@ -38,7 +39,9 @@ void UiaAccessibilityEventWaiter::Wait() {
 
 void UiaAccessibilityEventWaiter::WaitWithTimeout(base::TimeDelta timeout) {
   // Pump messages via |shutdown_loop_| until the thread is complete.
-  shutdown_loop_.RunWithTimeout(timeout);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, shutdown_loop_.QuitClosure(), timeout);
+  shutdown_loop_.Run();
   base::PlatformThread::Join(thread_handle_);
 }
 
@@ -87,6 +90,11 @@ void UiaAccessibilityEventWaiter::Thread::ThreadMain() {
   CHECK(cache_request_.Get());
   CHECK(SUCCEEDED(cache_request_->AddProperty(UIA_NamePropertyId)));
   CHECK(SUCCEEDED(cache_request_->AddProperty(UIA_AriaRolePropertyId)));
+
+  // Match AccEvent by using Raw View
+  Microsoft::WRL::ComPtr<IUIAutomationCondition> pRawCond;
+  CHECK(SUCCEEDED(uia_->get_RawViewCondition(&pRawCond)));
+  CHECK(SUCCEEDED(cache_request_->put_TreeFilter(pRawCond.Get())));
 
   // Subscribe to focus events.
   uia_->AddFocusChangedEventHandler(cache_request_.Get(),
@@ -195,7 +203,12 @@ STDMETHODIMP
 UiaAccessibilityEventWaiter::Thread::EventHandler::HandleAutomationEvent(
     IUIAutomationElement* sender,
     EVENTID event_id) {
-  // Add automation event handling code here.
+  if (owner_ &&
+      event_id ==
+          ui::AXPlatformNodeWin::MojoEventToUIAEvent(owner_->info_.event) &&
+      MatchesNameRole(sender)) {
+    owner_->SendShutdownSignal();
+  }
   return S_OK;
 }
 

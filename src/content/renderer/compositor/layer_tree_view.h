@@ -19,7 +19,6 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
 class GURL;
@@ -44,19 +43,21 @@ class UkmRecorderFactory;
 
 namespace gfx {
 class ColorSpace;
-class Size;
 }  // namespace gfx
 
 namespace ui {
 class LatencyInfo;
 }
 
+namespace viz {
+class LocalSurfaceIdAllocation;
+}
+
 namespace content {
 class LayerTreeViewDelegate;
 
 class CONTENT_EXPORT LayerTreeView
-    : public blink::WebLayerTreeView,
-      public cc::LayerTreeHostClient,
+    : public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
  public:
   // The |main_thread| is the task runner that the compositor will use for the
@@ -83,8 +84,6 @@ class CONTENT_EXPORT LayerTreeView
   void SetRasterizeOnlyVisibleContent();
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
 
-  bool IsSurfaceSynchronizationEnabled() const;
-
   // Indicates that blink needs a BeginFrame, but that nothing might actually be
   // dirty. Calls to this should never be done directly, but should go through
   // WebWidgetClient::ScheduleAnimate() instead, or they can bypass test
@@ -104,13 +103,12 @@ class CONTENT_EXPORT LayerTreeView
       std::unique_ptr<base::Value> value,
       base::OnceCallback<void(std::unique_ptr<base::Value>)> callback);
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
-  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetExternalPageScaleFactor(float page_scale_factor,
                                   bool is_external_pinch_gesture_active);
   void ClearCachesOnNextCommit();
-  void SetViewportSizeAndScale(
-      const gfx::Size& device_viewport_size,
+  void SetViewportRectAndScale(
+      const gfx::Rect& device_viewport_rect,
       float device_scale_factor,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void RequestNewLocalSurfaceId();
@@ -124,18 +122,7 @@ class CONTENT_EXPORT LayerTreeView
   // should just be destroyed instead.
   void ReleaseLayerTreeFrameSink();
 
-  // blink::WebLayerTreeView implementation.
-  viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  int LayerTreeId() const override;
-
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate) override;
-  void SetBrowserControlsHeight(float top_height,
-                                float bottom_height,
-                                bool shrink) override;
-  void SetBrowserControlsShownRatio(float) override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;
@@ -143,6 +130,8 @@ class CONTENT_EXPORT LayerTreeView
   void WillUpdateLayers() override;
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
+  void OnDeferMainFrameUpdatesChanged(bool) override;
+  void OnDeferCommitsChanged(bool) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void UpdateLayerTreeHost() override;
@@ -170,7 +159,6 @@ class CONTENT_EXPORT LayerTreeView
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
-  void RequestBeginMainFrameNotExpected(bool new_state) override;
 
   const cc::LayerTreeSettings& GetLayerTreeSettings() const;
 
@@ -205,7 +193,6 @@ class CONTENT_EXPORT LayerTreeView
 
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
-  viz::FrameSinkId frame_sink_id_;
   base::circular_deque<
       std::pair<uint32_t,
                 std::vector<base::OnceCallback<void(base::TimeTicks)>>>>

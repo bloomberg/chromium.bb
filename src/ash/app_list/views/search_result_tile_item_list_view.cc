@@ -212,7 +212,7 @@ int SearchResultTileItemListView::DoUpdate() {
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kPlayStoreImpressionDelayInMs), this,
         &SearchResultTileItemListView::OnPlayStoreImpressionTimer);
-  } else {
+  } else if (!found_playstore_results) {
     playstore_impression_timer_.Stop();
   }
 
@@ -250,23 +250,24 @@ int SearchResultTileItemListView::DoUpdate() {
 }
 
 std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
-  base::string16 raw_query = search_box_->text();
+  base::string16 raw_query = search_box_->GetText();
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
 
-  // We ask for |max_search_result_tiles_| total results, and we prefer
-  // reinstall candidates if appropriate. we fetch |reinstall_results| first,
-  // and front-fill the rest from the regular result types.
-  auto reinstall_filter =
+  // We ask for |max_search_result_tiles_| policy tile results first,
+  // then add them to their preferred position in the tile list if found.
+  auto policy_tiles_filter =
       base::BindRepeating([](const SearchResult& r) -> bool {
-        return r.display_type() ==
-                   ash::SearchResultDisplayType::kRecommendation &&
-               r.result_type() == ash::SearchResultType::kPlayStoreReinstallApp;
+        return r.display_location() ==
+                   ash::SearchResultDisplayLocation::kTileListContainer &&
+               r.display_index() != ash::SearchResultDisplayIndex::kUndefined &&
+               r.display_type() ==
+                   ash::SearchResultDisplayType::kRecommendation;
       });
-  std::vector<SearchResult*> reinstall_results =
+  std::vector<SearchResult*> policy_tiles_results =
       is_app_reinstall_recommendation_enabled_ && query.empty()
           ? SearchModel::FilterSearchResultsByFunction(
-                results(), reinstall_filter, max_search_result_tiles_)
+                results(), policy_tiles_filter, max_search_result_tiles_)
           : std::vector<SearchResult*>();
 
   SearchResult::DisplayType display_type =
@@ -274,10 +275,11 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
           ? (query.empty() ? ash::SearchResultDisplayType::kRecommendation
                            : ash::SearchResultDisplayType::kTile)
           : ash::SearchResultDisplayType::kTile;
-  size_t display_num = max_search_result_tiles_ - reinstall_results.size();
+  size_t display_num = max_search_result_tiles_ - policy_tiles_results.size();
 
-  // Do not display the continue reading app in the search result list.
-  auto non_reinstall_filter = base::BindRepeating(
+  // Do not display the repeat reinstall results or continue reading app in the
+  // search result list.
+  auto non_policy_tiles_filter = base::BindRepeating(
       [](const SearchResult::DisplayType& display_type,
          const SearchResult& r) -> bool {
         return r.display_type() == display_type &&
@@ -288,16 +290,35 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
       display_type);
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByFunction(
-          results(), non_reinstall_filter, display_num);
+          results(), non_policy_tiles_filter, display_num);
 
-  // Append the reinstalls to the display results.
-  display_results.insert(display_results.end(), reinstall_results.begin(),
-                         reinstall_results.end());
+  // Policy tile results will be appended to the final tiles list
+  // based on their specified index. If the requested index is out of
+  // range of the current list, the result will be appended to the back.
+  std::sort(policy_tiles_results.begin(), policy_tiles_results.end(),
+            [](const SearchResult* r1, const SearchResult* r2) -> bool {
+              return r1->display_index() < r2->display_index();
+            });
+
+  const ash::SearchResultDisplayIndex display_results_last_index =
+      static_cast<ash::SearchResultDisplayIndex>(display_results.size() - 1);
+  for (auto* result : policy_tiles_results) {
+    const ash::SearchResultDisplayIndex result_index = result->display_index();
+    if (result_index > display_results_last_index) {
+      display_results.emplace_back(result);
+    } else {
+      // TODO(newcomer): Remove this check once we determine the root cause for
+      // https://crbug.com/992344.
+      CHECK_GE(result_index, ash::SearchResultDisplayIndex::kFirstIndex);
+      display_results.emplace(display_results.begin() + result_index, result);
+    }
+  }
+
   return display_results;
 }
 
 base::string16 SearchResultTileItemListView::GetUserTypedQuery() {
-  base::string16 search_box_text = search_box_->text();
+  base::string16 search_box_text = search_box_->GetText();
   gfx::Range range = search_box_->GetSelectedRange();
   base::string16 raw_query = range.is_empty()
                                  ? search_box_text
@@ -324,6 +345,11 @@ void SearchResultTileItemListView::OnPlayStoreImpressionTimer() {
   DCHECK_LE(playstore_app_num, max_search_result_tiles_);
   UMA_HISTOGRAM_EXACT_LINEAR("Apps.AppListPlayStoreSearchAppsDisplayed",
                              playstore_app_num, max_search_result_tiles_);
+}
+
+void SearchResultTileItemListView::CleanUpOnViewHide() {
+  playstore_impression_timer_.Stop();
+  recent_playstore_query_.clear();
 }
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -376,8 +402,6 @@ void SearchResultTileItemListView::OnShownChanged() {
       view_delegate()->OnSearchResultVisibilityChanged(result->id(), shown());
     }
   }
-  if (!shown())
-    playstore_impression_timer_.Stop();
 }
 
 void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
@@ -389,7 +413,7 @@ void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
     return;
   }
 
-  playstore_impression_timer_.Stop();
+  CleanUpOnViewHide();
 
   for (const auto* tile_view : tile_views_) {
     SearchResult* result = tile_view->result();

@@ -20,63 +20,6 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
- * Video device information queried from HALv3 mojo private API.
- * @param {MediaDeviceInfo} deviceInfo Information of the video device.
- * @param {cros.mojom.CameraFacing} facing Camera facing of the video device.
- * @param {ResolList} photoResols Supported available photo resolutions of the
- *     video device.
- * @param {Array<[number, number, number]>} videoResolFpses Supported available
- *     video resolutions and maximal capture fps of the video device.
- * @param {FpsRangeInfo} fpsRanges Supported fps ranges of the video device.
- */
-cca.views.camera.Camera3DeviceInfo = function(
-    deviceInfo, facing, photoResols, videoResolFpses, fpsRanges) {
-  /**
-   * @type {string}
-   * @public
-   */
-  this.deviceId = deviceInfo.deviceId;
-
-  /**
-   * @type {cros.mojom.CameraFacing}
-   * @public
-   */
-  this.facing = facing;
-
-  /**
-   * @type {ResolList}
-   * @public
-   */
-  this.photoResols = photoResols;
-
-  /**
-   * @type {ResolList}
-   * @public
-   */
-  this.videoResols = [];
-
-  /**
-   * @type {MaxFpsInfo}
-   * @public
-   */
-  this.videoMaxFps = {};
-
-  /**
-   * @type {FpsRangeInfo}
-   * @public
-   */
-  this.fpsRanges = fpsRanges;
-
-  // End of properties, seal the object.
-  Object.seal(this);
-
-  videoResolFpses.filter(([, , fps]) => fps >= 24).forEach(([w, h, fps]) => {
-    this.videoResols.push([w, h]);
-    this.videoMaxFps[[w, h]] = fps;
-  });
-};
-
-/**
  * Creates a controller for the options of Camera view.
  * @param {cca.device.DeviceInfoUpdater} infoUpdater
  * @param {function()} doSwitchDevice Callback to trigger device switching.
@@ -131,7 +74,7 @@ cca.views.camera.Options = function(infoUpdater, doSwitchDevice) {
   /**
    * Promise for querying Camera3DeviceInfo of all available video devices from
    * mojo private API.
-   * @type {Promise<!Array<Camera3DeviceInfo>>}
+   * @type {Promise<!Array<cca.device.Camera3DeviceInfo>>}
    * @private
    */
   this.devicesPrivateInfo_ = null;
@@ -308,88 +251,6 @@ cca.views.camera.Options.prototype.updateAudioByMic_ = function() {
   if (this.audioTrack_) {
     this.audioTrack_.enabled = this.toggleMic_.checked;
   }
-};
-
-/**
- * Updates list of available video devices when changed, including the UI.
- * Does nothing if refreshing is already in progress.
- * @private
- */
-cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
-  if (this.refreshingVideoDeviceIds_) {
-    return;
-  }
-  this.refreshingVideoDeviceIds_ = true;
-
-  this.videoDevices_ = navigator.mediaDevices.enumerateDevices().then(
-      (devices) => devices.filter((device) => device.kind == 'videoinput'));
-
-  var multi = false;
-  this.videoDevices_.then((devices) => {
-    multi = devices.length >= 2;
-  }).catch(console.error).finally(() => {
-    cca.state.set('multi-camera', multi);
-    this.refreshingVideoDeviceIds_ = false;
-  });
-
-  this.devicesPrivateInfo_ = (async () => {
-    const devices = await this.videoDevices_;
-    try {
-      var privateInfos = await Promise.all(devices.map((d) => Promise.all([
-        d,
-        cca.mojo.getCameraFacing(d.deviceId),
-        cca.mojo.getPhotoResolutions(d.deviceId),
-        cca.mojo.getVideoConfigs(d.deviceId),
-        cca.mojo.getSupportedFpsRanges(d.deviceId),
-      ])));
-    } catch (e) {
-      cca.state.set('no-resolution-settings', true);
-      throw new Error('HALv1-api');
-    }
-    return privateInfos.map(
-        (info) => new cca.views.camera.Camera3DeviceInfo(...info));
-  })();
-
-  (async () => {
-    try {
-      var devicesPrivateInfo = await this.devicesPrivateInfo_;
-    } catch (e) {
-      if (e.message == 'HALv1-api') {
-        return;
-      }
-      throw e;
-    }
-    let frontSetting = null;
-    let backSetting = null;
-    let externalSettings = [];
-    devicesPrivateInfo.forEach((info) => {
-      const setting = [info.deviceId, info.photoResols, info.videoResols];
-      switch (info.facing) {
-        case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
-          frontSetting = setting;
-          break;
-        case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
-          backSetting = setting;
-          break;
-        case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
-          externalSettings.push(setting);
-          break;
-        default:
-          console.error(`Ignore device of unknown facing: ${info.facing}`);
-      }
-    });
-    this.photoResolPreferrer_.updateResolutions(
-        frontSetting && [frontSetting[0], frontSetting[1]],
-        backSetting && [backSetting[0], backSetting[1]],
-        externalSettings.map(([deviceId, photoRs]) => [deviceId, photoRs]));
-    this.videoPreferrer_.updateResolutions(
-        frontSetting && [frontSetting[0], frontSetting[2]],
-        backSetting && [backSetting[0], backSetting[2]],
-        externalSettings.map(([deviceId, , videoRs]) => [deviceId, videoRs]));
-
-    this.videoPreferrer_.updateFpses(devicesPrivateInfo.map(
-        (info) => [info.deviceId, info.videoMaxFps, info.fpsRanges]));
-  })();
 };
 
 /**

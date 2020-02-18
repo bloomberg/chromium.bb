@@ -14,7 +14,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
+#include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 namespace base {
 class TimeDelta;
@@ -62,11 +62,13 @@ class COMPONENT_EXPORT(OZONE_BASE) InputController {
   virtual void SetThreeFingerClick(bool enabled) = 0;
   virtual void SetTapDragging(bool enabled) = 0;
   virtual void SetNaturalScroll(bool enabled) = 0;
+  virtual void SetTouchpadAcceleration(bool enabled) = 0;
 
   // Mouse settings.
   virtual void SetMouseSensitivity(int value) = 0;
   virtual void SetPrimaryButtonRight(bool right) = 0;
   virtual void SetMouseReverseScroll(bool enabled) = 0;
+  virtual void SetMouseAcceleration(bool enabled) = 0;
 
   // Touch log collection.
   virtual void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) = 0;

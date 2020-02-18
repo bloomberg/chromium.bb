@@ -18,26 +18,30 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
-#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
 ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
                            PlatformWindowDelegate* delegate,
-                           fuchsia::ui::views::ViewToken view_token)
+                           fuchsia::ui::views::ViewToken view_token,
+                           scenic::ViewRefPair view_ref_pair)
     : manager_(window_manager),
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
       event_dispatcher_(this),
       scenic_session_(manager_->GetScenic()),
-      view_(&scenic_session_, std::move(view_token.value), "chromium window"),
+      view_(&scenic_session_,
+            std::move(view_token),
+            std::move(view_ref_pair.control_ref),
+            std::move(view_ref_pair.view_ref),
+            "chromium window"),
       node_(&scenic_session_),
       render_node_(&scenic_session_) {
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
   scenic_session_.set_event_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicEvents));
-  scenic_session_.SetDebugName("Chromium");
+  scenic_session_.SetDebugName("Chromium ScenicWindow");
 
   // Subscribe to metrics events from the node. These events are used to
   // get the device pixel ratio for the screen.
@@ -142,6 +146,8 @@ void ScenicWindow::Activate() {
 void ScenicWindow::Deactivate() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
+
+void ScenicWindow::SetUseNativeFrame(bool use_native_frame) {}
 
 void ScenicWindow::SetCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED_LOG_ONCE();

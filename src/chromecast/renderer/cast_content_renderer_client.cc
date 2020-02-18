@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/bitstream_audio_codecs.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
@@ -22,14 +23,12 @@
 #include "chromecast/renderer/queryable_data_bindings.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -100,8 +99,7 @@ void CastContentRendererClient::RenderThreadStarted() {
   // Register as observer for media capabilities
   content::RenderThread* thread = content::RenderThread::Get();
   media::mojom::MediaCapsPtr media_caps;
-  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
-                                        &media_caps);
+  thread->BindHostReceiver(mojo::MakeRequest(&media_caps));
   media::mojom::MediaCapsObserverPtr proxy;
   media_caps_observer_.reset(
       new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));
@@ -110,8 +108,7 @@ void CastContentRendererClient::RenderThreadStarted() {
 #if !defined(OS_ANDROID)
   // Register to observe memory pressure changes
   chromecast::mojom::MemoryPressureControllerPtr memory_pressure_controller;
-  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
-                                        &memory_pressure_controller);
+  thread->BindHostReceiver(mojo::MakeRequest(&memory_pressure_controller));
   chromecast::mojom::MemoryPressureObserverPtr memory_pressure_proxy;
   memory_pressure_observer_.reset(
       new MemoryPressureObserverImpl(&memory_pressure_proxy));
@@ -169,7 +166,9 @@ void CastContentRendererClient::RenderFrameCreated(
   DCHECK(render_frame);
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new CastMediaPlaybackOptions(render_frame);
-  new QueryableDataBindings(render_frame);
+  if (!::chromecast::IsFeatureEnabled(kUseQueryableDataBackend)) {
+    new QueryableDataBindings(render_frame);
+  }
 
   // Add script injection support to the RenderFrame, used by Cast platform
   // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.

@@ -11,13 +11,17 @@
 #include "osp/public/server_config.h"
 
 namespace openscreen {
+namespace platform {
+class NetworkRunner;
+}
 
 class ProtocolConnectionServerFactory {
  public:
   static std::unique_ptr<ProtocolConnectionServer> Create(
       const ServerConfig& config,
       MessageDemuxer* demuxer,
-      ProtocolConnectionServer::Observer* observer);
+      ProtocolConnectionServer::Observer* observer,
+      platform::NetworkRunner* network_runner);
 };
 
 }  // namespace openscreen

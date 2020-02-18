@@ -9,9 +9,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/safe_browsing/buildflags.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -275,9 +277,11 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       bool request_ap_verdicts = false;
-#if defined(FULL_SAFE_BROWSING)
-      request_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
-          RequestsAdvancedProtectionVerdicts(profile());
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      request_ap_verdicts =
+          safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+              profile())
+              ->RequestsAdvancedProtectionVerdicts();
 #endif
       return l10n_util::GetStringFUTF16(
           request_ap_verdicts

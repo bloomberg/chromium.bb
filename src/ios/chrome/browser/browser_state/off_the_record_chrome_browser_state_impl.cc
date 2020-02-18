@@ -26,7 +26,6 @@ OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
       original_chrome_browser_state_(original_chrome_browser_state),
       prefs_(static_cast<sync_preferences::PrefServiceSyncable*>(
           original_chrome_browser_state->GetOffTheRecordPrefs())) {
-  BrowserState::Initialize(this, otr_state_path_);
   user_prefs::UserPrefs::Set(this, GetPrefs());
   io_data_.reset(new OffTheRecordChromeBrowserStateIOData::Handle(this));
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
@@ -108,7 +107,7 @@ void OffTheRecordChromeBrowserStateImpl::ClearNetworkingHistorySince(
   // BrowsingDataRemover will never be destroyed and the dialog will never be
   // closed. We must do this asynchronously in order to avoid reentrancy issues.
   if (!completion.is_null()) {
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, completion);
+    base::PostTask(FROM_HERE, {web::WebThread::UI}, completion);
   }
 }
 

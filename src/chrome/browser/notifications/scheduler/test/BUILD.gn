@@ -10,6 +10,8 @@ source_set("test_lib") {
   sources = [
     "fake_clock.cc",
     "fake_clock.h",
+    "mock_background_task_coordinator.cc",
+    "mock_background_task_coordinator.h",
     "mock_display_agent.cc",
     "mock_display_agent.h",
     "mock_display_decider.cc",
@@ -18,6 +20,8 @@ source_set("test_lib") {
     "mock_impression_history_tracker.h",
     "mock_notification_background_task_scheduler.cc",
     "mock_notification_background_task_scheduler.h",
+    "mock_notification_scheduler_client.cc",
+    "mock_notification_scheduler_client.h",
     "mock_scheduled_notification_manager.cc",
     "mock_scheduled_notification_manager.h",
     "test_utils.cc",

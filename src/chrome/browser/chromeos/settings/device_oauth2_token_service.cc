@@ -61,8 +61,7 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
               kServiceAccountIdentity,
               base::Bind(
                   &DeviceOAuth2TokenService::OnServiceAccountIdentityChanged,
-                  base::Unretained(this)))),
-      weak_ptr_factory_(this) {
+                  base::Unretained(this)))) {
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);
   // Pull in the system salt.
@@ -366,7 +365,8 @@ std::string DeviceOAuth2TokenService::GetRefreshToken() const {
       // This shouldn't happen: GetRefreshToken() is only called for actual
       // token minting operations. In above states, requests are either queued
       // or short-circuited to signal error immediately, so no actual token
-      // minting via OAuth2TokenService::FetchOAuth2Token should be triggered.
+      // minting via OAuth2AccessTokenManager::FetchOAuth2Token should be
+      // triggered.
       NOTREACHED();
       return std::string();
     case STATE_VALIDATION_PENDING:

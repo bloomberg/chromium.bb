@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -19,9 +20,9 @@ namespace leveldb_proto {
 
 class SharedProtoDatabase;
 
-// A KeyedService that provides instances of ProtoDatabase tied to the current
+// Class that provides instances of ProtoDatabase tied to the current
 // profile directory.
-class ProtoDatabaseProvider : public KeyedService {
+class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseProvider {
  public:
   using GetSharedDBInstanceCallback =
       base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)>;
@@ -52,7 +53,7 @@ class ProtoDatabaseProvider : public KeyedService {
       GetSharedDBInstanceCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
-  ~ProtoDatabaseProvider() override;
+  virtual ~ProtoDatabaseProvider();
 
  private:
   friend class TestProtoDatabaseProvider;

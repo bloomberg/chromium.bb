@@ -5,17 +5,20 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/sys/cpp/component_context.h>
 
 #include "base/files/file_enumerator.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
+#include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/test_debug_listener.h"
-#include "fuchsia/engine/test_devtools_list_fetcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,9 +36,9 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   ~WebEngineDebugIntegrationTest() override = default;
 
   void SetUp() override {
-    web_context_provider_ =
-        base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-            ->ConnectToService<fuchsia::web::ContextProvider>();
+    web_context_provider_ = base::fuchsia::ComponentContextForCurrentProcess()
+                                ->svc()
+                                ->Connect<fuchsia::web::ContextProvider>();
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
 
@@ -93,7 +96,9 @@ class WebEngineDebugIntegrationTest : public testing::Test {
               fuchsia::web::ContextError::REMOTE_DEBUGGING_PORT_NOT_OPENED);
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   TestDebugListener dev_tools_listener_;
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;
@@ -151,8 +156,8 @@ TEST_F(WebEngineDebugIntegrationTest, DebugService) {
   // Test the debug information is correct.
   dev_tools_listener_.RunUntilNumberOfPortsIs(1u);
 
-  base::Value devtools_list =
-      GetDevToolsListFromPort(*dev_tools_listener_.debug_ports().begin());
+  base::Value devtools_list = cr_fuchsia::GetDevToolsListFromPort(
+      *dev_tools_listener_.debug_ports().begin());
   ASSERT_TRUE(devtools_list.is_list());
   EXPECT_EQ(devtools_list.GetList().size(), 1u);
 
@@ -179,7 +184,7 @@ TEST_F(WebEngineDebugIntegrationTest, MultipleDebugClients) {
   dev_tools_listener_.RunUntilNumberOfPortsIs(1u);
   uint16_t port1 = *dev_tools_listener_.debug_ports().begin();
 
-  base::Value devtools_list1 = GetDevToolsListFromPort(port1);
+  base::Value devtools_list1 = cr_fuchsia::GetDevToolsListFromPort(port1);
   ASSERT_TRUE(devtools_list1.is_list());
   EXPECT_EQ(devtools_list1.GetList().size(), 1u);
 
@@ -213,7 +218,7 @@ TEST_F(WebEngineDebugIntegrationTest, MultipleDebugClients) {
   ASSERT_NE(dev_tools_listener_.debug_ports().find(port2),
             dev_tools_listener_.debug_ports().end());
 
-  base::Value devtools_list2 = GetDevToolsListFromPort(port2);
+  base::Value devtools_list2 = cr_fuchsia::GetDevToolsListFromPort(port2);
   ASSERT_TRUE(devtools_list2.is_list());
   EXPECT_EQ(devtools_list2.GetList().size(), 1u);
 

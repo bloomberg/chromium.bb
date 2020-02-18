@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/numerics/ranges.h"
+#include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 #include "ui/gfx/animation/tween.h"
 
 namespace {
@@ -18,30 +19,22 @@ constexpr base::TimeDelta kZeroDuration = base::TimeDelta::FromMilliseconds(0);
 
 constexpr base::TimeDelta TabAnimation::kAnimationDuration;
 
-TabAnimation::TabAnimation(ViewType view_type,
-                           TabAnimationState initial_state,
-                           TabAnimationState target_state,
-                           base::TimeDelta duration,
+TabAnimation::TabAnimation(TabAnimationState static_state,
                            base::OnceClosure tab_removed_callback)
-    : view_type_(view_type),
-      initial_state_(initial_state),
-      target_state_(target_state),
+    : initial_state_(static_state),
+      target_state_(static_state),
       start_time_(base::TimeTicks::Now()),
-      duration_(duration),
+      duration_(kZeroDuration),
       tab_removed_callback_(std::move(tab_removed_callback)) {}
 
 TabAnimation::~TabAnimation() = default;
 
-TabAnimation::TabAnimation(TabAnimation&&) noexcept = default;
-TabAnimation& TabAnimation::operator=(TabAnimation&&) noexcept = default;
+bool TabAnimation::IsClosing() const {
+  return target_state_.IsFullyClosed();
+}
 
-// static
-TabAnimation TabAnimation::ForStaticState(
-    ViewType view_type,
-    TabAnimationState static_state,
-    base::OnceClosure tab_removed_callback) {
-  return TabAnimation(view_type, static_state, static_state, kZeroDuration,
-                      std::move(tab_removed_callback));
+bool TabAnimation::IsClosed() const {
+  return target_state_.IsFullyClosed() && GetTimeRemaining().is_zero();
 }
 
 void TabAnimation::AnimateTo(TabAnimationState target_state) {
@@ -70,6 +63,17 @@ void TabAnimation::NotifyCloseCompleted() {
   std::move(tab_removed_callback_).Run();
 }
 
+base::TimeDelta TabAnimation::GetTimeRemaining() const {
+  return std::max(start_time_ + duration_ - base::TimeTicks::Now(),
+                  kZeroDuration);
+}
+
+TabWidthConstraints TabAnimation::GetCurrentTabWidthConstraints(
+    const TabLayoutConstants& layout_constants,
+    const TabSizeInfo& size_info) const {
+  return TabWidthConstraints(GetCurrentState(), layout_constants, size_info);
+}
+
 TabAnimationState TabAnimation::GetCurrentState() const {
   if (duration_.is_zero())
     return target_state_;
@@ -81,9 +85,4 @@ TabAnimationState TabAnimation::GetCurrentState() const {
       gfx::Tween::Type::EASE_OUT, normalized_elapsed_time);
   return TabAnimationState::Interpolate(interpolation_value, initial_state_,
                                         target_state_);
-}
-
-base::TimeDelta TabAnimation::GetTimeRemaining() const {
-  return std::max(start_time_ + duration_ - base::TimeTicks::Now(),
-                  kZeroDuration);
 }

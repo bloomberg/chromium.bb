@@ -101,8 +101,7 @@ class TestNavigationThrottle : public NavigationThrottle {
              navigation_handle_impl->request_context_type());
     request_context_type_ = navigation_handle_impl->request_context_type();
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_start_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_start_);
     return will_start_result_;
   }
 
@@ -112,8 +111,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_redirect_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_redirect_);
     return will_redirect_result_;
   }
 
@@ -123,8 +121,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_fail_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_fail_);
     return will_fail_result_;
   }
 
@@ -134,8 +131,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_process_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_process_);
     return will_process_result_;
   }
 
@@ -603,9 +599,11 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
 
   {
     GURL url(embedded_test_server()->GetURL("/cross-site/baz.com/title1.html"));
+    GURL final_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
     NavigationHandleObserver observer(shell()->web_contents(), url);
 
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(
+        NavigateToURL(shell(), url, final_url /* expected_commit_url */));
 
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
@@ -1663,13 +1661,11 @@ class NavigationLogger : public WebContentsObserver {
   std::vector<GURL> finished_navigation_urls_;
 };
 
-// There was a bug without PlzNavigate that happened when a navigation was
-// blocked after a redirect. Blink didn't know about the redirect and tried
-// to commit an error page to the pre-redirect URL. The result was that the
-// NavigationHandle was not found on the browser-side and a new NavigationHandle
-// created for committing the error page. This test makes sure that only one
-// NavigationHandle is used for committing the error page.
-// See https://crbug.com/695421
+// Verifies that when a navigation is blocked after a redirect, the renderer
+// doesn't try to commit an error page to the pre-redirect URL. This would cause
+// a NavigationHandle mismatch and a new NavigationHandle creation to commit
+// the error page. This test makes sure that only one NavigationHandle is used
+// for committing the error page. See https://crbug.com/695421
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
   const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
   const GURL kRedirectingUrl =
@@ -1893,9 +1889,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorPageNetworkError) {
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   {
     NavigationHandleObserver observer(shell()->web_contents(), start_url);
@@ -2036,15 +2031,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
       // Same usernames in both frames.
       // Relative URLs on top-level pages that were loaded with embedded
-      // credentials should load correctly. It doesn't work correctly when
-      // PlzNavigate is disabled. See https://crbug.com/756846.
+      // credentials should load correctly.
       {GURL("http://user@a.com/frame_tree/page_with_one_frame.html"),
        GURL("http://user@a.com/title1.html"), false},
 
       // Same usernames and passwords in both frames.
       // Relative URLs on top-level pages that were loaded with embedded
-      // credentials should load correctly. It doesn't work correctly when
-      // PlzNavigate is disabled. See https://crbug.com/756846.
+      // credentials should load correctly.
       {GURL("http://user:pass@a.com/frame_tree/page_with_one_frame.html"),
        GURL("http://user:pass@a.com/title1.html"), false},
 
@@ -2180,18 +2173,19 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
 
   // Main frame tests.
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html")));
   {
     base::HistogramTester histograms;
     GURL url(embedded_test_server()->GetURL("/title1.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
                      TransitionType::kNew);
   }
   {
     base::HistogramTester histograms;
     GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     check_navigation(histograms, ProcessType::kCross, FrameType::kMain,
                      TransitionType::kNew);
   }
@@ -2219,7 +2213,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
   }
   {
     base::HistogramTester histograms;
-    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
     check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
                      TransitionType::kNew);
   }
@@ -2348,7 +2342,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, IsDownload) {
   GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.is_download());
 }
@@ -2357,7 +2351,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
                        DownloadFalseForHtmlResponse) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_download());
 }
@@ -2366,7 +2360,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
                        DownloadFalseFor404) {
   GURL url(embedded_test_server()->GetURL("/page404.html"));
   NavigationHandleObserver observer(shell()->web_contents(), url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_download());
 }
@@ -2380,7 +2374,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
       NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
       NavigationThrottle::PROCEED);
 
-  EXPECT_FALSE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.is_error());
   EXPECT_FALSE(observer.is_download());
@@ -2391,7 +2385,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   GURL redirect_url(
       embedded_test_server()->GetURL("/cross-site/bar.com/download-test1.lib"));
   NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
-  NavigateToURL(shell(), redirect_url);
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), redirect_url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.was_redirected());
   EXPECT_TRUE(observer.is_download());

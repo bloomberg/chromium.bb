@@ -28,7 +28,7 @@
 #import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
 #import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
 #import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
-#import "ios/web/public/web_state/web_state.h"                     // nogncheck
+#import "ios/web/public/web_state.h"                               // nogncheck
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -64,6 +64,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 #endif
 
   return idiom == UIUserInterfaceIdiomPad;
+}
+
+- (BOOL)isCompactWidth {
+#if defined(CHROME_EARL_GREY_1)
+  UIUserInterfaceSizeClass horizontalSpace =
+      [[[[UIApplication sharedApplication] keyWindow] traitCollection]
+          horizontalSizeClass];
+#elif defined(CHROME_EARL_GREY_2)
+  UIUserInterfaceSizeClass horizontalSpace =
+      [[[[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
+          traitCollection] horizontalSizeClass];
+#endif
+  return horizontalSpace == UIUserInterfaceSizeClassCompact;
 }
 
 #pragma mark - History Utilities (EG2)
@@ -354,6 +367,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   NSString* imageID = base::SysUTF8ToNSString(UTF8ImageID);
   EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
       waitForWebStateContainingLoadedImage:imageID]);
+}
+
+- (GURL)webStateVisibleURL {
+  return GURL(
+      base::SysNSStringToUTF8([ChromeEarlGreyAppInterface webStateVisibleURL]));
 }
 
 #pragma mark - Settings Utilities (EG2)

@@ -13,15 +13,15 @@ import difflib
 import errno
 import functools
 import itertools
-import mock
 import os
 import signal
 import socket
 import StringIO
 import sys
-import __builtin__
 
+import mock
 import six
+from six.moves import builtins
 
 from chromite.lib import constants
 from chromite.cbuildbot import repository
@@ -90,14 +90,16 @@ class CmdToStrTest(cros_test_lib.TestCase):
     # Dict of expected output strings to input lists.
     tests_quote = {
         "''": '',
-        'a': unicode('a'),
-        "'a b c'": unicode('a b c'),
+        'a': u'a',
+        "'a b c'": u'a b c',
         "'a\tb'": 'a\tb',
         "'/a$file'": '/a$file',
         "'/a#file'": '/a#file',
         """'b"c'""": 'b"c',
         "'a@()b'": 'a@()b',
         'j%k': 'j%k',
+        # pylint: disable=invalid-triple-quote
+        # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''"s'a\$va\\rs"''': r"s'a$va\rs",
         r'''"\\'\\\""''': r'''\'\"''',
         r'''"'\\\$"''': r"""'\$""",
@@ -106,6 +108,8 @@ class CmdToStrTest(cros_test_lib.TestCase):
     # Expected input output specific to ShellUnquote. This string cannot be
     # produced by ShellQuote but is still a valid bash escaped string.
     tests_unquote = {
+        # pylint: disable=invalid-triple-quote
+        # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''\$''': r'''"\\$"''',
     }
 
@@ -122,11 +126,13 @@ class CmdToStrTest(cros_test_lib.TestCase):
   def testCmdToStr(self):
     # Dict of expected output strings to input lists.
     tests = {
-        r"a b": ['a', 'b'],
+        r'a b': ['a', 'b'],
         r"'a b' c": ['a b', 'c'],
+        # pylint: disable=invalid-triple-quote
+        # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''a "b'c"''': ['a', "b'c"],
         r'''a "/'\$b" 'a b c' "xy'z"''':
-            [unicode('a'), "/'$b", 'a b c', "xy'z"],
+            [u'a', "/'$b", 'a b c', "xy'z"],
         '': [],
     }
     self._testData(cros_build_lib.CmdToStr, tests)
@@ -447,6 +453,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     ## This is a little bit circular, since the same logic is used to compute
     ## the value inside, but at least it checks that this happens.
     total_env = os.environ.copy()
+    # The core RunCommand code forces this too.
+    total_env['LC_MESSAGES'] = 'C'
     total_env.update(extra_env)
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
@@ -678,9 +686,9 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   def testLogOutput(self):
     """Normal log_output, stdout followed by stderr."""
     cmd = 'echo Greece; echo Italy >&2; echo Spain'
-    log_output = ("RunCommand: /bin/bash -c "
+    log_output = ('RunCommand: /bin/bash -c '
                   "'echo Greece; echo Italy >&2; echo Spain'\n"
-                  "(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n")
+                  '(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n')
     self.assertEquals(self._CaptureLogOutput(cmd, shell=True, log_output=True),
                       log_output)
 
@@ -921,7 +929,9 @@ class TestInput(cros_test_lib.MockOutputTestCase):
   def testGetInput(self):
     """Verify GetInput() basic behavior."""
     response = 'Some response'
-    self.PatchObject(__builtin__, 'raw_input', return_value=response)
+    if sys.version_info.major < 3:
+      self.PatchObject(builtins, 'raw_input', return_value=response)
+    self.PatchObject(builtins, 'input', return_value=response)
     self.assertEquals(response, cros_build_lib.GetInput('prompt'))
 
   def testBooleanPrompt(self):
@@ -1143,7 +1153,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
                          check_attrs={'errno': errno.ENOENT})
 
     # No merge target means the configuration isn't usable, period.
-    assertExcept("git tracking configuration for that branch is broken",
+    assertExcept('git tracking configuration for that branch is broken',
                  merge=None)
 
     # Ensure we detect if we're on the wrong branch, even if it has
@@ -1247,7 +1257,7 @@ ttt"
         'R': 'r\n',
         'RR': 'rr\nrrr',
         'RRR': 'rrr\n RRRR\n rrr\n',
-        'SSS': ' ss\n\'ssss\'\nss',
+        'SSS': " ss\n'ssss'\nss",
         'T': '\nttt'
     }
 
@@ -1620,6 +1630,7 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
 
   def testSuccessWithTooManyFiles(self):
     """Test a tarfile creation with -T /dev/stdin."""
+    # pylint: disable=protected-access
     num_inputs = cros_build_lib._THRESHOLD_TO_USE_T_FOR_TAR + 1
     inputs = ['input%s' % x for x in range(num_inputs)]
     largeInputDir = os.path.join(self.tempdir, 'largeinputs')

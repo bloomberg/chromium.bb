@@ -65,6 +65,9 @@ const char* kBypassBlacklistWildcardForSchemes[] = {
   "chrome-search",
 };
 
+const char kDevToolsLegacyScheme[] = "chrome-devtools";
+const char kDevToolsScheme[] = "devtools";
+
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 1000;
 
@@ -259,8 +262,18 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
   DCHECK(path);
   DCHECK(query);
   url::Parsed parsed;
-  const std::string lc_filter = base::ToLowerASCII(filter);
+  std::string lc_filter = base::ToLowerASCII(filter);
   const std::string url_scheme = url_formatter::SegmentURL(filter, &parsed);
+
+  // This is for backward compatibility between 'chrome-devtools' and 'devtools'
+  // schemes. url_formatter::SegmentURL will return 'devtools' if the filter's
+  // scheme is the deprecated 'chrome-devtools'. To comply with that
+  // transformation, since both schemes are equivalent, if the filter's scheme
+  // was 'chrome-devtools', it should be replaced by 'devtools'.
+  if (url_scheme == kDevToolsScheme &&
+      lc_filter.find(kDevToolsLegacyScheme) == 0) {
+    lc_filter.replace(0, 15, kDevToolsScheme);
+  }
 
   // Check if it's a scheme wildcard pattern. We support both versions
   // (scheme:* and scheme://*) the later being consistent with old filter
@@ -431,8 +444,8 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   // This class assumes that it is created on the same thread that
   // |pref_service_| lives on.
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT});
+  background_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT});
 
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
@@ -492,7 +505,7 @@ void URLBlacklistManager::SetBlacklist(
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Ignore blob scheme for two reasons:
-  // 1) PlzNavigate uses it to deliver the response to the renderer.
+  // 1) Its used to deliver the response to the renderer.
   // 2) A whitelisted page can use blob URLs internally.
   return !url.SchemeIs(url::kBlobScheme) && blacklist_->IsURLBlocked(url);
 }

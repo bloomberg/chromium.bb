@@ -17,6 +17,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -34,7 +35,6 @@ namespace payments {
 
 class ContentPaymentRequestDelegate;
 class PaymentInstrument;
-class ServiceWorkerPaymentInstrument;
 
 // Keeps track of the information currently selected by the user and whether the
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
@@ -107,15 +107,18 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       base::OnceCallback<void(bool methods_supported,
                               const std::string& error_message)>;
 
-  PaymentRequestState(content::WebContents* web_contents,
-                      const GURL& top_level_origin,
-                      const GURL& frame_origin,
-                      PaymentRequestSpec* spec,
-                      Delegate* delegate,
-                      const std::string& app_locale,
-                      autofill::PersonalDataManager* personal_data_manager,
-                      ContentPaymentRequestDelegate* payment_request_delegate,
-                      JourneyLogger* journey_logger);
+  PaymentRequestState(
+      content::WebContents* web_contents,
+      const GURL& top_level_origin,
+      const GURL& frame_origin,
+      PaymentRequestSpec* spec,
+      Delegate* delegate,
+      const std::string& app_locale,
+      autofill::PersonalDataManager* personal_data_manager,
+      ContentPaymentRequestDelegate* payment_request_delegate,
+      base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+          sw_identity_observer,
+      JourneyLogger* journey_logger);
   ~PaymentRequestState() override;
 
   // PaymentResponseHelper::Delegate
@@ -130,8 +133,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Checks whether support for the specified payment methods exist, either
   // because the user has a registered payment handler or because the browser
   // can do just-in-time registration for a suitable payment handler.
-  // If |legacy_mode| is true, then also checks that an instrument is enrolled.
-  void CanMakePayment(bool legacy_mode, StatusCallback callback);
+  void CanMakePayment(StatusCallback callback);
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods asynchronously.
@@ -310,7 +312,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // Checks whether support for the specified payment methods exists and call
   // the |callback| to return the result.
-  void CheckCanMakePayment(bool legacy_mode, StatusCallback callback);
+  void CheckCanMakePayment(StatusCallback callback);
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
@@ -327,7 +329,15 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   void IncrementSelectionStatus(JourneyLogger::Section section,
                                 SectionSelectionStatus selection_status);
 
+  // True when the requested autofill data (shipping address and/or contact
+  // information) and payment data (either autofill or service worker) are
+  // complete, valid, and selected.
   bool is_ready_to_pay_;
+
+  // True when the requested autofill data (shipping address and/or contact
+  // information) is complete and valid, even if not selected. This variable is
+  // not affected by payment instruments.
+  bool is_requested_autofill_data_available_ = true;
 
   bool get_all_instruments_finished_;
 
@@ -341,10 +351,6 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   Delegate* delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
-
-  // Whether |can_make_payment_callback_| expects the legacy canMakePayment
-  // semantic. Only meaningful when |can_make_payment_callback_| is present.
-  bool can_make_payment_legacy_mode_ = false;
 
   StatusCallback can_make_payment_callback_;
   StatusCallback has_enrolled_instrument_callback_;
@@ -374,6 +380,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
 
   ContentPaymentRequestDelegate* payment_request_delegate_;
+  base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+      sw_identity_observer_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
 

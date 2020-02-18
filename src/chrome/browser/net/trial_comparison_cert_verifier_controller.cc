@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -57,7 +58,7 @@ TrialComparisonCertVerifierController::
 bool TrialComparisonCertVerifierController::MaybeAllowedForProfile(
     Profile* profile) {
   bool is_official_build = g_is_fake_official_build_for_cert_verifier_testing;
-#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   is_official_build = true;
 #endif
 
@@ -104,17 +105,19 @@ void TrialComparisonCertVerifierController::SendTrialReport(
     bool enable_sha1_local_anchors,
     bool disable_symantec_enforcement,
     const net::CertVerifyResult& primary_result,
-    const net::CertVerifyResult& trial_result) {
+    const net::CertVerifyResult& trial_result,
+    network::mojom::CertVerifierDebugInfoPtr debug_info) {
   if (!IsAllowed() ||
       base::GetFieldTrialParamByFeatureAsBool(
           features::kCertDualVerificationTrialFeature, "uma_only", false)) {
     return;
   }
 
-  CertificateErrorReport report(
-      hostname, *unverified_cert, enable_rev_checking,
-      require_rev_checking_local_anchors, enable_sha1_local_anchors,
-      disable_symantec_enforcement, primary_result, trial_result);
+  CertificateErrorReport report(hostname, *unverified_cert, enable_rev_checking,
+                                require_rev_checking_local_anchors,
+                                enable_sha1_local_anchors,
+                                disable_symantec_enforcement, primary_result,
+                                trial_result, std::move(debug_info));
 
   report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
   report.AddChromeChannel(chrome::GetChannel());

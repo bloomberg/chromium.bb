@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_RENDERPIPELINE_H_
 #define DAWNNATIVE_RENDERPIPELINE_H_
 
+#include "dawn_native/AttachmentState.h"
 #include "dawn_native/Pipeline.h"
 
 #include "dawn_native/dawn_platform.h"
@@ -27,6 +28,7 @@ namespace dawn_native {
     struct BeginRenderPassCmd;
 
     class DeviceBase;
+    class RenderBundleEncoderBase;
 
     MaybeError ValidateRenderPipelineDescriptor(const DeviceBase* device,
                                                 const RenderPipelineDescriptor* descriptor);
@@ -77,9 +79,8 @@ namespace dawn_native {
         dawn::TextureFormat GetDepthStencilFormat() const;
         uint32_t GetSampleCount() const;
 
-        // A pipeline can be used in a render pass if its attachment info matches the actual
-        // attachments in the render pass. This returns whether it is the case.
-        MaybeError ValidateCompatibleWith(const BeginRenderPassCmd* renderPassCmd) const;
+        const AttachmentState* GetAttachmentState() const;
+
         std::bitset<kMaxVertexAttributes> GetAttributesUsingInput(uint32_t slot) const;
         std::array<std::bitset<kMaxVertexAttributes>, kMaxVertexBuffers> attributesUsingInput;
 
@@ -102,15 +103,13 @@ namespace dawn_native {
         std::array<VertexBufferInfo, kMaxVertexBuffers> mInputInfos;
 
         // Attachments
-        bool mHasDepthStencilAttachment = false;
+        Ref<AttachmentState> mAttachmentState;
         DepthStencilStateDescriptor mDepthStencilState;
-        std::bitset<kMaxColorAttachments> mColorAttachmentsSet;
         std::array<ColorStateDescriptor, kMaxColorAttachments> mColorStates;
 
         // Other state
         dawn::PrimitiveTopology mPrimitiveTopology;
         RasterizationStateDescriptor mRasterizationState;
-        uint32_t mSampleCount;
         uint32_t mSampleMask;
         bool mAlphaToCoverageEnabled;
 

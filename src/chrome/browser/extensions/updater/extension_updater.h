@@ -8,12 +8,12 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/containers/stack.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -34,6 +34,7 @@ namespace extensions {
 
 class ExtensionCache;
 class ExtensionPrefs;
+class ExtensionRegistry;
 class ExtensionServiceInterface;
 class ExtensionSet;
 struct ExtensionUpdateCheckParams;
@@ -270,6 +271,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   PrefService* prefs_;
   Profile* profile_;
 
+  ExtensionRegistry* registry_;
+
   std::map<int, InProgressCheck> requests_in_progress_;
   int next_request_id_;
 
@@ -281,7 +284,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   bool crx_install_is_running_;
 
   // Fetched CRX files waiting to be installed.
-  std::stack<FetchedCRXFile> fetched_crx_files_;
+  std::queue<FetchedCRXFile> fetched_crx_files_;
   FetchedCRXFile current_crx_file_;
 
   ExtensionCache* extension_cache_;

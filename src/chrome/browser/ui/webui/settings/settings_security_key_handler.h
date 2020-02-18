@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "device/fido/fido_constants.h"
 
+#include "device/fido/bio/enrollment.h"
+
 namespace base {
 class ListValue;
 }
@@ -22,8 +24,11 @@ namespace device {
 struct AggregatedEnumerateCredentialsResponse;
 class FidoDiscoveryFactory;
 class CredentialManagementHandler;
+enum class CredentialManagementStatus;
 class SetPINRequestHandler;
 class ResetRequestHandler;
+class BioEnrollmentHandler;
+enum class BioEnrollmentStatus;
 }  // namespace device
 
 namespace settings {
@@ -149,7 +154,7 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
       base::Optional<size_t> remaining_credentials);
   void OnGatherPIN(int64_t num_retries, base::OnceCallback<void(std::string)>);
   void OnCredentialsDeleted(device::CtapDeviceResponseCode status);
-  void OnFinished(device::FidoReturnCode status);
+  void OnFinished(device::CredentialManagementStatus status);
 
   State state_ = State::kNone;
   base::OnceCallback<void(std::string)> credential_management_provide_pin_cb_;
@@ -159,6 +164,60 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
 
   std::string callback_id_;
   base::WeakPtrFactory<SecurityKeysCredentialHandler> weak_factory_{this};
+};
+
+// SecurityKeysBioEnrollmentHandler processes messages from the "Manage
+// fingerprints" dialog of the "Security Keys" settings subpage. An instance of
+// this class is created for each settings tab and is destroyed when the tab is
+// closed. See SecurityKeysBioEnrollProxy about the interface.
+class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
+ public:
+  SecurityKeysBioEnrollmentHandler();
+  ~SecurityKeysBioEnrollmentHandler() override;
+
+ private:
+  enum class State {
+    kNone,
+    kStart,
+    kGatherPIN,
+    kReady,
+    kEnumerating,
+    kEnrolling,
+    kDeleting,
+    kCancelling,
+  };
+
+  void RegisterMessages() override;
+  void Close() override;
+
+  void HandleStart(const base::ListValue* args);
+  void OnReady();
+  void OnError(device::BioEnrollmentStatus status);
+  void OnGatherPIN(int64_t retries, base::OnceCallback<void(std::string)>);
+
+  void HandleProvidePIN(const base::ListValue* args);
+
+  void HandleEnumerate(const base::ListValue* args);
+  void OnHaveEnumeration(
+      device::CtapDeviceResponseCode,
+      base::Optional<std::map<std::vector<uint8_t>, std::string>>);
+
+  void HandleStartEnrolling(const base::ListValue* args);
+  void OnEnrollingResponse(device::BioEnrollmentSampleStatus, uint8_t);
+  void OnEnrollmentFinished(device::CtapDeviceResponseCode);
+
+  void HandleDelete(const base::ListValue* args);
+  void OnDelete(device::CtapDeviceResponseCode);
+
+  void HandleCancel(const base::ListValue* args);
+  void OnEnrollCancel(device::CtapDeviceResponseCode);
+
+  State state_ = State::kNone;
+  std::string callback_id_;
+  base::OnceCallback<void(std::string)> provide_pin_cb_;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
+  std::unique_ptr<device::BioEnrollmentHandler> bio_;
+  base::WeakPtrFactory<SecurityKeysBioEnrollmentHandler> weak_factory_{this};
 };
 
 }  // namespace settings

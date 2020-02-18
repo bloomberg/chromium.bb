@@ -186,8 +186,9 @@ static std::unique_ptr<uint32_t[]> make_data() {
     return data;
 }
 
-static sk_sp<GrSurfaceContext> make_surface_context(Encoding contextEncoding, GrContext* context,
-                                                    skiatest::Reporter* reporter) {
+static std::unique_ptr<GrSurfaceContext> make_surface_context(Encoding contextEncoding,
+                                                              GrContext* context,
+                                                              skiatest::Reporter* reporter) {
     auto surfaceContext = context->priv().makeDeferredRenderTargetContext(
             SkBackingFit::kExact, kW, kH, GrColorType::kRGBA_8888,
             encoding_as_color_space(contextEncoding), 1, GrMipMapped::kNo,
@@ -195,7 +196,7 @@ static sk_sp<GrSurfaceContext> make_surface_context(Encoding contextEncoding, Gr
     if (!surfaceContext) {
         ERRORF(reporter, "Could not create %s surface context.", encoding_as_str(contextEncoding));
     }
-    return std::move(surfaceContext);
+    return surfaceContext;
 }
 
 static void test_write_read(Encoding contextEncoding, Encoding writeEncoding, Encoding readEncoding,
@@ -227,8 +228,8 @@ static void test_write_read(Encoding contextEncoding, Encoding writeEncoding, En
 // are sRGB, linear, or untagged RGBA_8888.
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SRGBReadWritePixels, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    if (!context->priv().caps()->isConfigRenderable(kSRGBA_8888_GrPixelConfig) &&
-        !context->priv().caps()->isConfigTexturable(kSRGBA_8888_GrPixelConfig)) {
+    if (!context->priv().caps()->getDefaultBackendFormat(GrColorType::kRGBA_8888_SRGB,
+                                                         GrRenderable::kNo).isValid()) {
         return;
     }
     // We allow more error on GPUs with lower precision shader variables.

@@ -7,10 +7,8 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -75,8 +73,8 @@ class BLINK_MODULES_EXPORT VideoCaptureSettings {
 
   VideoCaptureSettings(const VideoCaptureSettings& other);
   VideoCaptureSettings& operator=(const VideoCaptureSettings& other);
-  VideoCaptureSettings(VideoCaptureSettings&& other);
-  VideoCaptureSettings& operator=(VideoCaptureSettings&& other);
+  VideoCaptureSettings(VideoCaptureSettings&& other) noexcept;
+  VideoCaptureSettings& operator=(VideoCaptureSettings&& other) noexcept;
   ~VideoCaptureSettings();
 
   bool HasValue() const { return !failed_constraint_name_; }
@@ -195,8 +193,8 @@ class BLINK_MODULES_EXPORT AudioCaptureSettings {
       const AudioProcessingProperties& audio_processing_properties);
   AudioCaptureSettings(const AudioCaptureSettings& other);
   AudioCaptureSettings& operator=(const AudioCaptureSettings& other);
-  AudioCaptureSettings(AudioCaptureSettings&& other);
-  AudioCaptureSettings& operator=(AudioCaptureSettings&& other);
+  AudioCaptureSettings(AudioCaptureSettings&& other) noexcept;
+  AudioCaptureSettings& operator=(AudioCaptureSettings&& other) noexcept;
 
   bool HasValue() const { return !failed_constraint_name_; }
 
@@ -265,41 +263,6 @@ BLINK_MODULES_EXPORT bool GetConstraintValueAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
-
-BLINK_MODULES_EXPORT bool GetConstraintMinAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
-    double* value);
-
-BLINK_MODULES_EXPORT bool GetConstraintMaxAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
-    double* value);
-
-// Method to get std::string value of constraint with |name| from constraints.
-// Returns true if the constraint is specified in either mandatory or Optional
-// constraints.
-BLINK_MODULES_EXPORT bool GetConstraintValueAsString(
-    const blink::WebMediaConstraints& constraints,
-    const blink::StringConstraint blink::WebMediaTrackConstraintSet::*picker,
-    std::string* value);
-
-// If |value| is outside the range of |constraint|, returns the name of the
-// failed constraint. Otherwise, returns nullptr. The return value converts to
-// bool in the expected way.
-template <typename NumericConstraintType, typename ValueType>
-const char* IsOutsideConstraintRange(NumericConstraintType constraint,
-                                     ValueType value) {
-  return (ConstraintHasMin(constraint) && value < ConstraintMin(constraint)) ||
-                 (ConstraintHasMax(constraint) &&
-                  value > ConstraintMax(constraint))
-             ? constraint.GetName()
-             : nullptr;
-}
-
-BLINK_MODULES_EXPORT std::string GetMediaStreamSource(
-    const blink::WebMediaConstraints& constraints);
-bool IsDeviceCapture(const blink::WebMediaConstraints& constraints);
 
 // This function selects track settings from a set of candidate resolutions and
 // frame rates, given the source video-capture format and ideal values.

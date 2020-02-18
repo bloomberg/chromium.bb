@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_clients.h"
@@ -59,7 +59,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
 };
 
 // By default, ProxyConfigServiceImpl should ignore the state of the nested

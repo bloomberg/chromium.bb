@@ -31,7 +31,7 @@ bool FieldIsInBlacklist(const char* current_value, std::string blacklist_str) {
 #if defined(OS_ANDROID)
 // Use android AImageReader when playing videos with MediaPlayer.
 const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use android SurfaceControl API for managing display compositor's buffer queue
 // and using overlays on Android.
@@ -112,6 +112,13 @@ const base::Feature kUseDCOverlaysForSoftwareProtectedVideo{
 // https://crbug.com/868400 is resolved.
 const base::Feature kVaapiJpegImageDecodeAcceleration{
     "VaapiJpegImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls the decode acceleration of WebP images in Chrome OS using the
+// VA-API.
+// TODO(gildekel): remove or enable by default in Chrome OS once
+// https://crbug.com/877694 is resolved.
+const base::Feature kVaapiWebPImageDecodeAcceleration{
+    "VaapiWebPImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {

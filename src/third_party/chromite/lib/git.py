@@ -17,6 +17,8 @@ import re
 import string
 from xml import sax
 
+import six
+
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -493,7 +495,7 @@ class Manifest(object):
 
   @staticmethod
   def _GetManifestHash(source, ignore_missing=False):
-    if isinstance(source, basestring):
+    if isinstance(source, six.string_types):
       try:
         # TODO(build): convert this to osutils.ReadFile once these
         # classes are moved out into their own module (if possible;
@@ -1412,7 +1414,8 @@ def PushBranch(branch, git_repo, dryrun=False,
   SyncPushBranch(git_repo, remote_ref.remote, local_ref.ref)
 
   try:
-    GitPush(git_repo, branch, remote_ref, skip=dryrun)
+    GitPush(git_repo, branch, remote_ref, skip=dryrun, print_cmd=True,
+            debug_level=logging.DEBUG)
   except cros_build_lib.RunCommandError:
     raise
 
@@ -1507,7 +1510,7 @@ def DeleteStaleLocks(git_repo):
   """
   git_gitdir = GetGitGitdir(git_repo)
   if not git_gitdir:
-    raise GitException("Not a valid git repo: %s" % git_repo)
+    raise GitException('Not a valid git repo: %s' % git_repo)
 
   for root, _, filenames in os.walk(git_gitdir):
     for filename in fnmatch.filter(filenames, '*.lock'):

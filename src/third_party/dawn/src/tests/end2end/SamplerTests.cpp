@@ -44,13 +44,13 @@ protected:
 
         mBindGroupLayout = utils::MakeBindGroupLayout(
             device, {
-                        {0, dawn::ShaderStageBit::Fragment, dawn::BindingType::Sampler},
-                        {1, dawn::ShaderStageBit::Fragment, dawn::BindingType::SampledTexture},
+                        {0, dawn::ShaderStage::Fragment, dawn::BindingType::Sampler},
+                        {1, dawn::ShaderStage::Fragment, dawn::BindingType::SampledTexture},
                     });
 
         auto pipelineLayout = utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
 
-        auto vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+        auto vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
             #version 450
             void main() {
                 const vec2 pos[6] = vec2[6](vec2(-2.f, -2.f),
@@ -62,7 +62,7 @@ protected:
                 gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
             }
         )");
-        auto fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        auto fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
             layout(set = 0, binding = 0) uniform sampler sampler0;
             layout(set = 0, binding = 1) uniform texture2D texture0;
@@ -75,7 +75,7 @@ protected:
 
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
         pipelineDescriptor.layout = pipelineLayout;
-        pipelineDescriptor.cVertexStage.module = vsModule;
+        pipelineDescriptor.vertexStage.module = vsModule;
         pipelineDescriptor.cFragmentStage.module = fsModule;
         pipelineDescriptor.cColorStates[0]->format = mRenderPass.colorFormat;
 
@@ -90,7 +90,7 @@ protected:
         descriptor.sampleCount = 1;
         descriptor.format = dawn::TextureFormat::RGBA8Unorm;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = dawn::TextureUsageBit::CopyDst | dawn::TextureUsageBit::Sampled;
+        descriptor.usage = dawn::TextureUsage::CopyDst | dawn::TextureUsage::Sampled;
         dawn::Texture texture = device.CreateTexture(&descriptor);
 
         // Create a 2x2 checkerboard texture, with black in the top left and bottom right corners.
@@ -102,7 +102,7 @@ protected:
         data[1] = data[rowPixels] = white;
 
         dawn::Buffer stagingBuffer =
-            utils::CreateBufferFromData(device, data, sizeof(data), dawn::BufferUsageBit::CopySrc);
+            utils::CreateBufferFromData(device, data, sizeof(data), dawn::BufferUsage::CopySrc);
         dawn::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 256, 0);
         dawn::TextureCopyView textureCopyView =
             utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
@@ -114,7 +114,7 @@ protected:
         dawn::CommandBuffer copy = encoder.Finish();
         queue.Submit(1, &copy);
 
-        mTextureView = texture.CreateDefaultView();
+        mTextureView = texture.CreateView();
     }
 
     void TestAddressModes(AddressModeTestCase u, AddressModeTestCase v, AddressModeTestCase w) {

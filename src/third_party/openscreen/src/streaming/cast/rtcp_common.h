@@ -92,7 +92,7 @@ struct RtcpReportBlock {
   RtpTimeDelta jitter;
 
   // The last Status Report received.
-  StatusReportId last_status_report_id;
+  StatusReportId last_status_report_id{};
 
   // The delay between when the peer received the most-recent Status Report and
   // when this report was sent. The timebase is 65536 ticks per second and,

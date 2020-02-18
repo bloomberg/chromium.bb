@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
@@ -67,6 +68,14 @@ bool VaryHeaderContainsAsterisk(const Response* response) {
   return false;
 }
 
+bool HasJavascriptMimeType(const Response* response) {
+  // Strip charset parameters from the MIME type since MIMETypeRegistry does
+  // not expect them to be present.
+  auto mime_type =
+      ExtractMIMETypeFromMediaType(AtomicString(response->InternalMIMEType()));
+  return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type);
+}
+
 enum class CodeCacheGenerateTiming {
   kDontGenerate,
   kGenerateNow,
@@ -85,10 +94,8 @@ CodeCacheGenerateTiming ShouldGenerateV8CodeCache(ScriptState* script_state,
   if (!global_scope)
     return CodeCacheGenerateTiming::kDontGenerate;
 
-  if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
-          response->InternalMIMEType())) {
+  if (!HasJavascriptMimeType(response))
     return CodeCacheGenerateTiming::kDontGenerate;
-  }
 
   if (!response->InternalBodyBuffer())
     return CodeCacheGenerateTiming::kDontGenerate;
@@ -447,7 +454,7 @@ class Cache::CodeCacheHandleCallbackForPut final
       scoped_refptr<CachedMetadata> cached_metadata =
           GenerateFullCodeCache(array_buffer);
       if (cached_metadata) {
-        const Vector<uint8_t>& serialized_data =
+        base::span<const uint8_t> serialized_data =
             cached_metadata->SerializedData();
         auto side_data_blob_data = std::make_unique<BlobData>();
         side_data_blob_data->AppendBytes(serialized_data.data(),

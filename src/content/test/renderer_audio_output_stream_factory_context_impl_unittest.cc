@@ -18,9 +18,9 @@
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/media/audio/mojo_audio_output_ipc.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
@@ -81,7 +81,7 @@ void SyncWithAllThreads() {
   // least one task will be run. 20 iterations should be enough for our code.
   for (int i = 0; i < 20; ++i) {
     base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
-    SyncWith(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+    SyncWith(base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
     SyncWith(media::AudioManager::Get()->GetWorkerTaskRunner());
   }
 }
@@ -177,7 +177,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
  public:
   RendererAudioOutputStreamFactoryIntegrationTest()
       : media_stream_manager_(),
-        thread_bundle_(TestBrowserThreadBundle::Options::REAL_IO_THREAD),
+        task_environment_(BrowserTaskEnvironment::Options::REAL_IO_THREAD),
         audio_manager_(std::make_unique<media::AudioThreadImpl>()),
         audio_system_(&audio_manager_) {
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
@@ -198,7 +198,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
   }
 
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   media::MockAudioManager audio_manager_;
   media::AudioSystemImpl audio_system_;
   std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,

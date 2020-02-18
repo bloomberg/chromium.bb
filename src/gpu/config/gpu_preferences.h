@@ -10,11 +10,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 #include "media/media_buildflags.h"
 #include "ui/gfx/buffer_types.h"
+
+#if defined(USE_OZONE)
+#include "base/message_loop/message_pump_type.h"
+#endif
 
 namespace gpu {
 
@@ -36,7 +39,7 @@ enum VulkanImplementationName : uint32_t {
 // NOTE: if you modify this structure then you must also modify the
 // following two files to keep them in sync:
 //   src/gpu/ipc/common/gpu_preferences.mojom
-//   src/gpu/ipc/common/gpu_preferences_struct_traits.h
+//   src/gpu/ipc/common/gpu_preferences_mojom_traits.h
 struct GPU_EXPORT GpuPreferences {
  public:
   GpuPreferences();
@@ -196,6 +199,9 @@ struct GPU_EXPORT GpuPreferences {
   // Use Vulkan for rasterization and display compositing.
   VulkanImplementationName use_vulkan = VulkanImplementationName::kNone;
 
+  // Enforce using vulkan protected memory.
+  bool enforce_vulkan_protected_memory = false;
+
   // Use vulkan VK_KHR_surface for presenting.
   bool disable_vulkan_surface = false;
 
@@ -215,8 +221,10 @@ struct GPU_EXPORT GpuPreferences {
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
 
-  // Determines message loop type for the GPU thread.
-  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+#if defined(USE_OZONE)
+  // Determines message pump type for the GPU thread.
+  base::MessagePumpType message_pump_type = base::MessagePumpType::DEFAULT;
+#endif
 
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.

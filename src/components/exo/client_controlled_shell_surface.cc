@@ -92,17 +92,9 @@ class ClientControlledStateDelegate
                            ash::WindowStateType requested_state,
                            const gfx::Rect& bounds_in_display,
                            int64_t display_id) override {
-    const display::Screen* screen = display::Screen::GetScreen();
-    display::Display target_display;
-    if (!screen->GetDisplayWithDisplayId(display_id, &target_display))
-      return;
-
-    gfx::Rect bounds_in_screen(bounds_in_display);
-    bounds_in_screen.Offset(target_display.bounds().OffsetFromOrigin());
-
     shell_surface_->OnBoundsChangeEvent(
         window_state->GetStateType(), requested_state, display_id,
-        bounds_in_screen,
+        bounds_in_display,
         window_state->drag_details() && shell_surface_->IsDragging()
             ? window_state->drag_details()->bounds_change
             : 0);
@@ -396,14 +388,7 @@ void ClientControlledShellSurface::SetSystemUiVisibility(bool autohide) {
 void ClientControlledShellSurface::SetAlwaysOnTop(bool always_on_top) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetAlwaysOnTop",
                "always_on_top", always_on_top);
-
-  if (!widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-
-  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                          always_on_top
-                                              ? ui::ZOrderLevel::kFloatingWindow
-                                              : ui::ZOrderLevel::kNormal);
+  pending_always_on_top_ = always_on_top;
 }
 
 void ClientControlledShellSurface::SetImeBlocked(bool ime_blocked) {
@@ -693,8 +678,14 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
-  if (client_controlled_state_->set_bounds_locally())
+  // Window dragging across display moves the window to target display when
+  // dropped, but the actual window bounds comes later from android.  Update the
+  // window bounds now so that the window stays where it is expected to be. (it
+  // may still move if the android sends different bounds).
+  if (client_controlled_state_->set_bounds_locally() ||
+      !GetWindowState()->is_dragged()) {
     return;
+  }
 
   ScopedLockedToRoot scoped_locked_to_root(widget_);
   UpdateWidgetBounds();
@@ -811,8 +802,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   display::Display display;
   if (screen->GetDisplayWithDisplayId(display_id_, &display)) {
     bool is_display_stale = display_id_ != current_display.id();
-    LOG(ERROR) << "DisplayId:" << display_id_
-               << ", current:" << current_display.id();
 
     // Preserve widget bounds until client acknowledges display move.
     if (preserve_widget_bounds_ && is_display_stale)
@@ -846,7 +835,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 
   bool set_bounds_locally =
       GetWindowState()->is_dragged() && !is_display_move_pending;
-  LOG(ERROR) << "Updating Locally";
 
   if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
@@ -861,7 +849,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     UpdateSurfaceBounds();
     return;
   }
-  LOG(ERROR) << "Updating Remotely";
 
   {
     ScopedSetBoundsLocally scoped_set_bounds(this);
@@ -869,12 +856,15 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   }
 
   if (bounds != adjusted_bounds || is_display_move_pending) {
-    LOG(ERROR) << "Sending Bounds:" << bounds.ToString()
-               << ", adjusted=" << adjusted_bounds.ToString();
     // Notify client that bounds were adjusted or window moved across displays.
     auto state_type = GetWindowState()->GetStateType();
+    gfx::Rect adjusted_bounds_in_display(adjusted_bounds);
+
+    adjusted_bounds_in_display.Offset(
+        -target_display.bounds().OffsetFromOrigin());
+
     OnBoundsChangeEvent(state_type, state_type, target_display.id(),
-                        adjusted_bounds, 0);
+                        adjusted_bounds_in_display, 0);
   }
 
   UpdateSurfaceBounds();
@@ -902,8 +892,10 @@ void ClientControlledShellSurface::InitializeWindowState(
   // when maximized, or the entire display when fullscreen.
   window_state->set_allow_set_bounds_direct(true);
   window_state->set_ignore_keyboard_bounds_change(true);
-  if (container_ == ash::kShellWindowId_SystemModalContainer)
+  if (container_ == ash::kShellWindowId_SystemModalContainer ||
+      container_ == ash::kShellWindowId_ArcVirtualKeyboardContainer) {
     DisableMovement();
+  }
   ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   frame_view->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
       frame_visible_button_mask_, frame_enabled_button_mask_));
@@ -1032,6 +1024,12 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   orientation_ = pending_orientation_;
   if (expected_orientation_ == orientation_)
     orientation_compositor_lock_.reset();
+
+  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                          pending_always_on_top_
+                                          ? ui::ZOrderLevel::kFloatingWindow
+                                          : ui::ZOrderLevel::kNormal);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

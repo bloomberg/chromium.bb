@@ -12,6 +12,7 @@
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/background_sync_controller.h"
@@ -257,6 +258,8 @@ int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(const GURL& url) {
 base::TimeDelta BackgroundSyncControllerImpl::SnapToMaxOriginFrequency(
     int64_t min_interval,
     int64_t min_gap_for_origin) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   DCHECK_GE(min_gap_for_origin, 0);
   DCHECK_GE(min_interval, 0);
 
@@ -268,9 +271,31 @@ base::TimeDelta BackgroundSyncControllerImpl::SnapToMaxOriginFrequency(
       (min_interval / min_gap_for_origin + 1) * min_gap_for_origin);
 }
 
+base::TimeDelta BackgroundSyncControllerImpl::ApplyMinGapForOrigin(
+    base::TimeDelta delay,
+    base::TimeDelta time_till_next_scheduled_event_for_origin,
+    base::TimeDelta min_gap_for_origin) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (time_till_next_scheduled_event_for_origin.is_max())
+    return delay;
+
+  if (delay <= time_till_next_scheduled_event_for_origin - min_gap_for_origin)
+    return delay;
+
+  if (delay <= time_till_next_scheduled_event_for_origin)
+    return time_till_next_scheduled_event_for_origin;
+
+  if (delay <= time_till_next_scheduled_event_for_origin + min_gap_for_origin)
+    return time_till_next_scheduled_event_for_origin + min_gap_for_origin;
+
+  return delay;
+}
+
 base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
     const content::BackgroundSyncRegistration& registration,
-    content::BackgroundSyncParameters* parameters) {
+    content::BackgroundSyncParameters* parameters,
+    base::TimeDelta time_till_soonest_scheduled_event_for_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(parameters);
 
@@ -290,8 +315,11 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
         int64_t effective_gap_ms =
             site_engagement_factor *
             parameters->min_periodic_sync_events_interval.InMilliseconds();
-        return SnapToMaxOriginFrequency(registration.options()->min_interval,
-                                        effective_gap_ms);
+        return ApplyMinGapForOrigin(
+            SnapToMaxOriginFrequency(registration.options()->min_interval,
+                                     effective_gap_ms),
+            time_till_soonest_scheduled_event_for_origin,
+            parameters->min_periodic_sync_events_interval);
     }
   }
 
@@ -304,7 +332,8 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
 std::unique_ptr<content::BackgroundSyncController::BackgroundSyncEventKeepAlive>
 BackgroundSyncControllerImpl::CreateBackgroundSyncEventKeepAlive() {
 #if !defined(OS_ANDROID)
-  return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
+  if (!KeepAliveRegistry::GetInstance()->IsShuttingDown())
+    return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
 #endif
   return nullptr;
 }

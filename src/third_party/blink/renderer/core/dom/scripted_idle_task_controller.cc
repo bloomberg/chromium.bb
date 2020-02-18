@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -128,7 +127,7 @@ ScriptedIdleTaskController::RegisterCallback(
                           idle_task, queue_timestamp, timeout_millis));
 
   probe::AsyncTaskScheduled(GetExecutionContext(), "requestIdleCallback",
-                            idle_task);
+                            idle_task->async_task_id());
 
   scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper =
       internal::IdleRequestCallbackWrapper::Create(id, this);
@@ -208,7 +207,8 @@ void ScriptedIdleTaskController::RunCallback(
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta allotted_time = std::max(deadline - now, base::TimeDelta());
 
-  probe::AsyncTask async_task(GetExecutionContext(), idle_task);
+  probe::AsyncTask async_task(GetExecutionContext(),
+                              idle_task->async_task_id());
   probe::UserCallback probe(GetExecutionContext(), "requestIdleCallback",
                             AtomicString(), true);
 

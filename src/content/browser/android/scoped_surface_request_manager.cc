@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 
 namespace content {
 
@@ -57,9 +58,9 @@ ScopedSurfaceRequestManager::GetAndUnregisterInternal(
 
 void ScopedSurfaceRequestManager::ForwardSurfaceOwnerForSurfaceRequest(
     const base::UnguessableToken& request_token,
-    const gpu::SurfaceOwner* surface_owner) {
+    const gpu::TextureOwner* texture_owner) {
   FulfillScopedSurfaceRequest(request_token,
-                              surface_owner->CreateJavaSurface());
+                              texture_owner->CreateJavaSurface());
 }
 
 void ScopedSurfaceRequestManager::FulfillScopedSurfaceRequest(
@@ -67,7 +68,7 @@ void ScopedSurfaceRequestManager::FulfillScopedSurfaceRequest(
     gl::ScopedJavaSurface surface) {
   // base::Unretained is safe because the lifetime of this object is tied to
   // the lifetime of the browser process.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ScopedSurfaceRequestManager::CompleteRequestOnUiThread,
                      base::Unretained(this), request_token,

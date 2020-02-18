@@ -32,7 +32,7 @@ def main():
 
   if (args.verbose):
     print('Creating C++ files from provided CDDL file...')
-  echoAndRunCommand(['./cddl', "--header", args.header, "--cc", args.cc,
+  echoAndRunCommand([args.cddl, "--header", args.header, "--cc", args.cc,
                      "--gen-dir", args.gen_dir, args.file],
                      False, log, args.verbose)
 
@@ -49,6 +49,7 @@ def main():
 
 def parseInput():
   parser = argparse.ArgumentParser()
+  parser.add_argument("--cddl", help="path to the cddl executable to use")
   parser.add_argument("--header", help="Specify the filename of the output \
      header file. This is also the name that will be used for the include \
      guard and as the include path in the source file.")

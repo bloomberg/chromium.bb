@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "components/drive/chromeos/dummy_file_system.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +59,7 @@ class TestFileSystem : public DummyFileSystem {
 }  // namespace
 
 TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestFileSystem test_file_system;
 
   FileError error = FILE_ERROR_FAILED;
@@ -80,7 +80,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
 }
 
 TEST(WriteOnCacheFileTest, PrepareFileForWritingCreateFail) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestFileSystem test_file_system;
 
   FileError error = FILE_ERROR_FAILED;

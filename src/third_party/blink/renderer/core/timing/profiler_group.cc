@@ -55,13 +55,14 @@ ProfilerGroup::ProfilerGroup(v8::Isolate* isolate)
       cpu_profiler_(nullptr),
       next_profiler_id_(0),
       num_active_profilers_(0) {
-  DCHECK(RuntimeEnabledFeatures::ExperimentalJSProfilerEnabled());
 }
 
 Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
                                         const ProfilerInitOptions& init_options,
                                         base::TimeTicks time_origin,
                                         ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::ExperimentalJSProfilerEnabled(
+      ExecutionContext::From(script_state)));
   DCHECK_EQ(script_state->GetIsolate(), isolate_);
   DCHECK(init_options.hasSampleInterval());
 
@@ -80,11 +81,11 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
   DCHECK(cpu_profiler_);
 
   String profiler_id = NextProfilerId();
-  v8::CpuProfilingOptions options(v8::kLeafNodeLineNumbers,
-                                  init_options.hasMaxBufferSize()
-                                      ? init_options.maxBufferSize()
+  v8::CpuProfilingOptions options(
+      v8::kLeafNodeLineNumbers,
+      init_options.hasMaxBufferSize() ? init_options.maxBufferSize()
                                       : v8::CpuProfilingOptions::kNoSampleLimit,
-                                  static_cast<int>(sample_interval_us));
+      static_cast<int>(sample_interval_us), script_state->GetContext());
 
   cpu_profiler_->StartProfiling(V8String(isolate_, profiler_id), options);
 

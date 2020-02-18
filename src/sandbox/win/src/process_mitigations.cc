@@ -20,8 +20,6 @@
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
-// API defined in winbase.h >= Vista.
-using SetProcessDEPPolicyFunction = decltype(&SetProcessDEPPolicy);
 
 // API defined in libloaderapi.h >= Win8.
 using SetDefaultDllDirectoriesFunction = decltype(&SetDefaultDllDirectories);
@@ -145,16 +143,10 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     if (flags & MITIGATION_DEP_NO_ATL_THUNK)
       dep_flags |= PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION;
 
-    SetProcessDEPPolicyFunction set_process_dep_policy =
-        reinterpret_cast<SetProcessDEPPolicyFunction>(
-            ::GetProcAddress(module, "SetProcessDEPPolicy"));
-    if (set_process_dep_policy) {
-      if (!set_process_dep_policy(dep_flags) &&
-          ERROR_ACCESS_DENIED != ::GetLastError()) {
-        return false;
-      }
-    } else
+    if (!::SetProcessDEPPolicy(dep_flags) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
       return false;
+    }
   }
 #endif
 
@@ -225,16 +217,12 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable dynamic code policies.
   if (!IsRunning32bitEmulatedOnArm64() &&
-      (flags & MITIGATION_DYNAMIC_CODE_DISABLE ||
-       flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT)) {
+      (flags & MITIGATION_DYNAMIC_CODE_DISABLE)) {
+    // Verify caller is not accidentally setting both mutually exclusive
+    // policies.
+    DCHECK(!(flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT));
     PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
     policy.ProhibitDynamicCode = true;
-
-    // Per-thread opt-out is only supported on >= Anniversary.
-    if (version >= base::win::Version::WIN10_RS1 &&
-        flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT) {
-      policy.AllowThreadOptOut = true;
-    }
 
     if (!set_process_mitigation_policy(ProcessDynamicCodePolicy, &policy,
                                        sizeof(policy)) &&
@@ -293,6 +281,27 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
 
     if (!set_process_mitigation_policy(ProcessImageLoadPolicy, &policy,
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
+    }
+  }
+
+  if (version < base::win::Version::WIN10_RS1)
+    return true;
+
+  // Enable dynamic code policies.
+  // Per-thread opt-out is only supported on >= Anniversary (RS1).
+  if (!IsRunning32bitEmulatedOnArm64() &&
+      (flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT)) {
+    // Verify caller is not accidentally setting both mutually exclusive
+    // policies.
+    DCHECK(!(flags & MITIGATION_DYNAMIC_CODE_DISABLE));
+    PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
+    policy.ProhibitDynamicCode = true;
+    policy.AllowThreadOptOut = true;
+
+    if (!set_process_mitigation_policy(ProcessDynamicCodePolicy, &policy,
                                        sizeof(policy)) &&
         ERROR_ACCESS_DENIED != ::GetLastError()) {
       return false;

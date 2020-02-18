@@ -28,9 +28,7 @@
 #include "perfetto/protozero/proto_utils.h"
 #include "src/tracing/core/trace_buffer.h"
 #include "src/tracing/test/fake_packet.h"
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "test/gtest_and_gmock.h"
 
 namespace perfetto {
 
@@ -829,6 +827,20 @@ TEST_F(TraceBufferTest, Fragments_DiscardedOnPacketSizeDropPacket) {
   trace_buffer()->BeginRead();
   ASSERT_THAT(ReadPacket(), ElementsAre(FakePacketFragment(10, 'a')));
   ASSERT_THAT(ReadPacket(), ElementsAre(FakePacketFragment(10, 'd')));
+  ASSERT_THAT(ReadPacket(), IsEmpty());
+}
+
+TEST_F(TraceBufferTest, Fragments_IncompleteChunkNeedsPatching) {
+  ResetBuffer(4096);
+  CreateChunk(ProducerID(1), WriterID(1), ChunkID(0))
+      .AddPacket(20, 'a')
+      .AddPacket(30, 'b', kContOnNextChunk | kChunkNeedsPatching)
+      .PadTo(512)
+      .CopyIntoTraceBuffer(/*chunk_complete=*/false);
+  trace_buffer()->BeginRead();
+  // First packet should be read even if the chunk's last packet still needs
+  // patching.
+  ASSERT_THAT(ReadPacket(), ElementsAre(FakePacketFragment(20, 'a')));
   ASSERT_THAT(ReadPacket(), IsEmpty());
 }
 

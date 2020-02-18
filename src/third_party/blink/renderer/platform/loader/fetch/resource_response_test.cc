@@ -30,10 +30,10 @@ ResourceResponse CreateTestResponse() {
 }
 
 void RunHeaderRelatedTest(const ResourceResponse& response) {
-  EXPECT_EQ(0, response.Age());
-  EXPECT_NE(0, response.Date());
-  EXPECT_NE(0, response.Expires());
-  EXPECT_NE(0, response.LastModified());
+  EXPECT_EQ(base::TimeDelta(), response.Age());
+  EXPECT_NE(base::nullopt, response.Date());
+  EXPECT_NE(base::nullopt, response.Expires());
+  EXPECT_NE(base::nullopt, response.LastModified());
   EXPECT_EQ(true, response.CacheControlContainsNoCache());
 }
 

@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
-class SkPath;
 class Tab;
-class TabGroupData;
+class TabGroupVisualData;
 class TabGroupId;
 
 namespace gfx {
@@ -39,9 +39,6 @@ class TabController {
   // Returns true if the close button for the given tab is forced to be hidden.
   virtual bool ShouldHideCloseButtonForTab(Tab* tab) const = 0;
 
-  // Returns true if ShouldPaintTab() could return a non-empty clip path.
-  virtual bool MaySetClip() = 0;
-
   // Selects the tab. |event| is the event that causes |tab| to be selected.
   virtual void SelectTab(Tab* tab, const ui::Event& event) = 0;
 
@@ -56,11 +53,6 @@ class TabController {
 
   // Closes the tab.
   virtual void CloseTab(Tab* tab, CloseTabSource source) = 0;
-
-  // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p,
-                                     ui::MenuSourceType source_type) = 0;
 
   // Returns whether |tab| is the active tab. The active tab is the one whose
   // content is shown in the browser.
@@ -112,11 +104,9 @@ class TabController {
   // Returns true if the hover card is showing for the given tab.
   virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;
 
-  // Returns whether |tab| needs to be painted. When this returns true, |clip|
-  // is set to the path which should be clipped out of the current tab's region
-  // (for hit testing or painting), if any.  |clip| is only non-empty when
-  // stacking tabs; if it is empty, no clipping is needed.
-  virtual bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) = 0;
+  // Returns the background offset used by inactive tabs to match the frame
+  // image.
+  virtual int GetBackgroundOffset() const = 0;
 
   // Returns the thickness of the stroke around the active tab in DIP.  Returns
   // 0 if there is no stroke.
@@ -145,22 +135,18 @@ class TabController {
   // Returns the tab background color based on both the |tab_state| and the
   // |active_state| of the window.
   virtual SkColor GetTabBackgroundColor(
-      TabState tab_state,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const = 0;
+      TabActive active,
+      BrowserNonClientFrameView::ActiveState active_state) const = 0;
 
   // Returns the tab foreground color of the the text based on the |tab_state|,
   // the activation state of the window, and the current |background_color|.
-  virtual SkColor GetTabForegroundColor(TabState tab_state,
+  virtual SkColor GetTabForegroundColor(TabActive active,
                                         SkColor background_color) const = 0;
 
-  // Returns the resource ID for the image to use as the tab background.
-  // |custom_image| is an outparam set to true if either the tab or the frame
-  // background images have been customized; see implementation comments.
-  virtual int GetBackgroundResourceId(
-      bool* has_custom_image,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const = 0;
+  // Returns the background tab image resource ID if the image has been
+  // customized, directly or indirectly, by the theme.
+  virtual base::Optional<int> GetCustomBackgroundId(
+      BrowserNonClientFrameView::ActiveState active_state) const = 0;
 
   // If the given tab is animating to its target destination, this returns the
   // target bounds. If the tab isn't moving this will return the current bounds
@@ -178,8 +164,12 @@ class TabController {
   // Returns opacity for use on tab hover radial highlight.
   virtual float GetHoverOpacityForRadialHighlight() const = 0;
 
-  // Returns the TabGroupData instance for the given |group|.
-  virtual const TabGroupData* GetDataForGroup(TabGroupId group) const = 0;
+  // Returns the TabGroupVisualData instance for the given |group|.
+  virtual const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group) const = 0;
+
+  virtual void SetVisualDataForGroup(TabGroupId group,
+                                     TabGroupVisualData visual_data) = 0;
 
  protected:
   virtual ~TabController() {}

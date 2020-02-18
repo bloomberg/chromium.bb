@@ -51,6 +51,8 @@
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "device/fido/win/fake_webauthn_api.h"
 #endif
 
@@ -72,6 +74,8 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
+constexpr char kOkMessage[] = "webauth: OK";
+
 constexpr char kPublicKeyErrorMessage[] =
     "webauth: NotSupportedError: Required parameters missing in "
     "`options.publicKey`.";
@@ -79,6 +83,13 @@ constexpr char kPublicKeyErrorMessage[] =
 constexpr char kNotAllowedErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
     "allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy.";
+
+#if defined(OS_WIN)
+constexpr char kInvalidStateErrorMessage[] =
+    "webauth: InvalidStateError: The user attempted to register an "
+    "authenticator that contains one of the credentials already registered "
+    "with the relying party.";
+#endif  // defined(OS_WIN)
 
 constexpr char kResidentCredentialsErrorMessage[] =
     "webauth: NotSupportedError: Resident credentials or empty "
@@ -96,6 +107,12 @@ constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
 
 constexpr char kAbortErrorMessage[] =
     "webauth: AbortError: Request has been aborted.";
+
+constexpr char kOriginMismatchMessage[] =
+    "webauth: NotAllowedError: The following credential operations can only "
+    "occur in a document which is same-origin with all of its ancestors: "
+    "storage/retrieval of 'PasswordCredential' and 'FederatedCredential', and "
+    "creation/retrieval of 'PublicKeyCredential'";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
@@ -475,7 +492,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         device::AuthenticatorSelectionCriteria(),
         device::AttestationConveyancePreference::kNone, nullptr,
         false /* no hmac_secret */, blink::mojom::ProtectionPolicy::UNSPECIFIED,
-        false /* protection policy not enforced */);
+        false /* protection policy not enforced */,
+        base::nullopt /* no appid_exclude */);
 
     return mojo_options;
   }
@@ -907,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(), script, &result));
-    ASSERT_EQ("webauth: OK", result);
+    ASSERT_EQ(kOkMessage, result);
   }
 }
 
@@ -949,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 }
 
 // Tests that when navigator.credentials.get() is called with user verification
-// required, we get an InvalidStateError because the virtual device isn't
+// required, we get an NotAllowedError because the virtual device isn't
 // configured with UV and GetAssertionRequestHandler will return
 // |kUserConsentButCredentialNotRecognized| when such an authenticator is
 // touched in that case.
@@ -967,6 +985,26 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         BuildGetCallWithParameters(parameters), &result));
     ASSERT_EQ(kNotAllowedErrorMessage, result);
   }
+}
+
+// Test that unknown transport types are ignored.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       UnknownTransportType) {
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->SetSupportedProtocol(device::ProtocolVersion::kCtap2);
+
+  GetParameters parameters;
+  parameters.allow_credentials =
+      "allowCredentials: [{"
+      "  type: 'public-key',"
+      "  id: new TextEncoder().encode('allowedCredential'),"
+      "  transports: ['carrierpigeon'],"
+      "}]";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildGetCallWithParameters(parameters), &result));
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.get() is called with an empty
@@ -1042,42 +1080,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   ASSERT_EQ(kAbortErrorMessage, result.substr(0, strlen(kAbortErrorMessage)));
 }
 
-// WebAuthBrowserBleDisabledTest
-// ----------------------------------------------
-
-// A test fixture that does not enable BLE discovery.
-class WebAuthBrowserBleDisabledTest : public WebAuthLocalClientBrowserTest {
- public:
-  WebAuthBrowserBleDisabledTest() {}
-
- protected:
-  std::vector<base::Feature> GetFeaturesToEnable() override {
-    return {features::kWebAuth};
-  }
-
-  device::test::FakeFidoDiscoveryFactory* discovery_factory;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserBleDisabledTest);
-};
-
-// Tests that the BLE discovery does not start when the WebAuthnBle feature
-// flag is disabled.
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
-  auto* fake_hid_discovery = discovery_factory_->ForgeNextHidDiscovery();
-  auto* fake_ble_discovery = discovery_factory_->ForgeNextBleDiscovery();
-
-  // Do something that will start discoveries.
-  TestCreateCallbackReceiver create_callback_receiver;
-  authenticator()->MakeCredential(BuildBasicCreateOptions(),
-                                  create_callback_receiver.callback());
-
-  fake_hid_discovery->WaitForCallToStart();
-  EXPECT_TRUE(fake_hid_discovery->is_start_requested());
-  EXPECT_FALSE(fake_ble_discovery->is_start_requested());
-}
-
 // Executes Javascript in the given WebContents and waits until a string with
 // the given prefix is received. It will ignore values other than strings, and
 // strings without the given prefix. Since messages are broadcast to
@@ -1111,6 +1113,71 @@ base::Optional<std::string> ExecuteScriptAndExtractPrefixedString(
   }
 }
 
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       RequestsFromIFrames) {
+  static constexpr char kOuterHost[] = "acme.com";
+  static constexpr char kInnerHost[] = "notacme.com";
+  NavigateToURL(shell(), GetHttpsURL(kOuterHost, "/page_with_iframe.html"));
+
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  static constexpr uint8_t kOuterCredentialID = 1;
+  static constexpr uint8_t kOuterCredentialIDArray[] = {kOuterCredentialID};
+  static constexpr uint8_t kInnerCredentialID = 2;
+  static constexpr uint8_t kInnerCredentialIDArray[] = {kInnerCredentialID};
+  ASSERT_TRUE(virtual_device_factory->mutable_state()->InjectRegistration(
+      kOuterCredentialIDArray, kOuterHost));
+  ASSERT_TRUE(virtual_device_factory->mutable_state()->InjectRegistration(
+      kInnerCredentialIDArray, kInnerHost));
+
+  for (const auto cross_origin : {false, true}) {
+    SCOPED_TRACE(cross_origin);
+
+    if (cross_origin) {
+      // Create a cross-origin iframe by loading it from notacme.com.
+      NavigateIframeToURL(shell()->web_contents(), "test_iframe",
+                          GetHttpsURL(kInnerHost, "/title2.html"));
+    } else {
+      // Create a same-origin iframe by loading it from www.acme.com.
+      NavigateIframeToURL(shell()->web_contents(), "test_iframe",
+                          GetHttpsURL(kOuterHost, "/title2.html"));
+    }
+
+    std::vector<RenderFrameHost*> frames =
+        shell()->web_contents()->GetAllFrames();
+    // GetAllFrames is documented to return a breadth-first list of frames. Thus
+    // there should be exactly two: the main frame and the contained iframe.
+    ASSERT_EQ(2u, frames.size());
+    RenderFrameHost* const iframe = frames[1];
+
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        iframe, BuildCreateCallWithParameters(CreateParameters()), &result));
+    if (cross_origin) {
+      EXPECT_EQ(kOriginMismatchMessage, result);
+    } else {
+      EXPECT_EQ(kOkMessage, result);
+    }
+
+    const int credential_id =
+        cross_origin ? kInnerCredentialID : kOuterCredentialID;
+    const std::string allow_credentials = base::StringPrintf(
+        "allowCredentials: "
+        "[{ type: 'public-key',"
+        "   id: new Uint8Array([%d]),"
+        "}]",
+        credential_id);
+    GetParameters get_params;
+    get_params.allow_credentials = allow_credentials.c_str();
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        iframe, BuildGetCallWithParameters(get_params), &result));
+    if (cross_origin) {
+      EXPECT_EQ(kOriginMismatchMessage, result);
+    } else {
+      EXPECT_EQ(kOkMessage, result);
+    }
+  }
+}
+
 // Tests that a credentials.create() call triggered by the main frame will
 // successfully complete even if a subframe navigation takes place while the
 // request is waiting for user consent.
@@ -1135,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents(),
       BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ("webauth: OK", *result);
+  ASSERT_EQ(kOkMessage, *result);
   ASSERT_TRUE(prompt_callback_was_invoked);
 }
 
@@ -1192,7 +1259,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         shell()->web_contents(), BuildCreateCallWithParameters(parameters),
         "webauth: ");
     ASSERT_TRUE(result);
-    ASSERT_EQ("webauth: OK", *result);
+    ASSERT_EQ(kOkMessage, *result);
     ASSERT_TRUE(prompt_callback_was_invoked);
   }
 }
@@ -1209,37 +1276,55 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
       shell()->web_contents(),
       BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ("webauth: OK", *result);
+  ASSERT_EQ(kOkMessage, *result);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        WinMakeCredentialReturnCodeFailure) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_is_uvpaa(true);
-  fake_api.set_hresult(E_FAIL);
 
-  // The authenticator response was good but the return code indicated failure.
-  base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
-      shell()->web_contents(),
-      BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
-  ASSERT_TRUE(result);
-  ASSERT_EQ(kNotAllowedErrorMessage, *result);
+  // Errors documented for WebAuthNGetErrorName() in <webauthn.h>.
+  const std::map<HRESULT, std::string> errors{
+      // NTE_EXISTS is the error for using an authenticator that matches the
+      // exclude list, which should result in "InvalidStateError".
+      {NTE_EXISTS, kInvalidStateErrorMessage},
+      // All other errors should yield "NotAllowedError".
+      {HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED), kNotAllowedErrorMessage},
+      {NTE_TOKEN_KEYSET_STORAGE_FULL, kNotAllowedErrorMessage},
+      {NTE_TOKEN_KEYSET_STORAGE_FULL, kNotAllowedErrorMessage},
+      {NTE_INVALID_PARAMETER, kNotAllowedErrorMessage},
+      {NTE_DEVICE_NOT_FOUND, kNotAllowedErrorMessage},
+      {NTE_NOT_FOUND, kNotAllowedErrorMessage},
+      {HRESULT_FROM_WIN32(ERROR_CANCELLED), kNotAllowedErrorMessage},
+      {NTE_USER_CANCELLED, kNotAllowedErrorMessage},
+      {HRESULT_FROM_WIN32(ERROR_TIMEOUT), kNotAllowedErrorMessage},
+      // Undocumented errors should default to NOT_ALLOWED_ERROR.
+      {ERROR_FILE_NOT_FOUND, kNotAllowedErrorMessage},
+  };
+
+  for (const auto& error : errors) {
+    fake_api.set_hresult(error.first);
+
+    base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
+        shell()->web_contents(),
+        BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
+    EXPECT_TRUE(result);
+    EXPECT_EQ(*result, error.second);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
 
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(S_OK);
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
       "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ("webauth: OK", *result);
+  ASSERT_EQ(kOkMessage, *result);
 
   // The authenticator response was good but the return code indicated failure.
   fake_api.set_hresult(E_FAIL);
@@ -1253,19 +1338,64 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        WinGetAssertionReturnCodeFailure) {
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-
   device::ScopedFakeWinWebAuthnApi fake_api;
-  fake_api.set_is_uvpaa(true);
-  fake_api.set_hresult(E_FAIL);
 
-  // The authenticator response was good but the return code indicated failure.
-  base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
-      shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
-      "webauth: ");
-  ASSERT_TRUE(result);
-  ASSERT_EQ(kNotAllowedErrorMessage, *result);
+  // Errors documented for WebAuthNGetErrorName() in <webauthn.h>.
+  const std::set<HRESULT> errors{
+      // NTE_EXISTS -- should not be returned for WebAuthNGetAssertion().
+      HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED), NTE_TOKEN_KEYSET_STORAGE_FULL,
+      NTE_TOKEN_KEYSET_STORAGE_FULL, NTE_INVALID_PARAMETER,
+      NTE_DEVICE_NOT_FOUND, NTE_NOT_FOUND, HRESULT_FROM_WIN32(ERROR_CANCELLED),
+      NTE_USER_CANCELLED, HRESULT_FROM_WIN32(ERROR_TIMEOUT),
+      // Other errors should also result in NOT_ALLOWED_ERROR.
+      ERROR_FILE_NOT_FOUND};
+
+  for (const auto& error : errors) {
+    fake_api.set_hresult(error);
+
+    base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
+        shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
+        "webauth: ");
+    ASSERT_EQ(*result, kNotAllowedErrorMessage);
+  }
 }
 #endif
+
+// WebAuthBrowserBleDisabledTest
+// ----------------------------------------------
+
+// A test fixture that does not enable BLE discovery.
+class WebAuthBrowserBleDisabledTest : public WebAuthLocalClientBrowserTest {
+ public:
+  WebAuthBrowserBleDisabledTest() {}
+
+ protected:
+  std::vector<base::Feature> GetFeaturesToEnable() override {
+    return {features::kWebAuth};
+  }
+
+  device::test::FakeFidoDiscoveryFactory* discovery_factory;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserBleDisabledTest);
+};
+
+// Tests that the BLE discovery does not start when the WebAuthnBle feature
+// flag is disabled.
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
+  auto* fake_hid_discovery = discovery_factory_->ForgeNextHidDiscovery();
+  auto* fake_ble_discovery = discovery_factory_->ForgeNextBleDiscovery();
+
+  // Do something that will start discoveries.
+  TestCreateCallbackReceiver create_callback_receiver;
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback_receiver.callback());
+
+  fake_hid_discovery->WaitForCallToStart();
+  EXPECT_TRUE(fake_hid_discovery->is_start_requested());
+  EXPECT_FALSE(fake_ble_discovery->is_start_requested());
+}
 
 // WebAuthBrowserCtapTest ----------------------------------------------
 

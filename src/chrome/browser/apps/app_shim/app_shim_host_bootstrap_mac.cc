@@ -4,31 +4,20 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 
-#include <sys/socket.h>
-#include <sys/un.h>
-
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
-// static
-void AppShimHostBootstrap::CreateForChannel(
-    mojo::PlatformChannelEndpoint endpoint) {
-  // AppShimHostBootstrap is initially owned by itself until it receives a
-  // LaunchApp message or a channel error. In LaunchApp, ownership is
-  // transferred to a unique_ptr.
-  DCHECK(endpoint.platform_handle().is_fd());
+namespace {
+AppShimHostBootstrap::Client* g_client = nullptr;
+}  // namespace
 
-  base::ProcessId pid;
-  socklen_t pid_size = sizeof(pid);
-  if (getsockopt(endpoint.platform_handle().GetFD().get(), SOL_LOCAL,
-                 LOCAL_PEERPID, &pid, &pid_size)) {
-    LOG(ERROR) << "Failed to get peer pid for app shim.";
-    return;
-  }
-  (new AppShimHostBootstrap(pid))->ServeChannel(std::move(endpoint));
+// static
+void AppShimHostBootstrap::SetClient(Client* client) {
+  g_client = client;
 }
 
 // static
@@ -43,7 +32,7 @@ void AppShimHostBootstrap::CreateForChannelAndPeerID(
 }
 
 AppShimHostBootstrap::AppShimHostBootstrap(base::ProcessId peer_pid)
-    : host_bootstrap_binding_(this), pid_(peer_pid) {}
+    : pid_(peer_pid) {}
 
 AppShimHostBootstrap::~AppShimHostBootstrap() {
   DCHECK(!launch_app_callback_);
@@ -55,11 +44,11 @@ void AppShimHostBootstrap::ServeChannel(
 
   mojo::ScopedMessagePipeHandle message_pipe =
       bootstrap_mojo_connection_.Connect(std::move(endpoint));
-  host_bootstrap_binding_.Bind(
-      chrome::mojom::AppShimHostBootstrapRequest(std::move(message_pipe)));
-  host_bootstrap_binding_.set_connection_error_with_reason_handler(
-      base::BindOnce(&AppShimHostBootstrap::ChannelError,
-                     base::Unretained(this)));
+  host_bootstrap_receiver_.Bind(
+      mojo::PendingReceiver<chrome::mojom::AppShimHostBootstrap>(
+          std::move(message_pipe)));
+  host_bootstrap_receiver_.set_disconnect_with_reason_handler(base::BindOnce(
+      &AppShimHostBootstrap::ChannelError, base::Unretained(this)));
 }
 
 void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,
@@ -71,10 +60,6 @@ void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,
   LOG(ERROR) << "Channel error custom_reason:" << custom_reason
              << " description: " << description;
   delete this;
-}
-
-apps::AppShimHandler* AppShimHostBootstrap::GetHandler() {
-  return apps::AppShimHandler::GetForAppMode(app_id_);
 }
 
 chrome::mojom::AppShimHostRequest
@@ -108,11 +93,11 @@ void AppShimHostBootstrap::LaunchApp(
   has_received_launch_app_ = true;
   std::unique_ptr<AppShimHostBootstrap> deleter(this);
 
-  // |handler| takes ownership of |this| now.
-  apps::AppShimHandler* handler = GetHandler();
-  if (handler)
-    handler->OnShimProcessConnected(std::move(deleter));
-  // |handler| can only be NULL after AppShimHostManager is destroyed. Since
+  // |g_client| takes ownership of |this| now.
+  if (g_client)
+    g_client->OnShimProcessConnected(std::move(deleter));
+
+  // |g_client| can only be nullptr after AppShimListener is destroyed. Since
   // this only happens at shutdown, do nothing here.
 }
 

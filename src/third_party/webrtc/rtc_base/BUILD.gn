@@ -19,27 +19,6 @@ config("rtc_base_chromium_config") {
   defines = [ "NO_MAIN_THREAD_WRAPPING" ]
 }
 
-config("rtc_base_all_dependent_config") {
-  if (is_ios) {
-    libs = [
-      "CFNetwork.framework",
-      "Foundation.framework",
-      "Security.framework",
-      "SystemConfiguration.framework",
-      "UIKit.framework",
-    ]
-  }
-  if (is_mac) {
-    libs = [
-      "Cocoa.framework",
-      "Foundation.framework",
-      "IOKit.framework",
-      "Security.framework",
-      "SystemConfiguration.framework",
-    ]
-  }
-}
-
 if (!rtc_build_ssl) {
   config("external_ssl_library") {
     assert(rtc_ssl_root != "",
@@ -77,7 +56,6 @@ rtc_source_set("rtc_base_approved") {
     ":safe_compare",
     ":type_traits",
     "../api:array_view",
-    "../api:function_view",
     "../api:scoped_refptr",
     "system:arch",
     "system:unused",
@@ -101,7 +79,6 @@ rtc_source_set("rtc_base_approved") {
     "copy_on_write_buffer.h",
     "event_tracer.cc",
     "event_tracer.h",
-    "function_view.h",
     "ignore_wundef.h",
     "location.cc",
     "location.h",
@@ -113,8 +90,6 @@ rtc_source_set("rtc_base_approved") {
     "numerics/sample_counter.cc",
     "numerics/sample_counter.h",
     "one_time_event.h",
-    "platform_file.cc",
-    "platform_file.h",
     "race_checker.cc",
     "race_checker.h",
     "random.cc",
@@ -792,8 +767,6 @@ rtc_static_library("rtc_base") {
   ]
   public_configs = []
 
-  all_dependent_configs = [ ":rtc_base_all_dependent_config" ]
-
   sources = [
     "async_invoker.cc",
     "async_invoker.h",
@@ -817,7 +790,6 @@ rtc_static_library("rtc_base") {
     "dscp.h",
     "file_rotating_stream.cc",
     "file_rotating_stream.h",
-    "gunit_prod.h",
     "helpers.cc",
     "helpers.h",
     "http_common.cc",
@@ -954,10 +926,13 @@ rtc_static_library("rtc_base") {
     ]
   }
 
-  if (is_mac) {
-    sources += [
-      "mac_utils.cc",
-      "mac_utils.h",
+  if (is_ios) {
+    libs += [
+      "CFNetwork.framework",
+      "Foundation.framework",
+      "Security.framework",
+      "SystemConfiguration.framework",
+      "UIKit.framework",
     ]
   }
 
@@ -1169,7 +1144,6 @@ if (rtc_include_tests) {
       "numerics/safe_minmax_unittest.cc",
       "numerics/sample_counter_unittest.cc",
       "one_time_event_unittest.cc",
-      "platform_file_unittest.cc",
       "platform_thread_unittest.cc",
       "random_unittest.cc",
       "rate_limiter_unittest.cc",

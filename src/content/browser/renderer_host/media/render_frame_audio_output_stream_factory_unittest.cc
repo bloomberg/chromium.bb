@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -29,7 +29,7 @@
 #include "media/audio/fake_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_parameters.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
@@ -58,8 +58,7 @@ class RenderFrameAudioOutputStreamFactoryTest
         audio_system_(media::AudioSystemImpl::CreateInstance()),
         media_stream_manager_(std::make_unique<MediaStreamManager>(
             audio_system_.get(),
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {BrowserThread::UI}))) {}
+            base::CreateSingleThreadTaskRunner({BrowserThread::UI}))) {}
 
   ~RenderFrameAudioOutputStreamFactoryTest() override {}
 
@@ -125,7 +124,6 @@ class RenderFrameAudioOutputStreamFactoryTest
       "111122223333444455556666777788889999aaaabbbbccccddddeeeeffff";
   const media::AudioParameters kParams =
       media::AudioParameters::UnavailableDeviceParams();
-  const int kNoSessionId = 0;
   MockStreamFactory audio_service_stream_factory_;
   std::unique_ptr<TestServiceManagerContext> test_service_manager_context_;
   media::FakeAudioLogFactory log_factory_;
@@ -151,7 +149,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   media::mojom::AudioOutputStreamProviderPtr provider_ptr;
   MockAuthorizationCallback mock_callback;
   factory_ptr->RequestDeviceAuthorization(mojo::MakeRequest(&provider_ptr),
-                                          kNoSessionId, kDefaultDeviceId,
+                                          base::nullopt, kDefaultDeviceId,
                                           mock_callback.Get());
 
   EXPECT_CALL(mock_callback,
@@ -173,7 +171,7 @@ TEST_F(
   media::mojom::AudioOutputStreamProviderPtr provider_ptr;
   MockAuthorizationCallback mock_callback;
   factory_ptr->RequestDeviceAuthorization(mojo::MakeRequest(&provider_ptr),
-                                          kNoSessionId, kDefaultDeviceId,
+                                          base::nullopt, kDefaultDeviceId,
                                           mock_callback.Get());
   provider_ptr.reset();
 
@@ -196,7 +194,7 @@ TEST_F(
   media::mojom::AudioOutputStreamProviderPtr provider_ptr;
   MockAuthorizationCallback mock_callback;
   factory_ptr->RequestDeviceAuthorization(mojo::MakeRequest(&provider_ptr),
-                                          kNoSessionId, kDeviceId,
+                                          base::nullopt, kDeviceId,
                                           mock_callback.Get());
 
   EXPECT_CALL(mock_callback,
@@ -217,7 +215,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   media::mojom::AudioOutputStreamProviderPtr provider_ptr;
   MockAuthorizationCallback mock_callback;
   factory_ptr->RequestDeviceAuthorization(mojo::MakeRequest(&provider_ptr),
-                                          kNoSessionId, kDefaultDeviceId,
+                                          base::nullopt, kDefaultDeviceId,
                                           mock_callback.Get());
   {
     media::mojom::AudioOutputStreamProviderClientPtr client;
@@ -247,7 +245,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
         mojo::MakeRequest(&factory_ptr));
 
     factory_ptr->RequestDeviceAuthorization(mojo::MakeRequest(&provider_ptr),
-                                            kNoSessionId, kDefaultDeviceId,
+                                            base::nullopt, kDefaultDeviceId,
                                             mock_callback.Get());
 
     audio::mojom::StreamFactory::CreateOutputStreamCallback created_callback;

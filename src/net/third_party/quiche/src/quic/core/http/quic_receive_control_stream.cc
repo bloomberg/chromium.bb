@@ -27,14 +27,14 @@ class QuicReceiveControlStream::HttpDecoderVisitor
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
 
-  bool OnPriorityFrameStart(Http3FrameLengths frame_lengths) override {
+  bool OnPriorityFrameStart(QuicByteCount header_length) override {
     if (stream_->session()->perspective() == Perspective::IS_CLIENT) {
       stream_->session()->connection()->CloseConnection(
           QUIC_HTTP_DECODER_ERROR, "Server must not send Priority frames.",
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
       return false;
     }
-    return stream_->OnPriorityFrameStart(frame_lengths);
+    return stream_->OnPriorityFrameStart(header_length);
   }
 
   bool OnPriorityFrame(const PriorityFrame& frame) override {
@@ -52,7 +52,13 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     return false;
   }
 
-  bool OnMaxPushIdFrame(const MaxPushIdFrame& /*frame*/) override {
+  bool OnMaxPushIdFrame(const MaxPushIdFrame& frame) override {
+    if (stream_->session()->perspective() == Perspective::IS_SERVER) {
+      QuicSpdySession* spdy_session =
+          static_cast<QuicSpdySession*>(stream_->session());
+      spdy_session->set_max_allowed_push_id(frame.push_id);
+      return true;
+    }
     CloseConnectionOnWrongFrame("Max Push Id");
     return false;
   }
@@ -62,8 +68,8 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     return false;
   }
 
-  bool OnSettingsFrameStart(Http3FrameLengths frame_lengths) override {
-    return stream_->OnSettingsFrameStart(frame_lengths);
+  bool OnSettingsFrameStart(QuicByteCount header_length) override {
+    return stream_->OnSettingsFrameStart(header_length);
   }
 
   bool OnSettingsFrame(const SettingsFrame& frame) override {
@@ -75,7 +81,7 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     return false;
   }
 
-  bool OnDataFrameStart(Http3FrameLengths /*frame_lengths*/) override {
+  bool OnDataFrameStart(QuicByteCount /*header_length*/) override {
     CloseConnectionOnWrongFrame("Data");
     return false;
   }
@@ -90,7 +96,7 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     return false;
   }
 
-  bool OnHeadersFrameStart(Http3FrameLengths /*frame_length*/) override {
+  bool OnHeadersFrameStart(QuicByteCount /*frame_length*/) override {
     CloseConnectionOnWrongFrame("Headers");
     return false;
   }
@@ -106,7 +112,8 @@ class QuicReceiveControlStream::HttpDecoderVisitor
   }
 
   bool OnPushPromiseFrameStart(PushId /*push_id*/,
-                               Http3FrameLengths /*frame_length*/) override {
+                               QuicByteCount /*frame_length*/,
+                               QuicByteCount /*push_id_length*/) override {
     CloseConnectionOnWrongFrame("Push Promise");
     return false;
   }
@@ -122,7 +129,7 @@ class QuicReceiveControlStream::HttpDecoderVisitor
   }
 
   bool OnUnknownFrameStart(uint64_t /* frame_type */,
-                           Http3FrameLengths /* frame_length */) override {
+                           QuicByteCount /* frame_length */) override {
     // Ignore unknown frame types.
     return true;
   }
@@ -138,11 +145,11 @@ class QuicReceiveControlStream::HttpDecoderVisitor
   }
 
  private:
-  void CloseConnectionOnWrongFrame(std::string frame_type) {
+  void CloseConnectionOnWrongFrame(QuicStringPiece frame_type) {
     // TODO(renjietang): Change to HTTP/3 error type.
     stream_->session()->connection()->CloseConnection(
         QUIC_HTTP_DECODER_ERROR,
-        frame_type + " frame received on control stream",
+        QuicStrCat(frame_type, " frame received on control stream"),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
 
@@ -189,7 +196,7 @@ void QuicReceiveControlStream::OnDataAvailable() {
 }
 
 bool QuicReceiveControlStream::OnSettingsFrameStart(
-    Http3FrameLengths /* frame_lengths */) {
+    QuicByteCount /* header_length */) {
   if (settings_frame_received_) {
     // TODO(renjietang): Change error code to HTTP_UNEXPECTED_FRAME.
     session()->connection()->CloseConnection(
@@ -207,24 +214,14 @@ bool QuicReceiveControlStream::OnSettingsFrame(const SettingsFrame& settings) {
   QUIC_DVLOG(1) << "Control Stream " << id()
                 << " received settings frame: " << settings;
   QuicSpdySession* spdy_session = static_cast<QuicSpdySession*>(session());
-  for (auto& it : settings.values) {
-    uint64_t setting_id = it.first;
-    switch (setting_id) {
-      case kSettingsMaxHeaderListSize:
-        spdy_session->set_max_outbound_header_list_size(it.second);
-        break;
-      case kSettingsNumPlaceholders:
-        // TODO: Support placeholder setting
-        break;
-      default:
-        break;
-    }
+  for (const auto& setting : settings.values) {
+    spdy_session->OnSetting(setting.first, setting.second);
   }
   return true;
 }
 
 bool QuicReceiveControlStream::OnPriorityFrameStart(
-    Http3FrameLengths /* frame_lengths */) {
+    QuicByteCount /* header_length */) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->perspective());
   return true;
 }
@@ -237,7 +234,7 @@ bool QuicReceiveControlStream::OnPriorityFrame(const PriorityFrame& priority) {
   // that the server is not permitted to open. In that case, simply drop the
   // frame.
   if (stream) {
-    stream->SetPriority(priority.weight);
+    stream->SetPriority(spdy::SpdyStreamPrecedence(priority.weight));
   }
   return true;
 }

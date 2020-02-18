@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -34,8 +35,7 @@
 
 namespace chromeos {
 
-LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host)
-    : host_(host), weak_factory_(this) {
+LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host) : host_(host) {
   user_manager::UserManager::Get()->AddObserver(this);
 }
 
@@ -47,6 +47,14 @@ void LoginDisplayMojo::UpdatePinKeyboardState(const AccountId& account_id) {
   quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
       account_id, base::BindOnce(&LoginDisplayMojo::OnPinCanAuthenticate,
                                  weak_factory_.GetWeakPtr(), account_id));
+}
+
+void LoginDisplayMojo::UpdateChallengeResponseAuthAvailability(
+    const AccountId& account_id) {
+  const bool enable_challenge_response =
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id);
+  ash::LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
+      account_id, enable_challenge_response);
 }
 
 void LoginDisplayMojo::ClearAndEnablePassword() {}
@@ -72,10 +80,12 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
 
-  // Enable pin for any users who can use it.
   if (user_manager::UserManager::IsInitialized()) {
+    // Enable pin and challenge-response authentication for any users who can
+    // use them.
     for (const user_manager::User* user : filtered_users) {
       UpdatePinKeyboardState(user->GetAccountId());
+      UpdateChallengeResponseAuthAvailability(user->GetAccountId());
     }
   }
 

@@ -230,6 +230,17 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   return base::nullopt;
 }
 
+// TODO(crbug.com/965991): Use ui::Event in Aura/X11
+#if !defined(USE_X11)
+void X11EventSource::RemoveXEventDispatcher(XEventDispatcher* dispatcher) {
+  delegate_->RemoveXEventDispatcher(dispatcher);
+}
+
+void X11EventSource::AddXEventDispatcher(XEventDispatcher* dispatcher) {
+  delegate_->AddXEventDispatcher(dispatcher);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected
 
@@ -289,7 +300,7 @@ void X11EventSource::StopCurrentEventStream() {
 
 void X11EventSource::OnDispatcherListChanged() {
   if (!hotplug_event_handler_) {
-    hotplug_event_handler_.reset(new X11HotplugEventHandler());
+    hotplug_event_handler_ = std::make_unique<X11HotplugEventHandler>();
     // Force the initial device query to have an update list of active devices.
     hotplug_event_handler_->OnHotplugEvent();
   }

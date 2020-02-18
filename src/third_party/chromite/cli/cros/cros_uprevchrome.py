@@ -166,7 +166,7 @@ class UprevChromeCommand(command.CliCommand):
     # pfq run, should not uprev or overwrite the uprevs.
     build_infos = buildstore.GetBuildHistory(constants.PFQ_MASTER,
                                              self.NUM_RESULTS_LIMIT,
-                                             ending_build_id=pfq_build)
+                                             starting_build_id=pfq_build)
 
     for build_info in build_infos:
       if build_info['status'] == 'pass':
@@ -181,7 +181,7 @@ class UprevChromeCommand(command.CliCommand):
     """Check if the remote ref exists."""
     output = git.RunGit(git_repo, ['ls-remote', remote, remote_ref]).output
     if not output.strip():
-      raise MissingBranchException('repo %s remote %s ref %s doesn\'t exist'
+      raise MissingBranchException("repo %s remote %s ref %s doesn't exist"
                                    % (git_repo, remote, remote_ref))
 
   def ParseGitLog(self, overlay):
@@ -241,10 +241,10 @@ class UprevChromeCommand(command.CliCommand):
   def ValidateReviewers(self, reviewers):
     """Raise an exception if one reviewer format isn't valid."""
     for r in reviewers:
-      if "\'" in r or "\"" in r:
+      if "'" in r or '"' in r:
         raise InvalidReviewerEmailException(
             'Invalid reviewer email %s: %s' % (
-                r, 'it cannot contain \" or \''))
+                r, 'it cannot contain " or \''))
 
   def UprevChrome(self, work_dir, pfq_identifier):
     """Uprev Chrome.

@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_FIDO_REQUEST_HANDLER_BASE_H_
 #define DEVICE_FIDO_FIDO_REQUEST_HANDLER_BASE_H_
 
+#include <array>
 #include <functional>
 #include <map>
 #include <memory>
@@ -275,7 +276,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;
   service_manager::Connector* const connector_;
 
-  base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;
+  base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);
 };
 

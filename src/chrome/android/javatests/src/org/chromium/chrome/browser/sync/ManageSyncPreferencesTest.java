@@ -24,10 +24,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.sync.ManageSyncPreferences;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
@@ -86,7 +87,7 @@ public class ManageSyncPreferencesTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         ManageSyncPreferences fragment = startManageSyncPreferences();
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         Collection<CheckBoxPreference> dataTypes = getDataTypes(fragment).values();
 
         assertSyncOnState(fragment);
@@ -106,7 +107,7 @@ public class ManageSyncPreferencesTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         ManageSyncPreferences fragment = startManageSyncPreferences();
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         Map<Integer, CheckBoxPreference> dataTypes = getDataTypes(fragment);
 
         assertSyncOnState(fragment);
@@ -171,7 +172,7 @@ public class ManageSyncPreferencesTest {
 
         ManageSyncPreferences fragment = startManageSyncPreferences();
         assertSyncOnState(fragment);
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         mSyncTestRule.togglePreference(syncEverything);
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -184,6 +185,7 @@ public class ManageSyncPreferencesTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/988622")
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxEnablesPaymentsIntegration() {
         mSyncTestRule.setUpTestAccountAndSignIn();
@@ -200,6 +202,7 @@ public class ManageSyncPreferencesTest {
         assertPaymentsIntegrationEnabled(true);
     }
 
+    @DisabledTest(message = "crbug.com/994726")
     @Test
     @SmallTest
     @Feature({"Sync"})
@@ -215,7 +218,7 @@ public class ManageSyncPreferencesTest {
 
         ManageSyncPreferences fragment = startManageSyncPreferences();
         assertSyncOnState(fragment);
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         mSyncTestRule.togglePreference(syncEverything);
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -238,7 +241,7 @@ public class ManageSyncPreferencesTest {
 
         ManageSyncPreferences fragment = startManageSyncPreferences();
         assertSyncOnState(fragment);
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         mSyncTestRule.togglePreference(syncEverything);
 
         CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
@@ -264,7 +267,7 @@ public class ManageSyncPreferencesTest {
 
         // Get the UI elements.
         ManageSyncPreferences fragment = startManageSyncPreferences();
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
                 ManageSyncPreferences.PREF_SYNC_AUTOFILL);
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -440,7 +443,7 @@ public class ManageSyncPreferencesTest {
     private ManageSyncPreferences startManageSyncPreferences() {
         mPreferences = mSyncTestRule.startPreferences(ManageSyncPreferences.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (ManageSyncPreferences) mPreferences.getMainFragmentCompat();
+        return (ManageSyncPreferences) mPreferences.getMainFragment();
     }
 
     private void closeFragment(ManageSyncPreferences fragment) {
@@ -451,8 +454,8 @@ public class ManageSyncPreferencesTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    private ChromeSwitchPreferenceCompat getSyncEverything(ManageSyncPreferences fragment) {
-        return (ChromeSwitchPreferenceCompat) fragment.findPreference(
+    private ChromeSwitchPreference getSyncEverything(ManageSyncPreferences fragment) {
+        return (ChromeSwitchPreference) fragment.findPreference(
                 ManageSyncPreferences.PREF_SYNC_EVERYTHING);
     }
 
@@ -479,22 +482,22 @@ public class ManageSyncPreferencesTest {
     }
 
     private PassphraseDialogFragment getPassphraseDialogFragment() {
-        return ActivityUtils.waitForFragmentCompat(
+        return ActivityUtils.waitForFragment(
                 mPreferences, ManageSyncPreferences.FRAGMENT_ENTER_PASSPHRASE);
     }
 
     private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
-        return ActivityUtils.waitForFragmentCompat(
+        return ActivityUtils.waitForFragment(
                 mPreferences, ManageSyncPreferences.FRAGMENT_PASSPHRASE_TYPE);
     }
 
     private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment() {
-        return ActivityUtils.waitForFragmentCompat(
+        return ActivityUtils.waitForFragment(
                 mPreferences, ManageSyncPreferences.FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
     private void assertSyncOnState(ManageSyncPreferences fragment) {
-        ChromeSwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
+        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
         Assert.assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
         Assert.assertTrue(
                 "The sync everything switch should be enabled.", syncEverything.isEnabled());

@@ -20,6 +20,10 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
@@ -64,8 +68,9 @@ class CONTENT_EXPORT LocalStorageContextMojo
       const base::FilePath& subdirectory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
-  void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request);
+  void OpenLocalStorage(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   void GetStorageUsage(GetStorageUsageCallback callback);
   // |callback| is called when the deletion is sent to the database and
   // GetStorageUsage() will not return entries for |origin| anymore.
@@ -95,7 +100,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void PurgeUnusedAreasIfNeeded();
 
   void SetDatabaseForTesting(
-      leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
+      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -134,8 +139,9 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
-  void BindLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest request);
+  void BindLocalStorage(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   StorageAreaHolder* GetOrCreateStorageArea(const url::Origin& origin);
 
   // The (possibly delayed) implementation of GetStorageUsage(). Can be called
@@ -183,8 +189,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_;
   bool tried_to_recreate_during_open_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;

@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/linux_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -55,9 +56,24 @@ constexpr char kKeyTasks[] = "tasks";
 
 constexpr char kLastTracingModelName[] = "last_tracing_model.json";
 
+enum class Action {
+  kShown = 0,
+  kBuildSucceeded = 1,
+  kBuildFailed = 2,
+  kInitialLoadSucceeded = 3,
+  kInitialLoadFailed = 4,
+  kLoadSucceeded = 5,
+  kLoadFailed = 6,
+  kMaxValue = kLoadFailed,
+};
+
+void UpdateStatistics(Action action) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.Tracing.Tool", action);
+}
+
 // Maximum interval to display.
 constexpr base::TimeDelta kMaxIntervalToDisplay =
-    base::TimeDelta::FromSecondsD(3.0);
+    base::TimeDelta::FromSecondsD(5.0);
 
 base::FilePath GetLastTracingModelPath(Profile* profile) {
   DCHECK(profile);
@@ -78,9 +94,12 @@ std::pair<base::Value, std::string> MaybeLoadLastGraphicsModel(
   arc::ArcTracingGraphicsModel graphics_model;
   base::DictionaryValue* dictionary = nullptr;
   model->GetAsDictionary(&dictionary);
-  if (!graphics_model.LoadFromValue(*dictionary))
+  if (!graphics_model.LoadFromValue(*dictionary)) {
+    UpdateStatistics(Action::kInitialLoadFailed);
     return std::make_pair(base::Value(), "Failed to load last tracing model");
+  }
 
+  UpdateStatistics(Action::kInitialLoadSucceeded);
   return std::make_pair(std::move(*model), "Loaded last tracing model");
 }
 
@@ -168,15 +187,19 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
       (time_min_clamped - base::TimeTicks()).InMicroseconds(),
       (time_max - base::TimeTicks()).InMicroseconds());
 
-  if (!common_model.Build(data))
+  if (!common_model.Build(data)) {
+    UpdateStatistics(Action::kBuildFailed);
     return std::make_pair(base::Value(), "Failed to process tracing data");
+  }
 
   system_stat_collector->Flush(time_min, time_max,
                                &common_model.system_model());
 
   arc::ArcTracingGraphicsModel graphics_model;
-  if (!graphics_model.Build(common_model))
+  if (!graphics_model.Build(common_model)) {
+    UpdateStatistics(Action::kBuildFailed);
     return std::make_pair(base::Value(), "Failed to build tracing model");
+  }
 
   UpdateThreads(&graphics_model.system_model().thread_map());
 
@@ -194,16 +217,20 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
                << ".";
   }
 
+  UpdateStatistics(Action::kBuildSucceeded);
   return std::make_pair(std::move(*model), "Tracing model is ready");
 }
 
 std::pair<base::Value, std::string> LoadGraphicsModel(
     const std::string& json_text) {
   arc::ArcTracingGraphicsModel graphics_model;
-  if (!graphics_model.LoadFromJson(json_text))
+  if (!graphics_model.LoadFromJson(json_text)) {
+    UpdateStatistics(Action::kLoadFailed);
     return std::make_pair(base::Value(), "Failed to load tracing model");
+  }
 
   std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
+  UpdateStatistics(Action::kLoadSucceeded);
   return std::make_pair(std::move(*model), "Tracing model is loaded");
 }
 
@@ -211,8 +238,7 @@ std::pair<base::Value, std::string> LoadGraphicsModel(
 
 ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
     : wm_helper_(exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance()
-                                              : nullptr),
-      weak_ptr_factory_(this) {
+                                              : nullptr) {
   DCHECK(wm_helper_);
 
   aura::Window* const current_active = wm_helper_->GetActiveWindow();
@@ -221,6 +247,8 @@ ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
                       current_active, nullptr);
   }
   wm_helper_->AddActivationObserver(this);
+
+  UpdateStatistics(Action::kShown);
 }
 
 ArcGraphicsTracingHandler::~ArcGraphicsTracingHandler() {
@@ -428,8 +456,9 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
     base::RefCountedString* trace_data) {
   std::string string_data;
   string_data.swap(trace_data->data());
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildGraphicsModel, std::move(string_data),
                      std::move(tasks_info_), std::move(system_stat_colletor_),
                      tracing_time_min_, tracing_time_max_,
@@ -450,8 +479,9 @@ void ArcGraphicsTracingHandler::OnGraphicsModelReady(
 }
 
 void ArcGraphicsTracingHandler::HandleReady(const base::ListValue* args) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&MaybeLoadLastGraphicsModel,
                      GetLastTracingModelPath(Profile::FromWebUI(web_ui()))),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
@@ -476,8 +506,9 @@ void ArcGraphicsTracingHandler::HandleLoadFromText(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&LoadGraphicsModel,
                      std::move(args->GetList()[0].GetString())),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,

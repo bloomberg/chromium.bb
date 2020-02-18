@@ -218,6 +218,12 @@ Status ExecuteSendCommand(Session* session,
                           std::unique_ptr<base::Value>* value,
                           Timeout* timeout);
 
+Status ExecuteSendCommandFromWebSocket(Session* session,
+                                       WebView* web_view,
+                                       const base::DictionaryValue& params,
+                                       std::unique_ptr<base::Value>* value,
+                                       Timeout* timeout);
+
 Status ExecuteSendCommandAndGetResult(Session* session,
                                       WebView* web_view,
                                       const base::DictionaryValue& params,
@@ -367,7 +373,7 @@ Status ExecutePerformActions(Session* session,
 Status ProcessInputActionSequence(
     Session* session,
     const base::DictionaryValue* action_sequence,
-    std::unique_ptr<base::DictionaryValue>* result);
+    std::vector<std::unique_ptr<base::DictionaryValue>>* action_list);
 
 Status ExecuteReleaseActions(Session* session,
                              WebView* web_view,
@@ -441,5 +447,12 @@ Status ExecuteGetIssueMessage(Session* session,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value,
                               Timeout* timeout);
+
+// Sets permissions.
+Status ExecuteSetPermission(Session* session,
+                            WebView* web_view,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_WINDOW_COMMANDS_H_

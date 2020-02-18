@@ -15,7 +15,6 @@ from datetime import date
 from datetime import time
 from datetime import timedelta
 from email import utils as email_utils
-from google.protobuf import timestamp_pb2
 import binascii
 import functools
 import hashlib
@@ -24,6 +23,10 @@ import os
 import sys
 import threading
 import urlparse
+
+from google.protobuf import timestamp_pb2
+import six
+
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -122,7 +125,7 @@ def parse_rfc3339_datetime(value):
       seconds -= (int(timezone[1:pos]) * 60 + int(timezone[pos + 1:])) * 60
     else:
       seconds += (int(timezone[1:pos]) * 60 + int(timezone[pos + 1:])) * 60
-  return timestamp_to_datetime(int(seconds) * 1e6 + int(nanos) / 1e3)
+  return timestamp_to_datetime(int(seconds) * 1e6 + int(nanos) // 1e3)
 
 def TimestampToDatetime(input_time):
   """Converts seconds in google.protobuf.Timestamp to readable format.
@@ -155,7 +158,7 @@ def DatetimeToTimestamp(input_date, end_of_day=False):
   else:
     datetime_instance = datetime.combine(input_date, time(0, 0))
   micros = datetime_to_timestamp(datetime_instance)
-  return timestamp_pb2.Timestamp(seconds=micros/(1000*1000))
+  return timestamp_pb2.Timestamp(seconds=micros // (1000 * 1000))
 
 def constant_time_equals(a, b):
   """Compares two strings in constant time regardless of theirs content."""
@@ -173,7 +176,7 @@ def to_units(number):
   unit = 0
   while number >= 1024.:
     unit += 1
-    number = number / 1024.
+    number = number // 1024.
     if unit == len(UNITS) - 1:
       break
   if unit:
@@ -222,7 +225,7 @@ def datetime_to_rfc2822(dt):
     raise TypeError(
         'Expecting datetime object, got %s instead' % type(dt).__name__)
   assert dt.tzinfo is None, 'Expecting UTC timestamp: %s' % dt
-  return email_utils.formatdate(datetime_to_timestamp(dt) / 1000000.0)
+  return email_utils.formatdate(datetime_to_timestamp(dt) // 1000000)
 
 
 def datetime_to_timestamp(value):
@@ -325,8 +328,8 @@ def get_token_fingerprint(blob):
 
   It can be used to identify this particular token in logs without revealing it.
   """
-  assert isinstance(blob, basestring)
-  if isinstance(blob, unicode):
+  assert isinstance(blob, six.string_types)
+  if isinstance(blob, six.text_type):
     blob = blob.encode('ascii', 'ignore')
   return binascii.hexlify(hashlib.sha256(blob).digest()[:16])
 

@@ -17,8 +17,9 @@ source_set("lib") {
     "collection_store.h",
     "display_decider.cc",
     "display_decider.h",
-    "distribution_policy.cc",
-    "distribution_policy.h",
+    "icon_converter.h",
+    "icon_converter_result.cc",
+    "icon_converter_result.h",
     "icon_entry.cc",
     "icon_entry.h",
     "icon_store.cc",
@@ -43,6 +44,8 @@ source_set("lib") {
     "notification_scheduler_context.h",
     "notification_store.cc",
     "notification_store.h",
+    "png_icon_converter_impl.cc",
+    "png_icon_converter_impl.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "scheduled_notification_manager.cc",
@@ -51,6 +54,8 @@ source_set("lib") {
     "scheduler_config.h",
     "scheduler_utils.cc",
     "scheduler_utils.h",
+    "stats.cc",
+    "stats.h",
     "webui_client.cc",
     "webui_client.h",
   ]
@@ -58,11 +63,13 @@ source_set("lib") {
   # This target should not depend on anything in //chrome/* except the proto library.
   deps = [
     "//base",
+    "//chrome/app:generated_resources",
     "//chrome/browser/notifications/proto",
     "//chrome/browser/notifications/scheduler/public",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//skia",
+    "//ui/base",
     "//ui/gfx/codec",
   ]
 }
@@ -72,15 +79,18 @@ source_set("unit_tests") {
   sources = [
     "background_task_coordinator_unittest.cc",
     "display_decider_unittest.cc",
-    "distribution_policy_unittest.cc",
+    "icon_converter_unittest.cc",
     "icon_store_unittest.cc",
     "impression_history_tracker_unittest.cc",
     "impression_store_unittest.cc",
+    "impression_types_unittest.cc",
     "init_aware_scheduler_unittest.cc",
+    "notification_scheduler_unittest.cc",
     "notification_store_unittest.cc",
     "proto_conversion_unittest.cc",
     "scheduled_notification_manager_unittest.cc",
     "scheduler_utils_unittest.cc",
+    "stats_unittest.cc",
   ]
 
   deps = [

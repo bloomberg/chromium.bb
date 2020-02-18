@@ -6,6 +6,7 @@
 
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
@@ -132,7 +133,7 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
           model->RowCount(), first_item, second_item);
     }
     auto* label = label_container->AddChildView(std::make_unique<views::Label>(
-        label_text, CONTEXT_BODY_TEXT_SMALL, STYLE_EMPHASIZED_SECONDARY));
+        label_text, CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
@@ -155,7 +156,7 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
         model, std::move(table_columns), views::ICON_AND_TEXT,
         /*single_selection=*/true);
     table_view->SetEnabled(false);
-    int row_height = table_view->row_height();
+    int row_height = table_view->GetRowHeight();
     int table_height = table_view->GetPreferredSize().height();
     table_view_parent_ = AddChildView(
         views::TableView::CreateScrollViewWithTable(std::move(table_view)));
@@ -240,6 +241,9 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
     content::WebContents* web_contents,
     const url::Origin& origin,
     Usage usage) {
+  base::RecordAction(
+      base::UserMetricsAction("NativeFileSystemAPI.OpenedBubble"));
+
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
@@ -261,8 +265,8 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   }
   usage.readable_directories = readable_directories;
 
-  bubble_ = new NativeFileSystemUsageBubbleView(
-      anchor_view, gfx::Point(), web_contents, origin, std::move(usage));
+  bubble_ = new NativeFileSystemUsageBubbleView(anchor_view, web_contents,
+                                                origin, std::move(usage));
 
   bubble_->SetHighlightedButton(anchor_view->GetPageActionIconView(
       PageActionIconType::kNativeFileSystemAccess));
@@ -285,11 +289,10 @@ NativeFileSystemUsageBubbleView* NativeFileSystemUsageBubbleView::GetBubble() {
 
 NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     const url::Origin& origin,
     Usage usage)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
       writable_paths_model_(usage_.writable_files, usage_.writable_directories),
@@ -353,17 +356,19 @@ void NativeFileSystemUsageBubbleView::Init() {
 
   if (!embedded_path.empty()) {
     AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
-        heading_message_id, origin_, embedded_path, CONTEXT_BODY_TEXT_LARGE));
+        heading_message_id, origin_, embedded_path, CONTEXT_BODY_TEXT_LARGE,
+        /*show_emphasis=*/false));
   } else {
     AddChildView(native_file_system_ui_helper::CreateOriginLabel(
-        heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE));
+        heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE,
+        /*show_emphasis=*/false));
 
     if (writable_paths_model_.RowCount() > 0) {
       if (readable_paths_model_.RowCount() > 0) {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES),
-            CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(std::move(label));
       }
@@ -376,7 +381,7 @@ void NativeFileSystemUsageBubbleView::Init() {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES),
-            CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(std::move(label));
       }
@@ -402,7 +407,7 @@ void NativeFileSystemUsageBubbleView::CloseBubble() {
 
 gfx::Size NativeFileSystemUsageBubbleView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
@@ -422,6 +427,9 @@ NativeFileSystemUsageBubbleView::CreateExtraView() {
 
 void NativeFileSystemUsageBubbleView::ButtonPressed(views::Button* sender,
                                                     const ui::Event& event) {
+  base::RecordAction(
+      base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
+
   if (!web_contents())
     return;
 

@@ -4,15 +4,15 @@
 
 import logging
 import os
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 
 @environment(file="../policy_test.asset.textpb")
 class YouTubeRestrictTest(ChromeEnterpriseTestCase):
   """Test the ForceYouTubeRestrict policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#ForceYouTubeRestrict"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ForceYouTubeRestrict"""
 
   RestrictedText = "This video is restricted. " \
       + "Try signing in with a Google Apps account."

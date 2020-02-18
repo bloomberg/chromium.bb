@@ -155,6 +155,7 @@ void DetailedCompare(const ui::DisplaySnapshot_Params& a,
   EXPECT_EQ(a.has_overscan, b.has_overscan);
   EXPECT_EQ(a.has_color_correction_matrix, b.has_color_correction_matrix);
   EXPECT_EQ(a.color_space, b.color_space);
+  EXPECT_EQ(a.bits_per_channel, b.bits_per_channel);
   EXPECT_EQ(a.display_name, b.display_name);
   EXPECT_EQ(a.sys_path, b.sys_path);
   EXPECT_EQ(a.modes, b.modes);
@@ -196,6 +197,7 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   fp.has_overscan = true;
   fp.has_color_correction_matrix = true;
   fp.color_space = gfx::ColorSpace::CreateREC709();
+  fp.bits_per_channel = 8u;
   fp.display_name = "bending glass";
   fp.sys_path = base::FilePath("/bending");
   fp.modes =
@@ -217,6 +219,7 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   sp.has_overscan = true;
   sp.has_color_correction_matrix = true;
   sp.color_space = gfx::ColorSpace::CreateExtendedSRGB();
+  sp.bits_per_channel = 8u;
   sp.display_name = "rigid glass";
   sp.sys_path = base::FilePath("/bending");
   sp.modes =
@@ -237,6 +240,7 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   ep.has_overscan = false;
   ep.has_color_correction_matrix = false;
   ep.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+  sp.bits_per_channel = 9u;
   ep.display_name = "fluted glass";
   ep.sys_path = base::FilePath("/bending");
   ep.modes = std::vector<DisplayMode_Params>(
@@ -611,6 +615,15 @@ TEST_F(DrmUtilTest, TestDisplayModesExtraction) {
   EXPECT_EQ(extracted_modes[0].get(), current_mode);
   EXPECT_EQ(extracted_modes[2].get(), native_mode);
   EXPECT_EQ(gfx::Size(800, 600), native_mode->size());
+
+  // While KMS specification says there should be at most one preferred mode per
+  // connector, we found monitors with more than one preferred mode. With this
+  // test we make sure the first one is the one used for native_mode.
+  modes_ptr[1].type |= DRM_MODE_TYPE_PREFERRED;
+  extracted_modes = ExtractDisplayModes(&info, active_pixel_size, &current_mode,
+                                        &native_mode);
+  ASSERT_EQ(5u, extracted_modes.size());
+  EXPECT_EQ(extracted_modes[1].get(), native_mode);
 }
 
 }  // namespace ui

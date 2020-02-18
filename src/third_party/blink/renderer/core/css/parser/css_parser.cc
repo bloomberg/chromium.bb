@@ -253,12 +253,18 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
   return true;
 }
 
-bool CSSParser::ParseSystemColor(Color& color, const String& color_string) {
+bool CSSParser::ParseSystemColor(Color& color,
+                                 const String& color_string,
+                                 WebColorScheme color_scheme) {
   CSSValueID id = CssValueKeywordID(color_string);
   if (!StyleColor::IsSystemColor(id))
     return false;
 
-  color = LayoutTheme::GetTheme().SystemColor(id);
+  if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
+      (id == CSSValueID::kLinktext || id == CSSValueID::kVisitedtext)) {
+    return false;
+  }
+  color = LayoutTheme::GetTheme().SystemColor(id, color_scheme);
   return true;
 }
 

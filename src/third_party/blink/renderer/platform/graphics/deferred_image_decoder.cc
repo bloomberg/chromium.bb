@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -238,7 +238,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
       frame_generator_, info, std::move(segment_reader), std::move(frames),
       complete_frame_content_id_, all_data_received_,
       !incremental_decode_needed_.value() /* able to do accelerated decoding */,
-      can_yuv_decode_);
+      can_yuv_decode_, image_type);
   first_decoding_generator_created_ = true;
 
   size_t image_byte_size = ByteSize();

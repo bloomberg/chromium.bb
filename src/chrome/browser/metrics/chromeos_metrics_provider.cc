@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -23,6 +22,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
@@ -133,8 +133,7 @@ ChromeOSMetricsProvider::ChromeOSMetricsProvider(
     metrics::MetricsLogUploader::MetricServiceType service_type)
     : cached_profile_(std::make_unique<metrics::CachedMetricsProfile>()),
       registered_user_count_at_log_initialization_(false),
-      user_count_at_log_initialization_(0),
-      weak_ptr_factory_(this) {
+      user_count_at_log_initialization_(0) {
   if (service_type == metrics::MetricsLogUploader::UMA)
     profile_provider_ = std::make_unique<metrics::ProfileProvider>();
 }
@@ -204,9 +203,9 @@ void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
     const base::Closure& callback) {
   // Run the (potentially expensive) task in the background to avoid blocking
   // the UI thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetFullHardwareClassOnBackgroundThread),
@@ -253,9 +252,8 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 void ChromeOSMetricsProvider::ProvideAccessibilityMetrics() {
-  PrefService* pref = g_browser_process->local_state();
   bool is_spoken_feedback_enabled =
-      pref->GetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback.EveryReport",
                         is_spoken_feedback_enabled);
 }
@@ -309,6 +307,11 @@ void ChromeOSMetricsProvider::ProvideCurrentSessionData(
 
 void ChromeOSMetricsProvider::WriteBluetoothProto(
     metrics::SystemProfileProto* system_profile_proto) {
+  // This may be called before the async init task to set |adapter_| is set,
+  // such as when the persistent system profile gets filled in initially.
+  if (!adapter_)
+    return;
+
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
 

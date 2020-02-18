@@ -16,7 +16,6 @@
 
 #include "src/tracing/core/trace_writer_impl.h"
 
-#include <gtest/gtest.h>
 #include "perfetto/ext/base/utils.h"
 #include "perfetto/ext/tracing/core/commit_data_request.h"
 #include "perfetto/ext/tracing/core/trace_writer.h"
@@ -26,9 +25,10 @@
 #include "src/tracing/core/shared_memory_arbiter_impl.h"
 #include "src/tracing/test/aligned_buffer_test.h"
 #include "src/tracing/test/fake_producer_endpoint.h"
+#include "test/gtest_and_gmock.h"
 
-#include "perfetto/trace/test_event.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/test_event.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
 namespace {
@@ -148,26 +148,26 @@ TEST_P(TraceWriterImplTest, FragmentingPacket) {
 // Sets up a scenario in which the SMB is exhausted and TraceWriter fails to get
 // a new chunk while fragmenting a packet. Verifies that data is dropped until
 // the SMB is freed up and TraceWriter can get a new chunk.
-TEST_P(TraceWriterImplTest, FragmentingPacketWhileBufferExhaused) {
+TEST_P(TraceWriterImplTest, FragmentingPacketWhileBufferExhausted) {
   arbiter_.reset(new SharedMemoryArbiterImpl(buf(), buf_size(), page_size(),
                                              &fake_producer_endpoint_,
                                              task_runner_.get()));
 
   const BufferID kBufId = 42;
-  std::unique_ptr<TraceWriter> writer = arbiter_->CreateTraceWriter(
-      kBufId, SharedMemoryArbiter::BufferExhaustedPolicy::kDrop);
+  std::unique_ptr<TraceWriter> writer =
+      arbiter_->CreateTraceWriter(kBufId, BufferExhaustedPolicy::kDrop);
 
   // Write a small first packet, so that |writer| owns a chunk.
   auto packet = writer->NewTracePacket();
   EXPECT_FALSE(reinterpret_cast<TraceWriterImpl*>(writer.get())
                    ->drop_packets_for_testing());
-  EXPECT_EQ(packet->Finalize(), 0);
+  EXPECT_EQ(packet->Finalize(), 0u);
 
   // Grab all the remaining chunks in the SMB in new writers.
   std::array<std::unique_ptr<TraceWriter>, kNumPages * 4 - 1> other_writers;
   for (size_t i = 0; i < other_writers.size(); i++) {
-    other_writers[i] = arbiter_->CreateTraceWriter(
-        kBufId, SharedMemoryArbiter::BufferExhaustedPolicy::kDrop);
+    other_writers[i] =
+        arbiter_->CreateTraceWriter(kBufId, BufferExhaustedPolicy::kDrop);
     auto other_writer_packet = other_writers[i]->NewTracePacket();
     EXPECT_FALSE(reinterpret_cast<TraceWriterImpl*>(other_writers[i].get())
                      ->drop_packets_for_testing());
@@ -225,7 +225,7 @@ TEST_P(TraceWriterImplTest, FragmentingPacketWhileBufferExhaused) {
 
   // The first packet in the chunk should have the previous_packet_dropped flag
   // set, so shouldn't be empty.
-  EXPECT_GT(packet4->Finalize(), 0);
+  EXPECT_GT(packet4->Finalize(), 0u);
 
   // Flushing the writer causes the chunk to be released again.
   writer->Flush();

@@ -45,9 +45,8 @@ void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
 
 }  // namespace
 
-WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppRegistrar* registrar,
-                                               WebAppIconManager* icon_manager)
-    : registrar_(registrar), icon_manager_(icon_manager) {}
+WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppIconManager* icon_manager)
+    : icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
 
@@ -61,7 +60,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   if (registrar_->GetAppById(app_id)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), app_id,
-                                  InstallResultCode::kAlreadyInstalled));
+                                  InstallResultCode::kSuccessAlreadyInstalled));
     return;
   }
 
@@ -72,6 +71,11 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetLaunchUrl(web_app_info.app_url);
   web_app->SetScope(web_app_info.scope);
   web_app->SetThemeColor(web_app_info.theme_color);
+  web_app->SetLaunchContainer(web_app_info.open_as_window
+                                  ? LaunchContainer::kWindow
+                                  : LaunchContainer::kTab);
+  web_app->SetIsLocallyInstalled(options.locally_installed);
+
   SetIcons(web_app_info, web_app.get());
 
   icon_manager_->WriteData(
@@ -83,7 +87,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
 void WebAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
-    UninstallExternalWebAppCallback callback) {
+    UninstallWebAppCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
+                                             UninstallWebAppCallback) {
   NOTIMPLEMENTED();
 }
 
@@ -99,8 +108,11 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
   AppId app_id = web_app->app_id();
 
   registrar_->RegisterApp(std::move(web_app));
+  // TODO(loyso): NotifyWebAppInstalled should be a part of RegisterApp.
+  registrar_->NotifyWebAppInstalled(app_id);
 
-  std::move(callback).Run(std::move(app_id), InstallResultCode::kSuccess);
+  std::move(callback).Run(std::move(app_id),
+                          InstallResultCode::kSuccessNewInstall);
 }
 
 bool WebAppInstallFinalizer::CanCreateOsShortcuts() const {
@@ -120,30 +132,6 @@ void WebAppInstallFinalizer::CreateOsShortcuts(
       base::BindOnce(std::move(callback), false /* shortcuts_created */));
 }
 
-bool WebAppInstallFinalizer::CanPinAppToShelf() const {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WebAppInstallFinalizer::PinAppToShelf(const AppId& app_id) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-}
-
-bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
-                                            bool shortcut_created) const {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  return true;
-}
-
-void WebAppInstallFinalizer::ReparentTab(const AppId& app_id,
-                                         content::WebContents* web_contents) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-}
-
 bool WebAppInstallFinalizer::CanRevealAppShim() const {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
@@ -160,6 +148,18 @@ bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
     const WebApplicationInfo& web_app_info) const {
   NOTIMPLEMENTED();
   return true;
+}
+
+bool WebAppInstallFinalizer::CanUserUninstallFromSync(
+    const AppId& app_id) const {
+  // TODO(crbug.com/901226): Implement it.
+  return false;
+}
+
+void WebAppInstallFinalizer::SetSubsystems(AppRegistrar* registrar,
+                                           WebAppUiManager* ui_manager) {
+  registrar_ = registrar ? registrar->AsWebAppRegistrar() : nullptr;
+  InstallFinalizer::SetSubsystems(registrar, ui_manager);
 }
 
 }  // namespace web_app

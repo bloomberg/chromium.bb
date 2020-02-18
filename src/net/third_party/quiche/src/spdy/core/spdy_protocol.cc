@@ -157,7 +157,7 @@ bool ParseSettingsId(SpdySettingsId wire_setting_id,
   return false;
 }
 
-SpdyString SettingsIdToString(SpdySettingsId id) {
+std::string SettingsIdToString(SpdySettingsId id) {
   SpdyKnownSettingsId known_id;
   if (!ParseSettingsId(id, &known_id)) {
     return SpdyStrCat("SETTINGS_UNKNOWN_",
@@ -229,6 +229,20 @@ const char* ErrorCodeToString(SpdyErrorCode error_code) {
   return "UNKNOWN_ERROR_CODE";
 }
 
+const char* WriteSchedulerTypeToString(WriteSchedulerType type) {
+  switch (type) {
+    case WriteSchedulerType::LIFO:
+      return "LIFO";
+    case WriteSchedulerType::SPDY:
+      return "SPDY";
+    case WriteSchedulerType::HTTP2:
+      return "HTTP2";
+    case WriteSchedulerType::FIFO:
+      return "FIFO";
+  }
+  return "UNKNOWN";
+}
+
 size_t GetNumberRequiredContinuationFrames(size_t size) {
   DCHECK_GT(size, kHttp2MaxControlFrameSendSize);
   size_t overflow = size - kHttp2MaxControlFrameSendSize;
@@ -279,9 +293,9 @@ SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, SpdyStringPiece data)
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const char* data)
     : SpdyDataIR(stream_id, SpdyStringPiece(data)) {}
 
-SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, SpdyString data)
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, std::string data)
     : SpdyFrameWithFinIR(stream_id),
-      data_store_(SpdyMakeUnique<SpdyString>(std::move(data))),
+      data_store_(SpdyMakeUnique<std::string>(std::move(data))),
       data_(data_store_->data()),
       data_len_(data_store_->size()),
       padded_(false),
@@ -378,7 +392,7 @@ SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
 
 SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                            SpdyErrorCode error_code,
-                           SpdyString description)
+                           std::string description)
     : description_store_(std::move(description)),
       description_(description_store_) {
   set_last_good_stream_id(last_good_stream_id);
@@ -401,7 +415,7 @@ size_t SpdyGoAwayIR::size() const {
 
 SpdyContinuationIR::SpdyContinuationIR(SpdyStreamId stream_id)
     : SpdyFrameIR(stream_id), end_headers_(false) {
-  encoding_ = SpdyMakeUnique<SpdyString>();
+  encoding_ = SpdyMakeUnique<std::string>();
 }
 
 SpdyContinuationIR::~SpdyContinuationIR() = default;
@@ -505,7 +519,7 @@ size_t SpdyAltSvcIR::size() const {
   size_t size = kGetAltSvcFrameMinimumSize;
   size += origin_.length();
   // TODO(yasong): estimates the size without serializing the vector.
-  SpdyString str =
+  std::string str =
       SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector_);
   size += str.size();
   return size;

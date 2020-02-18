@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "core/fpdfdoc/cpdf_action.h"
-#include "core/fpdfdoc/ipdf_formnotify.h"
+#include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/fx_dib.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
@@ -21,16 +21,11 @@
 class CPDF_Dictionary;
 class CPDF_FormControl;
 class CPDF_FormField;
-class CPDF_InteractiveForm;
 class CPDF_Object;
 class CPDFSDK_FormFillEnvironment;
 
-#ifdef PDF_ENABLE_XFA
-class CPDFSDK_XFAWidget;
-class CXFA_FFWidget;
-#endif  // PDF_ENABLE_XFA
-
-class CPDFSDK_InteractiveForm final : public IPDF_FormNotify {
+class CPDFSDK_InteractiveForm final
+    : public CPDF_InteractiveForm::NotifierIface {
  public:
   explicit CPDFSDK_InteractiveForm(CPDFSDK_FormFillEnvironment* pFormFillEnv);
   ~CPDFSDK_InteractiveForm() override;
@@ -55,9 +50,6 @@ class CPDFSDK_InteractiveForm final : public IPDF_FormNotify {
   bool IsCalculateEnabled() const;
 
 #ifdef PDF_ENABLE_XFA
-  void AddXFAMap(CXFA_FFWidget* hWidget, CPDFSDK_XFAWidget* pWidget);
-  void RemoveXFAMap(CXFA_FFWidget* hWidget);
-  CPDFSDK_XFAWidget* GetXFAWidget(CXFA_FFWidget* hWidget);
   void XfaEnableCalculate(bool bEnabled);
   bool IsXfaCalculateEnabled() const;
   bool IsXfaValidationsEnabled();
@@ -71,8 +63,7 @@ class CPDFSDK_InteractiveForm final : public IPDF_FormNotify {
   Optional<WideString> OnFormat(CPDF_FormField* pFormField);
 
   void ResetFieldAppearance(CPDF_FormField* pFormField,
-                            Optional<WideString> sValue,
-                            bool bValueChanged);
+                            Optional<WideString> sValue);
   void UpdateField(CPDF_FormField* pFormField);
 
   bool DoAction_Hide(const CPDF_Action& action);
@@ -100,7 +91,7 @@ class CPDFSDK_InteractiveForm final : public IPDF_FormNotify {
   FX_COLORREF GetHighlightColor(FormFieldType fieldType);
 
  private:
-  // IPDF_FormNotify:
+  // CPDF_InteractiveForm::NotifierIface:
   bool BeforeValueChange(CPDF_FormField* pField,
                          const WideString& csValue) override;
   void AfterValueChange(CPDF_FormField* pField) override;
@@ -117,13 +108,11 @@ class CPDFSDK_InteractiveForm final : public IPDF_FormNotify {
   std::unique_ptr<CPDF_InteractiveForm> const m_pInteractiveForm;
   std::map<CPDF_FormControl*, CPDFSDK_Widget*> m_Map;
 #ifdef PDF_ENABLE_XFA
-  std::map<CXFA_FFWidget*, CPDFSDK_XFAWidget*> m_XFAMap;
   bool m_bXfaCalculate = true;
   bool m_bXfaValidationsEnabled = true;
 #endif  // PDF_ENABLE_XFA
   bool m_bCalculate = true;
   bool m_bBusy = false;
-
   uint8_t m_HighlightAlpha = 0;
   FX_COLORREF m_HighlightColor[kFormFieldTypeCount];
   bool m_NeedsHighlight[kFormFieldTypeCount];

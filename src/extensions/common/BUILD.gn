@@ -52,7 +52,7 @@ if (enable_extensions) {
       "//content/public/common:interfaces",
       "//extensions/common/api:mojom",
       "//mojo/public/mojom/base",
-      "//ui/gfx/geometry/mojo",
+      "//ui/gfx/geometry/mojom",
       "//url/mojom:url_mojom_gurl",
     ]
 
@@ -311,6 +311,7 @@ if (enable_extensions) {
     public_deps = [
       ":common_constants",
       ":mojom",
+      "//components/services/app_service/public/cpp:app_file_handling",
       "//content/public/common",
       "//ipc",
       "//skia",
@@ -318,6 +319,7 @@ if (enable_extensions) {
 
     deps = [
       "//base",
+      "//build:branding_buildflags",
       "//components/crx_file",
       "//components/nacl/common:buildflags",
       "//components/url_formatter",
@@ -325,6 +327,7 @@ if (enable_extensions) {
       "//components/version_info",
       "//crypto",
       "//device/bluetooth",
+      "//device/bluetooth/public/cpp",
       "//extensions:extensions_resources",
       "//extensions/common/api",
       "//extensions/strings",

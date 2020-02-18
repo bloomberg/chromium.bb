@@ -45,16 +45,17 @@ class TestDelegate : public SwitchAccessEventHandlerDelegate {
   TestDelegate() = default;
   virtual ~TestDelegate() = default;
 
-  ui::KeyEvent* last_key_event() { return key_events_.back().get(); }
+  SwitchAccessCommand last_command() { return commands_.back(); }
+  int command_count() { return commands_.size(); }
 
  private:
   // SwitchAccessEventHandlerDelegate:
-  void DispatchKeyEvent(const ui::KeyEvent& event) override {
-    key_events_.push_back(std::make_unique<ui::KeyEvent>(event));
+  void SendSwitchAccessCommand(SwitchAccessCommand command) override {
+    commands_.push_back(command);
   }
-  void SendSwitchAccessCommand(SwitchAccessCommand command) override {}
 
   std::vector<std::unique_ptr<ui::KeyEvent>> key_events_;
+  std::vector<SwitchAccessCommand> commands_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
@@ -81,7 +82,7 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
         switches::kEnableExperimentalAccessibilitySwitchAccess);
     controller_->SetSwitchAccessEnabled(true);
     controller_->SetSwitchAccessEventHandlerDelegate(delegate_.get());
-    controller_->SetSwitchAccessIgnoreVirtualKeyEvent(false);
+    controller_->SetSwitchAccessIgnoreVirtualKeyEventForTesting(false);
   }
 
   void TearDown() override {
@@ -89,6 +90,13 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
     generator_ = nullptr;
     controller_ = nullptr;
     AshTestBase::TearDown();
+  }
+
+  void SetKeyCodesForCommand(std::set<int> key_codes,
+                             SwitchAccessCommand command) {
+    SwitchAccessEventHandler* handler =
+        controller_->GetSwitchAccessEventHandlerForTest();
+    handler->SetKeyCodesForCommand(key_codes, command);
   }
 
   const std::set<int> GetKeyCodesToCapture() {
@@ -118,65 +126,39 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
 };
 
 TEST_F(SwitchAccessEventHandlerTest, CaptureSpecifiedKeys) {
-  Shell::Get()->accessibility_controller()->SetSwitchAccessKeysToCapture(
-      {ui::VKEY_1, ui::VKEY_2, ui::VKEY_3});
+  // Set keys for Switch Access to capture.
+  SetKeyCodesForCommand({ui::VKEY_1, ui::VKEY_2}, SwitchAccessCommand::kSelect);
 
   EXPECT_FALSE(event_capturer_.last_key_event());
 
-  // Press the "1" key.
   generator_->PressKey(ui::VKEY_1, ui::EF_NONE);
   generator_->ReleaseKey(ui::VKEY_1, ui::EF_NONE);
 
   // The event was handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_1 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_1);
+  EXPECT_EQ(SwitchAccessCommand::kSelect, delegate_->last_command());
 
   // Press the "2" key.
   generator_->PressKey(ui::VKEY_2, ui::EF_NONE);
   generator_->ReleaseKey(ui::VKEY_2, ui::EF_NONE);
 
   // We received a new event.
-  EXPECT_NE(delegate_->last_key_event(), key_event_1);
 
   // The event was handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_2 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_2);
 
   // Press the "3" key.
   generator_->PressKey(ui::VKEY_3, ui::EF_NONE);
   generator_->ReleaseKey(ui::VKEY_3, ui::EF_NONE);
 
-  // We received a new event.
-  EXPECT_NE(delegate_->last_key_event(), key_event_2);
-
   // The event was handled by SwitchAccessEventHandler.
-  EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_3 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_3);
-}
-
-TEST_F(SwitchAccessEventHandlerTest, IgnoreKeysNotSpecifiedForCapture) {
-  // Switch Access only captures select keys. Ignore all others.
-  Shell::Get()->accessibility_controller()->SetSwitchAccessKeysToCapture(
-      {ui::VKEY_1, ui::VKEY_2, ui::VKEY_3});
-
-  EXPECT_FALSE(event_capturer_.last_key_event());
-
-  // Press the "X" key.
-  generator_->PressKey(ui::VKEY_X, ui::EF_NONE);
-  generator_->ReleaseKey(ui::VKEY_X, ui::EF_NONE);
-
-  // We received an event, but did not handle it.
   EXPECT_TRUE(event_capturer_.last_key_event());
-  EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
 
 TEST_F(SwitchAccessEventHandlerTest, KeysNoLongerCaptureAfterUpdate) {
   // Set Switch Access to capture the keys {1, 2, 3}.
-  Shell::Get()->accessibility_controller()->SetSwitchAccessKeysToCapture(
-      {ui::VKEY_1, ui::VKEY_2, ui::VKEY_3});
+  SetKeyCodesForCommand({ui::VKEY_1, ui::VKEY_2, ui::VKEY_3},
+                        SwitchAccessCommand::kSelect);
 
   EXPECT_FALSE(event_capturer_.last_key_event());
 
@@ -186,28 +168,32 @@ TEST_F(SwitchAccessEventHandlerTest, KeysNoLongerCaptureAfterUpdate) {
 
   // The event was handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  ui::KeyEvent* key_event_1 = delegate_->last_key_event();
-  EXPECT_TRUE(key_event_1);
+  EXPECT_EQ(SwitchAccessCommand::kSelect, delegate_->last_command());
 
   // Update the Switch Access keys to capture {2, 3, 4}.
-  Shell::Get()->accessibility_controller()->SetSwitchAccessKeysToCapture(
-      {ui::VKEY_2, ui::VKEY_3, ui::VKEY_4});
+  SetKeyCodesForCommand({ui::VKEY_2, ui::VKEY_3, ui::VKEY_4},
+                        SwitchAccessCommand::kSelect);
 
   // Press the "1" key.
   generator_->PressKey(ui::VKEY_1, ui::EF_NONE);
   generator_->ReleaseKey(ui::VKEY_1, ui::EF_NONE);
 
   // We received a new event.
-  EXPECT_NE(event_capturer_.last_key_event(), key_event_1);
 
   // The event was NOT handled by SwitchAccessEventHandler.
   EXPECT_TRUE(event_capturer_.last_key_event());
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
+
+  // Press the "4" key.
+  generator_->PressKey(ui::VKEY_4, ui::EF_NONE);
+  generator_->ReleaseKey(ui::VKEY_4, ui::EF_NONE);
+
+  // The event was handled by SwitchAccessEventHandler.
 }
 
 TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
-  Shell::Get()->accessibility_controller()->SetSwitchAccessKeysToCapture(
-      {ui::VKEY_1, ui::VKEY_2, ui::VKEY_3});
+  SetKeyCodesForCommand({ui::VKEY_1, ui::VKEY_2, ui::VKEY_3},
+                        SwitchAccessCommand::kSelect);
 
   EXPECT_FALSE(event_capturer_.last_key_event());
 
@@ -220,14 +206,12 @@ TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
 
   // The event should be handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  EXPECT_TRUE(delegate_->last_key_event());
 
   // Release the "T" key.
   generator_->ReleaseKey(ui::VKEY_T, ui::EF_NONE);
 
   // The event should be handled by SwitchAccessEventHandler.
   EXPECT_FALSE(event_capturer_.last_key_event());
-  EXPECT_TRUE(delegate_->last_key_event());
 
   // Tell the Switch Access Event Handler to stop forwarding key events.
   Shell::Get()->accessibility_controller()->ForwardKeyEventsToSwitchAccess(
@@ -236,11 +220,16 @@ TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
   // Press the "T" key.
   generator_->PressKey(ui::VKEY_T, ui::EF_NONE);
 
-  // The release event is not handled by SwitchAccessEventHandler.
+  // The event is not handled by SwitchAccessEventHandler.
   EXPECT_TRUE(event_capturer_.last_key_event());
+  EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 
   // Release the "T" key.
   generator_->ReleaseKey(ui::VKEY_T, ui::EF_NONE);
+
+  // The event is not handled by SwitchAccessEventHandler.
+  EXPECT_TRUE(event_capturer_.last_key_event());
+  EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
 
 TEST_F(SwitchAccessEventHandlerTest, SetKeyCodesForCommand) {

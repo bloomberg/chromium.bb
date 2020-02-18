@@ -431,8 +431,7 @@ ServicesCustomizationDocument::ServicesCustomizationDocument()
           base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS)),
       apply_tasks_started_(0),
       apply_tasks_finished_(0),
-      apply_tasks_success_(0),
-      weak_ptr_factory_(this) {}
+      apply_tasks_success_(0) {}
 
 ServicesCustomizationDocument::ServicesCustomizationDocument(
     const std::string& manifest)
@@ -441,8 +440,7 @@ ServicesCustomizationDocument::ServicesCustomizationDocument(
           base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS)),
       apply_tasks_started_(0),
       apply_tasks_finished_(0),
-      apply_tasks_success_(0),
-      weak_ptr_factory_(this) {
+      apply_tasks_success_(0) {
   LoadManifestFromString(manifest);
 }
 
@@ -552,8 +550,10 @@ void ServicesCustomizationDocument::StartFetching() {
   if (url_.is_valid()) {
     load_started_ = true;
     if (url_.SchemeIsFile()) {
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+           base::MayBlock()},
           base::BindOnce(&ReadFileInBackground, base::FilePath(url_.path())),
           base::BindOnce(&ServicesCustomizationDocument::OnManifestRead,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -581,7 +581,7 @@ void ServicesCustomizationDocument::DoStartFileFetch() {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url_;
   request->load_flags = net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->headers.SetHeader("Accept", "application/json");
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(request),
@@ -641,7 +641,7 @@ void ServicesCustomizationDocument::OnSimpleLoaderComplete(
   } else {
     if (num_retries_ < kMaxFetchRetries) {
       num_retries_++;
-      base::PostDelayedTaskWithTraits(
+      base::PostDelayedTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&ServicesCustomizationDocument::StartFileFetch,
                          weak_ptr_factory_.GetWeakPtr()),
@@ -876,8 +876,9 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
       &ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
       std::move(applying));
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(check_file_exists), std::move(on_checked_closure));
 }
 

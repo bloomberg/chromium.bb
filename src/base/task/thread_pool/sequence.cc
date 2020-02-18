@@ -6,12 +6,12 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/critical_closure.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -41,7 +41,7 @@ void Sequence::Transaction::PushTask(Task task) {
   DCHECK(task.queue_time.is_null());
 
   bool should_be_queued = WillPushTask();
-  task.queue_time = ThreadPoolClock::Now();
+  task.queue_time = TimeTicks::Now();
 
   task.task = sequence()->traits_.shutdown_behavior() ==
                       TaskShutdownBehavior::BLOCK_SHUTDOWN
@@ -56,9 +56,9 @@ void Sequence::Transaction::PushTask(Task task) {
     sequence()->task_runner()->AddRef();
 }
 
-TaskSource::RunIntent Sequence::WillRunTask() {
+TaskSource::RunStatus Sequence::WillRunTask() {
   // There should never be a second call to WillRunTask() before DidProcessTask
-  // since the RunIntent is always marked a saturated.
+  // since the RunStatus is always marked a saturated.
   DCHECK(!has_worker_);
 
   // It's ok to access |has_worker_| outside of a Transaction since
@@ -66,14 +66,16 @@ TaskSource::RunIntent Sequence::WillRunTask() {
   // TakeTask() and DidProcessTask() and only called if |!queue_.empty()|, which
   // means it won't race with WillPushTask()/PushTask().
   has_worker_ = true;
-  return MakeRunIntent(Saturated::kYes);
+  return RunStatus::kAllowedSaturated;
 }
 
 size_t Sequence::GetRemainingConcurrency() const {
   return 1;
 }
 
-Optional<Task> Sequence::TakeTask() {
+Optional<Task> Sequence::TakeTask(TaskSource::Transaction* transaction) {
+  CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
+
   DCHECK(has_worker_);
   DCHECK(!queue_.empty());
   DCHECK(queue_.front().task);
@@ -83,7 +85,8 @@ Optional<Task> Sequence::TakeTask() {
   return std::move(next_task);
 }
 
-bool Sequence::DidProcessTask(RunResult run_result) {
+bool Sequence::DidProcessTask(TaskSource::Transaction* transaction) {
+  CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
   // There should never be a call to DidProcessTask without an associated
   // WillRunTask().
   DCHECK(has_worker_);
@@ -103,15 +106,22 @@ SequenceSortKey Sequence::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), queue_.front().queue_time);
 }
 
-void Sequence::Clear() {
-  bool queue_was_empty = queue_.empty();
-  while (!queue_.empty())
-    queue_.pop();
-  if (!queue_was_empty) {
-    // No member access after this point, ReleaseTaskRunner() might have deleted
-    // |this|.
-    ReleaseTaskRunner();
-  }
+Optional<Task> Sequence::Clear(TaskSource::Transaction* transaction) {
+  CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
+  has_worker_ = false;
+  return base::make_optional<Task>(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<Sequence> self, base::queue<Task> queue) {
+            bool queue_was_empty = queue.empty();
+            while (!queue.empty())
+              queue.pop();
+            if (!queue_was_empty) {
+              self->ReleaseTaskRunner();
+            }
+          },
+          scoped_refptr<Sequence>(this), std::move(queue_)),
+      TimeDelta());
 }
 
 void Sequence::ReleaseTaskRunner() {

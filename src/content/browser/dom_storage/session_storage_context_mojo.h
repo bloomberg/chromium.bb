@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -23,7 +24,11 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -82,10 +87,11 @@ class CONTENT_EXPORT SessionStorageContextMojo
       base::FilePath local_partition_directory,
       std::string leveldb_name);
 
-  void OpenSessionStorage(int process_id,
-                          const std::string& namespace_id,
-                          mojo::ReportBadMessageCallback bad_message_callback,
-                          blink::mojom::SessionStorageNamespaceRequest request);
+  void OpenSessionStorage(
+      int process_id,
+      const std::string& namespace_id,
+      mojo::ReportBadMessageCallback bad_message_callback,
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
 
   void CreateSessionNamespace(const std::string& namespace_id);
   void CloneSessionNamespace(const std::string& namespace_id_to_clone,
@@ -135,7 +141,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Sets the database for testing.
   void SetDatabaseForTesting(
-      leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
+      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   leveldb::mojom::LevelDBDatabase* DatabaseForTesting() {
     return database_.get();
@@ -148,6 +154,18 @@ class CONTENT_EXPORT SessionStorageContextMojo
   friend class DOMStorageBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
                            PurgeMemoryDoesNotCrashOrHang);
+
+  // These values are written to logs.  New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
+  enum class OpenResult {
+    kDirectoryOpenFailed = 0,
+    kDatabaseOpenFailed = 1,
+    kInvalidVersion = 2,
+    kVersionReadError = 3,
+    kNamespacesReadError = 4,
+    kSuccess = 6,
+    kMaxValue = kSuccess
+  };
 
   // Object deletion is done through |ShutdownAndDelete()|.
   ~SessionStorageContextMojo() override;
@@ -187,16 +205,20 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void InitiateConnection(bool in_memory_only = false);
   void OnDirectoryOpened(base::File::Error err);
   void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
-  void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
-                            const std::vector<uint8_t>& value);
-  void OnGotNamespaces(
-      base::OnceClosure done,
-      std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations,
-      leveldb::mojom::DatabaseError status,
-      std::vector<leveldb::mojom::KeyValuePtr> values);
-  void OnGotNextMapId(base::OnceClosure done,
-                      leveldb::mojom::DatabaseError status,
-                      const std::vector<uint8_t>& map_id);
+
+  void OnGotDatabaseMetadata(
+      std::vector<leveldb::mojom::GetManyResultPtr> results);
+
+  using OpenResultAndHistogramName = std::tuple<OpenResult, const char*>;
+  OpenResultAndHistogramName ParseDatabaseVersion(
+      const leveldb::mojom::GetManyResultPtr& result,
+      std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations);
+  OpenResultAndHistogramName ParseNamespaces(
+      const leveldb::mojom::GetManyResultPtr& result,
+      std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations);
+  OpenResultAndHistogramName ParseNextMapId(
+      const leveldb::mojom::GetManyResultPtr& result);
+
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
   void OnDBDestroyed(bool recreate_in_memory,
@@ -211,17 +233,6 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_areas_count);
 
-  // These values are written to logs.  New enum values can be added, but
-  // existing enums must never be renumbered or deleted and reused.
-  enum class OpenResult {
-    kDirectoryOpenFailed = 0,
-    kDatabaseOpenFailed = 1,
-    kInvalidVersion = 2,
-    kVersionReadError = 3,
-    kNamespacesReadError = 4,
-    kSuccess = 6,
-    kMaxValue = kSuccess
-  };
 
   void LogDatabaseOpenResult(OpenResult result);
 
@@ -247,8 +258,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_;
   bool tried_to_recreate_during_open_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;

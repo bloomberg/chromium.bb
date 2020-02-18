@@ -36,6 +36,7 @@ include_rules = [
   "+components/os_crypt",
   "+components/policy",
   "+components/prefs",
+  "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/db",
   "+components/search_engines",
   "+components/services/quarantine",
@@ -72,6 +73,5 @@ include_rules = [
   "+media/base",
   "+mojo/core/embedder",
   "+sandbox/win/tests",
-  "+third_party/ocmock",
   "+third_party/webrtc",
 ]

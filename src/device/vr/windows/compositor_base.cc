@@ -32,6 +32,9 @@ void XRDeviceAbstraction::HandleDeviceLost() {}
 bool XRDeviceAbstraction::PreComposite() {
   return true;
 }
+bool XRDeviceAbstraction::HasSessionEnded() {
+  return false;
+}
 void XRDeviceAbstraction::OnLayerBoundsChanged() {}
 
 XRCompositorCommon::OutstandingFrame::OutstandingFrame() = default;
@@ -314,6 +317,11 @@ void XRCompositorCommon::GetFrameData(
     mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("xr", "GetFrameData");
+  if (HasSessionEnded()) {
+    ExitPresent();
+    return;
+  }
+
   if (!is_presenting_) {
     return;
   }
@@ -356,7 +364,8 @@ void XRCompositorCommon::GetFrameData(
 }
 
 void XRCompositorCommon::SetInputSourceButtonListener(
-    mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info) {
+    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo
+        input_listener_info) {
   DCHECK(UsesInputEventing());
   input_event_listener_.Bind(std::move(input_listener_info));
 }

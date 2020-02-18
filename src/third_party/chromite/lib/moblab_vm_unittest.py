@@ -7,10 +7,11 @@
 
 from __future__ import print_function
 
-import mock
 import os
 import shutil
 import unittest
+
+import mock
 
 from chromite.lib import cros_test_lib
 from chromite.lib import moblab_vm

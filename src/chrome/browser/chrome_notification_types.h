@@ -57,12 +57,6 @@ enum NotificationType {
   // the source is Source<WebContents>.
   NOTIFICATION_TAB_LANGUAGE_DETERMINED,
 
-  // Sent when a page has been translated. The source is the tab for that page
-  // (Source<WebContents>) and the details are the language the page was
-  // originally in and the language it was translated to
-  // (std::pair<std::string, std::string>).
-  NOTIFICATION_PAGE_TRANSLATED,
-
   // The user has changed the browser theme. The source is a
   // Source<ThemeService>. There are no details.
   NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -93,25 +87,6 @@ enum NotificationType {
   // will exit because the shutdown process can be cancelled by an unload
   // handler.  Use APP_TERMINATING for such needs.
   NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-
-  // Tabs --------------------------------------------------------------------
-
-  // Sent when a tab is added to a WebContentsDelegate. The source is the
-  // WebContentsDelegate and the details is the added WebContents.
-  NOTIFICATION_TAB_ADDED,
-
-  // This notification is sent after a tab has been appended to the tab_strip.
-  // The source is a Source<WebContents> of the tab being added. There
-  // are no details.
-  NOTIFICATION_TAB_PARENTED,
-
-  // This message is sent before a tab has been closed.  The source is a
-  // Source<NavigationController> with a pointer to the controller for the
-  // closed tab.  No details are expected.
-  //
-  // See also content::NOTIFICATION_WEB_CONTENTS_DESTROYED, which is sent when
-  // the WebContents containing the NavigationController is destroyed.
-  NOTIFICATION_TAB_CLOSING,
 
   // Authentication ----------------------------------------------------------
 
@@ -144,17 +119,10 @@ enum NotificationType {
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_CREATED,
 
+  // Use ProfileManagerObserver::OnProfileAdded instead of this notification.
   // Sent after a Profile has been added to ProfileManager.
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_ADDED,
-
-  // Use KeyedServiceShutdownNotifier instead this notification type (you did
-  // read the comment at the top of the file, didn't you?).
-  // Sent early in the process of destroying a Profile, at the time a user
-  // initiates the deletion of a profile versus the much later time when the
-  // profile object is actually destroyed (use NOTIFICATION_PROFILE_DESTROYED).
-  // The details are none and the source is a Profile*.
-  NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
 
   // Use KeyedServiceShutdownNotifier instead this notification type (you did
   // read the comment at the top of the file, didn't you?).
@@ -162,10 +130,6 @@ enum NotificationType {
   // normal and OTR profiles.
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_DESTROYED,
-
-  // Sent after the URLRequestContextGetter for a Profile has been initialized.
-  // The details are none and the source is a Profile*.
-  NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
   // Printing ----------------------------------------------------------------
 
@@ -181,21 +145,9 @@ enum NotificationType {
   // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
-  // Sent when a chromium os user logs in.
-  // The details are a chromeos::User object.
-  NOTIFICATION_LOGIN_USER_CHANGED,
-
   // Sent immediately after the logged-in user's profile is ready.
   // The details are a Profile object.
   NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-
-  // Sent when the chromium session of a particular user is started.
-  // If this is a new user on the machine this will not be sent until a profile
-  // picture has been selected, unlike NOTIFICATION_LOGIN_USER_CHANGED which is
-  // sent immediately after the user has logged in. This will be sent again if
-  // the browser crashes and restarts.
-  // The details are a chromeos::User object.
-  NOTIFICATION_SESSION_STARTED,
 
   // Sent when a network error message is displayed on the WebUI login screen.
   // First paint event of this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
@@ -236,9 +188,6 @@ enum NotificationType {
 
   // Sent when kiosk app list is loaded in UI.
   NOTIFICATION_KIOSK_APPS_LOADED,
-
-  // Sent when the user list has changed.
-  NOTIFICATION_USER_LIST_CHANGED,
 
   // Sent when the screen lock state has changed. The source is
   // ScreenLocker and the details is a bool specifing that the

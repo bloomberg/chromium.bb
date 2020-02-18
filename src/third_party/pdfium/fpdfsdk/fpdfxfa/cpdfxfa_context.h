@@ -13,6 +13,7 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/observed_ptr.h"
+#include "core/fxcrt/timerhandler_iface.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_docenvironment.h"
@@ -42,11 +43,6 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
   CXFA_FFDoc* GetXFADoc() { return m_pXFADoc.get(); }
   CXFA_FFDocView* GetXFADocView() const { return m_pXFADocView.Get(); }
   FormType GetFormType() const { return m_FormType; }
-  bool ContainsXFAForm() const {
-    return m_FormType == FormType::kXFAFull ||
-           m_FormType == FormType::kXFAForeground;
-  }
-
   CPDFSDK_FormFillEnvironment* GetFormFillEnv() const {
     return m_pFormFillEnv.Get();
   }
@@ -61,13 +57,15 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
   int GetPageCount() const override;
   void DeletePage(int page_index) override;
   uint32_t GetUserPermissions() const override;
+  bool ContainsExtensionForm() const override;
+  bool ContainsExtensionFullForm() const override;
+  bool ContainsExtensionForegroundForm() const override;
 
   // IFXA_AppProvider:
   WideString GetLanguage() override;
   WideString GetPlatform() override;
   WideString GetAppName() override;
   WideString GetAppTitle() const override;
-
   void Beep(uint32_t dwType) override;
   int32_t MsgBox(const WideString& wsMessage,
                  const WideString& wsTitle,
@@ -88,8 +86,11 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
   bool PutRequestURL(const WideString& wsURL,
                      const WideString& wsData,
                      const WideString& wsEncode) override;
+  TimerHandlerIface* GetTimerHandler() const override;
 
-  std::unique_ptr<IFWL_AdapterTimerMgr> NewTimerMgr() override;
+  void SendPostSaveToXFADoc();
+  void SendPreSaveToXFADoc(
+      std::vector<RetainPtr<IFX_SeekableStream>>* fileList);
 
  private:
   friend class CPDFXFA_DocEnvironment;

@@ -7,6 +7,7 @@
 
 #include <gmock/gmock.h>
 #include <memory>
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
@@ -22,11 +23,13 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                void(int64_t transaction_id,
                     int64_t object_store_id,
                     const String& new_name));
-  MOCK_METHOD4(CreateTransaction,
-               void(mojom::blink::IDBTransactionAssociatedRequest request,
+  MOCK_METHOD5(CreateTransaction,
+               void(mojo::PendingAssociatedReceiver<
+                        mojom::blink::IDBTransaction> receiver,
                     int64_t id,
                     const Vector<int64_t>& scope,
-                    mojom::IDBTransactionMode));
+                    mojom::IDBTransactionMode,
+                    bool relaxed_durability));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(VersionChangeIgnored, void());
   MOCK_METHOD1(Abort, void(int64_t transaction_id));

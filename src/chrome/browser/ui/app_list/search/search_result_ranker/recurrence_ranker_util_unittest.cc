@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -24,20 +24,17 @@ namespace app_list {
 
 class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
  public:
-  void SetUp() override {
-    converter_ = std::make_unique<JsonConfigConverter>(dd_service_.connector());
-  }
-
   // Converts the async JsonConfigConverter::Convert call into a synchronous
   // call for ease of testing.
   base::Optional<RecurrenceRankerConfigProto> Convert(const std::string& json) {
     base::RunLoop run_loop;
     done_callback_ = run_loop.QuitClosure();
-    converter_->Convert(
-        json, "",
+    converter_ = JsonConfigConverter::Convert(
+        dd_service_.connector(), json, "",
         base::BindOnce(
             [](RecurrenceRankerJsonConfigConverterTest* fixture,
                base::Optional<RecurrenceRankerConfigProto> config) {
+              fixture->converter_.reset();
               fixture->config_ = config;
               fixture->done_callback_.Run();
             },
@@ -53,9 +50,9 @@ class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
     return converted_proto.value();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
 
   std::unique_ptr<JsonConfigConverter> converter_;
 

@@ -69,8 +69,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
                    "Sync.ModelTypeEntityChange3.PREFERENCE",
                    /*REMOTE_NON_INITIAL_UPDATE=*/4));
 
-  EXPECT_EQ(
-      1U, histogram_tester
+  EXPECT_NE(
+      0U, histogram_tester
               .GetAllSamples(
                   "Sync.NonReflectionUpdateFreshnessPossiblySkewed2.PREFERENCE")
               .size());

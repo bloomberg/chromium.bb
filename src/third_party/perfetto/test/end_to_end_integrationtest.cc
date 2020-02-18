@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <unistd.h>
 
 #include <chrono>
@@ -26,7 +24,6 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/config/power/android_power_config.pbzero.h"
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/pipe.h"
 #include "perfetto/ext/base/temp_file.h"
@@ -34,14 +31,16 @@
 #include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/ext/tracing/ipc/default_socket.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
-#include "perfetto/trace/trace.pb.h"
-#include "perfetto/trace/trace_packet.pb.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
 #include "perfetto/tracing/core/test_config.h"
 #include "perfetto/tracing/core/trace_config.h"
+#include "protos/perfetto/config/power/android_power_config.pbzero.h"
+#include "protos/perfetto/trace/trace.pb.h"
+#include "protos/perfetto/trace/trace_packet.pb.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 #include "src/base/test/test_task_runner.h"
 #include "src/traced/probes/ftrace/ftrace_controller.h"
 #include "src/traced/probes/ftrace/ftrace_procfs.h"
+#include "test/gtest_and_gmock.h"
 #include "test/task_runner_thread.h"
 #include "test/task_runner_thread_delegates.h"
 #include "test/test_helper.h"
@@ -881,7 +880,8 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(StartTracingTrigger)) {
   base::ReadFile(path, &trace_str);
   protos::Trace trace;
   ASSERT_TRUE(trace.ParseFromString(trace_str));
-  EXPECT_EQ(kPreamblePackets + kMessageCount, trace.packet_size());
+  EXPECT_EQ(static_cast<int>(kPreamblePackets + kMessageCount),
+            trace.packet_size());
   for (const auto& packet : trace.packet()) {
     if (packet.data_case() == protos::TracePacket::kTraceConfig) {
       // Ensure the trace config properly includes the trigger mode we set.
@@ -972,7 +972,8 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(StopTracingTrigger)) {
   base::ReadFile(path, &trace_str);
   protos::Trace trace;
   ASSERT_TRUE(trace.ParseFromString(trace_str));
-  EXPECT_EQ(kPreamblePackets + kMessageCount, trace.packet_size());
+  EXPECT_EQ(static_cast<int>(kPreamblePackets + kMessageCount),
+            trace.packet_size());
   bool seen_first_trigger = false;
   for (const auto& packet : trace.packet()) {
     if (packet.data_case() == protos::TracePacket::kTraceConfig) {
@@ -1133,7 +1134,7 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(StopTracingTriggerFromConfig)) {
   base::ReadFile(path, &trace_str);
   protos::Trace trace;
   ASSERT_TRUE(trace.ParseFromString(trace_str));
-  EXPECT_LT(kMessageCount, trace.packet_size());
+  EXPECT_LT(static_cast<int>(kMessageCount), trace.packet_size());
   bool seen_first_trigger = false;
   for (const auto& packet : trace.packet()) {
     if (packet.data_case() == protos::TracePacket::kTraceConfig) {

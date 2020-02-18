@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -110,7 +109,7 @@ String BaseTemporalInputType::RangeUnderflowText(const Decimal& minimum) const {
 
 Decimal BaseTemporalInputType::DefaultValueForStepUp() const {
   return Decimal::FromDouble(
-      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
+      ConvertToLocalTime(base::Time::Now()).InMillisecondsF());
 }
 
 bool BaseTemporalInputType::IsSteppable() const {

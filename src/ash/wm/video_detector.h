@@ -19,13 +19,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-
-namespace aura {
-class Window;
-}
 
 namespace ash {
 
@@ -107,14 +104,15 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_manager_;
-  ScopedSessionObserver scoped_session_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_manager_{
+      this};
+  ScopedSessionObserver scoped_session_observer_{this};
 
   bool is_shutting_down_;
 
-  mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
+  mojo::Binding<viz::mojom::VideoDetectorObserver> binding_{this};
 
-  base::WeakPtrFactory<VideoDetector> weak_factory_;
+  base::WeakPtrFactory<VideoDetector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDetector);
 };

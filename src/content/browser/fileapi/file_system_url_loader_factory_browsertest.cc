@@ -29,7 +29,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -164,7 +163,6 @@ class FileSystemURLLoaderFactoryTest
  protected:
   FileSystemURLLoaderFactoryTest() : file_util_(nullptr) {
     std::vector<base::Feature> features;
-    features.push_back(network::features::kNetworkService);
     if (GetParam() == TestMode::kIncognito ||
         GetParam() == TestMode::kRegularWithIncognitoEnabled) {
       features.push_back(storage::features::kEnableFilesystemInIncognito);
@@ -181,10 +179,9 @@ class FileSystemURLLoaderFactoryTest
   bool IsIncognito() { return GetParam() == TestMode::kIncognito; }
 
   void SetUpOnMainThread() override {
-    io_task_runner_ =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    io_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
     blocking_task_runner_ =
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
 

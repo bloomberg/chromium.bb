@@ -284,7 +284,7 @@ bool P2PTransportChannel::MaybeSwitchSelectedConnection(
   if (ShouldSwitchSelectedConnection(new_connection,
                                      &missed_receiving_unchanged_threshold)) {
     RTC_LOG(LS_INFO) << "Switching selected connection due to: " << reason;
-    SwitchSelectedConnection(new_connection);
+    SwitchSelectedConnection(new_connection, reason);
     return true;
   }
   if (missed_receiving_unchanged_threshold &&
@@ -1493,15 +1493,15 @@ int P2PTransportChannel::SendPacket(const char* data,
   return sent;
 }
 
-bool P2PTransportChannel::GetStats(ConnectionInfos* candidate_pair_stats_list,
-                                   CandidateStatsList* candidate_stats_list) {
+bool P2PTransportChannel::GetStats(IceTransportStats* ice_transport_stats) {
   RTC_DCHECK_RUN_ON(network_thread_);
   // Gather candidate and candidate pair stats.
-  candidate_stats_list->clear();
-  candidate_pair_stats_list->clear();
+  ice_transport_stats->candidate_stats_list.clear();
+  ice_transport_stats->connection_infos.clear();
 
   if (!allocator_sessions_.empty()) {
-    allocator_session()->GetCandidateStatsFromReadyPorts(candidate_stats_list);
+    allocator_session()->GetCandidateStatsFromReadyPorts(
+        &ice_transport_stats->candidate_stats_list);
   }
 
   // TODO(qingsi): Remove naming inconsistency for candidate pair/connection.
@@ -1510,10 +1510,12 @@ bool P2PTransportChannel::GetStats(ConnectionInfos* candidate_pair_stats_list,
     stats.local_candidate = SanitizeLocalCandidate(stats.local_candidate);
     stats.remote_candidate = SanitizeRemoteCandidate(stats.remote_candidate);
     stats.best_connection = (selected_connection_ == connection);
-    candidate_pair_stats_list->push_back(std::move(stats));
+    ice_transport_stats->connection_infos.push_back(std::move(stats));
     connection->set_reported(true);
   }
 
+  ice_transport_stats->selected_candidate_pair_changes =
+      selected_candidate_pair_changes_;
   return true;
 }
 
@@ -1933,7 +1935,8 @@ void P2PTransportChannel::PruneConnections() {
 }
 
 // Change the selected connection, and let listeners know.
-void P2PTransportChannel::SwitchSelectedConnection(Connection* conn) {
+void P2PTransportChannel::SwitchSelectedConnection(Connection* conn,
+                                                   const std::string& reason) {
   RTC_DCHECK_RUN_ON(network_thread_);
   // Note: if conn is NULL, the previous |selected_connection_| has been
   // destroyed, so don't use it.
@@ -1978,8 +1981,19 @@ void P2PTransportChannel::SwitchSelectedConnection(Connection* conn) {
   } else {
     RTC_LOG(LS_INFO) << ToString() << ": No selected connection";
   }
-
   SignalNetworkRouteChanged(network_route_);
+
+  // Create event for candidate pair change.
+  if (selected_connection_) {
+    CandidatePairChangeEvent pair_change;
+    pair_change.reason = reason;
+    pair_change.selected_candidate_pair = *GetSelectedCandidatePair();
+    pair_change.last_data_received_ms =
+        selected_connection_->last_data_received();
+    SignalCandidatePairChanged(pair_change);
+  }
+
+  ++selected_candidate_pair_changes_;
 }
 
 // Warning: UpdateState should eventually be called whenever a connection
@@ -2393,7 +2407,6 @@ void P2PTransportChannel::OnConnectionStateChange(Connection* connection) {
   if (strongly_connected && latest_generation) {
     MaybeStopPortAllocatorSessions();
   }
-
   // We have to unroll the stack before doing this because we may be changing
   // the state of connections while sorting.
   RequestSortAndStateUpdate("candidate pair state changed");
@@ -2425,8 +2438,9 @@ void P2PTransportChannel::OnConnectionDestroyed(Connection* connection) {
   // there was no selected connection.
   if (selected_connection_ == connection) {
     RTC_LOG(LS_INFO) << "Selected connection destroyed. Will choose a new one.";
-    SwitchSelectedConnection(nullptr);
-    RequestSortAndStateUpdate("selected candidate pair destroyed");
+    const std::string reason = "selected candidate pair destroyed";
+    SwitchSelectedConnection(nullptr, reason);
+    RequestSortAndStateUpdate(reason);
   } else {
     // If a non-selected connection was destroyed, we don't need to re-sort but
     // we do need to update state, because we could be switching to "failed" or

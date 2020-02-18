@@ -12,8 +12,8 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/task_environment.h"
 #include "media/audio/audio_debug_file_writer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
@@ -122,9 +122,9 @@ double FakeConsumer::ComputeAmplitudeAt(int channel,
 void FakeConsumer::SaveToFile(const base::FilePath& path) const {
   // Not all tests set-up a full task environment. However, AudioDebugFileWriter
   // requires one. Provide a temporary one here, if necessary.
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment;
   if (!base::ThreadPoolInstance::Get()) {
-    task_environment = std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment = std::make_unique<base::test::TaskEnvironment>();
   }
 
   const media::AudioParameters params(

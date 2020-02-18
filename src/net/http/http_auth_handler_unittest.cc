@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -22,7 +22,7 @@
 namespace net {
 
 TEST(HttpAuthHandlerTest, NetLog) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   GURL origin("http://www.example.com");
   std::string challenge = "Mock asdf";

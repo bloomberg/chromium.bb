@@ -12,10 +12,11 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -108,7 +109,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -150,8 +150,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
 
   // For handling FetchEvent response.
-  mojo::Binding<blink::mojom::ServiceWorkerFetchResponseCallback>
-      response_callback_binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback_receiver_{this};
   // The blob needs to be held while it's read to keep it alive.
   blink::mojom::BlobPtr body_as_blob_;
   uint64_t body_as_blob_size_;
@@ -162,8 +162,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // to the controller. If a broken connection is observed, this loader attempts
   // to restart the controller and dispatch the event again.
   ScopedObserver<ControllerServiceWorkerConnector,
-                 ServiceWorkerSubresourceLoader>
-      controller_connector_observer_;
+                 ControllerServiceWorkerConnector::Observer>
+      controller_connector_observer_{this};
   bool fetch_request_restarted_;
   bool blob_reading_complete_;
   bool side_data_reading_complete_;

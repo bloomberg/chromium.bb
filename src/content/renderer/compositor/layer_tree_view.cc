@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/animation/animation_host.h"
@@ -84,8 +84,9 @@ void LayerTreeView::Initialize(
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
     // IO thread.
-    params.image_worker_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE,
+    params.image_worker_task_runner = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+         base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
   if (!is_threaded) {
@@ -123,10 +124,6 @@ void LayerTreeView::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
-bool LayerTreeView::IsSurfaceSynchronizationEnabled() const {
-  return layer_tree_host_->GetSettings().enable_surface_synchronization;
-}
-
 std::unique_ptr<cc::SwapPromiseMonitor>
 LayerTreeView::CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) {
   return std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
@@ -155,12 +152,12 @@ bool LayerTreeView::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
-void LayerTreeView::SetViewportSizeAndScale(
-    const gfx::Size& device_viewport_size,
+void LayerTreeView::SetViewportRectAndScale(
+    const gfx::Rect& device_viewport_rect,
     float device_scale_factor,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  layer_tree_host_->SetViewportSizeAndScale(
-      device_viewport_size, device_scale_factor, local_surface_id_allocation);
+  layer_tree_host_->SetViewportRectAndScale(
+      device_viewport_rect, device_scale_factor, local_surface_id_allocation);
 }
 
 void LayerTreeView::RequestNewLocalSurfaceId() {
@@ -173,10 +170,6 @@ void LayerTreeView::RequestForceSendMetadata() {
 
 void LayerTreeView::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   layer_tree_host_->SetViewportVisibleRect(visible_rect);
-}
-
-viz::FrameSinkId LayerTreeView::GetFrameSinkId() {
-  return frame_sink_id_;
 }
 
 void LayerTreeView::SetNonBlinkManagedRootLayer(
@@ -195,27 +188,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
     return;
   }
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
-}
-
-int LayerTreeView::LayerTreeId() const {
-  return layer_tree_host_->GetId();
-}
-
-void LayerTreeView::UpdateBrowserControlsState(
-    cc::BrowserControlsState constraints,
-    cc::BrowserControlsState current,
-    bool animate) {
-  layer_tree_host_->UpdateBrowserControlsState(constraints, current, animate);
-}
-
-void LayerTreeView::SetBrowserControlsHeight(float top_height,
-                                             float bottom_height,
-                                             bool shrink) {
-  layer_tree_host_->SetBrowserControlsHeight(top_height, bottom_height, shrink);
-}
-
-void LayerTreeView::SetBrowserControlsShownRatio(float ratio) {
-  layer_tree_host_->SetBrowserControlsShownRatio(ratio);
 }
 
 void LayerTreeView::WillBeginMainFrame() {
@@ -244,6 +216,14 @@ void LayerTreeView::DidUpdateLayers() {
 void LayerTreeView::BeginMainFrame(const viz::BeginFrameArgs& args) {
   web_main_thread_scheduler_->WillBeginFrame(args);
   delegate_->BeginMainFrame(args.frame_time);
+}
+
+void LayerTreeView::OnDeferMainFrameUpdatesChanged(bool status) {
+  delegate_->OnDeferMainFrameUpdatesChanged(status);
+}
+
+void LayerTreeView::OnDeferCommitsChanged(bool status) {
+  delegate_->OnDeferCommitsChanged(status);
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedSoon() {
@@ -367,10 +347,6 @@ void LayerTreeView::DidSubmitCompositorFrame() {}
 
 void LayerTreeView::DidLoseLayerTreeFrameSink() {}
 
-void LayerTreeView::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  frame_sink_id_ = frame_sink_id;
-}
-
 void LayerTreeView::SetRasterColorSpace(const gfx::ColorSpace& color_space) {
   layer_tree_host_->SetRasterColorSpace(color_space);
 }
@@ -384,10 +360,6 @@ void LayerTreeView::SetExternalPageScaleFactor(
 
 void LayerTreeView::ClearCachesOnNextCommit() {
   layer_tree_host_->ClearCachesOnNextCommit();
-}
-
-void LayerTreeView::RequestBeginMainFrameNotExpected(bool new_state) {
-  layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
 }
 
 const cc::LayerTreeSettings& LayerTreeView::GetLayerTreeSettings() const {

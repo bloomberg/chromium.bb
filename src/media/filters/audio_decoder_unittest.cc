@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
@@ -134,12 +134,12 @@ class AudioDecoderTest
     switch (decoder_type_) {
       case FFMPEG:
         decoder_.reset(new FFmpegAudioDecoder(
-            scoped_task_environment_.GetMainThreadTaskRunner(), &media_log_));
+            task_environment_.GetMainThreadTaskRunner(), &media_log_));
         break;
 #if defined(OS_ANDROID)
       case MEDIA_CODEC:
         decoder_.reset(new MediaCodecAudioDecoder(
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+            task_environment_.GetMainThreadTaskRunner()));
         break;
 #endif
     }
@@ -393,7 +393,7 @@ class AudioDecoderTest
   // that the decoder can be reinitialized with different parameters.
   TestParams params_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   NullMediaLog media_log_;
   scoped_refptr<DecoderBuffer> data_;

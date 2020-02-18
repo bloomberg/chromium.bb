@@ -27,7 +27,7 @@ namespace dawn_wire { namespace client {
                 std::is_same<Handle, MemoryTransferService::WriteHandle>::value;
 
             // Get the serialization size of the handle.
-            size_t handleCreateInfoLength = handle->SerializeCreate();
+            size_t handleCreateInfoLength = handle->SerializeCreateSize();
 
             BufferMapAsyncCmd cmd;
             cmd.bufferId = buffer->id;
@@ -59,7 +59,7 @@ namespace dawn_wire { namespace client {
         MemoryTransferService::ReadHandle* readHandle =
             buffer->device->GetClient()->GetMemoryTransferService()->CreateReadHandle(buffer->size);
         if (readHandle == nullptr) {
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST, nullptr, 0, userdata);
+            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST, nullptr, 0, userdata);
             return;
         }
 
@@ -90,7 +90,7 @@ namespace dawn_wire { namespace client {
             buffer->device->GetClient()->GetMemoryTransferService()->CreateWriteHandle(
                 buffer->size);
         if (writeHandle == nullptr) {
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST, nullptr, 0, userdata);
+            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST, nullptr, 0, userdata);
             return;
         }
 
@@ -171,7 +171,7 @@ namespace dawn_wire { namespace client {
         buffer->writeHandle = std::move(writeHandle);
 
         // Get the serialization size of the WriteHandle.
-        size_t handleCreateInfoLength = buffer->writeHandle->SerializeCreate();
+        size_t handleCreateInfoLength = buffer->writeHandle->SerializeCreateSize();
 
         DeviceCreateBufferMappedCmd cmd;
         cmd.device = cDevice;
@@ -223,7 +223,7 @@ namespace dawn_wire { namespace client {
             result.buffer = reinterpret_cast<DawnBuffer>(buffer);
             result.data = nullptr;
             result.dataLength = 0;
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST, result, userdata);
+            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST, result, userdata);
             return;
         }
 
@@ -246,7 +246,7 @@ namespace dawn_wire { namespace client {
         buffer->requests[serial] = std::move(request);
 
         // Get the serialization size of the WriteHandle.
-        size_t handleCreateInfoLength = writeHandle->SerializeCreate();
+        size_t handleCreateInfoLength = writeHandle->SerializeCreateSize();
 
         DeviceCreateBufferMappedAsyncCmd cmd;
         cmd.device = cDevice;
@@ -264,6 +264,16 @@ namespace dawn_wire { namespace client {
         writeHandle->SerializeCreate(allocatedBuffer + commandSize);
     }
 
+    void ClientDevicePushErrorScope(DawnDevice cDevice, DawnErrorFilter filter) {
+        Device* device = reinterpret_cast<Device*>(cDevice);
+        device->PushErrorScope(filter);
+    }
+
+    bool ClientDevicePopErrorScope(DawnDevice cDevice, DawnErrorCallback callback, void* userdata) {
+        Device* device = reinterpret_cast<Device*>(cDevice);
+        return device->RequestPopErrorScope(callback, userdata);
+    }
+
     uint64_t ClientFenceGetCompletedValue(DawnFence cSelf) {
         auto fence = reinterpret_cast<Fence*>(cSelf);
         return fence->completedValue;
@@ -275,7 +285,8 @@ namespace dawn_wire { namespace client {
                                  void* userdata) {
         Fence* fence = reinterpret_cast<Fence*>(cFence);
         if (value > fence->signaledValue) {
-            fence->device->HandleError("Value greater than fence signaled value");
+            fence->device->HandleError(DAWN_ERROR_TYPE_VALIDATION,
+                                       "Value greater than fence signaled value");
             callback(DAWN_FENCE_COMPLETION_STATUS_ERROR, userdata);
             return;
         }
@@ -326,7 +337,7 @@ namespace dawn_wire { namespace client {
             ASSERT(buffer->readHandle == nullptr);
 
             // Get the serialization size of metadata to flush writes.
-            size_t writeFlushInfoLength = buffer->writeHandle->SerializeFlush();
+            size_t writeFlushInfoLength = buffer->writeHandle->SerializeFlushSize();
 
             BufferUpdateMappedDataCmd cmd;
             cmd.bufferId = buffer->id;
@@ -384,11 +395,13 @@ namespace dawn_wire { namespace client {
         Queue* queue = reinterpret_cast<Queue*>(cQueue);
         if (fence->queue != queue) {
             fence->device->HandleError(
+                DAWN_ERROR_TYPE_VALIDATION,
                 "Fence must be signaled on the queue on which it was created.");
             return;
         }
         if (signalValue <= fence->signaledValue) {
-            fence->device->HandleError("Fence value less than or equal to signaled value");
+            fence->device->HandleError(DAWN_ERROR_TYPE_VALIDATION,
+                                       "Fence value less than or equal to signaled value");
             return;
         }
         fence->signaledValue = signalValue;
@@ -410,11 +423,11 @@ namespace dawn_wire { namespace client {
     void ClientDeviceRelease(DawnDevice) {
     }
 
-    void ClientDeviceSetErrorCallback(DawnDevice cSelf,
-                                      DawnDeviceErrorCallback callback,
-                                      void* userdata) {
+    void ClientDeviceSetUncapturedErrorCallback(DawnDevice cSelf,
+                                                DawnErrorCallback callback,
+                                                void* userdata) {
         Device* device = reinterpret_cast<Device*>(cSelf);
-        device->SetErrorCallback(callback, userdata);
+        device->SetUncapturedErrorCallback(callback, userdata);
     }
 
 }}  // namespace dawn_wire::client

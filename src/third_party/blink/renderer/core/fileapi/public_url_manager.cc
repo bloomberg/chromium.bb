@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
@@ -111,15 +112,13 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   DCHECK(!url.IsEmpty());
   const String& url_string = url.GetString();
 
-  mojom::blink::BlobPtr blob;
-  if (BlobUtils::MojoBlobURLsEnabled())
-    blob = registrable->AsMojoBlob();
+  mojo::PendingRemote<mojom::blink::Blob> blob = registrable->AsMojoBlob();
   if (blob) {
     // Measure how much jank the following synchronous IPC introduces.
     SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterPublicURLTime");
     if (!url_store_) {
       BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-          origin, MakeRequest(&url_store_));
+          origin, url_store_.BindNewEndpointAndPassReceiver());
     }
     url_store_->Register(std::move(blob), url);
     mojo_urls_.insert(url_string);
@@ -144,14 +143,14 @@ void PublicURLManager::Revoke(const KURL& url) {
           GetExecutionContext()->GetSecurityOrigin()))
     return;
 
-  if (BlobUtils::MojoBlobURLsEnabled()) {
-    if (!url_store_) {
-      BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-          GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
-    }
-    url_store_->Revoke(url);
-    mojo_urls_.erase(url.GetString());
+  if (!url_store_) {
+    BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
+        GetExecutionContext()->GetSecurityOrigin(),
+        url_store_.BindNewEndpointAndPassReceiver());
   }
+  url_store_->Revoke(url);
+  mojo_urls_.erase(url.GetString());
+
   RemoveFromOriginMap(url);
   auto it = url_to_registry_.find(url.GetString());
   if (it == url_to_registry_.end())
@@ -166,28 +165,28 @@ void PublicURLManager::Resolve(
   if (is_stopped_)
     return;
 
-  DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
     BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-        GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
+        GetExecutionContext()->GetSecurityOrigin(),
+        url_store_.BindNewEndpointAndPassReceiver());
   }
   url_store_->ResolveAsURLLoaderFactory(url, std::move(factory_request));
 }
 
 void PublicURLManager::Resolve(
     const KURL& url,
-    mojom::blink::BlobURLTokenRequest token_request) {
+    mojo::PendingReceiver<mojom::blink::BlobURLToken> token_receiver) {
   if (is_stopped_)
     return;
 
-  DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
     BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-        GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
+        GetExecutionContext()->GetSecurityOrigin(),
+        url_store_.BindNewEndpointAndPassReceiver());
   }
-  url_store_->ResolveForNavigation(url, std::move(token_request));
+  url_store_->ResolveForNavigation(url, std::move(token_receiver));
 }
 
 void PublicURLManager::ContextDestroyed(ExecutionContext*) {

@@ -105,6 +105,13 @@ const char kCryptohomeTpmAttestationSignEnterpriseChallenge[] =
     "TpmAttestationSignEnterpriseChallenge";
 const char kCryptohomeTpmAttestationSignEnterpriseVaChallenge[] =
     "TpmAttestationSignEnterpriseVaChallenge";
+// TODO(crbug.com/988367,b/35580115): This temporary method is used to change
+// the signature of |kCryptohomeTpmAttestationSignEnterpriseVaChallenge| to
+// accept a new argument. The plan is to migrate this to a function that takes
+// a protobuf for easier interface changes in the future. This method will be
+// removed when tha tis done.
+const char kCryptohomeTpmAttestationSignEnterpriseVaChallengeV2[] =
+    "TpmAttestationSignEnterpriseVaChallengeV2";
 const char kCryptohomeTpmAttestationSignSimpleChallenge[] =
     "TpmAttestationSignSimpleChallenge";
 const char kCryptohomeTpmAttestationGetKeyPayload[] =
@@ -122,6 +129,8 @@ const char kCryptohomeMountEx[] = "MountEx";
 const char kCryptohomeAddKeyEx[] = "AddKeyEx";
 const char kCryptohomeUpdateKeyEx[] = "UpdateKeyEx";
 const char kCryptohomeRemoveKeyEx[] = "RemoveKeyEx";
+const char kCryptohomeAddDataRestoreKey[] = "AddDataRestoreKey";
+const char kCryptohomeMassRemoveKeys[] = "MassRemoveKeys";
 const char kCryptohomeSignBootLockbox[] = "SignBootLockbox";
 const char kCryptohomeVerifyBootLockbox[] = "VerifyBootLockbox";
 const char kCryptohomeFinalizeBootLockbox[] = "FinalizeBootLockbox";

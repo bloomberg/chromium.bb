@@ -19,7 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -195,7 +195,7 @@ class TestBoundDelegate final : public InjectableTestDelegate {
 };
 
 enum class RunLoopTestType {
-  // Runs all RunLoopTests under a ScopedTaskEnvironment to make sure real world
+  // Runs all RunLoopTests under a TaskEnvironment to make sure real world
   // scenarios work.
   kRealEnvironment,
 
@@ -211,7 +211,7 @@ class RunLoopTestEnvironment {
   RunLoopTestEnvironment(RunLoopTestType type) {
     switch (type) {
       case RunLoopTestType::kRealEnvironment: {
-        task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
+        task_environment_ = std::make_unique<test::TaskEnvironment>();
         break;
       }
       case RunLoopTestType::kTestDelegate: {
@@ -225,7 +225,7 @@ class RunLoopTestEnvironment {
 
  private:
   // Instantiates one or the other based on the RunLoopTestType.
-  std::unique_ptr<test::ScopedTaskEnvironment> task_environment_;
+  std::unique_ptr<test::TaskEnvironment> task_environment_;
   std::unique_ptr<InjectableTestDelegate> test_delegate_;
 };
 
@@ -281,123 +281,6 @@ TEST_P(RunLoopTest, QuitWhenIdleClosure) {
       FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE), TimeDelta::FromDays(1));
 
   run_loop_.Run();
-}
-
-TEST_P(RunLoopTest, RunWithTimeout) {
-  // SimpleSingleThreadTaskRunner doesn't support delayed tasks.
-  if (GetParam() == RunLoopTestType::kTestDelegate)
-    return;
-
-  bool task1_run = false;
-  bool task2_run = false;
-  bool task3_run = false;
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task1_run = true; }),
-      TimeDelta::FromMilliseconds(10));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task2_run = true; }),
-      TimeDelta::FromMilliseconds(20));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task3_run = true; }),
-      TimeDelta::FromSeconds(10));
-
-  run_loop_.RunWithTimeout(TimeDelta::FromMilliseconds(20));
-  EXPECT_TRUE(task1_run);
-  EXPECT_TRUE(task2_run);
-  EXPECT_FALSE(task3_run);
-}
-
-// TODO(https://crbug.com/970187): This test is inherently flaky.
-TEST_P(RunLoopTest, DISABLED_NestedRunWithTimeout) {
-  // SimpleSingleThreadTaskRunner doesn't support delayed tasks.
-  if (GetParam() == RunLoopTestType::kTestDelegate)
-    return;
-
-  bool task1_run = false;
-  bool task2_run = false;
-  bool task3_run = false;
-  bool task4_run = false;
-  bool task5_run = false;
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task1_run = true; }),
-      TimeDelta::FromMilliseconds(10));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() {
-        task2_run = true;
-        EXPECT_FALSE(task3_run);
-        RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
-        nested_run_loop.RunWithTimeout(TimeDelta::FromMilliseconds(20));
-        EXPECT_TRUE(task3_run);
-        EXPECT_TRUE(task4_run);
-      }),
-      TimeDelta::FromMilliseconds(20));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task3_run = true; }),
-      TimeDelta::FromMilliseconds(30));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task4_run = true; }),
-      TimeDelta::FromMilliseconds(40));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task5_run = true; }),
-      TimeDelta::FromSeconds(10));
-
-  run_loop_.RunWithTimeout(TimeDelta::FromMilliseconds(40));
-  EXPECT_TRUE(task1_run);
-  EXPECT_TRUE(task2_run);
-  EXPECT_TRUE(task3_run);
-  EXPECT_TRUE(task4_run);
-  EXPECT_FALSE(task5_run);
-}
-
-TEST_P(RunLoopTest, NestedRunWithTimeoutWhereInnerLoopHasALongerTimeout) {
-  // SimpleSingleThreadTaskRunner doesn't support delayed tasks.
-  if (GetParam() == RunLoopTestType::kTestDelegate)
-    return;
-
-  bool task1_run = false;
-  bool task2_run = false;
-  bool task3_run = false;
-  bool task4_run = false;
-  bool task5_run = false;
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task1_run = true; }),
-      TimeDelta::FromMilliseconds(10));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() {
-        task2_run = true;
-        EXPECT_FALSE(task3_run);
-        RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
-        nested_run_loop.RunWithTimeout(TimeDelta::FromMilliseconds(50));
-        EXPECT_TRUE(task3_run);
-        EXPECT_TRUE(task4_run);
-      }),
-      TimeDelta::FromMilliseconds(20));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task3_run = true; }),
-      TimeDelta::FromMilliseconds(30));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task4_run = true; }),
-      TimeDelta::FromMilliseconds(40));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindLambdaForTesting([&]() { task5_run = true; }),
-      TimeDelta::FromMilliseconds(50));
-
-  run_loop_.RunWithTimeout(TimeDelta::FromMilliseconds(40));
-  EXPECT_TRUE(task1_run);
-  EXPECT_TRUE(task2_run);
-  EXPECT_TRUE(task3_run);
-  EXPECT_TRUE(task4_run);
-  EXPECT_TRUE(task5_run);
 }
 
 // Verify that the QuitWhenIdleClosure() can run after the RunLoop has been
@@ -666,7 +549,7 @@ INSTANTIATE_TEST_SUITE_P(Mock,
                          testing::Values(RunLoopTestType::kTestDelegate));
 
 TEST(ScopedRunTimeoutForTestTest, TimesOut) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
   RunLoop run_loop;
 
   static constexpr auto kArbitraryTimeout =
@@ -691,7 +574,7 @@ TEST(ScopedRunTimeoutForTestTest, TimesOut) {
 }
 
 TEST(ScopedRunTimeoutForTestTest, RunTasksUntilTimeout) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
   RunLoop run_loop;
 
   static constexpr auto kArbitraryTimeout =

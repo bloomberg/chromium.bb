@@ -29,8 +29,7 @@
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/task/thread_pool/thread_group.h"
 #include "base/task/thread_pool/thread_group_impl.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 
@@ -65,11 +64,9 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   //|histogram_label| is used to label histograms, it must not be empty.
   explicit ThreadPoolImpl(StringPiece histogram_label);
 
-  // For testing only. Creates a ThreadPoolImpl with a custom TaskTracker and
-  // TickClock.
+  // For testing only. Creates a ThreadPoolImpl with a custom TaskTracker.
   ThreadPoolImpl(StringPiece histogram_label,
-                 std::unique_ptr<TaskTrackerImpl> task_tracker,
-                 const TickClock* tick_clock);
+                 std::unique_ptr<TaskTrackerImpl> task_tracker);
 
   ~ThreadPoolImpl() override;
 
@@ -103,6 +100,11 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
 #endif  // defined(OS_WIN)
   scoped_refptr<UpdateableSequencedTaskRunner>
   CreateUpdateableSequencedTaskRunner(const TaskTraits& traits);
+
+  // PooledTaskRunnerDelegate:
+  bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
+  void UpdatePriority(scoped_refptr<TaskSource> task_source,
+                      TaskPriority priority) override;
 
   // Returns the TimeTicks of the next task scheduled on ThreadPool (Now() if
   // immediate, nullopt if none). This is thread-safe, i.e., it's safe if tasks
@@ -138,14 +140,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
-  bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
-  void UpdatePriority(scoped_refptr<TaskSource> task_source,
-                      TaskPriority priority) override;
-
-  // The clock instance used by all classes in base/task/thread_pool. Must
-  // outlive everything else to ensure no discrepancy in Now().
-  ThreadPoolClock thread_pool_clock_;
+  bool ShouldYield(const TaskSource* task_source) const override;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;

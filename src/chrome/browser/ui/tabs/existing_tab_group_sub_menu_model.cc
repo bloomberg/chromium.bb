@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 constexpr int kFirstCommandIndex =
@@ -23,9 +23,8 @@ void ExistingTabGroupSubMenuModel::Build() {
   // Start command ids after the parent menu's ids to avoid collisions.
   int group_index = kFirstCommandIndex;
   for (TabGroupId group : model_->ListTabGroups()) {
-    if (ShouldShowGroup(model_, context_index_, group)) {
-      AddItem(group_index, model_->GetDataForGroup(group)->title());
-    }
+    if (ShouldShowGroup(model_, context_index_, group))
+      AddItem(group_index, model_->GetUserVisibleGroupTitle(group));
     group_index++;
   }
 }

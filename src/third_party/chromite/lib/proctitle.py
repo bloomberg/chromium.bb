@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import __main__ as main
 import os
+
+import __main__ as main
 
 # Import the relevant funcs into our namespace for callers.
 try:

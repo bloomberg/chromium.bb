@@ -31,16 +31,13 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
-#include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
-#include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_util.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
@@ -56,6 +53,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 #include "third_party/webrtc/pc/media_session.h"
 #include "third_party/webrtc/pc/session_description.h"
@@ -510,7 +508,7 @@ void GetRTCStatsOnSignalingThread(
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
-  native_peer_connection->GetStats(RTCStatsCollectorCallbackImpl::Create(
+  native_peer_connection->GetStats(blink::CreateRTCStatsCollectorCallback(
       main_thread, std::move(callback), exposed_group_ids));
 }
 
@@ -811,7 +809,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 class RTCPeerConnectionHandler::Observer
     : public base::RefCountedThreadSafe<RTCPeerConnectionHandler::Observer>,
       public PeerConnectionObserver,
-      public RtcEventLogOutputSink {
+      public blink::RtcEventLogOutputSink {
  public:
   Observer(const base::WeakPtr<RTCPeerConnectionHandler>& handler,
            scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -1458,13 +1456,8 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSetConfiguration(this, new_configuration);
 
-  webrtc::RTCError webrtc_error;
-  bool ret = native_peer_connection_->SetConfiguration(new_configuration,
-                                                       &webrtc_error);
-  // The boolean return value is made redundant by the error output param; just
-  // DCHECK that they're consistent.
-  DCHECK_EQ(ret, webrtc_error.type() == webrtc::RTCErrorType::NONE);
-
+  webrtc::RTCError webrtc_error =
+      native_peer_connection_->SetConfiguration(new_configuration);
   if (webrtc_error.ok()) {
     configuration_ = new_configuration;
   }
@@ -1948,8 +1941,7 @@ void RTCPeerConnectionHandler::StartEventLog(int output_period_ms) {
   // or find a way to be able to use it.
   // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
-      std::make_unique<RtcEventLogOutputSinkProxy>(
-          peer_connection_observer_.get()),
+      blink::CreateRtcEventLogOutputSinkProxy(peer_connection_observer_.get()),
       output_period_ms);
 }
 

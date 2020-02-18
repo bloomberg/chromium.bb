@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
 #include "storage/browser/test/mock_storage_client.h"
@@ -151,8 +151,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 class QuotaTemporaryStorageEvictorTest : public testing::Test {
  public:
   QuotaTemporaryStorageEvictorTest()
-      : num_get_usage_and_quota_for_eviction_(0),
-        weak_factory_(this) {}
+      : num_get_usage_and_quota_for_eviction_(0) {}
 
   void SetUp() override {
     quota_eviction_handler_.reset(new MockQuotaEvictionHandler(this));
@@ -215,11 +214,11 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
     return num_get_usage_and_quota_for_eviction_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
   std::unique_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   int num_get_usage_and_quota_for_eviction_;
-  base::WeakPtrFactory<QuotaTemporaryStorageEvictorTest> weak_factory_;
+  base::WeakPtrFactory<QuotaTemporaryStorageEvictorTest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(QuotaTemporaryStorageEvictorTest);
 };
 

@@ -10,6 +10,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -31,11 +32,11 @@ bool IsVPNVisibleInSystemTray() {
 
   // Show the VPN entry in the ash tray bubble if at least one third-party VPN
   // provider is installed.
-  if (Shell::Get()->vpn_list()->HaveThirdPartyOrArcVPNProviders())
+  if (Shell::Get()->vpn_list()->HaveExtensionOrArcVpnProviders())
     return true;
 
   // Also show the VPN entry if at least one VPN network is configured.
-  return Shell::Get()->system_tray_model()->network_state_model()->active_vpn();
+  return Shell::Get()->system_tray_model()->network_state_model()->has_vpn();
 }
 
 }  // namespace

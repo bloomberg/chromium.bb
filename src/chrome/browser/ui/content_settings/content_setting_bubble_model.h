@@ -17,13 +17,16 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -55,6 +58,7 @@ class RapporServiceImpl;
 //   ContentSettingMediaStreamBubbleModel        - media (camera and mic)
 //   ContentSettingSubresourceFilterBubbleModel  - filtered subresources
 //   ContentSettingDownloadsBubbleModel          - automatic downloads
+//   ContentSettingNotificationsBubbleModel      - notifications
 
 // Forward declaration necessary for downcasts.
 class ContentSettingSimpleBubbleModel;
@@ -62,6 +66,7 @@ class ContentSettingMediaStreamBubbleModel;
 class ContentSettingSubresourceFilterBubbleModel;
 class ContentSettingDownloadsBubbleModel;
 class ContentSettingFramebustBlockBubbleModel;
+class ContentSettingNotificationsBubbleModel;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
@@ -70,15 +75,19 @@ class ContentSettingBubbleModel {
   typedef ContentSettingBubbleModelDelegate Delegate;
 
   struct ListItem {
-    ListItem(const gfx::Image& image,
+    ListItem(const gfx::VectorIcon* image,
              const base::string16& title,
+             const base::string16& description,
              bool has_link,
-             int32_t item_id)
-        : image(image), title(title), has_link(has_link), item_id(item_id) {}
-
-    gfx::Image image;
+             bool has_blocked_badge,
+             int32_t item_id);
+    ListItem(const ListItem& other);
+    ListItem& operator=(const ListItem& other);
+    const gfx::VectorIcon* image;
     base::string16 title;
+    base::string16 description;
     bool has_link;
+    bool has_blocked_badge;
     int32_t item_id;
   };
   typedef std::vector<ListItem> ListItems;
@@ -182,7 +191,7 @@ class ContentSettingBubbleModel {
   virtual void OnLearnMoreClicked() {}
   virtual void OnMediaMenuClicked(blink::mojom::MediaStreamType type,
                                   const std::string& selected_device_id) {}
-
+  virtual void OnDoneButtonClicked() {}
   // Called by the view code when the bubble is closed
   virtual void CommitChanges() {}
 
@@ -207,6 +216,9 @@ class ContentSettingBubbleModel {
   // Cast this bubble into ContentSettingFramebustBlockBubbleModel if possible.
   virtual ContentSettingFramebustBlockBubbleModel*
   AsFramebustBlockBubbleModel();
+
+  // Cast this bubble into ContentSettingNotificationsBubbleModel if possible.
+  virtual ContentSettingNotificationsBubbleModel* AsNotificationsBubbleModel();
 
   // Sets the Rappor service used for testing.
   void SetRapporServiceImplForTesting(
@@ -340,6 +352,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel() override;
   void CommitChanges() override;
   void OnManageButtonClicked() override;
+  void OnDoneButtonClicked() override;
 
  private:
   // Helper functions to check if this bubble was invoked for microphone,
@@ -366,6 +379,16 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   // Updates the camera and microphone setting with the passed |setting|.
   void UpdateSettings(ContentSetting setting);
 
+#if defined(OS_MACOSX)
+  // Initialize the bubble with the elements specific to the scenario when
+  // camera or mic are disabled in a system (OS) level.
+  void InitializeSystemMediaPermissionBubble();
+#endif  // defined(OS_MACOSX)
+
+  // Whether or not to show the bubble UI specific to when media permissions are
+  // turned off in a system level.
+  bool ShouldShowSystemMediaPermissions();
+
   // Updates the camera and microphone default device with the passed |type|
   // and device.
   void UpdateDefaultDeviceForType(blink::mojom::MediaStreamType type,
@@ -382,6 +405,29 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   TabSpecificContentSettings::MicrophoneCameraState state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
+};
+
+// The model of a bubble that acts as a quiet permission request prompt for
+// notifications. In contrast to other bubbles (which display the current
+// permission state after the user makes the initial decision), this is shown
+// before the user makes the first ever permission decisions.
+class ContentSettingNotificationsBubbleModel
+    : public ContentSettingBubbleModel {
+ public:
+  ContentSettingNotificationsBubbleModel(Delegate* delegate,
+                                         content::WebContents* web_contents);
+
+  ~ContentSettingNotificationsBubbleModel() override;
+
+ private:
+  void SetManageText();
+
+  // ContentSettingBubbleModel:
+  void OnManageButtonClicked() override;
+  void OnDoneButtonClicked() override;
+  ContentSettingNotificationsBubbleModel* AsNotificationsBubbleModel() override;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingNotificationsBubbleModel);
 };
 
 // The model for the deceptive content bubble.

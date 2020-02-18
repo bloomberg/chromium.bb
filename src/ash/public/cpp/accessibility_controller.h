@@ -66,10 +66,6 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   virtual void SetSelectToSpeakEventHandlerDelegate(
       SelectToSpeakEventHandlerDelegate* delegate) = 0;
 
-  // Sets the key codes that Switch Access should capture.
-  virtual void SetSwitchAccessKeysToCapture(
-      const std::vector<int>& keys_to_capture) = 0;
-
   // Set the delegate used by the Switch Access event handler.
   virtual void SetSwitchAccessEventHandlerDelegate(
       SwitchAccessEventHandlerDelegate* delegate) = 0;
@@ -98,6 +94,16 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   // the public interface because a11y features like screen magnifier are
   // managed outside of this accessibility controller.
   virtual void NotifyAccessibilityStatusChanged() = 0;
+
+  // Returns true if the |path| pref is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  virtual bool IsAccessibilityFeatureVisibleInTrayMenu(
+      const std::string& path) = 0;
+
+  // Sets whether Switch Access ignores virtual key events.
+  virtual void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
+      bool should_ignore) = 0;
 
  protected:
   AccessibilityController();

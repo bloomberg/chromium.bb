@@ -16,9 +16,12 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -59,7 +62,7 @@ void OpenPageInfoBubble(Browser* browser) {
   ClickEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_NE(nullptr, page_info);
   page_info->set_close_on_deactivate(false);
 }
@@ -68,7 +71,7 @@ void OpenPageInfoBubble(Browser* browser) {
 // |view_id|.
 views::View* GetView(Browser* browser, int view_id) {
   views::Widget* page_info_bubble =
-      PageInfoBubbleView::GetPageInfoBubble()->GetWidget();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetWidget();
   EXPECT_TRUE(page_info_bubble);
 
   views::View* view = page_info_bubble->GetRootView()->GetViewByID(view_id);
@@ -97,30 +100,57 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
     // In browser tests, the profile may already by authenticated with stub
     // account |user_manager::kStubUserEmail|.
     CoreAccountInfo info =
-        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
+        IdentityManagerFactory::GetForProfile(browser()->profile())
+            ->GetPrimaryAccountInfo();
     username = info.email;
 #endif
     if (username.empty()) {
-      browser()->profile()->GetPrefs()->SetString(
-          prefs::kGoogleServicesUsername, "user@domain.com");
-      username = "user@domain.com";
+      username = "user@gmail.com";
     }
 
     std::unique_ptr<ProfileSyncServiceHarness> harness =
         ProfileSyncServiceHarness::Create(
-            profile, username, "password",
+            browser()->profile(), username, "password",
             ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
-    EXPECT_TRUE(harness->SetupSync());
+
+#if !defined(OS_CHROMEOS)
+    // Sign the profile in.
+    ASSERT_TRUE(harness->SignInPrimaryAccount());
+#endif
+
+    CoreAccountInfo current_info =
+        IdentityManagerFactory::GetForProfile(browser()->profile())
+            ->GetPrimaryAccountInfo();
+    // Need to update hosted domain since it is not populated.
+    AccountInfo account_info;
+    account_info.account_id = current_info.account_id;
+    account_info.gaia = current_info.gaia;
+    account_info.email = current_info.email;
+    account_info.hosted_domain = kNoHostedDomainFound;
+    signin::UpdateAccountInfoForAccount(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        account_info);
+
+    ASSERT_TRUE(harness->SetupSync());
+  }
+
+  const base::string16 GetPageInfoBubbleViewDetailText() {
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    return page_info_bubble_view->details_text();
   }
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewSyncBrowserTest);
 };
 
 // Test opening page info bubble that matches
-// SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE threat type.
+// SB_THREAT_TYPE_GAIA_PASSWORD_REUSE threat type.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
                        VerifySignInPasswordReusePageInfoBubble) {
   Profile* profile = browser()->profile();
+  // PageInfo calls GetPasswordProtectionReusedPasswordAccountType which checks
+  // to see if the account is syncing.
   SetupSyncForAccount(profile);
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -128,13 +158,22 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   histograms.ExpectTotalCount(safe_browsing::kSyncPasswordPageInfoHistogram, 0);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
   // Update security state of the current page to match
-  // SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE.
+  // SB_THREAT_TYPE_GAIA_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
       ChromePasswordProtectionService::GetPasswordProtectionService(profile);
+  service->set_username_for_last_shown_warning("user@gmail.com");
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(contents, "token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  safe_browsing::ReusedPasswordAccountType account_type;
+  account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::GMAIL);
+  account_type.set_is_account_syncing(true);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      account_type);
+  service->ShowModalWarning(
+      contents, safe_browsing::RequestOutcome::UNKNOWN,
+      safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", account_type);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
@@ -147,8 +186,12 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
       SecurityStateTabHelper::FromWebContents(contents);
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       helper->GetVisibleSecurityState();
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            visible_security_state->malicious_content_status);
+  ASSERT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      visible_security_state->malicious_content_status);
+  ASSERT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC),
+      GetPageInfoBubbleViewDetailText());
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());

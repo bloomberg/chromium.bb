@@ -24,9 +24,7 @@
 
 #include <bitset>
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -132,15 +130,21 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     kLengthUnitTypeCount,
   };
 
+  using LengthTypeFlags = std::bitset<kLengthUnitTypeCount>;
   struct CSSLengthArray {
     CSSLengthArray() : values(kLengthUnitTypeCount) {
     }
 
     Vector<double, CSSPrimitiveValue::kLengthUnitTypeCount> values;
-    std::bitset<kLengthUnitTypeCount> type_flags;
+    LengthTypeFlags type_flags;
   };
 
-  void AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
+  // Returns false if the value cannot be represented as a length array, which
+  // happens when comparisons are involved (e.g., max(10px, 10%)).
+  bool AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
+
+  // Returns all types of length units involved in this value.
+  void AccumulateLengthUnitTypes(LengthTypeFlags& types) const;
 
   enum UnitCategory {
     kUNumber,
@@ -160,7 +164,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
            unit == UnitType::kGradians || unit == UnitType::kTurns;
   }
   bool IsAngle() const;
-  bool IsFontRelativeLength() const;
   static bool IsViewportPercentageLength(UnitType type) {
     return type >= UnitType::kViewportWidth && type <= UnitType::kViewportMax;
   }
@@ -289,7 +292,8 @@ int16_t CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData&) const;
 
 template <>
-float CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
+CORE_EXPORT float CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData&) const;
 
 template <>
 double CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;

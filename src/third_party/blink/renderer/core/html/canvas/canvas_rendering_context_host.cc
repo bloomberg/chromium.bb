@@ -108,24 +108,24 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
               kSoftwareCompositedResourceUsage;
         }
 
-        CanvasResourceProvider::PresentationMode presentation_mode;
-        if (RuntimeEnabledFeatures::WebGLSwapChainEnabled()) {
-          presentation_mode =
-              CanvasResourceProvider::kAllowSwapChainPresentationMode;
-        } else if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-          presentation_mode =
+        uint8_t presentation_mode =
+            CanvasResourceProvider::kDefaultPresentationMode;
+        if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+          presentation_mode |=
               CanvasResourceProvider::kAllowImageChromiumPresentationMode;
-        } else {
-          presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
         }
-
-        const bool is_origin_top_left =
-            !SharedGpuContext::IsGpuCompositingEnabled();
+        // Allow swap chain presentation only if 3d context is using a swap
+        // chain since we'll be importing it as a passthrough texture.
+        if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
+          presentation_mode |=
+              CanvasResourceProvider::kAllowSwapChainPresentationMode;
+        }
 
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
-            0 /* msaa_sample_count */, ColorParams(), presentation_mode,
-            std::move(dispatcher), is_origin_top_left));
+            0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
+            presentation_mode, std::move(dispatcher),
+            RenderingContext()->IsOriginTopLeft()));
       } else {
         DCHECK(Is2d());
         const bool want_acceleration =
@@ -141,23 +141,43 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
                 kAcceleratedCompositedResourceUsage;
           }
         } else {
-          usage = CanvasResourceProvider::ResourceUsage::
-              kSoftwareCompositedResourceUsage;
+          if (LowLatencyEnabled()) {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kSoftwareCompositedDirect2DResourceUsage;
+          } else {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kSoftwareCompositedResourceUsage;
+          }
         }
 
-        const CanvasResourceProvider::PresentationMode presentation_mode =
-            (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
-             (LowLatencyEnabled() && want_acceleration))
-                ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-                : CanvasResourceProvider::kDefaultPresentationMode;
+        uint8_t presentation_mode =
+            CanvasResourceProvider::kDefaultPresentationMode;
+        // Allow GMB image resources if the runtime feature is enabled or if
+        // we want to use it for low latency mode.
+        if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
+            (LowLatencyEnabled() && want_acceleration)) {
+          presentation_mode |=
+              CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+        }
+        // Allow swap chains only if the runtime feature is enabled and we're
+        // in low latency mode too.
+        if (RuntimeEnabledFeatures::Canvas2dSwapChainEnabled() &&
+            LowLatencyEnabled() && want_acceleration) {
+          presentation_mode |=
+              CanvasResourceProvider::kAllowSwapChainPresentationMode;
+        }
 
+        // It is important to not use the context's IsOriginTopLeft() here
+        // because that denotes the current state and could change after the
+        // new resource provider is created e.g. due to switching between
+        // unaccelerated and accelerated modes during tab switching.
         const bool is_origin_top_left =
             !want_acceleration || LowLatencyEnabled();
 
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
-            GetMSAASampleCountFor2dContext(), ColorParams(), presentation_mode,
-            std::move(dispatcher), is_origin_top_left));
+            GetMSAASampleCountFor2dContext(), FilterQuality(), ColorParams(),
+            presentation_mode, std::move(dispatcher), is_origin_top_left));
 
         if (ResourceProvider()) {
           // Always save an initial frame, to support resetting the top level
@@ -202,7 +222,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   }
 
   if (!this->IsPaintable() || Size().IsEmpty()) {
-    error_msg << "The size of " << object_name << " iz zero.";
+    error_msg << "The size of " << object_name << " is zero.";
     exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
                                       error_msg.str().c_str());
     return ScriptPromise();

@@ -150,7 +150,7 @@ class PrimitiveTopologyTest : public DawnTest {
 
             renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+            vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
                 void main() {
@@ -158,14 +158,15 @@ class PrimitiveTopologyTest : public DawnTest {
                     gl_PointSize = 1.0;
                 })");
 
-            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
                     fragColor = vec4(0.0, 1.0, 0.0, 1.0);
                 })");
 
-            vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices), dawn::BufferUsageBit::Vertex);
+            vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
+                                                       dawn::BufferUsage::Vertex);
         }
 
         struct LocationSpec {
@@ -182,7 +183,7 @@ class PrimitiveTopologyTest : public DawnTest {
         // Draw the vertices with the given primitive topology and check the pixel values of the test locations
         void DoTest(dawn::PrimitiveTopology primitiveTopology, const std::vector<LocationSpec> &locationSpecs) {
             utils::ComboRenderPipelineDescriptor descriptor(device);
-            descriptor.cVertexStage.module = vsModule;
+            descriptor.vertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = primitiveTopology;
             descriptor.cVertexInput.bufferCount = 1;

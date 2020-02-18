@@ -4,16 +4,12 @@
 
 #include "pdf/accessibility.h"
 
-#include "build/build_config.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
 #include "ppapi/c/private/ppb_pdf.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/system/sys_info.h"
-#endif
+#include "ppapi/c/private/ppp_pdf.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_pdf {
 
@@ -76,8 +72,10 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  ASSERT_TRUE(
-      GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs, &chars));
+  std::vector<PP_PrivateAccessibilityLinkInfo> links;
+  std::vector<PP_PrivateAccessibilityImageInfo> images;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &links, &images));
   EXPECT_EQ(0u, page_info.page_index);
   EXPECT_EQ(5, page_info.bounds.point.x);
   EXPECT_EQ(3, page_info.bounds.point.y);
@@ -85,12 +83,12 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   EXPECT_EQ(266, page_info.bounds.size.height);
   EXPECT_EQ(text_runs.size(), page_info.text_run_count);
   EXPECT_EQ(chars.size(), page_info.char_count);
+  // TODO(crbug.com/981448): Test the contents of |links| and |images| when
+  // populated.
+  EXPECT_EQ(links.size(), page_info.link_count);
+  EXPECT_EQ(images.size(), page_info.image_count);
 
-#if defined(OS_CHROMEOS)
-  bool is_chromeos = base::SysInfo::IsRunningOnChromeOS();
-#else
-  bool is_chromeos = false;
-#endif
+  bool is_chromeos = IsRunningOnChromeOS();
 
   ASSERT_EQ(kExpectedTextRunCount, text_runs.size());
   for (size_t i = 0; i < kExpectedTextRunCount; ++i) {
@@ -127,11 +125,11 @@ TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
 
   // The test rect spans across [0, 4] char indices.
   int start_index = -1;
-  uint32_t char_count = 0;
+  int char_count = 0;
   EXPECT_TRUE(page->GetUnderlyingTextRangeForRect(
       pp::FloatRect(20.0f, 50.0f, 26.0f, 8.0f), &start_index, &char_count));
   EXPECT_EQ(start_index, 0);
-  EXPECT_EQ(char_count, 5u);
+  EXPECT_EQ(char_count, 5);
 
   // The input rectangle is spanning across multiple lines.
   // GetUnderlyingTextRangeForRect() should return only the char indices
@@ -141,14 +139,54 @@ TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
   EXPECT_TRUE(page->GetUnderlyingTextRangeForRect(
       pp::FloatRect(20.0f, 0.0f, 26.0f, 58.0f), &start_index, &char_count));
   EXPECT_EQ(start_index, 0);
-  EXPECT_EQ(char_count, 5u);
+  EXPECT_EQ(char_count, 5);
 
   // There is no text below this rectangle. So, GetUnderlyingTextRangeForRect()
-  // will return false.
+  // will return false and not change the dummy values set here.
+  start_index = -9;
+  char_count = -10;
   EXPECT_FALSE(page->GetUnderlyingTextRangeForRect(
       pp::FloatRect(10.0f, 10.0f, 0.0f, 0.0f), &start_index, &char_count));
-  EXPECT_EQ(start_index, 0);
-  EXPECT_EQ(char_count, 5u);
+  EXPECT_EQ(start_index, -9);
+  EXPECT_EQ(char_count, -10);
+}
+
+// This class overrides TestClient to record points received when a scroll
+// call is made by tests.
+class ScrollEnabledTestClient : public TestClient {
+ public:
+  ScrollEnabledTestClient() = default;
+  ~ScrollEnabledTestClient() override = default;
+
+  // Records the point received in a ScrollBy action request from tests.
+  void ScrollBy(const pp::Point& point) override { received_point_ = point; }
+
+  // Returns the point received in a ScrollBy action for validation in tests.
+  const pp::Point& GetScrollRequestPoints() const { return received_point_; }
+
+ private:
+  pp::Point received_point_;
+};
+
+TEST_F(AccessibilityTest, TestScrollIntoViewActionHandling) {
+  // This test checks that accessibility scroll action is passed
+  // on to the ScrollEnabledTestClient implementation.
+  ScrollEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE;
+  action_data.target_rect = {{120, 0}, {10, 10}};
+  // As Pdfium::Client is mocked, we will receive the same points back.
+  engine->HandleAccessibilityAction(action_data);
+  EXPECT_EQ(action_data.target_rect.point, client.GetScrollRequestPoints());
+
+  // Simulate a zoom update in the PDFiumEngine.
+  engine->ZoomUpdated(1.5);
+  engine->HandleAccessibilityAction(action_data);
+  constexpr PP_Point kExpectedPoint = {180, 0};
+  EXPECT_EQ(kExpectedPoint, client.GetScrollRequestPoints());
 }
 
 }  // namespace chrome_pdf

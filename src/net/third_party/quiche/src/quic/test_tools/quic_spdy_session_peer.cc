@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 
 namespace quic {
@@ -13,11 +14,13 @@ namespace test {
 // static
 QuicHeadersStream* QuicSpdySessionPeer::GetHeadersStream(
     QuicSpdySession* session) {
+  DCHECK(!VersionUsesQpack(session->connection()->transport_version()));
   return session->headers_stream();
 }
 
 void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
                                            QuicHeadersStream* headers_stream) {
+  DCHECK(!VersionUsesQpack(session->connection()->transport_version()));
   for (auto& it : session->stream_map()) {
     if (it.first == QuicUtils::GetHeadersStreamId(
                         session->connection()->transport_version())) {
@@ -58,10 +61,10 @@ size_t QuicSpdySessionPeer::WriteHeadersOnHeadersStream(
     QuicStreamId id,
     spdy::SpdyHeaderBlock headers,
     bool fin,
-    spdy::SpdyPriority priority,
+    const spdy::SpdyStreamPrecedence& precedence,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   return session->WriteHeadersOnHeadersStream(
-      id, std::move(headers), fin, priority, std::move(ack_listener));
+      id, std::move(headers), fin, precedence, std::move(ack_listener));
 }
 
 // static
@@ -80,6 +83,30 @@ QuicReceiveControlStream* QuicSpdySessionPeer::GetReceiveControlStream(
 QuicSendControlStream* QuicSpdySessionPeer::GetSendControlStream(
     QuicSpdySession* session) {
   return session->send_control_stream_;
+}
+
+// static
+QpackSendStream* QuicSpdySessionPeer::GetQpackDecoderSendStream(
+    QuicSpdySession* session) {
+  return session->qpack_decoder_send_stream_;
+}
+
+// static
+QpackSendStream* QuicSpdySessionPeer::GetQpackEncoderSendStream(
+    QuicSpdySession* session) {
+  return session->qpack_encoder_send_stream_;
+}
+
+// static
+QpackReceiveStream* QuicSpdySessionPeer::GetQpackDecoderReceiveStream(
+    QuicSpdySession* session) {
+  return session->qpack_decoder_receive_stream_;
+}
+
+// static
+QpackReceiveStream* QuicSpdySessionPeer::GetQpackEncoderReceiveStream(
+    QuicSpdySession* session) {
+  return session->qpack_encoder_receive_stream_;
 }
 
 }  // namespace test

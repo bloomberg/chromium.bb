@@ -163,7 +163,7 @@ CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
   identities_ = std::move(identities);
 #endif
 
-  model_.reset(new CertificateTableModel(identities_, provider_names));
+  model_ = std::make_unique<CertificateTableModel>(identities_, provider_names);
 }
 
 CertificateSelector::~CertificateSelector() {
@@ -246,7 +246,7 @@ ui::TableModel* CertificateSelector::table_model_for_testing() const {
 }
 
 net::ClientCertIdentity* CertificateSelector::GetSelectedCert() const {
-  const int selected = table_->FirstSelectedRow();
+  const int selected = table_->GetFirstSelectedRow();
   if (selected < 0)  // Nothing is selected in |table_|.
     return nullptr;
   DCHECK_LT(static_cast<size_t>(selected), identities_.size());
@@ -254,7 +254,7 @@ net::ClientCertIdentity* CertificateSelector::GetSelectedCert() const {
 }
 
 bool CertificateSelector::Accept() {
-  const int selected = table_->FirstSelectedRow();
+  const int selected = table_->GetFirstSelectedRow();
   if (selected < 0)  // Nothing is selected in |table_|.
     return false;
 

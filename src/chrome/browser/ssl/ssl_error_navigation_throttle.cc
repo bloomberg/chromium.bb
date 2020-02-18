@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -67,8 +66,7 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   // If there was no certificate error, SSLInfo will be empty.
   const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
   int cert_status = info.cert_status;
-  if (!net::IsCertStatusError(cert_status) ||
-      net::IsCertStatusMinorError(cert_status)) {
+  if (!net::IsCertStatusError(cert_status)) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -120,7 +118,7 @@ void SSLErrorNavigationThrottle::QueueShowInterstitial(
   // navigation.
   std::move(handle_ssl_error_callback)
       .Run(web_contents, net_error, ssl_info, request_url,
-           false /* expired_previous_decision */, std::move(ssl_cert_reporter),
+           std::move(ssl_cert_reporter),
            base::Callback<void(content::CertificateRequestResultType)>(),
            base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
                           weak_ptr_factory_.GetWeakPtr(), net_error));

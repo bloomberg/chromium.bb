@@ -21,6 +21,7 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -29,7 +30,6 @@
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 #include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)
@@ -57,6 +57,33 @@ using media_session::mojom::AudioFocusType;
 
 using MediaSessionSuspendedSource =
     MediaSessionUmaHelper::MediaSessionSuspendedSource;
+
+const char kMediaSessionDataName[] = "MediaSessionDataName";
+
+class MediaSessionData : public base::SupportsUserData::Data {
+ public:
+  MediaSessionData() = default;
+
+  static MediaSessionData* GetOrCreate(BrowserContext* context) {
+    auto* data = static_cast<MediaSessionData*>(
+        context->GetUserData(kMediaSessionDataName));
+
+    if (!data) {
+      auto new_data = std::make_unique<MediaSessionData>();
+      data = new_data.get();
+      context->SetUserData(kMediaSessionDataName, std::move(new_data));
+    }
+
+    return data;
+  }
+
+  const base::UnguessableToken& source_id() const { return source_id_; }
+
+ private:
+  base::UnguessableToken source_id_ = base::UnguessableToken::Create();
+
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionData);
+};
 
 size_t ComputeFrameDepth(RenderFrameHost* rfh,
                          MapRenderFrameHostToDepth* map_rfh_to_depth) {
@@ -150,6 +177,26 @@ size_t MediaSessionImpl::PlayerIdentifier::Hash::operator()(
 // static
 MediaSession* MediaSession::Get(WebContents* web_contents) {
   return MediaSessionImpl::Get(web_contents);
+}
+
+// static
+const base::UnguessableToken& MediaSession::GetSourceId(
+    BrowserContext* browser_context) {
+  return MediaSessionData::GetOrCreate(browser_context)->source_id();
+}
+
+// static
+WebContents* MediaSession::GetWebContentsFromRequestId(
+    const base::UnguessableToken& request_id) {
+  DCHECK_NE(base::UnguessableToken::Null(), request_id);
+  for (WebContentsImpl* web_contents : WebContentsImpl::GetAllWebContents()) {
+    MediaSessionImpl* session = MediaSessionImpl::FromWebContents(web_contents);
+    if (!session)
+      continue;
+    if (session->GetRequestId() == request_id)
+      return web_contents;
+  }
+  return nullptr;
 }
 
 // static
@@ -297,6 +344,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
         iter->second = required_audio_focus_type;
 
       UpdateRoutedService();
+      RebuildAndNotifyMediaPositionChanged();
       return true;
     }
   }
@@ -321,6 +369,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   UpdateRoutedService();
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
+  RebuildAndNotifyMediaPositionChanged();
 
   return true;
 }
@@ -346,6 +395,7 @@ void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
 
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
@@ -375,6 +425,7 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
 
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 void MediaSessionImpl::RecordSessionDuck() {
@@ -413,6 +464,29 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
   // Otherwise, suspend the session.
   DCHECK(IsActive());
   OnSuspendInternal(SuspendType::kContent, State::SUSPENDED);
+}
+
+void MediaSessionImpl::RebuildAndNotifyMediaPositionChanged() {
+  base::Optional<media_session::MediaPosition> position;
+
+  // If there was a position specified from Blink then we should use that.
+  if (routed_service_ && routed_service_->position())
+    position = routed_service_->position();
+
+  // If we only have a single player then we should use the position from that.
+  if (!position && normal_players_.size() == 1 && one_shot_players_.empty() &&
+      pepper_players_.empty()) {
+    auto& first = normal_players_.begin()->first;
+    position = first.observer->GetPosition(first.player_id);
+  }
+
+  if (position == position_)
+    return;
+
+  position_ = position;
+
+  for (auto& observer : observers_)
+    observer->MediaSessionPositionChanged(position_);
 }
 
 void MediaSessionImpl::Resume(SuspendType suspend_type) {
@@ -486,6 +560,12 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
     }
   }
 
+  if (auto* pip_window_controller_ =
+          PictureInPictureWindowControllerImpl::FromWebContents(
+              web_contents())) {
+    pip_window_controller_->Close(false /* should_pause_video */);
+  }
+
   // TODO(mlamouri): merge the logic between UI and SYSTEM.
   if (suspend_type == SuspendType::kSystem) {
     OnSuspendInternal(suspend_type, State::INACTIVE);
@@ -499,6 +579,7 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   normal_players_.clear();
 
   AbandonSystemAudioFocusIfNeeded();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
@@ -772,9 +853,11 @@ AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
   return result;
 }
 
-void MediaSessionImpl::BindToMojoRequest(
-    mojo::InterfaceRequest<media_session::mojom::MediaSession> request) {
-  bindings_.AddBinding(this, std::move(request));
+mojo::PendingRemote<media_session::mojom::MediaSession>
+MediaSessionImpl::AddRemote() {
+  mojo::PendingRemote<media_session::mojom::MediaSession> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
@@ -828,6 +911,9 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   info->is_controllable = IsControllable();
 
+  // If the browser context is off the record then it should be sensitive.
+  info->is_sensitive = web_contents()->GetBrowserContext()->IsOffTheRecord();
+
   return info;
 }
 
@@ -843,16 +929,11 @@ void MediaSessionImpl::AddObserver(
   media_session_observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
   media_session_observer->MediaSessionMetadataChanged(metadata_);
   media_session_observer->MediaSessionImagesChanged(images_);
+  media_session_observer->MediaSessionPositionChanged(position_);
 
   std::vector<media_session::mojom::MediaSessionAction> actions(
       actions_.begin(), actions_.end());
   media_session_observer->MediaSessionActionsChanged(actions);
-
-  // TODO(crbug.com/985394): Use real position data here, this is mock data.
-  media_session::MediaPosition media_position(
-      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
-      base::TimeDelta::FromSeconds(300) /* position */);
-  media_session_observer->MediaSessionPositionChanged(media_position);
 
   observers_.Add(std::move(media_session_observer));
 }
@@ -903,6 +984,20 @@ void MediaSessionImpl::NextTrack() {
 
 void MediaSessionImpl::SkipAd() {
   DidReceiveAction(media_session::mojom::MediaSessionAction::kSkipAd);
+}
+
+void MediaSessionImpl::SeekTo(base::TimeDelta seek_time) {
+  DidReceiveAction(
+      media_session::mojom::MediaSessionAction::kSeekTo,
+      blink::mojom::MediaSessionActionDetails::NewSeekTo(
+          blink::mojom::MediaSessionSeekToDetails::New(seek_time, false)));
+}
+
+void MediaSessionImpl::ScrubTo(base::TimeDelta seek_time) {
+  DidReceiveAction(
+      media_session::mojom::MediaSessionAction::kSeekTo,
+      blink::mojom::MediaSessionActionDetails::NewSeekTo(
+          blink::mojom::MediaSessionSeekToDetails::New(seek_time, true)));
 }
 
 void MediaSessionImpl::GetMediaImageBitmap(
@@ -999,6 +1094,7 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
 
   UpdateRoutedService();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 
   return result != AudioFocusDelegate::AudioFocusResult::kFailed;
 }
@@ -1015,6 +1111,7 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
 
   UpdateRoutedService();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 
   return true;
 }
@@ -1064,6 +1161,12 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
 
 void MediaSessionImpl::DidReceiveAction(
     media_session::mojom::MediaSessionAction action) {
+  DidReceiveAction(action, nullptr /* details */);
+}
+
+void MediaSessionImpl::DidReceiveAction(
+    media_session::mojom::MediaSessionAction action,
+    blink::mojom::MediaSessionActionDetailsPtr details) {
   MediaSessionUmaHelper::RecordMediaSessionUserAction(
       MediaSessionActionToUserAction(action), focused_);
 
@@ -1102,7 +1205,7 @@ void MediaSessionImpl::DidReceiveAction(
   if (!routed_service_)
     return;
 
-  routed_service_->GetClient()->DidReceiveAction(action, nullptr /* details */);
+  routed_service_->GetClient()->DidReceiveAction(action, std::move(details));
 }
 
 bool MediaSessionImpl::IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh) {
@@ -1120,6 +1223,7 @@ void MediaSessionImpl::UpdateRoutedService() {
   RebuildAndNotifyMetadataChanged();
   RebuildAndNotifyActionsChanged();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
@@ -1168,6 +1272,15 @@ bool MediaSessionImpl::ShouldRouteAction(
   return routed_service_ && base::Contains(routed_service_->actions(), action);
 }
 
+const base::UnguessableToken& MediaSessionImpl::GetSourceId() const {
+  return MediaSessionData::GetOrCreate(web_contents()->GetBrowserContext())
+      ->source_id();
+}
+
+const base::UnguessableToken& MediaSessionImpl::GetRequestId() const {
+  return delegate_->request_id();
+}
+
 void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
   std::set<media_session::mojom::MediaSessionAction> actions =
       routed_service_ ? routed_service_->actions()
@@ -1187,6 +1300,12 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
     actions.insert(media_session::mojom::MediaSessionAction::kPlay);
     actions.insert(media_session::mojom::MediaSessionAction::kPause);
     actions.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
+
+  // If we support kSeekTo then we support kScrubTo as well.
+  if (base::Contains(actions,
+                     media_session::mojom::MediaSessionAction::kSeekTo)) {
+    actions.insert(media_session::mojom::MediaSessionAction::kScrubTo);
   }
 
   if (actions_ == actions)
@@ -1223,12 +1342,7 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
           ? content_client->GetLocalizedString(IDS_MEDIA_SESSION_FILE_SOURCE)
           : url_formatter::FormatOriginForSecurityDisplay(
                 url::Origin::Create(url));
-
-  if (metadata.artist.empty()) {
-    metadata.artist = formatted_origin;
-  } else {
-    metadata.source_title = formatted_origin;
-  }
+  metadata.source_title = formatted_origin;
 
   // If we have no artwork in |images_| or the arwork has changed then we should
   // update it with the latest artwork from the routed service.

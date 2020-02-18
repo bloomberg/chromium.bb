@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "net/base/hash_value.h"
@@ -40,6 +41,9 @@
 #include "net/ssl/ssl_info.h"
 
 namespace net {
+
+const base::Feature kEnforceCTForNewCerts{"EnforceCTForNewCerts",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -66,10 +70,6 @@ const size_t kReportCacheKeyLength = 16;
 //   1: Unless a delegate says otherwise, require CT.
 int g_ct_required_for_testing = 0;
 
-// Controls whether or not Certificate Transparency should be enforced for
-// newly-issued certificates.
-const base::Feature kEnforceCTForNewCerts{"EnforceCTForNewCerts",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 // The date (as the number of seconds since the Unix Epoch) to enforce CT for
 // new certificates.
 constexpr base::FeatureParam<int> kEnforceCTForNewCertsDate{
@@ -404,6 +404,10 @@ void SetTransportSecurityStateSourceForTesting(
 }
 
 TransportSecurityState::TransportSecurityState()
+    : TransportSecurityState(std::vector<std::string>()) {}
+
+TransportSecurityState::TransportSecurityState(
+    std::vector<std::string> hsts_host_bypass_list)
     : enable_static_pins_(true),
       enable_static_expect_ct_(true),
       enable_pkp_bypass_for_local_trust_anchors_(true),
@@ -411,10 +415,15 @@ TransportSecurityState::TransportSecurityState()
       sent_expect_ct_reports_cache_(kMaxReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID) || defined(OS_IOS)
   enable_static_pins_ = false;
   enable_static_expect_ct_ = false;
 #endif
+  // Check that there no invalid entries in the static HSTS bypass list.
+  for (auto& host : hsts_host_bypass_list) {
+    DCHECK(host.find('.') == std::string::npos);
+    hsts_host_bypass_list_.insert(host);
+  }
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -1140,7 +1149,8 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   if (!DecodeHSTSPreload(host, &result))
     return false;
 
-  if (result.force_https) {
+  if (hsts_host_bypass_list_.find(host) == hsts_host_bypass_list_.end() &&
+      result.force_https) {
     sts_result->domain = host.substr(result.hostname_offset);
     sts_result->include_subdomains = result.sts_include_subdomains;
     sts_result->last_observed = base::GetBuildTime();

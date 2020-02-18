@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/common/page_load_metrics_util.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 // Up to 10 minutes, with 100 buckets.
@@ -32,8 +32,6 @@
 #define PAGE_RESOURCE_COUNT_HISTOGRAM UMA_HISTOGRAM_COUNTS_10000
 
 namespace page_load_metrics {
-
-struct PageLoadExtraInfo;
 
 // Reasons a page load can be aborted.
 enum PageAbortReason {
@@ -103,7 +101,7 @@ struct PageAbortInfo {
 // background specific handling would not yet have been applied to that event.
 bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
-    const PageLoadExtraInfo& info);
+    const PageLoadMetricsObserverDelegate& delegate);
 
 // Returns true if:
 // - We have timing information for the event.
@@ -112,9 +110,9 @@ bool WasStartedInForegroundOptionalEventInForeground(
 // - Not moved back to the background prior to the event.
 bool WasStartedInBackgroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
-    const PageLoadExtraInfo& info);
+    const PageLoadMetricsObserverDelegate& delegate);
 
-PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info);
+PageAbortInfo GetPageAbortInfo(const PageLoadMetricsObserverDelegate& delegate);
 
 // Get the duration of time that the page spent in the foreground, from
 // navigation start until one of the following events:
@@ -125,14 +123,8 @@ PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info);
 // * a new navigation which later commits is initiated in the same tab
 // * the tab hosting the page is backgrounded
 base::Optional<base::TimeDelta> GetInitialForegroundDuration(
-    const PageLoadExtraInfo& info,
+    const PageLoadMetricsObserverDelegate& delegate,
     base::TimeTicks app_background_time);
-
-// Whether the given loading behavior was observed in any frame (either the main
-// frame or a subframe).
-bool DidObserveLoadingBehaviorInAnyFrame(
-    const page_load_metrics::PageLoadExtraInfo& info,
-    blink::WebLoadingBehaviorFlag behavior);
 
 // Whether the given url has a Google Search hostname.
 // Examples:

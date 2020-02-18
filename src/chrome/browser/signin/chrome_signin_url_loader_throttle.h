@@ -7,8 +7,9 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "content/public/browser/resource_request_info.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_type.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 class NavigationUIData;
@@ -20,7 +21,7 @@ class HeaderModificationDelegate;
 
 // This class is used to modify the main frame request made when loading the
 // GAIA signin realm.
-class URLLoaderThrottle : public content::URLLoaderThrottle,
+class URLLoaderThrottle : public blink::URLLoaderThrottle,
                           public base::SupportsUserData {
  public:
   // Creates a new throttle if |delegate| says that this request should be
@@ -28,11 +29,11 @@ class URLLoaderThrottle : public content::URLLoaderThrottle,
   static std::unique_ptr<URLLoaderThrottle> MaybeCreate(
       std::unique_ptr<HeaderModificationDelegate> delegate,
       content::NavigationUIData* navigation_ui_data,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter);
+      content::WebContents::Getter web_contents_getter);
 
   ~URLLoaderThrottle() override;
 
-  // content::URLLoaderThrottle
+  // blink::URLLoaderThrottle
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(net::RedirectInfo* redirect_info,
@@ -48,12 +49,11 @@ class URLLoaderThrottle : public content::URLLoaderThrottle,
   class ThrottleRequestAdapter;
   class ThrottleResponseAdapter;
 
-  URLLoaderThrottle(
-      std::unique_ptr<HeaderModificationDelegate> delegate,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter);
+  URLLoaderThrottle(std::unique_ptr<HeaderModificationDelegate> delegate,
+                    content::WebContents::Getter web_contents_getter);
 
   const std::unique_ptr<HeaderModificationDelegate> delegate_;
-  const content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  const content::WebContents::Getter web_contents_getter_;
 
   // Information about the current request.
   GURL request_url_;

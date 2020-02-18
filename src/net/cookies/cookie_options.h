@@ -20,6 +20,8 @@ class NET_EXPORT CookieOptions {
   // Ordered from least to most trusted environment.
   enum class SameSiteCookieContext {
     CROSS_SITE,
+    // Same rules as lax but the http method is unsafe.
+    SAME_SITE_LAX_METHOD_UNSAFE,
     SAME_SITE_LAX,
     SAME_SITE_STRICT
   };
@@ -52,15 +54,6 @@ class NET_EXPORT CookieOptions {
     return same_site_cookie_context_;
   }
 
-  // |server_time| indicates what the server sending us the Cookie thought the
-  // current time was when the cookie was produced.  This is used to adjust for
-  // clock skew between server and host.
-  void set_server_time(const base::Time& server_time) {
-    server_time_ = server_time;
-  }
-  bool has_server_time() const { return !server_time_.is_null(); }
-  base::Time server_time() const { return server_time_; }
-
   void set_update_access_time() { update_access_time_ = true; }
   void set_do_not_update_access_time() { update_access_time_ = false; }
   bool update_access_time() const { return update_access_time_; }
@@ -69,11 +62,18 @@ class NET_EXPORT CookieOptions {
   void unset_return_excluded_cookies() { return_excluded_cookies_ = false; }
   bool return_excluded_cookies() const { return return_excluded_cookies_; }
 
+  // Convenience method for where you need a CookieOptions that will
+  // work for getting/setting all types of cookies, including HttpOnly and
+  // SameSite cookies. Also specifies not to update the access time, because
+  // usually this is done to get all the cookies to check that they are correct,
+  // including the creation time. This basically makes a CookieOptions that is
+  // the opposite of the default CookieOptions.
+  static CookieOptions MakeAllInclusive();
+
  private:
   bool exclude_httponly_;
   SameSiteCookieContext same_site_cookie_context_;
   bool update_access_time_;
-  base::Time server_time_;
   bool return_excluded_cookies_;
 };
 

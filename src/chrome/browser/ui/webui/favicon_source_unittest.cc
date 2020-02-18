@@ -17,9 +17,8 @@
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +26,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using GotDataCallback = content::URLDataSource::GotDataCallback;
-using WebContentsGetter = content::ResourceRequestInfo::WebContentsGetter;
+using WebContentsGetter = content::WebContents::Getter;
 using testing::_;
 using testing::Return;
 using testing::ReturnArg;
@@ -141,7 +140,7 @@ class FaviconSourceTestBase : public testing::Test {
 
  protected:
   const scoped_refptr<base::RefCountedBytes> kDummyIconBytes;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ui::TestNativeTheme theme_;
   TestingProfile profile_;
   MockHistoryUiFaviconRequestHandler* mock_history_ui_favicon_request_handler_;
@@ -215,7 +214,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
       .Times(0);
 
   source()->StartDataRequest(
-      "?size=16&scale_factor=1x&url_type=page_url&url=https%3A%2F%2Fwww.google."
+      "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
       "com&allow_google_server_fallback=0",
       test_web_contents_getter_, base::BindRepeating(&Noop));
 }
@@ -230,7 +229,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
       .Times(0);
 
   source()->StartDataRequest(
-      "?size=16&scale_factor=1x&url_type=page_url&url=https%3A%2F%2Fwww.google."
+      "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
       "com&allow_google_server_fallback=1",
       test_web_contents_getter_, base::BindRepeating(&Noop));
 }
@@ -247,7 +246,7 @@ TEST_F(
       .Times(1);
 
   source()->StartDataRequest(
-      "?size=16&scale_factor=1x&url_type=page_url&url=https%3A%2F%2Fwww.google."
+      "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
       "com&allow_google_server_fallback=1",
       test_web_contents_getter_, base::BindRepeating(&Noop));
 }

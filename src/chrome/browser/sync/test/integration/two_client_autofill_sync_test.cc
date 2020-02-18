@@ -7,6 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -115,8 +116,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                                LOCAL_DELETION, 2);
 }
 
+// Flaky on Linux/Win/ChromeOS only. http://crbug.com/997629
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_SyncHistogramsInitialSync DISABLED_SyncHistogramsInitialSync
+#else
+#define MAYBE_SyncHistogramsInitialSync SyncHistogramsInitialSync
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
-                       SyncHistogramsInitialSync) {
+                       MAYBE_SyncHistogramsInitialSync) {
   ASSERT_TRUE(SetupClients());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -510,8 +517,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
 // syncing results in a conflict where the update wins. This only works with
 // a server that supports a strong consistency model and is hence capable of
 // detecting conflicts server-side.
+// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_DeleteAndUpdateWithStrongConsistency \
+  DISABLED_DeleteAndUpdateWithStrongConsistency
+#else
+#define MAYBE_DeleteAndUpdateWithStrongConsistency \
+  DeleteAndUpdateWithStrongConsistency
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
-                       DeleteAndUpdateWithStrongConsistency) {
+                       MAYBE_DeleteAndUpdateWithStrongConsistency) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
   GetFakeServer()->EnableStrongConsistencyWithConflictDetectionModel();

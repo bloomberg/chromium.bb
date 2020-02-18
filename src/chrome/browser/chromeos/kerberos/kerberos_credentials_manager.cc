@@ -55,7 +55,8 @@ constexpr char kLoginPasswordPlaceholder[] = "${PASSWORD}";
 constexpr char kDefaultKerberosConfig[] = R"([libdefaults]
   default_tgs_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
-  permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96)";
+  permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+  forwardable = true)";
 
 // If |principal_name| is "UsEr@realm.com", sets |principal_name| to
 // "user@REALM.COM". Returns false if the given name has no @ or one of the
@@ -740,7 +741,7 @@ void KerberosCredentialsManager::DoValidateActivePrincipal(
     found |= response.accounts(n).principal_name() == active_principal;
 
   if (!found) {
-    LOG(ERROR) << "Active principal got removed. Restoring.";
+    VLOG(1) << "Active principal got removed. Restoring.";
     if (response.accounts_size() > 0)
       SetActivePrincipalName(response.accounts(0).principal_name());
     else
@@ -791,17 +792,21 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
   if (!IsKerberosEnabled()) {
     VLOG(1) << "Kerberos disabled";
     NotifyRequiresLoginPassword(false);
-    // All managed accounts have already been removed here. No need to call
-    // RemoveAllManagedAccountsExcept().
+    // All managed accounts have already been removed here.
+    // No need to call RemoveAllManagedAccountsExcept().
     return;
   }
 
-  // Principal names of all accounts added.
   const base::Value* accounts = local_state_->GetList(prefs::kKerberosAccounts);
-  if (!accounts) {
-    VLOG(1) << "No KerberosAccounts policy";
+  if (!accounts || accounts->GetList().empty()) {
+    VLOG(1) << "No or empty KerberosAccounts policy";
     NotifyRequiresLoginPassword(false);
-    RemoveAllManagedAccountsExcept({});
+
+    // https://crbug.com/963824: The active principal is empty if there are no
+    // accounts, so no need to remove accounts. It would just start up the
+    // daemon unnecessarily.
+    if (!GetActivePrincipalName().empty())
+      RemoveAllManagedAccountsExcept({});
     return;
   }
 

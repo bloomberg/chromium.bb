@@ -179,7 +179,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   bool IsEventTimingBufferFull() const;
   void AddEventTimingBuffer(PerformanceEventTiming&);
 
-  void AddLayoutJankBuffer(LayoutShift&);
+  void AddLayoutShiftBuffer(LayoutShift&);
 
   void AddLargestContentfulPaint(LargestContentfulPaint*);
 
@@ -304,12 +304,13 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ScriptState*,
       const AtomicString& measure_name,
       const StringOrPerformanceMeasureOptions& start,
-      base::Optional<String> end,
+      base::Optional<String> end_mark,
       ExceptionState&);
 
   PerformanceMeasure* MeasureWithDetail(ScriptState*,
                                         const AtomicString& measure_name,
                                         const StringOrDouble& start,
+                                        base::Optional<double> duration,
                                         const StringOrDouble& end,
                                         const ScriptValue& detail,
                                         ExceptionState&);
@@ -350,7 +351,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned event_timing_buffer_max_size_;
   PerformanceEntryVector element_timing_buffer_;
   unsigned element_timing_buffer_max_size_;
-  PerformanceEntryVector layout_jank_buffer_;
+  PerformanceEntryVector layout_shift_buffer_;
   PerformanceEntryVector largest_contentful_paint_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;

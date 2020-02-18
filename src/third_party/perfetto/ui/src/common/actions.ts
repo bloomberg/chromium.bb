@@ -18,14 +18,17 @@ import {assertExists} from '../base/logging';
 import {ConvertTrace} from '../controller/trace_converter';
 
 import {
+  AdbRecordingTarget,
   createEmptyState,
   LogsPagination,
+  OmniboxState,
   RecordConfig,
   SCROLLING_TRACK_GROUP,
   State,
   Status,
   TraceTime,
   TrackState,
+  VisibleState,
 } from './state';
 
 type StateDraft = Draft<State>;
@@ -83,10 +86,10 @@ export const StateActions = {
     state.videoEnabled = true;
   },
 
-  convertTraceToJson(_: StateDraft, args: {file: File, truncate: boolean}):
-      void {
-        ConvertTrace(args.file, args.truncate);
-      },
+  convertTraceToJson(
+      _: StateDraft, args: {file: File, truncate?: 'start'|'end'}): void {
+    ConvertTrace(args.file, args.truncate);
+  },
 
   openTraceFromUrl(state: StateDraft, args: {url: string}): void {
     clearTraceState(state);
@@ -114,8 +117,7 @@ export const StateActions = {
 
   addTrack(state: StateDraft, args: {
     id?: string; engineId: string; kind: string; name: string;
-    trackGroup?: string;
-    config: {};
+    trackGroup?: string; config: {};
   }): void {
     const id = args.id !== undefined ? args.id : `${state.nextId++}`;
     state.tracks[id] = {
@@ -147,20 +149,8 @@ export const StateActions = {
     };
   },
 
-  reqTrackData(state: StateDraft, args: {
-    trackId: string; start: number; end: number; resolution: number;
-  }): void {
-    const id = args.trackId;
-    state.tracks[id].dataReq = {
-      start: args.start,
-      end: args.end,
-      resolution: args.resolution
-    };
-  },
-
-  clearTrackDataReq(state: StateDraft, args: {trackId: string}): void {
-    const id = args.trackId;
-    state.tracks[id].dataReq = undefined;
+  setVisibleTracks(state: StateDraft, args: {tracks: string[]}) {
+    state.visibleTracks = args.tracks;
   },
 
   executeQuery(
@@ -260,12 +250,6 @@ export const StateActions = {
     state.traceTime = args;
   },
 
-  setVisibleTraceTime(
-      state: StateDraft, args: {time: TraceTime; lastUpdate: number;}): void {
-    state.frontendLocalState.visibleTraceTime = args.time;
-    state.frontendLocalState.lastUpdate = args.lastUpdate;
-  },
-
   updateStatus(state: StateDraft, args: Status): void {
     state.status = args;
   },
@@ -317,18 +301,27 @@ export const StateActions = {
     if (!state.videoEnabled) {
       state.video = null;
       state.flagPauseEnabled = false;
+      state.scrubbingEnabled = false;
       state.videoNoteIds.forEach(id => {
-        this.removeNote(state, {id: id});
+        this.removeNote(state, {id});
       });
     }
   },
 
   toggleFlagPause(state: StateDraft): void {
-    if (state.video === null) {
-      state.flagPauseEnabled = false;
-    } else {
+    if (state.video != null) {
       state.flagPauseEnabled = !state.flagPauseEnabled;
     }
+  },
+
+  toggleScrubbing(state: StateDraft): void {
+    if (state.video != null) {
+      state.scrubbingEnabled = !state.scrubbingEnabled;
+    }
+  },
+
+  setVideoOffset(state: StateDraft, args: {offset: number}): void {
+    state.videoOffset = args.offset;
   },
 
   changeNoteColor(state: StateDraft, args: {id: string, newColor: string}):
@@ -346,8 +339,8 @@ export const StateActions = {
 
   removeNote(state: StateDraft, args: {id: string}): void {
     if (state.notes[args.id].isMovie) {
-      state.videoNoteIds = state.videoNoteIds.filter(function(id) {
-        return id != args.id;
+      state.videoNoteIds = state.videoNoteIds.filter(id => {
+        return id !== args.id;
       });
     }
     delete state.notes[args.id];
@@ -366,6 +359,10 @@ export const StateActions = {
     };
   },
 
+  selectChromeSlice(state: StateDraft, args: {slice_id: number}): void {
+    state.currentSelection = {kind: 'CHROME_SLICE', id: args.slice_id};
+  },
+
   selectTimeSpan(
       state: StateDraft, args: {startTs: number, endTs: number}): void {
     state.currentSelection = {
@@ -377,15 +374,18 @@ export const StateActions = {
 
   selectThreadState(
       state: StateDraft,
-      args: {utid: number, ts: number, dur: number, state: string}): void {
-    state.currentSelection = {
-      kind: 'THREAD_STATE',
-      utid: args.utid,
-      ts: args.ts,
-      dur: args.dur,
-      state: args.state
-    };
-  },
+      args:
+          {utid: number, ts: number, dur: number, state: string, cpu: number}):
+      void {
+        state.currentSelection = {
+          kind: 'THREAD_STATE',
+          utid: args.utid,
+          ts: args.ts,
+          dur: args.dur,
+          state: args.state,
+          cpu: args.cpu
+        };
+      },
 
   deselect(state: StateDraft, _: {}): void {
     state.currentSelection = null;
@@ -395,6 +395,54 @@ export const StateActions = {
     state.logsPagination = args;
   },
 
+  startRecording(state: StateDraft): void {
+    state.recordingInProgress = true;
+    state.lastRecordingError = undefined;
+  },
+
+  stopRecording(state: StateDraft): void {
+    state.recordingInProgress = false;
+  },
+
+  setExtensionAvailable(state: StateDraft, args: {available: boolean}): void {
+    state.extensionInstalled = args.available;
+  },
+
+  updateBufferUsage(state: StateDraft, args: {percentage: number}): void {
+    state.bufferUsage = args.percentage;
+  },
+
+  setAndroidDevice(state: StateDraft, args: {target?: AdbRecordingTarget}):
+      void {
+        state.androidDeviceConnected = args.target;
+      },
+
+  setAvailableDevices(state: StateDraft, args: {devices: AdbRecordingTarget[]}):
+      void {
+        state.availableDevices = args.devices;
+      },
+
+  setOmnibox(state: StateDraft, args: OmniboxState): void {
+    state.frontendLocalState.omniboxState = args;
+  },
+
+  setVisibleTraceTime(state: StateDraft, args: VisibleState): void {
+    state.frontendLocalState.visibleState = args;
+  },
+
+  setChromeCategories(state: StateDraft, args: {categories: string[]}): void {
+    state.chromeCategories = args.categories;
+  },
+
+  setLastRecordingError(state: StateDraft, args: {error?: string}): void {
+    state.lastRecordingError = args.error;
+    state.recordingStatus = undefined;
+  },
+
+  setRecordingStatus(state: StateDraft, args: {status?: string}): void {
+    state.recordingStatus = args.status;
+    state.lastRecordingError = undefined;
+  },
 };
 
 // When we are on the frontend side, we don't really want to execute the

@@ -121,6 +121,8 @@ blink_core_sources("html") {
     "forms/checkbox_input_type.h",
     "forms/chooser_only_temporal_input_type_view.cc",
     "forms/chooser_only_temporal_input_type_view.h",
+    "forms/chooser_resource_loader.cc",
+    "forms/chooser_resource_loader.h",
     "forms/clear_button_element.cc",
     "forms/clear_button_element.h",
     "forms/color_chooser.cc",
@@ -579,5 +581,24 @@ blink_core_sources("html") {
     "//services/metrics/public/cpp:metrics_cpp",
     "//skia:skcms",
     "//third_party/blink/renderer/core/html/parser:parser",
+  ]
+}
+
+copy("form_controls_pickers_js") {
+  testonly = true
+
+  sources = [
+    "forms/resources/color_picker.js",
+  ]
+
+  outputs = [
+    "{{source_gen_dir}}/{{source_file_part}}",
+  ]
+}
+
+group("js_files_for_form_controls_web_tests") {
+  testonly = true
+  data_deps = [
+    ":form_controls_pickers_js",
   ]
 }

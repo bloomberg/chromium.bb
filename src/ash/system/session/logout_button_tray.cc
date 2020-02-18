@@ -12,6 +12,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
@@ -40,7 +42,9 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : shelf_(shelf) {
   auto button = views::MdTextButton::Create(this, base::string16(),
                                             CONTEXT_LAUNCHER_BUTTON);
   button->SetProminent(true);
-  button->SetBgColorOverride(gfx::kGoogleRed700);
+  button->SetBgColorOverride(
+      AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kRed, kLogoutButtonTrayColor));
 
   button_ = container_->AddChildView(std::move(button));
   SetVisible(false);
@@ -143,7 +147,11 @@ void LogoutButtonTray::UpdateButtonTextAndImage() {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
     button_->SetImage(views::Button::STATE_NORMAL,
-                      gfx::CreateVectorIcon(kShelfLogoutIcon, kTrayIconColor));
+                      gfx::CreateVectorIcon(
+                          kShelfLogoutIcon,
+                          AshColorProvider::Get()->GetContentLayerColor(
+                              AshColorProvider::ContentLayerType::kIconPrimary,
+                              AshColorProvider::AshColorMode::kDark)));
     button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   UpdateVisibility();

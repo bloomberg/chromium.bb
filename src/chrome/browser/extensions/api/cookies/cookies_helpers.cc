@@ -38,6 +38,28 @@ namespace GetAll = extensions::api::cookies::GetAll;
 
 namespace extensions {
 
+namespace {
+
+void AppendCookieToVectorIfMatchAndHasHostPermission(
+    const net::CanonicalCookie cookie,
+    const GetAll::Params::Details* details,
+    const Extension* extension,
+    std::vector<Cookie>* match_vector) {
+  // Ignore any cookie whose domain doesn't match the extension's
+  // host permissions.
+  GURL cookie_domain_url = cookies_helpers::GetURLFromCanonicalCookie(cookie);
+  if (!extension->permissions_data()->HasHostPermission(cookie_domain_url))
+    return;
+  // Filter the cookie using the match filter.
+  cookies_helpers::MatchFilter filter(details);
+  if (filter.MatchesCookie(cookie)) {
+    match_vector->push_back(
+        cookies_helpers::CreateCookie(cookie, *details->store_id));
+  }
+}
+
+}  // namespace
+
 namespace cookies_helpers {
 
 static const char kOriginalProfileStoreId[] = "0";
@@ -81,6 +103,7 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
   cookie.secure = canonical_cookie.IsSecure();
   cookie.http_only = canonical_cookie.IsHttpOnly();
 
+  DCHECK(net::IsValidSameSiteValue(canonical_cookie.SameSite()));
   switch (canonical_cookie.SameSite()) {
     case net::CookieSameSite::NO_RESTRICTION:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
@@ -95,6 +118,8 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
     case net::CookieSameSite::UNSPECIFIED:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_UNSPECIFIED;
       break;
+    default:
+      NOTREACHED();
   }
 
   cookie.session = !canonical_cookie.IsPersistent();
@@ -129,22 +154,14 @@ void GetCookieListFromManager(
     network::mojom::CookieManager* manager,
     const GURL& url,
     network::mojom::CookieManager::GetCookieListCallback callback) {
-  if (url.is_empty()) {
-    // GetAllCookies has a different callback signature than GetCookieList, but
-    // can be treated as the same, just returning no excluded cookies.
-    // |AddCookieStatusList| takes a |GetCookieListCallback| and returns a
-    // callback that calls the input callback with an empty excluded list.
-    manager->GetAllCookies(
-        net::cookie_util::AddCookieStatusList(std::move(callback)));
-  } else {
-    net::CookieOptions options;
-    options.set_include_httponly();
-    options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-    options.set_do_not_update_access_time();
+  manager->GetCookieList(url, net::CookieOptions::MakeAllInclusive(),
+                         std::move(callback));
+}
 
-    manager->GetCookieList(url, options, std::move(callback));
-  }
+void GetAllCookiesFromManager(
+    network::mojom::CookieManager* manager,
+    network::mojom::CookieManager::GetAllCookiesCallback callback) {
+  manager->GetAllCookies(std::move(callback));
 }
 
 GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
@@ -158,21 +175,27 @@ GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
   return GURL(scheme + url::kStandardSchemeSeparator + host + "/");
 }
 
-void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,
-                                   const GURL& url,
-                                   const GetAll::Params::Details* details,
-                                   const Extension* extension,
-                                   std::vector<Cookie>* match_vector) {
+void AppendMatchingCookiesFromCookieListToVector(
+    const net::CookieList& all_cookies,
+    const GetAll::Params::Details* details,
+    const Extension* extension,
+    std::vector<Cookie>* match_vector) {
   for (const net::CanonicalCookie& cookie : all_cookies) {
-    // Ignore any cookie whose domain doesn't match the extension's
-    // host permissions.
-    GURL cookie_domain_url = GetURLFromCanonicalCookie(cookie);
-    if (!extension->permissions_data()->HasHostPermission(cookie_domain_url))
-      continue;
-    // Filter the cookie using the match filter.
-    cookies_helpers::MatchFilter filter(details);
-    if (filter.MatchesCookie(cookie))
-      match_vector->push_back(CreateCookie(cookie, *details->store_id));
+    AppendCookieToVectorIfMatchAndHasHostPermission(cookie, details, extension,
+                                                    match_vector);
+  }
+}
+
+void AppendMatchingCookiesFromCookieStatusListToVector(
+    const net::CookieStatusList& all_cookies_with_statuses,
+    const GetAll::Params::Details* details,
+    const Extension* extension,
+    std::vector<Cookie>* match_vector) {
+  for (const net::CookieWithStatus& cookie_with_status :
+       all_cookies_with_statuses) {
+    const net::CanonicalCookie& cookie = cookie_with_status.cookie;
+    AppendCookieToVectorIfMatchAndHasHostPermission(cookie, details, extension,
+                                                    match_vector);
   }
 }
 

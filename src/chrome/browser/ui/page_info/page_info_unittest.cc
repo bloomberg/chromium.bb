@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
@@ -30,10 +31,12 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -102,10 +105,9 @@ class MockPageInfoUI : public PageInfoUI {
     }
   }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
-  CreateSecurityDescriptionForPasswordReuse(
-      bool unused_is_enterprise_password) const override {
+  CreateSecurityDescriptionForPasswordReuse() const override {
     std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
         new PageInfoUI::SecurityDescription());
     security_description->summary_style = SecuritySummaryColor::RED;
@@ -173,7 +175,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ResetMockUI() {
-    mock_ui_.reset(new MockPageInfoUI());
+    mock_ui_ = std::make_unique<MockPageInfoUI>();
     // Use this rather than gmock's ON_CALL.WillByDefault(Invoke(... because
     // gmock doesn't handle move-only types well.
     mock_ui_->set_permission_info_callback_ =
@@ -213,9 +215,9 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
   PageInfo* page_info() {
     if (!page_info_.get()) {
-      page_info_.reset(new PageInfo(
+      page_info_ = std::make_unique<PageInfo>(
           mock_ui(), profile(), tab_specific_content_settings(), web_contents(),
-          url(), security_level(), visible_security_state()));
+          url(), security_level(), visible_security_state());
     }
     return page_info_.get();
   }
@@ -407,10 +409,11 @@ TEST_F(PageInfoTest, OnSiteDataAccessed) {
 TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+  usb_device_manager.AddReceiver(
+      device_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
-  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+  store->SetDeviceManagerForTesting(std::move(device_manager));
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");
@@ -470,16 +473,16 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
             page_info()->safe_browsing_status());
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 TEST_F(PageInfoTest, SignInPasswordReuse) {
   security_level_ = security_state::DANGEROUS;
   visible_security_state_.malicious_content_status =
-      security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
   SetDefaultUIExpectations(mock_ui());
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
             page_info()->safe_browsing_status());
 }
 
@@ -767,27 +770,6 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
   EXPECT_EQ(base::UTF8ToUTF16("Google Inc"), page_info()->organization_name());
   EXPECT_EQ(base::UTF8ToUTF16("Issued to: Google Inc [US]"),
             page_info()->site_details_message());
-}
-
-TEST_F(PageInfoTest, HTTPSRevocationError) {
-  security_level_ = security_state::SECURE;
-  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
-  visible_security_state_.certificate = cert();
-  visible_security_state_.cert_status =
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  int status = 0;
-  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  visible_security_state_.connection_status = status;
-  visible_security_state_.connection_info_initialized = true;
-
-  SetDefaultUIExpectations(mock_ui());
-
-  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
-            page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN,
-            page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
 TEST_F(PageInfoTest, HTTPSConnectionError) {
@@ -1105,6 +1087,119 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
     } else {
       histograms.ExpectTotalCount(
           kHistogramPrefix + "NoAction." + test.security_level_name, 1);
+    }
+  }
+
+  // PageInfoTest expects a valid PageInfo instance to exist at end of test.
+  ResetMockUI();
+  SetDefaultUIExpectations(mock_ui());
+  page_info();
+}
+
+// Tests that metrics are recorded on a PageInfo for pages with
+// various Safety Tip statuses.
+TEST_F(PageInfoTest, SafetyTipMetrics) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kSafetyTipUI);
+  struct TestCase {
+    const security_state::SafetyTipStatus safety_tip_status;
+    const std::string histogram_name;
+  };
+  const char kGenericHistogram[] = "WebsiteSettings.Action";
+
+  const TestCase kTestCases[] = {
+      {security_state::SafetyTipStatus::kNone,
+       "Security.SafetyTips.PageInfo.Action.SafetyTip_None"},
+      {security_state::SafetyTipStatus::kBadReputation,
+       "Security.SafetyTips.PageInfo.Action.SafetyTip_BadReputation"},
+      {security_state::SafetyTipStatus::kLookalike,
+       "Security.SafetyTips.PageInfo.Action.SafetyTip_Lookalike"},
+  };
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL("https://example.test");
+    visible_security_state_.safety_tip_status = test.safety_tip_status;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kGenericHistogram, 0);
+    histograms.ExpectTotalCount(test.histogram_name, 0);
+
+    page_info()->RecordPageInfoAction(
+        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+
+    // RecordPageInfoAction() is called during PageInfo
+    // creation in addition to the explicit RecordPageInfoAction()
+    // call, so it is called twice in total.
+    histograms.ExpectTotalCount(kGenericHistogram, 2);
+    histograms.ExpectBucketCount(kGenericHistogram,
+                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+
+    histograms.ExpectTotalCount(test.histogram_name, 2);
+    histograms.ExpectBucketCount(test.histogram_name,
+                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+  }
+}
+
+// Tests that the duration of time the PageInfo is open is recorded for pages
+// with various Safety Tip statuses.
+TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
+  struct TestCase {
+    const security_state::SafetyTipStatus safety_tip_status;
+    const std::string safety_tip_status_name;
+    const PageInfo::PageInfoAction action;
+  };
+
+  const std::string kHistogramPrefix("Security.PageInfo.TimeOpen.");
+
+  const TestCase kTestCases[] = {
+      // PAGE_INFO_COUNT used as shorthand for "take no action".
+      {security_state::SafetyTipStatus::kNone, "SafetyTip_None",
+       PageInfo::PAGE_INFO_COUNT},
+      {security_state::SafetyTipStatus::kLookalike, "SafetyTip_Lookalike",
+       PageInfo::PAGE_INFO_COUNT},
+      {security_state::SafetyTipStatus::kBadReputation,
+       "SafetyTip_BadReputation", PageInfo::PAGE_INFO_COUNT},
+      {security_state::SafetyTipStatus::kNone, "SafetyTip_None",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {security_state::SafetyTipStatus::kLookalike, "SafetyTip_Lookalike",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {security_state::SafetyTipStatus::kBadReputation,
+       "SafetyTip_BadReputation", PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+  };
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL("https://example.test");
+    visible_security_state_.safety_tip_status = test.safety_tip_status;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.safety_tip_status_name,
+                                0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "Action." + test.safety_tip_status_name, 0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "NoAction." + test.safety_tip_status_name, 0);
+
+    PageInfo* test_page_info = page_info();
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      test_page_info->RecordPageInfoAction(test.action);
+    }
+    ClearPageInfo();
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.safety_tip_status_name,
+                                1);
+
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "Action." + test.safety_tip_status_name, 1);
+    } else {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "NoAction." + test.safety_tip_status_name, 1);
     }
   }
 

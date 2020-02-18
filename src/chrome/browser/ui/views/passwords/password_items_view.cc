@@ -107,8 +107,9 @@ std::unique_ptr<views::LabelButton> CreateUndoButton(
 
 std::unique_ptr<views::Label> CreateUsernameLabel(
     const autofill::PasswordForm& form) {
-  auto label = std::make_unique<views::Label>(
-      GetDisplayUsername(form), CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+  auto label = std::make_unique<views::Label>(GetDisplayUsername(form),
+                                              CONTEXT_BODY_TEXT_LARGE,
+                                              views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
 }
@@ -147,8 +148,9 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
           ? form.password_value
           : l10n_util::GetStringFUTF16(federation_message_id,
                                        GetDisplayFederation(form));
-  int text_style = form.federation_origin.opaque() ? STYLE_SECONDARY_MONOSPACED
-                                                   : STYLE_SECONDARY;
+  int text_style = form.federation_origin.opaque()
+                       ? STYLE_SECONDARY_MONOSPACED
+                       : views::style::STYLE_SECONDARY;
   auto label =
       std::make_unique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE, text_style);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -233,9 +235,11 @@ void PasswordItemsView::PasswordRow::ButtonPressed(views::Button* sender,
 
 PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                                      views::View* anchor_view,
-                                     const gfx::Point& anchor_point,
                                      DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason) {
+    : PasswordBubbleViewBase(web_contents,
+                             anchor_view,
+                             reason,
+                             /*easily_dismissable=*/true) {
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
   if (model()->local_credentials().empty()) {

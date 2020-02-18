@@ -81,6 +81,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
@@ -157,14 +158,10 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 // WebWidget ------------------------------------------------------------------
 
 void WebFrameWidgetImpl::Close() {
-  if (layer_tree_view_) {
-    GetPage()->WillCloseLayerTreeView(*layer_tree_view_,
-                                      LocalRootImpl()->GetFrame()->View());
-  }
+  GetPage()->WillCloseAnimationHost(LocalRootImpl()->GetFrame()->View());
 
   WebFrameWidgetBase::Close();
 
-  layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   root_layer_ = nullptr;
   root_graphics_layer_ = nullptr;
@@ -217,21 +214,16 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
       LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
     }
 
-    // TODO(danakj): |layer_tree_view_| is used as a proxy to tell if we're
-    // using compositing, and we should just set that explicitly... or read it
-    // from the WebView.
-    if (layer_tree_view_) {
-      // Pass the limits even though this is for subframes, as the limits will
-      // be needed in setting the raster scale. We set this value when setting
-      // up the compositor, but need to update it when the limits of the
-      // WebViewImpl have changed.
-      // TODO(wjmaclean): This is updating when the size of the *child frame*
-      // have changed which are completely independent of the WebView, and in an
-      // OOPIF where the main frame is remote, are these limits even useful?
-      Client()->SetPageScaleStateAndLimits(
-          1.f, false /* is_pinch_gesture_active */,
-          View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
-    }
+    // Pass the limits even though this is for subframes, as the limits will
+    // be needed in setting the raster scale. We set this value when setting
+    // up the compositor, but need to update it when the limits of the
+    // WebViewImpl have changed.
+    // TODO(wjmaclean): This is updating when the size of the *child frame*
+    // have changed which are completely independent of the WebView, and in an
+    // OOPIF where the main frame is remote, are these limits even useful?
+    Client()->SetPageScaleStateAndLimits(
+        1.f, false /* is_pinch_gesture_active */,
+        View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
   }
 }
 
@@ -249,11 +241,11 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
 }
 
 void WebFrameWidgetImpl::DidEnterFullscreen() {
-  View()->MainFrameWidget()->DidEnterFullscreen();
+  View()->DidEnterFullscreen();
 }
 
 void WebFrameWidgetImpl::DidExitFullscreen() {
-  View()->MainFrameWidget()->DidExitFullscreen();
+  View()->DidExitFullscreen();
 }
 
 void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
@@ -317,6 +309,7 @@ void WebFrameWidgetImpl::EndUpdateLayers() {
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
         update_layers_start_time_.value(), base::TimeTicks::Now());
+    probe::LayerTreeDidChange(LocalRootImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
 }
@@ -974,13 +967,11 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
   return document->FocusedElement();
 }
 
-void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
-                                          cc::AnimationHost* animation_host) {
+void WebFrameWidgetImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
   DCHECK(Client());
-  layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
-  GetPage()->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
+  GetPage()->AnimationHostInitialized(*animation_host_,
                                       LocalRootImpl()->GetFrame()->View());
 }
 
@@ -1026,10 +1017,6 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..
   Client()->SetRootLayer(root_layer_);
-}
-
-WebLayerTreeView* WebFrameWidgetImpl::GetLayerTreeView() const {
-  return layer_tree_view_;
 }
 
 cc::AnimationHost* WebFrameWidgetImpl::AnimationHost() const {

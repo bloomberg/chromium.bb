@@ -54,7 +54,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 24;
+const int kCurrentVersionNumber = 25;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -125,6 +125,7 @@ enum LoginDatabaseTableColumns {
   COLUMN_GENERATION_UPLOAD_STATUS,
   COLUMN_POSSIBLE_USERNAME_PAIRS,
   COLUMN_ID,
+  COLUMN_DATE_LAST_USED,
   COLUMN_NUM  // Keep this last.
 };
 
@@ -191,6 +192,8 @@ void BindAddStatement(const PasswordForm& form,
       SerializeValueElementPairs(form.all_possible_usernames);
   s->BindBlob(COLUMN_POSSIBLE_USERNAME_PAIRS, usernames_pickle.data(),
               usernames_pickle.size());
+  s->BindInt64(COLUMN_DATE_LAST_USED,
+               form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 // Output parameter is the first one because of binding order.
@@ -521,6 +524,11 @@ void InitializeBuilders(SQLTableBuilders builders) {
   // start clean from scratch.
   SealVersion(builders, /*expected_version=*/24u);
 
+  // Version 25. Introduce date_last_used column to replace the preferred
+  // column. MigrateLogins() will take care of migrating the data.
+  builders.logins->AddColumn("date_last_used", "INTEGER NOT NULL DEFAULT 0");
+  SealVersion(builders, /*expected_version=*/25u);
+
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builders.logins->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
          "here.";
@@ -564,6 +572,26 @@ bool MigrateLogins(unsigned current_version,
   // drop all data because Sync would populate the tables properly at startup.
   if (current_version == 21 || current_version == 22 || current_version == 23) {
     if (!ClearAllSyncMetadata(db))
+      return false;
+  }
+
+  // "date_last_used" column has been introduced and we should migrate the data
+  // in "preferred" column. We set the value of "date_last_used"
+  // deterministically such the final output will be consistent across syncing
+  // clients.
+  // TODO(crbug.com/997670): Drop the "preferred" column together with this
+  // migration code in M82.
+  if (current_version < 25) {
+    sql::Statement preferred_stmt;
+    preferred_stmt.Assign(db->GetCachedStatement(
+        SQL_FROM_HERE,
+        "UPDATE logins SET date_last_used = ? WHERE preferred > 0"));
+    // Set the preferred password to be last used one day after the Windows
+    // Epoch to make sure the "preferred" password is used more recently.
+    // Non-preferred passwords carry the default value of 0 (which maps to the
+    // Windows Epoch).
+    preferred_stmt.BindInt64(0, base::TimeDelta::FromDays(1).InMicroseconds());
+    if (!preferred_stmt.Run())
       return false;
   }
 
@@ -623,8 +651,9 @@ PasswordForm GetFormForRemoval(const sql::Statement& statement) {
 
 }  // namespace
 
-LoginDatabase::LoginDatabase(const base::FilePath& db_path)
-    : db_path_(db_path) {}
+LoginDatabase::LoginDatabase(const base::FilePath& db_path,
+                             IsAccountStore is_account_store)
+    : db_path_(db_path), is_account_store_(is_account_store) {}
 
 LoginDatabase::~LoginDatabase() {
 }
@@ -708,7 +737,6 @@ bool LoginDatabase::Init() {
 
   int current_version = meta_table_.GetVersionNumber();
   bool migration_success = FixVersionIfNeeded(&db_, &current_version);
-  DCHECK_LE(current_version, kCurrentVersionNumber);
 
   // If the file on disk is an older database version, bring it up to date.
   if (migration_success && current_version < kCurrentVersionNumber) {
@@ -719,8 +747,13 @@ bool LoginDatabase::Init() {
     migration_success = stats_table_.MigrateToVersion(16);
   }
   if (migration_success) {
-    meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
-    meta_table_.SetVersionNumber(kCurrentVersionNumber);
+    // |migration_success| could be true when no logins have been actually
+    // migrated. We should protect against downgrading the database version in
+    // such case. Update the database version only if a migration took place.
+    if (current_version < kCurrentVersionNumber) {
+      meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
+      meta_table_.SetVersionNumber(kCurrentVersionNumber);
+    }
   } else {
     LogDatabaseInitError(MIGRATION_ERROR);
     LOG(ERROR) << "Unable to migrate database from "
@@ -979,7 +1012,6 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
     }
     return list;
   }
-
   DCHECK(!add_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
@@ -1079,6 +1111,8 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
   base::Pickle username_pickle =
       SerializeValueElementPairs(form.all_possible_usernames);
   s.BindBlob(next_param++, username_pickle.data(), username_pickle.size());
+  s.BindInt64(next_param++,
+              form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   // NOTE: Add new fields here unless the field is a part of the unique key.
   // If so, add new field below.
 
@@ -1306,6 +1340,8 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           generation_upload_status_int);
+  form->date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(s.ColumnInt64(COLUMN_DATE_LAST_USED)));
   DCHECK(autofill::mojom::IsKnownEnumValue(form->generation_upload_status));
   return ENCRYPTION_RESULT_SUCCESS;
 }
@@ -1319,8 +1355,7 @@ bool LoginDatabase::GetLogins(
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
   const bool should_PSL_matching_apply =
-      form.scheme == PasswordForm::Scheme::kHtml &&
-      ShouldPSLDomainMatchingApply(registered_domain);
+      !registered_domain.empty() && form.scheme == PasswordForm::Scheme::kHtml;
   const bool should_federated_apply =
       form.scheme == PasswordForm::Scheme::kHtml;
   DCHECK(!get_statement_.empty());
@@ -1394,6 +1429,35 @@ bool LoginDatabase::GetLogins(
   }
   for (auto& pair : key_to_form_map) {
     forms->push_back(std::move(pair.second));
+  }
+  return true;
+}
+
+bool LoginDatabase::GetLoginsByPassword(
+    const base::string16& plain_text_password,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
+  DCHECK(forms);
+  forms->clear();
+
+  // Get all autofillable (not blacklisted) logins.
+  DCHECK(!blacklisted_statement_.empty());
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, blacklisted_statement_.c_str()));
+  s.BindInt(0, 0);  // blacklisted = false
+
+  // Apply query, check status and copy results if successful.
+  PrimaryKeyToFormMap key_to_form_map;
+  FormRetrievalResult result =
+      StatementToForms(&s, /*matched_form=*/nullptr, &key_to_form_map);
+
+  if (result != FormRetrievalResult::kSuccess) {
+    return false;
+  }
+  for (auto& pair : key_to_form_map) {
+    if (pair.second->password_value == plain_text_password) {
+      // Only add the form the result if the password value matches.
+      forms->push_back(std::move(pair.second));
+    }
   }
   return true;
 }

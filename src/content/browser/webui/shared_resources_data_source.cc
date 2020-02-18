@@ -78,6 +78,9 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   };
 
 #if defined(OS_CHROMEOS)
+  // Add lottie library for Chrome OS.
+  aliases["../../../third_party/lottie/"] = "lottie/";
+
   if (UsingMultiplePolymerVersions())
     return aliases;
 #endif  // defined(OS_CHROMEOS)
@@ -292,7 +295,7 @@ std::string SharedResourcesDataSource::GetSource() {
 
 void SharedResourcesDataSource::StartDataRequest(
     const std::string& path,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
   std::string updated_path = path;
 #if defined(OS_CHROMEOS)
@@ -324,7 +327,7 @@ void SharedResourcesDataSource::StartDataRequest(
     bytes = GetContentClient()->GetDataResourceBytes(idr);
   }
 
-  callback.Run(bytes.get());
+  callback.Run(std::move(bytes));
 }
 
 bool SharedResourcesDataSource::AllowCaching() {
@@ -385,7 +388,7 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
   // TODO (rbpotter): Remove this once the OOBE Polymer 2 migration is complete.
 #if defined(OS_CHROMEOS)
   if (UsingMultiplePolymerVersions())
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 #endif  // defined(OS_CHROMEOS)
 
   int idr = GetIdrForPath(path);
@@ -393,7 +396,7 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
       idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
     // Use UI thread to load CSS since its construction touches non-thread-safe
     // gfx::Font names in ui::ResourceBundle.
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
 
   return nullptr;
@@ -414,10 +417,6 @@ std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
-bool SharedResourcesDataSource::IsGzipped(const std::string& path) {
-  return GetContentClient()->IsDataResourceGzipped(GetIdrForPath(path));
-}
-
 #if defined(OS_CHROMEOS)
 void SharedResourcesDataSource::DisablePolymer2ForHost(
     const std::string& host) {
@@ -425,9 +424,13 @@ void SharedResourcesDataSource::DisablePolymer2ForHost(
   disabled_polymer2_host_ = host;
 }
 
+std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return "worker-src blob: 'self';";
+}
+
 // Returns true if the WebContents making the request has disabled Polymer 2.
 bool SharedResourcesDataSource::IsPolymer2DisabledForPage(
-    const ResourceRequestInfo::WebContentsGetter& wc_getter) {
+    const WebContents::Getter& wc_getter) {
   // Return false in these cases, which sometimes occur in tests.
   if (!wc_getter)
     return false;

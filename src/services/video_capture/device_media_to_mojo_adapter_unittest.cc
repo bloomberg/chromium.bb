@@ -6,7 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/mock_device.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,12 +29,10 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
     mock_device_ptr_ = mock_device.get();
 #if defined(OS_CHROMEOS)
     adapter_ = std::make_unique<DeviceMediaToMojoAdapter>(
-        std::unique_ptr<service_manager::ServiceContextRef>(),
         std::move(mock_device), base::DoNothing(),
         base::ThreadTaskRunnerHandle::Get());
 #else
     adapter_ = std::make_unique<DeviceMediaToMojoAdapter>(
-        std::unique_ptr<service_manager::ServiceContextRef>(),
         std::move(mock_device));
 #endif  // defined(OS_CHROMEOS)
   }
@@ -51,7 +49,7 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
   std::unique_ptr<DeviceMediaToMojoAdapter> adapter_;
   std::unique_ptr<MockReceiver> mock_receiver_;
   mojom::ReceiverPtr receiver_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(DeviceMediaToMojoAdapterTest,

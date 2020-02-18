@@ -231,7 +231,7 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
     # NOTE: For now, installation requires running 'bundletool install-apks'.
     # TODO(digit): Add proper support for bundles to devil instead, then use it.
     install_cmd_args = [
-        'install-apks', '--apks=' + bundle_apks,
+        'install-apks', '--apks=' + bundle_apks, '--allow-downgrade',
         '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
         '--device-id=' + device.serial
     ]
@@ -1525,8 +1525,7 @@ class _BuildBundleApks(_Command):
         help='Build .apks archive that targets the bundle\'s minSdkVersion and '
         'contains only english splits. It still contains optional splits.')
     group.add_argument(
-        '--sdk-version',
-        help='Implies --minimal. The sdkVersion to build the .apks for.')
+        '--sdk-version', help='The sdkVersion to build the .apks for.')
     group.add_argument(
         '--build-mode',
         choices=app_bundle_utils.BUILD_APKS_MODES,
@@ -1540,7 +1539,7 @@ class _BuildBundleApks(_Command):
     _GenerateBundleApks(
         self.bundle_generation_info,
         self.args.output_apks,
-        minimal=self.args.sdk_version is not None or self.args.minimal,
+        minimal=self.args.minimal,
         minimal_sdk_version=self.args.sdk_version,
         mode=self.args.build_mode)
 

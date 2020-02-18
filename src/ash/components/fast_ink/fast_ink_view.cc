@@ -283,7 +283,7 @@ class FastInkView::LayerTreeFrameSinkHolder
 
 FastInkView::FastInkView(aura::Window* container,
                          const PresentationCallback& presentation_callback)
-    : presentation_callback_(presentation_callback), weak_ptr_factory_(this) {
+    : presentation_callback_(presentation_callback) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -296,7 +296,7 @@ FastInkView::FastInkView(aura::Window* container,
   params.layer_type = ui::LAYER_SOLID_COLOR;
 
   gfx::Rect screen_bounds = container->GetRootWindow()->GetBoundsInScreen();
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   widget_->Show();
   widget_->SetContentsView(this);
   widget_->SetBounds(screen_bounds);

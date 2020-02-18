@@ -21,6 +21,7 @@ vmtest_boards = frozenset([
     'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
     'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
     'betty-arcnext', # Like betty but with the next version of ARC++.
+    'betty-pi-arc',  # Like betty but P version of ARC++.
     'novato',        # Like betty but with GMSCore but not the Play Store
     'novato-arc64',  # 64 bit x86_64 ARC++ ABI
 ]) | config_boards.lakitu_boards  # All lakitu boards have VM support.
@@ -563,10 +564,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
-      'caroline-arcnext-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
       'grunt-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
@@ -604,6 +601,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.tast_vm_chrome_pfq_tests,
       'betty-arcnext-chrome-pfq':
           site_config.templates.tast_vm_chrome_pfq_tests,
+      'betty-pi-arc-chrome-pfq':
+          site_config.templates.tast_vm_chrome_pfq_tests,
       'betty-chrome-pfq': site_config.templates.tast_vm_chrome_pfq_tests,
 
       'betty-arc64-nyc-android-pfq':
@@ -612,12 +611,18 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.tast_vm_android_pfq_tests,
       'betty-arcnext-pi-android-pfq':
           site_config.templates.tast_vm_android_pfq_tests,
+      'betty-pi-arc-pi-android-pfq':
+          site_config.templates.tast_vm_android_pfq_tests,
 
       # There's no amd64-generic-release builder, so we use amd64-generic-full
       # to validate informational Tast tests on amd64-generic:
       # https://crbug.com/946858
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
+      'betty-arcnext-release': site_config.templates.tast_vm_canary_tests,
+      # TODO(crbug.com/988493): Re-enable once TastVMTest starts passing on
+      # betty-arcnext-release.
+      #'betty-pi-arc-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
       'kumo-pre-cq': {

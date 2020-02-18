@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/storage_partition_impl.h"
@@ -18,8 +18,8 @@
 #include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #if defined(OS_ANDROID)
@@ -63,7 +63,7 @@ class TestBrowserClient : public ContentBrowserClient {
 class BackgroundSyncLauncherTest : public testing::Test {
  public:
   BackgroundSyncLauncherTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::MainThreadType::UI) {}
+      : task_environment_(BrowserTaskEnvironment::MainThreadType::UI) {}
 
   void SetUpBrowserContext(const std::vector<GURL>& urls,
                            blink::mojom::BackgroundSyncType sync_type,
@@ -100,7 +100,7 @@ class BackgroundSyncLauncherTest : public testing::Test {
             [&to_return](base::TimeDelta soonest_wakeup_delta) {
               to_return = soonest_wakeup_delta;
             }));
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     return to_return;
   }
 
@@ -124,7 +124,7 @@ class BackgroundSyncLauncherTest : public testing::Test {
             },
             std::move(done_closure)));
 
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   int NumInvocationsOfFireBackgroundSyncEvents() {
@@ -137,7 +137,7 @@ class BackgroundSyncLauncherTest : public testing::Test {
     num_invocations_fire_background_sync_events_++;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserClient browser_client_;
   ContentBrowserClient* original_client_;
   TestBrowserContext test_browser_context_;

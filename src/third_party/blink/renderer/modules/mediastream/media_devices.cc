@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -26,8 +27,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-
-using blink::mojom::blink::MediaDeviceType;
 
 namespace blink {
 
@@ -60,7 +59,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 }  // namespace
 
 MediaDevices::MediaDevices(ExecutionContext* context)
-    : ContextLifecycleObserver(context), stopped_(false), binding_(this) {}
+    : ContextLifecycleObserver(context), stopped_(false) {}
 
 MediaDevices::~MediaDevices() = default;
 
@@ -185,8 +184,8 @@ void MediaDevices::RemovedEventListener(
 }
 
 bool MediaDevices::HasPendingActivity() const {
-  DCHECK(stopped_ || binding_.is_bound() == HasEventListeners());
-  return binding_.is_bound();
+  DCHECK(stopped_ || receiver_.is_bound() == HasEventListeners());
+  return receiver_.is_bound();
 }
 
 void MediaDevices::ContextDestroyed(ExecutionContext*) {
@@ -200,7 +199,7 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
 }
 
 void MediaDevices::OnDevicesChanged(
-    MediaDeviceType type,
+    mojom::blink::MediaDeviceType type,
     Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
   Document* document = To<Document>(GetExecutionContext());
   DCHECK(document);
@@ -235,25 +234,23 @@ void MediaDevices::DispatchScheduledEvents() {
 }
 
 void MediaDevices::StartObserving() {
-  if (binding_.is_bound() || stopped_)
+  if (receiver_.is_bound() || stopped_)
     return;
 
   Document* document = To<Document>(GetExecutionContext());
   if (!document || !document->GetFrame())
     return;
 
-  mojom::blink::MediaDevicesListenerPtr listener;
-  binding_.Bind(mojo::MakeRequest(&listener));
   GetDispatcherHost(document->GetFrame())
       ->AddMediaDevicesListener(true /* audio input */, true /* video input */,
-                                true /* audio output */, std::move(listener));
+                                true /* audio output */,
+                                receiver_.BindNewPipeAndPassRemote());
 }
 
 void MediaDevices::StopObserving() {
-  if (!binding_.is_bound())
+  if (!receiver_.is_bound())
     return;
-
-  binding_.Close();
+  receiver_.reset();
 }
 
 void MediaDevices::Dispose() {
@@ -277,41 +274,44 @@ void MediaDevices::DevicesEnumerated(
     return;
   }
 
-  DCHECK_EQ(static_cast<wtf_size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
+  DCHECK_EQ(static_cast<wtf_size_t>(
+                mojom::blink::MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
             enumeration.size());
 
   if (!video_input_capabilities.IsEmpty()) {
-    DCHECK_EQ(
-        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
-            .size(),
-        video_input_capabilities.size());
+    DCHECK_EQ(enumeration[static_cast<wtf_size_t>(
+                              mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT)]
+                  .size(),
+              video_input_capabilities.size());
   }
   if (!audio_input_capabilities.IsEmpty()) {
-    DCHECK_EQ(
-        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
-            .size(),
-        audio_input_capabilities.size());
+    DCHECK_EQ(enumeration[static_cast<wtf_size_t>(
+                              mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT)]
+                  .size(),
+              audio_input_capabilities.size());
   }
 
   MediaDeviceInfoVector media_devices;
   for (wtf_size_t i = 0;
-       i < static_cast<wtf_size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES);
+       i < static_cast<wtf_size_t>(
+               mojom::blink::MediaDeviceType::NUM_MEDIA_DEVICE_TYPES);
        ++i) {
     for (wtf_size_t j = 0; j < enumeration[i].size(); ++j) {
-      MediaDeviceType device_type = static_cast<MediaDeviceType>(i);
+      mojom::blink::MediaDeviceType device_type =
+          static_cast<mojom::blink::MediaDeviceType>(i);
       mojom::blink::MediaDeviceInfoPtr device_info =
           std::move(enumeration[i][j]);
-      if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT ||
-          device_type == MediaDeviceType::MEDIA_VIDEO_INPUT) {
+      if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
+          device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
         InputDeviceInfo* input_device_info =
             InputDeviceInfo::Create(device_info->device_id, device_info->label,
                                     device_info->group_id, device_type);
-        if (device_type == MediaDeviceType::MEDIA_VIDEO_INPUT &&
+        if (device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT &&
             !video_input_capabilities.IsEmpty()) {
           input_device_info->SetVideoInputCapabilities(
               std::move(video_input_capabilities[j]));
         }
-        if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT &&
+        if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT &&
             !audio_input_capabilities.IsEmpty()) {
           input_device_info->SetAudioInputCapabilities(
               std::move(audio_input_capabilities[j]));
@@ -343,12 +343,12 @@ void MediaDevices::OnDispatcherHostConnectionError() {
     std::move(connection_error_test_callback_).Run();
 }
 
-const mojom::blink::MediaDevicesDispatcherHostPtr&
+const mojo::Remote<mojom::blink::MediaDevicesDispatcherHost>&
 MediaDevices::GetDispatcherHost(LocalFrame* frame) {
   if (!dispatcher_host_) {
     frame->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&dispatcher_host_));
-    dispatcher_host_.set_connection_error_handler(
+        dispatcher_host_.BindNewPipeAndPassReceiver());
+    dispatcher_host_.set_disconnect_handler(
         WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,
                   WrapWeakPersistent(this)));
   }
@@ -357,9 +357,10 @@ MediaDevices::GetDispatcherHost(LocalFrame* frame) {
 }
 
 void MediaDevices::SetDispatcherHostForTesting(
-    mojom::blink::MediaDevicesDispatcherHostPtr dispatcher_host) {
-  dispatcher_host_ = std::move(dispatcher_host);
-  dispatcher_host_.set_connection_error_handler(
+    mojo::PendingRemote<mojom::blink::MediaDevicesDispatcherHost>
+        dispatcher_host) {
+  dispatcher_host_.Bind(std::move(dispatcher_host));
+  dispatcher_host_.set_disconnect_handler(
       WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,
                 WrapWeakPersistent(this)));
 }

@@ -447,6 +447,7 @@
       "os": {
         "type": "linux"
       },
+      "gl_type": "gl",
       "gl_renderer": ".*Mesa.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
@@ -462,7 +463,7 @@
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<=",
-        "value": "269.73"
+        "value": "8.17.12.6973"
       },
       "features": [
         "disable_d3d11"
@@ -620,9 +621,9 @@
         "type": "win"
       },
       "vendor_id": "0x1002",
-      "driver_date": {
+      "driver_version": {
         "op": "<",
-        "value": "2011.1"
+        "value": "8.17.10.1070"
       },
       "features": [
         "disable_d3d11"
@@ -682,7 +683,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<=",
-        "value": "9.18"
+        "value": "9.18.0.0"
       },
       "features": [
         "disable_d3d11"
@@ -797,9 +798,9 @@
           "value": "10"
         }
       },
-      "driver_date": {
+      "driver_version": {
         "op": "<",
-        "value": "2016.6"
+        "value": "20.19.0.32837"
       },
       "multi_gpu_style": "amd_switchable",
       "features": [
@@ -1790,7 +1791,7 @@
       },
       "driver_version": {
         "op": "<",
-        "value": "375.76"
+        "value": "21.21.13.7576"
       },
       "vendor_id": "0x10de",
       "features": [
@@ -1862,6 +1863,7 @@
       "os": {
         "type": "linux"
       },
+      "gl_type": "gl",
       "gl_version_string": ".*Mesa.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
@@ -2301,7 +2303,7 @@
     },
     {
       "id": 225,
-      "description": "VPx decoding is too slow on Intel Broadwell, Skylake, and CherryView",
+      "description": "VPx decoding is too slow on Intel Broadwell, Skylake, and CherryTrail",
       "cr_bugs": [616318],
       "os": {
         "type": "win"
@@ -2309,7 +2311,7 @@
       "gpu_series": [
         "intel_broadwell",
         "intel_skylake",
-        "intel_cherryview"
+        "intel_cherrytrail"
       ],
       "features": [
         "disable_accelerated_vpx_decode"
@@ -2936,7 +2938,7 @@
       "vendor_id": "0x1002",
       "driver_version": {
         "op": "=",
-        "value": "8.970.100.9001"
+        "value": "8.17.10.1129"
       },
       "features": [
         "disable_direct_composition"
@@ -3137,7 +3139,7 @@
         }
       ],
       "features": [
-        "disable_direct_composition_layers"
+        "disable_direct_composition_video_overlays"
       ]
     },
     {
@@ -3247,7 +3249,7 @@
       "vendor_id": "0x8086",
       "driver_version": {
         "op": "<",
-        "value": "24"
+        "value": "24.0.0.0"
       },
       "features": [
           "disable_nv12_dynamic_textures"
@@ -3263,10 +3265,10 @@
       "vendor_id": "0x10de",
       "driver_version": {
         "op": "<",
-        "value": "419"
+        "value": "25.21.14.1900"
       },
       "features": [
-        "disable_direct_composition_layers"
+        "disable_direct_composition_video_overlays"
       ]
     },
     {
@@ -3307,6 +3309,22 @@
       ]
     },
     {
+      "id": 309,
+      "cr_bugs": [993233],
+      "description": "Don't use video processor scaling on non-Intel GPUs.",
+      "os": {
+        "type" : "win"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086"
+        }
+      ],
+      "features": [
+          "disable_vp_scaling"
+      ]
+    },
+    {
       "id": 310,
       "description": "Context lost recovery often fails on Mali on CrOS.",
       "cr_bugs": [992286],
@@ -3318,6 +3336,43 @@
       "features": [
         "exit_on_context_lost"
       ]
-    }
+    },
+    {
+      "id": 311,
+      "cr_bugs": [991869],
+      "description": "Crash on Mali-T8x when using glTexImage2D",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": ".*Mali-T8.*",
+      "features": [
+        "prefer_draw_to_copy"
+      ]
+    },
+    {
+      "id": 313,
+      "description": "Context lost recovery often fails on PowerVR on CrOS.",
+      "cr_bugs": [1010121],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 314,
+      "cr_bugs": [1010338],
+      "description": "Crash on Adreno when using GL_EXT_shader_framebuffer_fetch",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "disabled_extensions": [
+        "GL_EXT_shader_framebuffer_fetch"
+      ]
+   }
   ]
 }

@@ -8,8 +8,8 @@
 
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 
 namespace page_load_metrics {
 
@@ -78,12 +78,27 @@ class LargestContentfulPaintHandler {
     return main_frame_tree_node_id_.value();
   }
 
+  // We merge the candidates from text side and image side to get the largest
+  // candidate across both types of content.
+  const ContentfulPaintTimingInfo& MainFrameLargestContentfulPaint() {
+    return main_frame_contentful_paint_.MergeTextAndImageTiming();
+  }
+  const ContentfulPaintTimingInfo& SubframesLargestContentfulPaint() {
+    return subframe_contentful_paint_.MergeTextAndImageTiming();
+  }
+  const ContentfulPaintTimingInfo& MainFrameLargestImagePaint() {
+    return main_frame_contentful_paint_.Image();
+  }
+  const ContentfulPaintTimingInfo& MainFrameLargestTextPaint() {
+    return main_frame_contentful_paint_.Text();
+  }
+
   // We merge the candidates from main frame and subframe to get the largest
   // candidate across all frames.
   const ContentfulPaintTimingInfo& MergeMainFrameAndSubframes();
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const PageLoadMetricsObserverDelegate& delegate);
 
  private:
   void RecordSubframeTiming(const mojom::PaintTimingPtr& timing,

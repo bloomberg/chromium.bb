@@ -104,6 +104,10 @@ class CryptAuthClientImpl : public CryptAuthClient {
       const cryptauthv2::BatchSetFeatureStatusesRequest& request,
       const BatchSetFeatureStatusesCallback& callback,
       const ErrorCallback& error_callback) override;
+  void GetDevicesActivityStatus(
+      const cryptauthv2::GetDevicesActivityStatusRequest& request,
+      const GetDevicesActivityStatusCallback& callback,
+      const ErrorCallback& error_callback) override;
   std::string GetAccessTokenUsed() override;
 
  private:
@@ -191,7 +195,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // Called when the current request fails.
   ErrorCallback error_callback_;
 
-  base::WeakPtrFactory<CryptAuthClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CryptAuthClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthClientImpl);
 };

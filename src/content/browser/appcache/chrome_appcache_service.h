@@ -25,13 +25,8 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 class BrowserContext;
-class ResourceContext;
 
 struct ChromeAppCacheServiceDeleter;
 
@@ -55,28 +50,16 @@ class CONTENT_EXPORT ChromeAppCacheService
   ChromeAppCacheService(storage::QuotaManagerProxy* proxy,
                         base::WeakPtr<StoragePartitionImpl> partition);
 
-  // If |cache_path| is empty we will use in-memory structs. If the
-  // NavigationLoaderOnUI feature is enabled, this is run on the UI thread with
-  // |browser_context| set and |resource_context| null. If it is disabled, this
-  // is run on the IO thread with |resource_context| set and |browser_context|
-  // null.
-  void InitializeOnLoaderThread(
+  // If |cache_path| is empty we will use in-memory structs.
+  void Initialize(
       const base::FilePath& cache_path,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   void CreateBackend(
       int process_id,
+      int routing_id,
       mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
-
-  // TODO(crbug.com/955171): Remove this after migrating RenderProcessHostImpl
-  // from using service_manager::BinderRegistry to service_manager::BinderMap in
-  // its RegisterMojoInterfaces() method, since such change will remove the need
-  // of expecting an InterfaceRequest as parameters in these creational methods.
-  void CreateBackendForRequest(int process_id,
-                               blink::mojom::AppCacheBackendRequest request);
 
   void Shutdown();
 
@@ -85,9 +68,6 @@ class CONTENT_EXPORT ChromeAppCacheService
                        const GURL& first_party) override;
   bool CanCreateAppCache(const GURL& manifest_url,
                          const GURL& first_party) override;
-
-  // AppCacheServiceImpl override
-  void UnregisterBackend(AppCacheBackendImpl* backend_impl) override;
 
  protected:
   ~ChromeAppCacheService() override;
@@ -98,25 +78,11 @@ class CONTENT_EXPORT ChromeAppCacheService
                                           ChromeAppCacheServiceDeleter>;
   friend struct ChromeAppCacheServiceDeleter;
 
-  void Bind(std::unique_ptr<blink::mojom::AppCacheBackend> backend,
-            mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver,
-            int process_id);
-  // Unbinds the pipe corresponding to the given process_id. Unbinding
-  // unregisters and destroys the existing backend for that process_id.
-  // The function must be called before a new backend is created for the given
-  // process_id to ensure that there is at most one backend per process_id.
-  // The function does nothing if no pipe was bound.
-  void Unbind(int process_id);
-
   void DeleteOnCorrectThread() const;
 
   BrowserContext* browser_context_ = nullptr;
-  ResourceContext* resource_context_ = nullptr;
   base::FilePath cache_path_;
   mojo::UniqueReceiverSet<blink::mojom::AppCacheBackend> receivers_;
-
-  // A map from a process_id to a receiver_id.
-  std::map<int, mojo::ReceiverId> process_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);
 };

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
@@ -53,7 +53,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/constants.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -70,7 +70,6 @@
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
@@ -83,12 +82,9 @@
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
 #include "services/service_manager/service_process_launcher.h"
-#include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
-#include "services/video_capture/service_impl.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
 
@@ -96,18 +92,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "content/public/android/content_jni_headers/ContentNfcDelegate_jni.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "components/services/font/font_service_app.h"
-#include "components/services/font/public/mojom/constants.mojom.h"  // nogncheck
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/assistant/buildflags.h"  // nogncheck
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif
 
 namespace content {
@@ -319,13 +303,6 @@ void RegisterInProcessService(
       &LaunchInProcessService, std::move(task_runner), factory);
 }
 
-std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<video_capture::ServiceImpl>(
-      std::move(request), base::CreateSingleThreadTaskRunnerWithTraits(
-                              {content::BrowserThread::UI}));
-}
-
 void CreateInProcessAudioService(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     service_manager::mojom::ServiceRequest request) {
@@ -340,13 +317,6 @@ void CreateInProcessAudioService(
                      },
                      BrowserMainLoop::GetAudioManager(), std::move(request)));
 }
-
-#if defined(OS_LINUX)
-std::unique_ptr<service_manager::Service> CreateFontService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<font_service::FontServiceApp>(std::move(request));
-}
-#endif  // defined(OS_LINUX)
 
 std::unique_ptr<service_manager::Service> CreateResourceCoordinatorService(
     service_manager::mojom::ServiceRequest request) {
@@ -374,9 +344,6 @@ void RunServiceInstanceOnIOThread(
                                 std::move(*receiver));
     return;
   }
-
-  GetContentClient()->browser()->RunServiceInstanceOnIOThread(identity,
-                                                              receiver);
 }
 
 // A ServiceProcessHost implementation which uses the Service Manager's builtin
@@ -460,8 +427,6 @@ class BrowserServiceManagerDelegate
     if (identity.name() == media::mojom::kMediaServiceName)
       run_in_gpu_process = true;
 #endif
-    if (identity.name() == shape_detection::mojom::kServiceName)
-      run_in_gpu_process = true;
     return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process,
                                                             child_flags);
   }
@@ -643,29 +608,6 @@ ServiceManagerContext::ServiceManagerContext(
                              base::BindRepeating(&CreateMediaSessionService));
   }
 
-  if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
-    RegisterInProcessService(
-        video_capture::mojom::kServiceName,
-#if defined(OS_WIN)
-        base::CreateCOMSTATaskRunnerWithTraits(
-#else
-        base::CreateSingleThreadTaskRunnerWithTraits(
-#endif
-            base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                              base::TaskPriority::BEST_EFFORT}),
-            base::SingleThreadTaskRunnerThreadMode::DEDICATED),
-        base::BindRepeating(&CreateVideoCaptureService));
-  }
-
-#if defined(OS_LINUX)
-  RegisterInProcessService(
-      font_service::mojom::kServiceName,
-      base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                            base::TaskPriority::USER_BLOCKING})),
-      base::BindRepeating(&CreateFontService));
-#endif
-
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call
   // GetConnectorForIOThread().
@@ -674,31 +616,27 @@ ServiceManagerContext::ServiceManagerContext(
   GetContentClient()->browser()->WillStartServiceManager();
 
   if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
-    RegisterInProcessService(
-        tracing::mojom::kServiceName,
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-             base::WithBaseSyncPrimitives(),
-             base::TaskPriority::USER_BLOCKING}),
-        base::BindRepeating(&CreateTracingService));
+    RegisterInProcessService(tracing::mojom::kServiceName,
+                             base::CreateSequencedTaskRunner(
+                                 {base::ThreadPool(), base::MayBlock(),
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+                                  base::WithBaseSyncPrimitives(),
+                                  base::TaskPriority::USER_BLOCKING}),
+                             base::BindRepeating(&CreateTracingService));
   }
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  if (network_service_enabled) {
-    if (IsInProcessNetworkService()) {
-      scoped_refptr<base::SequencedTaskRunner> task_runner =
-          service_manager_thread_task_runner_;
-      if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
-        base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-        network_service_thread_.StartWithOptions(options);
-        task_runner = network_service_thread_.task_runner();
-      }
-
-      GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
-      RegisterInProcessService(mojom::kNetworkServiceName, task_runner,
-                               base::BindRepeating(&CreateNetworkService));
+  if (IsInProcessNetworkService()) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        service_manager_thread_task_runner_;
+    if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
+      base::Thread::Options options(base::MessagePumpType::IO, 0);
+      network_service_thread_.StartWithOptions(options);
+      task_runner = network_service_thread_.task_runner();
     }
+
+    GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
+    RegisterInProcessService(mojom::kNetworkServiceName, task_runner,
+                             base::BindRepeating(&CreateNetworkService));
   }
 
   in_process_context_->Start(
@@ -750,8 +688,9 @@ void ServiceManagerContext::RunServiceInstance(
     // thread affinity on the clients. We therefore require a single-thread
     // runner.
     scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+        base::CreateSingleThreadTaskRunner({base::ThreadPool(),
+                                            base::MayBlock(),
+                                            base::TaskPriority::BEST_EFFORT});
 #if defined(OS_ANDROID)
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;

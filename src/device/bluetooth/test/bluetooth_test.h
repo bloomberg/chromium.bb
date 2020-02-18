@@ -13,7 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -648,9 +648,9 @@ class BluetoothTestBase : public testing::Test {
   // |device_ordinal|.
   LowEnergyDeviceData GetLowEnergyDeviceData(int device_ordinal) const;
 
-  // A ScopedTaskEnvironment is required by some implementations that will
+  // A TaskEnvironment is required by some implementations that will
   // PostTasks and by base::RunLoop().RunUntilIdle() use in this fixture.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
   std::vector<scoped_refptr<BluetoothAdvertisement>> advertisements_;
@@ -685,7 +685,7 @@ class BluetoothTestBase : public testing::Test {
   bool unexpected_success_callback_ = false;
   bool unexpected_error_callback_ = false;
 
-  base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
+  base::WeakPtrFactory<BluetoothTestBase> weak_factory_{this};
 };
 
 }  // namespace device

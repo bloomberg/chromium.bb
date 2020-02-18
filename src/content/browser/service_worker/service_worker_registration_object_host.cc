@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -42,7 +43,7 @@ void ExecuteUpdate(base::WeakPtr<ServiceWorkerContextCore> context,
                    bool skip_script_comparison,
                    ServiceWorkerContextCore::UpdateCallback callback,
                    blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     // The delay was already very long and update() is rejected immediately.
@@ -87,7 +88,7 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
   DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &ServiceWorkerRegistrationObjectHost::OnConnectionError,
       base::Unretained(this)));
 }
@@ -103,8 +104,10 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
   info->registration_id = registration_->id();
   info->scope = registration_->scope();
   info->update_via_cache = registration_->update_via_cache();
-  bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
-  info->request = mojo::MakeRequest(&remote_registration_);
+  receivers_.Add(this, info->host_remote.InitWithNewEndpointAndPassReceiver());
+
+  remote_registration_.reset();
+  info->receiver = remote_registration_.BindNewEndpointAndPassReceiver();
 
   info->installing = CreateCompleteObjectInfoToSend(
       provider_host_, registration_->installing_version());
@@ -145,11 +148,6 @@ void ServiceWorkerRegistrationObjectHost::OnUpdateFound(
 }
 
 void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
-  if (!CanServeRegistrationObjectHostMethods(
-          &callback, ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix)) {
-    return;
-  }
-
   // Run steps according to section 3.2.7:
   // https://w3c.github.io/ServiceWorker/#service-worker-registration-update
 
@@ -161,14 +159,18 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
   // passing |registration| as its argument.
   ServiceWorkerVersion* newest_worker = registration->GetNewestVersion();
 
+  if (!CanServeRegistrationObjectHostMethods(
+          &callback, ComposeUpdateErrorMessagePrefix(newest_worker))) {
+    return;
+  }
+
   // 3. If |newest_worker| is null, return a promise rejected with an
   // "InvalidStateError" DOMException and abort these steps.
   if (!newest_worker) {
     // This can happen if update() is called during initial script evaluation.
-    std::move(callback).Run(
-        blink::mojom::ServiceWorkerErrorType::kState,
-        std::string(ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix) +
-            std::string(ServiceWorkerConsts::kInvalidStateErrorMessage));
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kState,
+                            ComposeUpdateErrorMessagePrefix(nullptr) +
+                                ServiceWorkerConsts::kInvalidStateErrorMessage);
     return;
   }
 
@@ -184,8 +186,8 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
       // install-event-handler.
       std::move(callback).Run(
           blink::mojom::ServiceWorkerErrorType::kState,
-          std::string(ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix) +
-              std::string(ServiceWorkerConsts::kInvalidStateErrorMessage));
+          ComposeUpdateErrorMessagePrefix(version) +
+              ServiceWorkerConsts::kInvalidStateErrorMessage);
       return;
     }
   }
@@ -235,18 +237,18 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(std::move(update_function),
-                     blink::ServiceWorkerStatusCode::kOk),
-      delay);
+  base::PostDelayedTask(FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
+                        base::BindOnce(std::move(update_function),
+                                       blink::ServiceWorkerStatusCode::kOk),
+                        delay);
 }
 
 void ServiceWorkerRegistrationObjectHost::Unregister(
     UnregisterCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback,
-          ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix)) {
+          std::string(
+              ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix))) {
     return;
   }
 
@@ -262,7 +264,8 @@ void ServiceWorkerRegistrationObjectHost::EnableNavigationPreload(
     EnableNavigationPreloadCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback,
-          ServiceWorkerConsts::kEnableNavigationPreloadErrorPrefix)) {
+          std::string(
+              ServiceWorkerConsts::kEnableNavigationPreloadErrorPrefix))) {
     return;
   }
 
@@ -285,7 +288,9 @@ void ServiceWorkerRegistrationObjectHost::EnableNavigationPreload(
 void ServiceWorkerRegistrationObjectHost::GetNavigationPreloadState(
     GetNavigationPreloadStateCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
-          &callback, ServiceWorkerConsts::kGetNavigationPreloadStateErrorPrefix,
+          &callback,
+          std::string(
+              ServiceWorkerConsts::kGetNavigationPreloadStateErrorPrefix),
           nullptr)) {
     return;
   }
@@ -300,7 +305,8 @@ void ServiceWorkerRegistrationObjectHost::SetNavigationPreloadHeader(
     SetNavigationPreloadHeaderCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback,
-          ServiceWorkerConsts::kSetNavigationPreloadHeaderErrorPrefix)) {
+          std::string(
+              ServiceWorkerConsts::kSetNavigationPreloadHeaderErrorPrefix))) {
     return;
   }
 
@@ -316,7 +322,7 @@ void ServiceWorkerRegistrationObjectHost::SetNavigationPreloadHeader(
   // TODO(falken): Ideally this would match Blink's isValidHTTPHeaderValue.
   // Chrome's check is less restrictive: it allows non-latin1 characters.
   if (!net::HttpUtil::IsValidHeaderValue(value)) {
-    bindings_.ReportBadMessage(
+    receivers_.ReportBadMessage(
         ServiceWorkerConsts::kBadNavigationPreloadHeaderValue);
     return;
   }
@@ -339,9 +345,9 @@ void ServiceWorkerRegistrationObjectHost::UpdateComplete(
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, status_message,
                                              &error_type, &error_message);
-    std::move(callback).Run(
-        error_type,
-        ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix + error_message);
+    std::move(callback).Run(error_type, ComposeUpdateErrorMessagePrefix(
+                                            registration_->GetNewestVersion()) +
+                                            error_message);
     return;
   }
 
@@ -432,8 +438,8 @@ void ServiceWorkerRegistrationObjectHost::SetServiceWorkerObjects(
 }
 
 void ServiceWorkerRegistrationObjectHost::OnConnectionError() {
-  // If there are still bindings, |this| is still being used.
-  if (!bindings_.empty())
+  // If there are still receivers, |this| is still being used.
+  if (!receivers_.empty())
     return;
   // Will destroy |this|.
   provider_host_->RemoveServiceWorkerRegistrationObjectHost(
@@ -443,14 +449,12 @@ void ServiceWorkerRegistrationObjectHost::OnConnectionError() {
 template <typename CallbackType, typename... Args>
 bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     CallbackType* callback,
-    const char* error_prefix,
+    const std::string& error_prefix,
     Args... args) {
   if (!context_) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
-        std::string(error_prefix) +
-            std::string(ServiceWorkerConsts::kShutdownErrorMessage),
-        args...);
+        error_prefix + ServiceWorkerConsts::kShutdownErrorMessage, args...);
     return false;
   }
 
@@ -459,28 +463,39 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
   if (provider_host_->url().is_empty()) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kSecurity,
-        std::string(error_prefix) +
-            std::string(ServiceWorkerConsts::kNoDocumentURLErrorMessage),
+        error_prefix + ServiceWorkerConsts::kNoDocumentURLErrorMessage,
         args...);
     return false;
   }
 
   std::vector<GURL> urls = {provider_host_->url(), registration_->scope()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    bindings_.ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
+    receivers_.ReportBadMessage(
+        ServiceWorkerConsts::kBadMessageImproperOrigins);
     return false;
   }
 
   if (!provider_host_->AllowServiceWorker(registration_->scope(), GURL())) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
-        std::string(error_prefix) +
-            std::string(ServiceWorkerConsts::kUserDeniedPermissionMessage),
+        error_prefix + ServiceWorkerConsts::kUserDeniedPermissionMessage,
         args...);
     return false;
   }
 
   return true;
+}
+
+std::string
+ServiceWorkerRegistrationObjectHost::ComposeUpdateErrorMessagePrefix(
+    const ServiceWorkerVersion* version_to_update) const {
+  DCHECK(registration_);
+  const char* script_url = version_to_update
+                               ? version_to_update->script_url().spec().c_str()
+                               : "Unknown";
+  return base::StringPrintf(
+      ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix,
+      registration_->scope().spec().c_str(), script_url);
 }
 
 }  // namespace content

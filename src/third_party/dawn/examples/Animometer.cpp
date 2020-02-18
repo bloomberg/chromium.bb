@@ -52,10 +52,11 @@ void init() {
 
     queue = device.CreateQueue();
     swapchain = GetSwapChain(device);
-    swapchain.Configure(GetPreferredSwapChainTextureFormat(),
-                        dawn::TextureUsageBit::OutputAttachment, 640, 480);
+    swapchain.Configure(GetPreferredSwapChainTextureFormat(), dawn::TextureUsage::OutputAttachment,
+                        640, 480);
 
-    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+    dawn::ShaderModule vsModule =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
 
         layout(std140, set = 0, binding = 0) uniform Constants {
@@ -103,7 +104,7 @@ void init() {
         })");
 
     dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(location = 0) out vec4 fragColor;
         layout(location = 0) in vec4 v_color;
@@ -112,11 +113,11 @@ void init() {
         })");
 
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{0, dawn::ShaderStageBit::Vertex, dawn::BindingType::UniformBuffer, true}});
+        device, {{0, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer, true}});
 
     utils::ComboRenderPipelineDescriptor descriptor(device);
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
-    descriptor.cVertexStage.module = vsModule;
+    descriptor.vertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
     descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
 
@@ -134,11 +135,11 @@ void init() {
 
     dawn::BufferDescriptor bufferDesc;
     bufferDesc.size = kNumTriangles * sizeof(ShaderData);
-    bufferDesc.usage = dawn::BufferUsageBit::CopyDst | dawn::BufferUsageBit::Uniform;
+    bufferDesc.usage = dawn::BufferUsage::CopyDst | dawn::BufferUsage::Uniform;
     ubo = device.CreateBuffer(&bufferDesc);
 
     bindGroup =
-        utils::MakeBindGroup(device, bgl, {{0, ubo, 0, kNumTriangles * sizeof(ShaderData)}});
+        utils::MakeBindGroup(device, bgl, {{0, ubo, 0, sizeof(ShaderData)}});
 }
 
 void frame() {
@@ -151,7 +152,7 @@ void frame() {
     }
     ubo.SetSubData(0, kNumTriangles * sizeof(ShaderData), shaderData.data());
 
-    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()});
+    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateView()});
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);

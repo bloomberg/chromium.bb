@@ -18,7 +18,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
@@ -59,7 +59,9 @@ class MockProducerClient : public ProducerClient {
   }
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
-      perfetto::BufferID target_buffer) override;
+      perfetto::BufferID target_buffer,
+      perfetto::BufferExhaustedPolicy =
+          perfetto::BufferExhaustedPolicy::kDefault) override;
 
   void FlushPacketIfPossible() {
     // GetNewBuffer() in ScatteredStreamWriterNullDelegate doesn't
@@ -194,7 +196,8 @@ class MockTraceWriter : public perfetto::TraceWriter {
 };
 
 std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
-    perfetto::BufferID target_buffer) {
+    perfetto::BufferID target_buffer,
+    perfetto::BufferExhaustedPolicy) {
   // We attempt to destroy TraceWriters on thread shutdown in
   // ThreadLocalStorage::Slot, by posting them to the ProducerClient taskrunner,
   // but there's no guarantee that this will succeed if that taskrunner is also
@@ -214,7 +217,7 @@ class TraceEventDataSourceTest : public testing::Test {
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
     auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
     producer_client_ =
         std::make_unique<MockProducerClient>(std::move(perfetto_wrapper));
     base::ThreadIdNameManager::GetInstance()->SetName(kTestThread);
@@ -279,7 +282,7 @@ class TraceEventDataSourceTest : public testing::Test {
     last_thread_time_ = packet->thread_descriptor().reference_thread_time_us();
 
     EXPECT_EQ(packet->interned_data().event_categories_size(), 0);
-    EXPECT_EQ(packet->interned_data().legacy_event_names_size(), 0);
+    EXPECT_EQ(packet->interned_data().event_names_size(), 0);
 
     // ThreadDescriptor is only emitted when incremental state was reset, and
     // thus also always serves as indicator for the state reset to the consumer.
@@ -408,7 +411,7 @@ class TraceEventDataSourceTest : public testing::Test {
   void ExpectEventNames(
       const perfetto::protos::TracePacket* packet,
       std::initializer_list<std::pair<uint32_t, std::string>> entries) {
-    ExpectInternedNames(packet->interned_data().legacy_event_names(), entries);
+    ExpectInternedNames(packet->interned_data().event_names(), entries);
   }
 
   void ExpectDebugAnnotationNames(
@@ -433,7 +436,7 @@ class TraceEventDataSourceTest : public testing::Test {
 
  protected:
   // Should be the first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<MockProducerClient> producer_client_;
   int64_t last_timestamp_ = 0;
@@ -546,7 +549,7 @@ TEST_F(TraceEventDataSourceTest, TraceLogMetadataEvents) {
   bool has_process_uptime_event = false;
   for (size_t i = 0; i < producer_client()->GetFinalizedPacketCount(); ++i) {
     auto* packet = producer_client()->GetFinalizedPacket(i);
-    for (auto& event_name : packet->interned_data().legacy_event_names()) {
+    for (auto& event_name : packet->interned_data().event_names()) {
       if (event_name.name() == "process_uptime_seconds") {
         has_process_uptime_event = true;
         break;
@@ -1059,7 +1062,9 @@ TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
 TEST_F(TraceEventDataSourceTest, ProtoMetadataSource) {
   auto* metadata_source = TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(base::BindRepeating(
-      [](perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+      [](perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
+         bool privacy_filtering_enabled) {
+        EXPECT_TRUE(privacy_filtering_enabled);
         auto* field1 = metadata->set_background_tracing_metadata();
         auto* rule = field1->set_triggered_rule();
         rule->set_trigger_type(
@@ -1176,8 +1181,8 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   // deleting startup registry and setting the producer.
   auto wait_for_start_tracing = std::make_unique<base::WaitableEvent>();
   base::WaitableEvent* wait_ptr = wait_for_start_tracing.get();
-  base::PostTaskWithTraits(
-      FROM_HERE, base::TaskPriority::BEST_EFFORT,
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](std::unique_ptr<base::WaitableEvent> wait_for_start_tracing) {
             // This event can be hit anytime before startup registry is
@@ -1208,7 +1213,7 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   std::set<std::string> event_names;
   for (const auto& packet : producer_client()->finalized_packets()) {
     if (packet->has_interned_data()) {
-      for (const auto& name : packet->interned_data().legacy_event_names()) {
+      for (const auto& name : packet->interned_data().event_names()) {
         event_names.insert(name.name());
       }
     }

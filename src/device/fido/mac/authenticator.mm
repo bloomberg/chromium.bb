@@ -171,6 +171,10 @@ bool TouchIdAuthenticator::RequiresBlePairingPin() const {
   return false;
 }
 
+bool TouchIdAuthenticator::IsTouchIdAuthenticator() const {
+  return true;
+}
+
 void TouchIdAuthenticator::GetTouch(base::OnceClosure callback) {
   NOTREACHED();
   std::move(callback).Run();

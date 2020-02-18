@@ -17,10 +17,6 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
 
-#ifdef PDF_ENABLE_XFA
-#include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
-#endif  // PDF_ENABLE_XFA
-
 namespace {
 
 void UpdateAnnotRects(CPDFSDK_PageView* pPageView, CPDFSDK_BAAnnot* pBAAnnot) {
@@ -42,6 +38,11 @@ CPDFSDK_BAAnnotHandler::CPDFSDK_BAAnnotHandler() {}
 
 CPDFSDK_BAAnnotHandler::~CPDFSDK_BAAnnotHandler() {}
 
+void CPDFSDK_BAAnnotHandler::SetFormFillEnvironment(
+    CPDFSDK_FormFillEnvironment* pFormFillEnv) {
+  // CPDFSDK_BAAnnotHandler does not need it.
+}
+
 bool CPDFSDK_BAAnnotHandler::CanAnswer(CPDFSDK_Annot* pAnnot) {
   return false;
 }
@@ -50,13 +51,6 @@ CPDFSDK_Annot* CPDFSDK_BAAnnotHandler::NewAnnot(CPDF_Annot* pAnnot,
                                                 CPDFSDK_PageView* pPage) {
   return new CPDFSDK_BAAnnot(pAnnot, pPage);
 }
-
-#ifdef PDF_ENABLE_XFA
-CPDFSDK_Annot* CPDFSDK_BAAnnotHandler::NewAnnot(CXFA_FFWidget* hWidget,
-                                                CPDFSDK_PageView* pPage) {
-  return nullptr;
-}
-#endif  // PDF_ENABLE_XFA
 
 void CPDFSDK_BAAnnotHandler::ReleaseAnnot(
     std::unique_ptr<CPDFSDK_Annot> pAnnot) {
@@ -68,10 +62,9 @@ void CPDFSDK_BAAnnotHandler::OnDraw(CPDFSDK_PageView* pPageView,
                                     CFX_RenderDevice* pDevice,
                                     const CFX_Matrix& mtUser2Device,
                                     bool bDrawAnnots) {
-#ifdef PDF_ENABLE_XFA
-  if (pAnnot->IsXFAField())
+  if (pAnnot->AsXFAWidget())
     return;
-#endif  // PDF_ENABLE_XFA
+
   if (bDrawAnnots && pAnnot->GetAnnotSubtype() == CPDF_Annot::Subtype::POPUP) {
     pAnnot->AsBAAnnot()->DrawAppearance(pDevice, mtUser2Device,
                                         CPDF_Annot::Normal, nullptr);
@@ -192,14 +185,6 @@ bool CPDFSDK_BAAnnotHandler::IsIndexSelected(ObservedPtr<CPDFSDK_Annot>* pAnnot,
                                              int index) {
   return false;
 }
-
-#ifdef PDF_ENABLE_XFA
-bool CPDFSDK_BAAnnotHandler::OnXFAChangedFocus(
-    ObservedPtr<CPDFSDK_Annot>* pOldAnnot,
-    ObservedPtr<CPDFSDK_Annot>* pNewAnnot) {
-  return true;
-}
-#endif  // PDF_ENABLE_XFA
 
 CFX_FloatRect CPDFSDK_BAAnnotHandler::GetViewBBox(CPDFSDK_PageView* pPageView,
                                                   CPDFSDK_Annot* pAnnot) {

@@ -19,13 +19,10 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
+#include "services/tracing/public/cpp/perfetto/system_trace_writer.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
-#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
-#include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace content {
 
@@ -55,7 +52,9 @@ class CrOSSystemTracingSession {
       return;
     }
     debug_daemon_->SetStopAgentTracingTaskRunner(
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
     debug_daemon_->StartAgentTracing(
         trace_config,
         base::BindOnce(&CrOSSystemTracingSession::StartTracingCallbackProxy,
@@ -96,9 +95,6 @@ class CrOSSystemTracingSession {
 
 namespace {
 
-using ChromeEventBundleHandle =
-    protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>;
-
 class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
  public:
   static CrOSDataSource* GetInstance() {
@@ -110,16 +106,15 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   void StartTracing(
       tracing::PerfettoProducer* perfetto_producer,
       const perfetto::DataSourceConfig& data_source_config) override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CrOSDataSource::StartTracingOnUI,
-                       base::Unretained(this), perfetto_producer,
-                       data_source_config));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&CrOSDataSource::StartTracingOnUI,
+                                  base::Unretained(this), perfetto_producer,
+                                  data_source_config));
   }
 
   // Called from the tracing::PerfettoProducer on its sequence.
   void StopTracing(base::OnceClosure stop_complete_callback) override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CrOSDataSource::StopTracingOnUI, base::Unretained(this),
                        std::move(stop_complete_callback)));
@@ -176,23 +171,27 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   // Called on any thread.
   void OnTraceData(base::OnceClosure stop_complete_callback,
                    const scoped_refptr<base::RefCountedString>& events) {
-    if (events && !events->data().empty()) {
-      std::unique_ptr<perfetto::TraceWriter> trace_writer =
-          producer_->CreateTraceWriter(target_buffer_);
-      DCHECK(trace_writer);
-      {
-        perfetto::TraceWriter::TracePacketHandle trace_packet_handle =
-            trace_writer->NewTracePacket();
-        ChromeEventBundleHandle event_bundle =
-            ChromeEventBundleHandle(trace_packet_handle->set_chrome_events());
-        event_bundle->add_legacy_ftrace_output(events->data().data(),
-                                               events->data().length());
-      }
-      trace_writer->Flush();
+    if (!events || events->data().empty()) {
+      OnTraceDataCommitted(std::move(stop_complete_callback));
+      return;
     }
 
+    trace_writer_ = std::make_unique<
+        tracing::SystemTraceWriter<scoped_refptr<base::RefCountedString>>>(
+        producer_, target_buffer_,
+        tracing::SystemTraceWriter<
+            scoped_refptr<base::RefCountedString>>::TraceType::kFTrace);
+    trace_writer_->WriteData(events);
+    trace_writer_->Flush(base::BindOnce(&CrOSDataSource::OnTraceDataCommitted,
+                                        base::Unretained(this),
+                                        std::move(stop_complete_callback)));
+  }
+
+  void OnTraceDataCommitted(base::OnceClosure stop_complete_callback) {
+    trace_writer_.reset();
+
     // Destruction and reset of fields should happen on the UI thread.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CrOSDataSource::OnTraceDataOnUI, base::Unretained(this),
                        std::move(stop_complete_callback)));
@@ -215,6 +214,9 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   bool session_started_ = false;
   base::OnceClosure on_session_started_callback_;
   uint32_t target_buffer_ = 0;
+  std::unique_ptr<
+      tracing::SystemTraceWriter<scoped_refptr<base::RefCountedString>>>
+      trace_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSDataSource);
 };

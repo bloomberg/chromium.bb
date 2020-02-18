@@ -79,7 +79,6 @@ WebPreferences::WebPreferences()
       remote_fonts_enabled(true),
       javascript_can_access_clipboard(false),
       xslt_enabled(true),
-      xss_auditor_enabled(true),
       dns_prefetching_enabled(true),
       data_saver_enabled(false),
       data_saver_holdback_web_api_enabled(false),
@@ -102,7 +101,6 @@ WebPreferences::WebPreferences()
       mock_scrollbars_enabled(false),
       hide_scrollbars(false),
       accelerated_2d_canvas_enabled(false),
-      minimum_accelerated_2d_canvas_size(257 * 256),
       antialiased_2d_canvas_disabled(false),
       antialiased_clips_2d_canvas_enabled(true),
       accelerated_2d_canvas_msaa_sample_count(0),
@@ -209,6 +207,8 @@ WebPreferences::WebPreferences()
       embedded_media_experience_enabled(false),
       css_hex_alpha_color_enabled(true),
       scroll_top_left_interop_enabled(true),
+      disable_features_depending_on_viz(false),
+      disable_accelerated_small_canvases(false),
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),

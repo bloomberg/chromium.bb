@@ -25,7 +25,6 @@
  *   OncTypeTether: string,
  *   OncTypeVPN: string,
  *   OncTypeWiFi: string,
- *   OncTypeWiMAX: string,
  *   networkListItemConnected: string,
  *   networkListItemConnecting: string,
  *   networkListItemConnectingTo: string,
@@ -65,9 +64,6 @@ CrOnc.NetworkPropertyType;
  */
 CrOnc.ManagedProperty;
 
-/** @typedef {chrome.networkingPrivate.SIMLockStatus} */
-CrOnc.SIMLockStatus;
-
 /** @typedef {chrome.networkingPrivate.APNProperties} */
 CrOnc.APNProperties;
 
@@ -88,20 +84,6 @@ CrOnc.ProxyLocation;
 
 /** @typedef {chrome.networkingPrivate.ProxySettings} */
 CrOnc.ProxySettings;
-
-// Modified version of IPConfigProperties to store RoutingPrefix as a
-// human-readable string instead of as a number.
-/**
- * @typedef {{
- *   Gateway: (string|undefined),
- *   IPAddress: (string|undefined),
- *   NameServers: (!Array<string>|undefined),
- *   RoutingPrefix: (string|undefined),
- *   Type: (string|undefined),
- *   WebProxyAutoDiscoveryUrl: (string|undefined)
- * }}
- */
-CrOnc.IPConfigUIProperties;
 
 /** @typedef {chrome.networkingPrivate.PaymentPortal} */
 CrOnc.PaymentPortal;
@@ -334,60 +316,6 @@ CrOnc.getActiveProperties = function(properties) {
 };
 
 /**
- * Returns an IPConfigProperties object for |type|. For IPV4, these will be the
- * static properties if IPAddressConfigType is Static and StaticIPConfig is set.
- * @param {!CrOnc.NetworkProperties|undefined} properties The ONC properties.
- * @param {!CrOnc.IPType} type The IP Config type.
- * @return {CrOnc.IPConfigProperties|undefined} The IP Config object, or
- *     undefined if no properties for |type| are available.
- */
-CrOnc.getIPConfigForType = function(properties, type) {
-  'use strict';
-  /** @type {!CrOnc.IPConfigProperties|undefined} */ let ipConfig = undefined;
-  /** @type {!CrOnc.IPType|undefined} */ let ipType = undefined;
-  const ipConfigs = properties.IPConfigs;
-  if (ipConfigs) {
-    for (let i = 0; i < ipConfigs.length; ++i) {
-      ipConfig = ipConfigs[i];
-      ipType = ipConfig.Type ? /** @type {CrOnc.IPType} */ (ipConfig.Type) :
-                               undefined;
-      if (ipType == type) {
-        break;
-      }
-    }
-  }
-  if (type != CrOnc.IPType.IPV4) {
-    return type == ipType ? ipConfig : undefined;
-  }
-
-  const staticIpConfig =
-      /** @type {!CrOnc.IPConfigProperties|undefined} */ (
-          CrOnc.getActiveProperties(properties.StaticIPConfig));
-  if (!staticIpConfig) {
-    return ipConfig;
-  }
-
-  // If there is no entry in IPConfigs for |type|, return the static config.
-  if (!ipConfig) {
-    return staticIpConfig;
-  }
-
-  // Otherwise, merge the appropriate static values into the result.
-  if (staticIpConfig.IPAddress &&
-      CrOnc.getActiveValue(properties.IPAddressConfigType) == 'Static') {
-    ipConfig.Gateway = staticIpConfig.Gateway;
-    ipConfig.IPAddress = staticIpConfig.IPAddress;
-    ipConfig.RoutingPrefix = staticIpConfig.RoutingPrefix;
-    ipConfig.Type = staticIpConfig.Type;
-  }
-  if (staticIpConfig.NameServers &&
-      CrOnc.getActiveValue(properties.NameServersConfigType) == 'Static') {
-    ipConfig.NameServers = staticIpConfig.NameServers;
-  }
-  return ipConfig;
-};
-
-/**
  * Determines whether the provided properties represent a connecting/connected
  * network.
  * @param {!CrOnc.NetworkProperties|undefined} properties
@@ -421,9 +349,6 @@ CrOnc.getSignalStrength = function(properties) {
   if (type == CrOnc.Type.WI_FI && properties.WiFi) {
     return properties.WiFi.SignalStrength || 0;
   }
-  if (type == CrOnc.Type.WI_MAX && properties.WiMAX) {
-    return properties.WiMAX.SignalStrength || 0;
-  }
   return 0;
 };
 
@@ -445,9 +370,6 @@ CrOnc.getManagedAutoConnect = function(properties) {
   }
   if (type == CrOnc.Type.WI_FI && properties.WiFi) {
     return properties.WiFi.AutoConnect;
-  }
-  if (type == CrOnc.Type.WI_MAX && properties.WiMAX) {
-    return properties.WiMAX.AutoConnect;
   }
   return undefined;
 };
@@ -519,53 +441,6 @@ CrOnc.isSimLocked = function(properties) {
 };
 
 /**
- * Modifies |config| to include the correct set of properties for configuring
- * a network IP Address and NameServer configuration for |state|. Existing
- * properties in |config| will be preserved unless invalid.
- * @param {!chrome.networkingPrivate.NetworkConfigProperties} config A partial
- *     ONC configuration.
- * @param {CrOnc.NetworkProperties|undefined} properties The ONC properties.
- */
-CrOnc.setValidStaticIPConfig = function(config, properties) {
-  if (!config.IPAddressConfigType) {
-    const ipConfigType = /** @type {chrome.networkingPrivate.IPConfigType} */ (
-        CrOnc.getActiveValue(properties.IPAddressConfigType));
-    config.IPAddressConfigType = ipConfigType || CrOnc.IPConfigType.DHCP;
-  }
-  if (!config.NameServersConfigType) {
-    const nsConfigType = /** @type {chrome.networkingPrivate.IPConfigType} */ (
-        CrOnc.getActiveValue(properties.NameServersConfigType));
-    config.NameServersConfigType = nsConfigType || CrOnc.IPConfigType.DHCP;
-  }
-  if (config.IPAddressConfigType != CrOnc.IPConfigType.STATIC &&
-      config.NameServersConfigType != CrOnc.IPConfigType.STATIC) {
-    if (config.hasOwnProperty('StaticIPConfig')) {
-      delete config.StaticIPConfig;
-    }
-    return;
-  }
-
-  if (!config.hasOwnProperty('StaticIPConfig')) {
-    config.StaticIPConfig =
-        /** @type {chrome.networkingPrivate.IPConfigProperties} */ ({});
-  }
-  const staticIP = config.StaticIPConfig;
-  const stateIPConfig = CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV4);
-  if (config.IPAddressConfigType == 'Static') {
-    staticIP.Gateway = staticIP.Gateway || stateIPConfig.Gateway || '';
-    staticIP.IPAddress = staticIP.IPAddress || stateIPConfig.IPAddress || '';
-    staticIP.RoutingPrefix =
-        staticIP.RoutingPrefix || stateIPConfig.RoutingPrefix || 0;
-    staticIP.Type = staticIP.Type || stateIPConfig.Type || CrOnc.IPType.IPV4;
-  }
-  if (config.NameServersConfigType == 'Static') {
-    staticIP.NameServers =
-        staticIP.NameServers || stateIPConfig.NameServers || [];
-  }
-};
-
-
-/**
  * Sets the value of a property in an ONC dictionary.
  * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties
  *     The ONC property dictionary to modify.
@@ -609,93 +484,6 @@ CrOnc.setTypeProperty = function(properties, key, value) {
   }
   const typeKey = properties.Type + '.' + key;
   CrOnc.setProperty(properties, typeKey, value);
-};
-
-/**
- * Returns the routing prefix as a string for a given prefix length.
- * @param {number} prefixLength The ONC routing prefix length.
- * @return {string} The corresponding netmask.
- */
-CrOnc.getRoutingPrefixAsNetmask = function(prefixLength) {
-  'use strict';
-  // Return the empty string for invalid inputs.
-  if (prefixLength < 0 || prefixLength > 32) {
-    return '';
-  }
-  let netmask = '';
-  for (let i = 0; i < 4; ++i) {
-    let remainder = 8;
-    if (prefixLength >= 8) {
-      prefixLength -= 8;
-    } else {
-      remainder = prefixLength;
-      prefixLength = 0;
-    }
-    if (i > 0) {
-      netmask += '.';
-    }
-    let value = 0;
-    if (remainder != 0) {
-      value = ((2 << (remainder - 1)) - 1) << (8 - remainder);
-    }
-    netmask += value.toString();
-  }
-  return netmask;
-};
-
-/**
- * Returns the routing prefix length as a number from the netmask string.
- * @param {string} netmask The netmask string, e.g. 255.255.255.0.
- * @return {number} The corresponding netmask or -1 if invalid.
- */
-CrOnc.getRoutingPrefixAsLength = function(netmask) {
-  'use strict';
-  let prefixLength = 0;
-  const tokens = netmask.split('.');
-  if (tokens.length != 4) {
-    return -1;
-  }
-  for (let i = 0; i < tokens.length; ++i) {
-    const token = tokens[i];
-    // If we already found the last mask and the current one is not
-    // '0' then the netmask is invalid. For example, 255.224.255.0
-    if (prefixLength / 8 != i) {
-      if (token != '0') {
-        return -1;
-      }
-    } else if (token == '255') {
-      prefixLength += 8;
-    } else if (token == '254') {
-      prefixLength += 7;
-    } else if (token == '252') {
-      prefixLength += 6;
-    } else if (token == '248') {
-      prefixLength += 5;
-    } else if (token == '240') {
-      prefixLength += 4;
-    } else if (token == '224') {
-      prefixLength += 3;
-    } else if (token == '192') {
-      prefixLength += 2;
-    } else if (token == '128') {
-      prefixLength += 1;
-    } else if (token == '0') {
-      prefixLength += 0;
-    } else {
-      // mask is not a valid number.
-      return -1;
-    }
-  }
-  return prefixLength;
-};
-
-/**
- * @param {!CrOnc.ProxyLocation} a
- * @param {!CrOnc.ProxyLocation} b
- * @return {boolean}
- */
-CrOnc.proxyMatches = function(a, b) {
-  return a.Host == b.Host && a.Port == b.Port;
 };
 
 /**

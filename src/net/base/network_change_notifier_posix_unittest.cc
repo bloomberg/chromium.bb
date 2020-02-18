@@ -6,8 +6,11 @@
 
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/system_dns_config_change_notifier.h"
 #include "net/dns/test_dns_config_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,27 +20,32 @@ namespace net {
 class NetworkChangeNotifierPosixTest : public testing::Test {
  public:
   NetworkChangeNotifierPosixTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
-        notifier_(new NetworkChangeNotifierPosix(
-            NetworkChangeNotifier::CONNECTION_UNKNOWN,
-            NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    // Create a SystemDnsConfigChangeNotifier instead of letting
+    // NetworkChangeNotifier create a global one, otherwise the global one will
+    // hold a TaskRunner handle to |task_environment_| and crash if any
+    // subsequent tests use it.
+    dns_config_notifier_ = std::make_unique<SystemDnsConfigChangeNotifier>();
+    notifier_.reset(new NetworkChangeNotifierPosix(
+        NetworkChangeNotifier::CONNECTION_UNKNOWN,
+        NetworkChangeNotifier::SUBTYPE_UNKNOWN, dns_config_notifier_.get()));
     auto dns_config_service = std::make_unique<TestDnsConfigService>();
     dns_config_service_ = dns_config_service.get();
-    notifier_->system_dns_config_notifier()->SetDnsConfigServiceForTesting(
+    dns_config_notifier_->SetDnsConfigServiceForTesting(
         std::move(dns_config_service));
   }
 
   void FastForwardUntilIdle() {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   NetworkChangeNotifierPosix* notifier() { return notifier_.get(); }
   TestDnsConfigService* dns_config_service() { return dns_config_service_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::NetworkChangeNotifier::DisableForTest mock_notifier_disabler_;
+  std::unique_ptr<SystemDnsConfigChangeNotifier> dns_config_notifier_;
   std::unique_ptr<NetworkChangeNotifierPosix> notifier_;
   TestDnsConfigService* dns_config_service_;
 };
@@ -97,17 +105,48 @@ TEST_F(NetworkChangeNotifierPosixTest, OnMaxBandwidthChanged) {
   NetworkChangeNotifier::RemoveMaxBandwidthObserver(&observer);
 }
 
-TEST_F(NetworkChangeNotifierPosixTest, OnDNSChanged) {
-  DnsConfig expected_config;
-  expected_config.nameservers = {IPEndPoint(IPAddress(1, 2, 3, 4), 233)};
-  dns_config_service()->SetConfigForRefresh(expected_config);
+class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
+ public:
+  void OnDNSChanged() override { subsequent_dns_changes_++; }
 
+  void OnInitialDNSConfigRead() override { initial_dns_changes_++; }
+
+  int initial_dns_changes() const { return initial_dns_changes_; }
+  int subsequent_dns_changes() const { return subsequent_dns_changes_; }
+
+ private:
+  int initial_dns_changes_ = 0;
+  int subsequent_dns_changes_ = 0;
+};
+
+TEST_F(NetworkChangeNotifierPosixTest, OnDNSChanged) {
+  TestDnsObserver observer;
+  NetworkChangeNotifier::AddDNSObserver(&observer);
+
+  DnsConfig config;
+  config.nameservers = {IPEndPoint(IPAddress(1, 2, 3, 4), 233)};
+
+  dns_config_service()->SetConfigForRefresh(config);
   notifier()->OnDNSChanged();
   FastForwardUntilIdle();
+  EXPECT_EQ(1, observer.initial_dns_changes());
+  EXPECT_EQ(0, observer.subsequent_dns_changes());
 
-  DnsConfig actual_config;
-  NetworkChangeNotifier::GetDnsConfig(&actual_config);
-  EXPECT_EQ(expected_config, actual_config);
+  config.nameservers.push_back(IPEndPoint(IPAddress(2, 3, 4, 5), 234));
+  dns_config_service()->SetConfigForRefresh(config);
+  notifier()->OnDNSChanged();
+  FastForwardUntilIdle();
+  EXPECT_EQ(1, observer.initial_dns_changes());
+  EXPECT_EQ(1, observer.subsequent_dns_changes());
+
+  config.nameservers.push_back(IPEndPoint(IPAddress(3, 4, 5, 6), 235));
+  dns_config_service()->SetConfigForRefresh(config);
+  notifier()->OnDNSChanged();
+  FastForwardUntilIdle();
+  EXPECT_EQ(1, observer.initial_dns_changes());
+  EXPECT_EQ(2, observer.subsequent_dns_changes());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&observer);
 }
 
 }  // namespace net

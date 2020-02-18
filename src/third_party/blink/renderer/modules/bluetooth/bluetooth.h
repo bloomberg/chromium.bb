@@ -8,6 +8,7 @@
 #include <memory>
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -21,6 +22,7 @@ class ScriptState;
 
 class Bluetooth final : public EventTargetWithInlineData,
                         public ContextLifecycleObserver,
+                        public PageVisibilityObserver,
                         public mojom::blink::WebBluetoothScanClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Bluetooth);
@@ -30,6 +32,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   ~Bluetooth() override;
 
   // IDL exposed interface:
+  ScriptPromise getAvailability(ScriptState*);
   ScriptPromise requestDevice(ScriptState*,
                               const RequestDeviceOptions*,
                               ExceptionState&);
@@ -40,22 +43,26 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   mojom::blink::WebBluetoothService* Service() { return service_.get(); }
 
-  // mojom::blink::WebBluetoothScanClient:
+  // WebBluetoothScanClient
   void ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) override;
 
-  // EventTarget methods:
+  // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // Interface required by Garbage Collection:
+  // GC
   void Trace(blink::Visitor*) override;
 
-  // ContextLifecycleObserver interface.
+  // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived, kAdvertisementreceived)
 
+  // PageVisibilityObserver
+  void PageVisibilityChanged() override;
+
   void CancelScan(mojo::BindingId);
+  bool IsScanActive(mojo::BindingId) const;
 
  private:
   BluetoothDevice* GetBluetoothDeviceRepresentingDevice(
@@ -69,6 +76,8 @@ class Bluetooth final : public EventTargetWithInlineData,
   void RequestScanningCallback(ScriptPromiseResolver*,
                                mojo::BindingId id,
                                mojom::blink::RequestScanningStartResultPtr);
+
+  void EnsureServiceConnection();
 
   // Map of device ids to BluetoothDevice objects.
   // Ensures only one BluetoothDevice instance represents each

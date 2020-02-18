@@ -613,17 +613,11 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t total,
                                bool is_parallelizable,
                                bool is_parallel_download_enabled,
-                               DownloadSource download_source,
-                               bool post_content_length_mismatch) {
+                               DownloadSource download_source) {
   RecordDownloadCountWithSource(INTERRUPTED_COUNT, download_source);
   if (is_parallelizable) {
     RecordParallelizableDownloadCount(INTERRUPTED_COUNT,
                                       is_parallel_download_enabled);
-  }
-
-  if (post_content_length_mismatch) {
-    base::UmaHistogramSparse(
-        "Download.ResumptionAfterContentLengthMismatch.Reason", reason);
   }
 
   std::vector<base::HistogramBase::Sample> samples =
@@ -674,11 +668,6 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   }
 }
 
-void RecordMaliciousDownloadClassified(DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("Download.MaliciousDownloadClassified", danger_type,
-                            DOWNLOAD_DANGER_TYPE_MAX);
-}
-
 void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
                                    const base::FilePath& file_path) {
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated", danger_type,
@@ -687,31 +676,6 @@ void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
     base::UmaHistogramSparse(
         "Download.DangerousFile.DangerousDownloadValidated",
         GetDangerousFileType(file_path));
-  }
-}
-
-void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
-                                    DownloadDangerType danger_type,
-                                    const base::FilePath& file_path) {
-  switch (reason) {
-    case DOWNLOAD_DISCARD_DUE_TO_USER_ACTION:
-      UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", danger_type,
-                                DOWNLOAD_DANGER_TYPE_MAX);
-      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
-        base::UmaHistogramSparse("Download.DangerousFile.UserDiscard",
-                                 GetDangerousFileType(file_path));
-      }
-      break;
-    case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
-      UMA_HISTOGRAM_ENUMERATION("Download.Discard", danger_type,
-                                DOWNLOAD_DANGER_TYPE_MAX);
-      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
-        base::UmaHistogramSparse("Download.DangerousFile.Discard",
-                                 GetDangerousFileType(file_path));
-      }
-      break;
-    default:
-      NOTREACHED();
   }
 }
 
@@ -1233,14 +1197,6 @@ void RecordDownloadValidationMetrics(DownloadMetricsCallsite callsite,
   base::UmaHistogramEnumeration(
       GetDownloadValidationMetricName(callsite, state), file_type,
       DownloadContent::MAX);
-}
-
-void RecordDownloadConnectionSecurity(const GURL& download_url,
-                                      const std::vector<GURL>& url_chain) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.TargetConnectionSecurity",
-      CheckDownloadConnectionSecurity(download_url, url_chain),
-      DOWNLOAD_CONNECTION_SECURITY_MAX);
 }
 
 void RecordDownloadContentTypeSecurity(

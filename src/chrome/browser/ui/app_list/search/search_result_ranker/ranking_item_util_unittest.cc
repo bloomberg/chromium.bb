@@ -11,7 +11,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
@@ -100,6 +100,20 @@ TEST_F(RankingItemUtilTest, SimplifyGoogleDocsUrlId) {
   // We only want to remove one /view or /edit from the end of the URL.
   EXPECT_EQ(SimplifyGoogleDocsUrlId("docs.google.com/edit/hash/view/view"),
             "docs.google.com/edit/hash/view");
+}
+
+TEST_F(RankingItemUtilTest, NormalizeAppID) {
+  const std::string raw_id = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+  const std::string id_with_scheme =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf";
+  const std::string id_with_slash = "mgndgikekgjfcpckkfioiadnlibdjbkf/";
+  const std::string id_with_scheme_and_slash =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
+
+  EXPECT_EQ(NormalizeAppId(raw_id), raw_id);
+  EXPECT_EQ(NormalizeAppId(id_with_scheme), raw_id);
+  EXPECT_EQ(NormalizeAppId(id_with_slash), raw_id);
+  EXPECT_EQ(NormalizeAppId(id_with_scheme_and_slash), raw_id);
 }
 
 }  // namespace app_list

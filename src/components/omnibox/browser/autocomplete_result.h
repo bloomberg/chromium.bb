@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <list>
 #include <map>
 
 #include "base/macros.h"
@@ -102,6 +101,11 @@ class AutocompleteResult {
   static ACMatches::iterator FindTopMatch(const AutocompleteInput& input,
                                           ACMatches* matches);
 
+  // If the top match is a Search Entity, and it was deduplicated with a
+  // non-entity match, split off the non-entity match from the list of
+  // duplicates and promote it to the top.
+  static void DiscourageTopMatchFromBeingSearchEntity(ACMatches* matches);
+
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.
@@ -123,15 +127,6 @@ class AutocompleteResult {
   static GURL ComputeAlternateNavUrl(const AutocompleteInput& input,
                                      const AutocompleteMatch& match);
 
-  // Sort |matches| by destination, taking into account demotions based on
-  // |page_classification| when resolving ties about which of several
-  // duplicates to keep.  The matches are also deduplicated. Duplicate matches
-  // are stored in the |duplicate_matches| vector of the corresponding
-  // AutocompleteMatch.
-  static void SortAndDedupMatches(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* matches);
-
   // Prepend missing tail suggestion prefixes in results, if present.
   void InlineTailPrefixes();
 
@@ -145,6 +140,9 @@ class AutocompleteResult {
                            PedalSuggestionsRemainUnique);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            TestGroupSuggestionsBySearchVsURL);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           DemoteOnDeviceSearchSuggestions);
+  friend class HistoryURLProviderTest;
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
@@ -156,13 +154,12 @@ class AutocompleteResult {
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
 
-  // Examines |first| and |second| and returns the match that is preferred when
-  // choosing between candidate duplicates. Note that this may modify the
-  // relevance, allowed_to_be_default_match, or inline_autocompletion values of
-  // the returned match.
-  static std::list<ACMatches::iterator>::iterator BetterDuplicate(
-      std::list<ACMatches::iterator>::iterator first,
-      std::list<ACMatches::iterator>::iterator second);
+  // Modifies |matches| such that any duplicate matches are coalesced into
+  // representative "best" matches. The erased matches are moved into the
+  // |duplicate_matches| members of their representative matches.
+  static void DeduplicateMatches(
+      metrics::OmniboxEventProto::PageClassification page_classification,
+      ACMatches* matches);
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.
@@ -207,6 +204,16 @@ class AutocompleteResult {
   // earlier in the range, while non-search types and their submatches
   // are shifted later.
   static void GroupSuggestionsBySearchVsURL(iterator begin, iterator end);
+
+  // If we have SearchProvider search suggestions, demote OnDeviceProvider
+  // search suggestions, since, which in general have lower quality than
+  // SearchProvider search suggestions. The demotion can happen in two ways,
+  // controlled by Finch (1. decrease-relevances or 2. remove-suggestions):
+  // 1. Decrease the on device search suggestion relevances that they will
+  //    always be shown after SearchProvider search suggestions.
+  // 2. Set the relevances of OnDeviceProvider search suggestions to 0, such
+  //    that they will be removed from result list later.
+  void DemoteOnDeviceSearchSuggestions();
 
   ACMatches matches_;
 

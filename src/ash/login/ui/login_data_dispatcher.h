@@ -12,7 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/public/cpp/login_screen_model.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -51,6 +51,12 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     // should be disabled.
     virtual void OnPinEnabledForUserChanged(const AccountId& user,
                                             bool enabled);
+
+    // Called when the challenge-response authentication should be enabled or
+    // disabled for |user|. By default, it should be disabled.
+    virtual void OnChallengeResponseAuthEnabledForUserChanged(
+        const AccountId& user,
+        bool enabled);
 
     // Called when fingerprint unlock state changes for user with |account_id|.
     virtual void OnFingerprintStateChanged(const AccountId& account_id,
@@ -140,8 +146,6 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void SetTapToUnlockEnabledForUser(const AccountId& user, bool enabled);
-
   // LoginScreenModel:
   // TODO(estade): for now, LoginScreenModel overrides are mixed with
   // non-virtual methods. More of the non-virtual methods will become a part of
@@ -150,6 +154,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   // overrides.
   void SetUserList(const std::vector<LoginUserInfo>& users) override;
   void SetPinEnabledForUser(const AccountId& user, bool enabled) override;
+  void SetChallengeResponseAuthEnabledForUser(const AccountId& user,
+                                              bool enabled) override;
   void SetFingerprintState(const AccountId& account_id,
                            FingerprintState state) override;
   void SetAvatarForUser(const AccountId& account_id,
@@ -159,7 +165,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void EnableAuthForUser(const AccountId& account_id) override;
   void DisableAuthForUser(const AccountId& account_id,
                           const AuthDisabledData& auth_disabled_data) override;
-  void EnableTapToUnlockForUser(const AccountId& user) override;
+  void SetTapToUnlockEnabledForUser(const AccountId& user,
+                                    bool enabled) override;
   void ForceOnlineSignInForUser(const AccountId& user) override;
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,

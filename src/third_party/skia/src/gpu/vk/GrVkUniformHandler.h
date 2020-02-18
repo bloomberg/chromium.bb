@@ -8,9 +8,9 @@
 #ifndef GrVkUniformHandler_DEFINED
 #define GrVkUniformHandler_DEFINED
 
-#include "include/gpu/GrSamplerState.h"
 #include "include/gpu/vk/GrVkTypes.h"
 #include "src/gpu/GrAllocator.h"
+#include "src/gpu/GrSamplerState.h"
 #include "src/gpu/GrShaderVar.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/vk/GrVkSampler.h"
@@ -30,8 +30,7 @@ public:
         kSamplerDescSet = 1,
     };
     enum {
-        kGeometryBinding = 0,
-        kFragBinding = 1,
+        kUniformBinding = 0
     };
 
     struct UniformInfo {
@@ -39,11 +38,12 @@ public:
         uint32_t                fVisibility;
         // fUBOffset is only valid if the GrSLType of the fVariable is not a sampler
         uint32_t                fUBOffset;
-        // The SamplerState, maxMipLevel, and ycbcrInfo are only valid if the GrSLType is a sampler
-        // and that sampler is used for sampling an external image with a ycbcr conversion.
+        // fImmutableSampler is used for sampling an image with a ycbcr conversion.
         const GrVkSampler*      fImmutableSampler = nullptr;
     };
     typedef GrTAllocator<UniformInfo> UniformInfoArray;
+
+    ~GrVkUniformHandler() override;
 
     const GrShaderVar& getUniformVariable(UniformHandle u) const override {
         return fUniforms[u.toIndex()].fVariable;
@@ -53,13 +53,17 @@ public:
         return this->getUniformVariable(u).c_str();
     }
 
+    /**
+     * Returns the offset that the RTHeight synthetic uniform should use if it needs to be created.
+     */
+    uint32_t getRTHeightOffset() const;
+
 private:
     explicit GrVkUniformHandler(GrGLSLProgramBuilder* program)
         : INHERITED(program)
         , fUniforms(kUniformsPerBlock)
         , fSamplers(kUniformsPerBlock)
-        , fCurrentGeometryUBOOffset(0)
-        , fCurrentFragmentUBOOffset(0) {
+        , fCurrentUBOOffset(0) {
     }
 
     UniformHandle internalAddUniformArray(uint32_t visibility,
@@ -68,6 +72,10 @@ private:
                                           bool mangleName,
                                           int arrayCount,
                                           const char** outName) override;
+
+    void updateUniformVisibility(UniformHandle u, uint32_t visibility) override {
+        fUniforms[u.toIndex()].fVisibility |= visibility;
+    }
 
     SamplerHandle addSampler(const GrTexture* texture,
                              const GrSamplerState&,
@@ -92,10 +100,6 @@ private:
 
     void appendUniformDecls(GrShaderFlags, SkString*) const override;
 
-    bool hasGeometryUniforms() const { return fCurrentGeometryUBOOffset > 0; }
-    bool hasFragmentUniforms() const { return fCurrentFragmentUBOOffset > 0; }
-
-
     const UniformInfo& getUniformInfo(UniformHandle u) const {
         return fUniforms[u.toIndex()];
     }
@@ -105,8 +109,7 @@ private:
     UniformInfoArray    fSamplers;
     SkTArray<GrSwizzle> fSamplerSwizzles;
 
-    uint32_t            fCurrentGeometryUBOOffset;
-    uint32_t            fCurrentFragmentUBOOffset;
+    uint32_t            fCurrentUBOOffset;
 
     friend class GrVkPipelineStateBuilder;
     friend class GrVkDescriptorSetManager;

@@ -73,6 +73,9 @@ sessionInfos[sessionTypes.IMMERSIVE] = new SessionInfo();
 sessionInfos[sessionTypes.AR] = new SessionInfo();
 sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 
+var immersiveSessionInit = {};
+var nonImmersiveSessionInit = {};
+
 function getSessionType(session) {
   if (session.mode == 'immersive-vr') {
     return sessionTypes.IMMERSIVE;
@@ -83,11 +86,19 @@ function getSessionType(session) {
   }
 }
 
+function sessionTypeWouldTriggerConsent(sessionType) {
+  if (typeof navigator.xr.startedSessionTypes === 'undefined') {
+    return true;
+  }
+  return !(sessionType in navigator.xr.startedSessionTypes);
+}
+
 function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
       console.info('Requesting immersive VR session');
-      navigator.xr.requestSession('immersive-vr').then( (session) => {
+      navigator.xr.requestSession('immersive-vr', immersiveSessionInit)
+      .then( (session) => {
         session.mode = 'immersive-vr';
         console.info('Immersive VR session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
@@ -99,7 +110,8 @@ function onRequestSession() {
       break;
     case sessionTypes.AR:
       console.info('Requesting Immersive AR session');
-      navigator.xr.requestSession('immersive-ar').then((session) => {
+      navigator.xr.requestSession('immersive-ar', immersiveSessionInit)
+      .then((session) => {
         session.mode = 'immersive-ar';
         console.info('Immersive AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;
@@ -115,6 +127,14 @@ function onRequestSession() {
 }
 
 function onSessionStarted(session) {
+  // Record that we've started this session type so that we know not to expect
+  // the consent dialog for it in the future.
+  let sessionType = getSessionType(session);
+  if (typeof navigator.xr.startedSessionTypes === 'undefined') {
+    navigator.xr.startedSessionTypes = {};
+  }
+  navigator.xr.startedSessionTypes[sessionType] = undefined;
+
   session.addEventListener('end', onSessionEnded);
   // Initialize the WebGL context for use with XR if it hasn't been already
   if (!gl) {
@@ -132,12 +152,7 @@ function onSessionStarted(session) {
     onSessionStartedCallback(session);
   }
 
-  let sessionType = getSessionType(session);
-
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl, {
-      compositionDisabled: sessionType == sessionTypes.MAGIC_WINDOW
-    })
-  });
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
   session.requestReferenceSpace(referenceSpaceMap[sessionType])
       .then( (refSpace) => {
         sessionInfos[sessionType].currentRefSpace = refSpace;
@@ -195,7 +210,7 @@ function onXRFrame(t, frame) {
 function requestMagicWindowSession() {
   // Set up an inline session (magic window) drawing into the full screen canvas
   // on the page
-  navigator.xr.requestSession('inline')
+  navigator.xr.requestSession('inline', nonImmersiveSessionInit)
   .then((session) => {
     session.mode = 'inline';
     sessionInfos[sessionTypes.MAGIC_WINDOW].currentSession = session;

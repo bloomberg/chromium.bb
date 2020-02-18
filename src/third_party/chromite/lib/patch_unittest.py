@@ -10,10 +10,11 @@ from __future__ import print_function
 import copy
 import contextlib
 import itertools
-import mock
 import os
 import shutil
 import time
+
+import mock
 
 from chromite.lib import config_lib
 from chromite.lib import constants

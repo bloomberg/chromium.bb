@@ -163,6 +163,7 @@ class StatsReport {
     kStatsValueNameDecodingMutedOutput,
     kStatsValueNameDecodingNormal,
     kStatsValueNameDecodingPLC,
+    kStatsValueNameDecodingCodecPLC,
     kStatsValueNameDecodingPLCCNG,
     kStatsValueNameDer,
     kStatsValueNameDtlsCipher,
@@ -237,6 +238,7 @@ class StatsReport {
     kStatsValueNameTransportType,
     kStatsValueNameTypingNoiseState,
     kStatsValueNameWritable,
+    kStatsValueNameAudioDeviceUnderrunCounter,
   };
 
   class IdBase : public rtc::RefCountInterface {

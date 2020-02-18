@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/proto/client_state.pb.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/proto_conversion.h"
@@ -90,7 +90,7 @@ class ImpressionStoreTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::map<std::string, proto::ClientState> db_entries_;
   bool load_result_;
   Entries loaded_entries_;

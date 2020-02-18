@@ -30,8 +30,8 @@ class AnchorElementMetricsTest : public SimTest {
     SimRequest main_resource(source, "text/html");
     LoadURL(source);
     main_resource.Complete("<a id='anchor' href=''>example</a>");
-    HTMLAnchorElement* anchor_element =
-        ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+    auto* anchor_element =
+        To<HTMLAnchorElement>(GetDocument().getElementById("anchor"));
     anchor_element->SetHref(AtomicString(target));
 
     return AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
@@ -82,8 +82,8 @@ TEST_F(AnchorElementMetricsTest, FinchControl) {
   SimRequest resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   resource.Complete("<a id='anchor' href='https://google.com/'>google</a>");
-  HTMLAnchorElement* anchor_element =
-      ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+  auto* anchor_element =
+      To<HTMLAnchorElement>(GetDocument().getElementById("anchor"));
 
   // With feature kNavigationPredictor disabled, we should not see any
   // count in histograms.
@@ -111,8 +111,8 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
   SimRequest http_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   http_resource.Complete("<a id='anchor' href='data://google.com/'>google</a>");
-  HTMLAnchorElement* anchor_element =
-      ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+  auto* anchor_element =
+      To<HTMLAnchorElement>(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
@@ -122,7 +122,8 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
   // is clicked.
   LoadURL(
       "data:text/html,<a id='anchor' href='https://google.com/'>google</a>");
-  anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+  anchor_element =
+      To<HTMLAnchorElement>(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
@@ -134,7 +135,8 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
   LoadURL("https://example.com/");
   http_resource_2.Complete(
       "<a id='anchor' href='https://google.com/'>google</a>");
-  anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+  anchor_element =
+      To<HTMLAnchorElement>(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
@@ -159,7 +161,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureImageLink) {
       kViewportHeight / 2, 10 * kViewportHeight));
 
   Element* anchor = GetDocument().getElementById("anchor");
-  HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
+  auto* anchor_element = To<HTMLAnchorElement>(anchor);
 
   auto feature =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
@@ -188,7 +190,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
       2 * kViewportHeight, 10 * kViewportHeight));
 
   Element* anchor = GetDocument().getElementById("anchor");
-  HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
+  auto* anchor_element = To<HTMLAnchorElement>(anchor);
 
   auto feature =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
@@ -248,12 +250,12 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
       kViewportHeight / 2, 5 * kViewportHeight));
 
   Element* iframe = GetDocument().getElementById("iframe");
-  HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
+  auto* iframe_element = To<HTMLIFrameElement>(iframe);
   Frame* sub = iframe_element->ContentFrame();
   auto* subframe = To<LocalFrame>(sub);
 
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
-  HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
+  auto* anchor_element = To<HTMLAnchorElement>(anchor);
 
   auto feature =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
@@ -317,12 +319,12 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
       kViewportHeight / 2, 5 * kViewportHeight));
 
   Element* iframe = GetDocument().getElementById("iframe");
-  HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
+  auto* iframe_element = To<HTMLIFrameElement>(iframe);
   Frame* sub = iframe_element->ContentFrame();
   auto* subframe = To<LocalFrame>(sub);
 
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
-  HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
+  auto* anchor_element = To<HTMLAnchorElement>(anchor);
 
   EXPECT_FALSE(
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)

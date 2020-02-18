@@ -41,7 +41,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/vpn_service_proxy.h"
@@ -166,26 +165,35 @@ bool HasEffectiveUrl(content::BrowserContext* browser_context,
              Profile::FromBrowserContext(browser_context), url) != url;
 }
 
-const ExtensionSet* GetEnabledExtensions(content::BrowserContext* context) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  return &registry->enabled_extensions();
-}
+bool AllowServiceWorker(const GURL& scope,
+                        const GURL& script_url,
+                        const Extension* extension) {
+  // Don't allow a service worker for an extension url with no extension (this
+  // could happen in the case of, e.g., an unloaded extension).
+  if (!extension)
+    return false;
 
-const ExtensionSet* GetEnabledExtensions(content::ResourceContext* context) {
-  ProfileIOData* profile = ProfileIOData::FromResourceContext(context);
-  if (!profile)
-    return nullptr;
+  // If an extension doesn't have a service worker-based background script, it
+  // can register a service worker at any scope.
+  if (!extensions::BackgroundInfo::IsServiceWorkerBased(extension))
+    return true;
 
-  return &profile->GetExtensionInfoMap()->extensions();
-}
+  // If the script_url parameter is an empty string, allow it. The
+  // infrastructure will call this function at times when the script url is
+  // unknown, but it is always known at registration, so this is OK.
+  if (script_url.is_empty())
+    return true;
 
-const ExtensionSet* GetEnabledExtensions(
-    content::BrowserOrResourceContext context) {
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    return GetEnabledExtensions(context.ToBrowserContext());
-  }
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return GetEnabledExtensions(context.ToResourceContext());
+  // An extension with a service worked-based background script can register a
+  // service worker at any scope other than the root scope.
+  if (scope != extension->url())
+    return true;
+
+  // If an extension is service-worker based, only the script specified in the
+  // manifest can be registered at the root scope.
+  const std::string& sw_script =
+      extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
+  return script_url == extension->GetResourceURL(sw_script);
 }
 
 }  // namespace
@@ -292,10 +300,11 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseSpareRenderProcessHost(
 
 // static
 bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
-    content::BrowserOrResourceContext browser_or_resource_context,
+    content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  const Extension* extension = GetEnabledExtensions(browser_or_resource_context)
-                                   ->GetExtensionOrAppByURL(effective_site_url);
+  const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(effective_site_url);
   // Isolate all extensions.
   return extension != nullptr;
 }
@@ -553,7 +562,7 @@ bool ChromeContentBrowserClientExtensionsPart::
 }
 
 // static
-bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
+bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
     const GURL& scope,
     const GURL& first_party_url,
     const GURL& script_url,
@@ -566,32 +575,23 @@ bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
   InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
   const Extension* extension =
       extension_info_map->extensions().GetExtensionOrAppByURL(first_party_url);
-  // Don't allow a service worker for an extension url with no extension (this
-  // could happen in the case of, e.g., an unloaded extension).
-  if (!extension)
-    return false;
+  return AllowServiceWorker(scope, script_url, extension);
+}
 
-  // If an extension doesn't have a service worker-based background script, it
-  // can register a service worker at any scope.
-  if (!extensions::BackgroundInfo::IsServiceWorkerBased(extension))
+// static
+bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
+    const GURL& scope,
+    const GURL& first_party_url,
+    const GURL& script_url,
+    content::BrowserContext* context) {
+  // We only care about extension urls.
+  if (!first_party_url.SchemeIs(kExtensionScheme))
     return true;
 
-  // If the script_url parameter is an empty string, allow it. The
-  // infrastructure will call this function at times when the script url is
-  // unknown, but it is always known at registration, so this is OK.
-  if (script_url.is_empty())
-    return true;
-
-  // An extension with a service worked-based background script can register a
-  // service worker at any scope other than the root scope.
-  if (scope != extension->url())
-    return true;
-
-  // If an extension is service-worker based, only the script specified in the
-  // manifest can be registered at the root scope.
-  const std::string& sw_script =
-      extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
-  return script_url == extension->GetResourceURL(sw_script);
+  const Extension* extension = ExtensionRegistry::Get(context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(first_party_url);
+  return AllowServiceWorker(scope, script_url, extension);
 }
 
 // static
@@ -729,7 +729,8 @@ ChromeContentBrowserClientExtensionsPart::
     CreateURLLoaderFactoryForNetworkRequests(
         content::RenderProcessHost* process,
         network::mojom::NetworkContext* network_context,
-        network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+        mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+            header_client,
         const url::Origin& request_initiator) {
   return URLLoaderFactoryManager::CreateFactory(
       process, network_context, header_client, request_initiator);
@@ -756,7 +757,7 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
 
   host->AddFilter(new ChromeExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionMessageFilter(id, profile));
-  host->AddFilter(new IOThreadExtensionMessageFilter(id, profile));
+  host->AddFilter(new IOThreadExtensionMessageFilter());
   host->AddFilter(new ExtensionsGuestViewMessageFilter(id, profile));
   if (extensions::ExtensionsClient::Get()
           ->ExtensionAPIEnabledInExtensionServiceWorkers()) {
@@ -784,7 +785,7 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&InfoMap::RegisterExtensionProcess,
                      ExtensionSystem::Get(context)->info_map(), extension->id(),
@@ -809,7 +810,7 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&InfoMap::UnregisterExtensionProcess,
                      ExtensionSystem::Get(context)->info_map(), extension->id(),

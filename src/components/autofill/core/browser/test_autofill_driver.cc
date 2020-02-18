@@ -15,8 +15,7 @@
 namespace autofill {
 
 TestAutofillDriver::TestAutofillDriver()
-    : url_request_context_(nullptr),
-      test_shared_loader_factory_(
+    : test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {}
 
@@ -35,10 +34,6 @@ ui::AXTreeID TestAutofillDriver::GetAxTreeId() const {
   return ui::AXTreeIDUnknown();
 }
 
-net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {
-  return url_request_context_;
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 TestAutofillDriver::GetURLLoaderFactory() {
   return test_shared_loader_factory_;
@@ -50,7 +45,7 @@ bool TestAutofillDriver::RendererIsAvailable() {
 
 #if !defined(OS_IOS)
 void TestAutofillDriver::ConnectToAuthenticator(
-    blink::mojom::InternalAuthenticatorRequest request) {}
+    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {}
 #endif
 
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,
@@ -100,11 +95,6 @@ void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
 
 void TestAutofillDriver::SetIsInMainFrame(bool is_in_main_frame) {
   is_in_main_frame_ = is_in_main_frame;
-}
-
-void TestAutofillDriver::SetURLRequestContext(
-    net::URLRequestContextGetter* url_request_context) {
-  url_request_context_ = url_request_context;
 }
 
 void TestAutofillDriver::SetSharedURLLoaderFactory(

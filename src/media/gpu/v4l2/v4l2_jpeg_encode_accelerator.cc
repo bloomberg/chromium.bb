@@ -71,7 +71,7 @@ V4L2JpegEncodeAccelerator::JobRecord::JobRecord(
       output_frame(output_frame),
       quality(quality),
       task_id(task_id),
-      output_shm(base::SharedMemoryHandle(), 0, true),  // dummy
+      output_shm(base::subtle::PlatformSharedMemoryRegion(), 0, true),  // dummy
       exif_shm(nullptr) {
   if (exif_buffer) {
     exif_shm.reset(new UnalignedSharedMemory(exif_buffer->TakeRegion(),
@@ -1457,8 +1457,7 @@ bool V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::EnqueueInputRecord() {
     qbuf.m.planes[i].m.fd = (i < fds.size()) ? fds[i].get() : fds.back().get();
     qbuf.m.planes[i].data_offset = planes[i].offset;
     qbuf.m.planes[i].bytesused += qbuf.m.planes[i].data_offset;
-    qbuf.m.planes[i].length =
-        planes[i].size + qbuf.m.planes[i].data_offset;
+    qbuf.m.planes[i].length = planes[i].size + qbuf.m.planes[i].data_offset;
   }
 
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);

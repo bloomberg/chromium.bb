@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/version.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +63,7 @@ class OptimizationGuideServiceTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     optimization_guide_service_ = std::make_unique<OptimizationGuideService>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
 
     observer_ = std::make_unique<TestObserver>();
   }
@@ -82,14 +82,14 @@ class OptimizationGuideServiceTest : public testing::Test {
 
   void MaybeUpdateHintsComponent(const HintsComponentInfo& info) {
     optimization_guide_service_->MaybeUpdateHintsComponent(info);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<OptimizationGuideService> optimization_guide_service_;

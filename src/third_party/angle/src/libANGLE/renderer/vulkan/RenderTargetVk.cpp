@@ -36,10 +36,10 @@ RenderTargetVk::RenderTargetVk(RenderTargetVk &&other)
 {}
 
 void RenderTargetVk::init(vk::ImageHelper *image,
-                          vk::ImageView *imageView,
-                          vk::ImageView *cubeImageFetchView,
-                          size_t levelIndex,
-                          size_t layerIndex)
+                          const vk::ImageView *imageView,
+                          const vk::ImageView *cubeImageFetchView,
+                          uint32_t levelIndex,
+                          uint32_t layerIndex)
 {
     mImage              = image;
     mImageView          = imageView;
@@ -105,18 +105,18 @@ const vk::ImageHelper &RenderTargetVk::getImage() const
     return *mImage;
 }
 
-vk::ImageView *RenderTargetVk::getDrawImageView() const
+const vk::ImageView *RenderTargetVk::getDrawImageView() const
 {
     ASSERT(mImageView && mImageView->valid());
     return mImageView;
 }
 
-vk::ImageView *RenderTargetVk::getReadImageView() const
+const vk::ImageView *RenderTargetVk::getReadImageView() const
 {
     return getDrawImageView();
 }
 
-vk::ImageView *RenderTargetVk::getFetchImageView() const
+const vk::ImageView *RenderTargetVk::getFetchImageView() const
 {
     return mCubeImageFetchView && mCubeImageFetchView->valid() ? mCubeImageFetchView
                                                                : getReadImageView();
@@ -131,10 +131,10 @@ const vk::Format &RenderTargetVk::getImageFormat() const
 gl::Extents RenderTargetVk::getExtents() const
 {
     ASSERT(mImage && mImage->valid());
-    return mImage->getLevelExtents2D(mLevelIndex);
+    return mImage->getLevelExtents2D(static_cast<uint32_t>(mLevelIndex));
 }
 
-void RenderTargetVk::updateSwapchainImage(vk::ImageHelper *image, vk::ImageView *imageView)
+void RenderTargetVk::updateSwapchainImage(vk::ImageHelper *image, const vk::ImageView *imageView)
 {
     ASSERT(image && image->valid() && imageView && imageView->valid());
     mImage              = image;

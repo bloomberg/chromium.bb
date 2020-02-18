@@ -34,15 +34,15 @@
             <org.chromium.ui.widget.ChipView
                 android:id="@+id/cc_number"
                 android:gravity="center_vertical|start"
-                android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/InputChip" />
 
             <LinearLayout
+                android:id="@+id/exp_group"
                 android:gravity="center_vertical|start"
                 android:fillViewport="true"
-                android:layout_height="@dimen/keyboard_accessory_suggestion_height"
+                android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:orientation="horizontal">
 
@@ -60,8 +60,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/keyboard_accessory_sheet_padding"
                     android:layout_marginEnd="@dimen/keyboard_accessory_sheet_padding"
-                    android:textAppearance="@style/TextAppearance.BlackHint1"
-                    />
+                    android:textAppearance="@style/TextAppearance.DividerText"/>
 
                 <org.chromium.ui.widget.ChipView
                     android:id="@+id/exp_year"
@@ -76,17 +75,16 @@
             <org.chromium.ui.widget.ChipView
                 android:id="@+id/cardholder"
                 android:gravity="center_vertical|start"
-                android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/InputChip" />
 
         </LinearLayout>
 
-        <!-- TODO(crbug.com/969708): Replace placeholder dimensions once icon is replaced -->
         <ImageView
             android:id="@+id/icon"
-            android:layout_width="@dimen/keyboard_accessory_suggestion_icon_size"
+            android:layout_marginTop="@dimen/keyboard_accessory_image_top_padding"
+            android:layout_width="@dimen/keyboard_accessory_bar_item_cc_icon_width"
             android:layout_height="@dimen/keyboard_accessory_suggestion_icon_size"
             android:layout_weight="0"
             android:importantForAccessibility="no"

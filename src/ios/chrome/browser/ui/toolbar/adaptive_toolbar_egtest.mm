@@ -41,6 +41,8 @@ namespace {
 
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
+using chrome_test_util::WebStateScrollViewMatcher;
+using chrome_test_util::WebViewMatcher;
 
 const char kPageURL[] = "/test-page.html";
 const char kPageURL2[] = "/test-page-2.html";
@@ -442,7 +444,7 @@ void FocusOmnibox() {
 
 // Tests that tapping a button cancels the focus on the omnibox.
 - (void)testCancelOmniboxEdit {
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     EARL_GREY_TEST_SKIPPED(@"No button to tap in compact width.");
   }
 
@@ -602,9 +604,7 @@ void FocusOmnibox() {
       assertWithMatcher:positionMatcher];
 
   // Scroll down
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
   // Check that the button is visible.
@@ -664,9 +664,7 @@ void FocusOmnibox() {
       assertWithMatcher:grey_not(grey_enabled())];
 
   // Open a page in a new incognito tab to have the focus.
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewInWebState(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkID],
                         true /* menu should appear */)];

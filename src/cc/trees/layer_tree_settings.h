@@ -111,7 +111,7 @@ class CC_EXPORT LayerTreeSettings {
 
   // Indicates that the LayerTreeHost should defer commits unless it has a valid
   // viz::LocalSurfaceId set.
-  bool enable_surface_synchronization = false;
+  bool enable_surface_synchronization = true;
 
   // Indicates the case when a sub-frame gets its own LayerTree because it's
   // rendered in a different process from its ancestor frames.
@@ -146,7 +146,7 @@ class CC_EXPORT LayerTreeSettings {
   // Whether to use edge anti-aliasing for all layer types that supports it.
   bool enable_edge_anti_aliasing = true;
 
-  // Whether SetViewportSizeAndScale should update the painted scale factor or
+  // Whether SetViewportRectAndScale should update the painted scale factor or
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
 
@@ -168,6 +168,13 @@ class CC_EXPORT LayerTreeSettings {
   // go away and CC should send Blink fractional values:
   // https://crbug.com/414283.
   bool commit_fractional_scroll_deltas = false;
+
+  // When false, we do not check for occlusion and all quads are drawn.
+  // Defaults to true.
+  bool enable_occlusion = true;
+
+  // Whether experimental de-jelly effect is allowed.
+  bool allow_de_jelly_effect = false;
 };
 
 }  // namespace cc

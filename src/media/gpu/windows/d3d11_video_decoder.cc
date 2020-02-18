@@ -112,8 +112,7 @@ D3D11VideoDecoder::D3D11VideoDecoder(
       gpu_workarounds_(gpu_workarounds),
       get_d3d11_device_cb_(std::move(get_d3d11_device_cb)),
       get_helper_cb_(std::move(get_helper_cb)),
-      supported_configs_(std::move(supported_configs)),
-      weak_factory_(this) {
+      supported_configs_(std::move(supported_configs)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(media_log_);
 
@@ -224,14 +223,18 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   //
   // TODO(liberato): On re-init, we can probably re-use the device.
   device_ = get_d3d11_device_cb_.Run();
-  usable_feature_level_ = device_->GetFeatureLevel();
-
   if (!device_) {
     // This happens if, for example, if chrome is configured to use
     // D3D9 for ANGLE.
     NotifyError("ANGLE did not provide D3D11 device");
     return;
   }
+
+  if (!GetD3D11FeatureLevel(device_, &usable_feature_level_)) {
+    NotifyError("D3D11 feature level not supported");
+    return;
+  }
+
   device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
   HRESULT hr;
@@ -707,6 +710,22 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
 }
 
 // static
+bool D3D11VideoDecoder::GetD3D11FeatureLevel(ComD3D11Device dev,
+                                             D3D_FEATURE_LEVEL* feature_level) {
+  if (!dev || !feature_level)
+    return false;
+
+  *feature_level = dev->GetFeatureLevel();
+  if (*feature_level < D3D_FEATURE_LEVEL_11_0)
+    return false;
+
+  // TODO(tmathmeyer) should we log this to UMA?
+  if (base::FeatureList::IsEnabled(kD3D11LimitTo11_0))
+    *feature_level = D3D_FEATURE_LEVEL_11_0;
+  return true;
+}
+
+// static
 std::vector<SupportedVideoDecoderConfig>
 D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     const gpu::GpuPreferences& gpu_preferences,
@@ -746,7 +765,12 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     return {};
   }
 
-  D3D_FEATURE_LEVEL usable_feature_level = d3d11_device->GetFeatureLevel();
+  D3D_FEATURE_LEVEL usable_feature_level;
+  if (!GetD3D11FeatureLevel(d3d11_device, &usable_feature_level)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        uma_name, NotSupportedReason::kInsufficientD3D11FeatureLevel);
+    return {};
+  }
 
   const bool allow_encrypted =
       (usable_feature_level > D3D_FEATURE_LEVEL_11_0) &&

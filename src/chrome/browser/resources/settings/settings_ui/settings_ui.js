@@ -66,9 +66,6 @@ Polymer({
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
-    showApps_: Boolean,
-
-    /** @private */
     showAndroidApps_: Boolean,
 
     /** @private */
@@ -147,7 +144,6 @@ Polymer({
       OncTypeTether: loadTimeData.getString('OncTypeTether'),
       OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
       OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
       networkListItemConnected:
           loadTimeData.getString('networkListItemConnected'),
       networkListItemConnecting:
@@ -169,8 +165,6 @@ Polymer({
     // The SplitSettings feature hides OS settings in the browser settings page.
     // https://crbug.com/950007
     const showOSSettings = loadTimeData.getBoolean('showOSSettings');
-    this.showApps_ = showOSSettings && loadTimeData.valueExists('showApps') &&
-        loadTimeData.getBoolean('showApps');
     this.showAndroidApps_ = showOSSettings &&
         loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');

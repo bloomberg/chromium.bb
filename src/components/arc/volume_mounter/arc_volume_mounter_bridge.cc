@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/disks/disk.h"
@@ -72,8 +73,7 @@ ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContextForTesting(
 ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      pref_service_(user_prefs::UserPrefs::Get(context)),
-      weak_ptr_factory_(this) {
+      pref_service_(user_prefs::UserPrefs::Get(context)) {
   DCHECK(pref_service_);
   arc_bridge_service_->volume_mounter()->AddObserver(this);
   arc_bridge_service_->volume_mounter()->SetHost(this);
@@ -81,11 +81,11 @@ ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
   DiskMountManager::GetInstance()->AddObserver(this);
 
   change_registerar_.Init(pref_service_);
-  // Start monitoring |kArcHasAccessToRemovableMedia| changes. Note that the
+  // Start monitoring |kArcVisibleExternalStorages| changes. Note that the
   // registerar automatically stops monitoring the pref in its dtor.
   change_registerar_.Add(
-      prefs::kArcHasAccessToRemovableMedia,
-      base::BindRepeating(&ArcVolumeMounterBridge::OnPrefChanged,
+      prefs::kArcVisibleExternalStorages,
+      base::BindRepeating(&ArcVolumeMounterBridge::OnVisibleStoragesChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -97,8 +97,7 @@ ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
 
 // Sends MountEvents of all existing MountPoints in cros-disks.
 void ArcVolumeMounterBridge::SendAllMountEvents() {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
-    SendMountEventForMyFiles();
+  SendMountEventForMyFiles();
 
   for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
@@ -123,28 +122,31 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
 
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
-      device_label, device_type));
+      device_label, device_type, false));
 }
 
-bool ArcVolumeMounterBridge::HasAccessToRemovableMedia() const {
-  DCHECK(pref_service_);
-  // If the UI is not enabled, allow the access.
-  if (!base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
-    return true;
-  return pref_service_->GetBoolean(prefs::kArcHasAccessToRemovableMedia);
-}
-
-void ArcVolumeMounterBridge::OnPrefChanged() {
-  if (HasAccessToRemovableMedia()) {
-    // Mount everything again. Mounting the same disk (e.g. MyFiles) again is
-    // allowed and is no-op.
-    SendAllMountEvents();
-    return;
+bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
+    const std::string& uuid) const {
+  const base::ListValue* uuid_list =
+      pref_service_->GetList(prefs::kArcVisibleExternalStorages);
+  for (auto& value : uuid_list->GetList()) {
+    if (value.is_string() && value.GetString() == uuid)
+      return true;
   }
-  // Unmount everything except for MyFiles.
-  for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
+  return false;
+}
+
+void ArcVolumeMounterBridge::OnVisibleStoragesChanged() {
+  // Remount all external mount points when the list of visible storage changes.
+  for (const auto& key_value :
+       DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
-                 chromeos::MountError::MOUNT_ERROR_NONE, keyValue.second);
+                 chromeos::MountError::MOUNT_ERROR_NONE, key_value.second);
+  }
+  for (const auto& key_value :
+       DiskMountManager::GetInstance()->mount_points()) {
+    OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
+                 chromeos::MountError::MOUNT_ERROR_NONE, key_value.second);
   }
 }
 
@@ -171,15 +173,6 @@ void ArcVolumeMounterBridge::OnMountEvent(
   }
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     DVLOG(1) << "Error " << error_code << "occurs during MountEvent " << event;
-    return;
-  }
-
-  // Do not propagate MOUNTING event to ARC when the media sharing setting is
-  // turned off. The other event (i.e. UNMOUNTING) should still go through.
-  if (event == DiskMountManager::MountEvent::MOUNTING &&
-      !HasAccessToRemovableMedia()) {
-    VLOG(2) << "Disk at " << mount_info.source_path
-            << " is not allowed to be shared with ARC";
     return;
   }
 
@@ -213,9 +206,18 @@ void ArcVolumeMounterBridge::OnMountEvent(
   if (!volume_mounter_instance)
     return;
 
+  const bool visible = IsVisibleToAndroidApps(fs_uuid);
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       event, mount_info.source_path, mount_info.mount_path, fs_uuid,
-      device_label, device_type));
+      device_label, device_type, visible));
+  if (event == DiskMountManager::MountEvent::MOUNTING &&
+      (device_type == chromeos::DeviceType::DEVICE_TYPE_USB ||
+       device_type == chromeos::DeviceType::DEVICE_TYPE_SD)) {
+    // Record visibilities of the mounted devices only when they are removable
+    // storages (e.g. USB sticks or SD cards).
+    base::UmaHistogramBoolean("Arc.ExternalStorage.MountedMediaVisibility",
+                              visible);
+  }
 }
 
 void ArcVolumeMounterBridge::RequestAllMountPoints() {

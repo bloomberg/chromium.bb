@@ -22,7 +22,7 @@
 #include "components/drive/local_file_reader.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -47,8 +47,7 @@ void IncrementCallback(int* num_called) {
 class LocalReaderProxyTest : public ::testing::Test {
  protected:
   LocalReaderProxyTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -59,7 +58,7 @@ class LocalReaderProxyTest : public ::testing::Test {
     ASSERT_TRUE(worker_thread_->Start());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   base::FilePath file_path_;
@@ -109,10 +108,9 @@ TEST_F(LocalReaderProxyTest, ReadWithLimit) {
 class NetworkReaderProxyTest : public ::testing::Test {
  protected:
   NetworkReaderProxyTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(NetworkReaderProxyTest, EmptyFile) {
@@ -301,8 +299,7 @@ TEST_F(NetworkReaderProxyTest, CancelJob) {
 class DriveFileStreamReaderTest : public ::testing::Test {
  protected:
   DriveFileStreamReaderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     worker_thread_ =
@@ -327,7 +324,7 @@ class DriveFileStreamReaderTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<base::Thread> worker_thread_;
 

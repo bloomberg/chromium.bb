@@ -258,8 +258,7 @@ OverviewController::OverviewController()
     : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
       overview_wallpaper_controller_(
           std::make_unique<OverviewWallpaperController>()),
-      delayed_animation_task_delay_(kTransition),
-      weak_ptr_factory_(this) {
+      delayed_animation_task_delay_(kTransition) {
   Shell::Get()->activation_client()->AddObserver(this);
 }
 
@@ -304,9 +303,9 @@ bool OverviewController::InOverviewSession() const {
   return overview_session_ && !overview_session_->is_shutting_down();
 }
 
-void OverviewController::IncrementSelection(int increment) {
+void OverviewController::IncrementSelection(bool forward) {
   DCHECK(InOverviewSession());
-  overview_session_->IncrementSelection(increment);
+  overview_session_->IncrementSelection(forward);
 }
 
 bool OverviewController::AcceptSelection() {
@@ -322,16 +321,14 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
 
   // Depending on the state of the windows and split view, a long press has many
   // different results.
-  // 1. Already in split view - exit split view. Activate the left window if it
-  // is snapped left or both sides. Activate the right window if it is snapped
-  // right.
-  // 2. Not in overview mode - enter split view iff
-  //     a) there is an active window
-  //     b) there are at least two windows in the mru list
-  //     c) the active window is snappable
-  // 3. In overview mode - enter split view iff
-  //     a) there are at least two windows in the mru list
-  //     b) the first window in the mru list is snappable
+  // 1. Already in split view - exit split view. The active snapped window
+  // becomes maximized. If overview was seen alongside a snapped window, then
+  // overview mode ends.
+  // 2. Not in overview mode - enter split view iff there is an active window
+  // and it is snappable.
+  // 3. In overview mode - enter split view iff there are at least two windows
+  // in the overview grid for the display where the overview button was long
+  // pressed, and the first window in that overview grid is snappable.
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   // Exit split view mode if we are already in it.
@@ -617,16 +614,12 @@ bool OverviewController::ToggleOverview(
       observer.OnOverviewModeEnding(overview_session_.get());
     overview_session_->Shutdown();
 
-#if DCHECK_IS_ON()
-    const auto enter_exit_type = overview_session_->enter_exit_overview_type();
-    if (enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kImmediateExit &&
-        !delayed_animations_.empty()) {
-      // Immediate exit type implies no delayed exit animations at all, if we
-      // get here then this is a bug.
-      NOTREACHED();
+    if (overview_session_->enter_exit_overview_type() ==
+        OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      for (const auto& animation : delayed_animations_)
+        animation->Shutdown();
+      delayed_animations_.clear();
     }
-#endif
 
     // Don't delete |overview_session_| yet since the stack is still using it.
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
@@ -649,6 +642,21 @@ bool OverviewController::ToggleOverview(
     if (!delayed_animations_.empty())
       OnEndingAnimationComplete(/*canceled=*/true);
     delayed_animations_.clear();
+
+    // |should_focus_overview_| shall be true except when split view mode starts
+    // on transition between clamshell mode and tablet mode, on transition
+    // between user sessions, or on transition between virtual desks. Those are
+    // the cases where code arranges split view by first snapping a window on
+    // one side and then starting overview to be seen on the other side, meaning
+    // that the split view state here will be |SplitViewState::kLeftSnapped| or
+    // |SplitViewState::kRightSnapped|. We have to check the split view state
+    // before |SplitViewController::OnOverviewModeStarting|, because in case of
+    // |SplitViewState::kBothSnapped|, that function will insert one of the two
+    // snapped windows to overview.
+    const SplitViewState split_view_state =
+        Shell::Get()->split_view_controller()->state();
+    should_focus_overview_ = split_view_state == SplitViewState::kNoSnap ||
+                             split_view_state == SplitViewState::kBothSnapped;
 
     // Suspend occlusion tracker until the enter animation is complete.
     PauseOcclusionTracker();
@@ -713,8 +721,10 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
 
   for (auto& observer : observers_)
     observer.OnOverviewModeStartingAnimationComplete(canceled);
-  if (overview_session_)
-    overview_session_->OnStartingAnimationComplete(canceled);
+  if (overview_session_) {
+    overview_session_->OnStartingAnimationComplete(canceled,
+                                                   should_focus_overview_);
+  }
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
   TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
                          "canceled", canceled);

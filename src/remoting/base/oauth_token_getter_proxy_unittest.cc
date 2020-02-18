@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -48,11 +48,11 @@ class FakeOAuthTokenGetter : public OAuthTokenGetter {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<FakeOAuthTokenGetter> weak_factory_;
+  base::WeakPtrFactory<FakeOAuthTokenGetter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeOAuthTokenGetter);
 };
 
-FakeOAuthTokenGetter::FakeOAuthTokenGetter() : weak_factory_(this) {
+FakeOAuthTokenGetter::FakeOAuthTokenGetter() {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -135,7 +135,7 @@ class OAuthTokenGetterProxyTest : public testing::Test {
 
   std::unique_ptr<TokenCallbackResult> expected_callback_result_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetterProxyTest);
 };

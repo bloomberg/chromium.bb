@@ -293,6 +293,13 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void ReinitializeGLState();
   void RestoreGLState();
 
+  // TODO(weiliangc): Once the overlay processor could schedule overlays, remove
+  // these functions.
+  // Sends over output surface information as it is a overlay plane. This is
+  // used for BufferQueue. For non-BufferQueue cases, this function will do
+  // nothing.
+  void ScheduleOutputSurfaceAsOverlay();
+  // Schedule overlays sends overlay candidate to the GPU.
   void ScheduleCALayers();
   void ScheduleDCLayers();
   void ScheduleOverlays();
@@ -419,6 +426,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   gfx::Size offscreen_stencil_renderbuffer_size_;
 
   unsigned num_triangles_drawn_ = 0;
+  bool prefer_draw_to_copy_ = false;
 
   // This may be null if the compositor is run on a thread without a
   // MessageLoop.

@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
@@ -167,6 +166,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
   self.tableView.tableFooterView = [[UIView alloc] init];
+  self.tableView.accessibilityIdentifier = kHistoryTableViewIdentifier;
 
   // ContextMenu gesture recognizer.
   UILongPressGestureRecognizer* longPressRecognizer = [
@@ -271,9 +271,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // If there are no results and no URLs have been loaded, report that no
   // history entries were found.
   if (results.empty() && self.empty && !self.searchInProgress) {
+    UIImage* emptyImage = [[UIImage imageNamed:@"empty_history"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                            IDS_HISTORY_NO_RESULTS)
-                                 image:[UIImage imageNamed:@"empty_history"]];
+                                 image:emptyImage];
     [self updateToolbarButtons];
     return;
   }
@@ -471,6 +473,24 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)searchBarTextDidEndEditing:(UISearchBar*)searchBar {
   self.searchInProgress = NO;
   [self updateEntriesStatusMessage];
+}
+
+#pragma mark UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerWillDismiss:
+    (UIPresentationController*)presentationController {
+  if (self.searchInProgress) {
+    // Dismiss the keyboard if trying to dismiss the VC so the keyboard doesn't
+    // linger until the VC dismissal has completed.
+    [self.searchController.searchBar endEditing:YES];
+  }
+}
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call the localDispatcher dismissHistoryWithCompletion to clean up state and
+  // stop the Coordinator.
+  [self.localDispatcher dismissHistoryWithCompletion:nil];
 }
 
 #pragma mark - History Data Updates
@@ -676,9 +696,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   if ([self.tableViewModel numberOfSections] == 1) {
     self.empty = YES;
     if (!self.searchInProgress) {
+      UIImage* emptyImage = [[UIImage imageNamed:@"empty_history"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                              IDS_HISTORY_NO_RESULTS)
-                                   image:[UIImage imageNamed:@"empty_history"]];
+                                   image:emptyImage];
     }
   }
   [self updateEntriesStatusMessage];
@@ -1098,8 +1120,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                         action:@selector(openPrivacySettings)];
     _clearBrowsingDataButton.accessibilityIdentifier =
         kHistoryToolbarClearBrowsingButtonIdentifier;
-    _clearBrowsingDataButton.tintColor =
-        [UIColor colorNamed:kDestructiveTintColor];
+    _clearBrowsingDataButton.tintColor = [UIColor colorNamed:kRedColor];
   }
   return _clearBrowsingDataButton;
 }
@@ -1115,7 +1136,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                action:@selector(deleteSelectedItemsFromHistory)];
     _deleteButton.accessibilityIdentifier =
         kHistoryToolbarDeleteButtonIdentifier;
-    _deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
+    _deleteButton.tintColor = [UIColor colorNamed:kRedColor];
   }
   return _deleteButton;
 }

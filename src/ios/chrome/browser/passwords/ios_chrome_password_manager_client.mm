@@ -35,6 +35,7 @@
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -53,11 +54,6 @@ const syncer::SyncService* GetSyncService(
   return ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
 }
 
-const signin::IdentityManager* GetIdentityManager(
-    ios::ChromeBrowserState* browser_state) {
-  return IdentityManagerFactory::GetForBrowserState(browser_state);
-}
-
 }  // namespace
 
 IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
@@ -65,14 +61,13 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
     : delegate_(delegate),
       credentials_filter_(
           this,
-          base::BindRepeating(&GetSyncService, delegate_.browserState),
-          base::BindRepeating(&GetIdentityManager, delegate_.browserState)),
+          base::BindRepeating(&GetSyncService, delegate_.browserState)),
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
-      *saving_passwords_enabled_, this, GetSyncService(delegate_.browserState),
-      GetIdentityManager(delegate_.browserState), GetPrefs());
+      this, GetSyncService(delegate_.browserState), GetIdentityManager(),
+      GetPrefs());
   log_manager_ = autofill::LogManager::Create(
       ios::PasswordManagerLogRouterFactory::GetForBrowserState(
           delegate_.browserState),
@@ -108,6 +103,11 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   }
 
   return true;
+}
+
+bool IOSChromePasswordManagerClient::ShowOnboarding(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+  return false;
 }
 
 void IOSChromePasswordManagerClient::ShowManualFallbackForSaving(
@@ -219,6 +219,15 @@ IOSChromePasswordManagerClient::GetMetricsRecorder() {
     metrics_recorder_.emplace(GetUkmSourceId(), delegate_.lastCommittedURL);
   }
   return base::OptionalOrNullptr(metrics_recorder_);
+}
+
+signin::IdentityManager* IOSChromePasswordManagerClient::GetIdentityManager() {
+  return IdentityManagerFactory::GetForBrowserState(delegate_.browserState);
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+IOSChromePasswordManagerClient::GetURLLoaderFactory() {
+  return (delegate_.browserState)->GetSharedURLLoaderFactory();
 }
 
 password_manager::PasswordRequirementsService*

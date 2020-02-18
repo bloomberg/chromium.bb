@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/messaging_client.h"
@@ -211,7 +211,7 @@ class FtlSignalStrategyTest : public testing::Test,
   ~FtlSignalStrategyTest() override {
     signal_strategy_->RemoveListener(this);
     signal_strategy_.reset();
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -236,8 +236,8 @@ class FtlSignalStrategyTest : public testing::Test,
                     const std::string&,
                     const ftl::ChromotingMessage&));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   MockOAuthTokenGetter* token_getter_ = nullptr;
   FakeRegistrationManager* registration_manager_ = nullptr;
@@ -497,6 +497,23 @@ TEST_F(FtlSignalStrategyTest, ReceiveMessage_DelieverMessageAndDropStanza) {
                                message);
 
   // Message has already been consumed in OnSignalStrategyIncomingMessage().
+  ASSERT_EQ(0u, received_messages_.size());
+}
+
+TEST_F(FtlSignalStrategyTest, ReceiveStanza_DropMessageWithMalformedXmpp) {
+  ExpectGetOAuthTokenSucceedsWithFakeCreds();
+  registration_manager_->ExpectSignInGaiaSucceeds();
+  signal_strategy_->Connect();
+  messaging_client_->AcceptReceivingMessages();
+
+  ftl::ChromotingMessage message;
+  message.mutable_xmpp()->set_stanza("Malformed!!!");
+  ftl::Id remote_user_id;
+  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
+  remote_user_id.set_id(kFakeRemoteUsername);
+  messaging_client_->OnMessage(remote_user_id, kFakeRemoteRegistrationId,
+                               message);
+
   ASSERT_EQ(0u, received_messages_.size());
 }
 

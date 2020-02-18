@@ -194,18 +194,8 @@ INSTANTIATE_TEST_SUITE_P(Tests, QuicStreamIdManagerTestClient, testing::Bool());
 TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerClientInitialization) {
   // These fields are inited via the QuicSession constructor to default
   // values defined as a constant.
-  // If bidi, Crypto stream default created  at start up, it is one
-  // more stream to account for since initialization is "number of
-  // request/responses" & crypto is added in to that, not streams.
-  size_t extra_stream_count = 0;
-  if (GetParam() && !QuicVersionUsesCryptoFrames(transport_version())) {
-    extra_stream_count = 1;
-  }
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection + extra_stream_count,
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             stream_id_manager_->outgoing_max_streams());
-  // Test is predicated on having 1 static stream going if bidi, 0 if not...)
-  EXPECT_EQ(extra_stream_count,
-            stream_id_manager_->outgoing_static_stream_count());
 
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             stream_id_manager_->incoming_actual_max_streams());
@@ -230,29 +220,6 @@ TEST_P(QuicStreamIdManagerTestClient, CheckMaxStreamsWindow1) {
   EXPECT_EQ(1u, stream_id_manager_->max_streams_window());
 }
 
-// Test that stream counts that would exceed the implementation maximum are
-// safely handled.
-// First, check that setting up to and including the implementation maximum
-// is OK.
-TEST_P(QuicStreamIdManagerTestClient, CheckMaxStreamsBadValuesToMaxOkOutgoing) {
-  QuicStreamCount implementation_max =
-      QuicUtils::GetMaxStreamCount(!GetParam(), /* GetParam==true for bidi */
-                                   Perspective::IS_CLIENT);
-  stream_id_manager_->AdjustMaxOpenOutgoingStreams(implementation_max - 1u);
-  // If bidi, Crypto stream default created  at start up, it is one
-  // more stream to account for since initialization is "number of
-  // request/responses" & crypto is added in to that, not streams.
-  size_t extra_stream_count = 0;
-  if (GetParam() && !QuicVersionUsesCryptoFrames(transport_version())) {
-    extra_stream_count = 1;
-  }
-  EXPECT_EQ(implementation_max - 1u + extra_stream_count,
-            stream_id_manager_->outgoing_max_streams());
-
-  stream_id_manager_->AdjustMaxOpenOutgoingStreams(implementation_max);
-  EXPECT_EQ(implementation_max, stream_id_manager_->outgoing_max_streams());
-}
-
 // Now check that setting to a value larger than the maximum fails.
 TEST_P(QuicStreamIdManagerTestClient,
        CheckMaxStreamsBadValuesOverMaxFailsOutgoing) {
@@ -263,7 +230,7 @@ TEST_P(QuicStreamIdManagerTestClient,
   EXPECT_LT(stream_id_manager_->outgoing_max_streams(), implementation_max);
 
   // Try to go over.
-  stream_id_manager_->AdjustMaxOpenOutgoingStreams(implementation_max + 1);
+  stream_id_manager_->SetMaxOpenOutgoingStreams(implementation_max + 1);
   // Should be pegged at the max.
   EXPECT_EQ(implementation_max, stream_id_manager_->outgoing_max_streams());
 }
@@ -388,15 +355,14 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerClientOnMaxStreamsFrame) {
   QuicStreamCount initial_stream_count =
       // need to know the number of request/response streams.
       // This is the total number of outgoing streams (which includes both
-      // req/resp and statics) minus just the statics...
-      stream_id_manager_->outgoing_max_streams() -
-      stream_id_manager_->outgoing_static_stream_count();
+      // req/resp and statics).
+      stream_id_manager_->outgoing_max_streams();
 
   QuicMaxStreamsFrame frame;
 
   // Even though the stream count in the frame is < the initial maximum,
-  // it is should be ignored since the initial max was set via
-  // the constructor (an educated guess) and the MAX STREAMS frame
+  // it shouldn't be ignored since the initial max was set via
+  // the constructor (an educated guess) but the MAX STREAMS frame
   // is authoritative.
   frame.stream_count = initial_stream_count - 1;
 
@@ -491,20 +457,12 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerOnStreamsBlockedFrame) {
 TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerGetNextOutgoingStream) {
   // Number of streams we can open and the first one we should get when
   // opening...
-  int number_of_streams = kDefaultMaxStreamsPerConnection;
+  size_t number_of_streams = kDefaultMaxStreamsPerConnection;
   QuicStreamId stream_id =
       IsUnidi() ? session_->next_outgoing_unidirectional_stream_id()
                 : session_->next_outgoing_bidirectional_stream_id();
 
-  // If bidi, Crypto stream default created  at start up, it is one
-  // more stream to account for since initialization is "number of
-  // request/responses" & crypto is added in to that, not streams.
-  size_t extra_stream_count = 0;
-  if (IsBidi() && !QuicVersionUsesCryptoFrames(transport_version())) {
-    extra_stream_count = 1;
-  }
-  EXPECT_EQ(number_of_streams + extra_stream_count,
-            stream_id_manager_->outgoing_max_streams());
+  EXPECT_EQ(number_of_streams, stream_id_manager_->outgoing_max_streams());
   while (number_of_streams) {
     EXPECT_TRUE(stream_id_manager_->CanOpenNextOutgoingStream());
     EXPECT_EQ(stream_id, stream_id_manager_->GetNextOutgoingStreamId());
@@ -522,7 +480,7 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerGetNextOutgoingStream) {
   // If bidi, Crypto stream default created  at start up, it is one
   // more stream to account for since initialization is "number of
   // request/responses" & crypto is added in to that, not streams.
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection + extra_stream_count,
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             session_->save_frame().max_streams_frame.stream_count);
   // If we try to get the next id (above the limit), it should cause a quic-bug.
   EXPECT_QUIC_BUG(
@@ -623,46 +581,6 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerServerMaxStreams) {
   EXPECT_EQ(MAX_STREAMS_FRAME, session_->save_frame().type);
   EXPECT_EQ(stream_id_manager_->incoming_advertised_max_streams(),
             session_->save_frame().max_streams_frame.stream_count);
-}
-
-// Test that registering static stream IDs causes the stream limit to rise
-// accordingly. This is server/client agnostic.
-TEST_P(QuicStreamIdManagerTestClient, TestStaticStreamAdjustment) {
-  QuicStreamId first_dynamic =
-      QuicStreamIdManagerPeer::GetFirstIncomingStreamId(stream_id_manager_);
-  QuicStreamCount actual_max =
-      stream_id_manager_->incoming_actual_max_streams();
-
-  // First test will register the first dynamic stream id as being for a static
-  // stream.
-  stream_id_manager_->RegisterStaticStream(first_dynamic,
-                                           /*stream_already_counted = */ false);
-  // Should go up by 1 stream/stream id.
-  EXPECT_EQ(actual_max + 1u, stream_id_manager_->incoming_actual_max_streams());
-}
-
-// Check that the OnMaxStreamFrame logic properly handles all the
-// cases of offered max streams and outgoing_static_stream_count_,
-// checking for the wrap conditions. Tests in client perspective, necessary
-// because internally, some calculations depend on the client/server
-// perspective.
-TEST_P(QuicStreamIdManagerTestClient, TestMaxStreamsWrapChecks) {
-  QuicStreamCount max_stream_count =
-      QuicUtils::GetMaxStreamCount(IsUnidi(), Perspective::IS_CLIENT);
-  QuicMaxStreamsFrame frame;
-  frame.unidirectional = IsUnidi();
-
-  // Check the case where the offered stream count is less than the
-  // maximum
-  frame.stream_count = max_stream_count - 10;
-  EXPECT_TRUE(stream_id_manager_->OnMaxStreamsFrame(frame));
-  EXPECT_EQ(max_stream_count - 10u, stream_id_manager_->outgoing_max_streams());
-
-  // Now check if the offered count is larger than the max.
-  // The count should be pegged at the max.
-  frame.stream_count = max_stream_count + 10;
-  EXPECT_TRUE(stream_id_manager_->OnMaxStreamsFrame(frame));
-  EXPECT_EQ(max_stream_count, stream_id_manager_->outgoing_max_streams());
 }
 
 // Check that edge conditions of the stream count in a STREAMS_BLOCKED frame
@@ -787,15 +705,8 @@ TEST_P(QuicStreamIdManagerTestServer, StreamIdManagerServerInitialization) {
   // values defined as a constant.
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             stream_id_manager_->incoming_initial_max_open_streams());
-  // If bidi, Crypto stream default created  at start up, it is one
-  // more stream to account for since initialization is "number of
-  // request/responses" & crypto is added in to that, not streams.
-  // Since this is the server, the stream is incoming.
-  size_t extra_stream_count = 0;
-  if (IsBidi() && !QuicVersionUsesCryptoFrames(transport_version())) {
-    extra_stream_count = 1;
-  }
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection + extra_stream_count,
+
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             stream_id_manager_->incoming_actual_max_streams());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             stream_id_manager_->outgoing_max_streams());
@@ -841,30 +752,6 @@ TEST_P(QuicStreamIdManagerTestServer, ExtremeMaybeIncreaseLargestPeerStreamId) {
               CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
   EXPECT_FALSE(
       stream_id_manager_->MaybeIncreaseLargestPeerStreamId(too_big_stream_id));
-}
-
-// Check that the OnMaxStreamFrame logic properly handles all the
-// cases of offered max streams and outgoing_static_stream_count_,
-// checking for the wrap conditions. Tests in server perspective, necessary
-// because internally, some calculations depend on the client/server
-// perspective.
-TEST_P(QuicStreamIdManagerTestServer, TestMaxStreamsWrapChecks) {
-  QuicStreamCount max_stream_count =
-      QuicUtils::GetMaxStreamCount(IsUnidi(), Perspective::IS_SERVER);
-  QuicMaxStreamsFrame frame;
-  frame.unidirectional = IsUnidi();
-
-  // Check the case where the offered stream count is less than the
-  // implementation maximum,
-  frame.stream_count = max_stream_count - 10;
-  EXPECT_TRUE(stream_id_manager_->OnMaxStreamsFrame(frame));
-  EXPECT_EQ(max_stream_count - 10u, stream_id_manager_->outgoing_max_streams());
-
-  // Check the case where the offered stream count is greater than the
-  // implementation maximum. The count should peg at the maximum.
-  frame.stream_count = max_stream_count + 10;
-  EXPECT_TRUE(stream_id_manager_->OnMaxStreamsFrame(frame));
-  EXPECT_EQ(max_stream_count, stream_id_manager_->outgoing_max_streams());
 }
 
 }  // namespace

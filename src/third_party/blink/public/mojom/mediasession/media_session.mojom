@@ -7,7 +7,7 @@ module blink.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
 enum MediaSessionPlaybackState {
@@ -47,10 +47,13 @@ struct SpecMediaMetadata {
 interface MediaSessionService {
   // MediaSessionClient interface is used to notify Blink MediaSession of
   // media control actions.
-  SetClient(MediaSessionClient client);
+  SetClient(pending_remote<MediaSessionClient> client);
 
   // Notifies the browser that the page specified its current playback state.
   SetPlaybackState(MediaSessionPlaybackState state);
+
+  // Notifies the browser that the page specified its current position state.
+  SetPositionState(media_session.mojom.MediaPosition? position);
 
   // Notifies the browser that the metadata is set, |metadata| will be displayed
   // on the UI.

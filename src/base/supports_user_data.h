@@ -20,6 +20,8 @@ namespace base {
 class BASE_EXPORT SupportsUserData {
  public:
   SupportsUserData();
+  SupportsUserData(SupportsUserData&&);
+  SupportsUserData& operator=(SupportsUserData&&);
 
   // Derive from this class and add your own data members to associate extra
   // information with this object. Alternatively, add this as a public base
@@ -53,6 +55,10 @@ class BASE_EXPORT SupportsUserData {
 
  protected:
   virtual ~SupportsUserData();
+
+  // Clear all user data from this object. This can be used if the subclass
+  // needs to provide reset functionality.
+  void ClearAllUserData();
 
  private:
   using DataMap = std::map<const void*, std::unique_ptr<Data>>;

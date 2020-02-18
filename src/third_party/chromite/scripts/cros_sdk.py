@@ -868,7 +868,7 @@ def main(argv):
   if host != 'x86_64':
     cros_build_lib.Die(
         "cros_sdk is currently only supported on x86_64; you're running"
-        " %s.  Please find a x86_64 machine." % (host,))
+        ' %s.  Please find a x86_64 machine.' % (host,))
 
   _ReportMissing(osutils.FindMissingBinaries(NEEDED_TOOLS))
   if options.proxy_sim:
@@ -920,8 +920,8 @@ def main(argv):
 
   if (options.delete and not options.create and
       (options.enter or any_snapshot_operation)):
-    parser.error("Trying to enter or snapshot the chroot when --delete "
-                 "was specified makes no sense.")
+    parser.error('Trying to enter or snapshot the chroot when --delete '
+                 'was specified makes no sense.')
 
   if (options.unmount and
       (options.create or options.enter or any_snapshot_operation)):
@@ -987,14 +987,14 @@ def main(argv):
   # below if needed.
   if options.create and options.use_image:
     if missing_image_tools:
-      raise SystemExit('''The tool(s) %s were not found.
+      raise SystemExit("""The tool(s) %s were not found.
 Please make sure the lvm2 and thin-provisioning-tools packages
 are installed on your host.
 Example(ubuntu):
   sudo apt-get install lvm2 thin-provisioning-tools
 
 If you want to run without lvm2, pass --nouse-image (chroot
-snapshots will be unavailable).''' % ', '.join(missing_image_tools))
+snapshots will be unavailable).""" % ', '.join(missing_image_tools))
 
     logging.debug('Making sure chroot image is mounted.')
     with cgroups.SimpleContainChildren('cros_sdk'):
@@ -1061,7 +1061,7 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
     mount_used_bytes = mount_stat.f_frsize * (
         mount_stat.f_blocks - mount_stat.f_bfree)
 
-    extra_gbs = (img_used_bytes - mount_used_bytes) / 2**30
+    extra_gbs = (img_used_bytes - mount_used_bytes) // 2**30
     if extra_gbs > MAX_UNUSED_IMAGE_GBS:
       logging.notice('%s is using %s GiB more than needed.  Running '
                      'fstrim.', img_path, extra_gbs)
@@ -1122,8 +1122,8 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
           osutils.SafeMakedirsNonRoot(target)
           continue
         lock.write_lock(
-            "Upgrade to %r needed but chroot is locked; please exit "
-            "all instances so this upgrade can finish." % src)
+            'Upgrade to %r needed but chroot is locked; please exit '
+            'all instances so this upgrade can finish.' % src)
         if not os.path.exists(src):
           # Note that while waiting for the write lock, src may've vanished;
           # it's a rare race during the upgrade process that's a byproduct

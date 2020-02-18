@@ -14,7 +14,8 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.StrictMode;
 
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.services.ICrashReceiverService;
@@ -28,6 +29,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;

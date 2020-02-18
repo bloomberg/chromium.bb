@@ -100,7 +100,7 @@ public:
 
     SkAutoPathBoundsUpdate(SkPath* path, SkScalar left, SkScalar top,
                            SkScalar right, SkScalar bottom) {
-        fRect.set(left, top, right, bottom);
+        fRect.setLTRB(left, top, right, bottom);
         this->init(path);
     }
 
@@ -311,7 +311,7 @@ bool SkPath::conservativelyContainsRect(const SkRect& rect) const {
     SkDEBUGCODE(int moveCnt = 0;)
     SkDEBUGCODE(int closeCount = 0;)
 
-    while ((verb = iter.next(pts, true, true)) != kDone_Verb) {
+    while ((verb = iter.next(pts)) != kDone_Verb) {
         int nextPt = -1;
         switch (verb) {
             case kMove_Verb:
@@ -320,20 +320,26 @@ bool SkPath::conservativelyContainsRect(const SkRect& rect) const {
                 firstPt = prevPt = pts[0];
                 break;
             case kLine_Verb:
-                nextPt = 1;
-                SkASSERT(moveCnt && !closeCount);
-                ++segmentCount;
+                if (!SkPathPriv::AllPointsEq(pts, 2)) {
+                    nextPt = 1;
+                    SkASSERT(moveCnt && !closeCount);
+                    ++segmentCount;
+                }
                 break;
             case kQuad_Verb:
             case kConic_Verb:
-                SkASSERT(moveCnt && !closeCount);
-                ++segmentCount;
-                nextPt = 2;
+                if (!SkPathPriv::AllPointsEq(pts, 3)) {
+                    SkASSERT(moveCnt && !closeCount);
+                    ++segmentCount;
+                    nextPt = 2;
+                }
                 break;
             case kCubic_Verb:
-                SkASSERT(moveCnt && !closeCount);
-                ++segmentCount;
-                nextPt = 3;
+                if (!SkPathPriv::AllPointsEq(pts, 4)) {
+                    SkASSERT(moveCnt && !closeCount);
+                    ++segmentCount;
+                    nextPt = 3;
+                }
                 break;
             case kClose_Verb:
                 SkDEBUGCODE(++closeCount;)
@@ -1486,6 +1492,15 @@ SkPath& SkPath::arcTo(SkScalar rx, SkScalar ry, SkScalar angle, SkPath::ArcSize 
     } else if (thetaArc > 0 && arcSweep) {  // arcSweep flipped from the original implementation
         thetaArc -= SK_ScalarPI * 2;
     }
+
+    // Very tiny angles cause our subsequent math to go wonky (skbug.com/9272)
+    // so we do a quick check here. The precise tolerance amount is just made up.
+    // PI/million happens to fix the bug in 9272, but a larger value is probably
+    // ok too.
+    if (SkScalarAbs(thetaArc) < (SK_ScalarPI / (1000 * 1000))) {
+        return this->lineTo(x, y);
+    }
+
     pointTransform.setRotate(angle);
     pointTransform.preScale(rx, ry);
 
@@ -1828,7 +1843,7 @@ void SkPath::transform(const SkMatrix& matrix, SkPath* dst) const {
         SkPoint         pts[4];
         SkPath::Verb    verb;
 
-        while ((verb = iter.next(pts, false)) != kDone_Verb) {
+        while ((verb = iter.next(pts)) != kDone_Verb) {
             switch (verb) {
                 case kMove_Verb:
                     tmp.moveTo(pts[0]);
@@ -2006,90 +2021,7 @@ const SkPoint& SkPath::Iter::cons_moveTo() {
     return fPts[-1];
 }
 
-void SkPath::Iter::consumeDegenerateSegments(bool exact) {
-    // We need to step over anything that will not move the current draw point
-    // forward before the next move is seen
-    const uint8_t* lastMoveVerb = nullptr;
-    const SkPoint* lastMovePt = nullptr;
-    const SkScalar* lastMoveWeight = nullptr;
-    SkPoint lastPt = fLastPt;
-    while (fVerbs != fVerbStop) {
-        unsigned verb = *(fVerbs - 1); // fVerbs is one beyond the current verb
-        switch (verb) {
-            case kMove_Verb:
-                // Keep a record of this most recent move
-                lastMoveVerb = fVerbs;
-                lastMovePt = fPts;
-                lastMoveWeight = fConicWeights;
-                lastPt = fPts[0];
-                fVerbs--;
-                fPts++;
-                break;
-
-            case kClose_Verb:
-                // A close when we are in a segment is always valid except when it
-                // follows a move which follows a segment.
-                if (fSegmentState == kAfterPrimitive_SegmentState && !lastMoveVerb) {
-                    return;
-                }
-                // A close at any other time must be ignored
-                fVerbs--;
-                break;
-
-            case kLine_Verb:
-                if (!IsLineDegenerate(lastPt, fPts[0], exact)) {
-                    if (lastMoveVerb) {
-                        fVerbs = lastMoveVerb;
-                        fPts = lastMovePt;
-                        fConicWeights = lastMoveWeight;
-                        return;
-                    }
-                    return;
-                }
-                // Ignore this line and continue
-                fVerbs--;
-                fPts++;
-                break;
-
-            case kConic_Verb:
-            case kQuad_Verb:
-                if (!IsQuadDegenerate(lastPt, fPts[0], fPts[1], exact)) {
-                    if (lastMoveVerb) {
-                        fVerbs = lastMoveVerb;
-                        fPts = lastMovePt;
-                        fConicWeights = lastMoveWeight;
-                        return;
-                    }
-                    return;
-                }
-                // Ignore this line and continue
-                fVerbs--;
-                fPts += 2;
-                fConicWeights += (kConic_Verb == verb);
-                break;
-
-            case kCubic_Verb:
-                if (!IsCubicDegenerate(lastPt, fPts[0], fPts[1], fPts[2], exact)) {
-                    if (lastMoveVerb) {
-                        fVerbs = lastMoveVerb;
-                        fPts = lastMovePt;
-                        fConicWeights = lastMoveWeight;
-                        return;
-                    }
-                    return;
-                }
-                // Ignore this line and continue
-                fVerbs--;
-                fPts += 3;
-                break;
-
-            default:
-                SkDEBUGFAIL("Should never see kDone_Verb");
-        }
-    }
-}
-
-SkPath::Verb SkPath::Iter::doNext(SkPoint ptsParam[4]) {
+SkPath::Verb SkPath::Iter::next(SkPoint ptsParam[4]) {
     SkASSERT(ptsParam);
 
     if (fVerbs == fVerbStop) {
@@ -2222,7 +2154,7 @@ void SkPath::dump(SkWStream* wStream, bool forceClose, bool dumpAsHex) const {
     };
     builder.printf("path.setFillType(SkPath::k%s_FillType);\n",
             gFillTypeStrs[(int) this->getFillType()]);
-    while ((verb = iter.next(pts, false)) != kDone_Verb) {
+    while ((verb = iter.next(pts)) != kDone_Verb) {
         switch (verb) {
             case kMove_Verb:
                 append_params(&builder, "path.moveTo", &pts[0], 1, asType);
@@ -2702,6 +2634,11 @@ private:
         largest = SkTMax(largest, -smallest);
 
         if (almost_equal(largest, largest + cross)) {
+            constexpr SkScalar nearlyZeroSqd = SK_ScalarNearlyZero * SK_ScalarNearlyZero;
+            if (SkScalarNearlyZero(SkPointPriv::LengthSqd(fLastVec), nearlyZeroSqd) ||
+                SkScalarNearlyZero(SkPointPriv::LengthSqd(curVec), nearlyZeroSqd)) {
+                return kUnknown_DirChange;
+            }
             return fLastVec.dot(curVec) < 0 ? kBackwards_DirChange : kStraight_DirChange;
         }
         return 1 == SkScalarSignAsInt(cross) ? kRight_DirChange : kLeft_DirChange;
@@ -2771,7 +2708,7 @@ SkPath::Convexity SkPath::internalGetConvexity() const {
         const SkPoint* points = fPathRef->points();
         const SkPoint* last = &points[pointCount];
         // only consider the last of the initial move tos
-        while (SkPath::kMove_Verb == iter.next(pts, false, false)) {
+        while (SkPath::kMove_Verb == iter.next(pts)) {
             ++points;
         }
         --points;
@@ -2796,7 +2733,7 @@ SkPath::Convexity SkPath::internalGetConvexity() const {
         return setComputedConvexity(SkPath::kConcave_Convexity);
     };
 
-    while ((verb = iter.next(pts, false, false)) != SkPath::kDone_Verb) {
+    while ((verb = iter.next(pts)) != SkPath::kDone_Verb) {
         switch (verb) {
             case kMove_Verb:
                 if (++contourCount > 1) {
@@ -3547,7 +3484,7 @@ bool SkPath::contains(SkScalar x, SkScalar y) const {
     int onCurveCount = 0;
     do {
         SkPoint pts[4];
-        switch (iter.next(pts, false)) {
+        switch (iter.next(pts)) {
             case SkPath::kMove_Verb:
             case SkPath::kClose_Verb:
                 break;
@@ -3590,7 +3527,7 @@ bool SkPath::contains(SkScalar x, SkScalar y) const {
     do {
         SkPoint pts[4];
         int oldCount = tangents.count();
-        switch (iter.next(pts, false)) {
+        switch (iter.next(pts)) {
             case SkPath::kMove_Verb:
             case SkPath::kClose_Verb:
                 break;
@@ -3707,22 +3644,22 @@ bool SkPathPriv::IsSimpleClosedRect(const SkPath& path, SkRect* rect, SkPath::Di
             ((rectPts[0].fY < rectPts[2].fY) ? 0b00 : 0b10);
     switch (sortFlags) {
         case 0b00:
-            rect->set(rectPts[0].fX, rectPts[0].fY, rectPts[2].fX, rectPts[2].fY);
+            rect->setLTRB(rectPts[0].fX, rectPts[0].fY, rectPts[2].fX, rectPts[2].fY);
             *direction = vec03IsVertical ? SkPath::kCW_Direction : SkPath::kCCW_Direction;
             *start = 0;
             break;
         case 0b01:
-            rect->set(rectPts[2].fX, rectPts[0].fY, rectPts[0].fX, rectPts[2].fY);
+            rect->setLTRB(rectPts[2].fX, rectPts[0].fY, rectPts[0].fX, rectPts[2].fY);
             *direction = vec03IsVertical ? SkPath::kCCW_Direction : SkPath::kCW_Direction;
             *start = 1;
             break;
         case 0b10:
-            rect->set(rectPts[0].fX, rectPts[2].fY, rectPts[2].fX, rectPts[0].fY);
+            rect->setLTRB(rectPts[0].fX, rectPts[2].fY, rectPts[2].fX, rectPts[0].fY);
             *direction = vec03IsVertical ? SkPath::kCCW_Direction : SkPath::kCW_Direction;
             *start = 3;
             break;
         case 0b11:
-            rect->set(rectPts[2].fX, rectPts[2].fY, rectPts[0].fX, rectPts[0].fY);
+            rect->setLTRB(rectPts[2].fX, rectPts[2].fY, rectPts[0].fX, rectPts[0].fY);
             *direction = vec03IsVertical ? SkPath::kCW_Direction : SkPath::kCCW_Direction;
             *start = 2;
             break;

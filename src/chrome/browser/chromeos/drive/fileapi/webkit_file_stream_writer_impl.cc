@@ -30,7 +30,7 @@ void CreateWritableSnapshotFile(
     const fileapi_internal::CreateWritableSnapshotFileCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &fileapi_internal::RunFileSystemCallback, file_system_getter,
@@ -51,8 +51,7 @@ WebkitFileStreamWriterImpl::WebkitFileStreamWriterImpl(
     : file_system_getter_(file_system_getter),
       file_task_runner_(file_task_runner),
       file_path_(file_path),
-      offset_(offset),
-      weak_ptr_factory_(this) {}
+      offset_(offset) {}
 
 WebkitFileStreamWriterImpl::~WebkitFileStreamWriterImpl() {
   if (local_file_writer_) {
@@ -60,8 +59,8 @@ WebkitFileStreamWriterImpl::~WebkitFileStreamWriterImpl() {
     // It is necessary to close the local file in advance.
     local_file_writer_.reset();
     DCHECK(!close_callback_on_ui_thread_.is_null());
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             close_callback_on_ui_thread_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   close_callback_on_ui_thread_);
   }
 }
 
@@ -143,8 +142,8 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
       // Here the file is internally created. To revert the operation, close
       // the file.
       DCHECK(!close_callback_on_ui_thread.is_null());
-      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                               close_callback_on_ui_thread);
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     close_callback_on_ui_thread);
     }
 
     std::move(pending_cancel_callback_).Run(net::OK);

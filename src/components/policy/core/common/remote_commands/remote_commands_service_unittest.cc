@@ -169,8 +169,8 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
     // Simulate delay from DMServer back to client.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), DM_STATUS_SUCCESS,
-                       fetched_commands),
+        base::BindOnce(std::move(callback), DM_STATUS_SUCCESS, fetched_commands,
+                       std::vector<em::SignedData>()),
         base::TimeDelta::FromSeconds(
             kTestClientServerCommunicationDelayInSeconds));
   }
@@ -201,8 +201,9 @@ class RemoteCommandsServiceTest : public testing::Test {
 
   void StartService(std::unique_ptr<RemoteCommandsFactory> factory) {
     remote_commands_service_.reset(new RemoteCommandsService(
-        std::move(factory), cloud_policy_client_.get()));
-    remote_commands_service_->SetClockForTesting(
+        std::move(factory), cloud_policy_client_.get(), nullptr /* store */));
+    remote_commands_service_->SetClocksForTesting(
+        mock_task_runner_->GetMockClock(),
         mock_task_runner_->GetMockTickClock());
   }
 

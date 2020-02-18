@@ -35,7 +35,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/request_priority.h"
@@ -131,7 +131,7 @@ constexpr char kExpectedFileContents[] =
 class ExternalFileURLRequestJobTest : public testing::Test {
  protected:
   ExternalFileURLRequestJobTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         integration_service_factory_callback_(base::Bind(
             &ExternalFileURLRequestJobTest::CreateDriveIntegrationService,
             base::Unretained(this))),
@@ -246,7 +246,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
 
   drive::FileSystemInterface* GetFileSystem() { return fake_file_system_; }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;

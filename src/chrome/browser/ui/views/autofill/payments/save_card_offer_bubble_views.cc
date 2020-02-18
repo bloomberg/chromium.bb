@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
-#include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -54,11 +53,9 @@ const int kTooltipIconSize = 12;
 
 SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
-}
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
 
 std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   // Only show the (i) info icon for upload saves using implicit sync.
@@ -74,12 +71,13 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   auto upload_explanation_tooltip = std::make_unique<
       views::TooltipIcon>(l10n_util::GetStringUTF16(
       (cardholder_name_textfield_ &&
-       !cardholder_name_textfield_->text().empty())
+       !cardholder_name_textfield_->GetText().empty())
           ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
           : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
   upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
   upload_explanation_tooltip->set_anchor_point_arrow(
       views::BubbleBorder::Arrow::TOP_RIGHT);
+  upload_explanation_tooltip->SetID(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP);
   return upload_explanation_tooltip;
 }
 
@@ -98,7 +96,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateFootnoteView() {
 bool SaveCardOfferBubbleViews::Accept() {
   if (controller()) {
     controller()->OnSaveButton(
-        {cardholder_name_textfield_ ? cardholder_name_textfield_->text()
+        {cardholder_name_textfield_ ? cardholder_name_textfield_->GetText()
                                     : base::string16(),
          month_input_dropdown_ ? month_input_dropdown_->model()->GetItemAt(
                                      month_input_dropdown_->GetSelectedIndex())
@@ -130,7 +128,7 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
     DCHECK(!month_input_dropdown_ && !year_input_dropdown_);
     // If requesting the user confirm the name, it cannot be blank.
     base::string16 trimmed_text;
-    base::TrimWhitespace(cardholder_name_textfield_->text(), base::TRIM_ALL,
+    base::TrimWhitespace(cardholder_name_textfield_->GetText(), base::TRIM_ALL,
                          &trimmed_text);
     return !trimmed_text.empty();
   }
@@ -207,7 +205,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
         std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME),
-            CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     cardholder_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
@@ -316,7 +314,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   // Set up expiration date label.
   auto expiration_date_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE),
-      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+      CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   expiration_date_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   expiration_date_view->AddChildView(expiration_date_label.release());

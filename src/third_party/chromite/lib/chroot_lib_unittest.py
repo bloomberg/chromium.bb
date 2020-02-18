@@ -71,6 +71,13 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     # Make sure it can handle absolute paths.
     self.assertEqual(chroot.full_path(path1), chroot.full_path(path2))
 
+  def testFullPathWithExtraArgs(self):
+    """Test full_path functionality with extra args passed."""
+    chroot = chroot_lib.Chroot(self.tempdir)
+    path1 = 'some/path'
+    self.assertEqual(os.path.join(self.tempdir, 'some/path/abc/def/g/h/i'),
+                     chroot.full_path(path1, '/abc', 'def', '/g/h/i'))
+
   def testHasPathSuccess(self):
     """Test has path for a valid path."""
     path = 'some/file.txt'
@@ -84,3 +91,30 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     """Test has path for a non-existent path."""
     chroot = chroot_lib.Chroot(self.tempdir)
     self.assertFalse(chroot.has_path('/does/not/exist'))
+
+  def testHasPathVariadic(self):
+    """Test multiple args to has path."""
+    path = ['some', 'file.txt']
+    tempdir_path = os.path.join(self.tempdir, *path)
+    osutils.Touch(tempdir_path, makedirs=True)
+
+    chroot = chroot_lib.Chroot(self.tempdir)
+    self.assertTrue(chroot.has_path(*path))
+
+  def testEqual(self):
+    """__eq__ method sanity check."""
+    path = '/chroot/path'
+    cache_dir = '/cache/dir'
+    chrome_root = '/chrome/root'
+    env = {'USE': 'useflag',
+           'FEATURES': 'feature'}
+    chroot1 = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
+                                chrome_root=chrome_root, env=env)
+    chroot2 = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
+                                chrome_root=chrome_root, env=env)
+    chroot3 = chroot_lib.Chroot(path=path)
+    chroot4 = chroot_lib.Chroot(path=path)
+
+    self.assertEqual(chroot1, chroot2)
+    self.assertEqual(chroot3, chroot4)
+    self.assertNotEqual(chroot1, chroot3)

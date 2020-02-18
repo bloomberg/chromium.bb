@@ -31,8 +31,25 @@
 #include <cstring>
 #include <iostream>
 
-void PrintDeviceError(const char* message, void*) {
-    std::cout << "Device error: " << message << std::endl;
+void PrintDeviceError(DawnErrorType errorType, const char* message, void*) {
+    switch (errorType) {
+        case DAWN_ERROR_TYPE_VALIDATION:
+            std::cout << "Validation ";
+            break;
+        case DAWN_ERROR_TYPE_OUT_OF_MEMORY:
+            std::cout << "Out of memory ";
+            break;
+        case DAWN_ERROR_TYPE_UNKNOWN:
+            std::cout << "Unknown ";
+            break;
+        case DAWN_ERROR_TYPE_DEVICE_LOST:
+            std::cout << "Device lost ";
+            break;
+        default:
+            UNREACHABLE();
+            return;
+    }
+    std::cout << "error: " << message << std::endl;
 }
 
 void PrintGLFWError(int code, const char* message) {
@@ -144,7 +161,7 @@ dawn::Device CreateCppDawnDevice() {
     }
 
     dawnSetProcs(&procs);
-    procs.deviceSetErrorCallback(cDevice, PrintDeviceError, nullptr);
+    procs.deviceSetUncapturedErrorCallback(cDevice, PrintDeviceError, nullptr);
     return dawn::Device::Acquire(cDevice);
 }
 
@@ -173,9 +190,9 @@ dawn::TextureView CreateDefaultDepthStencilView(const dawn::Device& device) {
     descriptor.sampleCount = 1;
     descriptor.format = dawn::TextureFormat::Depth24PlusStencil8;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+    descriptor.usage = dawn::TextureUsage::OutputAttachment;
     auto depthStencilTexture = device.CreateTexture(&descriptor);
-    return depthStencilTexture.CreateDefaultView();
+    return depthStencilTexture.CreateView();
 }
 
 bool InitSample(int argc, const char** argv) {

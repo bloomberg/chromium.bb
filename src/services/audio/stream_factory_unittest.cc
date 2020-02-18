@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -20,7 +20,7 @@ namespace audio {
 
 // Stream creation is tested as part of the stream unit tests.
 TEST(AudioServiceStreamFactoryTest, TakesServiceRef) {
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
   service_manager::ServiceKeepalive keepalive{nullptr, base::nullopt};
   media::MockAudioManager audio_manager(
       std::make_unique<media::TestAudioThread>());

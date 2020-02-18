@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -152,6 +153,11 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationResults(
   NOTIMPLEMENTED();
 }
 
+void WebViewAutofillClientIOS::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
@@ -165,7 +171,9 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     SaveCreditCardOptions options,
     LocalSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
-  [bridge_ confirmSaveCreditCardLocally:card callback:std::move(callback)];
+  [bridge_ confirmSaveCreditCardLocally:card
+                  saveCreditCardOptions:options
+                               callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -174,10 +182,14 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
+  [bridge_ confirmSaveCreditCardToCloud:card
+                           legalMessage:std::move(legal_message)
+                  saveCreditCardOptions:options
+                               callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::CreditCardUploadCompleted(bool card_saved) {
-  NOTIMPLEMENTED();
+  [bridge_ handleCreditCardUploadCompleted:card_saved];
 }
 
 void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(

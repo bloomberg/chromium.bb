@@ -8,9 +8,11 @@
 from __future__ import print_function
 
 import collections
-import mock
 import os
 import re
+
+import mock
+import six
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -129,7 +131,7 @@ class ListRegex(Regex):
 
   @staticmethod
   def _ProcessArg(arg):
-    if not isinstance(arg, basestring):
+    if not isinstance(arg, six.string_types):
       return ' '.join(arg)
     return arg
 

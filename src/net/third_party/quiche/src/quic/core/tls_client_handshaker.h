@@ -52,9 +52,14 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   CryptoMessageParser* crypto_message_parser() override;
+  size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
+
+  void AllowEmptyAlpnForTests() { allow_empty_alpn_for_tests_ = true; }
 
  protected:
-  TlsConnection* tls_connection() override { return &tls_connection_; }
+  const TlsConnection* tls_connection() const override {
+    return &tls_connection_;
+  }
 
   void AdvanceHandshake() override;
   void CloseConnection(QuicErrorCode error,
@@ -92,6 +97,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
     STATE_CONNECTION_CLOSED,
   } state_ = STATE_IDLE;
 
+  bool SetAlpn();
   bool SetTransportParameters();
   bool ProcessTransportParameters(std::string* error_details);
   void FinishHandshake();
@@ -117,6 +123,8 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   bool handshake_confirmed_ = false;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
+
+  bool allow_empty_alpn_for_tests_ = false;
 
   TlsClientConnection tls_connection_;
 };

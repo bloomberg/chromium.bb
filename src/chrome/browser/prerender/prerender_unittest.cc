@@ -43,7 +43,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_cache.h"
@@ -428,7 +428,7 @@ class PrerenderTest : public testing::Test {
 
  private:
   // Needed to pass PrerenderManager's DCHECKs.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfile profile_;
   base::SimpleTestTickClock tick_clock_;
@@ -538,6 +538,75 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackOffGWSReferrer) {
       FINAL_STATUS_MANAGER_SHUTDOWN);
 
   EXPECT_TRUE(AddSimpleGWSPrerender(url));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackNonPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, url::Origin::Create(GURL("www.notgoogle.com")),
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, base::nullopt, ORIGIN_NAVIGATION_PREDICTOR,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_EQ(nullptr, prerender_manager()->AddPrerenderFromNavigationPredictor(
+                         url, nullptr, gfx::Size()));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffNonPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, url::Origin::Create(GURL("www.notgoogle.com")),
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffPredictorReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      kNavigationPredictorPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, base::nullopt, ORIGIN_NAVIGATION_PREDICTOR,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_NE(nullptr, prerender_manager()->AddPrerenderFromNavigationPredictor(
+                         url, nullptr, gfx::Size()));
 }
 
 TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {

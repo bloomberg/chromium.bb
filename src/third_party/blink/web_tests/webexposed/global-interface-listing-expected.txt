@@ -639,6 +639,10 @@ interface CSS
     static method vw
     attribute @@toStringTag
     method constructor
+interface CSSAnimation : Animation
+    attribute @@toStringTag
+    getter animationName
+    method constructor
 interface CSSConditionRule : CSSGroupingRule
     attribute @@toStringTag
     getter conditionText
@@ -892,6 +896,10 @@ interface CSSTransformValue : CSSStyleValue
     method keys
     method toMatrix
     method values
+interface CSSTransition : Animation
+    attribute @@toStringTag
+    getter transitionProperty
+    method constructor
 interface CSSTranslate : CSSTransformComponent
     attribute @@toStringTag
     getter x
@@ -1552,6 +1560,7 @@ interface Document : Node
     attribute @@unscopables
     getter URL
     getter activeElement
+    getter addressSpace
     getter adoptedStyleSheets
     getter alinkColor
     getter all
@@ -1933,6 +1942,7 @@ interface Element : Node
     attribute @@unscopables
     getter accessibleNode
     getter ariaActiveDescendant
+    getter ariaActiveDescendantElement
     getter ariaAtomic
     getter ariaAutoComplete
     getter ariaBusy
@@ -1944,8 +1954,10 @@ interface Element : Node
     getter ariaCurrent
     getter ariaDescribedBy
     getter ariaDetails
+    getter ariaDetailsElement
     getter ariaDisabled
     getter ariaErrorMessage
+    getter ariaErrorMessageElement
     getter ariaExpanded
     getter ariaFlowTo
     getter ariaHasPopup
@@ -2011,6 +2023,7 @@ interface Element : Node
     getter part
     getter prefix
     getter previousElementSibling
+    getter renderSubtree
     getter role
     getter scrollHeight
     getter scrollLeft
@@ -2074,6 +2087,7 @@ interface Element : Node
     method webkitRequestFullScreen
     method webkitRequestFullscreen
     setter ariaActiveDescendant
+    setter ariaActiveDescendantElement
     setter ariaAtomic
     setter ariaAutoComplete
     setter ariaBusy
@@ -2085,8 +2099,10 @@ interface Element : Node
     setter ariaCurrent
     setter ariaDescribedBy
     setter ariaDetails
+    setter ariaDetailsElement
     setter ariaDisabled
     setter ariaErrorMessage
+    setter ariaErrorMessageElement
     setter ariaExpanded
     setter ariaFlowTo
     setter ariaHasPopup
@@ -2133,14 +2149,63 @@ interface Element : Node
     setter onwebkitfullscreenerror
     setter outerHTML
     setter part
+    setter renderSubtree
     setter role
     setter scrollLeft
     setter scrollTop
     setter slot
 interface ElementInternals
     attribute @@toStringTag
+    getter ariaActiveDescendant
+    getter ariaActiveDescendantElement
+    getter ariaAtomic
+    getter ariaAutoComplete
+    getter ariaBusy
+    getter ariaChecked
+    getter ariaColCount
+    getter ariaColIndex
+    getter ariaColSpan
+    getter ariaControls
+    getter ariaCurrent
+    getter ariaDescribedBy
+    getter ariaDetails
+    getter ariaDetailsElement
+    getter ariaDisabled
+    getter ariaErrorMessage
+    getter ariaErrorMessageElement
+    getter ariaExpanded
+    getter ariaFlowTo
+    getter ariaHasPopup
+    getter ariaHidden
+    getter ariaKeyShortcuts
+    getter ariaLabel
+    getter ariaLabelledBy
+    getter ariaLevel
+    getter ariaLive
+    getter ariaModal
+    getter ariaMultiLine
+    getter ariaMultiSelectable
+    getter ariaOrientation
+    getter ariaOwns
+    getter ariaPlaceholder
+    getter ariaPosInSet
+    getter ariaPressed
+    getter ariaReadOnly
+    getter ariaRelevant
+    getter ariaRequired
+    getter ariaRoleDescription
+    getter ariaRowCount
+    getter ariaRowIndex
+    getter ariaRowSpan
+    getter ariaSelected
+    getter ariaSort
+    getter ariaValueMax
+    getter ariaValueMin
+    getter ariaValueNow
+    getter ariaValueText
     getter form
     getter labels
+    getter role
     getter validationMessage
     getter validity
     getter willValidate
@@ -2149,6 +2214,54 @@ interface ElementInternals
     method reportValidity
     method setFormValue
     method setValidity
+    setter ariaActiveDescendant
+    setter ariaActiveDescendantElement
+    setter ariaAtomic
+    setter ariaAutoComplete
+    setter ariaBusy
+    setter ariaChecked
+    setter ariaColCount
+    setter ariaColIndex
+    setter ariaColSpan
+    setter ariaControls
+    setter ariaCurrent
+    setter ariaDescribedBy
+    setter ariaDetails
+    setter ariaDetailsElement
+    setter ariaDisabled
+    setter ariaErrorMessage
+    setter ariaErrorMessageElement
+    setter ariaExpanded
+    setter ariaFlowTo
+    setter ariaHasPopup
+    setter ariaHidden
+    setter ariaKeyShortcuts
+    setter ariaLabel
+    setter ariaLabelledBy
+    setter ariaLevel
+    setter ariaLive
+    setter ariaModal
+    setter ariaMultiLine
+    setter ariaMultiSelectable
+    setter ariaOrientation
+    setter ariaOwns
+    setter ariaPlaceholder
+    setter ariaPosInSet
+    setter ariaPressed
+    setter ariaReadOnly
+    setter ariaRelevant
+    setter ariaRequired
+    setter ariaRoleDescription
+    setter ariaRowCount
+    setter ariaRowIndex
+    setter ariaRowSpan
+    setter ariaSelected
+    setter ariaSort
+    setter ariaValueMax
+    setter ariaValueMin
+    setter ariaValueNow
+    setter ariaValueText
+    setter role
 interface EnterPictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow
@@ -2270,6 +2383,33 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemDirectoryHandle : FileSystemHandle
+    static method getSystemDirectory
+    attribute @@toStringTag
+    method constructor
+    method getDirectory
+    method getEntries
+    method getFile
+    method removeEntry
+interface FileSystemFileHandle : FileSystemHandle
+    attribute @@toStringTag
+    method constructor
+    method createWriter
+    method getFile
+interface FileSystemHandle
+    attribute @@toStringTag
+    getter isDirectory
+    getter isFile
+    getter name
+    method constructor
+    method queryPermission
+    method requestPermission
+interface FileSystemWriter
+    attribute @@toStringTag
+    method close
+    method constructor
+    method truncate
+    method write
 interface FocusEvent : UIEvent
     attribute @@toStringTag
     getter relatedTarget
@@ -3183,7 +3323,6 @@ interface HTMLImageElement : HTMLElement
     getter height
     getter hspace
     getter importance
-    getter intrinsicSize
     getter isMap
     getter loading
     getter longDesc
@@ -3210,7 +3349,6 @@ interface HTMLImageElement : HTMLElement
     setter height
     setter hspace
     setter importance
-    setter intrinsicSize
     setter isMap
     setter loading
     setter longDesc
@@ -4020,7 +4158,6 @@ interface HTMLVideoElement : HTMLMediaElement
     getter autoPictureInPicture
     getter disablePictureInPicture
     getter height
-    getter intrinsicSize
     getter onenterpictureinpicture
     getter onleavepictureinpicture
     getter playsInline
@@ -4042,7 +4179,6 @@ interface HTMLVideoElement : HTMLMediaElement
     setter autoPictureInPicture
     setter disablePictureInPicture
     setter height
-    setter intrinsicSize
     setter onenterpictureinpicture
     setter onleavepictureinpicture
     setter playsInline
@@ -4264,7 +4400,6 @@ interface Image
     getter height
     getter hspace
     getter importance
-    getter intrinsicSize
     getter isMap
     getter loading
     getter longDesc
@@ -4291,7 +4426,6 @@ interface Image
     setter height
     setter hspace
     setter importance
-    setter intrinsicSize
     setter isMap
     setter loading
     setter longDesc
@@ -4668,6 +4802,7 @@ interface MediaSession
     getter playbackState
     method constructor
     method setActionHandler
+    method setPositionState
     setter metadata
     setter playbackState
 interface MediaSettingsRange
@@ -4925,14 +5060,9 @@ interface NDEFRecord
     getter mediaType
     getter recordType
     method constructor
-    method data
-interface NFC
-    attribute @@toStringTag
-    method cancelPush
-    method cancelWatch
-    method constructor
-    method push
-    method watch
+    method toArrayBuffer
+    method toJSON
+    method toText
 interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error
@@ -4942,8 +5072,7 @@ interface NFCReader : EventTarget
     getter onerror
     getter onreading
     method constructor
-    method start
-    method stop
+    method scan
     setter onerror
     setter onreading
 interface NFCReadingEvent : Event
@@ -4998,7 +5127,6 @@ interface Navigator
     getter mediaDevices
     getter mediaSession
     getter mimeTypes
-    getter nfc
     getter onLine
     getter permissions
     getter platform
@@ -5007,6 +5135,7 @@ interface Navigator
     getter product
     getter productSub
     getter scheduling
+    getter screen
     getter serial
     getter serviceWorker
     getter sms
@@ -5794,7 +5923,7 @@ interface RTCDataChannel : EventTarget
     getter bufferedAmountLowThreshold
     getter id
     getter label
-    getter maxRetransmitTime
+    getter maxPacketLifeTime
     getter maxRetransmits
     getter negotiated
     getter onbufferedamountlow
@@ -6897,7 +7026,6 @@ interface SVGImageElement : SVGGraphicsElement
     getter decoding
     getter height
     getter href
-    getter intrinsicSize
     getter preserveAspectRatio
     getter width
     getter x
@@ -6905,7 +7033,6 @@ interface SVGImageElement : SVGGraphicsElement
     method constructor
     method decode
     setter decoding
-    setter intrinsicSize
 interface SVGLength
     attribute @@toStringTag
     attribute SVG_LENGTHTYPE_CM
@@ -7328,6 +7455,12 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
+interface Scheduler
+    attribute @@toStringTag
+    getter currentTaskQueue
+    method constructor
+    method getTaskQueue
+    method postTask
 interface Scheduling
     attribute @@toStringTag
     method constructor
@@ -7344,6 +7477,10 @@ interface Screen
     getter pixelDepth
     getter width
     method constructor
+interface ScreenManager
+    attribute @@toStringTag
+    method constructor
+    method requestDisplays
 interface ScreenOrientation : EventTarget
     attribute @@toStringTag
     getter angle
@@ -7444,10 +7581,11 @@ interface SerialPort
     attribute @@toStringTag
     getter readable
     getter writable
-    method clearReadError
     method close
     method constructor
+    method getSignals
     method open
+    method setSignals
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -7691,6 +7829,13 @@ interface SyncManager
     method constructor
     method getTags
     method register
+interface Task
+    attribute @@toStringTag
+    getter priority
+    getter result
+    getter status
+    method cancel
+    method constructor
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
     getter containerId
@@ -7699,6 +7844,12 @@ interface TaskAttributionTiming : PerformanceEntry
     getter containerType
     method constructor
     method toJSON
+interface TaskQueue
+    attribute @@toStringTag
+    getter priority
+    method constructor
+    method postTask
+    method take
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot
@@ -7908,6 +8059,9 @@ interface TrustedTypePolicy
 interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
 interface TrustedURL
     attribute @@toStringTag
     method constructor
@@ -8381,6 +8535,8 @@ interface WebGL2ComputeRenderingContext
     attribute DRAW_BUFFER9
     attribute DRAW_FRAMEBUFFER
     attribute DRAW_FRAMEBUFFER_BINDING
+    attribute DRAW_INDIRECT_BUFFER
+    attribute DRAW_INDIRECT_BUFFER_BINDING
     attribute DST_ALPHA
     attribute DST_COLOR
     attribute DYNAMIC_COPY
@@ -10508,6 +10664,13 @@ interface WebSocket : EventTarget
     setter onerror
     setter onmessage
     setter onopen
+interface WebSocketStream
+    attribute @@toStringTag
+    getter closed
+    getter connection
+    getter url
+    method close
+    method constructor
 interface WheelEvent : MouseEvent
     attribute @@toStringTag
     attribute DOM_DELTA_LINE
@@ -10674,17 +10837,33 @@ interface XRFrame
     attribute @@toStringTag
     getter session
     method constructor
+    method getHitTestResults
     method getPose
     method getViewerPose
 interface XRHitResult
     attribute @@toStringTag
     getter hitMatrix
     method constructor
+interface XRHitTestOptions
+    attribute @@toStringTag
+    getter offsetRay
+    getter space
+    method constructor
+interface XRHitTestResult
+    attribute @@toStringTag
+    getter hitTestOptions
+    getter transform
+    method constructor
+interface XRHitTestSource
+    attribute @@toStringTag
+    getter hitTestOptions
+    method constructor
 interface XRInputSource
     attribute @@toStringTag
     getter gamepad
     getter gripSpace
     getter handedness
+    getter profiles
     getter targetRayMode
     getter targetRaySpace
     method constructor
@@ -10699,7 +10878,6 @@ interface XRInputSourceArray
     method values
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
-    getter buttonIndex
     getter frame
     getter inputSource
     method constructor
@@ -10708,9 +10886,6 @@ interface XRInputSourcesChangeEvent : Event
     getter added
     getter removed
     getter session
-    method constructor
-interface XRLayer
-    attribute @@toStringTag
     method constructor
 interface XRPose
     attribute @@toStringTag
@@ -10752,28 +10927,28 @@ interface XRSession : EventTarget
     attribute @@toStringTag
     getter environmentBlendMode
     getter inputSources
-    getter onblur
     getter onend
-    getter onfocus
     getter oninputsourceschange
     getter onselect
     getter onselectend
     getter onselectstart
+    getter onvisibilitychange
     getter renderState
+    getter visibilityState
     method cancelAnimationFrame
     method constructor
     method end
     method requestAnimationFrame
     method requestHitTest
+    method requestHitTestSource
     method requestReferenceSpace
     method updateRenderState
-    setter onblur
     setter onend
-    setter onfocus
     setter oninputsourceschange
     setter onselect
     setter onselectend
     setter onselectstart
+    setter onvisibilitychange
 interface XRSessionEvent : Event
     attribute @@toStringTag
     getter session
@@ -10798,11 +10973,10 @@ interface XRViewport
     getter x
     getter y
     method constructor
-interface XRWebGLLayer : XRLayer
+interface XRWebGLLayer
     static method getNativeFramebufferScaleFactor
     attribute @@toStringTag
     getter antialias
-    getter context
     getter framebuffer
     getter framebufferHeight
     getter framebufferWidth
@@ -11160,6 +11334,7 @@ interface webkitURL
     getter performance
     getter personalbar
     getter portalHost
+    getter scheduler
     getter screen
     getter screenLeft
     getter screenTop
@@ -11185,6 +11360,7 @@ interface webkitURL
     method cancelIdleCallback
     method cancelPostAnimationFrame
     method captureEvents
+    method chooseFileSystemEntries
     method clearInterval
     method clearTimeout
     method close
@@ -11355,6 +11531,7 @@ interface webkitURL
     setter pageYOffset
     setter performance
     setter personalbar
+    setter scheduler
     setter screen
     setter screenLeft
     setter screenTop

@@ -203,7 +203,7 @@ CallClient::CallClient(
       clock_(time_controller->GetClock()),
       log_writer_factory_(std::move(log_writer_factory)),
       network_controller_factory_(log_writer_factory_.get(), config.transport),
-      header_parser_(RtpHeaderParser::Create()),
+      header_parser_(RtpHeaderParser::CreateForTest()),
       task_queue_(time_controller->GetTaskQueueFactory()->CreateTaskQueue(
           "CallClient",
           TaskQueueFactory::Priority::NORMAL)) {
@@ -241,7 +241,10 @@ ColumnPrinter CallClient::StatsPrinter() {
 }
 
 Call::Stats CallClient::GetStats() {
-  return call_->GetStats();
+  // This call needs to be made on the thread that |call_| was constructed on.
+  Call::Stats stats;
+  SendTask([this, &stats] { stats = call_->GetStats(); });
+  return stats;
 }
 
 DataRate CallClient::target_rate() const {
@@ -251,6 +254,11 @@ DataRate CallClient::target_rate() const {
 DataRate CallClient::link_capacity() const {
   return network_controller_factory_.GetUpdate()
       .target_rate->network_estimate.bandwidth;
+}
+
+DataRate CallClient::stable_target_rate() const {
+  return network_controller_factory_.GetUpdate()
+      .target_rate->stable_target_rate;
 }
 
 DataRate CallClient::padding_rate() const {

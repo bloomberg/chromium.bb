@@ -12,26 +12,27 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 ServiceWorkerContentSettingsProxyImpl::ServiceWorkerContentSettingsProxyImpl(
     const GURL& script_url,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    blink::mojom::WorkerContentSettingsProxyRequest request)
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    mojo::PendingReceiver<blink::mojom::WorkerContentSettingsProxy> receiver)
     : origin_(url::Origin::Create(script_url)),
-      context_(context),
-      binding_(this, std::move(request)) {}
+      context_wrapper_(context_wrapper),
+      receiver_(this, std::move(receiver)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 ServiceWorkerContentSettingsProxyImpl::
     ~ServiceWorkerContentSettingsProxyImpl() = default;
 
 void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
     AllowIndexedDBCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // May be shutting down.
-  if (!context_ || !context_->wrapper()->resource_context()) {
+  if (!context_wrapper_->browser_context()) {
     std::move(callback).Run(false);
     return;
   }
@@ -45,15 +46,14 @@ void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
   // so just pass an empty |render_frames|.
   std::vector<GlobalFrameRoutingId> render_frames;
   std::move(callback).Run(GetContentClient()->browser()->AllowWorkerIndexedDB(
-      origin_.GetURL(), context_->wrapper()->resource_context(),
-      render_frames));
+      origin_.GetURL(), context_wrapper_->browser_context(), render_frames));
 }
 
 void ServiceWorkerContentSettingsProxyImpl::AllowCacheStorage(
     AllowCacheStorageCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // May be shutting down.
-  if (!context_ || !context_->wrapper()->resource_context()) {
+  if (!context_wrapper_->browser_context()) {
     std::move(callback).Run(false);
     return;
   }
@@ -68,7 +68,7 @@ void ServiceWorkerContentSettingsProxyImpl::AllowCacheStorage(
   std::vector<GlobalFrameRoutingId> render_frames;
   std::move(callback).Run(
       GetContentClient()->browser()->AllowWorkerCacheStorage(
-          origin_.GetURL(), context_->wrapper()->resource_context(),
+          origin_.GetURL(), context_wrapper_->browser_context(),
           render_frames));
 }
 

@@ -23,7 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +57,7 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
 
   TestingPrefServiceSimple* GetTestingLocalState();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   extensions::QuotaService::ScopedDisablePurgeForTesting
       disable_purge_for_testing_;
 
@@ -93,7 +93,7 @@ SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
   EXPECT_CALL(*user_manager_, RemoveSessionStateObserver(_)).Times(1);
   profile_.reset();
   // Finish any pending tasks before deleting the TestingBrowserProcess.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   TestingBrowserProcess::DeleteInstance();
   base::PowerMonitor::ShutdownForTesting();
 }

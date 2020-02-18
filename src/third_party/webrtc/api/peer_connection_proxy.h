@@ -108,11 +108,7 @@ PROXY_METHOD2(void,
               std::unique_ptr<SessionDescriptionInterface>,
               rtc::scoped_refptr<SetRemoteDescriptionObserverInterface>)
 PROXY_METHOD0(PeerConnectionInterface::RTCConfiguration, GetConfiguration)
-PROXY_METHOD2(bool,
-              SetConfiguration,
-              const PeerConnectionInterface::RTCConfiguration&,
-              RTCError*)
-PROXY_METHOD1(bool,
+PROXY_METHOD1(RTCError,
               SetConfiguration,
               const PeerConnectionInterface::RTCConfiguration&)
 PROXY_METHOD1(bool, AddIceCandidate, const IceCandidateInterface*)

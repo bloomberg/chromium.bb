@@ -35,7 +35,6 @@ namespace i18n {
 namespace phonenumbers {
 
 using std::string;
-using std::vector;
 using icu::UnicodeString;
 
 namespace {
@@ -103,10 +102,10 @@ class PhoneNumberMatcherTest : public testing::Test {
   // Tests each number in the test cases provided is found in its entirety for
   // the specified leniency level.
   void DoTestNumberMatchesForLeniency(
-      const vector<NumberTest>& test_cases,
+      const std::vector<NumberTest>& test_cases,
       PhoneNumberMatcher::Leniency leniency) const {
     scoped_ptr<PhoneNumberMatcher> matcher;
-    for (vector<NumberTest>::const_iterator test = test_cases.begin();
+    for (std::vector<NumberTest>::const_iterator test = test_cases.begin();
          test != test_cases.end(); ++test) {
       matcher.reset(GetMatcherWithLeniency(
           test->raw_string_, test->region_, leniency));
@@ -126,10 +125,10 @@ class PhoneNumberMatcherTest : public testing::Test {
   // Tests no number in the test cases provided is found for the specified
   // leniency level.
   void DoTestNumberNonMatchesForLeniency(
-      const vector<NumberTest>& test_cases,
+      const std::vector<NumberTest>& test_cases,
       PhoneNumberMatcher::Leniency leniency) const {
     scoped_ptr<PhoneNumberMatcher> matcher;
-    for (vector<NumberTest>::const_iterator test = test_cases.begin();
+    for (std::vector<NumberTest>::const_iterator test = test_cases.begin();
          test != test_cases.end(); ++test) {
       matcher.reset(GetMatcherWithLeniency(
           test->raw_string_, test->region_, leniency));
@@ -183,13 +182,13 @@ class PhoneNumberMatcherTest : public testing::Test {
   // -- if is_possible is true, they all find a test number inserted in the
   //   middle when leniency of matching is set to POSSIBLE; else no test number
   //   should be extracted at that leniency level
-  void FindMatchesInContexts(const vector<NumberContext>& contexts,
+  void FindMatchesInContexts(const std::vector<NumberContext>& contexts,
                              bool is_valid, bool is_possible,
                              const string& region, const string& number) {
     if (is_valid) {
       DoTestInContext(number, region, contexts, PhoneNumberMatcher::VALID);
     } else {
-      for (vector<NumberContext>::const_iterator it = contexts.begin();
+      for (std::vector<NumberContext>::const_iterator it = contexts.begin();
            it != contexts.end(); ++it) {
         string text = StrCat(it->leading_text_, number, it->trailing_text_);
         PhoneNumberMatcher matcher(text, region);
@@ -199,7 +198,7 @@ class PhoneNumberMatcherTest : public testing::Test {
     if (is_possible) {
       DoTestInContext(number, region, contexts, PhoneNumberMatcher::POSSIBLE);
     } else {
-      for (vector<NumberContext>::const_iterator it = contexts.begin();
+      for (std::vector<NumberContext>::const_iterator it = contexts.begin();
            it != contexts.end(); ++it) {
         string text = StrCat(it->leading_text_, number, it->trailing_text_);
         PhoneNumberMatcher matcher(phone_util_, text, region,
@@ -211,7 +210,7 @@ class PhoneNumberMatcherTest : public testing::Test {
   }
 
   // Variant of FindMatchesInContexts that uses a default number and region.
-  void FindMatchesInContexts(const vector<NumberContext>& contexts,
+  void FindMatchesInContexts(const std::vector<NumberContext>& contexts,
                              bool is_valid, bool is_possible) {
     const string& region = RegionCode::US();
     const string number("415-666-7777");
@@ -223,7 +222,7 @@ class PhoneNumberMatcherTest : public testing::Test {
   // PhoneNumberMatcher::POSSIBLE.
   void FindPossibleInContext(const string& number,
                              const string& default_country) {
-    vector<NumberContext> context_pairs;
+    std::vector<NumberContext> context_pairs;
     context_pairs.push_back(NumberContext("", ""));  // no context
     context_pairs.push_back(NumberContext("   ", "\t"));  // whitespace only
     context_pairs.push_back(NumberContext("Hello ", ""));  // no context at end
@@ -253,6 +252,10 @@ class PhoneNumberMatcherTest : public testing::Test {
     // With trailing numbers after a comma. The 45 should not be considered an
     // extension.
     context_pairs.push_back(NumberContext("", ", 45 days a year"));
+    // When matching we don't consider semicolon along with legitimate extension
+    // symbol to indicate an extension. The 7246433 should not be considered an
+    // extension.
+    context_pairs.push_back(NumberContext("", ";x 7246433"));
     // With a postfix stripped off as it looks like the start of another number.
     context_pairs.push_back(NumberContext("Call ", "/x12 more"));
 
@@ -263,7 +266,7 @@ class PhoneNumberMatcherTest : public testing::Test {
   // Tests valid numbers in contexts that fail for PhoneNumberMatcher::POSSIBLE
   // but are valid for PhoneNumberMatcher::VALID.
   void FindValidInContext(const string& number, const string& default_country) {
-    vector<NumberContext> context_pairs;
+    std::vector<NumberContext> context_pairs;
     // With other small numbers.
     context_pairs.push_back(NumberContext("It's only 9.99! Call ", " to buy"));
     // With a number Day.Month.Year date.
@@ -280,9 +283,9 @@ class PhoneNumberMatcherTest : public testing::Test {
   }
 
   void DoTestInContext(const string& number, const string& default_country,
-                       const vector<NumberContext>& context_pairs,
+                       const std::vector<NumberContext>& context_pairs,
                        PhoneNumberMatcher::Leniency leniency) {
-    for (vector<NumberContext>::const_iterator it = context_pairs.begin();
+    for (std::vector<NumberContext>::const_iterator it = context_pairs.begin();
          it != context_pairs.end(); ++it) {
       string prefix = it->leading_text_;
       string text = StrCat(prefix, number, it->trailing_text_);
@@ -650,7 +653,7 @@ TEST_F(PhoneNumberMatcherTest, IsLatinLetter) {
 }
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithSurroundingLatinChars) {
-  vector<NumberContext> possible_only_contexts;
+  std::vector<NumberContext> possible_only_contexts;
   possible_only_contexts.push_back(NumberContext("abc", "def"));
   possible_only_contexts.push_back(NumberContext("abc", ""));
   possible_only_contexts.push_back(NumberContext("", "def"));
@@ -665,7 +668,7 @@ TEST_F(PhoneNumberMatcherTest, MatchesWithSurroundingLatinChars) {
 }
 
 TEST_F(PhoneNumberMatcherTest, MoneyNotSeenAsPhoneNumber) {
-  vector<NumberContext> possible_only_contexts;
+  std::vector<NumberContext> possible_only_contexts;
   possible_only_contexts.push_back(NumberContext("$", ""));
   possible_only_contexts.push_back(NumberContext("", "$"));
   possible_only_contexts.push_back(NumberContext("\xC2\xA3" /* "£" */, ""));
@@ -674,14 +677,14 @@ TEST_F(PhoneNumberMatcherTest, MoneyNotSeenAsPhoneNumber) {
 }
 
 TEST_F(PhoneNumberMatcherTest, PercentageNotSeenAsPhoneNumber) {
-  vector<NumberContext> possible_only_contexts;
+  std::vector<NumberContext> possible_only_contexts;
   possible_only_contexts.push_back(NumberContext("", "%"));
   // Numbers followed by % should be dropped.
   FindMatchesInContexts(possible_only_contexts, false, true);
 }
 
 TEST_F(PhoneNumberMatcherTest, PhoneNumberWithLeadingOrTrailingMoneyMatches) {
-  vector<NumberContext> contexts;
+  std::vector<NumberContext> contexts;
   contexts.push_back(NumberContext("$20 ", ""));
   contexts.push_back(NumberContext("", " 100$"));
   // Because of the space after the 20 (or before the 100) these dollar amounts
@@ -691,7 +694,7 @@ TEST_F(PhoneNumberMatcherTest, PhoneNumberWithLeadingOrTrailingMoneyMatches) {
 
 TEST_F(PhoneNumberMatcherTest,
        MatchesWithSurroundingLatinCharsAndLeadingPunctuation) {
-  vector<NumberContext> possible_only_contexts;
+  std::vector<NumberContext> possible_only_contexts;
   // Contexts with trailing characters. Leading characters are okay here since
   // the numbers we will insert start with punctuation, but trailing characters
   // are still not allowed.
@@ -708,7 +711,7 @@ TEST_F(PhoneNumberMatcherTest,
   FindMatchesInContexts(possible_only_contexts, false, true, RegionCode::US(),
                         number_with_brackets);
 
-  vector<NumberContext> valid_contexts;
+  std::vector<NumberContext> valid_contexts;
   valid_contexts.push_back(NumberContext("abc", ""));
   valid_contexts.push_back(NumberContext("\xC3\x89" /* "É" */, ""));
   valid_contexts.push_back(
@@ -724,7 +727,7 @@ TEST_F(PhoneNumberMatcherTest,
 }
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithSurroundingChineseChars) {
-  vector<NumberContext> valid_contexts;
+  std::vector<NumberContext> valid_contexts;
   valid_contexts.push_back(NumberContext(
       /* "我的电话号码是" */
       "\xE6\x88\x91\xE7\x9A\x84\xE7\x94\xB5\xE8\xAF\x9D\xE5\x8F\xB7\xE7\xA0\x81"
@@ -743,7 +746,7 @@ TEST_F(PhoneNumberMatcherTest, MatchesWithSurroundingChineseChars) {
 }
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithSurroundingPunctuation) {
-  vector<NumberContext> valid_contexts;
+  std::vector<NumberContext> valid_contexts;
   // At end of text.
   valid_contexts.push_back(NumberContext("My number-", ""));
   // At start of text.
@@ -854,6 +857,10 @@ static const NumberTest kValidCases[] = {
   NumberTest("03 0 -3 2 23 12 34", RegionCode::DE()),
   NumberTest("(0)3 0 -3 2 23 12 34", RegionCode::DE()),
   NumberTest("0 3 0 -3 2 23 12 34", RegionCode::DE()),
+#ifdef I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS
+  // Fits an alternate pattern, but the leading digits don't match.
+  NumberTest("+52 332 123 23 23", RegionCode::MX()),
+#endif  // I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS
 };
 
 // Strings with number-like things that should only be found up to and including
@@ -864,11 +871,15 @@ static const NumberTest kStrictGroupingCases[] = {
   // Should be found by strict grouping but not exact grouping, as the last two
   // groups are formatted together as a block.
   NumberTest("0800-2491234", RegionCode::DE()),
+  // If the user is using alternate formats, test that numbers formatted in
+  // that way are found.
+#ifdef I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS
   // Doesn't match any formatting in the test file, but almost matches an
   // alternate format (the last two groups have been squashed together here).
   NumberTest("0900-1 123123", RegionCode::DE()),
   NumberTest("(0)900-1 123123", RegionCode::DE()),
   NumberTest("0 900-1 123123", RegionCode::DE()),
+#endif  // I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS
   // NDC also found as part of the country calling code; this shouldn't ruin the
   // grouping expectations.
   NumberTest("+33 3 34 2312", RegionCode::FR()),
@@ -903,49 +914,55 @@ static const NumberTest kExactGroupingCases[] = {
   NumberTest("0494949 ext. 49", RegionCode::DE()),
   NumberTest("01 (33) 3461 2234", RegionCode::MX()),  // Optional NP present
   NumberTest("(33) 3461 2234", RegionCode::MX()),  // Optional NP omitted
-  // Breakdown assistance number with normal formatting.
+  // If the user is using alternate formats, test that numbers formatted in
+  // that way are found.
+#ifdef I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS
+  // Breakdown assistance number using alternate formatting pattern.
   NumberTest("1800-10-10 22", RegionCode::AU()),
   // Doesn't match any formatting in the test file, but matches an alternate
   // format exactly.
   NumberTest("0900-1 123 123", RegionCode::DE()),
   NumberTest("(0)900-1 123 123", RegionCode::DE()),
   NumberTest("0 900-1 123 123", RegionCode::DE()),
+#endif  // I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS
   NumberTest("+33 3 34 23 12", RegionCode::FR()),
 };
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithPossibleLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kPossibleOnlyCases,
                     kPossibleOnlyCases + arraysize(kPossibleOnlyCases));
   test_cases.insert(test_cases.begin(), kValidCases,
                     kValidCases + arraysize(kValidCases));
-  test_cases.insert(test_cases.begin(), kStrictGroupingCases,
-                    kStrictGroupingCases + arraysize(kStrictGroupingCases));
+  test_cases.insert(
+      test_cases.begin(), kStrictGroupingCases,
+      kStrictGroupingCases + arraysize(kStrictGroupingCases));
   test_cases.insert(test_cases.begin(), kExactGroupingCases,
                     kExactGroupingCases + arraysize(kExactGroupingCases));
   DoTestNumberMatchesForLeniency(test_cases, PhoneNumberMatcher::POSSIBLE);
 }
 
 TEST_F(PhoneNumberMatcherTest, NonMatchesWithPossibleLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kImpossibleCases,
                     kImpossibleCases + arraysize(kImpossibleCases));
   DoTestNumberNonMatchesForLeniency(test_cases, PhoneNumberMatcher::POSSIBLE);
 }
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithValidLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kValidCases,
                     kValidCases + arraysize(kValidCases));
-  test_cases.insert(test_cases.begin(), kStrictGroupingCases,
-                    kStrictGroupingCases + arraysize(kStrictGroupingCases));
+  test_cases.insert(
+      test_cases.begin(), kStrictGroupingCases,
+      kStrictGroupingCases + arraysize(kStrictGroupingCases));
   test_cases.insert(test_cases.begin(), kExactGroupingCases,
                     kExactGroupingCases + arraysize(kExactGroupingCases));
   DoTestNumberMatchesForLeniency(test_cases, PhoneNumberMatcher::VALID);
 }
 
 TEST_F(PhoneNumberMatcherTest, NonMatchesWithValidLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kImpossibleCases,
                     kImpossibleCases + arraysize(kImpossibleCases));
   test_cases.insert(test_cases.begin(), kPossibleOnlyCases,
@@ -954,9 +971,10 @@ TEST_F(PhoneNumberMatcherTest, NonMatchesWithValidLeniency) {
 }
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithStrictGroupingLeniency) {
-  vector<NumberTest> test_cases;
-  test_cases.insert(test_cases.begin(), kStrictGroupingCases,
-                    kStrictGroupingCases + arraysize(kStrictGroupingCases));
+  std::vector<NumberTest> test_cases;
+  test_cases.insert(
+      test_cases.begin(), kStrictGroupingCases,
+      kStrictGroupingCases + arraysize(kStrictGroupingCases));
   test_cases.insert(test_cases.begin(), kExactGroupingCases,
                     kExactGroupingCases + arraysize(kExactGroupingCases));
   DoTestNumberMatchesForLeniency(test_cases,
@@ -964,7 +982,7 @@ TEST_F(PhoneNumberMatcherTest, MatchesWithStrictGroupingLeniency) {
 }
 
 TEST_F(PhoneNumberMatcherTest, NonMatchesWithStrictGroupingLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kImpossibleCases,
                     kImpossibleCases + arraysize(kImpossibleCases));
   test_cases.insert(test_cases.begin(), kPossibleOnlyCases,
@@ -976,7 +994,7 @@ TEST_F(PhoneNumberMatcherTest, NonMatchesWithStrictGroupingLeniency) {
 }
 
 TEST_F(PhoneNumberMatcherTest, MatchesWithExactGroupingLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kExactGroupingCases,
                     kExactGroupingCases + arraysize(kExactGroupingCases));
   DoTestNumberMatchesForLeniency(test_cases,
@@ -984,15 +1002,16 @@ TEST_F(PhoneNumberMatcherTest, MatchesWithExactGroupingLeniency) {
 }
 
 TEST_F(PhoneNumberMatcherTest, NonMatchesWithExactGroupingLeniency) {
-  vector<NumberTest> test_cases;
+  std::vector<NumberTest> test_cases;
   test_cases.insert(test_cases.begin(), kImpossibleCases,
                     kImpossibleCases + arraysize(kImpossibleCases));
   test_cases.insert(test_cases.begin(), kPossibleOnlyCases,
                     kPossibleOnlyCases + arraysize(kPossibleOnlyCases));
   test_cases.insert(test_cases.begin(), kValidCases,
                     kValidCases + arraysize(kValidCases));
-  test_cases.insert(test_cases.begin(), kStrictGroupingCases,
-                    kStrictGroupingCases + arraysize(kStrictGroupingCases));
+  test_cases.insert(
+      test_cases.begin(), kStrictGroupingCases,
+      kStrictGroupingCases + arraysize(kStrictGroupingCases));
   DoTestNumberNonMatchesForLeniency(test_cases,
                                     PhoneNumberMatcher::EXACT_GROUPING);
 }
@@ -1095,11 +1114,11 @@ TEST_F(PhoneNumberMatcherTest, MaxMatches) {
   // Matches all 100. Max only applies to failed cases.
   PhoneNumber number;
   phone_util_.Parse("+14156667777", RegionCode::US(), &number);
-  vector<PhoneNumber> expected(100, number);
+  std::vector<PhoneNumber> expected(100, number);
 
   PhoneNumberMatcher matcher(
       phone_util_, numbers, RegionCode::US(), PhoneNumberMatcher::VALID, 10);
-  vector<PhoneNumber> actual;
+  std::vector<PhoneNumber> actual;
   PhoneNumberMatch match;
   while (matcher.HasNext()) {
     matcher.Next(&match);
@@ -1132,11 +1151,11 @@ TEST_F(PhoneNumberMatcherTest, MaxMatchesMixed) {
 
   PhoneNumber number;
   phone_util_.Parse("+14156667777", RegionCode::ZZ(), &number);
-  vector<PhoneNumber> expected(10, number);
+  std::vector<PhoneNumber> expected(10, number);
 
   PhoneNumberMatcher matcher(
       phone_util_, numbers, RegionCode::US(), PhoneNumberMatcher::VALID, 10);
-  vector<PhoneNumber> actual;
+  std::vector<PhoneNumber> actual;
   PhoneNumberMatch match;
   while (matcher.HasNext()) {
     matcher.Next(&match);

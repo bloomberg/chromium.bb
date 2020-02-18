@@ -6,11 +6,13 @@
 #define NGLayoutResult_h
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
@@ -45,8 +47,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // still replaced with |nullopt|.
   NGLayoutResult(const NGLayoutResult& other,
                  const NGConstraintSpace& new_space,
+                 const NGMarginStrut& new_end_margin_strut,
                  LayoutUnit bfc_line_offset,
-                 base::Optional<LayoutUnit> bfc_block_offset);
+                 base::Optional<LayoutUnit> bfc_block_offset,
+                 LayoutUnit block_offset_delta);
   ~NGLayoutResult();
 
   const NGPhysicalContainerFragment& PhysicalFragment() const {
@@ -64,6 +68,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const NGUnpositionedListMarker UnpositionedListMarker() const {
     return HasRareData() ? rare_data_->unpositioned_list_marker
                          : NGUnpositionedListMarker();
+  }
+
+  // Get the column spanner (if any) that interrupted column layout.
+  NGBlockNode ColumnSpanner() const {
+    return HasRareData() ? rare_data_->column_spanner : NGBlockNode(nullptr);
   }
 
   const NGExclusionSpace& ExclusionSpace() const {
@@ -122,6 +131,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                          : LayoutUnit::Max();
   }
 
+  SerializedScriptValue* CustomLayoutData() const {
+    return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
+  }
+
   // The break-before value on the first child needs to be propagated to the
   // container, in search of a valid class A break point.
   EBreakBetween InitialBreakBefore() const {
@@ -170,6 +183,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // block-size on them).
   bool HasDescendantThatDependsOnPercentageBlockSize() const {
     return bitfields_.has_descendant_that_depends_on_percentage_block_size;
+  }
+
+  // Returns true if this subtree modified the incoming margin-strut (i.e.
+  // appended a non-zero margin).
+  bool SubtreeModifiedMarginStrut() const {
+    return bitfields_.subtree_modified_margin_strut;
   }
 
   // Returns true if the space stored with this layout result, is valid.
@@ -261,7 +280,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       const NGLayoutResult& other,
       const NGExclusionSpace& new_input_exclusion_space,
       LayoutUnit bfc_line_offset,
-      base::Optional<LayoutUnit> bfc_block_offset);
+      LayoutUnit block_offset_delta);
 
   struct RareData {
     USING_FAST_MALLOC(RareData);
@@ -278,8 +297,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     LogicalOffset oof_positioned_offset;
     NGMarginStrut end_margin_strut;
     NGUnpositionedListMarker unpositioned_list_marker;
+    NGBlockNode column_spanner = nullptr;
     LayoutUnit minimal_space_shortage = LayoutUnit::Max();
     NGExclusionSpace exclusion_space;
+    scoped_refptr<SerializedScriptValue> custom_layout_data;
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }
@@ -316,6 +337,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
           is_initial_block_size_indefinite(false),
           has_descendant_that_depends_on_percentage_block_size(
               has_descendant_that_depends_on_percentage_block_size),
+          subtree_modified_margin_strut(false),
           initial_break_before(static_cast<unsigned>(EBreakBetween::kAuto)),
           final_break_after(static_cast<unsigned>(EBreakBetween::kAuto)),
           status(static_cast<unsigned>(kSuccess)) {}
@@ -334,6 +356,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
     unsigned is_initial_block_size_indefinite : 1;
     unsigned has_descendant_that_depends_on_percentage_block_size : 1;
+
+    unsigned subtree_modified_margin_strut : 1;
 
     unsigned initial_break_before : 4;  // EBreakBetween
     unsigned final_break_after : 4;     // EBreakBetween

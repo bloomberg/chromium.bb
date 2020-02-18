@@ -60,19 +60,25 @@ void PlatformNotificationServiceProxy::VerifyServiceWorkerScope(
     DisplayResultCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  base::OnceClosure task;
+
   if (status == blink::ServiceWorkerStatusCode::kOk &&
       registration->scope().GetOrigin() == data.origin) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&PlatformNotificationServiceProxy::DoDisplayNotification,
-                       AsWeakPtr(), data, registration->scope(),
-                       std::move(callback)));
+    task = base::BindOnce(
+        &PlatformNotificationServiceProxy::DoDisplayNotification, AsWeakPtr(),
+        data, registration->scope(), std::move(callback));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(std::move(callback), /* success= */ false,
-                       /* notification_id= */ ""));
+    task = base::BindOnce(std::move(callback), /* success= */ false,
+                          /* notification_id= */ "");
+  }
+
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    std::move(task).Run();
+  } else {
+    base::PostTask(FROM_HERE,
+                   {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                   std::move(task));
   }
 }
 
@@ -80,15 +86,17 @@ void PlatformNotificationServiceProxy::DisplayNotification(
     const NotificationDatabaseData& data,
     DisplayResultCallback callback) {
   if (!service_worker_context_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&PlatformNotificationServiceProxy::DoDisplayNotification,
                        AsWeakPtr(), data, GURL(), std::move(callback)));
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO, base::TaskPriority::USER_VISIBLE},
+  base::PostTask(
+      FROM_HERE,
+      {ServiceWorkerContext::GetCoreThreadId(),
+       base::TaskPriority::USER_VISIBLE},
       base::BindOnce(
           &ServiceWorkerContextWrapper::FindReadyRegistrationForId,
           service_worker_context_, data.service_worker_registration_id,
@@ -102,7 +110,7 @@ void PlatformNotificationServiceProxy::CloseNotification(
     const std::string& notification_id) {
   if (!notification_service_)
     return;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&PlatformNotificationServiceProxy::DoCloseNotification,
                      AsWeakPtr(), notification_id));
@@ -117,7 +125,7 @@ void PlatformNotificationServiceProxy::DoCloseNotification(
 void PlatformNotificationServiceProxy::ScheduleTrigger(base::Time timestamp) {
   if (!notification_service_)
     return;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&PlatformNotificationServiceProxy::DoScheduleTrigger,
                      AsWeakPtr(), timestamp));
@@ -133,7 +141,7 @@ void PlatformNotificationServiceProxy::ScheduleNotification(
   DCHECK(data.notification_data.show_trigger_timestamp.has_value());
   if (!notification_service_)
     return;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&PlatformNotificationServiceProxy::DoScheduleNotification,
                      AsWeakPtr(), data));
@@ -172,10 +180,10 @@ bool PlatformNotificationServiceProxy::ShouldLogClose(const GURL& origin) {
 
 void PlatformNotificationServiceProxy::LogClose(
     const NotificationDatabaseData& data) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&PlatformNotificationServiceProxy::DoLogClose, AsWeakPtr(),
-                     data));
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+                 base::BindOnce(&PlatformNotificationServiceProxy::DoLogClose,
+                                AsWeakPtr(), data));
 }
 
 void PlatformNotificationServiceProxy::DoLogClose(

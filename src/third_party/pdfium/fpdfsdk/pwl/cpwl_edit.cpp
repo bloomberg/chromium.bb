@@ -27,8 +27,9 @@
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "public/fpdf_fwlevent.h"
 
-CPWL_Edit::CPWL_Edit(const CreateParams& cp,
-                     std::unique_ptr<PrivateData> pAttachedData)
+CPWL_Edit::CPWL_Edit(
+    const CreateParams& cp,
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
     : CPWL_EditCtrl(cp, std::move(pAttachedData)) {}
 
 CPWL_Edit::~CPWL_Edit() {
@@ -172,7 +173,7 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     switch (GetBorderStyle()) {
       case BorderStyle::SOLID: {
         CFX_GraphStateData gsd;
-        gsd.m_LineWidth = (float)GetBorderWidth();
+        gsd.m_LineWidth = GetBorderWidth();
 
         CFX_PathData path;
 
@@ -237,10 +238,9 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     pRange = &wrRange;
   }
 
-  CFX_SystemHandler* pSysHandler = GetSystemHandler();
   CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device, m_pEdit.get(),
                           GetTextColor().ToFXColor(GetTransparency()), rcClip,
-                          CFX_PointF(), pRange, pSysHandler,
+                          CFX_PointF(), pRange, GetSystemHandler(),
                           m_pFormFiller.Get());
 }
 
@@ -278,10 +278,6 @@ bool CPWL_Edit::OnRButtonUp(const CFX_PointF& point, uint32_t nFlag) {
 
   if (!HasFlag(PES_TEXTOVERFLOW) && !ClientHitTest(point))
     return true;
-
-  CFX_SystemHandler* pSH = GetSystemHandler();
-  if (!pSH)
-    return false;
 
   SetFocus();
 
@@ -392,7 +388,7 @@ void CPWL_Edit::SetCharArray(int32_t nCharArray) {
   if (!pFontMap)
     return;
 
-  float fFontSize = GetCharArrayAutoFontSize(pFontMap->GetPDFFont(0),
+  float fFontSize = GetCharArrayAutoFontSize(pFontMap->GetPDFFont(0).Get(),
                                              GetClientRect(), nCharArray);
   if (fFontSize <= 0.0f)
     return;

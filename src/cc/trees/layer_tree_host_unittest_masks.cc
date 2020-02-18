@@ -40,7 +40,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -57,9 +57,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     LayerTreeTest::SetupTree();
     scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
     outer_viewport_scroll_layer->SetBounds(layer_size);
-    CreateVirtualViewportLayers(root.get(), outer_viewport_scroll_layer,
-                                gfx::Size(50, 50), gfx::Size(50, 50),
-                                layer_tree_host());
+    SetupViewport(root.get(), outer_viewport_scroll_layer, gfx::Size(50, 50));
     layer_tree_host()->outer_viewport_container_layer()->SetMasksToBounds(true);
     outer_viewport_scroll_layer->AddChild(content_layer);
 
@@ -95,8 +93,6 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;
@@ -138,7 +134,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -202,8 +198,6 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     return draw_result;
   }
 
-  void AfterTest() override {}
-
   int mask_layer_id_;
   FakeContentLayerClient client_;
 };
@@ -245,7 +239,7 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -323,8 +317,6 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     return draw_result;
   }
 
-  void AfterTest() override {}
-
   int mask_layer_id_;
   FakeContentLayerClient client_;
 };
@@ -364,7 +356,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -431,13 +423,13 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         gfx::Size double_root_size(200, 200);
-        layer_tree_host()->SetViewportSizeAndScale(
-            double_root_size, 2.f, viz::LocalSurfaceIdAllocation());
+        GenerateNewLocalSurfaceId();
+        layer_tree_host()->SetViewportRectAndScale(
+            gfx::Rect(double_root_size), 2.f,
+            GetCurrentLocalSurfaceIdAllocation());
         break;
     }
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
 };
@@ -468,7 +460,7 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -513,8 +505,6 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;

@@ -28,8 +28,8 @@ namespace storage {
 class FileSystemContext;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
 }
 
 namespace network {
@@ -79,10 +79,6 @@ class ZoomLevelDelegate;
 class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
-  // These can't be called when the network service is enabled, since net/ runs
-  // in a separate process.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
-  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
 
   // Returns a raw mojom::NetworkContext pointer. When network service crashes
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
@@ -117,7 +113,8 @@ class CONTENT_EXPORT StoragePartition {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest request) = 0;
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
+          receiver) = 0;
 
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
@@ -140,6 +137,13 @@ class CONTENT_EXPORT StoragePartition {
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
 #endif  // !defined(OS_ANDROID)
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
+
+  virtual leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() = 0;
+  // Must be set before the first call to GetProtoDatabaseProvider(), or a new
+  // one will be created by get.
+  virtual void SetProtoDatabaseProvider(
+      std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
+          optional_proto_db_provider) = 0;
 
   enum : uint32_t {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,
@@ -226,16 +230,6 @@ class CONTENT_EXPORT StoragePartition {
       const base::Time end,
       base::OnceClosure callback) = 0;
 
-  // Clears the HTTP and media caches associated with this StoragePartition's
-  // request contexts. If |begin| and |end| are not null, only entries with
-  // timestamps inbetween are deleted. If |url_matcher| is not null, only
-  // entries with matching URLs are deleted.
-  virtual void ClearHttpAndMediaCaches(
-      const base::Time begin,
-      const base::Time end,
-      const base::Callback<bool(const GURL&)>& url_matcher,
-      base::OnceClosure callback) = 0;
-
   // Clears code caches associated with this StoragePartition.
   // If |begin| and |end| are not null, only entries with
   // timestamps inbetween are deleted. If |url_matcher| is not null, only
@@ -263,6 +257,9 @@ class CONTENT_EXPORT StoragePartition {
 
   // Wait until all deletions tasks are finished. For test use only.
   virtual void WaitForDeletionTasksForTesting() = 0;
+
+  // Wait until code cache's shutdown is complete. For test use only.
+  virtual void WaitForCodeCacheShutdownForTesting() = 0;
 
  protected:
   virtual ~StoragePartition() {}

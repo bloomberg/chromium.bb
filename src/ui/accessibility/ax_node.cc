@@ -17,6 +17,8 @@
 
 namespace ui {
 
+constexpr AXNode::AXID AXNode::kInvalidAXID;
+
 AXNode::AXNode(AXNode::OwnerTree* tree,
                AXNode* parent,
                int32_t id,
@@ -56,7 +58,7 @@ AXNode* AXNode::GetUnignoredChildAtIndex(size_t index) const {
 AXNode* AXNode::GetUnignoredParent() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* result = parent();
-  while (result && result->data().HasState(ax::mojom::State::kIgnored))
+  while (result && result->IsIgnored())
     result = result->parent();
   return result;
 }
@@ -107,7 +109,7 @@ AXNode* AXNode::GetNextUnignoredSibling() const {
   while (parent_node) {
     if (index < parent_node->children().size()) {
       AXNode* child = parent_node->children()[index];
-      if (!child->data().HasState(ax::mojom::State::kIgnored))
+      if (!child->IsIgnored())
         return child;  // valid position (unignored child)
 
       // If the node is ignored, drill down to the ignored node's first child.
@@ -116,7 +118,7 @@ AXNode* AXNode::GetNextUnignoredSibling() const {
     } else {
       // If the parent is not ignored and we are past all of its children, there
       // is no next sibling.
-      if (!parent_node->data().HasState(ax::mojom::State::kIgnored))
+      if (!parent_node->IsIgnored())
         return nullptr;
 
       // If the parent is ignored and we are past all of its children, continue
@@ -136,7 +138,7 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
   while (parent_node) {
     if (!before_first_child) {
       AXNode* child = parent_node->children()[index];
-      if (!child->data().HasState(ax::mojom::State::kIgnored))
+      if (!child->IsIgnored())
         return child;  // valid position (unignored child)
 
       // If the node is ignored, drill down to the ignored node's last child.
@@ -146,7 +148,7 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
     } else {
       // If the parent is not ignored and we are past all of its children, there
       // is no next sibling.
-      if (!parent_node->data().HasState(ax::mojom::State::kIgnored))
+      if (!parent_node->IsIgnored())
         return nullptr;
 
       // If the parent is ignored and we are past all of its children, continue
@@ -204,8 +206,9 @@ bool AXNode::IsText() const {
 
 bool AXNode::IsLineBreak() const {
   return data().role == ax::mojom::Role::kLineBreak ||
-         (IsText() && parent() &&
-          parent()->data().role == ax::mojom::Role::kLineBreak);
+         (data().role == ax::mojom::Role::kInlineTextBox &&
+          data().GetBoolAttribute(
+              ax::mojom::BoolAttribute::kIsLineBreakingObject));
 }
 
 void AXNode::SetData(const AXNodeData& src) {
@@ -218,7 +221,8 @@ void AXNode::SetLocation(int32_t offset_container_id,
   data_.relative_bounds.offset_container_id = offset_container_id;
   data_.relative_bounds.bounds = location;
   if (transform)
-    data_.relative_bounds.transform.reset(new gfx::Transform(*transform));
+    data_.relative_bounds.transform =
+        std::make_unique<gfx::Transform>(*transform);
   else
     data_.relative_bounds.transform.reset(nullptr);
 }
@@ -228,7 +232,7 @@ void AXNode::SetIndexInParent(size_t index_in_parent) {
 }
 
 void AXNode::UpdateUnignoredCachedValues() {
-  if (!data().HasState(ax::mojom::State::kIgnored))
+  if (!IsIgnored())
     UpdateUnignoredCachedValuesRecursive(0);
 }
 
@@ -784,7 +788,8 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
     case ax::mojom::Role::kListBox:
       return item_role == ax::mojom::Role::kListBoxOption;
     case ax::mojom::Role::kMenuListPopup:
-      return item_role == ax::mojom::Role::kMenuListOption;
+      return item_role == ax::mojom::Role::kMenuListOption ||
+             item_role == ax::mojom::Role::kMenuItem;
     case ax::mojom::Role::kRadioGroup:
       return item_role == ax::mojom::Role::kRadioButton;
     case ax::mojom::Role::kDescriptionList:
@@ -803,7 +808,7 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
 int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
   int count = 0;
   for (AXNode* child : children_) {
-    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+    if (child->IsIgnored()) {
       child->unignored_index_in_parent_ = 0;
       count += child->UpdateUnignoredCachedValuesRecursive(startIndex + count);
     } else {
@@ -818,12 +823,11 @@ int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
 // Is not required for set's role to match node's role.
 AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
-
-  // Continue walking up while parent is invalid, ignored, or is a generic
-  // container.
-  while (result && (result->data().HasState(ax::mojom::State::kIgnored) ||
+  // Continue walking up while parent is invalid, ignored, a generic container,
+  // or unknown.
+  while (result && (result->IsIgnored() ||
                     result->data().role == ax::mojom::Role::kGenericContainer ||
-                    result->data().role == ax::mojom::Role::kIgnored)) {
+                    result->data().role == ax::mojom::Role::kUnknown)) {
     result = result->parent();
   }
   return result;
@@ -836,7 +840,7 @@ AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
 
   for (int i = static_cast<int>(children().size()) - 1; i >= 0; --i) {
     AXNode* child = children_[i];
-    if (!child->data().HasState(ax::mojom::State::kIgnored))
+    if (!child->IsIgnored())
       return child;
 
     AXNode* descendant = child->ComputeLastUnignoredChildRecursive();
@@ -850,7 +854,7 @@ AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   for (size_t i = 0; i < children().size(); i++) {
     AXNode* child = children_[i];
-    if (!child->data().HasState(ax::mojom::State::kIgnored))
+    if (!child->IsIgnored())
       return child;
 
     AXNode* descendant = child->ComputeFirstUnignoredChildRecursive();

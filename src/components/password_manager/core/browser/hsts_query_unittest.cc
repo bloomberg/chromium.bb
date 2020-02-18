@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "net/url_request/url_request_test_util.h"
@@ -71,7 +71,7 @@ class HSTSQueryTest : public testing::Test {
 
  private:
   // Used by request_context_.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   network::mojom::NetworkContextPtr network_context_pipe_;
   std::unique_ptr<network::NetworkContext> network_context_;

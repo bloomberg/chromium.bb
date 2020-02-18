@@ -5,7 +5,6 @@
 package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -68,7 +67,8 @@ import java.util.regex.Pattern;
  * application
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@CommandLineFlags.Add(ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1")
+@CommandLineFlags.
+Add({"allow-pre-commit-input", ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =
@@ -2870,8 +2870,8 @@ public class AwSettingsTest {
     @Feature({"AndroidWebView", "Preferences"})
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
-        Assert.assertFalse(VideoTestUtil.runVideoTest(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule, true, scaleTimeout(5000)));
+        Assert.assertFalse(VideoTestUtil.runVideoTest(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule, true, 5000L));
     }
 
     @Test

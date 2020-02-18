@@ -15,6 +15,7 @@ namespace blink {
 
 class LayoutBox;
 class NGBaselineRequest;
+class NGBlockBreakToken;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGBoxFragmentBuilder;
@@ -113,9 +114,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
-  // Return true if the block size of this table cell should be considered
-  // restricted (e.g. height of the cell or its table is non-auto).
-  bool IsRestrictedBlockSizeTableCell() const;
+  // Returns true if the custom layout node is in its loaded state (all script
+  // for the web-developer defined layout is ready).
+  bool IsCustomLayoutLoaded() const;
 
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<const NGLayoutResult> LayoutAtomicInline(
@@ -159,18 +160,20 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
-  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&,
-                                   const NGLayoutResult&);
+  void CopyFragmentDataToLayoutBox(
+      const NGConstraintSpace&,
+      const NGLayoutResult&,
+      const NGBlockBreakToken* previous_break_token);
+  void CopyFragmentDataToLayoutBoxForInlineChildren(
+      const NGPhysicalBoxFragment& container);
   void CopyFragmentDataToLayoutBoxForInlineChildren(
       const NGPhysicalContainerFragment& container,
       LayoutUnit initial_container_width,
       bool initial_container_is_flipped,
       PhysicalOffset offset = {});
-  void PlaceChildrenInLayoutBox(const NGConstraintSpace&,
-                                const NGPhysicalBoxFragment&,
+  void PlaceChildrenInLayoutBox(const NGPhysicalBoxFragment&,
                                 const PhysicalOffset& offset_from_start);
-  void PlaceChildrenInFlowThread(const NGConstraintSpace&,
-                                 const NGPhysicalBoxFragment&);
+  void PlaceChildrenInFlowThread(const NGPhysicalBoxFragment&);
   void CopyChildFragmentPosition(
       const NGPhysicalFragment& fragment,
       const PhysicalOffset fragment_offset,

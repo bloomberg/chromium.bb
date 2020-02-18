@@ -9,8 +9,6 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -41,8 +39,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
       : blob_registry_(blob_registry),
         uuid_(uuid),
         builder_(std::make_unique<BlobDataBuilder>(uuid)),
-        bad_message_callback_(std::move(bad_message_callback)),
-        weak_ptr_factory_(this) {
+        bad_message_callback_(std::move(bad_message_callback)) {
     builder_->set_content_type(content_type);
     builder_->set_content_disposition(content_disposition);
     for (auto& element : elements)
@@ -61,8 +58,8 @@ class BlobRegistryImpl::BlobUnderConstruction {
 
  private:
   // Holds onto a blink::mojom::DataElement struct and optionally a bound
-  // blink::mojom::BytesProviderPtr or blink::mojom::BlobPtr, if the element
-  // encapsulates a large byte array or a blob.
+  // mojo::Remote<blink::mojom::BytesProvider> or blink::mojom::BlobPtr, if the
+  // element encapsulates a large byte array or a blob.
   struct ElementEntry {
     explicit ElementEntry(blink::mojom::DataElementPtr e)
         : element(std::move(e)) {
@@ -78,7 +75,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
     ElementEntry& operator=(ElementEntry&& other) = default;
 
     blink::mojom::DataElementPtr element;
-    blink::mojom::BytesProviderPtr bytes_provider;
+    mojo::Remote<blink::mojom::BytesProvider> bytes_provider;
     blink::mojom::BlobPtr blob;
   };
 
@@ -206,7 +203,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // Number of dependent blobs that have started constructing.
   size_t ready_dependent_blob_count_ = 0;
 
-  base::WeakPtrFactory<BlobUnderConstruction> weak_ptr_factory_;
+  base::WeakPtrFactory<BlobUnderConstruction> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BlobUnderConstruction);
 };
 
@@ -231,7 +228,7 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
           base::BindOnce(&BlobUnderConstruction::ReceivedBlobUUID,
                          weak_ptr_factory_.GetWeakPtr(), blob_count++));
     } else if (element->is_bytes()) {
-      entry.bytes_provider.set_connection_error_handler(base::BindOnce(
+      entry.bytes_provider.set_disconnect_handler(base::BindOnce(
           &BlobUnderConstruction::MarkAsBroken, weak_ptr_factory_.GetWeakPtr(),
           BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT, ""));
     }
@@ -476,8 +473,7 @@ BlobRegistryImpl::BlobRegistryImpl(
     base::WeakPtr<BlobStorageContext> context,
     scoped_refptr<FileSystemContext> file_system_context)
     : context_(std::move(context)),
-      file_system_context_(std::move(file_system_context)),
-      weak_ptr_factory_(this) {}
+      file_system_context_(std::move(file_system_context)) {}
 
 BlobRegistryImpl::~BlobRegistryImpl() {
   // BlobBuilderFromStream needs to be aborted before it can be destroyed, but
@@ -488,14 +484,15 @@ BlobRegistryImpl::~BlobRegistryImpl() {
     builder->Abort();
 }
 
-void BlobRegistryImpl::Bind(blink::mojom::BlobRegistryRequest request,
-                            std::unique_ptr<Delegate> delegate) {
+void BlobRegistryImpl::Bind(
+    mojo::PendingReceiver<blink::mojom::BlobRegistry> receiver,
+    std::unique_ptr<Delegate> delegate) {
   DCHECK(delegate);
-  bindings_.AddBinding(this, std::move(request), std::move(delegate));
+  receivers_.Add(this, std::move(receiver), std::move(delegate));
 }
 
 void BlobRegistryImpl::Register(
-    blink::mojom::BlobRequest blob,
+    mojo::PendingReceiver<blink::mojom::Blob> blob,
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition,
@@ -508,11 +505,12 @@ void BlobRegistryImpl::Register(
 
   if (uuid.empty() || context_->registry().HasEntry(uuid) ||
       base::Contains(blobs_under_construction_, uuid)) {
-    bindings_.ReportBadMessage("Invalid UUID passed to BlobRegistry::Register");
+    receivers_.ReportBadMessage(
+        "Invalid UUID passed to BlobRegistry::Register");
     return;
   }
 
-  Delegate* delegate = bindings_.dispatch_context().get();
+  Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
   for (const auto& element : elements) {
     if (element->is_file()) {
@@ -542,7 +540,7 @@ void BlobRegistryImpl::Register(
 
   blobs_under_construction_[uuid] = std::make_unique<BlobUnderConstruction>(
       this, uuid, content_type, content_disposition, std::move(elements),
-      bindings_.GetBadMessageCallback());
+      receivers_.GetBadMessageCallback());
 
   std::unique_ptr<BlobDataHandle> handle = context_->AddFutureBlob(
       uuid, content_type, content_disposition,
@@ -560,7 +558,7 @@ void BlobRegistryImpl::RegisterFromStream(
     const std::string& content_disposition,
     uint64_t expected_length,
     mojo::ScopedDataPipeConsumerHandle data,
-    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+    mojo::PendingAssociatedRemote<blink::mojom::ProgressClient> progress_client,
     RegisterFromStreamCallback callback) {
   if (!context_) {
     std::move(callback).Run(nullptr);
@@ -578,16 +576,17 @@ void BlobRegistryImpl::RegisterFromStream(
                           std::move(progress_client));
 }
 
-void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
-                                       const std::string& uuid,
-                                       GetBlobFromUUIDCallback callback) {
+void BlobRegistryImpl::GetBlobFromUUID(
+    mojo::PendingReceiver<blink::mojom::Blob> blob,
+    const std::string& uuid,
+    GetBlobFromUUIDCallback callback) {
   if (!context_) {
     std::move(callback).Run();
     return;
   }
 
   if (uuid.empty()) {
-    bindings_.ReportBadMessage(
+    receivers_.ReportBadMessage(
         "Invalid UUID passed to BlobRegistry::GetBlobFromUUID");
     return;
   }
@@ -602,17 +601,17 @@ void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
 
 void BlobRegistryImpl::URLStoreForOrigin(
     const url::Origin& origin,
-    blink::mojom::BlobURLStoreAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::BlobURLStore> receiver) {
   // TODO(mek): Pass origin on to BlobURLStoreImpl so it can use it to generate
   // Blob URLs, and verify at this point that the renderer can create URLs for
   // that origin.
-  Delegate* delegate = bindings_.dispatch_context().get();
+  Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
-  auto binding = mojo::MakeStrongAssociatedBinding(
+  auto self_owned_associated_receiver = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<BlobURLStoreImpl>(context_, delegate),
-      std::move(request));
+      std::move(receiver));
   if (g_url_store_creation_hook)
-    g_url_store_creation_hook->Run(binding);
+    g_url_store_creation_hook->Run(self_owned_associated_receiver);
 }
 
 // static

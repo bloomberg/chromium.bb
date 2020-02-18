@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,11 +64,7 @@ int TabModelSyncedWindowDelegate::GetActiveIndex() const {
   return web_state_list_->active_index();
 }
 
-bool TabModelSyncedWindowDelegate::IsApp() const {
-  return false;
-}
-
-bool TabModelSyncedWindowDelegate::IsTypeTabbed() const {
+bool TabModelSyncedWindowDelegate::IsTypeNormal() const {
   return true;
 }
 

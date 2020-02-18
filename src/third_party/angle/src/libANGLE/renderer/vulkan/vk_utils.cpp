@@ -150,9 +150,6 @@ angle::Result AllocateBufferOrImageMemory(vk::Context *context,
     return angle::Result::Continue;
 }
 
-const char *g_VkLoaderLayersPathEnv = "VK_LAYER_PATH";
-const char *g_VkICDPathEnv          = "VK_ICD_FILENAMES";
-
 const char *VulkanResultString(VkResult result)
 {
     switch (result)
@@ -249,6 +246,9 @@ bool GetAvailableValidationLayers(const std::vector<VkLayerProperties> &layerPro
 
 namespace vk
 {
+const char *gLoaderLayersPathEnv   = "VK_LAYER_PATH";
+const char *gLoaderICDFilenamesEnv = "VK_ICD_FILENAMES";
+
 VkImageAspectFlags GetDepthStencilAspectFlags(const angle::Format &format)
 {
     return (format.depthBits > 0 ? VK_IMAGE_ASPECT_DEPTH_BIT : 0) |
@@ -262,12 +262,6 @@ VkImageAspectFlags GetFormatAspectFlags(const angle::Format &format)
     // is less trivial than depth/stencil, e.g. as block formats don't indicate any bits for RGBA
     // channels.
     return dsAspect != 0 ? dsAspect : VK_IMAGE_ASPECT_COLOR_BIT;
-}
-
-VkImageAspectFlags GetDepthStencilAspectFlagsForCopy(bool copyDepth, bool copyStencil)
-{
-    return copyDepth ? VK_IMAGE_ASPECT_DEPTH_BIT
-                     : 0 | copyStencil ? VK_IMAGE_ASPECT_STENCIL_BIT : 0;
 }
 
 // Context implementation.
@@ -532,6 +526,57 @@ bool GarbageObject::destroyIfComplete(VkDevice device, Serial completedSerial)
     return false;
 }
 
+bool SamplerNameContainsNonZeroArrayElement(const std::string &name)
+{
+    constexpr char kZERO_ELEMENT[] = "[0]";
+
+    size_t start = 0;
+    while (true)
+    {
+        start = name.find(kZERO_ELEMENT[0], start);
+        if (start == std::string::npos)
+        {
+            break;
+        }
+        if (name.compare(start, strlen(kZERO_ELEMENT), kZERO_ELEMENT) != 0)
+        {
+            return true;
+        }
+        start++;
+    }
+    return false;
+}
+
+std::string GetMappedSamplerName(const std::string &originalName)
+{
+    std::string samplerName = originalName;
+
+    // Samplers in structs are extracted.
+    std::replace(samplerName.begin(), samplerName.end(), '.', '_');
+
+    // Remove array elements
+    auto out = samplerName.begin();
+    for (auto in = samplerName.begin(); in != samplerName.end(); in++)
+    {
+        if (*in == '[')
+        {
+            while (*in != ']')
+            {
+                in++;
+                ASSERT(in != samplerName.end());
+            }
+        }
+        else
+        {
+            *out++ = *in;
+        }
+    }
+
+    samplerName.erase(out, samplerName.end());
+
+    return samplerName;
+}
+
 }  // namespace vk
 
 // VK_EXT_debug_utils
@@ -695,7 +740,7 @@ VkPrimitiveTopology GetPrimitiveTopology(gl::PrimitiveMode mode)
     }
 }
 
-VkCullModeFlags GetCullMode(const gl::RasterizerState &rasterState)
+VkCullModeFlagBits GetCullMode(const gl::RasterizerState &rasterState)
 {
     if (!rasterState.cullFace)
     {
@@ -894,6 +939,34 @@ void GetViewport(const gl::Rectangle &viewport,
         viewportOut->height = -viewportOut->height;
     }
 }
+
+void GetExtentsAndLayerCount(gl::TextureType textureType,
+                             const gl::Extents &extents,
+                             VkExtent3D *extentsOut,
+                             uint32_t *layerCountOut)
+{
+    extentsOut->width  = extents.width;
+    extentsOut->height = extents.height;
+
+    switch (textureType)
+    {
+        case gl::TextureType::CubeMap:
+            extentsOut->depth = 1;
+            *layerCountOut    = gl::kCubeFaceCount;
+            break;
+
+        case gl::TextureType::_2DArray:
+        case gl::TextureType::_2DMultisampleArray:
+            extentsOut->depth = 1;
+            *layerCountOut    = extents.depth;
+            break;
+
+        default:
+            extentsOut->depth = extents.depth;
+            *layerCountOut    = 1;
+            break;
+    }
+}
 }  // namespace gl_vk
 
 namespace vk_gl
@@ -902,27 +975,27 @@ void AddSampleCounts(VkSampleCountFlags sampleCounts, gl::SupportedSampleSet *se
 {
     // The possible bits are VK_SAMPLE_COUNT_n_BIT = n, with n = 1 << b.  At the time of this
     // writing, b is in [0, 6], however, we test all 32 bits in case the enum is extended.
-    for (unsigned long bit : angle::BitSet32<32>(sampleCounts))
+    for (size_t bit : angle::BitSet32<32>(sampleCounts))
     {
-        setOut->insert(1 << bit);
+        setOut->insert(static_cast<GLuint>(1 << bit));
     }
 }
 
 GLuint GetMaxSampleCount(VkSampleCountFlags sampleCounts)
 {
     GLuint maxCount = 0;
-    for (unsigned long bit : angle::BitSet32<32>(sampleCounts))
+    for (size_t bit : angle::BitSet32<32>(sampleCounts))
     {
-        maxCount = 1 << bit;
+        maxCount = static_cast<GLuint>(1 << bit);
     }
     return maxCount;
 }
 
 GLuint GetSampleCount(VkSampleCountFlags supportedCounts, GLuint requestedCount)
 {
-    for (unsigned long bit : angle::BitSet32<32>(supportedCounts))
+    for (size_t bit : angle::BitSet32<32>(supportedCounts))
     {
-        GLuint sampleCount = 1 << bit;
+        GLuint sampleCount = static_cast<GLuint>(1 << bit);
         if (sampleCount >= requestedCount)
         {
             return sampleCount;

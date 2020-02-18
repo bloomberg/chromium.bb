@@ -125,37 +125,13 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
 
     return frozenset(commits)
 
-  def CacheCommitInfo(self):
-    try:
-      return commit_cache.Get(self.id_string)
-    except KeyError:
-      commit_info = gitiles_service.CommitInfo(
-          self.repository_url, self.git_hash)
-      url = self.repository_url + '/+/' + commit_info['commit']
-      author = commit_info['author']['email']
-
-      created = ParseDateWithUTCOffset(commit_info['committer']['time'])
-
-      subject = commit_info['message'].split('\n', 1)[0]
-      message = commit_info['message']
-
-      commit_cache.Put(self.id_string, url, author, created, subject, message)
-
-      return {
-          'url': url,
-          'author': author,
-          'created': created,
-          'subject': subject,
-          'message': message,
-      }
-
   def AsDict(self):
     d = {
         'repository': self.repository,
         'git_hash': self.git_hash,
     }
 
-    d.update(self.CacheCommitInfo())
+    d.update(self.GetOrCacheCommitInfo())
     d['created'] = d['created'].isoformat()
 
     commit_position = _ParseCommitPosition(d['message'])
@@ -252,6 +228,57 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
     return commit
 
   @classmethod
+  def CommitRange(cls, commit_a, commit_b):
+    # We need to get the full list of commits in between two git hashes, and
+    # only look into the chain formed by following the first parents of each
+    # commit. This gives us a linear view of the log even in the presence of
+    # merge commits.
+    commits = []
+
+    # The commit_range by default is in reverse-chronological (latest commit
+    # first) order. This means we should keep following the first parent to get
+    # the linear history for a branch that we're exploring.
+    expected_parent = commit_b.git_hash
+    commit_range = gitiles_service.CommitRange(commit_a.repository_url,
+                                               commit_a.git_hash,
+                                               commit_b.git_hash)
+    for commit in commit_range:
+      # Skip commits until we find the parent we're looking for.
+      if commit['commit'] == expected_parent:
+        commits.append(commit)
+        if 'parents' in commit and len(commit['parents']):
+          expected_parent = commit['parents'][0]
+
+    return commits
+
+  def GetOrCacheCommitInfo(self):
+    try:
+      return commit_cache.Get(self.id_string)
+    except KeyError:
+      commit_info = gitiles_service.CommitInfo(
+          self.repository_url, self.git_hash)
+      return self.CacheCommitInfo(commit_info)
+
+  def CacheCommitInfo(self, commit_info):
+    url = self.repository_url + '/+/' + commit_info['commit']
+    author = commit_info['author']['email']
+
+    created = ParseDateWithUTCOffset(commit_info['committer']['time'])
+
+    subject = commit_info['message'].split('\n', 1)[0]
+    message = commit_info['message']
+
+    commit_cache.Put(self.id_string, url, author, created, subject, message)
+
+    return {
+        'url': url,
+        'author': author,
+        'created': created,
+        'subject': subject,
+        'message': message,
+    }
+
+  @classmethod
   def Midpoint(cls, commit_a, commit_b):
     """Return a Commit halfway between the two given Commits.
 
@@ -277,25 +304,7 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
       raise NonLinearError('Repositories differ between Commits: %s vs %s' %
                            (commit_a.repository, commit_b.repository))
 
-    # We need to get the full list of commits in between two git hashes, and
-    # only look into the chain formed by following the first parents of each
-    # commit. This gives us a linear view of the log even in the presence of
-    # merge commits.
-    commits = []
-
-    # The commit_range by default is in reverse-chronological (latest commit
-    # first) order. This means we should keep following the first parent to get
-    # the linear history for a branch that we're exploring.
-    expected_parent = commit_b.git_hash
-    commit_range = gitiles_service.CommitRange(commit_a.repository_url,
-                                               commit_a.git_hash,
-                                               commit_b.git_hash)
-    for commit in commit_range:
-      # Skip commits until we find the parent we're looking for.
-      if commit['commit'] == expected_parent:
-        commits.append(commit)
-        if 'parents' in commit and len(commit['parents']):
-          expected_parent = commit['parents'][0]
+    commits = cls.CommitRange(commit_a, commit_b)
 
     # We don't handle NotFoundErrors because we assume that all Commits either
     # came from this method or were already validated elsewhere.
@@ -310,14 +319,15 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
 
     deferred.defer(
         _CacheCommitDetails,
-        commit_a.repository, commits[len(commits) // 2]['commit'])
+        commit_a.repository, commits)
 
     return cls(commit_a.repository, commits[len(commits) // 2]['commit'])
 
 
-def _CacheCommitDetails(repository, git_url):
-  c = Commit(repository, git_url)
-  c.CacheCommitInfo()
+def _CacheCommitDetails(repository, commits):
+  for cur in commits:
+    c = Commit(repository, cur['commit'])
+    c.CacheCommitInfo(cur)
 
 
 def _ParseCommitPosition(commit_message):

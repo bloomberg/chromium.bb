@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "android_webview/browser/input_stream.h"
-#include "android_webview/browser/net/aw_web_resource_request.h"
-#include "android_webview/browser/net/aw_web_resource_response.h"
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
+#include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native_jni/AwContentsBackgroundThreadClient_jni.h"
 #include "android_webview/native_jni/AwContentsIoThreadClient_jni.h"
@@ -28,19 +28,18 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/data_url.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 
+using base::LazyInstance;
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
-using base::LazyInstance;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::ResourceType;
@@ -238,14 +237,14 @@ std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
   pair<int, int> rfh_id(render_process_id, render_frame_id);
   IoThreadClientData client_data;
   if (!RfhToIoThreadClientMap::GetInstance()->Get(rfh_id, &client_data))
-    return std::unique_ptr<AwContentsIoThreadClient>();
+    return nullptr;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate =
       client_data.io_thread_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return std::unique_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClient(
-      client_data.pending_association, java_delegate));
+  return std::make_unique<AwContentsIoThreadClient>(
+      client_data.pending_association, java_delegate);
 }
 
 std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
@@ -253,14 +252,14 @@ std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
   IoThreadClientData client_data;
   if (!RfhToIoThreadClientMap::GetInstance()->Get(frame_tree_node_id,
                                                   &client_data))
-    return std::unique_ptr<AwContentsIoThreadClient>();
+    return nullptr;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate =
       client_data.io_thread_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return std::unique_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClient(
-      client_data.pending_association, java_delegate));
+  return std::make_unique<AwContentsIoThreadClient>(
+      client_data.pending_association, java_delegate);
 }
 
 // static
@@ -314,10 +313,9 @@ AwContentsIoThreadClient::GetServiceWorkerIoThreadClient() {
   ScopedJavaLocalRef<jobject> java_delegate = g_sw_instance_.Get().get(env);
 
   if (java_delegate.is_null())
-    return std::unique_ptr<AwContentsIoThreadClient>();
+    return nullptr;
 
-  return std::unique_ptr<AwContentsIoThreadClient>(
-      new AwContentsIoThreadClient(false, java_delegate));
+  return std::make_unique<AwContentsIoThreadClient>(false, java_delegate);
 }
 
 AwContentsIoThreadClient::AwContentsIoThreadClient(bool pending_association,
@@ -437,20 +435,21 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
   RecordInterceptedScheme(ret.is_null(), request.url);
 
   if (ret.is_null())
-    return std::unique_ptr<AwWebResourceResponse>(nullptr);
+    return nullptr;
 
-  AwWebResourceResponse* response = new AwWebResourceResponse(ret);
+  std::unique_ptr<AwWebResourceResponse> response =
+      std::make_unique<AwWebResourceResponse>(ret);
   if (!response->HasInputStream(env)) {
     // Only record UMA for cases where the input stream is null (see
     // crbug.com/974273).
-    RecordResponseStatusCode(env, response);
+    RecordResponseStatusCode(env, response.get());
   }
 
-  return std::unique_ptr<AwWebResourceResponse>(response);
+  return response;
 }
 
 std::unique_ptr<AwWebResourceResponse> ReturnNull() {
-  return std::unique_ptr<AwWebResourceResponse>();
+  return nullptr;
 }
 
 }  // namespace

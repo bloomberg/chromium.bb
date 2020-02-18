@@ -6,7 +6,10 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/api/event_waiter.h"
+#include "platform/api/time.h"
+#include "platform/impl/udp_socket_posix.h"
+#include "platform/test/fake_clock.h"
+#include "platform/test/fake_task_runner.h"
 #include "platform/test/mock_udp_socket.h"
 
 namespace openscreen {
@@ -15,6 +18,31 @@ namespace platform {
 using namespace ::testing;
 using ::testing::_;
 using ::testing::Invoke;
+
+class MockUdpSocketPosix : public UdpSocketPosix {
+ public:
+  explicit MockUdpSocketPosix(TaskRunner* task_runner,
+                              Client* client,
+                              Version version = Version::kV4)
+      : UdpSocketPosix(task_runner, client, 0, IPEndpoint()),
+        version_(version) {}
+  ~MockUdpSocketPosix() override = default;
+
+  bool IsIPv4() const override { return version_ == UdpSocket::Version::kV4; }
+
+  bool IsIPv6() const override { return version_ == UdpSocket::Version::kV6; }
+
+  MOCK_METHOD0(Bind, Error());
+  MOCK_METHOD1(SetMulticastOutboundInterface, Error(NetworkInterfaceIndex));
+  MOCK_METHOD2(JoinMulticastGroup,
+               Error(const IPAddress&, NetworkInterfaceIndex));
+  MOCK_METHOD0(ReceiveMessage, ErrorOr<UdpPacket>());
+  MOCK_METHOD3(SendMessage, Error(const void*, size_t, const IPEndpoint&));
+  MOCK_METHOD1(SetDscp, Error(DscpMode));
+
+ private:
+  Version version_;
+};
 
 // Mock event waiter
 class MockNetworkWaiter final : public NetworkWaiter {
@@ -83,8 +111,10 @@ TEST(NetworkReaderTest, WatchReadableSucceeds) {
       std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  std::unique_ptr<MockUdpSocket> socket =
-      std::make_unique<MockUdpSocket>(UdpSocket::Version::kV4);
+  MockUdpSocket::MockClient client;
+  std::unique_ptr<MockUdpSocketPosix> socket =
+      std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client,
+                                           UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   MockCallbacks callbacks;
@@ -113,23 +143,27 @@ TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
       std::unique_ptr<NetworkWaiter>(new MockNetworkWaiter());
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  std::unique_ptr<MockUdpSocket> socket =
-      std::make_unique<MockUdpSocket>(UdpSocket::Version::kV4);
+  MockUdpSocket::MockClient client;
+  std::unique_ptr<MockUdpSocketPosix> socket =
+      std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client,
+                                           UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   MockCallbacks callbacks;
 
   auto callback = callbacks.GetReadCallback();
-  EXPECT_FALSE(network_waiter.CancelRead(socket.get()));
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()),
+            Error::Code::kOperationInvalid);
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 
   EXPECT_EQ(network_waiter.ReadRepeatedly(socket.get(), callback).code(),
             Error::Code::kNone);
 
-  EXPECT_TRUE(network_waiter.CancelRead(socket.get()));
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNone);
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 
-  EXPECT_FALSE(network_waiter.CancelRead(socket.get()));
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()),
+            Error::Code::kOperationInvalid);
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.
@@ -152,7 +186,7 @@ TEST(NetworkReaderTest, WaitBubblesUpWaitForEventsErrors) {
   auto result = network_waiter.WaitTesting(timeout);
   EXPECT_EQ(result.code(), response_code);
 
-  response_code = Error::Code::kAlreadyListening;
+  response_code = Error::Code::kOperationInvalid;
   EXPECT_CALL(*mock_waiter_ptr, AwaitSocketsReadable(_, timeout))
       .WillOnce(Return(ByMove(std::move(response_code))));
   result = network_waiter.WaitTesting(timeout);
@@ -180,8 +214,10 @@ TEST(NetworkReaderTest, WaitSuccessfullyCalledOnAllWatchedSockets) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  std::unique_ptr<MockUdpSocket> socket =
-      std::make_unique<MockUdpSocket>(UdpSocket::Version::kV4);
+  MockUdpSocket::MockClient client;
+  std::unique_ptr<MockUdpSocketPosix> socket =
+      std::make_unique<MockUdpSocketPosix>(task_runner.get(), &client,
+                                           UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   auto timeout = Clock::duration(0);
@@ -208,7 +244,9 @@ TEST(NetworkReaderTest, WaitSuccessfulReadAndCallCallback) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(task_runner_ptr);
-  MockUdpSocket socket(UdpSocket::Version::kV4);
+  MockUdpSocket::MockClient client;
+  MockUdpSocketPosix socket(task_runner.get(), &client,
+                            UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   auto timeout = Clock::duration(0);
@@ -236,7 +274,9 @@ TEST(NetworkReaderTest, WaitFailsIfReadingSocketFails) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  MockUdpSocket socket(UdpSocket::Version::kV4);
+  MockUdpSocket::MockClient client;
+  MockUdpSocketPosix socket(task_runner.get(), &client,
+                            UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   auto timeout = Clock::duration(0);
@@ -248,9 +288,8 @@ TEST(NetworkReaderTest, WaitFailsIfReadingSocketFails) {
       .WillOnce(Return(ByMove(std::vector<UdpSocket*>{&socket})));
   EXPECT_CALL(callbacks, ReadCallbackInternal()).Times(0);
   EXPECT_CALL(socket, ReceiveMessage())
-      .WillOnce(Return(ByMove(Error::Code::kGenericPlatformError)));
-  EXPECT_EQ(network_waiter.WaitTesting(timeout),
-            Error::Code::kGenericPlatformError);
+      .WillOnce(Return(ByMove(Error::Code::kUnknownError)));
+  EXPECT_EQ(network_waiter.WaitTesting(timeout), Error::Code::kUnknownError);
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.

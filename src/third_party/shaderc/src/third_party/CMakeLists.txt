@@ -83,13 +83,19 @@ if (SHADERC_ENABLE_SPVC)
     if (IS_DIRECTORY ${SHADERC_SPIRV_CROSS_DIR})
       set(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS ${DISABLE_EXCEPTIONS} CACHE BOOL "tell SPIRV-Cross not to throw" FORCE)
 
-      # Add -fPIC to SPIRV-Cross build.
-      set(CXX_BACK ${CMAKE_CXX_FLAGS})
-      set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
-      # cmake inserts a semicolon, change it to a space.
-      string(REGEX REPLACE ";" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-      add_subdirectory(${SHADERC_SPIRV_CROSS_DIR} spirv-cross)
-      set(CMAKE_CXX_FLAGS ${CXX_BACK})
+      # Add -fPIC to SPIRV-Cross build, if supported
+      unset(COMPILER_SUPPORTS_PIC CACHE)
+      check_cxx_compiler_flag(-fPIC COMPILER_SUPPORTS_PIC)
+      if (COMPILER_SUPPORTS_PIC)
+        set(CXX_BACK ${CMAKE_CXX_FLAGS})
+        set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fPIC")
+        # cmake inserts a semicolon, change it to a space.
+        string(REGEX REPLACE ";" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        add_subdirectory(${SHADERC_SPIRV_CROSS_DIR} spirv-cross)
+        set(CMAKE_CXX_FLAGS ${CXX_BACK})
+      else()
+        add_subdirectory(${SHADERC_SPIRV_CROSS_DIR} spirv-cross)
+      endif()
     endif()
     if (NOT TARGET spirv-cross-core)
       message(FATAL_ERROR "SPIRV-Cross was not found - required for compilation")
@@ -116,9 +122,8 @@ if(${SHADERC_ENABLE_TESTS})
   endif()
 
   add_custom_target(copy-tests-if-necessary ALL
-    COMMAND ${PYTHON_EXE}
-      ${shaderc_SOURCE_DIR}/utils/copy-tests-if-necessary.py
-      ${GLSLANG_TEST_SRC_DIR} ${GLSLANG_TEST_BIN_DIR} ${GLSLANG_CONFIGURATION_DIR}
+    ${PYTHON_EXECUTABLE} ${shaderc_SOURCE_DIR}/utils/copy-tests-if-necessary.py
+    ${GLSLANG_TEST_SRC_DIR} ${GLSLANG_TEST_BIN_DIR} ${GLSLANG_CONFIGURATION_DIR}
     COMMENT "Copying and patching glslang tests if needed")
 
   # glslang-testsuite runs a bash script on Windows.

@@ -5,25 +5,46 @@
 /**
  * @fileoverview Provides language switching services for ChromeVox, which
  * uses language detection information to automatically change the ChromeVox
- * output language.
+ * output voice.
  */
 
 goog.provide('LanguageSwitching');
 
 /**
  * The current output language. Initialize to the language of the browser or
- * empty string if unavailable.
+ * empty string if the former is unavailable.
  * @private {string}
  */
 LanguageSwitching.currentLanguage_ =
     chrome.i18n.getUILanguage().toLowerCase() || '';
 
 /**
- * Confidence threshold to meet before assigning inner-node language.
+ * Confidence threshold to meet before assigning sub-node language.
  * @const
- * @type {number}
+ * @private {number}
  */
-LanguageSwitching.PROBABILITY_THRESHOLD = 0.9;
+LanguageSwitching.PROBABILITY_THRESHOLD_ = 0.9;
+
+/**
+ * Stores whether or not ChromeVox sub-node language switching is enabled.
+ * Set to false as default, as sub-node language detection is still
+ * experimental.
+ * @private {boolean}
+ */
+LanguageSwitching.sub_node_switching_enabled_ = false;
+
+/**
+ * Initialization function for language switching.
+ */
+LanguageSwitching.init = function() {
+  // Enable sub-node language switching if feature flag is enabled.
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-sub-node-language-' +
+          'switching',
+      function(enabled) {
+        LanguageSwitching.sub_node_switching_enabled_ = enabled;
+      });
+};
 
 /*
  * Main language switching function.
@@ -41,9 +62,26 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     node, stringAttribute, appendStringWithLanguage) {
   if (!node)
     return;
-  var languageAnnotation =
-      node.languageAnnotationForStringAttribute(stringAttribute);
   var stringAttributeValue = node[stringAttribute];
+  var languageAnnotation;
+  // Quick note:
+  // The decideNewLanguage function, which contains the core language switching
+  // logic, is setup to prefer sub-node switching if the detected language's
+  // probability exceeds the PROBABILITY_THRESHOLD_; otherwise node-level
+  // switching will be used as a fallback.
+  if (LanguageSwitching.sub_node_switching_enabled_) {
+    languageAnnotation =
+        node.languageAnnotationForStringAttribute(stringAttribute);
+  } else {
+    var nodeLevelLanguageData = {};
+    // Ensure that we span the entire stringAttributeValue.
+    nodeLevelLanguageData.startIndex = 0;
+    nodeLevelLanguageData.endIndex = stringAttributeValue.length;
+    nodeLevelLanguageData.language = '';
+    nodeLevelLanguageData.probability = 0;
+    languageAnnotation = [nodeLevelLanguageData];
+  }
+
   // If no language annotation is found, append entire stringAttributeValue to
   // buffer and do not switch languages.
   // TODO(akihiroota): Decide if we simply want to return if
@@ -53,9 +91,10 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
         stringAttributeValue || '', LanguageSwitching.currentLanguage_);
     return;
   }
+
   // Split output based on language annotation.
   // Each object in languageAnnotation contains a language, probability,
-  // and start/end indices that define a substring.
+  // and start/end indices that define a substring of stringAttributeValue.
   for (var i = 0; i < languageAnnotation.length; ++i) {
     var speechProps = new Output.SpeechProperties();
     var startIndex = languageAnnotation[i].startIndex;
@@ -83,14 +122,14 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
 /**
  * Run error checks on language data and decide new output language.
  * @param {!AutomationNode} node
- * @param {string} innerNodeLanguage
+ * @param {string} subNodeLanguage
  * @param {number} probability
  * @return {string}
  */
 LanguageSwitching.decideNewLanguage = function(
-    node, innerNodeLanguage, probability) {
+    node, subNodeLanguage, probability) {
   // Use the following priority rankings when deciding language.
-  // 1. Inner-node language. If we can detect inner-node language with a high
+  // 1. Sub-node language. If we can detect sub-node language with a high
   // enough probability of accuracy, then we should use it.
   // 2. Node-level detected language.
   // 3. Author-provided language. This language is also assigned at the node
@@ -98,9 +137,9 @@ LanguageSwitching.decideNewLanguage = function(
   // 4. LanguageSwitching.currentLanguage_. If we do not have enough language
   // data, then we should not switch languages.
 
-  // Use innerNodeLanguage if probability exceeds threshold.
-  if (probability > LanguageSwitching.PROBABILITY_THRESHOLD)
-    return innerNodeLanguage.toLowerCase();
+  // Use subNodeLanguage if probability exceeds threshold.
+  if (probability > LanguageSwitching.PROBABILITY_THRESHOLD_)
+    return subNodeLanguage.toLowerCase();
 
   // Use detected language as nodeLevelLanguage, if present.
   // If no detected language, use author-provided language.
@@ -134,7 +173,7 @@ LanguageSwitching.decideNewLanguage = function(
 };
 
 /**
- * Returns a unicode-aware substring of text from startIndex to endIndex.
+ * Returns a unicode-aware substring of |text| from startIndex to endIndex.
  * @param {string} text
  * @param {number} startIndex
  * @param {number} endIndex

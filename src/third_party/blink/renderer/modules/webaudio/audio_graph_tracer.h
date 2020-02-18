@@ -13,6 +13,9 @@
 
 namespace blink {
 
+class AudioListener;
+class AudioNode;
+class AudioParam;
 class BaseAudioContext;
 class Document;
 class InspectorWebAudioAgent;
@@ -34,13 +37,36 @@ class MODULES_EXPORT AudioGraphTracer final
 
   void SetInspectorAgent(InspectorWebAudioAgent*);
 
-  // Notify an associated inspector agent when a BaseAudioContext is created.
+  // Graph lifecycle events: notifies an associated inspector agent about
+  // the object lifecycle of BaseAudioContext, AudioListener, AudioNode, and
+  // AudioParam.
   void DidCreateBaseAudioContext(BaseAudioContext*);
+  void WillDestroyBaseAudioContext(BaseAudioContext*);
+  void DidCreateAudioListener(AudioListener*);
+  void WillDestroyAudioListener(AudioListener*);
+  void DidCreateAudioNode(AudioNode*);
+  void WillDestroyAudioNode(AudioNode*);
+  void DidCreateAudioParam(AudioParam*);
+  void WillDestroyAudioParam(AudioParam*);
 
-  // Notify an associated inspector agent when a BaseAudioContext is destroyed.
-  void DidDestroyBaseAudioContext(BaseAudioContext*);
+  // Graph connection events: notifies an associated inspector agent about
+  // when a connection between graph objects happens.
+  void DidConnectNodes(AudioNode* source_node,
+                       AudioNode* destination_node,
+                       unsigned source_output_index = 0,
+                       unsigned destination_input_index = 0);
+  void DidDisconnectNodes(AudioNode* source_node,
+                          AudioNode* destination_node = nullptr,
+                          unsigned source_output_index = 0,
+                          unsigned destination_input_index = 0);
+  void DidConnectNodeParam(AudioNode* source_node,
+                           AudioParam* destination_param,
+                           unsigned source_output_index = 0);
+  void DidDisconnectNodeParam(AudioNode* source_node,
+                              AudioParam* destination_param,
+                              unsigned source_output_index = 0);
 
-  // Notify an associated inspector agent when a BaseAudioContext is changed.
+  // Notifies an associated inspector agent when a BaseAudioContext is changed.
   void DidChangeBaseAudioContext(BaseAudioContext*);
 
   BaseAudioContext* GetContextById(const String contextId);

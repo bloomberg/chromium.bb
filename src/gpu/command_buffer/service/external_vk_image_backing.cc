@@ -14,12 +14,18 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
+
+#if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
+#include "gpu/command_buffer/service/external_vk_image_dawn_representation.h"
+#endif
 
 #if defined(OS_FUCHSIA)
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
@@ -36,11 +42,29 @@ namespace {
 GrVkImageInfo CreateGrVkImageInfo(VkImage image,
                                   VkFormat vk_format,
                                   VkDeviceMemory memory,
-                                  size_t memory_size) {
+                                  size_t memory_size,
+                                  bool use_protected_memory,
+                                  base::Optional<VulkanYCbCrInfo> ycbcr_info) {
+  GrVkYcbcrConversionInfo gr_ycbcr_info{};
+  if (ycbcr_info) {
+    gr_ycbcr_info = GrVkYcbcrConversionInfo(
+        static_cast<VkFormat>(ycbcr_info->image_format),
+        ycbcr_info->external_format,
+        static_cast<VkSamplerYcbcrModelConversion>(
+            ycbcr_info->suggested_ycbcr_model),
+        static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
+        static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
+        static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
+        static_cast<VkFilter>(VK_FILTER_LINEAR),
+        /*forceExplicitReconstruction=*/false,
+        static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features));
+  }
   GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
-  return GrVkImageInfo(image, alloc, VK_IMAGE_TILING_OPTIMAL,
-                       VK_IMAGE_LAYOUT_UNDEFINED, vk_format,
-                       1 /* levelCount */);
+  return GrVkImageInfo(
+      image, alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
+      vk_format, 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
+      use_protected_memory ? GrProtected::kYes : GrProtected::kNo,
+      gr_ycbcr_info);
 }
 
 VkResult CreateVkImage(SharedContextState* context_state,
@@ -48,6 +72,7 @@ VkResult CreateVkImage(SharedContextState* context_state,
                        const gfx::Size& size,
                        bool is_transfer_dst,
                        bool is_external,
+                       bool use_protected_memory,
                        VkImage* image) {
   VkExternalMemoryImageCreateInfoKHR external_info = {
       .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
@@ -63,7 +88,7 @@ VkResult CreateVkImage(SharedContextState* context_state,
   VkImageCreateInfo create_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .pNext = is_external ? &external_info : nullptr,
-      .flags = 0,
+      .flags = use_protected_memory ? VK_IMAGE_CREATE_PROTECTED_BIT : 0,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format,
       .extent = {size.width(), size.height(), 1},
@@ -125,6 +150,23 @@ class ScopedPixelStore {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
 };
 
+base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
+  switch (format) {
+    case viz::RED_8:
+    case viz::ALPHA_8:
+    case viz::LUMINANCE_8:
+      return DAWN_TEXTURE_FORMAT_R8_UNORM;
+    case viz::RG_88:
+      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+    case viz::RGBA_8888:
+      return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
+    case viz::BGRA_8888:
+      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
+    default:
+      return {};
+  }
+}
+
 }  // namespace
 
 // static
@@ -137,15 +179,22 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     base::span<const uint8_t> pixel_data,
-    bool using_gmb) {
+    bool using_gmb,
+    base::Optional<VulkanYCbCrInfo> ycbcr_info) {
   VkDevice device =
       context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
   VkFormat vk_format = ToVkFormat(format);
   VkImage image;
   bool is_external = context_state->support_vulkan_external_object();
   bool is_transfer_dst = using_gmb || !pixel_data.empty() || !is_external;
-  VkResult result = CreateVkImage(context_state, vk_format, size,
-                                  is_transfer_dst, is_external, &image);
+  if (context_state->vk_context_provider()
+          ->GetVulkanImplementation()
+          ->enforce_protected_memory()) {
+    usage |= SHARED_IMAGE_USAGE_PROTECTED;
+  }
+  VkResult result =
+      CreateVkImage(context_state, vk_format, size, is_transfer_dst,
+                    is_external, usage & SHARED_IMAGE_USAGE_PROTECTED, &image);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "Failed to create external VkImage: " << result;
     return nullptr;
@@ -197,7 +246,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
-      requirements.size, vk_format, command_pool));
+      requirements.size, vk_format, command_pool, ycbcr_info,
+      GetDawnFormat(format), mem_alloc_info.memoryTypeIndex));
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -220,11 +270,6 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
-    DLOG(ERROR) << "Invalid image format.";
-    return nullptr;
-  }
-
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
     DLOG(ERROR) << "Invalid image size for format.";
     return nullptr;
@@ -241,26 +286,35 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     VkImageCreateInfo vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
     VkDeviceSize memory_size = 0;
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
     if (!vulkan_implementation->CreateImageFromGpuMemoryHandle(
             vk_device, std::move(handle), size, &vk_image, &vk_image_info,
-            &vk_device_memory, &memory_size)) {
+            &vk_device_memory, &memory_size, &ycbcr_info)) {
       DLOG(ERROR) << "Failed to create VkImage from GpuMemoryHandle.";
       return nullptr;
     }
 
     VkFormat expected_format = ToVkFormat(resource_format);
     if (expected_format != vk_image_info.format) {
-      DLOG(ERROR) << "BufferFormat doesn't match the buffer";
+      DLOG(ERROR) << "BufferFormat doesn't match the buffer ";
       vkFreeMemory(vk_device, vk_device_memory, nullptr);
       vkDestroyImage(vk_device, vk_image, nullptr);
       return nullptr;
     }
 
+    viz::ResourceFormat resource_format = viz::GetResourceFormat(buffer_format);
+
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, viz::GetResourceFormat(buffer_format), size, color_space,
         usage, context_state, vk_image, vk_device_memory, memory_size,
-        vk_image_info.format, command_pool));
+        vk_image_info.format, command_pool, ycbcr_info,
+        GetDawnFormat(resource_format), {}));
+  }
+
+  if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
+    DLOG(ERROR) << "Invalid image format.";
+    return nullptr;
   }
 
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
@@ -354,7 +408,10 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     VkDeviceMemory memory,
     size_t memory_size,
     VkFormat vk_format,
-    VulkanCommandPool* command_pool)
+    VulkanCommandPool* command_pool,
+    base::Optional<VulkanYCbCrInfo> ycbcr_info,
+    base::Optional<DawnTextureFormat> dawn_format,
+    base::Optional<uint32_t> memory_type_index)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -363,11 +420,17 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                          memory_size,
                          false /* is_thread_safe */),
       context_state_(context_state),
-      backend_texture_(
-          size.width(),
-          size.height(),
-          CreateGrVkImageInfo(image, vk_format, memory, memory_size)),
-      command_pool_(command_pool) {}
+      backend_texture_(size.width(),
+                       size.height(),
+                       CreateGrVkImageInfo(image,
+                                           vk_format,
+                                           memory,
+                                           memory_size,
+                                           usage & SHARED_IMAGE_USAGE_PROTECTED,
+                                           ycbcr_info)),
+      command_pool_(command_pool),
+      dawn_format_(dawn_format),
+      memory_type_index_(memory_type_index) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
   DCHECK(!backend_texture_.isValid());
@@ -424,8 +487,7 @@ void ExternalVkImageBacking::Destroy() {
   if (texture_) {
     // Ensure that a context is current before removing the ref and calling
     // glDeleteTextures.
-    if (!gl::g_current_gl_context)
-      context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    context_state()->MakeCurrent(nullptr, true /* need_gl */);
     texture_->RemoveLightweightRef(have_context());
   }
 }
@@ -436,6 +498,39 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
   // synchronization between Vulkan and GL that is implemented in the
   // representation classes.
   return false;
+}
+
+std::unique_ptr<SharedImageRepresentationDawn>
+ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
+                                    MemoryTypeTracker* tracker,
+                                    DawnDevice dawnDevice) {
+#if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
+  if (!dawn_format_) {
+    DLOG(ERROR) << "Format not supported for Dawn";
+    return nullptr;
+  }
+
+  if (!memory_type_index_) {
+    DLOG(ERROR) << "No type index info provided";
+    return nullptr;
+  }
+
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
+
+  int memory_fd = GetMemoryFd(image_info);
+  if (memory_fd < 0) {
+    return nullptr;
+  }
+
+  return std::make_unique<ExternalVkImageDawnRepresentation>(
+      manager, this, tracker, dawnDevice, dawn_format_.value(), memory_fd,
+      image_info.fAlloc.fSize, memory_type_index_.value());
+#else  // !defined(OS_LINUX) || !BUILDFLAG(USE_DAWN)
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
+#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
@@ -457,17 +552,8 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     gl::GLApi* api = gl::g_current_gl_context;
     GLuint memory_object = 0;
     if (!use_separate_gl_texture()) {
-      VkMemoryGetFdInfoKHR get_fd_info;
-      get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-      get_fd_info.pNext = nullptr;
-      get_fd_info.memory = image_info.fAlloc.fMemory;
-      get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
-
-      int memory_fd = -1;
-      vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
+      int memory_fd = GetMemoryFd(image_info);
       if (memory_fd < 0) {
-        DLOG(ERROR)
-            << "Unable to extract file descriptor out of external VkImage";
         return nullptr;
       }
 
@@ -543,6 +629,23 @@ ExternalVkImageBacking::ProduceSkia(
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
 }
+
+#ifdef OS_LINUX
+int ExternalVkImageBacking::GetMemoryFd(const GrVkImageInfo& image_info) {
+  VkMemoryGetFdInfoKHR get_fd_info;
+  get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
+  get_fd_info.pNext = nullptr;
+  get_fd_info.memory = image_info.fAlloc.fMemory;
+  get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+
+  int memory_fd = -1;
+  vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
+  if (memory_fd < 0) {
+    DLOG(ERROR) << "Unable to extract file descriptor out of external VkImage";
+  }
+  return memory_fd;
+}
+#endif
 
 void ExternalVkImageBacking::InstallSharedMemory(
     base::WritableSharedMemoryMapping shared_memory_mapping,

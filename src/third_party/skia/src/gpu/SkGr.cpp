@@ -127,7 +127,7 @@ sk_sp<GrTextureProxy> GrCopyBaseMipMapToTextureProxy(GrRecordingContext* ctx,
                                                      GrTextureProxy* baseProxy) {
     SkASSERT(baseProxy);
 
-    if (!ctx->priv().caps()->isConfigCopyable(baseProxy->config())) {
+    if (!ctx->priv().caps()->isFormatCopyable(baseProxy->backendFormat())) {
         return nullptr;
     }
     return GrSurfaceProxy::Copy(ctx, baseProxy, GrMipMapped::kYes, SkBackingFit::kExact,
@@ -189,11 +189,12 @@ sk_sp<GrTextureProxy> GrMakeCachedImageProxy(GrProxyProvider* proxyProvider,
     create_unique_key_for_image(srcImage.get(), &originalKey);
 
     if (originalKey.isValid()) {
-        proxy = proxyProvider->findOrCreateProxyByUniqueKey(originalKey, kTopLeft_GrSurfaceOrigin);
+        proxy = proxyProvider->findOrCreateProxyByUniqueKey(
+                originalKey, SkColorTypeToGrColorType(srcImage->colorType()),
+                kTopLeft_GrSurfaceOrigin);
     }
     if (!proxy) {
-        proxy = proxyProvider->createTextureProxy(srcImage, GrRenderable::kNo, 1, SkBudgeted::kYes,
-                                                  fit);
+        proxy = proxyProvider->createTextureProxy(srcImage, 1, SkBudgeted::kYes, fit);
         if (proxy && originalKey.isValid()) {
             proxyProvider->assignUniqueKeyToProxy(originalKey, proxy.get());
             const SkBitmap* bm = as_IB(srcImage.get())->onPeekBitmap();
@@ -308,6 +309,9 @@ static inline int32_t dither_range_type_for_config(GrColorType dstColorType) {
         case GrColorType::kRGBA_F16:
         case GrColorType::kRGBA_F16_Clamped:
         case GrColorType::kAlpha_8:
+        case GrColorType::kAlpha_8xxx:
+        case GrColorType::kAlpha_F32xxx:
+        case GrColorType::kGray_8xxx:
             return -1;
     }
     SkUNREACHABLE;
@@ -537,20 +541,21 @@ bool SkPaintToGrPaintWithTexture(GrRecordingContext* context,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-GrSamplerState::Filter GrSkFilterQualityToGrFilterMode(SkFilterQuality paintFilterQuality,
+GrSamplerState::Filter GrSkFilterQualityToGrFilterMode(int imageWidth, int imageHeight,
+                                                       SkFilterQuality paintFilterQuality,
                                                        const SkMatrix& viewM,
                                                        const SkMatrix& localM,
                                                        bool sharpenMipmappedTextures,
                                                        bool* doBicubic) {
     *doBicubic = false;
-    GrSamplerState::Filter textureFilterMode;
+    if (imageWidth <= 1 && imageHeight <= 1) {
+        return GrSamplerState::Filter::kNearest;
+    }
     switch (paintFilterQuality) {
         case kNone_SkFilterQuality:
-            textureFilterMode = GrSamplerState::Filter::kNearest;
-            break;
+            return GrSamplerState::Filter::kNearest;
         case kLow_SkFilterQuality:
-            textureFilterMode = GrSamplerState::Filter::kBilerp;
-            break;
+            return GrSamplerState::Filter::kBilerp;
         case kMedium_SkFilterQuality: {
             SkMatrix matrix;
             matrix.setConcat(viewM, localM);
@@ -564,24 +569,19 @@ GrSamplerState::Filter GrSkFilterQualityToGrFilterMode(SkFilterQuality paintFilt
             //        2^0.5/2 = s
             SkScalar mipScale = sharpenMipmappedTextures ? SK_ScalarRoot2Over2 : SK_Scalar1;
             if (matrix.getMinScale() < mipScale) {
-                textureFilterMode = GrSamplerState::Filter::kMipMap;
+                return GrSamplerState::Filter::kMipMap;
             } else {
                 // Don't trigger MIP level generation unnecessarily.
-                textureFilterMode = GrSamplerState::Filter::kBilerp;
+                return GrSamplerState::Filter::kBilerp;
             }
-            break;
         }
         case kHigh_SkFilterQuality: {
             SkMatrix matrix;
             matrix.setConcat(viewM, localM);
+            GrSamplerState::Filter textureFilterMode;
             *doBicubic = GrBicubicEffect::ShouldUseBicubic(matrix, &textureFilterMode);
-            break;
+            return textureFilterMode;
         }
-        default:
-            // Should be unreachable.  If not, fall back to mipmaps.
-            textureFilterMode = GrSamplerState::Filter::kMipMap;
-            break;
-
     }
-    return textureFilterMode;
+    SkUNREACHABLE;
 }

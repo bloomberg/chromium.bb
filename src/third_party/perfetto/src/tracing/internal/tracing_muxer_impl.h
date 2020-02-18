@@ -27,6 +27,7 @@
 #include <memory>
 #include <vector>
 
+#include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/thread_checker.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
 #include "perfetto/ext/tracing/core/consumer.h"
@@ -114,7 +115,8 @@ class TracingMuxerImpl : public TracingMuxer {
 
   // Consumer-side bookkeeping methods.
   void SetupTracingSession(TracingSessionGlobalID,
-                           const std::shared_ptr<TraceConfig>&);
+                           const std::shared_ptr<TraceConfig>&,
+                           base::ScopedFile trace_fd = base::ScopedFile());
   void StartTracingSession(TracingSessionGlobalID);
   void StopTracingSession(TracingSessionGlobalID);
   void DestroyTracingSession(TracingSessionGlobalID);
@@ -188,6 +190,9 @@ class TracingMuxerImpl : public TracingMuxer {
     void OnTraceStats(bool success, const TraceStats&) override;
     void OnObservableEvents(const ObservableEvents&) override;
 
+    void NotifyStartComplete();
+    void NotifyStopComplete();
+
     TracingMuxerImpl* const muxer_;
     TracingBackendId const backend_id_;
     TracingSessionGlobalID const session_id_;
@@ -198,6 +203,10 @@ class TracingMuxerImpl : public TracingMuxer {
     // the config and check if we have it after connection.
     bool start_pending_ = false;
 
+    // Similarly if the session is stopped before the consumer was connected, we
+    // need to wait until the session has started before stopping it.
+    bool stop_pending_ = false;
+
     // Whether this session was already stopped. This will happen in response to
     // Stop{,Blocking}, but also if the service stops the session for us
     // automatically (e.g., when there are no data sources).
@@ -206,6 +215,7 @@ class TracingMuxerImpl : public TracingMuxer {
     // shared_ptr because it's posted across threads. This is to avoid copying
     // it more than once.
     std::shared_ptr<TraceConfig> trace_config_;
+    base::ScopedFile trace_fd_;
 
     // An internal callback used to implement StartBlocking().
     std::function<void()> blocking_start_complete_callback_;
@@ -236,7 +246,7 @@ class TracingMuxerImpl : public TracingMuxer {
    public:
     TracingSessionImpl(TracingMuxerImpl*, TracingSessionGlobalID);
     ~TracingSessionImpl() override;
-    void Setup(const TraceConfig&) override;
+    void Setup(const TraceConfig&, int fd) override;
     void Start() override;
     void StartBlocking() override;
     void Stop() override;

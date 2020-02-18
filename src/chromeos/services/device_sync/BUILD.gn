@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("device_sync") {
   sources = [
+    "async_execution_time_metrics_logger.cc",
+    "async_execution_time_metrics_logger.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
     "cryptauth_better_together_feature_types.cc",
@@ -27,6 +29,8 @@ static_library("device_sync") {
     "cryptauth_device_sync_result.h",
     "cryptauth_device_syncer.cc",
     "cryptauth_device_syncer.h",
+    "cryptauth_device_syncer_impl.cc",
+    "cryptauth_device_syncer_impl.h",
     "cryptauth_ecies_encryptor.cc",
     "cryptauth_ecies_encryptor.h",
     "cryptauth_ecies_encryptor_impl.cc",
@@ -81,6 +85,8 @@ static_library("device_sync") {
     "cryptauth_scheduler.h",
     "cryptauth_scheduler_impl.cc",
     "cryptauth_scheduler_impl.h",
+    "cryptauth_task_metrics_logger.cc",
+    "cryptauth_task_metrics_logger.h",
     "cryptauth_v2_device_manager.cc",
     "cryptauth_v2_device_manager.h",
     "cryptauth_v2_device_manager_impl.cc",
@@ -128,7 +134,6 @@ static_library("device_sync") {
     "//chromeos/services/device_sync/public/mojom",
     "//components/signin/public/identity_manager",
     "//services/network/public/cpp",
-    "//services/service_manager/public/cpp",
   ]
 
   deps = [
@@ -144,12 +149,11 @@ static_library("device_sync") {
     "//components/gcm_driver",
     "//net",
     "//services/preferences/public/cpp",
-    "//services/service_manager/public/cpp",
   ]
 
   visibility = [
     ":*",
-    "//chrome/browser",
+    "//chrome/browser/chromeos",
     "//chrome/test:test_support_ui",
     "//chromeos/services/device_sync/public/cpp:unit_tests",
   ]
@@ -163,6 +167,8 @@ static_library("test_support") {
     "cryptauth_v2_device_sync_test_devices.h",
     "fake_cryptauth_device_manager.cc",
     "fake_cryptauth_device_manager.h",
+    "fake_cryptauth_device_syncer.cc",
+    "fake_cryptauth_device_syncer.h",
     "fake_cryptauth_ecies_encryptor.cc",
     "fake_cryptauth_ecies_encryptor.h",
     "fake_cryptauth_enrollment_manager.cc",
@@ -222,6 +228,7 @@ source_set("unit_tests") {
     "cryptauth_client_impl_unittest.cc",
     "cryptauth_device_manager_impl_unittest.cc",
     "cryptauth_device_registry_impl_unittest.cc",
+    "cryptauth_device_syncer_impl_unittest.cc",
     "cryptauth_device_unittest.cc",
     "cryptauth_ecies_encryptor_impl_unittest.cc",
     "cryptauth_enroller_impl_unittest.cc",
@@ -236,6 +243,7 @@ source_set("unit_tests") {
     "cryptauth_key_unittest.cc",
     "cryptauth_metadata_syncer_impl_unittest.cc",
     "cryptauth_scheduler_impl_unittest.cc",
+    "cryptauth_v2_device_manager_impl_unittest.cc",
     "cryptauth_v2_enroller_impl_unittest.cc",
     "cryptauth_v2_enrollment_manager_impl_unittest.cc",
     "device_sync_service_unittest.cc",
@@ -266,7 +274,6 @@ source_set("unit_tests") {
     "//components/signin/public/identity_manager:test_support",
     "//net/traffic_annotation:test_support",
     "//services/network:test_support",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

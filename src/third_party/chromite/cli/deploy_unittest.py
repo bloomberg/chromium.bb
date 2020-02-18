@@ -38,8 +38,15 @@ class ChromiumOSDeviceFake(object):
     self.lsb_release = None
     self.cmds = []
     self.work_dir = '/testdir/'
+    self.selinux_available = False
 
   def MountRootfsReadWrite(self):
+    return True
+
+  def IsSELinuxAvailable(self):
+    return self.selinux_available
+
+  def IsSELinuxEnforced(self):
     return True
 
   def RunCommand(self, cmd, **_kwargs):
@@ -104,14 +111,15 @@ class DbApiFake(object):
 class PackageScannerFake(object):
   """Fake for PackageScanner."""
 
-  def __init__(self, packages, packages_cpvs=None):
+  def __init__(self, packages, pkgs_attrs, packages_cpvs=None):
     self.pkgs = packages
     self.cpvs = packages_cpvs or packages
     self.listed = []
     self.num_updates = None
+    self.pkgs_attrs = pkgs_attrs
 
   def Run(self, _device, _root, _packages, _update, _deep, _deep_rev):
-    return self.cpvs, self.listed, self.num_updates
+    return self.cpvs, self.listed, self.num_updates, self.pkgs_attrs
 
 
 class PortageTreeFake(object):
@@ -137,6 +145,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
     self.PatchObject(cros_build_lib, 'GetChoice', return_value=0)
     self.device = ChromiumOSDeviceHandlerFake()
     self.scanner = deploy._InstallPackageScanner(self._BUILD_ROOT)
+    self.PatchObject(deploy, '_GetDLCInfo', return_value=(None, None))
 
   def SetupVartree(self, vartree_pkgs):
     self.device.GetAgent().remote_sh_output = json.dumps(vartree_pkgs)
@@ -162,7 +171,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309336'),
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
@@ -175,7 +184,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
@@ -189,7 +198,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
         (app2, '0', '', '1413309350'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1, app2], constraints=[(app1, app2)])
     self.ValidatePkgs(listed, [app1])
@@ -204,7 +213,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
         (app6, '0', '', '1413309350'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1, app6], constraints=[(app1, app6)])
     self.ValidatePkgs(listed, [app1])
@@ -219,7 +228,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app4, '0', 'foo/app1 foo/app5', '1413309350'),
         ('foo/app5-3.0.7-r3', '0', '', '1413309336'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1, app4], constraints=[(app4, app1)])
     self.ValidatePkgs(listed, [app1])
@@ -233,7 +242,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app1, '0', 'foo/app2 !foo/app3', '1413309350'),
         (app6, '0', 'foo/app1', '1413309350'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
@@ -251,7 +260,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app4, '0', 'foo/app1 foo/app5', '1413309350'),
         (app5, '0', '', '1413309350'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1, app2, app4, app5],
                       constraints=[(app1, app2), (app4, app1), (app4, app5)])
@@ -265,7 +274,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app1, '0', '|| ( foo/app6 foo/app2 ) !foo/app3', '1413309350'),
         ('foo/app2-4.5.6-r7', '0', '', '1413309336'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1])
     self.ValidatePkgs(listed, [app1])
@@ -279,7 +288,7 @@ class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
         (app1, '0', '|| ( foo/app6 foo/app7 ) !foo/app3', '1413309350'),
         (app7, '0', '', '1413309350'),
     ])
-    installs, listed, num_updates = self.scanner.Run(
+    installs, listed, num_updates, _ = self.scanner.Run(
         self.device, '/', ['app1'], True, True, True)
     self.ValidatePkgs(installs, [app1, app7], constraints=[(app1, app7)])
     self.ValidatePkgs(listed, [app1])
@@ -304,10 +313,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
         deploy, '_GetPackagesByCPV', side_effect=self.FakeGetPackagesByCPV)
     self.emerge = self.PatchObject(deploy, '_Emerge', return_value=None)
     self.unmerge = self.PatchObject(deploy, '_Unmerge', return_value=None)
-    self.has_selinux = self.PatchObject(
-        deploy, '_HasSELinux', return_value=False)
-    self.is_selinux_enforced = self.PatchObject(
-        deploy, '_IsSELinuxEnforced', return_value=True)
+    self.PatchObject(deploy, '_GetDLCInfo', return_value=(None, None))
 
   def testDeployEmerge(self):
     """Test that deploy._Emerge is called for each package."""
@@ -318,7 +324,10 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
 
     packages = ['some/foo-1.2.3', _BINPKG, 'some/foobar-2.0']
     cpvs = ['some/foo-1.2.3', 'to/bar-1.2.5', 'some/foobar-2.0']
-    self.package_scanner.return_value = PackageScannerFake(packages, cpvs)
+    self.package_scanner.return_value = PackageScannerFake(
+        packages,
+        {'some/foo-1.2.3': {}, _BINPKG: {}, 'some/foobar-2.0': {}},
+        cpvs)
     self.PatchObject(os.path, 'isfile', side_effect=FakeIsFile)
 
     deploy.Deploy(None, ['package'], force=True, clean_binpkg=False)
@@ -329,6 +338,19 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     # Check that deploy._Emerge is called the right number of times.
     self.assertEqual(self.emerge.call_count, len(packages))
     self.assertEqual(self.unmerge.call_count, 0)
+
+  def testDeployEmergeDLC(self):
+    """Test that deploy._Emerge installs images for DLC packages."""
+    packages = ['some/foodlc-1.0', 'some/bardlc-2.0']
+    cpvs = ['some/foodlc-1.0', 'some/bardlc-2.0']
+    self.package_scanner.return_value = PackageScannerFake(
+        packages, {'some/foodlc-1.0': {}, 'some/bardlc-2.0': {}}, cpvs)
+    self.PatchObject(deploy, '_GetDLCInfo',
+                     return_value=('foo_id', 'foo_package'))
+
+    deploy.Deploy(None, ['package'], force=True, clean_binpkg=False)
+    # Check that dlcservice is restarted (DLC modules are deployed).
+    self.assertTrue(['restart', 'dlcservice'] in self.device.device.cmds)
 
   def testDeployEmergeSELinux(self):
     """Test deploy progress when the device has SELinux"""
@@ -345,10 +367,13 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
                'restorecon', '-i', '-f', '-'],
               ['setenforce', '1']]
 
-    self.has_selinux.return_value = True
+    self.device.device.selinux_available = True
     packages = ['some/foo-1.2.3', _BINPKG, 'some/foobar-2.0']
     cpvs = ['some/foo-1.2.3', 'to/bar-1.2.5', 'some/foobar-2.0']
-    self.package_scanner.return_value = PackageScannerFake(packages, cpvs)
+    self.package_scanner.return_value = PackageScannerFake(
+        packages,
+        {'some/foo-1.2.3': {}, _BINPKG: {}, 'some/foobar-2.0': {}},
+        cpvs)
     self.PatchObject(os.path, 'isfile', side_effect=FakeIsFile)
 
     deploy.Deploy(None, ['package'], force=True, clean_binpkg=False)
@@ -367,8 +392,11 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
 
   def testDeployUnmerge(self):
     """Test that deploy._Unmerge is called for each package."""
-    packages = ['foo', 'bar', 'foobar']
-    self.package_scanner.return_value = PackageScannerFake(packages)
+    packages = ['foo', 'bar', 'foobar', 'foodlc']
+    self.package_scanner.return_value = PackageScannerFake(
+        packages, {'foo': {}, 'bar': {}, 'foobar': {},
+                   'foodlc': {deploy._DLC_ID: 'foodlc',
+                              deploy._DLC_PACKAGE: 'foopackage'}})
 
     deploy.Deploy(None, ['package'], force=True, clean_binpkg=False,
                   emerge=False)
@@ -377,10 +405,17 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     self.assertEqual(self.emerge.call_count, 0)
     self.assertEqual(self.unmerge.call_count, len(packages))
 
+    self.assertEqual(
+        self.device.device.cmds,
+        [['sudo', '-u', 'chronos', 'dlcservice_util',
+          '--uninstall', '--dlc_ids=foodlc'],
+         ['restart', 'dlcservice']])
+
   def testDeployMergeWithProgressBar(self):
     """Test that BrilloDeployOperation.Run() is called for merge."""
     packages = ['foo', 'bar', 'foobar']
-    self.package_scanner.return_value = PackageScannerFake(packages)
+    self.package_scanner.return_value = PackageScannerFake(
+        packages, {'foo': {}, 'bar': {}, 'foobar': {}})
 
     run = self.PatchObject(deploy.BrilloDeployOperation, 'Run',
                            return_value=None)
@@ -394,7 +429,8 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
   def testDeployUnmergeWithProgressBar(self):
     """Test that BrilloDeployOperation.Run() is called for unmerge."""
     packages = ['foo', 'bar', 'foobar']
-    self.package_scanner.return_value = PackageScannerFake(packages)
+    self.package_scanner.return_value = PackageScannerFake(
+        packages, {'foo': {}, 'bar': {}, 'foobar': {}})
 
     run = self.PatchObject(deploy.BrilloDeployOperation, 'Run',
                            return_value=None)

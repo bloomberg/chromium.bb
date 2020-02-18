@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Java accessor for base/feature_list.h state.
@@ -25,7 +26,6 @@ final public class AwFeatureList {
     private static Boolean sPageStartedOnCommitForBrowserNavigations;
 
     private static boolean computePageStartedOnCommitForBrowserNavigations() {
-        if (!nativeIsEnabled(WEBVIEW_PAGE_STARTED_ON_COMMIT)) return false;
         if (GMS_PACKAGE.equals(ContextUtils.getApplicationContext().getPackageName())) {
             try {
                 PackageInfo gmsPackage =
@@ -60,13 +60,15 @@ final public class AwFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        return nativeIsEnabled(featureName);
+        return AwFeatureListJni.get().isEnabled(featureName);
     }
 
     // Alphabetical:
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
-    public static final String WEBVIEW_PAGE_STARTED_ON_COMMIT = "WebViewPageStartedOnCommit";
 
-    private static native boolean nativeIsEnabled(String featureName);
+    @NativeMethods
+    interface Natives {
+        boolean isEnabled(String featureName);
+    }
 }

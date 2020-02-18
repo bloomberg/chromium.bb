@@ -68,7 +68,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     InputRecord();
     InputRecord(const InputRecord&);
     ~InputRecord();
-    bool at_device;
     scoped_refptr<VideoFrame> frame;
 
     // This is valid only if image processor is used. The buffer associated with
@@ -80,10 +79,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   struct OutputRecord {
     OutputRecord();
     ~OutputRecord();
-    bool at_device;
+
     std::unique_ptr<BitstreamBufferRef> buffer_ref;
-    void* address;
-    size_t length;
   };
 
   // Store all the information of input frame passed to Encode().
@@ -210,10 +207,16 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   bool SetFormats(VideoPixelFormat input_format,
                   VideoCodecProfile output_profile);
 
+  // Reconfigure format of input buffers and image processor if frame size
+  // given by client is different from one set in input buffers.
+  bool ReconfigureFormatIfNeeded(VideoPixelFormat format,
+                                 const gfx::Size& new_frame_size);
+
   // Try to set up the device to the input format we were Initialized() with,
   // or if the device doesn't support it, use one it can support, so that we
   // can later instantiate an ImageProcessor to convert to it.
-  bool NegotiateInputFormat(VideoPixelFormat input_format);
+  bool NegotiateInputFormat(VideoPixelFormat input_format,
+                            const gfx::Size& frame_size);
 
   // Set up the device to the output format requested in Initialize().
   bool SetOutputFormat(VideoCodecProfile output_profile);
@@ -299,22 +302,13 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Encoder device.
   scoped_refptr<V4L2Device> device_;
 
-  // Input queue state.
-  bool input_streamon_;
-  // Input buffers enqueued to device.
-  int input_buffer_queued_count_;
-  // Input buffers ready to use; LIFO since we don't care about ordering.
-  std::vector<int> free_input_buffers_;
   // Mapping of int index to input buffer record.
   std::vector<InputRecord> input_buffer_map_;
   v4l2_memory input_memory_type_;
 
-  // Output queue state.
-  bool output_streamon_;
-  // Output buffers enqueued to device.
-  int output_buffer_queued_count_;
-  // Output buffers ready to use; LIFO since we don't care about ordering.
-  std::vector<int> free_output_buffers_;
+  scoped_refptr<V4L2Queue> input_queue_;
+  scoped_refptr<V4L2Queue> output_queue_;
+
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
 

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -46,23 +47,35 @@ void PendingInvalidations::ScheduleInvalidationSetsForNode(
       if (!invalidation_set->IsEmpty())
         requires_descendant_invalidation = true;
     }
+    // No need to schedule descendant invalidations on display:none elements.
+    if (requires_descendant_invalidation && !node.GetComputedStyle() &&
+        node.CanParticipateInFlatTree()) {
+      requires_descendant_invalidation = false;
+    }
   }
 
   if (!requires_descendant_invalidation &&
-      (invalidation_lists.siblings.IsEmpty() || !node.nextSibling()))
+      invalidation_lists.siblings.IsEmpty())
     return;
 
-  node.SetNeedsStyleInvalidation();
-
+  // For SiblingInvalidationSets we can skip scheduling if there is no
+  // nextSibling() to invalidate, but NthInvalidationSets are scheduled on the
+  // parent node which may not have a sibling.
+  bool nth_only = !node.nextSibling();
+  bool requires_sibling_invalidation = false;
   NodeInvalidationSets& pending_invalidations =
       EnsurePendingInvalidations(node);
-  if (node.nextSibling()) {
-    for (auto& invalidation_set : invalidation_lists.siblings) {
-      if (pending_invalidations.Siblings().Contains(invalidation_set))
-        continue;
-      pending_invalidations.Siblings().push_back(invalidation_set);
-    }
+  for (auto& invalidation_set : invalidation_lists.siblings) {
+    if (nth_only && !invalidation_set->IsNthSiblingInvalidationSet())
+      continue;
+    if (pending_invalidations.Siblings().Contains(invalidation_set))
+      continue;
+    pending_invalidations.Siblings().push_back(invalidation_set);
+    requires_sibling_invalidation = true;
   }
+
+  if (requires_sibling_invalidation || requires_descendant_invalidation)
+    node.SetNeedsStyleInvalidation();
 
   if (!requires_descendant_invalidation)
     return;
@@ -118,7 +131,10 @@ void PendingInvalidations::ScheduleSiblingInvalidationsAsDescendants(
 
 void PendingInvalidations::RescheduleSiblingInvalidationsAsDescendants(
     Element& element) {
-  DCHECK(element.parentNode());
+  auto* parent = element.parentNode();
+  DCHECK(parent);
+  if (parent->IsDocumentNode())
+    return;
   auto pending_invalidations_iterator =
       pending_invalidation_map_.find(&element);
   if (pending_invalidations_iterator == pending_invalidation_map_.end() ||
@@ -136,12 +152,11 @@ void PendingInvalidations::RescheduleSiblingInvalidationsAsDescendants(
       invalidation_lists.descendants.push_back(descendants);
     }
   }
-  ScheduleInvalidationSetsForNode(invalidation_lists, *element.parentNode());
+  ScheduleInvalidationSetsForNode(invalidation_lists, *parent);
 }
 
 void PendingInvalidations::ClearInvalidation(ContainerNode& node) {
-  if (!node.NeedsStyleInvalidation())
-    return;
+  DCHECK(node.NeedsStyleInvalidation());
   pending_invalidation_map_.erase(&node);
   node.ClearNeedsStyleInvalidation();
 }

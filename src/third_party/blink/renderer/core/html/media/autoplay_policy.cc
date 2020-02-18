@@ -12,7 +12,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -145,19 +144,8 @@ bool AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
 
 // static
 bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
-  if (!document.GetFrame())
-    return false;
-
-  WebFrame* web_frame = WebFrame::FromFrame(document.GetFrame());
-  if (!web_frame)
-    return false;
-
-  WebLocalFrame* frame = web_frame->ToWebLocalFrame();
-  if (!frame || !frame->Client())
-    return false;
-
-  if (WebUserMediaClient* media_client = frame->Client()->UserMediaClient())
-    return media_client->IsCapturing();
+  if (auto* local_frame = document.GetFrame())
+    return local_frame->IsCapturingMedia();
 
   return false;
 }

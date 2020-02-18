@@ -52,7 +52,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
@@ -68,7 +68,7 @@
 class SkBitmap;
 
 namespace blink {
-class WebMediaStreamCenter;
+class WebVideoCaptureImplManager;
 }
 
 namespace base {
@@ -122,7 +122,6 @@ class PeerConnectionTracker;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
-class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
 class StreamTextureFactory;
@@ -212,6 +211,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // ChildThread implementation via ChildThreadImpl:
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
+  // ChildThreadImpl implementation:
+  void OnBindReceiver(mojo::GenericPendingReceiver receiver) override;
+
   // CompositorDependencies implementation.
   bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
@@ -298,10 +300,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool EnableStreamTextureCopy();
 #endif
 
-  // Creates the embedder implementation of WebMediaStreamCenter.
-  // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter();
-
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();
   }
@@ -318,7 +316,7 @@ class CONTENT_EXPORT RenderThreadImpl
     return p2p_socket_dispatcher_.get();
   }
 
-  VideoCaptureImplManager* video_capture_impl_manager() const {
+  blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
   }
 
@@ -508,9 +506,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnGetAccessibilityTree();
 
   // mojom::Renderer:
-  void CreateEmbedderRendererService(
-      service_manager::mojom::ServiceRequest service_request) override;
   void CreateView(mojom::CreateViewParamsPtr params) override;
+  void DestroyView(int32_t view_id) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(
       int32_t routing_id,
@@ -520,8 +517,8 @@ class CONTENT_EXPORT RenderThreadImpl
       const FrameReplicationState& replicated_state,
       const base::UnguessableToken& devtools_frame_token) override;
   void SetUpEmbeddedWorkerChannelForServiceWorker(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest client_request)
-      override;
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          client_receiver) override;
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;
@@ -537,6 +534,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnSystemColorsChanged(int32_t aqua_color_variant,
                              const std::string& highlight_text_color,
                              const std::string& highlight_color) override;
+  void UpdateSystemColorInfo(
+      mojom::UpdateSystemColorInfoParamsPtr params) override;
   void PurgePluginListCache(bool reload_pages) override;
   void SetProcessState(mojom::RenderProcessState process_state) override;
   void SetSchedulerKeepActive(bool keep_active) override;
@@ -601,7 +600,7 @@ class CONTENT_EXPORT RenderThreadImpl
   base::Optional<AudioOutputIPCFactory> audio_output_ipc_factory_;
 
   // Used on the render thread.
-  std::unique_ptr<VideoCaptureImplManager> vc_manager_;
+  std::unique_ptr<blink::WebVideoCaptureImplManager> vc_manager_;
 
   // Used to keep track of the renderer's backgrounded and visibility state.
   // Updated via an IPC from the browser process. If nullopt, the browser
@@ -734,9 +733,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // this member.
   mojo::Binding<viz::mojom::CompositingModeWatcher>
       compositing_mode_watcher_binding_;
-
-  base::TimeTicks init_start_;
-  base::TimeTicks init_end_;
 
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 

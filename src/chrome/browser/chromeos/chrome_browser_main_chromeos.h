@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
-#include "chrome/browser/chromeos/crostini/crosvm_metrics.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/assistant/buildflags.h"
@@ -35,6 +34,11 @@ class LockToSingleUserManager;
 class AssistantClient;
 #endif
 
+namespace crostini {
+class CrostiniUnsupportedActionNotifier;
+class CrosvmMetrics;
+}  // namespace crostini
+
 namespace chromeos {
 
 class ArcKioskAppManager;
@@ -45,6 +49,8 @@ class EventRewriterDelegateImpl;
 class FastTransitionObserver;
 class GnubbyNotification;
 class IdleActionWarningObserver;
+class LoginScreenExtensionsLifetimeManager;
+class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
@@ -165,12 +171,19 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
 
+  std::unique_ptr<crostini::CrostiniUnsupportedActionNotifier>
+      crostini_unsupported_action_notifier_;
+
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
 
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
+  std::unique_ptr<LoginScreenExtensionsLifetimeManager>
+      login_screen_extensions_lifetime_manager_;
+  std::unique_ptr<LoginScreenExtensionsStorageCleaner>
+      login_screen_extensions_storage_cleaner_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
 

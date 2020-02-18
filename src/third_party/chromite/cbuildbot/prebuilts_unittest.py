@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.lib import constants
@@ -213,15 +214,6 @@ class BinhostConfWriterTest(
     # Provide a sample of private/public slave boards that are expected.
     public_slave_boards = ('amd64-generic', 'scarlet')
     private_slave_boards = ('cyan', 'nocturne', 'reef')
-
-    self._VerifyResults(public_slave_boards=public_slave_boards,
-                        private_slave_boards=private_slave_boards)
-
-  def testMasterPostsubmit(self):
-    self._Run('master-postsubmit')
-
-    public_slave_boards = ('amd64-generic', 'scarlet')
-    private_slave_boards = ('glados', 'grunt', 'reef')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)

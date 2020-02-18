@@ -62,10 +62,9 @@ class SyncEngine : public ModelTypeConfigurer {
     GURL service_url;
     std::string sync_user_agent;
     SyncEngine::HttpPostProviderFactoryGetter http_factory_getter;
-    std::string authenticated_account_id;
+    CoreAccountId authenticated_account_id;
     std::string invalidator_client_id;
     std::unique_ptr<SyncManagerFactory> sync_manager_factory;
-    bool delete_sync_data_folder = false;
     bool enable_local_sync_backend = false;
     base::FilePath local_sync_backend_folder;
     std::string restored_key_for_bootstrapping;

@@ -468,19 +468,17 @@ static void extract_planes(const SkBitmap& bm, SkYUVColorSpace yuvColorSpace, Pl
 
     SkASSERT(!(bm.width() % 2));
     SkASSERT(!(bm.height() % 2));
-
     planes->fYFull.allocPixels(SkImageInfo::Make(bm.width(), bm.height(), kGray_8_SkColorType,
-                                                 kPremul_SkAlphaType));
+                               kUnpremul_SkAlphaType));
     planes->fUFull.allocPixels(SkImageInfo::Make(bm.width(), bm.height(), kGray_8_SkColorType,
-                                                 kPremul_SkAlphaType));
+                               kUnpremul_SkAlphaType));
     planes->fVFull.allocPixels(SkImageInfo::Make(bm.width(), bm.height(), kGray_8_SkColorType,
-                                                 kPremul_SkAlphaType));
-    planes->fAFull.allocPixels(SkImageInfo::Make(bm.width(), bm.height(), kAlpha_8_SkColorType,
-                                                 kPremul_SkAlphaType));
+                               kUnpremul_SkAlphaType));
+    planes->fAFull.allocPixels(SkImageInfo::MakeA8(bm.width(), bm.height()));
     planes->fUQuarter.allocPixels(SkImageInfo::Make(bm.width()/2, bm.height()/2,
-                                                    kGray_8_SkColorType, kPremul_SkAlphaType));
-    planes->fVQuarter.allocPixels(SkImageInfo::Make(bm.width() / 2, bm.height() / 2,
-                                                    kGray_8_SkColorType, kPremul_SkAlphaType));
+                                  kGray_8_SkColorType, kUnpremul_SkAlphaType));
+    planes->fVQuarter.allocPixels(SkImageInfo::Make(bm.width()/2, bm.height()/2,
+                                  kGray_8_SkColorType, kUnpremul_SkAlphaType));
 
     for (int y = 0; y < bm.height(); ++y) {
         for (int x = 0; x < bm.width(); ++x) {
@@ -941,7 +939,7 @@ static void make_RG_88(const GrCaps* caps,
             currPixel += 2;
         }
     }
-    *format = caps->getBackendFormatFromColorType(GrColorType::kRG_88);
+    *format = caps->getDefaultBackendFormat(GrColorType::kRG_88, GrRenderable::kNo);
 }
 
 static void make_RG_1616(const GrCaps* caps,
@@ -975,7 +973,7 @@ static void make_RG_1616(const GrCaps* caps,
         }
     }
 
-    *format = caps->getBackendFormatFromColorType(GrColorType::kRG_1616);
+    *format = caps->getDefaultBackendFormat(GrColorType::kRG_1616, GrRenderable::kNo);
 }
 
 static void make_RGBA_16(const GrCaps* caps,
@@ -1008,7 +1006,7 @@ static void make_RGBA_16(const GrCaps* caps,
         }
     }
 
-    *format = caps->getBackendFormatFromColorType(GrColorType::kRGBA_16161616);
+    *format = caps->getDefaultBackendFormat(GrColorType::kRGBA_16161616, GrRenderable::kNo);
     return;
 }
 
@@ -1041,7 +1039,7 @@ static void make_R_16(const GrCaps* caps,
         }
     }
 
-    *format = caps->getBackendFormatFromColorType(GrColorType::kR_16);
+    *format = caps->getDefaultBackendFormat(GrColorType::kR_16, GrRenderable::kNo);
 }
 
 static GrBackendTexture create_yuva_texture(GrContext* context, const SkBitmap& bm,
@@ -1080,6 +1078,8 @@ static GrBackendTexture create_yuva_texture(GrContext* context, const SkBitmap& 
             }
         }
 
+        // TODO: SkColorType needs to be expanded to allow this to be done via the
+        // GrContext::createBackendTexture API
         tex = gpu->createBackendTexture(bm.width(), bm.height(), format,
                                         GrMipMapped::kNo, GrRenderable::kNo,
                                         pixels, rowBytes, nullptr, GrProtected::kNo);
@@ -1219,7 +1219,6 @@ protected:
                             // know about the intended domain and the domain padding bleeds in
                             counterMod = 1;
                         }
-                        counterMod = 1;
                         switch (counterMod) {
                         case 0:
                             fImages[opaque][cs][format] = SkImage::MakeFromYUVATexturesCopy(

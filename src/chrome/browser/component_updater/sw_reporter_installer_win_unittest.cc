@@ -29,7 +29,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/mock_component_updater_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace component_updater {
@@ -201,7 +201,7 @@ class SwReporterInstallerTest : public ::testing::Test {
 
   // |ComponentReady| asserts that it is run on the UI thread, so we must
   // create test threads before calling it.
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Bound callback to the |SwReporterComponentReady| method.
   OnComponentReadyCallback on_component_ready_callback_;
@@ -742,7 +742,7 @@ class SwReporterOnDemandFetcherTest : public ::testing::Test,
 
   bool component_can_be_updated_ = false;
   bool error_callback_called_ = false;
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SwReporterOnDemandFetcherTest);
 };

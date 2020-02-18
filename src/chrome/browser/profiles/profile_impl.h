@@ -23,6 +23,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/identity/public/mojom/identity_service.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -43,6 +45,10 @@ class SupervisedUserTestBase;
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace identity {
+class IdentityService;
 }
 
 namespace policy {
@@ -87,10 +93,6 @@ class ProfileImpl : public Profile {
       override;
   content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   content::BackgroundSyncController* GetBackgroundSyncController() override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateMediaRequestContext() override;
   void SetCorsOriginAccessListForOrigin(
       const url::Origin& source_origin,
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
@@ -114,6 +116,7 @@ class ProfileImpl : public Profile {
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
   base::FilePath GetPath() override;
+  base::Time GetCreationTime() const override;
   bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
   base::FilePath GetPath() const override;
@@ -147,7 +150,6 @@ class ProfileImpl : public Profile {
   policy::ProfilePolicyConnector* GetProfilePolicyConnector() override;
   const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
       const override;
-  net::URLRequestContextGetter* GetRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
@@ -160,12 +162,15 @@ class ProfileImpl : public Profile {
   ExitType GetLastSessionExitType() override;
   bool ShouldRestoreOldSessionCookies() override;
   bool ShouldPersistSessionCookies() override;
+  identity::mojom::IdentityService* GetIdentityService() override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
   void OnLogin() override;
   void InitChromeOSPreferences() override;
 #endif  // defined(OS_CHROMEOS)
+
+  void SetCreationTimeForTesting(base::Time creation_time) override;
 
  private:
 #if defined(OS_CHROMEOS)
@@ -183,6 +188,7 @@ class ProfileImpl : public Profile {
   ProfileImpl(const base::FilePath& path,
               Delegate* delegate,
               CreateMode create_mode,
+              base::Time creation_time,
               scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
 #if defined(OS_ANDROID)
@@ -215,14 +221,28 @@ class ProfileImpl : public Profile {
   void UpdateAvatarInStorage();
   void UpdateIsEphemeralInStorage();
 
+  // Called to initialize Data Reduction Proxy.
+  void InitializeDataReductionProxy();
+
   policy::ConfigurationPolicyProvider* configuration_policy_provider();
 
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
 
+  base::Time creation_time_;
+
   // Task runner used for file access in the profile path.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
+  // The Identity Service instance for this profile. This should not be exposed
+  // outside of ProfileImpl except through |remote_identity_service_| by way of
+  // |GetIdentityService()|.
+  std::unique_ptr<identity::IdentityService> identity_service_impl_;
+
+  // A Mojo connection to the above service instance. Exposed to clients via
+  // |GetIdentityService()|.
+  mojo::Remote<identity::mojom::IdentityService> remote_identity_service_;
 
   // !!! BIG HONKING WARNING !!!
   //  The order of the members below is important. Do not change it unless

@@ -19,6 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "components/crx_file/id_util.h"
+#include "components/device_event_log/device_event_log.h"
 
 namespace chromeos {
 namespace onc {
@@ -162,6 +164,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateEAP(repaired.get());
     } else if (&signature == &kCertificateSignature) {
       valid = ValidateCertificate(repaired.get());
+    } else if (&signature == &kScopeSignature) {
+      valid = ValidateScope(repaired.get());
     } else if (&signature == &kTetherWithStateSignature) {
       valid = ValidateTether(repaired.get());
     }
@@ -622,10 +626,17 @@ bool Validator::ValidateToplevelConfiguration(base::DictionaryValue* result) {
 bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
   using namespace ::onc::network_config;
 
+  const std::string* onc_type = result->FindStringKey(kType);
+  if (onc_type && *onc_type == ::onc::network_type::kWimaxDeprecated) {
+    AddValidationIssue(/*is_error=*/false, "WiMax is deprecated");
+    return true;
+  }
+
   const char* const kValidTypes[] = {
       ::onc::network_type::kEthernet, ::onc::network_type::kVPN,
       ::onc::network_type::kWiFi,     ::onc::network_type::kCellular,
-      ::onc::network_type::kWimax,    ::onc::network_type::kTether};
+      ::onc::network_type::kTether,
+  };
   const std::vector<const char*> valid_types(toVector(kValidTypes));
   const char* const kValidIPConfigTypes[] = {kIPConfigTypeDHCP,
                                              kIPConfigTypeStatic};
@@ -676,9 +687,9 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     } else if (type == ::onc::network_type::kCellular) {
       all_required_exist &=
           RequireField(*result, ::onc::network_config::kCellular);
-    } else if (type == ::onc::network_type::kWimax) {
+    } else if (type == ::onc::network_type::kWimaxDeprecated) {
       all_required_exist &=
-          RequireField(*result, ::onc::network_config::kWimax);
+          RequireField(*result, ::onc::network_config::kWimaxDeprecated);
     } else if (type == ::onc::network_type::kVPN) {
       all_required_exist &= RequireField(*result, ::onc::network_config::kVPN);
     } else if (type == ::onc::network_type::kTether) {
@@ -1006,7 +1017,7 @@ bool Validator::ValidateGlobalNetworkConfiguration(
 
   // Ensure the list contains only legitimate network type identifiers.
   const char* const kValidNetworkTypeValues[] = {kCellular, kEthernet, kWiFi,
-                                                 kWimax, kTether};
+                                                 kWimaxDeprecated, kTether};
   const std::vector<const char*> valid_network_type_values(
       toVector(kValidNetworkTypeValues));
   if (!ListFieldContainsValidValues(*result, kDisableNetworkTypes,
@@ -1110,6 +1121,33 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
   return !error_on_missing_field_ || all_required_exist;
 }
 
+bool Validator::ValidateScope(base::DictionaryValue* result) {
+  using namespace ::onc::scope;
+
+  const char* const kValidTypes[] = {kDefault, kExtension};
+  const std::vector<const char*> valid_types(toVector(kValidTypes));
+  if (FieldExistsAndHasNoValidValue(*result, kType, valid_types) ||
+      FieldExistsAndIsEmpty(*result, kId)) {
+    return false;
+  }
+
+  bool all_required_exist = RequireField(*result, kType);
+  const std::string* type_string = result->FindStringKey(kType);
+  if (type_string && *type_string == kExtension) {
+    all_required_exist &= RequireField(*result, kId);
+    // Check Id validity for type 'Extension'.
+    const std::string* id_string = result->FindStringKey(kId);
+    if (id_string && !crx_file::id_util::IdIsValid(*id_string)) {
+      std::ostringstream msg;
+      msg << "Field '" << kId << "' is not a valid extension id.";
+      AddValidationIssue(false /* is_error */, msg.str());
+      return false;
+    }
+  }
+
+  return !error_on_missing_field_ || all_required_exist;
+}
+
 bool Validator::ValidateTether(base::DictionaryValue* result) {
   using namespace ::onc::tether;
 
@@ -1135,9 +1173,9 @@ void Validator::AddValidationIssue(bool is_error,
   std::string message = msg.str();
 
   if (is_error)
-    LOG(ERROR) << message;
+    NET_LOG(ERROR) << message;
   else if (log_warnings_)
-    LOG(WARNING) << message;
+    NET_LOG(DEBUG) << message;
 
   validation_issues_.push_back({is_error, message});
 }

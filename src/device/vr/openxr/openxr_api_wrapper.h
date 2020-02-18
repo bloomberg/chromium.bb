@@ -12,53 +12,74 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "third_party/openxr/include/openxr/openxr.h"
-#include "third_party/openxr/include/openxr/openxr_platform.h"
+#include "base/optional.h"
+#include "device/vr/vr_export.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
+#include "third_party/openxr/src/include/openxr/openxr_platform.h"
 
 namespace gfx {
 class Quaternion;
 class Point3F;
+class Size;
+class Transform;
 }  // namespace gfx
 
 namespace device {
+
+class OpenXrGamepadHelper;
+class VRTestHook;
+class ServiceTestHook;
 
 class OpenXrApiWrapper {
  public:
   OpenXrApiWrapper();
   ~OpenXrApiWrapper();
+  bool IsInitialized() const;
 
   static std::unique_ptr<OpenXrApiWrapper> Create();
 
   static bool IsHardwareAvailable();
   static bool IsApiAvailable();
 
-  XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
+  static VRTestHook* GetTestHook();
+
+  bool session_ended() const { return session_ended_; }
+
+  XrResult InitSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
+                       std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
 
-  XrResult GetHeadPose(gfx::Quaternion* orientation,
-                       gfx::Point3F* position) const;
+  XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
+                       base::Optional<gfx::Point3F>* position) const;
 
+  bool HasPosition() const;
+  gfx::Size GetViewSize() const;
+  const XrView& GetView(uint32_t index) const;
   XrTime GetPredictedDisplayTime() const;
-
-  void GetViewSize(uint32_t* width, uint32_t* height) const;
   XrResult GetLuid(LUID* luid) const;
+  std::string GetRuntimeName() const;
+  bool GetStageParameters(XrExtent2Df* stage_bounds,
+                          gfx::Transform* standing_transform) const;
+
+  static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
  private:
   void Reset();
   bool Initialize();
   void Uninitialize();
-  bool IsInitialized() const;
 
   XrResult InitializeSystem();
   XrResult PickEnvironmentBlendMode(XrSystemId system);
+  XrResult ProcessEvents();
 
   XrResult CreateSession(
       const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
   XrResult CreateSwapchain();
   XrResult CreateSpace(XrReferenceSpaceType type, XrSpace* space);
-  XrResult CreateViewSpace();
+  XrResult CreateGamepadHelper(
+      std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginSession();
   XrResult UpdateProjectionLayers();
@@ -72,6 +93,13 @@ class OpenXrApiWrapper {
   bool HasFrameState() const;
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
+  XrResult GetStageBounds(XrExtent2Df* stage_bounds) const;
+
+  bool session_ended_;
+
+  // Testing objects
+  static VRTestHook* test_hook_;
+  static ServiceTestHook* service_test_hook_;
 
   // OpenXR objects
 
@@ -87,6 +115,7 @@ class OpenXrApiWrapper {
   XrSwapchain color_swapchain_;
   std::vector<XrSwapchainImageD3D11KHR> color_swapchain_images_;
   XrSpace local_space_;
+  XrSpace stage_space_;
   XrSpace view_space_;
 
   // These objects store information about the current frame. They're

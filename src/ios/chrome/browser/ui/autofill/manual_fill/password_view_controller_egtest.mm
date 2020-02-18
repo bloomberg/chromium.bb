@@ -18,7 +18,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -61,13 +61,13 @@ id<GREYMatcher> KeyboardIconMatcher() {
 // Returns a matcher for the password table view in manual fallback.
 id<GREYMatcher> PasswordTableViewMatcher() {
   return grey_accessibilityID(
-      manual_fill::PasswordTableViewAccessibilityIdentifier);
+      manual_fill::kPasswordTableViewAccessibilityIdentifier);
 }
 
 // Returns a matcher for the password search bar in manual fallback.
 id<GREYMatcher> PasswordSearchBarMatcher() {
   return grey_accessibilityID(
-      manual_fill::PasswordSearchBarAccessibilityIdentifier);
+      manual_fill::kPasswordSearchBarAccessibilityIdentifier);
 }
 
 // Returns a matcher for the button to open password settings in manual
@@ -328,12 +328,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // password.
 // TODO(crbug.com/981922): Re-enable this test due to failing DB call.
 - (void)DISABLED_testPasswordControllerResumes {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 12)) {
-    // TODO(crbug.com/976348): iOS 11 support is being deprecated, disable this
-    // failing test for now.
-    return;
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -372,16 +366,8 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is resumed after dismissing "Other
 // Passwords".
-- (void)testPasswordControllerResumesWhenOtherPasswordsDismiss {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
-    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
-    return;
-  }
-  if (base::ios::IsRunningOnIOS13OrLater() && [ChromeEarlGrey isIPadIdiom]) {
-    // TODO(crbug.com/984977): Support this behavior in iPads again.
-    return;
-  }
-
+// TODO(crbug.com/984977): Support this behavior again.
+- (void)DISABLED_testPasswordControllerResumesWhenOtherPasswordsDismiss {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -510,11 +496,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that after switching fields the content size of the table view didn't
 // grow.
 - (void)testPasswordControllerKeepsRightSize {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
-    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
-    return;
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];

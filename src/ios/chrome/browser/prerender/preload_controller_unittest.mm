@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prerender/preload_controller.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -103,7 +103,7 @@ class PreloadControllerTest : public PlatformTest {
         net::NetworkChangeNotifier::CONNECTION_3G);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<net::TestURLFetcherFactory> test_url_fetcher_factory_;

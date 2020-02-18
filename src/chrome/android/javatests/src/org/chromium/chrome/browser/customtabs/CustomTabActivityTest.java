@@ -34,11 +34,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.DrawableRes;
-import android.support.customtabs.CustomTabsCallback;
-import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsSession;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -53,6 +48,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+
+import androidx.browser.customtabs.CustomTabsCallback;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSession;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -80,7 +81,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -89,9 +89,10 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
-import org.chromium.chrome.browser.browserservices.SessionDataHolder;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -157,8 +158,8 @@ public class CustomTabActivityTest {
     private static final int NUM_CHROME_MENU_ITEMS = 5;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
-    private static final String GEOLOCATION_PAGE =
-            "/chrome/test/data/geolocation/geolocation_on_load.html";
+    private static final String POPUP_PAGE =
+            "/chrome/test/data/popup_blocker/popup-window-open.html";
     private static final String SELECT_POPUP_PAGE = "/chrome/test/data/android/select.html";
     private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
     private static final String TARGET_BLANK_TEST_PAGE =
@@ -604,8 +605,7 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     public void testAppMenuForMediaViewer() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.MEDIA_VIEWER);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.MEDIA_VIEWER);
         IntentHandler.addTrustedIntentExtras(intent);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
@@ -625,8 +625,7 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     public void testAppMenuForReaderMode() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.READER_MODE);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.READER_MODE);
         IntentHandler.addTrustedIntentExtras(intent);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
@@ -814,19 +813,16 @@ public class CustomTabActivityTest {
 
     /**
      * Test whether a custom tab can be reparented to a new activity while showing an infobar.
-     *
-     * TODO(timloh): Use a different InfoBar type once we only use modals for permission prompts.
      */
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @RetryOnFailure
     public void testTabReparentingInfoBar() throws InterruptedException {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
-                        mTestServer.getURL(GEOLOCATION_PAGE)));
+                        mTestServer.getURL(POPUP_PAGE)));
         CriteriaHelper.pollUiThread(
                 () -> isInfoBarSizeOne(mCustomTabActivityTestRule.getActivity().getActivityTab()));
 
@@ -2707,8 +2703,10 @@ public class CustomTabActivityTest {
     private void checkPageLoadMetrics(boolean allowMetrics)
             throws InterruptedException, TimeoutException {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
+        final AtomicReference<Long> largestContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
+        final AtomicReference<Float> layoutShiftScore = new AtomicReference<>(-1f);
         final AtomicReference<Boolean> sawNetworkQualityEstimates = new AtomicReference<>(false);
 
         CustomTabsCallback cb = new CustomTabsCallback() {
@@ -2725,6 +2723,12 @@ public class CustomTabActivityTest {
                     sawNetworkQualityEstimates.set(true);
                 }
 
+                float layoutShiftScoreValue =
+                        args.getFloat(PageLoadMetrics.LAYOUT_SHIFT_SCORE, -1f);
+                if (layoutShiftScoreValue >= 0f) {
+                    layoutShiftScore.set(layoutShiftScoreValue);
+                }
+
                 long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
                 if (navigationStart == -1) {
                     // Untested metric callback.
@@ -2739,6 +2743,13 @@ public class CustomTabActivityTest {
                 if (firstContentfulPaint > 0) {
                     Assert.assertTrue(firstContentfulPaint <= (current - navigationStart));
                     firstContentfulPaintMs.set(firstContentfulPaint);
+                }
+
+                long largestContentfulPaint =
+                        args.getLong(PageLoadMetrics.LARGEST_CONTENTFUL_PAINT, -1);
+                if (largestContentfulPaint > 0) {
+                    Assert.assertTrue(largestContentfulPaint <= (current - navigationStart));
+                    largestContentfulPaintMs.set(largestContentfulPaint);
                 }
 
                 long loadEventStart = args.getLong(PageLoadMetrics.LOAD_EVENT_START, -1);
@@ -2776,6 +2787,25 @@ public class CustomTabActivityTest {
                 // Expected.
             }
             assertEquals(-1L, (long) firstContentfulPaintMs.get());
+
+            try {
+                CriteriaHelper.pollInstrumentationThread(() -> largestContentfulPaintMs.get() > 0);
+            } catch (AssertionError e) {
+                // Expected.
+            }
+            assertEquals(-1L, (long) largestContentfulPaintMs.get());
+        }
+
+        // Navigate to a new page, as metrics like LCP are only reported at the end of the page load
+        // lifetime.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
+            activity.getComponent().resolveNavigationController().navigate("about:blank");
+        });
+
+        if (allowMetrics) {
+            CriteriaHelper.pollInstrumentationThread(() -> largestContentfulPaintMs.get() > 0);
+            CriteriaHelper.pollInstrumentationThread(() -> layoutShiftScore.get() != -1f);
         }
     }
 

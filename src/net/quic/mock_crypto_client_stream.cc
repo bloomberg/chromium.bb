@@ -134,8 +134,7 @@ bool MockCryptoClientStream::CryptoConnect() {
             QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
       }
       session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
-      session()->OnCryptoHandshakeEvent(
-          QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+      session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED);
       break;
     }
 
@@ -179,6 +178,7 @@ bool MockCryptoClientStream::CryptoConnect() {
       session()->connection()->SetDefaultEncryptionLevel(
           ENCRYPTION_FORWARD_SECURE);
       session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+      session()->connection()->OnHandshakeComplete();
       break;
     }
 

@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Filters voor gebeurtenisstream verbergen</translation>
 <translation id="1088219014394087294">Geen koppen.</translation>
 <translation id="1106741348836243114">Geluidsfeedback (earcons) in- of uitschakelen.</translation>
-<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "anna", "b": "bernard", "c": "cornelis", "d": "dirk", "e": "eduard", "f": "ferdinand", "g": "gerard", "h": "hendrik", "i": "izaak", "j": "johannes", "k": "karel", "l": "lodewijk", "m": "maria", "n": "nico", "o": "otto","p": "pieter", "q": "quirinus", "r": "rudolf", "s": "simon", "t": "tinus", "u": "utrecht", "v": "victor", "w": "willem","x": "xantippe", "y": "ypsilon", "z": "zaandam"}</translation>
 <translation id="1120938014254001895">Veeg met twee vingers omhoog</translation>
 <translation id="1124771028211010580">De huidige weergavestijl is naast elkaar.</translation>
 <translation id="1126928665165112660">Niet cursief</translation>
@@ -69,7 +69,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1385214448885562192">Druk op Enter om door te gaan of op Escape om te annuleren. Druk op de pijl-omlaag voor het volgende resultaat en op de pijl-omhoog voor het vorige resultaat.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Kenmerken van tekst met opmaak aankondigen</translation>
 <translation id="1405567553485452995">Lichtgroen</translation>
 <translation id="1417889266572670458">Marineblauw</translation>
 <translation id="1431911867058218151">Pruim</translation>
@@ -169,6 +168,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2220529011494928058">Een probleem melden</translation>
 <translation id="2223693656926968778">Actie ondernemen voor huidig item</translation>
 <translation id="225732394367814946">Spreeksnelheid verhogen</translation>
+<translation id="2267538686624070261">Spelfout sluiten</translation>
 <translation id="2267945578749931355">Volgend teken</translation>
 <translation id="2278490101488436824">Veeg met drie vingers naar links</translation>
 <translation id="2281234842553884450">Vorige scrollbar</translation>
@@ -207,6 +207,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="257674075312929031">Groep</translation>
 <translation id="2582407057977008361">Terzijde</translation>
 <translation id="2592212930811759050">Dubbeltik om te beginnen met bewerken</translation>
+<translation id="2598495320872286378">Grammaticafout</translation>
 <translation id="2606210917827248971">met {COUNT,plural, =1{# item}other{# items}}</translation>
 <translation id="2614981083756825552">MathML-indeling</translation>
 <translation id="2624431853467395961">Leermodus openen</translation>
@@ -422,7 +423,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4039983576244166038">Lege koptekst rij</translation>
 <translation id="4042843249978639960">Geen volgende kop voor niveau 2.</translation>
 <translation id="4043348641337972076">Geen vorig ARIA-oriëntatiepunt.</translation>
-<translation id="4045764028670444336">Begin van spelfout</translation>
 <translation id="4047216625641135770">Markeren</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Limoengroen</translation>
@@ -484,6 +484,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4372705107434148843">Spraak stoppen</translation>
 <translation id="4373197658375206385">Geen vorig item dat geen link is.</translation>
 <translation id="4376316291247992553">Afbeelding als braille weergeven</translation>
+<translation id="437809255587011096">Stijl van aankondigingstekst</translation>
 <translation id="4378308539633073595">Vooruit scrollen</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -504,7 +505,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4547556996012970016">Volgende kop voor niveau 5</translation>
 <translation id="4562381607973973258">Koptekst</translation>
 <translation id="4569941707103739422">Druk op de pijl-omhoog of -omlaag om te navigeren of druk op Enter om te activeren.</translation>
-<translation id="4570424871453628777">Einde van spelfout</translation>
 <translation id="4591507479202817876">, geselecteerd</translation>
 <translation id="4597532268155981612">formulier</translation>
 <translation id="4597896406374528575">april</translation>
@@ -727,7 +727,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6037602951055904232">Vooruit schuiven</translation>
 <translation id="6042826534790431634">Druk op de zoektoets en de spatiebalk om te activeren.</translation>
 <translation id="6044160928851315051">Scherm donkerder maken</translation>
-<translation id="6065293622157674001">Begin van grammaticafout</translation>
 <translation id="6082768461603900813">Basisnavigatie</translation>
 <translation id="6118126368611144850">Android-apps voor Chrome. Als de Play Store op je apparaat staat, kun je een voorproefje van ChromeVox met Android-apps krijgen. Probeer de experimentele ondersteuning door Google Chrome Canary te downloaden vanuit de Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -760,7 +759,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6348869651006731065">Schemergrijs</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{opsommingsteken}other{# opsommingstekens}}</translation>
 <translation id="6355910664415701303">Geen vorig lijstitem.</translation>
-<translation id="6360318852623800555">Kenmerken tekst met opmaak</translation>
 <translation id="6364795331201459219">k6</translation>
 <translation id="6368143427468974988">Vorige kop</translation>
 <translation id="6376999910001533545">Kastanjebruin</translation>
@@ -824,6 +822,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6833103209700200188">Voettekst</translation>
 <translation id="6858047746862060282">Proloog</translation>
 <translation id="6859876496651143278">Veeg met één vinger naar links</translation>
+<translation id="6865519907510167493">Spelfout</translation>
 <translation id="6871161210040114857">Hoofdlettergebruik wordt genegeerd.</translation>
 <translation id="6877435256196695200">Geen volgende afbeelding.</translation>
 <translation id="6897341342232909480">Naar links verplaatsen</translation>
@@ -868,7 +867,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7153618581592392745">Lavendel</translation>
 <translation id="7157306005867877619">Uittreksel</translation>
-<translation id="7161425887892204659">Eind van tekstovereenkomst</translation>
 <translation id="7161771961008409533">Pop-up-knop</translation>
 <translation id="7165714724802225287">De huidige weergavestijl is interleave.</translation>
 <translation id="7167657087543110">tekenecho</translation>
@@ -906,7 +904,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabel verlaten.</translation>
 <translation id="738899727977260036">Leisteenblauw</translation>
-<translation id="7392145451309930991">Begin van tekstovereenkomst</translation>
 <translation id="739763518212184081">Vorige regel</translation>
 <translation id="7400575256015741911">Spelfout gedetecteerd</translation>
 <translation id="7408482676469142474">tabel</translation>
@@ -1085,7 +1082,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8153880621934657047">Niet in tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">De ChromeVox-taal automatisch detecteren en schakelen.</translation>
 <translation id="8184828902145951186">rij</translation>
 <translation id="8186185314313222077">volledig scherm in- of uitschakelen</translation>
 <translation id="8199231515320852133">De koppen van de huidige cel melden</translation>
@@ -1116,12 +1112,13 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8446884382197647889">Meer informatie</translation>
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">heeft toegangscode, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Grammaticafout sluiten</translation>
 <translation id="847154984256717791">bezet</translation>
 <translation id="8476408756881832830">Afspelen onderbreken wanneer ChromeVox spreekt</translation>
 <translation id="8476508772960940536">vensteroverzicht</translation>
 <translation id="8503360654911991865">Detailniveau van navigatie verkleinen</translation>
-<translation id="8504695234784218301">Einde van grammaticafout</translation>
 <translation id="8520472399088452386">Draaiknop</translation>
+<translation id="8534394844575788431">Opmaak</translation>
 <translation id="8538744478902126321">Schat de kop van de rij van de huidige cel</translation>
 <translation id="8540054775867439484">Omloop naar boven</translation>
 <translation id="8542271685829952264">Als je alle ChromeVox-opdrachten en -sneltoetsen wilt bekijken, druk je op Zoeken + punt. Vervolgens gebruik je de pijltoetsen om door de menu's te navigeren en druk je op Enter om een opdracht te activeren. Je kunt terugkeren door op Zoeken + o en vervolgens op t te drukken.</translation>
@@ -1201,6 +1198,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tabblad</translation>
 <translation id="9151211641321628915">Geeft een korte beschrijving van de huidige positie</translation>
+<translation id="9151249085738989067">ChromeVox-stem automatisch wijzigen op basis van taal</translation>
 <translation id="9153606228985488238">Toonhoogte <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Naar het einde van de huidige kolom gaan</translation>
 <translation id="9173115498289768110">Volume <ph name="PERCENT" /> procent</translation>

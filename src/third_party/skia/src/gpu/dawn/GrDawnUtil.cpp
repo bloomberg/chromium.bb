@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "GrDawnUtil.h"
+#include "src/gpu/dawn/GrDawnUtil.h"
 
 GrPixelConfig GrDawnFormatToPixelConfig(dawn::TextureFormat format) {
     switch (format) {
@@ -22,6 +22,12 @@ GrPixelConfig GrDawnFormatToPixelConfig(dawn::TextureFormat format) {
     }
 }
 
+bool GrDawnFormatIsRenderable(dawn::TextureFormat format) {
+    // For now, all the formats above are renderable. If a non-renderable format is added
+    // (see dawn/src/dawn_native/Format.cpp), an exception should be added here.
+    return true;
+}
+
 bool GrPixelConfigToDawnFormat(GrPixelConfig config, dawn::TextureFormat* format) {
     switch (config) {
         case kRGBA_8888_GrPixelConfig:
@@ -34,9 +40,33 @@ bool GrPixelConfigToDawnFormat(GrPixelConfig config, dawn::TextureFormat* format
             *format = dawn::TextureFormat::BGRA8Unorm;
             return true;
         case kAlpha_8_GrPixelConfig:
+        case kAlpha_8_as_Red_GrPixelConfig:
             *format = dawn::TextureFormat::R8Unorm;
             return true;
         default:
             return false;
     }
 }
+
+size_t GrDawnRoundRowBytes(size_t rowBytes) {
+    // Dawn requires that rowBytes be a multiple of 256. (This is actually imposed by D3D12.)
+    return (rowBytes + 0xFF) & ~0xFF;
+}
+
+#if GR_TEST_UTILS
+const char* GrDawnFormatToStr(dawn::TextureFormat format) {
+    switch (format) {
+        case dawn::TextureFormat::RGBA8Unorm:
+            return "RGBA8Unorm";
+        case dawn::TextureFormat::BGRA8Unorm:
+            return "BGRA8Unorm";
+        case dawn::TextureFormat::R8Unorm:
+            return "R8Unorm";
+        case dawn::TextureFormat::Depth24PlusStencil8:
+            return "Depth24PlusStencil8";
+        default:
+            SkASSERT(false);
+            return "Unknown";
+    }
+}
+#endif

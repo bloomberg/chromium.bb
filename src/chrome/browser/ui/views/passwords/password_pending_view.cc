@@ -201,9 +201,11 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
 
 PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
                                          views::View* anchor_view,
-                                         const gfx::Point& anchor_point,
                                          DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason),
+    : PasswordBubbleViewBase(web_contents,
+                             anchor_view,
+                             reason,
+                             /*auto_dismissable=*/false),
       is_update_bubble_(model()->state() ==
                         password_manager::ui::PENDING_PASSWORD_UPDATE_STATE),
       sign_in_promo_(nullptr),
@@ -313,7 +315,8 @@ std::unique_ptr<views::View> PasswordPendingView::CreateFootnoteView() {
     return nullptr;
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
-      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
+      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;

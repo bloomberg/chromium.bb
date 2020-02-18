@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
@@ -67,8 +67,8 @@ class RecoveryComponentTest : public testing::Test {
   RecoveryComponentTest() : task_runner_(new base::TestSimpleTaskRunner) {}
 
   // Needed for the current task runner to be available.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
 
   // The recover component under test. This declaration must be after the
   // |ui_message_loop_| because the |RecoveryComponent| constructor needs

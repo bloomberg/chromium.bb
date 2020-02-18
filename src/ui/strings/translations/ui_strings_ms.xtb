@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1m}other{#m}}</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
 <translation id="1243314992276662751">Muat naik</translation>
+<translation id="1266864766717917324">Tidak dapat berkongsi <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Alih <ph name="DRAGGED_APP" /> ke folder <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Cuba kongsikan teks dalam bahagian yang lebih kecil.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APL YANG DISYORKAN</translation>
 <translation id="1368832886055348810">Kiri ke Kanan</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1398853756734560583">Maksimumkan</translation>
 <translation id="1409544243779336081">Pengesyoran apl</translation>
+<translation id="1450753235335490080">Tidak dapat berkongsi <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Anda pernah mencari perkara ini. Tindakan memadamkan "<ph name="QUERY" />" daripada sejarah anda akan mengalihkannya keluar daripada akaun anda pada semua peranti anda.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minit dan }other{# minit dan }}</translation>
 <translation id="1643823602425662293">Pemberitahuan</translation>
@@ -35,9 +38,11 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Pilih &amp;semua</translation>
 <translation id="1938451708255335766">Untuk melaraskan ketumpatan paparan tetingkap, mulakan semula apl.</translation>
+<translation id="2006524834898217237">Pastikan peranti ini disambungkan ke Internet.</translation>
 <translation id="208586643495776849">Sila cuba lagi</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1h}other{#h}}</translation>
 <translation id="2148716181193084225">Hari ini</translation>
+<translation id="2161656808144014275">Teks</translation>
 <translation id="2168039046890040389">Halaman Ke Atas</translation>
 <translation id="2190355936436201913">(kosong)</translation>
 <translation id="2192232475740621500">Gunakan ketumpatan rendah</translation>
@@ -49,7 +54,6 @@
 <translation id="2388990488038464401">Panggil nombor ini daripada telefon anda?</translation>
 <translation id="24452542372838207">Kembangkan pemberitahuan</translation>
 <translation id="2445449901874883781">Gunakan ketumpatan tinggi</translation>
-<translation id="2451871130406122810">Dihantar ke peranti</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2497284189126895209">Semua Fail</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 hari}other{# hari}}</translation>
 <translation id="3295886253693811851">Buat panggilan daripada</translation>
 <translation id="335581015389089642">Pertuturan</translation>
+<translation id="3389286852084373014">Teks terlalu besar</translation>
 <translation id="3443810440409579745">Tab diterima.</translation>
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="348799646910989694">Rak disembunyikan secara automatik</translation>
@@ -85,6 +90,7 @@
 <translation id="3618849550573277856">Cari “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pilih Folder untuk Dimuat Naik</translation>
 <translation id="3660179305079774227">Anak Panah Atas</translation>
+<translation id="3670030362669914947">Nombor</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Teruskan membaca daripada peranti mudah alih anda <ph name="TITLE" /></translation>
@@ -100,7 +106,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 bulan yang lalu}other{# bulan yang lalu}}</translation>
 <translation id="4289300219472526559">Mula Bercakap</translation>
 <translation id="4316910396681052118">SEMUA APL</translation>
-<translation id="4467014365953759647">Tidak dapat menghantar nombor</translation>
 <translation id="4588090240171750605">Tatal ke Kanan</translation>
 <translation id="4690510401873698237">Rak di bahagian bawah</translation>
 <translation id="4724120544754982507">Pusat Pemberitahuan, <ph name="UNREAD_NOTIFICATION_COUNT" /> pemberitahuan belum dibaca</translation>
@@ -108,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{Berbaki 1 bulan}other{Berbaki # bulan}}</translation>
 <translation id="4841881773802181781">Penyisipan</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="4888938634149558681">Buat panggilan</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="4971687151119236543">Lagu Media Sebelumnya</translation>
 <translation id="5046499563572181734">Ketik di sini</translation>
@@ -127,6 +133,7 @@
 <translation id="5583640892426849032">Undur ruang</translation>
 <translation id="5613020302032141669">Anak Panah Kiri</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Aktif hari ini}=1{Aktif 1 hari yang lalu}other{Aktif # hari yang lalu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 hari dan }other{# hari dan }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{dalam 1t}other{dalam #t}}</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
@@ -150,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 saat yang lalu}other{# saat yang lalu}}</translation>
 <translation id="6430678249303439055">Sekat semua pemberitahuan daripada apl ini</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Sesaat yang lalu}other{# saat yang lalu}}</translation>
+<translation id="6539092367496845964">Kesilapan telah berlaku. Cuba sebentar lagi.</translation>
 <translation id="654149438358937226">Sekat semua pemberitahuan</translation>
 <translation id="6567071839949112727">klik pewaris</translation>
 <translation id="6578407462441924264">Tidak bernama</translation>
 <translation id="6612467943526193239">Untuk keluar daripada penentukuran, tekan Esc.</translation>
 <translation id="6620110761915583480">Simpan Fail</translation>
+<translation id="6656912866303152668">Pastikan penyegerakan <ph name="TARGET_DEVICE_NAME" /> telah dihidupkan dalam Chrome, kemudian cuba hantar lagi.</translation>
 <translation id="6699343763173986273">Lagu Media Seterusnya</translation>
 <translation id="673773751041746814">Pemadaman</translation>
 <translation id="6779314412797872738">Untuk menghantar nombor dari sini ke telefon Android anda, <ph name="TROUBLESHOOT_LINK" /> untuk kedua-dua peranti dalam tetapan.</translation>
@@ -176,7 +185,6 @@
 <translation id="7319740667687257810">Pelancar, paparan separa</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min yang lalu}other{# min yang lalu}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Periksa sambungan telefon anda dan cuba lagi</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minit lagi}other{# minit lagi}}</translation>
 <translation id="7430878839542012341">Padamkan carian ini daripada sejarah anda?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -217,9 +225,11 @@
 <translation id="8806053966018712535">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Anotasikan imej</translation>
 <translation id="8841375032071747811">Butang kembali</translation>
+<translation id="8867568208303837180">Menghantar...</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Rak sentiasa disembunyikan</translation>
+<translation id="8996630695507351249">Pastikan <ph name="TARGET_DEVICE_NAME" /> disambungkan ke Internet.</translation>
 <translation id="9002566407876343676">buka</translation>
 <translation id="9039076430527029379">Beralih ke Halaman <ph name="PAGE_NUMBER" />, baris <ph name="ROW_NUMBER" />, lajur <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>

@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -71,11 +71,11 @@ class BlacklistedCredentialsCleanerTest : public ::testing::Test {
 
   ~BlacklistedCredentialsCleanerTest() override {
     store_->ShutdownOnUIThread();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
   const scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
@@ -98,7 +98,7 @@ TEST_F(BlacklistedCredentialsCleanerTest, CleanerUpdatesPref) {
   MockCredentialsCleanerObserver observer;
   cleaner_.StartCleaning(&observer);
   EXPECT_CALL(observer, CleaningCompleted);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(prefs_.GetBoolean(prefs::kBlacklistedCredentialsNormalized));
 }
@@ -111,7 +111,7 @@ TEST_F(BlacklistedCredentialsCleanerTest, CleanerNormalizesData) {
   MockCredentialsCleanerObserver observer;
   cleaner_.StartCleaning(&observer);
   EXPECT_CALL(observer, CleaningCompleted);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   TestPasswordStore::PasswordMap stored_passwords = store_->stored_passwords();
   ASSERT_EQ(1u, stored_passwords.size());
@@ -133,7 +133,7 @@ TEST_F(BlacklistedCredentialsCleanerTest,
   MockCredentialsCleanerObserver observer;
   cleaner_.StartCleaning(&observer);
   EXPECT_CALL(observer, CleaningCompleted);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   TestPasswordStore::PasswordMap stored_passwords = store_->stored_passwords();
   ASSERT_EQ(1u, stored_passwords.size());
@@ -148,7 +148,7 @@ TEST_F(BlacklistedCredentialsCleanerTest, CleanerDeduplicatesForms) {
   // Create a duplicated entry for the same signon realm.
   test_credential.username_value = base::ASCIIToUTF16(kTestUsername2);
   store_->AddLogin(test_credential);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const TestPasswordStore::PasswordMap& stored_passwords =
       store_->stored_passwords();
@@ -158,7 +158,7 @@ TEST_F(BlacklistedCredentialsCleanerTest, CleanerDeduplicatesForms) {
   MockCredentialsCleanerObserver observer;
   cleaner_.StartCleaning(&observer);
   EXPECT_CALL(observer, CleaningCompleted);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, stored_passwords.size());
   // Only one credential for the signon realm is left.

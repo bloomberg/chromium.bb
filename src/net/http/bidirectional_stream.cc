@@ -113,7 +113,6 @@ BidirectionalStream::BidirectionalStream(
   }
 
   SSLConfig ssl_config;
-  session->ssl_config_service()->GetSSLConfig(&ssl_config);
   session->GetAlpnProtos(&ssl_config.alpn_protos);
 
   StartRequest(ssl_config);
@@ -265,7 +264,7 @@ void BidirectionalStream::OnHeadersReceived(
   load_timing_info_.receive_headers_end = base::TimeTicks::Now();
   read_end_time_ = load_timing_info_.receive_headers_end;
   session_->http_stream_factory()->ProcessAlternativeServices(
-      session_, response_info.headers.get(),
+      session_, net::NetworkIsolationKey(), response_info.headers.get(),
       url::SchemeHostPort(request_info_->url));
   delegate_->OnHeadersReceived(response_headers);
 }
@@ -419,11 +418,8 @@ void BidirectionalStream::OnNeedsClientAuth(const SSLConfig& used_ssl_config,
   // BidirectionalStream doesn't support client auth. It ignores client auth
   // requests with null client cert and key.
   SSLConfig ssl_config = used_ssl_config;
-  ssl_config.send_client_cert = true;
-  ssl_config.client_cert = nullptr;
-  ssl_config.client_private_key = nullptr;
-  session_->ssl_client_auth_cache()->Add(cert_info->host_and_port, nullptr,
-                                         nullptr);
+  session_->ssl_client_context()->SetClientCertificate(cert_info->host_and_port,
+                                                       nullptr, nullptr);
   stream_request_ = nullptr;
   StartRequest(ssl_config);
 }

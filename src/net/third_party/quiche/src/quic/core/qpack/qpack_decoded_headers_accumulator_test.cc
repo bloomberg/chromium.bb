@@ -31,6 +31,9 @@ const size_t kMaxHeaderListSize = 100;
 // Maximum dynamic table capacity.
 const size_t kMaxDynamicTableCapacity = 100;
 
+// Maximum number of blocked streams.
+const uint64_t kMaximumBlockedStreams = 1;
+
 // Header Acknowledgement decoder stream instruction with stream_id = 1.
 const char* const kHeaderAcknowledgement = "\x81";
 
@@ -46,12 +49,16 @@ class NoopVisitor : public QpackDecodedHeadersAccumulator::Visitor {
 class QpackDecodedHeadersAccumulatorTest : public QuicTest {
  protected:
   QpackDecodedHeadersAccumulatorTest()
-      : qpack_decoder_(&encoder_stream_error_delegate_,
-                       &decoder_stream_sender_delegate_),
+      : qpack_decoder_(kMaxDynamicTableCapacity,
+                       kMaximumBlockedStreams,
+                       &encoder_stream_error_delegate_),
         accumulator_(kTestStreamId,
                      &qpack_decoder_,
                      &visitor_,
-                     kMaxHeaderListSize) {}
+                     kMaxHeaderListSize) {
+    qpack_decoder_.set_qpack_stream_sender_delegate(
+        &decoder_stream_sender_delegate_);
+  }
 
   NoopEncoderStreamErrorDelegate encoder_stream_error_delegate_;
   StrictMock<MockQpackStreamSenderDelegate> decoder_stream_sender_delegate_;
@@ -74,9 +81,6 @@ TEST_F(QpackDecodedHeadersAccumulatorTest, TruncatedHeaderBlockPrefix) {
 }
 
 TEST_F(QpackDecodedHeadersAccumulatorTest, EmptyHeaderList) {
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
-
   EXPECT_TRUE(accumulator_.Decode(QuicTextUtils::HexDecode("0000")));
   EXPECT_EQ(Status::kSuccess, accumulator_.EndHeaderBlock());
 
@@ -98,9 +102,6 @@ TEST_F(QpackDecodedHeadersAccumulatorTest, InvalidPayload) {
 }
 
 TEST_F(QpackDecodedHeadersAccumulatorTest, Success) {
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
-
   std::string encoded_data(QuicTextUtils::HexDecode("000023666f6f03626172"));
   EXPECT_TRUE(accumulator_.Decode(encoded_data));
   EXPECT_EQ(Status::kSuccess, accumulator_.EndHeaderBlock());
@@ -114,9 +115,6 @@ TEST_F(QpackDecodedHeadersAccumulatorTest, Success) {
 }
 
 TEST_F(QpackDecodedHeadersAccumulatorTest, ExceedingLimit) {
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
-
   // Total length of header list exceeds kMaxHeaderListSize.
   EXPECT_TRUE(accumulator_.Decode(QuicTextUtils::HexDecode(
       "0000"                                      // header block prefix
@@ -132,12 +130,12 @@ TEST_F(QpackDecodedHeadersAccumulatorTest, ExceedingLimit) {
 }
 
 TEST_F(QpackDecodedHeadersAccumulatorTest, BlockedDecoding) {
-  qpack_decoder_.SetMaximumDynamicTableCapacity(kMaxDynamicTableCapacity);
-
   // Reference to dynamic table entry not yet received.
   EXPECT_TRUE(accumulator_.Decode(QuicTextUtils::HexDecode("020080")));
   EXPECT_EQ(Status::kBlocked, accumulator_.EndHeaderBlock());
 
+  // Set dynamic table capacity.
+  qpack_decoder_.OnSetDynamicTableCapacity(kMaxDynamicTableCapacity);
   // Adding dynamic table entry unblocks decoding.
   EXPECT_CALL(decoder_stream_sender_delegate_,
               WriteStreamData(Eq(kHeaderAcknowledgement)));
@@ -148,11 +146,11 @@ TEST_F(QpackDecodedHeadersAccumulatorTest, BlockedDecoding) {
 
 TEST_F(QpackDecodedHeadersAccumulatorTest,
        BlockedDecodingUnblockedBeforeEndOfHeaderBlock) {
-  qpack_decoder_.SetMaximumDynamicTableCapacity(kMaxDynamicTableCapacity);
-
   // Reference to dynamic table entry not yet received.
   EXPECT_TRUE(accumulator_.Decode(QuicTextUtils::HexDecode("020080")));
 
+  // Set dynamic table capacity.
+  qpack_decoder_.OnSetDynamicTableCapacity(kMaxDynamicTableCapacity);
   // Adding dynamic table entry unblocks decoding.
   qpack_decoder_.OnInsertWithoutNameReference("foo", "bar");
 

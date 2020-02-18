@@ -42,12 +42,11 @@
 #include "content/public/common/content_features.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -85,7 +84,8 @@ void CreateChildFrameOnUI(
     int new_routing_id,
     mojo::ScopedMessagePipeHandle interface_provider_request_handle,
     mojo::ScopedMessagePipeHandle document_interface_broker_content_handle,
-    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle) {
+    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle,
+    mojo::ScopedMessagePipeHandle browser_interface_broker_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
@@ -96,10 +96,12 @@ void CreateChildFrameOnUI(
         new_routing_id,
         service_manager::mojom::InterfaceProviderRequest(
             std::move(interface_provider_request_handle)),
-        blink::mojom::DocumentInterfaceBrokerRequest(
+        mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
             std::move(document_interface_broker_content_handle)),
-        blink::mojom::DocumentInterfaceBrokerRequest(
+        mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
             std::move(document_interface_broker_blink_handle)),
+        mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>(
+            std::move(browser_interface_broker_handle)),
         scope, frame_name, frame_unique_name, is_created_by_script,
         devtools_frame_token, frame_policy, frame_owner_properties, owner_type);
   }
@@ -111,7 +113,7 @@ void CreateChildFrameOnUI(
 void DownloadUrlOnUIThread(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-    blink::mojom::BlobURLTokenPtrInfo blob_url_token) {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* render_process_host =
@@ -125,8 +127,7 @@ void DownloadUrlOnUIThread(
   if (blob_url_token) {
     blob_url_loader_factory =
         ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            browser_context,
-            blink::mojom::BlobURLTokenPtr(std::move(blob_url_token)));
+            browser_context, std::move(blob_url_token));
   }
 
   DownloadManager* download_manager =
@@ -135,29 +136,6 @@ void DownloadUrlOnUIThread(
   download_manager->DownloadUrl(std::move(parameters),
                                 std::move(blob_data_handle),
                                 std::move(blob_url_loader_factory));
-}
-
-// With network service disabled the downloads code wouldn't know what to do
-// with a BlobURLToken, so this method is used to convert from a token to a
-// BlobDataHandle to be passed on to the rest of the downloads system.
-void DownloadBlobURLFromToken(
-    std::unique_ptr<download::DownloadUrlParameters> params,
-    blink::mojom::BlobURLTokenPtr,
-    const base::WeakPtr<storage::BlobStorageContext>& context,
-    const base::UnguessableToken& token) {
-  std::unique_ptr<storage::BlobDataHandle> blob_handle;
-  GURL blob_url;
-  if (context) {
-    std::string uuid;
-    if (context->registry().GetTokenMapping(token, &blob_url, &uuid) &&
-        blob_url == params->url()) {
-      blob_handle = context->GetBlobDataFromUUID(uuid);
-    }
-  }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DownloadUrlOnUIThread, std::move(params),
-                     std::move(blob_handle), nullptr));
 }
 
 // Common functionality for converting a sync renderer message to a callback
@@ -276,10 +254,6 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
       plugin_service_(plugin_service),
       profile_data_directory_(storage_partition->GetPath()),
 #endif  // ENABLE_PLUGINS
-      request_context_(
-          base::FeatureList::IsEnabled(network::features::kNetworkService)
-              ? nullptr
-              : storage_partition->GetURLRequestContext()),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
@@ -326,6 +300,15 @@ void RenderFrameMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
+void RenderFrameMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (message.type() == FrameHostMsg_GetPluginInfo::ID)
+    *thread = BrowserThread::UI;
+#endif  // ENABLE_PLUGINS
+}
+
 void RenderFrameMessageFilter::DownloadUrl(
     int render_view_id,
     int render_frame_id,
@@ -335,7 +318,7 @@ void RenderFrameMessageFilter::DownloadUrl(
     const base::string16& suggested_name,
     const bool use_prompt,
     const bool follow_cross_origin_redirects,
-    blink::mojom::BlobURLTokenPtrInfo blob_url_token) const {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) const {
   if (!resource_context_)
     return;
 
@@ -386,29 +369,12 @@ void RenderFrameMessageFilter::DownloadUrl(
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(resource_context_);
 
-    // With network service disabled the downloads code wouldn't know what to do
-    // with the BlobURLToken (or the resulting URLLoaderFactory). So for that
-    // case convert the token to a BlobDataHandle before passing it of to the
-    // rest of the downloads system.
-    if (blob_url_token &&
-        !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      blink::mojom::BlobURLTokenPtr blob_url_token_ptr(
-          std::move(blob_url_token));
-      auto* raw_token = blob_url_token_ptr.get();
-      raw_token->GetToken(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce(&DownloadBlobURLFromToken, std::move(parameters),
-                         std::move(blob_url_token_ptr),
-                         blob_context->context()->AsWeakPtr()),
-          base::UnguessableToken()));
-      return;
-    }
-
     blob_data_handle = blob_context->context()->GetBlobDataFromPublicURL(url);
     // Don't care if the above fails. We are going to let the download go
     // through and allow it to be interrupted so that the embedder can deal.
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
                      std::move(blob_data_handle), std::move(blob_url_token)));
@@ -424,22 +390,30 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
   params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       document_interface_broker_content;
-  auto document_interface_broker_request_content(
-      mojo::MakeRequest(&document_interface_broker_content));
+  auto document_interface_broker_receiver_content =
+      document_interface_broker_content.InitWithNewPipeAndPassReceiver();
   params_reply->document_interface_broker_content_handle =
-      document_interface_broker_content.PassHandle().release();
+      document_interface_broker_content.PassPipe().release();
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
-  auto document_interface_broker_request_blink(
-      mojo::MakeRequest(&document_interface_broker_blink));
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink;
+  auto document_interface_broker_receiver_blink =
+      document_interface_broker_blink.InitWithNewPipeAndPassReceiver();
   params_reply->document_interface_broker_blink_handle =
-      document_interface_broker_blink.PassHandle().release();
+      document_interface_broker_blink.PassPipe().release();
+
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  auto browser_interface_broker_receiver =
+      browser_interface_broker.InitWithNewPipeAndPassReceiver();
+  params_reply->browser_interface_broker_handle =
+      browser_interface_broker.PassPipe().release();
 
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &CreateChildFrameOnUI, render_process_id_, params.parent_routing_id,
@@ -448,13 +422,14 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
           params.frame_policy, params.frame_owner_properties,
           params.frame_owner_element_type, params_reply->child_routing_id,
           interface_provider_request.PassMessagePipe(),
-          document_interface_broker_request_content.PassMessagePipe(),
-          document_interface_broker_request_blink.PassMessagePipe()));
+          document_interface_broker_receiver_content.PassPipe(),
+          document_interface_broker_receiver_blink.PassPipe(),
+          browser_interface_broker_receiver.PassPipe()));
 }
 
 void RenderFrameMessageFilter::OnDownloadUrl(
     const FrameHostMsg_DownloadUrl_Params& params) {
-  blink::mojom::BlobURLTokenPtrInfo blob_url_token;
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
   if (!VerifyDownloadUrlParams(render_process_id_, params, &blob_url_token))
     return;
 
@@ -477,7 +452,7 @@ void RenderFrameMessageFilter::OnSaveImageFromDataURL(
     return;
 
   DownloadUrl(render_view_id, render_frame_id, data_url, Referrer(),
-              url::Origin(), base::string16(), true, true, nullptr);
+              url::Origin(), base::string16(), true, true, mojo::NullRemote());
 }
 
 void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,
@@ -498,14 +473,10 @@ void RenderFrameMessageFilter::OnGetPluginInfo(
     bool* found,
     WebPluginInfo* info,
     std::string* actual_mime_type) {
-  if (!resource_context_)
-    return;
-
   bool allow_wildcard = true;
   *found = plugin_service_->GetPluginInfo(
-      render_process_id_, render_frame_id, resource_context_, url,
-      main_frame_origin, mime_type, allow_wildcard, nullptr, info,
-      actual_mime_type);
+      render_process_id_, render_frame_id, url, main_frame_origin, mime_type,
+      allow_wildcard, nullptr, info, actual_mime_type);
 }
 
 void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(

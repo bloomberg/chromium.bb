@@ -38,10 +38,14 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
 namespace resource_coordinator {
 
@@ -116,7 +120,10 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
     tester->SetLastActiveTime(NowTicks());
     ResourceCoordinatorTabHelper::CreateForWebContents(web_contents_);
     // Commit an URL to allow discarding.
-    tester->NavigateAndCommit(GURL("https://www.example.com"));
+    auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+        GURL("https://www.example.com"), web_contents_);
+    navigation->SetKeepLoading(true);
+    navigation->Commit();
 
     tab_strip_model_ =
         std::make_unique<TabStripModel>(&tab_strip_model_delegate_, profile());
@@ -485,16 +492,18 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
 
   // Connect with the FakeUsbDeviceManager.
   device::FakeUsbDeviceManager device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> pending_device_manager;
+  device_manager.AddReceiver(
+      pending_device_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContextFactory::GetForProfile(profile())
-      ->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+      ->SetDeviceManagerForTesting(std::move(pending_device_manager));
 
   UsbTabHelper* usb_tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents_);
+  mojo::Remote<blink::mojom::WebUsbService> web_usb_service;
   usb_tab_helper->CreateWebUsbService(
       web_contents_->GetMainFrame(),
-      mojo::InterfaceRequest<blink::mojom::WebUsbService>());
+      web_usb_service.BindNewPipeAndPassReceiver());
 
   // Page could be intending to use the WebUSB API, but there's no connection
   // open yet, so it can still be discarded/frozen.
@@ -890,6 +899,36 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
       LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
   EXPECT_TRUE(decision_details.IsPositive());
   decision_details.Clear();
+}
+
+TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  content::WebContentsTester::For(web_contents_)
+      ->SetIsConnectedToBluetoothDevice(true);
+
+  DecisionDetails decision_details;
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH,
+            decision_details.FailureReason());
+
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH,
+            decision_details.FailureReason());
+
+  content::WebContentsTester::For(web_contents_)
+      ->SetIsConnectedToBluetoothDevice(false);
 }
 
 }  // namespace resource_coordinator

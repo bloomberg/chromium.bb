@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
@@ -251,6 +253,14 @@ class WebContents : public PageNavigator,
   // Returns the WebContents associated with the |frame_tree_node_id|.
   CONTENT_EXPORT static WebContents* FromFrameTreeNodeId(
       int frame_tree_node_id);
+
+  // A callback that returns a pointer to a WebContents. The callback can
+  // always be used, but it may return nullptr: if the info used to
+  // instantiate the callback can no longer be used to return a WebContents,
+  // nullptr will be returned instead.
+  // The callback should only run on the UI thread and it should always be
+  // non-null.
+  using Getter = base::Callback<WebContents*(void)>;
 
   // Sets delegate for platform specific screen orientation functionality.
   CONTENT_EXPORT static void SetScreenOrientationDelegate(
@@ -480,6 +490,10 @@ class WebContents : public PageNavigator,
   virtual bool IsConnectedToSerialPort() = 0;
 
   // Indicates whether any frame in the WebContents has native file system
+  // handles.
+  virtual bool HasNativeFileSystemHandles() = 0;
+
+  // Indicates whether any frame in the WebContents has native file system
   // directory handles.
   virtual bool HasNativeFileSystemDirectoryHandles() = 0;
 
@@ -618,7 +632,7 @@ class WebContents : public PageNavigator,
   // As long as these handles are not deleted, subresources will continue to be
   // deferred until an internal navigation happens in the frame. Holding handles
   // for deleted or re-navigated frames has no effect.
-  virtual std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  virtual std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
   PauseSubresourceLoading() = 0;
 
   // Editing commands ----------------------------------------------------------
@@ -742,14 +756,23 @@ class WebContents : public PageNavigator,
       const std::string& headers,
       const base::string16& suggested_filename) = 0;
 
-  // Generate an MHTML representation of the current page in the given file.
-  // If |use_binary_encoding| is specified, a Content-Transfer-Encoding value of
-  // 'binary' will be used, instead of a combination of 'quoted-printable' and
-  // 'base64'.  Binary encoding is known to have interoperability issues and is
-  // not the recommended encoding for shareable content.
+  // Generate an MHTML representation of the current page conforming to the
+  // settings provided by |params| and returning final status information via
+  // the callback. See MHTMLGenerationParams for details on generation settings.
+  // A resulting |file_size| of -1 represents a failure. Any other value
+  // represents the size of the successfully generated file.
+  //
+  // TODO(https://crbug.com/915966): GenerateMHTML will eventually be removed
+  // and GenerateMHTMLWithResult will be renamed to GenerateMHTML to replace it.
+  // Both GenerateMHTML and GenerateMHTMLWithResult perform the same operation.
+  // however, GenerateMHTMLWithResult provides a struct as output, that contains
+  // the file size and more.
   virtual void GenerateMHTML(
       const MHTMLGenerationParams& params,
       base::OnceCallback<void(int64_t /* size of the file */)> callback) = 0;
+  virtual void GenerateMHTMLWithResult(
+      const MHTMLGenerationParams& params,
+      MHTMLGenerationResult::GenerateMHTMLCallback callback) = 0;
 
   // Returns the contents MIME type after a navigation.
   virtual const std::string& GetContentsMimeType() = 0;
@@ -767,10 +790,6 @@ class WebContents : public PageNavigator,
   // A render view-originated drag has ended. Informs the render view host and
   // WebContentsDelegate.
   virtual void SystemDragEnded(RenderWidgetHost* source_rwh) = 0;
-
-  // The user initiated navigation to this page (as opposed to a navigation that
-  // could have been triggered without user interaction).
-  virtual void NavigatedByUser() = 0;
 
   // Indicates if this tab was explicitly closed by the user (control-w, close
   // tab menu item...). This is false for actions that indirectly close the tab,

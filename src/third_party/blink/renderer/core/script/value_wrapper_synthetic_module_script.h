@@ -28,8 +28,7 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
   static ValueWrapperSyntheticModuleScript*
   CreateJSONWrapperSyntheticModuleScript(
       const base::Optional<ModuleScriptCreationParams>& params,
-      Modulator* settings_object,
-      const ScriptFetchOptions options_);
+      Modulator* settings_object);
 
   static ValueWrapperSyntheticModuleScript* CreateWithDefaultExport(
       v8::Local<v8::Value> value,
@@ -49,7 +48,7 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
   ValueWrapperSyntheticModuleScript(Modulator* settings_object,
-                                    ModuleRecord record,
+                                    v8::Local<v8::Module> record,
                                     const KURL& source_url,
                                     const KURL& base_url,
                                     const ScriptFetchOptions& fetch_options,
@@ -66,7 +65,6 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
       v8::Local<v8::Context> context,
       v8::Local<v8::Module> module);
 
-  String InlineSourceTextForCSP() const override;
   void Trace(blink::Visitor* visitor) override;
 
  private:

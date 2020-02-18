@@ -131,41 +131,33 @@ struct Header {
   uint16_t additional_record_count;
 };
 
-// TODO(mayaki): Here and below consider converting constants to members of
-// enum classes.
+static_assert(sizeof(Header) == 12, "Size of mDNS header must be 12 bytes.");
 
-// DNS Header flags. All flags are formatted to mask directly onto FLAG header
-// field in network-byte order.
+enum class MessageType {
+  Query = 0,
+  Response = 1,
+};
+
 constexpr uint16_t kFlagResponse = 0x8000;
 constexpr uint16_t kFlagAA = 0x0400;
 constexpr uint16_t kFlagTC = 0x0200;
-constexpr uint16_t kFlagRD = 0x0100;
-constexpr uint16_t kFlagRA = 0x0080;
-constexpr uint16_t kFlagZ = 0x0040;  // Unused field
-constexpr uint16_t kFlagAD = 0x0020;
-constexpr uint16_t kFlagCD = 0x0010;
-
-// DNS Header OPCODE mask and values. The mask is formatted to mask directly
-// onto FLAG header field in network-byte order. The values are formatted after
-// shifting into correct position.
 constexpr uint16_t kOpcodeMask = 0x7800;
-constexpr uint8_t kOpcodeQUERY = 0;
-constexpr uint8_t kOpcodeIQUERY = 1;
-constexpr uint8_t kOpcodeSTATUS = 2;
-constexpr uint8_t kOpcodeUNASSIGNED = 3;  // Unused for now
-constexpr uint8_t kOpcodeNOTIFY = 4;
-constexpr uint8_t kOpcodeUPDATE = 5;
-
-// DNS Header RCODE mask and values. The mask is formatted to mask directly onto
-// FLAG header field in network-byte order. The values are formatted after
-// shifting into correct position.
 constexpr uint16_t kRcodeMask = 0x000F;
-constexpr uint8_t kRcodeNOERROR = 0;
-constexpr uint8_t kRcodeFORMERR = 1;
-constexpr uint8_t kRcodeSERVFAIL = 2;
-constexpr uint8_t kRcodeNXDOMAIN = 3;
-constexpr uint8_t kRcodeNOTIMP = 4;
-constexpr uint8_t kRcodeREFUSED = 5;
+
+constexpr MessageType GetMessageType(uint16_t flags) {
+  // RFC 6762 Section 18.2
+  return (flags & kFlagResponse) ? MessageType::Response : MessageType::Query;
+}
+
+constexpr uint16_t MakeFlags(MessageType type) {
+  // RFC 6762 Section 18.2 and Section 18.4
+  return (type == MessageType::Response) ? (kFlagResponse | kFlagAA) : 0;
+}
+
+constexpr bool IsValidFlagsSection(uint16_t flags) {
+  // RFC 6762 Section 18.3 and Section 18.11
+  return (flags & (kOpcodeMask | kRcodeMask)) == 0;
+}
 
 // ============================================================================
 // Domain Name
@@ -293,44 +285,58 @@ enum class DnsType : uint16_t {
   kANY = 255,  // Only allowed for QTYPE
 };
 
-// DNS CLASS masks and values.
-constexpr uint16_t kClassMask = 0x7FFF;
-
-// In mDNS the most significant bit of the RRCLASS for response records is
-// designated as the "cache-flush bit", as described in
-// https://tools.ietf.org/html/rfc6762#section-10.2
-constexpr uint16_t kCacheFlushBit = 0x8000;
-// In mDNS the most significant bit of the RRCLASS for query records is
-// designated as the "unicast-response bit", as described in
-// https://tools.ietf.org/html/rfc6762#section-5.4
-constexpr uint16_t kUnicastResponseBit = 0x8000;
-
 enum class DnsClass : uint16_t {
   kIN = 1,
   kANY = 255,  // Only allowed for QCLASS
 };
 
+// Unique and shared records are described in
+// https://tools.ietf.org/html/rfc6762#section-2 and
+// https://tools.ietf.org/html/rfc6762#section-10.2
+enum class RecordType {
+  kShared = 0,
+  kUnique = 1,
+};
+
+// Unicast and multicast preferred response types are described in
+// https://tools.ietf.org/html/rfc6762#section-5.4
+enum class ResponseType {
+  kMulticast = 0,
+  kUnicast = 1,
+};
+
+// DNS CLASS masks and values.
+// In mDNS the most significant bit of the RRCLASS for response records is
+// designated as the "cache-flush bit", as described in
+// https://tools.ietf.org/html/rfc6762#section-10.2
+// In mDNS the most significant bit of the RRCLASS for query records is
+// designated as the "unicast-response bit", as described in
+// https://tools.ietf.org/html/rfc6762#section-5.4
+constexpr uint16_t kClassMask = 0x7FFF;
+constexpr uint16_t kClassMsbMask = 0x8000;
+constexpr uint16_t kClassMsbShift = 0xF;
+
 constexpr DnsClass GetDnsClass(uint16_t rrclass) {
   return static_cast<DnsClass>(rrclass & kClassMask);
 }
 
-constexpr bool GetCacheFlush(uint16_t rrclass) {
-  return rrclass & kCacheFlushBit;
+constexpr RecordType GetRecordType(uint16_t rrclass) {
+  return static_cast<RecordType>((rrclass & kClassMsbMask) >> kClassMsbShift);
 }
 
-constexpr bool GetUnicastResponse(uint16_t rrclass) {
-  return rrclass & kUnicastResponseBit;
+constexpr ResponseType GetResponseType(uint16_t rrclass) {
+  return static_cast<ResponseType>((rrclass & kClassMsbMask) >> kClassMsbShift);
 }
 
-constexpr uint16_t MakeRecordClass(DnsClass dns_class, bool cache_flush) {
+constexpr uint16_t MakeRecordClass(DnsClass dns_class, RecordType record_type) {
   return static_cast<uint16_t>(dns_class) |
-         (static_cast<uint16_t>(cache_flush) << 15);
+         (static_cast<uint16_t>(record_type) << kClassMsbShift);
 }
 
 constexpr uint16_t MakeQuestionClass(DnsClass dns_class,
-                                     bool unicast_response) {
+                                     ResponseType response_type) {
   return static_cast<uint16_t>(dns_class) |
-         (static_cast<uint16_t>(unicast_response) << 15);
+         (static_cast<uint16_t>(response_type) << kClassMsbShift);
 }
 
 // See RFC 6762, section 11: https://tools.ietf.org/html/rfc6762#section-11

@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/services/pdf_compositor/pdf_compositor_impl.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
@@ -24,8 +24,11 @@ struct TestRequestData {
 
 class MockPdfCompositorImpl : public PdfCompositorImpl {
  public:
-  MockPdfCompositorImpl() : PdfCompositorImpl(nullptr) {}
-  ~MockPdfCompositorImpl() override {}
+  MockPdfCompositorImpl()
+      : PdfCompositorImpl(mojo::NullReceiver(),
+                          false /* initialize_environment */,
+                          nullptr /* io_task_runner */) {}
+  ~MockPdfCompositorImpl() override = default;
 
   MOCK_METHOD2(OnFulfillRequest, void(uint64_t, int));
 
@@ -41,8 +44,7 @@ class MockPdfCompositorImpl : public PdfCompositorImpl {
 class PdfCompositorImplTest : public testing::Test {
  public:
   PdfCompositorImplTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         run_loop_(std::make_unique<base::RunLoop>()),
         is_ready_(false) {}
 
@@ -74,7 +76,7 @@ class PdfCompositorImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   bool is_ready_;
 };
@@ -96,7 +98,9 @@ class PdfCompositorImplCrashKeyTest : public PdfCompositorImplTest {
 };
 
 TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
-  PdfCompositorImpl impl(nullptr);
+  PdfCompositorImpl impl(mojo::NullReceiver(),
+                         false /* initialize_environment */,
+                         nullptr /* io_task_runner */);
   // Frame 2 and 3 are painted.
   impl.AddSubframeContent(2, CreateTestData(2, -1), ContentToFrameMap());
   impl.AddSubframeContent(3, CreateTestData(3, -1), ContentToFrameMap());
@@ -132,7 +136,9 @@ TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
 }
 
 TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
-  PdfCompositorImpl impl(nullptr);
+  PdfCompositorImpl impl(mojo::NullReceiver(),
+                         false /* initialize_environment */,
+                         nullptr /* io_task_runner */);
   // Frame 3 has content 1 which refers to subframe 1.
   ContentToFrameMap subframe_content_map = {{1, 1}};
   impl.AddSubframeContent(3, CreateTestData(3, -1), subframe_content_map);
@@ -172,7 +178,9 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
 }
 
 TEST_F(PdfCompositorImplTest, DependencyLoop) {
-  PdfCompositorImpl impl(nullptr);
+  PdfCompositorImpl impl(mojo::NullReceiver(),
+                         false /* initialize_environment */,
+                         nullptr /* io_task_runner */);
   // Frame 3 has content 1, which refers to frame 1.
   // Frame 1 has content 3, which refers to frame 3.
   ContentToFrameMap subframe_content_map = {{3, 3}};
@@ -305,7 +313,9 @@ TEST_F(PdfCompositorImplTest, NotifyUnavailableSubframe) {
 }
 
 TEST_F(PdfCompositorImplCrashKeyTest, SetCrashKey) {
-  PdfCompositorImpl impl(nullptr);
+  PdfCompositorImpl impl(mojo::NullReceiver(),
+                         false /* initialize_environment */,
+                         nullptr /* io_task_runner */);
   std::string url_str("https://www.example.com/");
   GURL url(url_str);
   impl.SetWebContentsURL(url);

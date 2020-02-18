@@ -9,6 +9,7 @@
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -34,33 +35,29 @@ void BookmarkAppRegistrar::Init(base::OnceClosure callback) {
   ExtensionSystem::Get(profile())->ready().Post(FROM_HERE, std::move(callback));
 }
 
-bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const ExtensionSet& extensions = registry->enabled_extensions();
-
-  // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
-  // or check the web extent (hosted apps).
-  for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (!extension->from_bookmark())
-      continue;
-
-    if (!BookmarkAppIsLocallyInstalled(profile(), extension.get()))
-      continue;
-
-    DCHECK(extension->web_extent().is_empty());
-    if (AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url)
-      return true;
-  }
-  return false;
+BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
+  return this;
 }
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
   return GetExtension(app_id) != nullptr;
 }
 
+bool BookmarkAppRegistrar::IsLocallyInstalled(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension && BookmarkAppIsLocallyInstalled(profile(), extension);
+}
+
 bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
     const web_app::AppId& app_id) const {
   return ExtensionPrefs::Get(profile())->IsExternalExtensionUninstalled(app_id);
+}
+
+bool BookmarkAppRegistrar::WasInstalledByUser(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension && !extension->was_installed_by_default();
 }
 
 base::Optional<web_app::AppId> BookmarkAppRegistrar::FindAppWithUrlInScope(
@@ -80,15 +77,6 @@ int BookmarkAppRegistrar::CountUserInstalledApps() const {
   return CountUserInstalledBookmarkApps(profile());
 }
 
-void BookmarkAppRegistrar::OnExtensionInstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    bool is_update) {
-  DCHECK_EQ(browser_context, profile());
-  if (extension->from_bookmark())
-    NotifyWebAppInstalled(extension->id());
-}
-
 void BookmarkAppRegistrar::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
@@ -105,8 +93,10 @@ void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
 
 const Extension* BookmarkAppRegistrar::GetExtension(
     const web_app::AppId& app_id) const {
-  return ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
-      app_id);
+  const Extension* extension =
+      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(app_id);
+  DCHECK(!extension || extension->from_bookmark());
+  return extension;
 }
 
 std::string BookmarkAppRegistrar::GetAppShortName(
@@ -153,6 +143,59 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
     return scope_url;
 
   return base::nullopt;
+}
+
+web_app::LaunchContainer BookmarkAppRegistrar::GetAppLaunchContainer(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return web_app::LaunchContainer::kWindow;
+
+  switch (extensions::GetLaunchContainer(
+      extensions::ExtensionPrefs::Get(profile()), extension)) {
+    case LaunchContainer::kLaunchContainerWindow:
+    case LaunchContainer::kLaunchContainerPanelDeprecated:
+      return web_app::LaunchContainer::kWindow;
+    case LaunchContainer::kLaunchContainerTab:
+      return web_app::LaunchContainer::kTab;
+    case LaunchContainer::kLaunchContainerNone:
+      NOTREACHED();
+      return web_app::LaunchContainer::kDefault;
+  }
+}
+
+void BookmarkAppRegistrar::SetAppLaunchContainer(
+    const web_app::AppId& app_id,
+    web_app::LaunchContainer launch_container) {
+  const Extension* extension = GetExtension(app_id);
+  DCHECK(extension);
+  if (!extension)
+    return;
+
+  switch (launch_container) {
+    case web_app::LaunchContainer::kWindow:
+      extensions::SetLaunchType(profile(), extension->id(),
+                                extensions::LAUNCH_TYPE_WINDOW);
+      return;
+    case web_app::LaunchContainer::kTab:
+      extensions::SetLaunchType(profile(), extension->id(),
+                                extensions::LAUNCH_TYPE_REGULAR);
+      return;
+    case web_app::LaunchContainer::kDefault:
+      NOTREACHED();
+      return;
+  }
+}
+
+std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
+  std::vector<web_app::AppId> app_ids;
+  for (scoped_refptr<const Extension> app :
+       ExtensionRegistry::Get(profile())->enabled_extensions()) {
+    if (app->from_bookmark()) {
+      app_ids.push_back(app->id());
+    }
+  }
+  return app_ids;
 }
 
 }  // namespace extensions

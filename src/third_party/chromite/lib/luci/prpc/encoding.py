@@ -54,7 +54,7 @@ def get_encoder(encoding):
   if encoding == Encoding.BINARY:
     return lambda proto: proto.SerializeToString()
   elif encoding == Encoding.JSON:
-    return lambda proto: ')]}\'\n' + json_format.MessageToJson(proto)
+    return lambda proto: ")]}'\n" + json_format.MessageToJson(proto)
   elif encoding == Encoding.TEXT:
     return lambda proto: text_format.MessageToString(proto, as_utf8=True)
   else:

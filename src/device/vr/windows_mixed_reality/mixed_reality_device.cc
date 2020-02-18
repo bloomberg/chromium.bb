@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/numerics/math_constants.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "device/vr/util/transform_utils.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
@@ -44,9 +45,8 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   left_eye->field_of_view = mojom::VRFieldOfView::New(45, 45, 45, 45);
   right_eye->field_of_view = mojom::VRFieldOfView::New(45, 45, 45, 45);
 
-  constexpr float interpupillary_distance = 0.1f;  // 10cm
-  left_eye->offset = {-interpupillary_distance * 0.5, 0, 0};
-  right_eye->offset = {interpupillary_distance * 0.5, 0, 0};
+  left_eye->head_from_eye = vr_utils::DefaultHeadFromLeftEyeTransform();
+  right_eye->head_from_eye = vr_utils::DefaultHeadFromRightEyeTransform();
 
   constexpr uint32_t width = 1024;
   constexpr uint32_t height = 1024;
@@ -64,8 +64,7 @@ MixedRealityDevice::MixedRealityDevice()
     : VRDeviceBase(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID),
       gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this),
-      exclusive_controller_binding_(this),
-      weak_ptr_factory_(this) {
+      exclusive_controller_binding_(this) {
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
 
@@ -98,7 +97,7 @@ void MixedRealityDevice::RequestSession(
     // We need to start a UI message loop or we will not receive input events
     // on 1809 or newer.
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
+    options.message_pump_type = base::MessagePumpType::UI;
     render_loop_->StartWithOptions(options);
 
     // IsRunning() should be true here unless the thread failed to start (likely

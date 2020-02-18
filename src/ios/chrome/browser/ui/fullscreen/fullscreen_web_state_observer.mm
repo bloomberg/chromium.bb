@@ -20,9 +20,9 @@
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
-#import "ios/web/public/web_state/page_display_state.h"
-#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/ui/page_display_state.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -95,18 +95,6 @@ void FullscreenWebStateObserver::DidFinishNavigation(
                                !ios::GetChromeBrowserProvider()
                                     ->GetFullscreenProvider()
                                     ->IsInitialized());
-
-  // On iOS 12, resetting WKScrollView.contentInset at this point in the load
-  // will push the content down by the top inset.  On iOS 11, however, this does
-  // not occur.  Manually push the content below the toolbars the first time a
-  // page is loaded with the content inset setting enabled.  The scroll offset
-  // of subsequent loads of this navigation will be set by the PageDisplayState.
-  web::NavigationItem* committed_item =
-      web_state->GetNavigationManager()->GetLastCommittedItem();
-  if (use_content_inset && !base::ios::IsRunningOnIOS12OrLater() &&
-      !committed_item->GetPageDisplayState().IsValid()) {
-    MoveContentBelowHeader(web_view_proxy, model_);
-  }
 
   // Only reset the model for document-changing navigations or same-document
   // navigations that update the visible URL.

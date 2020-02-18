@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -60,8 +61,7 @@ ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
     : host_(new views::NativeViewHost()),
       arc_app_window_(arc_app_window),
       surface_id_(surface_id),
-      top_margin_(top_margin),
-      weak_ptr_factory_(this) {
+      top_margin_(top_margin) {
   AddChildView(host_);
   arc_app_window_->AddObserver(this);
   set_owned_by_client();

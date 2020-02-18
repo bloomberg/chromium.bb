@@ -88,7 +88,7 @@ void FullscreenElementChanged(Document& document,
     // fullscreen element. Hence, it must match :-webkit-full-screen-ancestor.
     if (new_request_type ==
         Fullscreen::RequestType::kPrefixedForCrossProcessDescendant) {
-      DCHECK(IsHTMLIFrameElement(new_element));
+      DCHECK(IsA<HTMLIFrameElement>(new_element));
       new_element->SetContainsFullScreenElement(true);
     }
     new_element->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
@@ -286,7 +286,7 @@ bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
     return false;
 
   // |pending| is not a dialog element.
-  if (IsHTMLDialogElement(pending))
+  if (IsA<HTMLDialogElement>(pending))
     return false;
 
   // The fullscreen element ready check for |pending| returns false.

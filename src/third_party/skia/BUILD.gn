@@ -6,106 +6,11 @@
 import("gn/flutter_defines.gni")
 import("gn/fuchsia_defines.gni")
 import("gn/shared_sources.gni")
+
 import("gn/skia.gni")
-
-if (is_fuchsia) {
-  import("//build/fuchsia/sdk.gni")
-  import("//build/vulkan/config.gni")
-}
-
-declare_args() {
-  skia_enable_flutter_defines = false
-}
-
-declare_args() {
-  skia_use_angle = false
-  skia_use_egl = false
-  skia_use_expat = true
-  skia_use_experimental_xform = false
-  skia_use_ffmpeg = false
-  skia_use_fontconfig = is_linux
-  skia_use_fonthost_mac = is_mac
-  skia_use_freetype = is_android || is_fuchsia || is_linux
-  skia_use_fixed_gamma_text = is_android
-  skia_use_libjpeg_turbo = true
-  skia_use_libpng = true
-  skia_use_libwebp = !is_fuchsia
-  skia_use_lua = is_skia_dev_build && !is_ios
-  skia_use_opencl = false
-  skia_use_piex = !is_win
-  skia_use_wuffs = false
-  skia_use_zlib = true
-  skia_use_metal = false
-  skia_use_dawn = false
-  skia_use_libheif = is_skia_dev_build
-  skia_use_x11 = is_linux
-  skia_use_xps = true
-}
-
-declare_args() {
-  skia_android_serial = ""
-  skia_enable_ccpr = true
-  skia_enable_nvpr = !skia_enable_flutter_defines
-  skia_enable_discrete_gpu = true
-  skia_enable_pdf = true
-  skia_enable_spirv_validation = is_skia_dev_build && is_debug && !skia_use_dawn
-  skia_enable_skpicture = true
-  skia_enable_sksl_interpreter = is_skia_dev_build
-  skia_enable_skvm_jit =
-      is_skia_dev_build && ((target_cpu == "x64" && (is_linux || is_mac)) ||
-                            (target_cpu == "arm64" && is_android))
-  skia_enable_vulkan_debug_layers = is_skia_dev_build && is_debug
-  skia_qt_path = getenv("QT_PATH")
-  skia_compile_processors = false
-  skia_generate_workarounds = false
-  skia_lex = false
-
-  skia_skqp_global_error_tolerance = 0
-
-  skia_llvm_path = ""
-  skia_llvm_lib = "LLVM"
-
-  skia_tools_require_resources = false
-  skia_include_multiframe_procs = false
-}
 
 if (skia_use_dawn) {
   import("third_party/externals/dawn/scripts/dawn_features.gni")
-}
-
-declare_args() {
-  skia_use_dng_sdk = !is_fuchsia && skia_use_libjpeg_turbo && skia_use_zlib
-  skia_use_sfntly = skia_use_icu
-  skia_enable_atlas_text = is_skia_dev_build && skia_enable_gpu
-  skia_enable_fontmgr_empty = false
-  skia_enable_fontmgr_custom =
-      is_linux && skia_use_freetype && !skia_use_fontconfig
-  skia_enable_fontmgr_custom_empty = is_fuchsia && skia_use_freetype
-  skia_enable_fontmgr_android = skia_use_expat && skia_use_freetype
-  skia_enable_fontmgr_fuchsia = is_fuchsia
-  skia_enable_fontmgr_win = is_win
-  skia_enable_fontmgr_win_gdi = is_win
-
-  if (is_mac) {
-    skia_gl_standard = "gl"
-  } else if (is_ios) {
-    skia_gl_standard = "gles"
-  } else {
-    skia_gl_standard = ""
-  }
-
-  if (is_android) {
-    skia_use_vulkan = defined(ndk_api) && ndk_api >= 24
-  } else if (is_fuchsia) {
-    skia_use_vulkan = fuchsia_use_vulkan
-  } else {
-    skia_use_vulkan = defined(skia_moltenvk_path) && skia_moltenvk_path != ""
-  }
-
-  if (is_ios) {
-    skia_ios_identity = ".*Google.*"
-    skia_ios_profile = "Google Development"
-  }
 }
 
 if (defined(skia_settings)) {
@@ -516,7 +421,7 @@ if (skia_compile_processors) {
     include_dirs = [ "." ]
     deps = [
       ":run_sksllex",
-      "//third_party/spirv-tools",
+      "//third_party/spirv-tools:spvtools",
     ]
   }
 
@@ -981,14 +886,6 @@ component("skia") {
   ]
 
   defines = []
-  if (!skia_enable_skpicture) {
-    defines = [ "SK_DISABLE_SKPICTURE" ]
-    public -= skia_skpicture_public
-    sources -= skia_skpicture_sources
-    sources -= [ "//src/effects/imagefilters/SkPictureImageFilter.cpp" ]
-    sources += [ "src/core/SkPicture_none.cpp" ]
-  }
-
   libs = []
 
   if (is_win) {
@@ -1078,7 +975,7 @@ component("skia") {
   }
 
   if (skia_enable_spirv_validation) {
-    deps += [ "//third_party/spirv-tools" ]
+    deps += [ "//third_party/spirv-tools:spvtools_val" ]
     defines += [ "SK_ENABLE_SPIRV_VALIDATION" ]
   }
 
@@ -1300,6 +1197,108 @@ if (skia_enable_tools) {
     }
   }
 
+  # Template to compile .xib and .storyboard files.
+  #
+  # Arguments
+  #
+  #     sources:
+  #         list of string, sources to compile
+  #
+  #     ibtool_flags:
+  #         (optional) list of string, additional flags to pass to the ibtool
+  template("compile_ib_files") {
+    action_foreach(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                             ])
+      assert(defined(invoker.sources),
+             "sources must be specified for $target_name")
+      assert(defined(invoker.output_extension),
+             "output_extension must be specified for $target_name")
+
+      ibtool_flags = []
+      if (defined(invoker.ibtool_flags)) {
+        ibtool_flags = invoker.ibtool_flags
+      }
+
+      _output_extension = invoker.output_extension
+
+      script = "//gn/compile_ib_files.py"
+      sources = invoker.sources
+      outputs = [
+        "$target_gen_dir/$target_name/{{source_name_part}}.$_output_extension",
+      ]
+      args = [
+        "--input",
+        "{{source}}",
+        "--output",
+        rebase_path(
+            "$target_gen_dir/$target_name/{{source_name_part}}.$_output_extension",
+            root_build_dir),
+      ]
+
+      #    if (!use_system_xcode) {
+      #      args += [
+      #        "--developer_dir",
+      #        hermetic_xcode_path,
+      #      ]
+      #    }
+      args += ibtool_flags
+    }
+  }
+
+  template("bundle_data_ib_file") {
+    assert(defined(invoker.source),
+           "source needs to be defined for $target_name")
+
+    _source_extension = get_path_info(invoker.source, "extension")
+    assert(_source_extension == "xib" || _source_extension == "storyboard",
+           "source must be a .xib or .storyboard for $target_name")
+
+    _target_name = target_name
+    if (_source_extension == "xib") {
+      _compile_ib_file = target_name + "_compile_xib"
+      _output_extension = "nib"
+    } else {
+      _compile_ib_file = target_name + "_compile_storyboard"
+      _output_extension = "storyboardc"
+    }
+
+    compile_ib_files(_compile_ib_file) {
+      sources = [
+        invoker.source,
+      ]
+      output_extension = _output_extension
+      visibility = [ ":$_target_name" ]
+      ibtool_flags = [
+        #        "--minimum-deployment-target",
+        #        ios_deployment_target,
+        "--auto-activate-custom-fonts",
+        "--target-device",
+        "iphone",
+        "--target-device",
+        "ipad",
+      ]
+    }
+
+    bundle_data(_target_name) {
+      forward_variables_from(invoker, "*", [ "source" ])
+
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += [ ":$_compile_ib_file" ]
+
+      sources = get_target_outputs(":$_compile_ib_file")
+
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+    }
+  }
+
   template("test_app") {
     if (is_ios) {
       app_name = target_name
@@ -1336,6 +1335,9 @@ if (skia_enable_tools) {
           # iOS reserves the folders 'Resources' and 'resources' so store one level deeper
           "{{bundle_resources_dir}}/data/resources",
         ]
+      }
+      bundle_data_ib_file("${app_name}_bundle_launchscreen") {
+        source = "platform_tools/ios/app/LaunchScreen.storyboard"
       }
       if (has_skps) {
         bundle_data("${app_name}_bundle_skps") {
@@ -1375,9 +1377,28 @@ if (skia_enable_tools) {
         testonly = true
       }
 
-      bundle_data("${app_name}_bundle_symbols") {
+      action("${app_name}_dsymutil") {
         public_deps = [
           ":${app_name}_generate_executable",
+        ]
+        sources = [
+          "$gen_path/$app_name",
+        ]
+        script = "//gn/call.py"
+        args = [
+          "dsymutil",
+          rebase_path("$gen_path/$app_name"),
+        ]
+        outputs = [
+          "$gen_path/${app_name}.dSYM",
+        ]
+        testonly = true
+        pool = "//gn/toolchain:dsymutil_pool($default_toolchain)"
+      }
+
+      bundle_data("${app_name}_bundle_symbols") {
+        public_deps = [
+          ":${app_name}_dsymutil",
         ]
         sources = [
           "$gen_path/${app_name}.dSYM",
@@ -1399,6 +1420,7 @@ if (skia_enable_tools) {
         deps = [
           ":${app_name}_bundle_executable",
           ":${app_name}_bundle_info_plist",
+          ":${app_name}_bundle_launchscreen",
           ":${app_name}_bundle_resources",
           ":${app_name}_bundle_symbols",
         ]
@@ -1719,6 +1741,10 @@ if (skia_enable_tools) {
       "modules/sksg",
       "modules/skshaper",
     ]
+    if (is_skia_dev_build) {
+      sources += [ "gm/fiddle.cpp" ]
+      deps += [ ":skia.h" ]
+    }
     public_deps = [
       ":gpu_tool_utils",
     ]
@@ -2314,6 +2340,10 @@ if (skia_enable_tools) {
     ]
     libs = []
 
+    if (skia_use_dawn) {
+      sources += [ "tools/sk_app/DawnWindowContext.cpp" ]
+    }
+
     if (is_android) {
       sources += [
         "tools/sk_app/android/GLWindowContext_android.cpp",
@@ -2331,6 +2361,13 @@ if (skia_enable_tools) {
         "tools/sk_app/unix/keysym2ucs.c",
         "tools/sk_app/unix/main_unix.cpp",
       ]
+      if (skia_use_dawn) {
+        if (dawn_enable_vulkan) {
+          sources += [ "tools/sk_app/unix/DawnVulkanWindowContext_unix.cpp" ]
+          defines = [ "VK_USE_PLATFORM_XCB_KHR" ]
+          libs += [ "X11-xcb" ]
+        }
+      }
       libs += [
         "GL",
         "X11",
@@ -2345,6 +2382,11 @@ if (skia_enable_tools) {
       if (skia_use_angle) {
         sources += [ "tools/sk_app/win/ANGLEWindowContext_win.cpp" ]
       }
+      if (skia_use_dawn) {
+        if (dawn_enable_d3d12) {
+          sources += [ "tools/sk_app/win/DawnD3D12WindowContext_win.cpp" ]
+        }
+      }
     } else if (is_mac) {
       sources += [
         "tools/sk_app/mac/GLWindowContext_mac.mm",
@@ -2352,6 +2394,11 @@ if (skia_enable_tools) {
         "tools/sk_app/mac/Window_mac.mm",
         "tools/sk_app/mac/main_mac.mm",
       ]
+      if (skia_use_dawn) {
+        if (dawn_enable_metal) {
+          sources += [ "tools/sk_app/mac/DawnMTLWindowContext_mac.mm" ]
+        }
+      }
       libs += [
         "QuartzCore.framework",
         "Cocoa.framework",
@@ -2359,11 +2406,12 @@ if (skia_enable_tools) {
       ]
     } else if (is_ios) {
       sources += [
-        "tools/sk_app/ios/GLWindowContext_ios.cpp",
-        "tools/sk_app/ios/RasterWindowContext_ios.cpp",
-        "tools/sk_app/ios/Window_ios.cpp",
-        "tools/sk_app/ios/main_ios.cpp",
+        "tools/sk_app/ios/GLWindowContext_ios.mm",
+        "tools/sk_app/ios/RasterWindowContext_ios.mm",
+        "tools/sk_app/ios/Window_ios.mm",
+        "tools/sk_app/ios/main_ios.mm",
       ]
+      libs += [ "QuartzCore.framework" ]
     }
 
     if (skia_use_vulkan) {
@@ -2385,8 +2433,9 @@ if (skia_enable_tools) {
       sources += [ "tools/sk_app/MetalWindowContext.mm" ]
       if (is_mac) {
         sources += [ "tools/sk_app/mac/MetalWindowContext_mac.mm" ]
+      } else if (is_ios) {
+        sources += [ "tools/sk_app/ios/MetalWindowContext_ios.mm" ]
       }
-      libs += [ "MetalKit.framework" ]
     }
 
     deps = [
@@ -2394,8 +2443,6 @@ if (skia_enable_tools) {
     ]
     if (is_android) {
       deps += [ "//third_party/native_app_glue" ]
-    } else if (is_ios) {
-      deps += [ "//third_party/libsdl" ]
     }
     if (skia_use_angle) {
       deps += [ "//third_party/angle2" ]
@@ -2596,22 +2643,13 @@ if (skia_enable_tools) {
     ]
   }
 
-  test_app("editor") {
-    is_shared_library = is_android
-    sources = [
-      "experimental/editor/editor.cpp",
-      "experimental/editor/editor.h",
-      "experimental/editor/editor_application.cpp",
-      "experimental/editor/run_handler.cpp",
-      "experimental/editor/run_handler.h",
-      "experimental/editor/stringslice.cpp",
-      "experimental/editor/stringslice.h",
-    ]
-    deps = [
-      ":sk_app",
-      ":skia",
-      "modules/skshaper",
-    ]
+  if (skia_use_icu && skia_use_harfbuzz) {
+    test_app("editor") {
+      is_shared_library = is_android
+      deps = [
+        "modules/skplaintexteditor:editor_app",
+      ]
+    }
   }
 
   if (skia_enable_skvm_jit) {

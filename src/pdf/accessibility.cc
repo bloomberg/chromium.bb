@@ -14,7 +14,9 @@ bool GetAccessibilityInfo(
     int32_t page_index,
     PP_PrivateAccessibilityPageInfo* page_info,
     std::vector<PP_PrivateAccessibilityTextRunInfo>* text_runs,
-    std::vector<PP_PrivateAccessibilityCharInfo>* chars) {
+    std::vector<PP_PrivateAccessibilityCharInfo>* chars,
+    std::vector<PP_PrivateAccessibilityLinkInfo>* links,
+    std::vector<PP_PrivateAccessibilityImageInfo>* images) {
   int page_count = engine->GetNumberOfPages();
   if (page_index < 0 || page_index >= page_count)
     return false;
@@ -37,39 +39,60 @@ bool GetAccessibilityInfo(
 
   int char_index = 0;
   while (char_index < char_count) {
-    PP_PrivateAccessibilityTextRunInfo text_run_info;
-    pp::FloatRect bounds;
-    engine->GetTextRunInfo(page_index, char_index, &text_run_info.len,
-                           &text_run_info.font_size, &bounds);
-    DCHECK_LE(char_index + text_run_info.len,
-              static_cast<uint32_t>(char_count));
-    text_run_info.direction = PP_PRIVATEDIRECTION_LTR;
-    text_run_info.bounds = bounds;
+    base::Optional<PP_PrivateAccessibilityTextRunInfo> text_run_info_result =
+        engine->GetTextRunInfo(page_index, char_index);
+    DCHECK(text_run_info_result.has_value());
+    const auto& text_run_info = text_run_info_result.value();
+    uint32_t text_run_end = char_index + text_run_info.len;
+    DCHECK_LE(text_run_end, static_cast<uint32_t>(char_count));
     text_runs->push_back(text_run_info);
 
     // We need to provide enough information to draw a bounding box
     // around any arbitrary text range, but the bounding boxes of characters
-    // we get from PDFium don't necessarily "line up". Walk through the
+    // we get from PDFium don't necessarily "line up".
+    // Example for LTR text direction: walk through the
     // characters in each text run and let the width of each character be
     // the difference between the x coordinate of one character and the
     // x coordinate of the next. The rest of the bounds of each character
     // can be computed from the bounds of the text run.
+    // The same idea is used for RTL, TTB and BTT text direction.
     pp::FloatRect char_bounds = engine->GetCharBounds(page_index, char_index);
-    for (uint32_t i = 0; i < text_run_info.len - 1; i++) {
-      DCHECK_LT(char_index + i + 1, static_cast<uint32_t>(char_count));
-      pp::FloatRect next_char_bounds =
-          engine->GetCharBounds(page_index, char_index + i + 1);
-      (*chars)[char_index + i].char_width =
-          next_char_bounds.x() - char_bounds.x();
+    for (uint32_t i = char_index; i < text_run_end - 1; i++) {
+      DCHECK_LT(i + 1, static_cast<uint32_t>(char_count));
+      pp::FloatRect next_char_bounds = engine->GetCharBounds(page_index, i + 1);
+      double& char_width = (*chars)[i].char_width;
+      switch (text_run_info.direction) {
+        case PP_PRIVATEDIRECTION_NONE:
+        case PP_PRIVATEDIRECTION_LTR:
+          char_width = next_char_bounds.x() - char_bounds.x();
+          break;
+        case PP_PRIVATEDIRECTION_TTB:
+          char_width = next_char_bounds.y() - char_bounds.y();
+          break;
+        case PP_PRIVATEDIRECTION_RTL:
+          char_width = char_bounds.right() - next_char_bounds.right();
+          break;
+        case PP_PRIVATEDIRECTION_BTT:
+          char_width = char_bounds.bottom() - next_char_bounds.bottom();
+          break;
+      }
       char_bounds = next_char_bounds;
     }
-    (*chars)[char_index + text_run_info.len - 1].char_width =
-        char_bounds.width();
+    double& char_width = (*chars)[text_run_end - 1].char_width;
+    if (text_run_info.direction == PP_PRIVATEDIRECTION_BTT ||
+        text_run_info.direction == PP_PRIVATEDIRECTION_TTB) {
+      char_width = char_bounds.height();
+    } else {
+      char_width = char_bounds.width();
+    }
 
     char_index += text_run_info.len;
   }
 
   page_info->text_run_count = text_runs->size();
+  // TODO(crbug.com/981448): Populate |links| and |images|.
+  page_info->link_count = links->size();
+  page_info->image_count = images->size();
   return true;
 }
 

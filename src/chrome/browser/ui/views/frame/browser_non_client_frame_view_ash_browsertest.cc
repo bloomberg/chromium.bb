@@ -14,7 +14,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"     // mash-ok
@@ -377,16 +377,14 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   CloseBrowserSynchronously(browser());
 
   chrome::NewEmptyWindow(profile);
-  ui_test_utils::BrowserAddedObserver window_observer;
-  SessionRestoreTestHelper restore_observer;
+  SessionRestoreTestHelper().Wait();
 
-  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
 
   // Check that a layout occurs.
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(new_browser);
   Widget* widget = browser_view->GetWidget();
-  restore_observer.Wait();
 
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
@@ -589,7 +587,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
       browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
 
   ash::ImmersiveFullscreenControllerTestApi(
@@ -887,9 +885,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 
   // Check the bubble anchors inside the main app window even if there's space
   // available outside the main app window.
-  gfx::Rect page_info_bounds = PageInfoBubbleViewBase::GetPageInfoBubble()
-                                   ->GetWidget()
-                                   ->GetWindowBoundsInScreen();
+  gfx::Rect page_info_bounds =
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()
+          ->GetWidget()
+          ->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget->GetWindowBoundsInScreen().Contains(page_info_bounds));
 }
 
@@ -1421,6 +1420,20 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
+// TODO(crbug.com/993974): When the test flake has been addressed, improve
+// performance by consolidating this unit test with
+// |TabletModeBrowserCaptionButtonVisibility|. Do not forget to remove the
+// corresponding |FRIEND_TEST_ALL_PREFIXES| usage from
+// |BrowserNonClientFrameViewAsh|.
+IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
+                       CaptionButtonVisibilityForBrowserLaunchedInTabletMode) {
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+  EXPECT_FALSE(GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(
+                                   CreateBrowser(browser()->profile())))
+                   ->caption_button_container_->GetVisible());
+}
+
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeAppCaptionButtonVisibility) {
   browser()->window()->Close();
@@ -1431,7 +1444,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
       browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
   browser->window()->Show();
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);

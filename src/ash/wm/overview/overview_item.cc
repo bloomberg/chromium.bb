@@ -21,6 +21,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -35,6 +36,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -42,6 +44,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -125,14 +128,9 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
   // new bounds back to the old bounds, and then apply the idenity
   // transform. This so the bounds visually line up the concurrent transform
   // animations. Also transform animations may be more performant.
-  // TODO(sammiequon): Move the transform calcuations to a utility function.
-  gfx::RectF current_bounds = gfx::RectF(window->GetBoundsInScreen());
-  gfx::Transform transform(previous_bounds.width() / current_bounds.width(),
-                           0.f, 0.f,
-                           previous_bounds.height() / current_bounds.height(),
-                           previous_bounds.x() - current_bounds.x(),
-                           previous_bounds.y() - current_bounds.y());
-  window->SetTransform(transform);
+  const gfx::RectF current_bounds = gfx::RectF(window->GetBoundsInScreen());
+  window->SetTransform(
+      gfx::TransformBetweenRects(current_bounds, previous_bounds));
   ScopedOverviewAnimationSettings settings(animation_type, window);
   if (observer)
     settings.AddObserver(observer);
@@ -301,15 +299,15 @@ OverviewItem::UpdateYPositionAndOpacity(
     }
     layer->SetOpacity(opacity);
 
-    int initial_y_ = 0;
+    int initial_y = 0;
     if (translation_y_map_.contains(window))
-      initial_y_ = translation_y_map_[window];
+      initial_y = translation_y_map_[window];
 
     // Alter the y-translation. Offset by the window location relative to the
     // grid.
     gfx::Transform transform = layer->transform();
     transform.matrix().setFloat(1, 3,
-                                static_cast<float>(initial_y_ - new_grid_y));
+                                static_cast<float>(initial_y - new_grid_y));
     layer->SetTransform(transform);
 
     // Return the first layer for the caller to observe.
@@ -421,18 +419,11 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   translation_y_map_.clear();
   aura::Window::Windows windows = GetWindowsForHomeGesture();
   for (auto* window : windows) {
-    // There is a bug where the first OverviewItem |window_| will always return
-    // the identity, even though a transform has been visually applied. For this
-    // case use the y location of the screen bounds.
-    // TODO(sammiequon): Investigate why this is happening and remove the if
-    // clause.
-    if (window->transform().IsIdentity() &&
-        (window == GetWindow() ||
-         ::wm::HasTransientAncestor(window, GetWindow()))) {
-      translation_y_map_[window] = window->GetBoundsInScreen().y();
-    } else {
-      translation_y_map_[window] = window->transform().To2dTranslation().y();
-    }
+    // Cache the original y translation when setting bounds. They will be
+    // possibly used later when swiping up from the shelf to close overview. Use
+    // the target transform as some windows may still be animating.
+    translation_y_map_[window] =
+        window->layer()->GetTargetTransform().To2dTranslation().y();
   }
 }
 
@@ -521,10 +512,9 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
     params.message_id = IDS_ASH_SPLIT_VIEW_CANNOT_SNAP;
     params.parent =
         root_window()->GetChildById(kShellWindowId_AlwaysOnTopContainer);
+    params.hide_in_mini_view = true;
     cannot_snap_widget_ = std::make_unique<RoundedLabelWidget>();
-    cannot_snap_widget_->Init(params);
-    auto* widget_window = cannot_snap_widget_->GetNativeWindow();
-    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
+    cannot_snap_widget_->Init(std::move(params));
   }
 
   DoSplitviewOpacityAnimation(cannot_snap_widget_->GetNativeWindow()->layer(),
@@ -539,10 +529,6 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
-  // Disable shadow for the dragged overview item during dragging.
-  if (is_being_dragged_)
-    UpdateRoundedCornersAndShadow();
-
   caption_container_view_->SetHeaderVisibility(
       is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
@@ -550,22 +536,14 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
-  if (is_being_dragged_) {
-    is_being_dragged_ = false;
-    // Do nothing further with the dragged overview item if it is being snapped.
-    if (snap)
-      return;
-    // Re-show shadow for the dragged overview item after drag ends.
-    UpdateRoundedCornersAndShadow();
-  }
-
-  // Update the header.
   if (snap) {
-    caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
+    if (!is_being_dragged_)
+      caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
   } else {
     caption_container_view_->SetHeaderVisibility(
         CaptionContainerView::HeaderVisibility::kVisible);
   }
+  is_being_dragged_ = false;
 }
 
 ScopedOverviewTransformWindow::GridWindowFillMode
@@ -610,8 +588,8 @@ void OverviewItem::OnDragAnimationCompleted() {
 
   should_restack_on_animation_end_ = false;
 
-  // First stack this item's window below the snapped window if split view mode
-  // is active.
+  // First stack this item's window below the snapped window if split view
+  // mode is active.
   aura::Window* dragged_window = GetWindow();
   aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
   aura::Window* parent_window = dragged_widget_window->parent();
@@ -647,33 +625,21 @@ void OverviewItem::OnDragAnimationCompleted() {
   }
 }
 
-void OverviewItem::UpdatePhantomsForDragging(
-    const gfx::PointF& location_in_screen) {
+void OverviewItem::UpdatePhantomsForDragging(bool is_touch_dragging) {
   DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
-
-  aura::Window* window = transform_window_.IsMinimized()
-                             ? item_widget_->GetNativeWindow()
-                             : GetWindow();
-
   if (!phantoms_for_dragging_) {
-    DCHECK_EQ(1.f, window->layer()->opacity());
-    phantoms_for_dragging_ = std::make_unique<DragWindowController>(window);
+    phantoms_for_dragging_ = std::make_unique<DragWindowController>(
+        transform_window_.IsMinimized() ? item_widget_->GetNativeWindow()
+                                        : GetWindow(),
+        is_touch_dragging);
   }
-
-  const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
-    window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
-        root_window_, window, location));
-  phantoms_for_dragging_->Update(location);
+  phantoms_for_dragging_->Update();
 }
 
 void OverviewItem::DestroyPhantomsForDragging() {
   DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   phantoms_for_dragging_.reset();
-  aura::Window* window = transform_window_.IsMinimized()
-                             ? item_widget_->GetNativeWindow()
-                             : GetWindow();
-  window->layer()->SetOpacity(1.f);
 }
 
 void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
@@ -700,10 +666,9 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
 }
 
 void OverviewItem::UpdateRoundedCornersAndShadow() {
-  // Do not show the rounded corners and the shadow if overview is shutting down
-  // or we're currently in entering overview animation.
-  // Also don't update or animate the window's frame header clip under these
-  // conditions.
+  // Do not show the rounded corners and the shadow if overview is shutting
+  // down or we're currently in entering overview animation. Also don't update
+  // or animate the window's frame header clip under these conditions.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   const bool is_shutting_down =
       !overview_controller || !overview_controller->InOverviewSession();
@@ -716,11 +681,10 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
       /*update_clip=*/should_show_rounded_corners);
 
   // In addition, the shadow should be hidden if
-  // 1) this overview item is being dragged or
-  // 2) this overview item is the drop target window or
-  // 3) this overview item is in animation.
+  // 1) this overview item is the drop target window or
+  // 2) this overview item is in animation.
   const bool should_show_shadow =
-      should_show_rounded_corners && !is_being_dragged_ &&
+      should_show_rounded_corners &&
       !overview_grid_->IsDropTargetWindow(GetWindow()) &&
       !transform_window_.GetOverviewWindow()
            ->layer()
@@ -740,8 +704,8 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
 void OverviewItem::OnStartingAnimationComplete() {
   DCHECK(item_widget_);
   if (transform_window_.IsMinimized()) {
-    // Fade the title in if minimized. The rest of |item_widget_| should already
-    // be shown.
+    // Fade the title in if minimized. The rest of |item_widget_| should
+    // already be shown.
     caption_container_view_->SetHeaderVisibility(
         CaptionContainerView::HeaderVisibility::kVisible);
   } else {
@@ -793,57 +757,96 @@ OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
-                                    bool from_touch_gesture) {
-  // We allow switching finger while dragging, but do not allow dragging two or
-  // more items.
-  if (overview_session_->window_drag_controller() &&
-      overview_session_->window_drag_controller()->item()) {
+void OverviewItem::HandleMouseEvent(const ui::MouseEvent& event) {
+  const gfx::PointF screen_location = event.target()->GetScreenLocationF(event);
+  switch (event.type()) {
+    case ui::ET_MOUSE_PRESSED:
+      HandlePressEvent(screen_location, /*from_touch_gesture=*/false);
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      HandleReleaseEvent(screen_location);
+      break;
+    case ui::ET_MOUSE_DRAGGED:
+      HandleDragEvent(screen_location);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
+  if (ShouldUseTabletModeGridLayout()) {
+    HandleGestureEventForTabletModeLayout(event);
     return;
   }
 
-  StartDrag();
-  overview_session_->InitiateDrag(this, location_in_screen,
-                                  /*allow_drag_to_close=*/from_touch_gesture);
+  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      HandlePressEvent(location, /*from_touch_gesture=*/true);
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      HandleDragEvent(location);
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      HandleFlingStartEvent(location, event->details().velocity_x(),
+                            event->details().velocity_y());
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      HandleReleaseEvent(location);
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      HandleLongPressEvent(location);
+      break;
+    case ui::ET_GESTURE_TAP:
+      HandleTapEvent();
+      break;
+    case ui::ET_GESTURE_END:
+      HandleGestureEndEvent();
+      break;
+    default:
+      break;
+  }
 }
 
-void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->CompleteDrag(this, location_in_screen);
-}
-
-void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->Drag(this, location_in_screen);
-}
-
-void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
-  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
-    overview_session_->StartNormalDragMode(location_in_screen);
-}
-
-void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,
-                                         float velocity_x,
-                                         float velocity_y) {
-  overview_session_->Fling(this, location_in_screen, velocity_x, velocity_y);
-}
-
-void OverviewItem::HandleTapEvent() {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->ActivateDraggedWindow();
-}
-
-void OverviewItem::HandleGestureEndEvent() {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->ResetDraggedWindowGesture();
+void OverviewItem::HandleGestureEventForTabletModeLayout(
+    ui::GestureEvent* event) {
+  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (IsDragItem())
+        HandleDragEvent(location);
+      else
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      if (IsDragItem()) {
+        HandleFlingStartEvent(location, event->details().velocity_x(),
+                              event->details().velocity_y());
+      } else {
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      if (IsDragItem())
+        HandleReleaseEvent(location);
+      else
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      HandlePressEvent(location, /*from_touch_gesture=*/true);
+      break;
+    case ui::ET_GESTURE_TAP:
+      overview_session_->SelectWindow(this);
+      break;
+    case ui::ET_GESTURE_END:
+      HandleGestureEndEvent();
+      break;
+    default:
+      overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      break;
+  }
 }
 
 bool OverviewItem::ShouldIgnoreGestureEvents() {
@@ -885,8 +888,8 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
     if (window == GetWindow()) {
       caption_container_view_->UpdatePreviewView();
     } else {
-      // Transient window is repositioned. The new position within the overview
-      // item needs to be recomputed.
+      // Transient window is repositioned. The new position within the
+      // overview item needs to be recomputed.
       SetBounds(target_bounds_, OVERVIEW_ANIMATION_NONE);
     }
   }
@@ -911,8 +914,9 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
 void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
   if (window != GetWindow())
     return;
-  // TODO(flackr): Maybe add the new title to a vector of titles so that we can
-  // filter any of the titles the window had while in the overview session.
+  // TODO(flackr): Maybe add the new title to a vector of titles so that we
+  // can filter any of the titles the window had while in the overview
+  // session.
   caption_container_view_->SetTitle(window->GetTitle());
 }
 
@@ -981,13 +985,13 @@ void OverviewItem::CreateWindowLabel() {
       views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
   params.accept_events = true;
   params.parent = transform_window_.window()->parent();
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
 
   item_widget_ = std::make_unique<views::Widget>();
   item_widget_->set_focus_on_creation(false);
-  item_widget_->Init(params);
+  item_widget_->Init(std::move(params));
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
-  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
 
   shadow_ = std::make_unique<ui::Shadow>();
   shadow_->Init(kShadowElevation);
@@ -1052,6 +1056,62 @@ void OverviewItem::AnimateOpacity(float opacity,
         animation_type, cannot_snap_widget_window);
     cannot_snap_widget_window->layer()->SetOpacity(opacity);
   }
+}
+
+void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
+                                    bool from_touch_gesture) {
+  // We allow switching finger while dragging, but do not allow dragging two
+  // or more items.
+  if (overview_session_->window_drag_controller() &&
+      overview_session_->window_drag_controller()->item()) {
+    return;
+  }
+
+  StartDrag();
+  overview_session_->InitiateDrag(this, location_in_screen,
+                                  /*is_touch_dragging=*/from_touch_gesture);
+}
+
+void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->CompleteDrag(this, location_in_screen);
+}
+
+void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->Drag(this, location_in_screen);
+}
+
+void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
+  if (!IsDragItem())
+    return;
+
+  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
+    overview_session_->StartNormalDragMode(location_in_screen);
+}
+
+void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                                         float velocity_x,
+                                         float velocity_y) {
+  overview_session_->Fling(this, location_in_screen, velocity_x, velocity_y);
+}
+
+void OverviewItem::HandleTapEvent() {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->ActivateDraggedWindow();
+}
+
+void OverviewItem::HandleGestureEndEvent() {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->ResetDraggedWindowGesture();
 }
 
 void OverviewItem::StartDrag() {

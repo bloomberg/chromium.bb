@@ -29,9 +29,6 @@ extern const char kCredentialsEnableAutosignin[];
 extern const char kCredentialsEnableService[];
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// The local profile id for this profile.
-extern const char kLocalProfileId[];
-
 // The current state of the migration to LoginDB from Keyring/Kwallet on Linux.
 extern const char kMigrationToLoginDBStep[];
 #endif
@@ -80,6 +77,13 @@ extern const char kLastTimeObsoleteHttpCredentialsRemoved[];
 
 // List that contains captured password hashes.
 extern const char kPasswordHashDataList[];
+
+// Integer indicating the state of the password manager onboarding experience.
+extern const char kPasswordManagerOnboardingState[];
+
+// Boolean indicating whether Chrome should check whether the credentials
+// submitted by the user were part of a leak.
+extern const char kPasswordLeakDetectionEnabled[];
 
 }  // namespace prefs
 }  // namespace password_manager

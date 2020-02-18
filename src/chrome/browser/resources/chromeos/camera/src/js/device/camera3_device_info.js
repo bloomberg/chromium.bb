@@ -96,4 +96,28 @@ cca.device.Camera3DeviceInfo = class {
       this.videoMaxFps[[w, h]] = fps;
     });
   }
+
+  /**
+   * Create a Camera3DeviceInfo by given device info and the mojo device
+   *     operator.
+   * @param {!MediaDeviceInfo} deviceInfo
+   * @return {Promise<!cca.device.Camera3DeviceInfo>}
+   * @throws {Error} Thrown when the device operation is not supported.
+   */
+  static async create(deviceInfo) {
+    const deviceId = deviceInfo.deviceId;
+
+    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    if (!deviceOperator) {
+      throw new Error('Device operation is not supported');
+    }
+    const facing = await deviceOperator.getCameraFacing(deviceId);
+    const photoResolution = await deviceOperator.getPhotoResolutions(deviceId);
+    const videoConfigs = await deviceOperator.getVideoConfigs(deviceId);
+    const supportedFpsRanges =
+        await deviceOperator.getSupportedFpsRanges(deviceId);
+
+    return new cca.device.Camera3DeviceInfo(
+        deviceInfo, facing, photoResolution, videoConfigs, supportedFpsRanges);
+  }
 };

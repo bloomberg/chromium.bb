@@ -111,6 +111,7 @@ source_set("shared") {
 
   public_deps = [
     "//components/keyed_service/core",
+    "//skia",
   ]
 
   deps = [
@@ -148,6 +149,17 @@ static_library("test_support") {
     sources += [
       "core/base_session_service_test_helper.cc",
       "core/base_session_service_test_helper.h",
+    ]
+  }
+
+  if (!is_ios) {
+    sources += [
+      "content/content_test_helper.cc",
+      "content/content_test_helper.h",
+    ]
+    deps += [
+      "//content/public/browser",
+      "//content/public/common",
     ]
   }
 }

@@ -90,11 +90,11 @@ class AssistantOptInContainer : public views::Button {
 AssistantOptInView::AssistantOptInView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   InitLayout();
-  delegate_->AddAssistantPrefsObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 AssistantOptInView::~AssistantOptInView() {
-  delegate_->RemoveAssistantPrefsObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
 }
 
 const char* AssistantOptInView::GetClassName() const {
@@ -114,7 +114,7 @@ void AssistantOptInView::ButtonPressed(views::Button* sender,
   delegate_->OnOptInButtonPressed();
 }
 
-void AssistantOptInView::OnAssistantConsentStatusUpdated(int consent_status) {
+void AssistantOptInView::OnAssistantConsentStatusChanged(int consent_status) {
   UpdateLabel(consent_status);
 }
 
@@ -152,7 +152,8 @@ void AssistantOptInView::InitLayout() {
   container_->AddChildView(label_);
   container_->SetFocusForPlatform();
 
-  UpdateLabel(delegate_->GetConsentStatus());
+  UpdateLabel(AssistantState::Get()->consent_status().value_or(
+      chromeos::assistant::prefs::ConsentStatus::kUnknown));
 }
 
 void AssistantOptInView::UpdateLabel(int consent_status) {

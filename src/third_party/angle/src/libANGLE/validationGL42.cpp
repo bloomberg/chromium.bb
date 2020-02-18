@@ -12,7 +12,7 @@ namespace gl
 {
 
 bool ValidateDrawArraysInstancedBaseInstance(Context *context,
-                                             GLenum mode,
+                                             PrimitiveMode mode,
                                              GLint first,
                                              GLsizei count,
                                              GLsizei instancecount,
@@ -33,9 +33,9 @@ bool ValidateDrawElementsInstancedBaseInstance(Context *context,
 }
 
 bool ValidateDrawElementsInstancedBaseVertexBaseInstance(Context *context,
-                                                         GLenum mode,
+                                                         PrimitiveMode mode,
                                                          GLsizei count,
-                                                         GLenum type,
+                                                         DrawElementsType type,
                                                          const void *indices,
                                                          GLsizei instancecount,
                                                          GLint basevertex,
@@ -46,7 +46,7 @@ bool ValidateDrawElementsInstancedBaseVertexBaseInstance(Context *context,
 
 bool ValidateDrawTransformFeedbackInstanced(Context *context,
                                             GLenum mode,
-                                            GLuint id,
+                                            TransformFeedbackID id,
                                             GLsizei instancecount)
 {
     return true;
@@ -54,7 +54,7 @@ bool ValidateDrawTransformFeedbackInstanced(Context *context,
 
 bool ValidateDrawTransformFeedbackStreamInstanced(Context *context,
                                                   GLenum mode,
-                                                  GLuint id,
+                                                  TransformFeedbackID id,
                                                   GLuint stream,
                                                   GLsizei instancecount)
 {
@@ -62,7 +62,7 @@ bool ValidateDrawTransformFeedbackStreamInstanced(Context *context,
 }
 
 bool ValidateGetActiveAtomicCounterBufferiv(Context *context,
-                                            GLuint program,
+                                            ShaderProgramID program,
                                             GLuint bufferIndex,
                                             GLenum pname,
                                             GLint *params)

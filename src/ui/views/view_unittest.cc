@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "cc/paint/display_item_list.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,6 +54,7 @@
 #include "ui/views/paint_info.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_observer.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -248,7 +250,7 @@ class TestView : public View {
   void OnMouseExited(const ui::MouseEvent& event) override;
 
   void OnPaint(gfx::Canvas* canvas) override;
-  void SchedulePaintInRect(const gfx::Rect& rect) override;
+  void OnDidSchedulePaint(const gfx::Rect& rect) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   void OnThemeChanged() override;
@@ -423,7 +425,7 @@ TEST_F(ViewTest, MouseEvent) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
+  widget->Init(std::move(params));
   internal::RootView* root =
       static_cast<internal::RootView*>(widget->GetRootView());
 
@@ -486,7 +488,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root = widget->GetRootView();
 
   root->AddChildView(v1);
@@ -517,9 +519,9 @@ namespace {
 // the helper class goes out of scope.
 class ScopedTestPaintWidget {
  public:
-  explicit ScopedTestPaintWidget(const Widget::InitParams& params)
-        : widget_(new Widget) {
-    widget_->Init(params);
+  explicit ScopedTestPaintWidget(Widget::InitParams params)
+      : widget_(new Widget) {
+    widget_->Init(std::move(params));
     widget_->GetRootView()->SetBounds(0, 0, 25, 26);
   }
 
@@ -1304,9 +1306,9 @@ TEST_F(ViewTest, PaintLocalBounds) {
   EXPECT_TRUE(v1->canvas_bounds().Contains(v1->GetVisibleBounds()));
 }
 
-void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
+void TestView::OnDidSchedulePaint(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
-  View::SchedulePaintInRect(rect);
+  View::OnDidSchedulePaint(rect);
 }
 
 namespace {
@@ -1331,7 +1333,7 @@ void RotateClockwise(gfx::Transform* transform) {
 TEST_F(ViewTest, GetEventHandlerForRect) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root_view = widget->GetRootView();
   root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
@@ -1643,7 +1645,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
 TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root_view = widget->GetRootView();
   root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
@@ -1799,7 +1801,7 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
 TEST_F(ViewTest, NotifyEnterExitOnChild) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root_view = widget->GetRootView();
   root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
@@ -1937,7 +1939,7 @@ TEST_F(ViewTest, Textfield) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root_view = widget->GetRootView();
 
   Textfield* textfield = new Textfield();
@@ -1945,17 +1947,17 @@ TEST_F(ViewTest, Textfield) {
 
   // Test setting, appending text.
   textfield->SetText(kText);
-  EXPECT_EQ(kText, textfield->text());
+  EXPECT_EQ(kText, textfield->GetText());
   textfield->AppendText(kExtraText);
-  EXPECT_EQ(kText + kExtraText, textfield->text());
+  EXPECT_EQ(kText + kExtraText, textfield->GetText());
   textfield->SetText(base::string16());
-  EXPECT_TRUE(textfield->text().empty());
+  EXPECT_TRUE(textfield->GetText().empty());
 
   // Test selection related methods.
   textfield->SetText(kText);
   EXPECT_TRUE(textfield->GetSelectedText().empty());
   textfield->SelectAll(false);
-  EXPECT_EQ(kText, textfield->text());
+  EXPECT_EQ(kText, textfield->GetText());
   textfield->ClearSelection();
   EXPECT_TRUE(textfield->GetSelectedText().empty());
 
@@ -1974,7 +1976,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root_view = widget->GetRootView();
 
   Textfield* normal = new Textfield();
@@ -1998,21 +2000,21 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_CUT, 0);
   base::string16 result;
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_CUT, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   password->ExecuteCommand(IDS_APP_CUT, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -2024,19 +2026,19 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_COPY, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_COPY, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   password->ExecuteCommand(IDS_APP_COPY, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   // Text cannot be copied from an obscured field; the clipboard won't change.
   EXPECT_EQ(kNormalText, result);
 
@@ -2047,19 +2049,85 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   // Attempting to paste kNormalText in a read-only text-field should fail.
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_PASTE, 0);
-  EXPECT_EQ(kReadOnlyText, read_only->text());
+  EXPECT_EQ(kReadOnlyText, read_only->GetText());
 
   password->SelectAll(false);
   password->ExecuteCommand(IDS_APP_PASTE, 0);
-  EXPECT_EQ(kNormalText, password->text());
+  EXPECT_EQ(kNormalText, password->GetText());
 
   // Copy from |read_only| to observe a change in the normal textfield text.
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_COPY, 0);
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_PASTE, 0);
-  EXPECT_EQ(kReadOnlyText, normal->text());
+  EXPECT_EQ(kReadOnlyText, normal->GetText());
   widget->CloseNow();
+}
+
+class ViewPaintOptimizationTest : public ViewsTestBase {
+ public:
+  ViewPaintOptimizationTest() = default;
+
+  ~ViewPaintOptimizationTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        views::features::kEnableViewPaintOptimization);
+    ViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewPaintOptimizationTest);
+};
+
+// Tests that only Views where SchedulePaint was invoked get repainted.
+TEST_F(ViewPaintOptimizationTest, PaintDirtyViewsOnly) {
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
+  View* root_view = widget->GetRootView();
+
+  TestView* v1 = root_view->AddChildView(std::make_unique<TestView>());
+  v1->SetBounds(10, 11, 12, 13);
+
+  TestView* v2 = root_view->AddChildView(std::make_unique<TestView>());
+  v2->SetBounds(3, 4, 6, 5);
+
+  TestView* v21 = v2->AddChildView(std::make_unique<TestView>());
+  v21->SetBounds(2, 3, 4, 5);
+
+  // Paint everything once, since it has to build its cache. Then we can test
+  // invalidation.
+  gfx::Rect first_paint(1, 1);
+  auto list = base::MakeRefCounted<cc::DisplayItemList>();
+  root_view->Paint(PaintInfo::CreateRootPaintInfo(
+      ui::PaintContext(list.get(), 1.f, first_paint, false),
+      root_view->size()));
+  v1->Reset();
+  v2->Reset();
+  v21->Reset();
+
+  gfx::Rect paint_area(10, 11, 12, 13);
+  list = base::MakeRefCounted<cc::DisplayItemList>();
+
+  // Schedule a paint on v2 which marks it invalidated.
+  v2->SchedulePaint();
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  EXPECT_FALSE(v21->did_paint_);
+
+  // Paint with an unknown invalidation. The invalidation is irrelevant since
+  // repainting a view only depends on whether the view had a scheduled paint.
+  gfx::Rect empty_rect;
+  EXPECT_TRUE(empty_rect.IsEmpty());
+
+  root_view->Paint(PaintInfo::CreateRootPaintInfo(
+      ui::PaintContext(list.get(), 1.f, paint_area, false), empty_rect.size()));
+
+  // Only v2 should be repainted.
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+  EXPECT_FALSE(v21->did_paint_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2075,7 +2143,7 @@ namespace {
 // A Widget with a TestView in the view hierarchy. Used for accelerator tests.
 class TestViewWidget {
  public:
-  TestViewWidget(const Widget::InitParams& create_params,
+  TestViewWidget(Widget::InitParams create_params,
                  ui::Accelerator* initial_accelerator,
                  bool show_after_init = true)
       : view_(new TestView) {
@@ -2088,10 +2156,10 @@ class TestViewWidget {
     }
 
     // Create a window and add the view as its child.
-    Widget::InitParams params = create_params;
+    Widget::InitParams params = std::move(create_params);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 100, 100);
-    widget_.Init(params);
+    widget_.Init(std::move(params));
     View* root = widget_.GetRootView();
     root->AddChildView(view_);
     if (show_after_init)
@@ -2146,12 +2214,11 @@ TEST_F(ViewTest, HandleAccelerator) {
   child_view->Reset();
   child_view->AddAccelerator(return_accelerator);
   EXPECT_EQ(child_view->accelerator_count_map_[return_accelerator], 0);
-  view->AddChildView(child_view);
   Widget* child_widget = new Widget;
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_CONTROL);
   child_params.parent = widget->GetNativeView();
-  child_widget->Init(child_params);
+  child_widget->Init(std::move(child_params));
   child_widget->SetContentsView(child_view);
 
   FocusManager* child_focus_manager = child_widget->GetFocusManager();
@@ -2432,18 +2499,18 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
   Widget::InitParams toplevel1_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   toplevel1_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  toplevel1->Init(toplevel1_params);
+  toplevel1->Init(std::move(toplevel1_params));
 
   std::unique_ptr<Widget> toplevel2(new Widget);
   Widget::InitParams toplevel2_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   toplevel2_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  toplevel2->Init(toplevel2_params);
+  toplevel2->Init(std::move(toplevel2_params));
 
   Widget* child = new Widget;
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
   child_params.parent = toplevel1->GetNativeView();
-  child->Init(child_params);
+  child->Init(std::move(child_params));
 
   ToplevelWidgetObserverView* observer_view =
       new ToplevelWidgetObserverView();
@@ -2480,7 +2547,7 @@ class TransformPaintView : public TestView {
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
   // Overridden from View:
-  void SchedulePaintInRect(const gfx::Rect& rect) override {
+  void OnDidSchedulePaint(const gfx::Rect& rect) override {
     gfx::Rect xrect = ConvertRectToParent(rect);
     scheduled_paint_rect_.Union(xrect);
   }
@@ -2501,7 +2568,7 @@ TEST_F(ViewTest, TransformPaint) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   View* root = widget->GetRootView();
 
@@ -2540,7 +2607,7 @@ TEST_F(ViewTest, TransformEvent) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root = widget->GetRootView();
 
   root->AddChildView(v1);
@@ -2679,7 +2746,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
   View* viewport = new View;
@@ -2736,7 +2803,7 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
   View* viewport = new View;
@@ -2838,7 +2905,7 @@ TEST_F(ViewTest, AddAndRemoveSchedulePaints) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
   TestView* parent_view = new TestView;
@@ -3054,7 +3121,7 @@ TEST_F(ViewTest, ConversionsToFromScreen) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   View* child = new View;
   widget->GetRootView()->AddChildView(child);
@@ -3086,7 +3153,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root = widget->GetRootView();
 
   TestView* v1 = new TestView;
@@ -3370,7 +3437,7 @@ TEST_F(ViewTest, AddedToRemovedFromWidget) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   View* root = widget.GetRootView();
 
@@ -3437,7 +3504,7 @@ TEST_F(ViewTest, AddedToRemovedFromWidget) {
   // Test move between widgets.
   Widget second_widget;
   params.bounds = gfx::Rect(150, 150, 650, 650);
-  second_widget.Init(params);
+  second_widget.Init(std::move(params));
 
   View* second_root = second_widget.GetRootView();
 
@@ -3707,7 +3774,7 @@ TEST_F(ViewTest, AdvanceFocusIfNecessaryForUnfocusableView) {
   ActiveWidget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   View* view1 = widget.GetRootView()->AddChildView(std::make_unique<View>());
   view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -3822,7 +3889,7 @@ class ViewLayerTest : public ViewsTestBase {
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
     widget_->GetRootView()->SetBounds(0, 0, 200, 200);
   }
@@ -4253,6 +4320,7 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
                                v2->layer()));
 
   // Reparent |v2|.
+  v1->RemoveChildView(v2);
   content_view->AddChildView(v2);
   delete v1;
   v1 = nullptr;
@@ -4381,6 +4449,7 @@ TEST_F(ViewLayerTest, VisibilityChildLayers) {
   EXPECT_TRUE(ViewAndLayerTreeAreConsistent(v1, v1->layer()));
 
   // Reparent |v3| to |v1|.
+  v2->RemoveChildView(v3);
   v1->AddChildView(v3);
   EXPECT_TRUE(v1->layer()->IsDrawn());
   EXPECT_TRUE(v4->layer()->IsDrawn());
@@ -4588,6 +4657,14 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v11->layer()->GetSubpixelOffset()));
+
+  // DSF reset followed by DSF change should update the offset.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->GetSubpixelOffset()));
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.5f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->GetSubpixelOffset()));
 }
 
 TEST_F(ViewLayerTest, LayerBeneathTriggersPaintToLayer) {
@@ -4950,6 +5027,14 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   GetRootLayer()->GetCompositor()->SetScaleAndSize(
       2.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
   EXPECT_EQ("0.00 0.00", ToString(v3->layer()->GetSubpixelOffset()));
+
+  // DSF reset followed by DSF change should update the offset.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.00 0.00", ToString(v3->layer()->GetSubpixelOffset()));
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(
+      1.33f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ("0.06 -0.44", ToString(v3->layer()->GetSubpixelOffset()));
 }
 
 TEST_F(ViewLayerPixelCanvasTest, LayerBeneathOnPixelCanvas) {
@@ -5013,7 +5098,7 @@ TEST_F(ViewTest, OnThemeChanged) {
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   widget->GetRootView()->AddChildView(test_view);
   EXPECT_TRUE(test_view->native_theme_);
@@ -5052,7 +5137,7 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 350, 350);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root = widget->GetRootView();
   TestView* v = root->AddChildView(std::make_unique<TestView>());
   v->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
@@ -5139,7 +5224,7 @@ TEST_F(ViewTest, CrashOnAddFromFromOnThemeChanged) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 350, 350);
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   AddViewWithChildLayer(widget.GetRootView());
   ViewThatAddsViewInOnThemeChanged* v = widget.GetRootView()->AddChildView(
@@ -5177,7 +5262,7 @@ TEST_F(ViewTest, DestroyLayerInClose) {
   NoLayerWhenHiddenView view;
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetBounds(gfx::Rect(0, 0, 100, 100));
   widget->GetContentsView()->AddChildView(&view);
   widget->Show();
@@ -5422,6 +5507,7 @@ TEST_F(ViewObserverTest, ViewParentChanged) {
   reset();
 
   // Removed from parent1, added to parent2
+  parent1->RemoveChildView(child_view.get());
   parent2->AddChildView(child_view.get());
   EXPECT_EQ(1, child_view_removed_times());
   EXPECT_EQ(1, child_view_added_times());

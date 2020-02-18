@@ -105,10 +105,8 @@ UpdateDataProvider::GetData(bool install_immediately,
     crx_component->allows_background_download = false;
     crx_component->requires_network_encryption = true;
     crx_component->crx_format_requirement =
-        extension->from_webstore()
-            ? GetWebstoreVerifierFormat()
-            : GetPolicyVerifierFormat(
-                  extension_prefs->InsecureExtensionUpdatesEnabled());
+        extension->from_webstore() ? GetWebstoreVerifierFormat(false)
+                                   : GetPolicyVerifierFormat();
     crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(
         id, extension->path(), install_immediately,
         base::BindOnce(&UpdateDataProvider::RunInstallCallback, this));
@@ -143,14 +141,15 @@ void UpdateDataProvider::RunInstallCallback(
           << public_key;
 
   if (!browser_context_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), unpacked_dir,
                        true));
     return;
   }
 
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(InstallUpdateCallback, browser_context_, extension_id,

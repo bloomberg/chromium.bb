@@ -30,7 +30,7 @@ class ToldToDie(Exception):
   """Exception thrown via signal handlers."""
 
   def __init__(self, signum):
-    Exception.__init__(self, "We received signal %i" % (signum,))
+    Exception.__init__(self, 'We received signal %i' % (signum,))
 
 
 def _TeeProcessSignalHandler(signum, _frame):
@@ -116,7 +116,7 @@ class _TeeProcess(multiprocessing.Process):
     preserve = iter(sorted(preserve))
     fd = 0
     while fd < subprocess.MAXFD:
-      current_low = preserve.next()
+      current_low = next(preserve)
       if fd != current_low:
         os.closerange(fd, current_low)
         fd = current_low
@@ -161,7 +161,7 @@ class _TeeProcess(multiprocessing.Process):
         try:
           os.kill(self.master_pid, signal.SIGTERM)
         except Exception as e:
-          self._error_handle.write("\nTee failed signaling %s\n" % e)
+          self._error_handle.write('\nTee failed signaling %s\n' % e)
 
       # Finally, kill ourself.
       # Specifically do it in a fashion that ensures no inherited

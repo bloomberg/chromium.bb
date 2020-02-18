@@ -22,7 +22,7 @@
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #include "media/base/media_log.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
 
 namespace media {
 class GpuVideoAcceleratorFactories;
@@ -128,7 +128,7 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   std::unique_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
   bool decode_done_;
 
-  base::WeakPtrFactory<DownloadMediaParser> weak_factory_;
+  base::WeakPtrFactory<DownloadMediaParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadMediaParser);
 };

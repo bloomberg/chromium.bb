@@ -13,22 +13,23 @@ class FilePath;
 
 namespace content {
 
-class AccessibilityTreeFormatter;
+class AccessibilityTestExpectationsLocator;
 
 // A helper class for writing accessibility tree dump tests.
 class DumpAccessibilityTestHelper {
  public:
-  DumpAccessibilityTestHelper(AccessibilityTreeFormatter* formatter);
+  explicit DumpAccessibilityTestHelper(
+      AccessibilityTestExpectationsLocator* test_locator);
   ~DumpAccessibilityTestHelper() = default;
 
   // Returns a path to an expectation file for the current platform. If no
   // suitable expectation file can be found, logs an error message and returns
-  // nullopt.
-  base::Optional<base::FilePath> GetExpectationFilePath(
-      const base::FilePath& test_file_path);
+  // an empty path.
+  base::FilePath GetExpectationFilePath(const base::FilePath& test_file_path);
 
-  // Loads the given expectation file. Returns nullopt if the file contains a
-  // skip marker.
+  // Loads the given expectation file and returns the contents. An expectation
+  // file may be empty, in which case an empty vector is returned.
+  // Returns nullopt if the file contains a skip marker.
   static base::Optional<std::vector<std::string>> LoadExpectationFile(
       const base::FilePath& expected_file);
 
@@ -48,7 +49,7 @@ class DumpAccessibilityTestHelper {
       const std::vector<std::string>& expected_lines,
       const std::vector<std::string>& actual_lines);
 
-  AccessibilityTreeFormatter* formatter_;
+  AccessibilityTestExpectationsLocator* const test_locator_;
 };
 
 }  // namespace content

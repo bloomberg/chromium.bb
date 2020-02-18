@@ -84,14 +84,13 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime PreviousIntervalBegin() const { return previous_interval_begin_; }
   SMILTime SimpleDuration() const;
 
-  void SeekToIntervalCorrespondingToTime(double elapsed);
-
   bool NeedsToProgress(double elapsed);
-  void Progress(double elapsed, bool seek_to_time);
+  void Progress(double elapsed);
   void TriggerPendingEvents(double elapsed);
-  void UpdateSyncbases();
+  void UpdateSyncBases();
   void UpdateNextProgressTime(double elapsed);
 
+  SMILTime NextInterestingTime(SMILTime) const;
   SMILTime NextProgressTime() const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
     UpdateAnimation(last_percent_, last_repeat_, result_element);
@@ -131,7 +130,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ConnectEventBaseConditions();
 
   void ScheduleEvent(const AtomicString& event_type);
-  void ScheduleRepeatEvents(unsigned);
+  void ScheduleRepeatEvents();
   void DispatchPendingEvent(const AtomicString& event_type);
 
   virtual bool IsSVGDiscardElement() const { return false; }
@@ -142,6 +141,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
  protected:
   enum BeginOrEnd { kBegin, kEnd };
+
+  void IntervalIsDirty() {
+    interval_.begin = 0.0;
+    interval_.end = 0.0;
+  }
 
   void AddInstanceTime(
       BeginOrEnd,
@@ -195,14 +199,15 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // <animate begin="otherElement.begin + 8s; button.click" ... />
   class Condition : public GarbageCollectedFinalized<Condition> {
    public:
-    enum Type { kEventBase, kSyncbase, kAccessKey };
+    enum Type { kEventBase, kSyncBase, kAccessKey };
 
     Condition(Type,
               BeginOrEnd,
               const AtomicString& base_id,
               const AtomicString& name,
               SMILTime offset,
-              int repeat);
+              unsigned repeat);
+
     ~Condition();
     void Trace(blink::Visitor*);
 
@@ -210,12 +215,12 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     BeginOrEnd GetBeginOrEnd() const { return begin_or_end_; }
     const AtomicString& GetName() const { return name_; }
     SMILTime Offset() const { return offset_; }
-    int Repeat() const { return repeat_; }
+    unsigned Repeat() const { return repeat_; }
 
     void ConnectSyncBase(SVGSMILElement&);
     void DisconnectSyncBase(SVGSMILElement&);
-    bool SyncBaseEquals(SVGSMILElement& timed_element) const {
-      return base_element_ == timed_element;
+    bool IsSyncBaseFor(SVGSMILElement* timed_element) const {
+      return GetType() == kSyncBase && base_element_ == timed_element;
     }
 
     void ConnectEventBase(SVGSMILElement&);
@@ -227,7 +232,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     AtomicString base_id_;
     AtomicString name_;
     SMILTime offset_;
-    int repeat_;
+    unsigned repeat_;
     Member<SVGElement> base_element_;
     Member<IdTargetObserver> base_id_observer_;
     Member<ConditionEventListener> event_listener_;
@@ -239,7 +244,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DisconnectEventBaseConditions();
 
   void NotifyDependentsIntervalChanged(const SMILInterval& interval);
-  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase,
+  void CreateInstanceTimesFromSyncBase(SVGSMILElement* timed_element,
                                        const SMILInterval& interval);
   void AddSyncBaseDependent(SVGSMILElement&);
   void RemoveSyncBaseDependent(SVGSMILElement&);

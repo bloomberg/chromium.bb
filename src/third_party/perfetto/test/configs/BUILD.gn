@@ -14,39 +14,48 @@
 
 import("../../gn/perfetto.gni")
 
-if (perfetto_build_standalone) {
-  action_foreach("configs") {
-    testonly = true
-    script = "$root_out_dir/protoc_helper"
+protoc_target = "../../gn:protoc($host_toolchain)"
 
-    deps = [
-      "../../tools:protoc_helper",
-    ]
+action_foreach("configs") {
+  testonly = true
+  script = "../../tools/protoc_helper.py"
 
-    sources = [
-      "android_log.cfg",
-      "atrace.cfg",
-      "background.cfg",
-      "camera.cfg",
-      "client_api.cfg",
-      "ftrace.cfg",
-      "ftrace_largebuffer.cfg",
-      "heapprofd.cfg",
-      "long_trace.cfg",
-      "processes.cfg",
-      "summary.cfg",
-      "sys_stats.cfg",
-    ]
+  deps = [
+    "../../protos/perfetto/config:merged_config",
+    "../../protos/perfetto/trace:merged_trace",
+    protoc_target,
+  ]
 
-    outputs = [
-      "$root_out_dir/{{source_file_part}}.protobuf",
-    ]
+  sources = [
+    "android_log.cfg",
+    "atrace.cfg",
+    "background.cfg",
+    "bad_config.cfg",
+    "camera.cfg",
+    "client_api.cfg",
+    "ftrace.cfg",
+    "ftrace_largebuffer.cfg",
+    "heapprofd.cfg",
+    "long_trace.cfg",
+    "processes.cfg",
+    "summary.cfg",
+    "sys_stats.cfg",
+  ]
 
-    args = [
-      "encode",
-      "--root=" + rebase_path(perfetto_root_path, ""),
-      "--input={{source}}",
-      "--output={{source_file_part}}.protobuf",
-    ]
-  }
+  outputs = [
+    "$root_out_dir/{{source_file_part}}.protobuf",
+  ]
+
+  # Retrieves the path where protoc is built relative to the dir where commands
+  # are ran (root_build_dir == out/xxx). protoc_rel_dir ends up being "." for
+  # pure host build and "gcc_like_host" for android builds
+  protoc_out_dir = get_label_info(protoc_target, "root_out_dir")
+  protoc_rel_dir = rebase_path(protoc_out_dir, root_build_dir)
+
+  args = [
+    "encode",
+    "--protoc=$protoc_rel_dir/protoc",
+    "--input={{source}}",
+    "--output={{source_file_part}}.protobuf",
+  ]
 }

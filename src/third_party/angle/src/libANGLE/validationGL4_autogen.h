@@ -17,7 +17,7 @@ namespace gl
 {
 class Context;
 
-bool ValidateBeginQueryIndexed(Context *context, GLenum target, GLuint index, GLuint id);
+bool ValidateBeginQueryIndexed(Context *context, GLenum target, GLuint index, QueryID idPacked);
 bool ValidateBlendEquationSeparatei(Context *context, GLuint buf, GLenum modeRGB, GLenum modeAlpha);
 bool ValidateBlendEquationi(Context *context, GLuint buf, GLenum mode);
 bool ValidateBlendFuncSeparatei(Context *context,
@@ -27,31 +27,34 @@ bool ValidateBlendFuncSeparatei(Context *context,
                                 GLenum srcAlpha,
                                 GLenum dstAlpha);
 bool ValidateBlendFunci(Context *context, GLuint buf, GLenum src, GLenum dst);
-bool ValidateDrawTransformFeedback(Context *context, GLenum mode, GLuint id);
-bool ValidateDrawTransformFeedbackStream(Context *context, GLenum mode, GLuint id, GLuint stream);
+bool ValidateDrawTransformFeedback(Context *context, GLenum mode, TransformFeedbackID idPacked);
+bool ValidateDrawTransformFeedbackStream(Context *context,
+                                         GLenum mode,
+                                         TransformFeedbackID idPacked,
+                                         GLuint stream);
 bool ValidateEndQueryIndexed(Context *context, GLenum target, GLuint index);
 bool ValidateGetActiveSubroutineName(Context *context,
-                                     GLuint program,
+                                     ShaderProgramID programPacked,
                                      GLenum shadertype,
                                      GLuint index,
                                      GLsizei bufsize,
                                      GLsizei *length,
                                      GLchar *name);
 bool ValidateGetActiveSubroutineUniformName(Context *context,
-                                            GLuint program,
+                                            ShaderProgramID programPacked,
                                             GLenum shadertype,
                                             GLuint index,
                                             GLsizei bufsize,
                                             GLsizei *length,
                                             GLchar *name);
 bool ValidateGetActiveSubroutineUniformiv(Context *context,
-                                          GLuint program,
+                                          ShaderProgramID programPacked,
                                           GLenum shadertype,
                                           GLuint index,
                                           GLenum pname,
                                           GLint *values);
 bool ValidateGetProgramStageiv(Context *context,
-                               GLuint program,
+                               ShaderProgramID programPacked,
                                GLenum shadertype,
                                GLenum pname,
                                GLint *values);
@@ -61,18 +64,21 @@ bool ValidateGetQueryIndexediv(Context *context,
                                GLenum pname,
                                GLint *params);
 bool ValidateGetSubroutineIndex(Context *context,
-                                GLuint program,
+                                ShaderProgramID programPacked,
                                 GLenum shadertype,
                                 const GLchar *name);
 bool ValidateGetSubroutineUniformLocation(Context *context,
-                                          GLuint program,
+                                          ShaderProgramID programPacked,
                                           GLenum shadertype,
                                           const GLchar *name);
 bool ValidateGetUniformSubroutineuiv(Context *context,
                                      GLenum shadertype,
                                      GLint location,
                                      GLuint *params);
-bool ValidateGetUniformdv(Context *context, GLuint program, GLint location, GLdouble *params);
+bool ValidateGetUniformdv(Context *context,
+                          ShaderProgramID programPacked,
+                          GLint location,
+                          GLdouble *params);
 bool ValidateMinSampleShading(Context *context, GLfloat value);
 bool ValidatePatchParameterfv(Context *context, GLenum pname, const GLfloat *values);
 bool ValidatePatchParameteri(Context *context, GLenum pname, GLint value);

@@ -10,13 +10,15 @@
 #include <string>
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -39,7 +41,7 @@ class TestNodeWrapper {
   TestNodeWrapper(TestNodeWrapper&& other) : impl_(std::move(other.impl_)) {}
 
   void operator=(TestNodeWrapper&& other) { impl_ = std::move(other.impl_); }
-  void operator=(TestNodeWrapper& other) = delete;
+  void operator=(const TestNodeWrapper& other) = delete;
 
   ~TestNodeWrapper() { reset(); }
 
@@ -85,6 +87,18 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
   }
 };
 
+// A specialized factory function for ProcessNodes which will provide an empty
+// RenderProcessHostProxy when it's not needed.
+template <>
+struct TestNodeWrapper<ProcessNodeImpl>::Factory {
+  static std::unique_ptr<ProcessNodeImpl> Create(
+      GraphImpl* graph,
+      RenderProcessHostProxy proxy = RenderProcessHostProxy()) {
+    // Provide an empty RenderProcessHostProxy by default.
+    return std::make_unique<ProcessNodeImpl>(graph, std::move(proxy));
+  }
+};
+
 // A specialized factory function for page nodes that helps fill out some
 // common values.
 template <>
@@ -92,10 +106,27 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
   static std::unique_ptr<PageNodeImpl> Create(
       GraphImpl* graph,
       const WebContentsProxy& wc_proxy = WebContentsProxy(),
+      const std::string& browser_context_id = std::string(),
       bool is_visible = false,
       bool is_audible = false) {
-    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible,
-                                          is_audible);
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy, browser_context_id,
+                                          is_visible, is_audible);
+  }
+};
+
+// A specialized factory function for worker nodes that helps fill out some
+// common values.
+template <>
+struct TestNodeWrapper<WorkerNodeImpl>::Factory {
+  static std::unique_ptr<WorkerNodeImpl> Create(
+      GraphImpl* graph,
+      WorkerNode::WorkerType worker_type,
+      ProcessNodeImpl* process_node,
+      const std::string& browser_context_id = std::string(),
+      const GURL& url = GURL(),
+      const base::UnguessableToken& token = base::UnguessableToken::Create()) {
+    return std::make_unique<WorkerNodeImpl>(
+        graph, browser_context_id, worker_type, process_node, url, token);
   }
 };
 
@@ -141,7 +172,7 @@ class GraphTestHarness : public ::testing::Test {
   GraphTestHarness();
   ~GraphTestHarness() override;
 
-  // Optional constructor for directly configuring the ScopedTaskEnvironment.
+  // Optional constructor for directly configuring the TaskEnvironment.
   template <class... ArgTypes>
   explicit GraphTestHarness(ArgTypes... args) : task_env_(args...) {}
 
@@ -160,11 +191,11 @@ class GraphTestHarness : public ::testing::Test {
   void TearDown() override;
 
  protected:
-  base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
+  base::test::TaskEnvironment& task_env() { return task_env_; }
   GraphImpl* graph() { return &graph_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   GraphImpl graph_;
 };
 

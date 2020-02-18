@@ -44,10 +44,6 @@ class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 }  // namespace content
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace policy {
 class PolicyService;
 class ProfilePolicyConnector;
@@ -271,6 +267,7 @@ class TestingProfile : public Profile {
   // content::BrowserContext
   base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
+  base::Time GetCreationTime() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -294,10 +291,6 @@ class TestingProfile : public Profile {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateMediaRequestContext() override;
   void SetCorsOriginAccessListForOrigin(
       const url::Origin& source_origin,
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
@@ -334,7 +327,6 @@ class TestingProfile : public Profile {
 #if !defined(OS_ANDROID)
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
 #endif  // !defined(OS_ANDROID)
-  net::URLRequestContextGetter* GetRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   void set_last_session_exited_cleanly(bool value) {
@@ -381,6 +373,8 @@ class TestingProfile : public Profile {
   void BlockUntilHistoryProcessesPendingRequests();
 
   GURL GetHomePage() override;
+
+  void SetCreationTimeForTesting(base::Time creation_time) override;
 
   PrefService* GetOffTheRecordPrefs() override;
 

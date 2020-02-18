@@ -13,9 +13,10 @@
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool/initialization_util.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "content/common/thread_pool_util.h"
+#include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
@@ -40,7 +41,8 @@ std::unique_ptr<base::FieldTrialList> SetUpFieldTrialsAndFeatureList() {
 
   base::FeatureList::InitializeInstance(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures),
+      GetSwitchDependentFeatureOverrides(*command_line));
   return field_trial_list;
 }
 

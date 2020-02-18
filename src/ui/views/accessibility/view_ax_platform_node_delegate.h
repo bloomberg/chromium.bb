@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/gfx/geometry/rect.h"
@@ -74,6 +74,8 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
 
  protected:
   explicit ViewAXPlatformNodeDelegate(View* view);
+
+  ui::AXPlatformNode* ax_platform_node() { return ax_platform_node_; }
 
  private:
   // Uses Views::GetViewsInGroup to find nearby Views in the same group.

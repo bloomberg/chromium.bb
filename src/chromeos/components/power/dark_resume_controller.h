@@ -13,7 +13,8 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -56,12 +57,8 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   static constexpr base::TimeDelta kDarkResumeWakeLockCheckTimeout =
       base::TimeDelta::FromSeconds(3);
 
-  // Max time to wait for wake lock release after a wake lock check after a dark
-  // resume. After this time the system is asked to re-suspend.
-  static constexpr base::TimeDelta kDarkResumeHardTimeout =
-      base::TimeDelta::FromSeconds(10);
-
   // chromeos::PowerManagerClient::Observer overrides.
+  void PowerManagerInitialized() override;
   void DarkSuspendImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
@@ -79,6 +76,9 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // either by re-suspending or transitioning to full resume.
   bool IsDarkResumeStateClearedForTesting() const;
 
+  // Returns |dark_resume_hard_timeout_|.
+  base::TimeDelta GetHardTimeoutForTesting() const;
+
  private:
   // Called |kDarkResumeWakeLockCheckTimeout| after a dark resume. Checks if
   // app suspension wake locks are held. If no wake locks are held then
@@ -94,7 +94,7 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   void ClearDarkResumeState();
 
   // Used for acquiring, releasing and observing wake locks.
-  device::mojom::WakeLockProviderPtr wake_lock_provider_;
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
 
   // Not owned by this instance.
   service_manager::Connector* const connector_;
@@ -103,14 +103,22 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // after a dark resume.
   base::UnguessableToken block_suspend_token_;
 
-  // The binding used to implement device::mojom::WakeLockObserver.
-  mojo::Binding<device::mojom::WakeLockObserver> wake_lock_observer_binding_;
+  // The receiver used to implement device::mojom::WakeLockObserver.
+  mojo::Receiver<device::mojom::WakeLockObserver> wake_lock_observer_receiver_{
+      this};
 
   // Timer used to schedule HandleDarkResumeWakeLockCheckTimeout.
   base::OneShotTimer wake_lock_check_timer_;
 
   // Timer used to schedule HandleDarkResumeHardTimeout.
   base::OneShotTimer hard_timeout_timer_;
+
+  // Max time to wait for wake lock release after a wake lock check after a dark
+  // resume. After this time the system is asked to re-suspend. This is
+  // initialized via PowerManagerClient when it's initialization is complete in
+  // |PowerManagerInitialized|. Till then there may be a very small window after
+  // booth when it takes a default value.
+  base::TimeDelta dark_resume_hard_timeout_;
 
   // Used for checking if HandleDarkResumeWakeLockCheckTimeout and
   // HandleDarkResumeHardTimeout run on the same sequence.
@@ -122,7 +130,7 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // resume state machine related tasks via other means. In the future if other
   // tasks or callbacks need to be added separate from the dark resume state
   // machine lifetime then a separate factory needs to be created and used.
-  base::WeakPtrFactory<DarkResumeController> weak_ptr_factory_;
+  base::WeakPtrFactory<DarkResumeController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DarkResumeController);
 };

@@ -8,51 +8,52 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "base/guid.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(crbug.com/961073): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_AddDuplicate DISABLED_AddDuplicate
-#define MAYBE_Add DISABLED_Add
-#else
-#define MAYBE_AddDuplicate AddDuplicate
-#define MAYBE_Add Add
-#endif
-
+using ::testing::_;
+using ::testing::Invoke;
 namespace notifications {
 namespace {
 
-const char kEntryKey[] = "guid_key1";
-const char kEntryKey2[] = "guid_key2";
-const char kEntryId[] = "proto_id_1";
-const char kEntryId2[] = "proto_id_2";
-const char kEntryData[] = "data_1";
-const char kEntryData2[] = "data_2";
+class MockIconConverter : public IconConverter {
+ public:
+  MockIconConverter() = default;
+  MOCK_METHOD2(ConvertIconToString,
+               void(std::vector<SkBitmap>, IconConverter::EncodeCallback));
+  MOCK_METHOD2(ConvertStringToIcon,
+               void(std::vector<std::string>, IconConverter::DecodeCallback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockIconConverter);
+};
 
 class IconStoreTest : public testing::Test {
  public:
-  IconStoreTest() : load_result_(false), db_(nullptr) {}
+  IconStoreTest()
+      : add_result_(false),
+        load_result_(false),
+        db_(nullptr),
+        icon_converter_(nullptr) {}
   ~IconStoreTest() override = default;
 
   void SetUp() override {
-    IconEntry entry;
-    entry.uuid = kEntryId;
-    entry.data = kEntryData;
-    proto::Icon proto;
-    leveldb_proto::DataToProto(&entry, &proto);
-    db_entries_.emplace(kEntryKey, proto);
-
     auto db =
         std::make_unique<leveldb_proto::test::FakeDB<proto::Icon, IconEntry>>(
             &db_entries_);
     db_ = db.get();
-    store_ = std::make_unique<IconProtoDbStore>(std::move(db));
+    auto icon_converter = std::make_unique<MockIconConverter>();
+    icon_converter_ = icon_converter.get();
+    store_ = std::make_unique<IconProtoDbStore>(std::move(db),
+                                                std::move(icon_converter));
   }
 
   void InitDb() {
@@ -60,35 +61,84 @@ class IconStoreTest : public testing::Test {
     db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   }
 
-  void Load(const std::string& key) {
-    store()->Load(key, base::BindOnce(&IconStoreTest::OnEntryLoaded,
-                                      base::Unretained(this)));
+  IconStore::IconTypeBundleMap CreateIcons() {
+    IconStore::IconTypeBundleMap result;
+    SkBitmap large_icon;
+    large_icon.allocN32Pixels(1, 1);
+    IconBundle large_icon_bundle;
+    large_icon_bundle.bitmap = std::move(large_icon);
+    result.emplace(IconType::kLargeIcon, std::move(large_icon_bundle));
+    SkBitmap small_icon;
+    small_icon.allocN32Pixels(1, 1);
+    IconBundle small_icon_bundle;
+    small_icon_bundle.bitmap = std::move(small_icon);
+    result.emplace(IconType::kSmallIcon, std::move(small_icon_bundle));
+    return result;
   }
 
-  void OnEntryLoaded(bool success, std::unique_ptr<IconEntry> entry) {
-    loaded_entry_ = std::move(entry);
+  void LoadIcons(std::vector<std::string> keys) {
+    EXPECT_CALL(*icon_converter(), ConvertStringToIcon(_, _))
+        .WillOnce(Invoke([&](std::vector<std::string> encoded_icons,
+                             IconConverter::DecodeCallback callback) {
+          std::vector<SkBitmap> icons(encoded_icons.size());
+          std::move(callback).Run(
+              std::make_unique<DecodeResult>(true, std::move(icons)));
+        }));
+    store()->LoadIcons(
+        std::move(keys),
+        base::BindOnce(&IconStoreTest::OnIconsLoaded, base::Unretained(this)));
+  }
+
+  void AddIcons(IconStore::IconTypeBundleMap input) {
+    auto add_icons_callback =
+        base::BindOnce(&IconStoreTest::OnIconsAdded, base::Unretained(this));
+    EXPECT_CALL(*icon_converter(), ConvertIconToString(_, _))
+        .WillOnce(Invoke([&](std::vector<SkBitmap> icons,
+                             IconConverter::EncodeCallback callback) {
+          std::vector<std::string> encoded_icons(icons.size());
+          std::move(callback).Run(
+              std::make_unique<EncodeResult>(true, std::move(encoded_icons)));
+        }));
+    store()->AddIcons(std::move(input), std::move(add_icons_callback));
+  }
+
+  void OnIconsAdded(IconStore::IconTypeUuidMap icons_uuid, bool success) {
+    icons_uuid_map_ = std::move(icons_uuid);
+    add_result_ = success;
+  }
+
+  void OnIconsLoaded(bool success, IconStore::LoadedIconsMap icons) {
+    loaded_icons_ = std::move(icons);
     load_result_ = success;
   }
 
  protected:
   IconStore* store() { return store_.get(); }
+  MockIconConverter* icon_converter() { return icon_converter_; }
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db() { return db_; }
   bool load_result() const { return load_result_; }
-  IconEntry* loaded_entry() { return loaded_entry_.get(); }
-
-  void VerifyEntry(const std::string& uuid, const std::string& data) {
-    DCHECK(loaded_entry_);
-    EXPECT_EQ(loaded_entry_->uuid, uuid);
-    EXPECT_EQ(loaded_entry_->data, data);
+  bool add_result() const { return add_result_; }
+  std::vector<std::string> icons_uuid() const {
+    std::vector<std::string> result;
+    for (const auto& pair : icons_uuid_map_) {
+      result.emplace_back(pair.second);
+    }
+    return result;
+  }
+  const IconStore::LoadedIconsMap& loaded_icons() const {
+    return loaded_icons_;
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
+  bool add_result_;
+  bool load_result_;
+  IconStore::LoadedIconsMap loaded_icons_;
+  IconStore::IconTypeUuidMap icons_uuid_map_;
   std::unique_ptr<IconStore> store_;
   std::map<std::string, proto::Icon> db_entries_;
-  std::unique_ptr<IconEntry> loaded_entry_;
-  bool load_result_;
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db_;
+  MockIconConverter* icon_converter_;
 
   DISALLOW_COPY_AND_ASSIGN(IconStoreTest);
 };
@@ -105,75 +155,95 @@ TEST_F(IconStoreTest, InitFailed) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(IconStoreTest, LoadOne) {
+TEST_F(IconStoreTest, AddIconsFailed) {
   InitDb();
-  Load(kEntryKey);
-  db()->GetCallback(true);
+  auto input = CreateIcons();
 
-  // Verify data is loaded.
-  DCHECK(loaded_entry());
-  EXPECT_TRUE(load_result());
-  VerifyEntry(kEntryId, kEntryData);
+  // Save two icons into store.
+  AddIcons(input);
+  db()->UpdateCallback(false);
+  EXPECT_FALSE(add_result());
+  EXPECT_EQ(icons_uuid().size(), input.size());
 }
 
-TEST_F(IconStoreTest, LoadFailed) {
+TEST_F(IconStoreTest, AddAndLoadIcons) {
   InitDb();
-  Load(kEntryKey);
-  db()->GetCallback(false);
+  auto input = CreateIcons();
 
-  // Verify load failure.
-  EXPECT_FALSE(loaded_entry());
+  // Save two icons into store.
+  AddIcons(input);
+  db()->UpdateCallback(true);
+  EXPECT_TRUE(add_result());
+  EXPECT_EQ(icons_uuid().size(), input.size());
+
+  // Load two icons.
+  LoadIcons(icons_uuid());
+  db()->LoadCallback(true);
+  EXPECT_TRUE(load_result());
+  EXPECT_EQ(loaded_icons().size(), input.size());
+}
+
+TEST_F(IconStoreTest, LoadIconsFailed) {
+  InitDb();
+  auto input = CreateIcons();
+
+  // Save two icons into store.
+  AddIcons(input);
+  db()->UpdateCallback(true);
+  EXPECT_TRUE(add_result());
+  EXPECT_EQ(icons_uuid().size(), input.size());
+
+  // Load two icons.
+  store()->LoadIcons(icons_uuid(), base::BindOnce(&IconStoreTest::OnIconsLoaded,
+                                                  base::Unretained(this)));
+  db()->LoadCallback(false);
   EXPECT_FALSE(load_result());
+  EXPECT_TRUE(loaded_icons().empty());
 }
 
-TEST_F(IconStoreTest, MAYBE_Add) {
+TEST_F(IconStoreTest, DeleteIcons) {
   InitDb();
+  auto input = CreateIcons();
 
-  auto new_entry = std::make_unique<IconEntry>();
-  new_entry->uuid = kEntryId2;
-  new_entry->data = kEntryData;
+  // Save two icons into store.
+  AddIcons(input);
+  db()->UpdateCallback(true);
+  EXPECT_TRUE(add_result());
+  EXPECT_EQ(icons_uuid().size(), input.size());
 
-  store()->Add(kEntryKey2, std::move(new_entry), base::DoNothing());
+  // Delete icons.
+  store()->DeleteIcons(
+      icons_uuid(), base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   db()->UpdateCallback(true);
 
-  // Verify the entry is added.
-  Load(kEntryKey2);
-  db()->GetCallback(true);
+  // Load two icons.
+  LoadIcons(icons_uuid());
+  db()->LoadCallback(true);
   EXPECT_TRUE(load_result());
-  VerifyEntry(kEntryId2, kEntryData);
+  EXPECT_TRUE(loaded_icons().empty());
 }
 
-TEST_F(IconStoreTest, MAYBE_AddDuplicate) {
+TEST_F(IconStoreTest, DeleteIconsFailed) {
   InitDb();
+  auto input = CreateIcons();
 
-  auto new_entry = std::make_unique<IconEntry>();
-  new_entry->uuid = kEntryId;
-  new_entry->data = kEntryData2;
-
-  store()->Add(kEntryKey, std::move(new_entry), base::DoNothing());
+  // Save two icons into store.
+  AddIcons(input);
   db()->UpdateCallback(true);
+  EXPECT_TRUE(add_result());
+  EXPECT_EQ(icons_uuid().size(), input.size());
 
-  // Add a duplicate id is currently allowed, we just update the entry.
-  Load(kEntryKey);
-  db()->GetCallback(true);
+  // Delete icons.
+  store()->DeleteIcons(icons_uuid(), base::BindOnce([](bool success) {
+                         EXPECT_FALSE(success);
+                       }));
+  db()->UpdateCallback(false);
+
+  // Load two icons.
+  LoadIcons(icons_uuid());
+  db()->LoadCallback(true);
   EXPECT_TRUE(load_result());
-  VerifyEntry(kEntryId, kEntryData2);
+  EXPECT_EQ(icons_uuid().size(), input.size());
 }
-
-TEST_F(IconStoreTest, Delete) {
-  InitDb();
-
-  // Delete the only entry.
-  store()->Delete(kEntryKey,
-                  base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
-  db()->UpdateCallback(true);
-
-  // No entry can be loaded, move nullptr as result.
-  Load(kEntryKey);
-  db()->GetCallback(true);
-  EXPECT_FALSE(loaded_entry());
-  EXPECT_TRUE(load_result());
-}
-
 }  // namespace
 }  // namespace notifications

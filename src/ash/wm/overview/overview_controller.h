@@ -40,9 +40,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
 
-  // Moves the current selection by |increment| items. Positive values of
-  // |increment| move the selection forward, negative values move it backward.
-  void IncrementSelection(int increment);
+  // Moves the current selection forward or backward.
+  void IncrementSelection(bool forward);
 
   // Accepts current selection if any. Returns true if a selection was made,
   // false otherwise.
@@ -144,6 +143,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // notify shell that the starting animations have been completed.
   std::vector<std::unique_ptr<DelayedAnimationObserver>> start_animations_;
 
+  // Indicates that overview shall gain focus when the starting animations have
+  // completed.
+  bool should_focus_overview_ = false;
+
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
       occlusion_tracker_pauser_;
 
@@ -165,7 +168,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   base::ObserverList<OverviewObserver> observers_;
 
-  base::WeakPtrFactory<OverviewController> weak_ptr_factory_;
+  base::WeakPtrFactory<OverviewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OverviewController);
 };

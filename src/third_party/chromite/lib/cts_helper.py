@@ -124,7 +124,7 @@ def uploadFiles(dir_entry, build, apfe_id, job_id, package, uploader,
     for apfe in apfe_files:
       timestamp = os.path.splitext(os.path.basename(apfe))[0]
       gs_url = os.path.join(constants.DEFAULT_CTS_APFE_GSURI, build,
-                            apfe_id, package, job_id + "_" + timestamp)
+                            apfe_id, package, job_id + '_' + timestamp)
       uploader(gs_url, apfe, *args, **kwargs)
   else:
     logging.debug('%s is a CTS Test collector Autotest test run.', package)

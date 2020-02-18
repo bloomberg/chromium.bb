@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/accessibility/ax_action_handler.h"
@@ -111,8 +111,12 @@ class ArcAccessibilityHelperBridge
 
  protected:
   virtual aura::Window* GetActiveWindow();
+  virtual extensions::EventRouter* GetEventRouter() const;
 
  private:
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  void UpdateCaptionSettings() const;
+
   // wm::ActivationChangeObserver overrides.
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,

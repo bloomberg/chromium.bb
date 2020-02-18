@@ -78,7 +78,7 @@ class DOMAgentTest : public views::ViewsTestBase {
 #if defined(USE_AURA)
     params.parent = GetContext();
 #endif
-    widget->Init(params);
+    widget->Init(std::move(params));
     return widget->native_widget_private();
   }
 
@@ -95,7 +95,7 @@ class DOMAgentTest : public views::ViewsTestBase {
 #endif
     if (name)
       params.name = *name;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }
@@ -528,6 +528,7 @@ TEST_F(DOMAgentTest, ViewRearranged) {
   EXPECT_TRUE(WasChildNodeInserted(parent_view));
 
   int child_id = GetIDForBackendElement(child_view);
+  parent_view->RemoveChildView(child_view);
   target_view->AddChildView(child_view);
   EXPECT_TRUE(WasChildNodeRemoved(parent_view, child_id));
   EXPECT_TRUE(WasChildNodeInserted(target_view));
@@ -555,6 +556,60 @@ TEST_F(DOMAgentTest, ViewRearrangedRemovedAndInserted) {
   target_view->AddChildView(child_view);
   EXPECT_TRUE(WasChildNodeRemoved(parent_view, child_id));
   EXPECT_TRUE(WasChildNodeInserted(target_view));
+}
+
+TEST_F(DOMAgentTest, NodeIdToUIElementTest) {
+  // widget
+  //   root_view
+  //     child_a1
+  //       child_a11
+  //         child_a111
+  //           child_a1111
+  //         child_a112
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
+
+  widget->Show();
+  views::View* root_view = widget->GetRootView();
+  views::View* child_a1 =
+      root_view->AddChildView(std::make_unique<views::View>());
+  views::View* child_a11 =
+      child_a1->AddChildView(std::make_unique<views::View>());
+  views::View* child_a111 =
+      child_a11->AddChildView(std::make_unique<views::View>());
+  views::View* child_a112 =
+      child_a11->AddChildView(std::make_unique<views::View>());
+  views::View* child_a1111 =
+      child_a111->AddChildView(std::make_unique<views::View>());
+
+  std::unique_ptr<DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  int child_a1_id = GetIDForBackendElement(child_a1);
+  int child_a11_id = GetIDForBackendElement(child_a11);
+  int child_a111_id = GetIDForBackendElement(child_a111);
+  int child_a112_id = GetIDForBackendElement(child_a112);
+  int child_a1111_id = GetIDForBackendElement(child_a1111);
+
+  // Make sure all child nodes are in the |node_id_to_ui_element_| map.
+  EXPECT_NE(dom_agent()->GetElementFromNodeId(child_a1_id), nullptr);
+  EXPECT_NE(dom_agent()->GetElementFromNodeId(child_a11_id), nullptr);
+  EXPECT_NE(dom_agent()->GetElementFromNodeId(child_a111_id), nullptr);
+  EXPECT_NE(dom_agent()->GetElementFromNodeId(child_a112_id), nullptr);
+  EXPECT_NE(dom_agent()->GetElementFromNodeId(child_a1111_id), nullptr);
+
+  root_view->RemoveChildView(child_a1);
+
+  // Check that child_a1 and its children are all removed from the
+  // |node_id_to_ui_element_| map.
+  EXPECT_EQ(dom_agent()->GetElementFromNodeId(child_a1_id), nullptr);
+  EXPECT_EQ(dom_agent()->GetElementFromNodeId(child_a11_id), nullptr);
+  EXPECT_EQ(dom_agent()->GetElementFromNodeId(child_a111_id), nullptr);
+  EXPECT_EQ(dom_agent()->GetElementFromNodeId(child_a112_id), nullptr);
+  EXPECT_EQ(dom_agent()->GetElementFromNodeId(child_a1111_id), nullptr);
+
+  // Required since it was removed from its parent view.
+  delete child_a1;
 }
 
 // Tests to ensure dom search for native UI is working

@@ -18,13 +18,14 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
     : duration_(duration),
       perf_args_(perf_args),
       done_callback_(std::move(callback)),
-      pending_stop_(false),
-      weak_factory_(this) {
+      pending_stop_(false) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   perf_data_pipe_reader_ =
-      std::make_unique<chromeos::PipeReader>(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+      std::make_unique<chromeos::PipeReader>(base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
   base::ScopedFD pipe_write_end =
       perf_data_pipe_reader_->StartIO(base::BindOnce(
@@ -35,6 +36,8 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
                         base::BindOnce(&PerfOutputCall::OnGetPerfOutput,
                                        weak_factory_.GetWeakPtr()));
 }
+
+PerfOutputCall::PerfOutputCall() : pending_stop_(false), weak_factory_(this) {}
 
 PerfOutputCall::~PerfOutputCall() {}
 

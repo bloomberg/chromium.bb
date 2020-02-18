@@ -4,15 +4,15 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 
-#include <memory>
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "services/viz/public/interfaces/compositing/frame_timing_details.mojom-blink.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
+#include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
+#include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -24,7 +24,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-#include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
+#include "ui/gfx/mojom/presentation_feedback.mojom-blink.h"
 
 namespace blink {
 
@@ -58,28 +58,25 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       size_(size),
       change_size_for_next_commit_(false),
       needs_begin_frame_(false),
-      binding_(this),
       placeholder_canvas_id_(canvas_id),
       num_unreclaimed_frames_posted_(0),
-      client_(client),
-      enable_surface_synchronization_(
-          ::features::IsSurfaceSynchronizationEnabled()) {
+      client_(client) {
   // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
   // channel for this special case.
   if (!frame_sink_id_.is_valid())
     return;
 
   DCHECK(!sink_.is_bound());
-  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
+  mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&provider));
+      provider.BindNewPipeAndPassReceiver());
 
   DCHECK(provider);
-  binding_.Bind(mojo::MakeRequest(&client_ptr_));
-  provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
-                                      mojo::MakeRequest(&sink_));
+  provider->CreateCompositorFrameSink(frame_sink_id_,
+                                      receiver_.BindNewPipeAndPassRemote(),
+                                      sink_.BindNewPipeAndPassReceiver());
   provider->ConnectToEmbedder(frame_sink_id_,
-                              mojo::MakeRequest(&surface_embedder_));
+                              surface_embedder_.BindNewPipeAndPassReceiver());
 }
 
 CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;
@@ -94,9 +91,10 @@ void UpdatePlaceholderImage(
     viz::ResourceId resource_id) {
   DCHECK(IsMainThread());
   OffscreenCanvasPlaceholder* placeholder_canvas =
-      OffscreenCanvasPlaceholder::GetPlaceholderById(placeholder_canvas_id);
+      OffscreenCanvasPlaceholder::GetPlaceholderCanvasById(
+          placeholder_canvas_id);
   if (placeholder_canvas) {
-    placeholder_canvas->SetPlaceholderFrame(
+    placeholder_canvas->SetOffscreenCanvasFrame(
         std::move(canvas_resource), std::move(dispatcher),
         std::move(task_runner), resource_id);
   }
@@ -239,6 +237,9 @@ bool CanvasResourceDispatcher::PrepareFrame(
   viz::TransferableResource resource;
   auto frame_resource = std::make_unique<FrameResource>();
 
+  bool nearest_neighbor =
+      canvas_resource->FilterQuality() == kNone_SkFilterQuality;
+
   canvas_resource->PrepareTransferableResource(
       &resource, &frame_resource->release_callback, kVerifiedSyncToken);
   resource.id = next_resource_id_;
@@ -263,11 +264,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   constexpr gfx::PointF uv_top_left(0.f, 0.f);
   constexpr gfx::PointF uv_bottom_right(1.f, 1.f);
   constexpr float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
-  // TODO(crbug.com/645994): this should be true when using style
-  // "image-rendering: pixelated".
-  // TODO(crbug.com/645590): filter should respect the image-rendering CSS
-  // property of associated canvas element.
-  constexpr bool kNearestNeighbor = false;
+
   // Accelerated resources have the origin of coordinates in the upper left
   // corner while canvases have it in the lower left corner. The DrawQuad is
   // marked as vertically flipped unless someone else has done the flip for us.
@@ -276,7 +273,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   quad->SetAll(sqs, bounds, bounds, needs_blending, resource.id,
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
-               kNearestNeighbor, /*secure_output_only=*/false,
+               nearest_neighbor, /*secure_output_only=*/false,
                gfx::ProtectedVideoType::kClear);
 
   frame->render_pass_list.push_back(std::move(pass));
@@ -284,12 +281,9 @@ bool CanvasResourceDispatcher::PrepareFrame(
   if (change_size_for_next_commit_ ||
       !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
-    if (enable_surface_synchronization_) {
-      surface_embedder_->SetLocalSurfaceId(
-          parent_local_surface_id_allocator_
-              .GetCurrentLocalSurfaceIdAllocation()
-              .local_surface_id());
-    }
+    surface_embedder_->SetLocalSurfaceId(
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id());
     change_size_for_next_commit_ = false;
   }
   frame->metadata.local_surface_id_allocation_time =

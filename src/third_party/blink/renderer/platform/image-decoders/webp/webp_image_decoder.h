@@ -30,7 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_WEBP_WEBP_IMAGE_DECODER_H_
 
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "webp/decode.h"
 #include "webp/demux.h"
@@ -62,6 +62,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
   bool CanDecodeToYUV() override;
   void DecodeToYUV() override;
+  SkYUVColorSpace GetYUVColorSpace() const override;
 
   WEBP_CSP_MODE RGBOutputMode();
   // Returns true if the image data received so far (as stored in

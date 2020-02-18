@@ -25,7 +25,7 @@
 #include "ios/web/public/navigation/web_state_policy_decider.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -141,8 +141,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
-    cookie_settings_ =
-        new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
+    cookie_settings_ = new content_settings::CookieSettings(settings_map_.get(),
+                                                            &prefs_, false, "");
     account_reconcilor_ =
         std::make_unique<MockAccountReconcilor>(signin_client_.get());
     ResetAccountConsistencyService();
@@ -235,7 +235,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
 
   // Creates test threads, necessary for ActiveStateManager that needs a UI
   // thread.
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::TestBrowserState browser_state_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestWebState web_state_;

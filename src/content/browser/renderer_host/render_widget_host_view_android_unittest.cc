@@ -10,9 +10,9 @@
 #include "cc/layers/layer.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/browser/renderer_host/mock_render_widget_host.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/android/view_android.h"
@@ -51,7 +51,7 @@ class RenderWidgetHostViewAndroidTest : public testing::Test {
   std::unique_ptr<MockRenderWidgetHost> host_;
   RenderWidgetHostViewAndroid* render_widget_host_view_android_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroidTest);
 };

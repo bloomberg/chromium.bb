@@ -45,7 +45,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -61,7 +60,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
-#include "content/shell/browser/shell_network_delegate.h"
 #include "content/shell/browser/web_test/devtools_protocol_test_bindings.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/test_info_extractor.h"
@@ -79,6 +77,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_MACOSX)
@@ -325,8 +324,7 @@ BlinkTestController::BlinkTestController()
       devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
       crash_when_leak_found_(false),
-      pending_layout_dumps_(0),
-      render_process_host_observer_(this) {
+      pending_layout_dumps_(0) {
   CHECK(!instance_);
   instance_ = this;
 
@@ -347,6 +345,9 @@ BlinkTestController::BlinkTestController()
   // Print text only (without binary dumps and headers/footers for run_web_tests
   // protocol) until we enter the protocol mode (see TestInfo::protocol_mode).
   printer_->set_capture_text_only(true);
+
+  InjectTestSharedWorkerService(BrowserContext::GetStoragePartition(
+      ShellContentBrowserClient::Get()->browser_context(), nullptr));
 
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
@@ -565,6 +566,10 @@ void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
       if (!command_line.HasSwitch(switches::kDisableGpu))
         prefs->accelerated_2d_canvas_enabled = true;
       prefs->mock_scrollbars_enabled = true;
+    }
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kForceHighContrast)) {
+      prefs->forced_colors = blink::ForcedColors::kActive;
     }
   }
 }
@@ -1030,7 +1035,7 @@ void BlinkTestController::OnTestFinished() {
 
   // TODO(nhiroki): Add a comment about the reason why we terminate all shared
   // workers here.
-  TerminateAllSharedWorkersForTesting(
+  TerminateAllSharedWorkers(
       BrowserContext::GetStoragePartition(
           ShellContentBrowserClient::Get()->browser_context(), nullptr),
       barrier_closure);
@@ -1362,17 +1367,11 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
 }
 
 void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ShellBrowserContext* browser_context =
-        ShellContentBrowserClient::Get()->browser_context();
-    browser_context->GetDefaultStoragePartition(browser_context)
-        ->GetCookieManagerForBrowserProcess()
-        ->BlockThirdPartyCookies(block);
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(ShellNetworkDelegate::SetBlockThirdPartyCookies, block));
-  }
+  ShellBrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  browser_context->GetDefaultStoragePartition(browser_context)
+      ->GetCookieManagerForBrowserProcess()
+      ->BlockThirdPartyCookies(block);
 }
 
 mojom::WebTestControlAssociatedPtr& BlinkTestController::GetWebTestControlPtr(

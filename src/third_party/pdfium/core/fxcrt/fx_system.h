@@ -139,9 +139,9 @@ size_t FXSYS_wcsftime(wchar_t* strDest,
                       size_t maxsize,
                       const wchar_t* format,
                       const struct tm* timeptr);
-
+#define FXSYS_SetLastError SetLastError
+#define FXSYS_GetLastError GetLastError
 #else  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-
 int FXSYS_GetACP();
 char* FXSYS_itoa(int value, char* str, int radix);
 int FXSYS_WideCharToMultiByte(uint32_t codepage,
@@ -166,6 +166,8 @@ wchar_t* FXSYS_wcslwr(wchar_t* str);
 wchar_t* FXSYS_wcsupr(wchar_t* str);
 #define FXSYS_pow(a, b) (float)pow(a, b)
 #define FXSYS_wcsftime wcsftime
+void FXSYS_SetLastError(uint32_t err);
+uint32_t FXSYS_GetLastError();
 #endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
 
 #define FXWORD_GET_LSBFIRST(p)                                \

@@ -124,12 +124,6 @@ class ThemeProperties {
     COLOR_TAB_THROBBER_SPINNING,
     COLOR_TAB_THROBBER_WAITING,
 
-    // Colors for the tab close button inons.
-    COLOR_TAB_CLOSE_BUTTON_ACTIVE,
-    COLOR_TAB_CLOSE_BUTTON_INACTIVE,
-    COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER,
-    COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED,
-
     // The colors used by the various alert indicator icons in the tab.
     COLOR_TAB_ALERT_AUDIO,
     COLOR_TAB_ALERT_RECORDING,
@@ -157,14 +151,6 @@ class ThemeProperties {
     // Colors for in-product help promo bubbles.
     COLOR_FEATURE_PROMO_BUBBLE_TEXT,
     COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND,
-  };
-
-  // Represents the lookup values for a theme property.
-  struct PropertyLookupPair {
-    int property_id;    // ID of the property to lookup (should never be an
-                        // incognito variant)
-    bool is_incognito;  // Whether the lookup should use the incognito value
-                        // of this property or not
   };
 
   // Themes are hardcoded to draw frame images as if they start this many DIPs
@@ -199,16 +185,6 @@ class ThemeProperties {
   // Returns the default color for the given color |id| COLOR_* enum value.
   // Returns gfx::kPlaceholderColor if |id| is invalid.
   static SkColor GetDefaultColor(int id, bool incognito);
-
-  // Returns the default color for the color represented by |lookup_pair|
-  // Returns gfx::kPlaceholderColor if |id| is invalid.
-  static SkColor GetDefaultColor(PropertyLookupPair lookup_pair);
-
-  // Get the PropertyLookupPair  necessary to look up a property for |input_id|
-  // in an incognito-aware context.  Returns a pair with the id to lookup
-  // (always a non-incognito variant), and a boolean representing whether
-  // |input_id| was an incognito variant of the id to lookup
-  static PropertyLookupPair GetLookupID(int input_id);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ThemeProperties);

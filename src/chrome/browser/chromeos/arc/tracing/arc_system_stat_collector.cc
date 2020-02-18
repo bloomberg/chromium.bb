@@ -116,7 +116,7 @@ constexpr int ArcSystemStatCollector::kGemInfoColumns[];
 // static
 constexpr int ArcSystemStatCollector::kCpuTempInfoColumns[];
 
-ArcSystemStatCollector::ArcSystemStatCollector() : weak_ptr_factory_(this) {}
+ArcSystemStatCollector::ArcSystemStatCollector() {}
 
 ArcSystemStatCollector::~ArcSystemStatCollector() = default;
 
@@ -129,8 +129,8 @@ void ArcSystemStatCollector::Start(const base::TimeDelta& max_interval) {
   // Maximum 10 warning per session.
   missed_update_warning_left_ = 10;
 
-  background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  background_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   timer_.Start(
       FROM_HERE, kSystemStatUpdateInterval,
       base::BindRepeating(&ArcSystemStatCollector::ScheduleSystemStatUpdate,

@@ -14,7 +14,38 @@
 
 import("../../gn/perfetto.gni")
 import("../../gn/proto_library.gni")
+import("../../gn/test.gni")
 
+# The command line client for Perfetto. Allows to configure / start / stop
+# tracing, acting as a Consumer.
+executable("perfetto") {
+  deps = [
+    ":perfetto_cmd",
+    "../../gn:default_deps",
+  ]
+  sources = [
+    "main.cc",
+  ]
+}
+
+# Tool to finalize long running traces.
+# This connects to traced as a producer and sends the triggers passed on the
+# commandline. This is a subset of what the perfetto binary can do but we
+# need a separate binary for programs that cannot (for good reason) use the
+# additional functionality (for example starting traces via consumer socket)
+# due to selinux rules.
+executable("trigger_perfetto") {
+  deps = [
+    ":trigger_perfetto_cmd",
+    "../../gn:default_deps",
+  ]
+  sources = [
+    "trigger_perfetto_main.cc",
+  ]
+}
+
+# Contains all the implementation but not the main() entry point. This target
+# is shared both by the executable and tests.
 source_set("perfetto_cmd") {
   public_deps = [
     ":protos",
@@ -44,13 +75,8 @@ source_set("perfetto_cmd") {
     "rate_limiter.cc",
     "rate_limiter.h",
   ]
-  if (perfetto_build_with_android) {
-    deps += [ "../base:android_task_runner" ]
-    libs = [
-      "binder",
-      "services",
-      "utils",
-    ]
+  if (is_android) {
+    sources += [ "perfetto_cmd_android.cc" ]
   }
 }
 
@@ -83,17 +109,15 @@ source_set("trigger_producer") {
   ]
 }
 
-proto_library("protos") {
-  generate_python = false
-  deps = []
+perfetto_proto_library("protos") {
+  proto_generators = [ "lite" ]
   sources = [
     "perfetto_cmd_state.proto",
   ]
-  proto_in_dir = perfetto_root_path
-  proto_out_dir = perfetto_root_path
+  proto_path = perfetto_root_path
 }
 
-source_set("unittests") {
+perfetto_unittest_source_set("unittests") {
   testonly = true
   public_deps = []
   deps = [

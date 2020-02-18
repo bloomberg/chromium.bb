@@ -19,9 +19,14 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
+#import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
+#import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
@@ -51,7 +56,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
@@ -74,7 +79,9 @@ const int kLocationAuthorizationStatusCount = 5;
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
   // Observer that updates |viewController| for fullscreen events.
-  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
+  std::unique_ptr<FullscreenUIUpdater> _omniboxFullscreenUIUpdater;
+  // Observer that updates BadgeViewController for fullscreen events.
+  std::unique_ptr<FullscreenUIUpdater> _badgeFullscreenUIUpdater;
 }
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -82,10 +89,14 @@ const int kLocationAuthorizationStatusCount = 5;
 @property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
 // Mediator for the badges displayed in the LocationBar.
 @property(nonatomic, strong) BadgeMediator* badgeMediator;
+// ViewController for the badges displayed in the LocationBar.
+@property(nonatomic, strong) BadgeViewController* badgeViewController;
 // Coordinator for the omnibox.
 @property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
 @property(nonatomic, strong) LocationBarMediator* mediator;
 @property(nonatomic, strong) LocationBarViewController* viewController;
+@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) WebStateList* webStateList;
 
 // Tracks calls in progress to -cancelOmniboxEdit to avoid calling it from
 // itself when -resignFirstResponder causes -textFieldWillResignFirstResponder
@@ -95,16 +106,16 @@ const int kLocationAuthorizationStatusCount = 5;
 @end
 
 @implementation LocationBarCoordinator
-@synthesize commandDispatcher = _commandDispatcher;
-@synthesize viewController = _viewController;
-@synthesize started = _started;
-@synthesize mediator = _mediator;
-@synthesize browserState = _browserState;
-@synthesize dispatcher = _dispatcher;
-@synthesize delegate = _delegate;
-@synthesize webStateList = _webStateList;
-@synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
-@synthesize omniboxCoordinator = _omniboxCoordinator;
+
+#pragma mark - Accessors
+
+- (ios::ChromeBrowserState*)browserState {
+  return self.browser ? self.browser->GetBrowserState() : nullptr;
+}
+
+- (WebStateList*)webStateList {
+  return self.browser ? self.browser->GetWebStateList() : nullptr;
+}
 
 #pragma mark - public
 
@@ -114,6 +125,7 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (void)start {
   DCHECK(self.commandDispatcher);
+  DCHECK(self.browser);
 
   if (self.started)
     return;
@@ -162,24 +174,36 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.omniboxPopupCoordinator start];
 
   // Create BadgeMediator and set the viewController as its consumer.
-  if (IsInfobarUIRebootEnabled()) {
-    self.badgeMediator =
-        [[BadgeMediator alloc] initWithConsumer:self.viewController
-                                   webStateList:self.webStateList];
-  }
+  BadgeButtonActionHandler* actionHandler =
+      [[BadgeButtonActionHandler alloc] init];
+  actionHandler.dispatcher = static_cast<id<InfobarCommands>>(self.dispatcher);
+  BadgeButtonFactory* buttonFactory =
+      [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+  buttonFactory.incognito = isIncognito;
+  self.badgeViewController =
+      [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
+  [self.viewController addChildViewController:self.badgeViewController];
+  [self.viewController setBadgeView:self.badgeViewController.view];
+  [self.badgeViewController didMoveToParentViewController:self.viewController];
+  self.badgeMediator =
+      [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
+                                 webStateList:self.webStateList];
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+  _badgeFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+      fullscreenController, self.badgeViewController);
 
   self.mediator = [[LocationBarMediator alloc]
       initWithLocationBarModel:[self locationBarModel]];
   self.mediator.webStateList = self.webStateList;
+  self.mediator.webContentAreaOverlayPresenter = OverlayPresenter::FromBrowser(
+      self.browser, OverlayModality::kWebContentArea);
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self;
 
-  _fullscreenObserver =
-      std::make_unique<FullscreenUIUpdater>(self.viewController);
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->AddObserver(_fullscreenObserver.get());
+  _omniboxFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+      fullscreenController, self.viewController);
 
   self.started = YES;
 }
@@ -198,9 +222,9 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.mediator disconnect];
   self.mediator = nil;
 
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->RemoveObserver(_fullscreenObserver.get());
+  _badgeFullscreenUIUpdater = nullptr;
+  _omniboxFullscreenUIUpdater = nullptr;
+
   self.started = NO;
 }
 
@@ -392,21 +416,6 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
   self.viewController.searchByImageEnabled = searchByImageSupported;
-}
-
-- (void)displayInfobarBadge:(BOOL)display type:(InfobarType)infobarType {
-  InfobarMetricsRecorder* metricsRecorder;
-  // If the Badge will be displayed create a metrics recorder to log its
-  // interactions, if its hidden metrics recorder should be nil.
-  if (display)
-    metricsRecorder = [[InfobarMetricsRecorder alloc] initWithType:infobarType];
-
-  [self.viewController displayInfobarButton:display
-                            metricsRecorder:metricsRecorder];
-}
-
-- (void)activeInfobarBadge:(BOOL)active {
-  [self.viewController setInfobarButtonStyleActive:active];
 }
 
 #pragma mark - private

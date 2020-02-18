@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 The ANGLE Project Authors. All rights reserved.
+// Copyright 2016 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,7 +22,8 @@ class GlslangWrapper
     static void Initialize();
     static void Release();
 
-    static void GetShaderSource(const gl::ProgramState &programState,
+    static void GetShaderSource(bool useOldRewriteStructSamplers,
+                                const gl::ProgramState &programState,
                                 const gl::ProgramLinkedResources &resources,
                                 gl::ShaderMap<std::string> *shaderSourcesOut);
 

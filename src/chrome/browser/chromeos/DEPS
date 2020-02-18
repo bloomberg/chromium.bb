@@ -6,19 +6,20 @@ include_rules = [
 
   "+chrome/services/app_service/public",
   "+chrome/services/wilco_dtc_supportd/public",
+  "+components/guest_os",
   "+cros",
   "+dbus",
   "+device/bluetooth",
   "+mash/public/mojom",
   "+media/audio/sounds",  # For system sounds
   "+media/base/media_switches.h",  # For media command line switches.
-  "+media/mojo/interfaces",  # For platform verification mojom interface.
+  "+media/mojo/mojom",  # For platform verification mojom interface.
   "+remoting/host/it2me",  # For CRD host in remote command
   "+services/device/public",
   "+services/metrics/public",
   "+services/network",
   "+services/tracing/public",
-  "+services/viz/public/interfaces",
+  "+services/viz/public/mojom",
 
   # keyboard::KeyboardController only exists in ash and should not be accessed
   # directly from src/chrome. Use ChromeKeyboardControllerClient instead.
@@ -27,6 +28,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  # Dependencies specific for fuzz targets and other fuzzing-related code.
+  ".*fuzz.*": [
+    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
+  ],
   ".*test.*": [
    "!ash",
    "+ash/public",

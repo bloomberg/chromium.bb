@@ -21,7 +21,7 @@ class TestDataSource : public content::URLDataSource {
  private:
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
 
   std::string GetMimeType(const std::string& path) override;
@@ -39,8 +39,8 @@ class TestDataSource : public content::URLDataSource {
   void ReadFile(const std::string& path,
                 const content::URLDataSource::GotDataCallback& callback);
 
-  base::FilePath test_data_;
-  base::FilePath source_root_;
+  base::FilePath src_root_;
+  base::FilePath gen_root_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataSource);
 };

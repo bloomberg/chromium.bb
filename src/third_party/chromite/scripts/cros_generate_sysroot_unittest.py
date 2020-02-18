@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -85,7 +86,7 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
 
   def testMultiplePkgsTargetName(self):
     """Test getting the right target name with multiple pkgs."""
-    pkgs = "%s virtual/target-os" %constants.CHROME_CP
+    pkgs = '%s virtual/target-os' % constants.CHROME_CP
     options = cros_gen.ParseCommandLine(
         ['--board', BOARD, '--out-dir', self.tempdir,
          '--package', pkgs])

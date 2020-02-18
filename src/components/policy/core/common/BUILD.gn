@@ -241,7 +241,10 @@ jumbo_source_set("internal") {
     ]
   }
   if (is_mac) {
-    libs = [ "CoreFoundation.framework" ]
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",
+    ]
   }
   if (is_ios || is_mac) {
     sources += [
@@ -409,6 +412,7 @@ source_set("unit_tests") {
     "//components/account_id",
     "//components/policy:generated",
     "//components/prefs:test_support",
+    "//components/version_info:version_info",
     "//extensions/buildflags",
     "//google_apis",
     "//net:test_support",

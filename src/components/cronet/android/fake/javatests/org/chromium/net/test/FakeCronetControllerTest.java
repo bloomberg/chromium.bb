@@ -134,10 +134,10 @@ public class FakeCronetControllerTest {
     public void testResponseMatchersConsultedInOrderOfAddition() {
         String url = "url";
         FakeUrlResponse response =
-                new FakeUrlResponse.Builder().setResponseBody("body text").build();
+                new FakeUrlResponse.Builder().setResponseBody("body text".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
         mFakeCronetController.addResponseMatcher(matcher);
-        mFakeCronetController.addSuccessResponse(url, "different text");
+        mFakeCronetController.addSuccessResponse(url, "different text".getBytes());
 
         FakeUrlResponse foundResponse =
                 mFakeCronetController.getResponse(new String(url), null, null);
@@ -150,7 +150,7 @@ public class FakeCronetControllerTest {
     public void testRemoveResponseMatcher() {
         String url = "url";
         FakeUrlResponse response =
-                new FakeUrlResponse.Builder().setResponseBody("body text").build();
+                new FakeUrlResponse.Builder().setResponseBody("body text".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
         mFakeCronetController.addResponseMatcher(matcher);
         mFakeCronetController.removeResponseMatcher(matcher);
@@ -166,7 +166,7 @@ public class FakeCronetControllerTest {
     public void testClearResponseMatchers() {
         String url = "url";
         FakeUrlResponse response =
-                new FakeUrlResponse.Builder().setResponseBody("body text").build();
+                new FakeUrlResponse.Builder().setResponseBody("body text".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
         mFakeCronetController.addResponseMatcher(matcher);
         mFakeCronetController.clearResponseMatchers();
@@ -182,7 +182,7 @@ public class FakeCronetControllerTest {
     public void testAddUrlResponseMatcher() {
         String url = "url";
         FakeUrlResponse response =
-                new FakeUrlResponse.Builder().setResponseBody("body text").build();
+                new FakeUrlResponse.Builder().setResponseBody("body text".getBytes()).build();
         mFakeCronetController.addResponseForUrl(response, url);
 
         FakeUrlResponse foundResponse = mFakeCronetController.getResponse(url, null, null);
@@ -243,12 +243,12 @@ public class FakeCronetControllerTest {
     public void testAddSuccessResponse() {
         String url = "url";
         String body = "TEST_BODY";
-        mFakeCronetController.addSuccessResponse(url, body);
+        mFakeCronetController.addSuccessResponse(url, body.getBytes());
 
         FakeUrlResponse foundResponse = mFakeCronetController.getResponse(url, null, null);
 
         assertTrue(foundResponse.getHttpStatusCode() >= 200);
         assertTrue(foundResponse.getHttpStatusCode() < 300);
-        assertEquals(body, foundResponse.getResponseBody());
+        assertEquals(body, new String(foundResponse.getResponseBody()));
     }
 }

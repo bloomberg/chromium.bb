@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -66,7 +67,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 @synthesize overscrollDelegate = _overscrollDelegate;
 @synthesize scrolledToTop = _scrolledToTop;
 @synthesize metricsRecorder = _metricsRecorder;
-@synthesize containsToolbar = _containsToolbar;
 @dynamic collectionViewModel;
 
 #pragma mark - Lifecycle
@@ -222,6 +222,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   self.collectionView.backgroundColor = ntp_home::kNTPBackgroundColor();
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.cardBorderRadius = kCardBorderRadius;
+  self.styler.separatorColor = [UIColor colorNamed:kSeparatorColor];
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
 
   ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
@@ -475,12 +476,10 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   // MDCCollectionView doesn't support dynamic colors, so they have to be
   // resolved now.
   // TODO(crbug.com/984928): Clean up once dynamic color support is added.
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     return [ntp_home::kNTPBackgroundColor()
         resolvedColorWithTraitCollection:self.traitCollection];
   }
-#endif
   return ntp_home::kNTPBackgroundColor();
 }
 

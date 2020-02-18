@@ -32,7 +32,9 @@
 
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -45,25 +47,25 @@
 namespace blink {
 
 DateTimeChooserImpl::DateTimeChooserImpl(
-    ChromeClient* chrome_client,
+    LocalFrame* frame,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters)
-    : chrome_client_(chrome_client),
+    : frame_(frame),
       client_(client),
       popup_(nullptr),
       parameters_(&parameters),
       locale_(Locale::Create(parameters.locale)) {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
-  DCHECK(chrome_client_);
+  DCHECK(frame_);
   DCHECK(client_);
-  popup_ = chrome_client_->OpenPagePopup(this);
+  popup_ = frame_->View()->GetChromeClient()->OpenPagePopup(this);
   parameters_ = nullptr;
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;
 
 void DateTimeChooserImpl::Trace(Visitor* visitor) {
-  visitor->Trace(chrome_client_);
+  visitor->Trace(frame_);
   visitor->Trace(client_);
   DateTimeChooser::Trace(visitor);
 }
@@ -71,7 +73,7 @@ void DateTimeChooserImpl::Trace(Visitor* visitor) {
 void DateTimeChooserImpl::EndChooser() {
   if (!popup_)
     return;
-  chrome_client_->ClosePagePopup(popup_);
+  frame_->View()->GetChromeClient()->ClosePagePopup(popup_);
 }
 
 AXObject* DateTimeChooserImpl::RootAXObject() {
@@ -120,16 +122,22 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
-  data->Append(Platform::Current()->GetDataResource("pickerButton.css"));
-  data->Append(Platform::Current()->GetDataResource("suggestionPicker.css"));
-  data->Append(Platform::Current()->GetDataResource("calendarPicker.css"));
+
+  data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
+  if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    data->Append(ChooserResourceLoader::GetPickerButtonStyleSheet());
+  data->Append(ChooserResourceLoader::GetSuggestionPickerStyleSheet());
+  data->Append(ChooserResourceLoader::GetCalendarPickerStyleSheet());
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet());
+  }
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
       data);
   AddProperty("anchorRectInScreen", parameters_->anchor_rect_in_screen, data);
-  float scale_factor = chrome_client_->WindowToViewportScalar(1.0f);
+  float scale_factor =
+      frame_->View()->GetChromeClient()->WindowToViewportScalar(frame_, 1.0f);
   AddProperty("zoomFactor", ZoomFactor() / scale_factor, data);
   AddProperty("min",
               ValueToDateTimeString(parameters_->minimum, parameters_->type),
@@ -169,6 +177,8 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);
   AddProperty("isLocaleRTL", locale_->IsRTL(), data);
   AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
+  AddProperty("isFormControlsRefreshEnabled",
+              RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   AddProperty("mode", parameters_->type.GetString(), data);
   if (parameters_->suggestions.size()) {
     Vector<String> suggestion_values;
@@ -206,9 +216,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
   AddString("}\n", data);
 
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
-  data->Append(Platform::Current()->GetDataResource("suggestionPicker.js"));
-  data->Append(Platform::Current()->GetDataResource("calendarPicker.js"));
+  data->Append(ChooserResourceLoader::GetPickerCommonJS());
+  data->Append(ChooserResourceLoader::GetSuggestionPickerJS());
+  data->Append(ChooserResourceLoader::GetCalendarPickerJS());
   AddString("</script></body>\n", data);
 }
 

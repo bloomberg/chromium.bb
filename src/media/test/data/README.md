@@ -233,9 +233,13 @@ a rotation of 180 degrees in mp4 meta data.
 Actual video frames are the same as four-colors.mp4, except it specifies
 a rotation of 270 degrees in mp4 meta data.
 
-#### four-colors-vp9.web
+#### four-colors-vp9.webm
 A 960x540 vp9 video with 4 color blocks (Y,R,G,B) in every frame. This is
 converted from four-colors.mp4 by ffmpeg.
+
+#### four-colors-vp9-i420a.webm
+A 960x540 yuva420p vp9 video with 4 color blocks (Y,R,G,B) in every frame. This
+is converted from four-colors.mp4 by adding an opacity of 0.5 using ffmpeg.
 
 #### bear-320x180-hi10p.mp4
 #### bear-320x240-vp9_profile2.webm
@@ -788,6 +792,22 @@ RAW BGRA format data. This data is created from bear\_320x192.i420.yuv by the
 following command. Alpha channel is always 0xFF because of that.
 `ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
 
+
+#### puppets-1280x720.nv12.yuv
+RAW NV12 format data. The width and height are 1280 and 720, respectively.
+This data is created from peach\_pi-1280x720.jpg by the following command.
+`ffmpeg -i peach_pi-1280x720.jpg -s 1280x720 -pix_fmt nv12 puppets-1280x720.nv12.yuv`
+
+#### puppets-640x360.nv12.yuv
+RAW NV12 format data. The width and height are 640 and 360, respectively.
+This data is created from puppets-1280x720.nv12.yuv by the following command.
+`ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=640x360 -c:v rawvideo -pix_fmt nv12 puppets-640x360.nv12.yuv`
+
+#### puppets-320x180.nv12.yuv
+RAW NV12 format data. The width and height are 320 and 180, respectively.
+This data is created from puppets-1280x720.nv12.yuv by the following command.
+`ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=320x180 -c:v rawvideo -pix_fmt nv12 puppets-320x180.nv12.yuv`
+
 ###  VP9 parser test files:
 
 #### bear-vp9.ivf
@@ -877,6 +897,33 @@ resulting file.
 A version of pixel-1280x720.jpg converted to 4:2:0 subsampling using:
 ```
 convert pixel-1280x720.jpg -sampling-factor 4:2:0 -define jpeg:optimize-coding=false pixel-1280x720-yuv420.jpg
+```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
+#### pixel-40x23-yuv420.jpg
+A version of pixel-1280x720-yuv420.jpg resized to 40x23 (so that the height is
+odd) using:
+```
+convert pixel-1280x720-yuv420.jpg -resize 40x23\! -define jpeg:optimize-coding=false pixel-40x23-yuv420.jpg
+```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
+#### pixel-41x22-yuv420.jpg
+A version of pixel-1280x720-yuv420.jpg resized to 41x22 (so that the width is
+odd) using:
+```
+convert pixel-1280x720-yuv420.jpg -resize 41x22\! -define jpeg:optimize-coding=false pixel-41x22-yuv420.jpg
+```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
+#### pixel-41x23-yuv420.jpg
+A version of pixel-1280x720-yuv420.jpg resized to 41x23 (so that both dimensions
+are odd) using:
+```
+convert pixel-1280x720-yuv420.jpg -resize 41x23\! -define jpeg:optimize-coding=false pixel-41x23-yuv420.jpg
 ```
 Then, using a hex editor, the Huffman table sections were removed from the
 resulting file.

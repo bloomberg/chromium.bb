@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_hints.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,14 +14,13 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/host_filter.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
@@ -59,20 +59,23 @@ void AddBlacklistBloomFilterToConfig(
   blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
 }
 
-}  // namespace
-
-class TestHostFilter : public optimization_guide::HostFilter {
- public:
-  explicit TestHostFilter(std::string single_host_match)
-      : HostFilter(nullptr), single_host_match_(single_host_match) {}
-
-  bool ContainsHostSuffix(const GURL& url) const override {
-    return single_host_match_ == url.host();
+void AddRegexpsFilterToConfig(optimization_guide::proto::Configuration* config,
+                              const std::vector<std::string>& regexps) {
+  optimization_guide::proto::OptimizationFilter* blacklist_proto;
+  if (config->optimization_blacklists_size() > 0) {
+    blacklist_proto = config->mutable_optimization_blacklists(0);
+  } else {
+    blacklist_proto = config->add_optimization_blacklists();
+    blacklist_proto->set_optimization_type(
+        optimization_guide::proto::LITE_PAGE_REDIRECT);
   }
 
- private:
-  std::string single_host_match_;
-};
+  for (const std::string& regexp : regexps) {
+    blacklist_proto->add_regexps(regexp);
+  }
+}
+
+}  // namespace
 
 class PreviewsHintsTest
     : public optimization_guide::ProtoDatabaseProviderTestBase {
@@ -85,8 +88,8 @@ class PreviewsHintsTest
     ProtoDatabaseProviderTestBase::SetUp();
     hint_cache_ = std::make_unique<optimization_guide::HintCache>(
         std::make_unique<optimization_guide::HintCacheStore>(
-            db_provider_.get(), temp_dir_.GetPath(), nullptr /* pref_service */,
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+            db_provider_.get(), temp_dir_.GetPath(),
+            task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;
     hint_cache_->Initialize(
@@ -141,12 +144,10 @@ class PreviewsHintsTest
       net::EffectiveConnectionType* out_ect_threshold,
       std::string* serialized_hint_version_string);
 
-  void MaybeLoadHintAndLogHintCacheMatch(const GURL& url,
-                                         bool is_committed,
-                                         net::EffectiveConnectionType ect);
+  void MaybeLoadHintAndLogHintCacheMatch(const GURL& url, bool is_committed);
 
   void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -168,7 +169,7 @@ class PreviewsHintsTest
 
   void MaybeLoadHint(const GURL& url);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool is_store_initialized_;
   bool are_previews_hints_initialized_;
@@ -190,12 +191,10 @@ bool PreviewsHintsTest::MaybeLoadHintAndCheckIsWhitelisted(
                                         out_serialized_hint_version_string);
 }
 
-void PreviewsHintsTest::MaybeLoadHintAndLogHintCacheMatch(
-    const GURL& url,
-    bool is_committed,
-    net::EffectiveConnectionType ect) {
+void PreviewsHintsTest::MaybeLoadHintAndLogHintCacheMatch(const GURL& url,
+                                                          bool is_committed) {
   MaybeLoadHint(url);
-  previews_hints_->LogHintCacheMatch(url, is_committed, ect);
+  previews_hints_->LogHintCacheMatch(url, is_committed);
 }
 
 void PreviewsHintsTest::MaybeLoadHint(const GURL& url) {
@@ -233,43 +232,99 @@ TEST_F(PreviewsHintsTest, LogHintCacheMatch) {
   resource_loading_hint1->set_resource_pattern("news_cruft.js");
   ParseConfig(config);
 
-  base::HistogramTester histogram_tester;
+  // Verify histogram counts for non-matching URL host prior to commit.
+  {
+    base::HistogramTester histogram_tester;
 
-  // First verify no histogram counts for non-matching URL host.
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://someotherdomain.com/news/story.html"),
-      false /* is_committed */, net::EFFECTIVE_CONNECTION_TYPE_3G);
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://someotherdomain.com/news/story2.html"),
-      true /* is_committed */, net::EFFECTIVE_CONNECTION_TYPE_4G);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
-  histogram_tester.ExpectTotalCount(
-      "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://someotherdomain.com/news/story.html"),
+        false /* is_committed */);
 
-  // Now verify do have histogram counts for matching URL host.
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://somedomain.org/news/story.html"), false /* is_committed */,
-      net::EFFECTIVE_CONNECTION_TYPE_3G);
-  MaybeLoadHintAndLogHintCacheMatch(
-      GURL("https://somedomain.org/news/story2.html"), true /* is_committed */,
-      net::EFFECTIVE_CONNECTION_TYPE_4G);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit",
-      4 /* EFFECTIVE_CONNECTION_TYPE_3G */, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.HasHint.AtCommit",
-      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit",
-      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit",
-      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+  }
+
+  // Verify histogram counts for non-matching URL host after commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://someotherdomain.com/news/story2.html"),
+        true /* is_committed */);
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
+    // We don't have a hint for this host so we do not expect to check if the
+    // hint is loaded and we have a page hint.
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+  }
+
+  // Verify do have histogram counts for matching URL host before commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://somedomain.org/news/story.html"),
+        false /* is_committed */);
+
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
+    // None of the AfterCommit histograms should be recorded.
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+  }
+
+  // Verify do have histogram counts for matching URL host after commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://somedomain.org/news/story2.html"),
+        true /* is_committed */);
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
+  }
+
+  // Verify do have histogram counts for matching URL host but no matching page
+  // hint after commit.
+  {
+    base::HistogramTester histogram_tester;
+
+    MaybeLoadHintAndLogHintCacheMatch(
+        GURL("https://somedomain.org/nopagehint/story2.html"),
+        true /* is_committed */);
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.PageMatch.AtCommit", false, 1);
+  }
 }
 
 TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {
@@ -292,7 +347,36 @@ TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {
       GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
 }
 
-TEST_F(PreviewsHintsTest, IsBlacklisted) {
+TEST_F(PreviewsHintsTest, IsBlacklisted_BloomFilterAndRegexps) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+
+  optimization_guide::proto::Configuration config;
+  AddBlacklistBloomFilterToConfig(blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  AddRegexpsFilterToConfig(&config, {"blackpath"});
+  ParseConfig(config);
+
+  EXPECT_TRUE(HasLitePageRedirectBlacklist());
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
+                                               PreviewsType::OFFLINE));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+      GURL("https://ok-host.com/"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://ok-host.com/blackpath"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IsBlacklisted_BloomFilter) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
@@ -316,6 +400,47 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
       GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_FALSE(previews_hints()->IsBlacklisted(
       GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IsBlacklisted_Regexps) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::proto::Configuration config;
+  AddRegexpsFilterToConfig(&config, {"black\\.com"});
+  ParseConfig(config);
+
+  EXPECT_TRUE(HasLitePageRedirectBlacklist());
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
+                                               PreviewsType::OFFLINE));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+      GURL("https://blackish.com"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, ParseConfigWithBadRegexp) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::proto::Configuration config;
+  AddRegexpsFilterToConfig(&config, {"["});
+  ParseConfig(config);
+
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kInvalidRegexp, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 2);
+
+  EXPECT_FALSE(HasLitePageRedirectBlacklist());
 }
 
 TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {
@@ -358,9 +483,7 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
   int too_many_bits =
-      previews::params::LitePageRedirectPreviewMaxServerBlacklistByteSize() *
-          8 +
-      1;
+      optimization_guide::features::MaxServerBloomFilterByteSize() * 8 + 1;
 
   optimization_guide::BloomFilter blacklist_bloom_filter(
       kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits);

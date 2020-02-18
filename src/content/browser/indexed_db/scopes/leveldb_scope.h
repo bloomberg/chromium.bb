@@ -67,7 +67,9 @@ namespace content {
 class CONTENT_EXPORT LevelDBScope {
  public:
   using RollbackCallback =
-      base::OnceCallback<void(int64_t scope_id, std::vector<ScopeLock> locks)>;
+      base::OnceCallback<leveldb::Status(int64_t scope_id,
+                                         std::vector<ScopeLock> locks)>;
+  using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
   using CleanupCallback = base::OnceCallback<void(int64_t scope_id)>;
 
   ~LevelDBScope();
@@ -91,12 +93,17 @@ class CONTENT_EXPORT LevelDBScope {
   // |DeleteRange|.
   leveldb::Status WriteChangesAndUndoLog() WARN_UNUSED_RESULT;
 
+  // In the case of LevelDBScopes being in the mode
+  // TaskRunnerMode::kUseCurrentSequence, rollbacks happen synchronously. The
+  // status of this possibly synchronous rollback is returned.
+  leveldb::Status Rollback();
+
   uint64_t GetMemoryUsage() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return buffer_batch_.ApproximateSize();
   }
 
-  uint64_t GetTransactionSize() const {
+  uint64_t GetApproximateBytesWritten() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return approximate_bytes_written_.ValueOrDie();
   }
@@ -131,13 +138,20 @@ class CONTENT_EXPORT LevelDBScope {
                scoped_refptr<LevelDBState> level_db,
                std::vector<ScopeLock> locks,
                std::vector<EmptyRange> empty_ranges,
-               RollbackCallback rollback_callback);
+               RollbackCallback rollback_callback,
+               TearDownCallback tear_down_callback);
 
   // Called by LevelDBScopes. Saves all data, release all locks, and returns the
   // status & the mode of this scope. The caller (LevelDBScopes) is expected to
   // queue up a cleanup task if the mode is kUndoLogOnDisk. This instance should
   // not be used after this call.
-  std::pair<leveldb::Status, Mode> Commit() WARN_UNUSED_RESULT;
+  std::pair<leveldb::Status, Mode> Commit(bool sync_on_commit)
+      WARN_UNUSED_RESULT;
+
+  // Submits pending changes & the undo log to LevelDB. Required to be able to
+  // read any keys that have been submitted to Put, Delete, or
+  // DeleteRange. |sync| makes the write a synchronous write.
+  leveldb::Status WriteChangesAndUndoLogInternal(bool sync);
 
   void AddUndoPutTask(std::string key, std::string value);
   void AddUndoDeleteTask(std::string key);
@@ -188,6 +202,8 @@ class CONTENT_EXPORT LevelDBScope {
   std::vector<ScopeLock> locks_;
   base::flat_map<EmptyRange, bool, EmptyRangeLessThan> empty_ranges_;
   RollbackCallback rollback_callback_;
+  // Warning: Calling this callback can destroy this scope.
+  TearDownCallback tear_down_callback_;
 
   leveldb::WriteBatch buffer_batch_;
   bool buffer_batch_empty_ = true;

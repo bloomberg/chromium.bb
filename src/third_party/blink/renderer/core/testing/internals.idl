@@ -42,7 +42,7 @@
 
     DOMString getResourceHeader(DOMString url, DOMString header, Document document);
 
-    bool doesWindowHaveUrlFragment(Window window);
+    boolean doesWindowHaveUrlFragment(Window window);
 
     CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 
@@ -196,7 +196,6 @@
     const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
     const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
-    const unsigned short LAYER_TREE_INCLUDES_CLIP_AND_SCROLL_PARENTS = 16;
     const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
     const unsigned short LAYER_TREE_INCLUDES_PAINT_RECORDS = 64;
     const unsigned short OUTPUT_AS_LAYER_TREE = 0x4000;
@@ -418,12 +417,12 @@
     void DisableIntersectionObserverThrottleDelay();
 
     // Reports whether an iframe's browsing context runs in a separate process
-    bool isSiteIsolated(HTMLIFrameElement iframe);
+    boolean isSiteIsolated(HTMLIFrameElement iframe);
 
     // Reports whether a parent document is propagating occlusion information
     // down to a child frame, for the purpose of servicing IntersectionObserver
     // instances that track visibility.
-    bool isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
+    boolean isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
 
     // Declare that the given |name| is in use by the embedder via the custom
     // element mechanism.
@@ -433,6 +432,12 @@
     // Throws TypeError on error.
     // Used for testing Import Maps https://github.com/domenic/import-maps
     [RaisesException] DOMString resolveModuleSpecifier(DOMString specifier, DOMString base_url, Document document);
+
+    // Returns the current serialized import map of the Document.
+    // TODO(crbug.com/927181): Currently this returns the "imports" value,
+    // because Blink doesn't support scopes yet. Update this once scopes are
+    // implemented.
+    [RaisesException] DOMString getParsedImportMap(Document document);
 
     // Sets the scale for devtools device emulation.
     [RaisesException] void setDeviceEmulationScale(float scale);

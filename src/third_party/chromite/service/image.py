@@ -36,7 +36,8 @@ class BuildConfig(object):
   """Value object to hold the build configuration options."""
 
   def __init__(self, builder_path=None, disk_layout=None,
-               enable_rootfs_verification=True, replace=False, version=None):
+               enable_rootfs_verification=True, replace=False, version=None,
+               build_attempt=None, symlink=None):
     """Build config initialization.
 
     Args:
@@ -47,12 +48,16 @@ class BuildConfig(object):
         enabled.
       replace (bool): Whether to replace existing output if any exists.
       version (str): The version string to use for the image.
+      build_attempt (int): The build_attempt number to pass to build_image.
+      symlink (str): Symlink string.
     """
     self.builder_path = builder_path
     self.disk_layout = disk_layout
     self.enable_rootfs_verification = enable_rootfs_verification
     self.replace = replace
     self.version = version
+    self.build_attempt = build_attempt
+    self.symlink = symlink
 
   def GetArguments(self):
     """Get the build_image arguments for the configuration."""
@@ -68,6 +73,10 @@ class BuildConfig(object):
       args.append('--replace')
     if self.version:
       args.extend(['--version', self.version])
+    if self.build_attempt:
+      args.extend(['--build_attempt', self.build_attempt])
+    if self.symlink:
+      args.extend(['--symlink', self.symlink])
 
     return args
 
@@ -91,13 +100,14 @@ class BuildResult(object):
     self.success = return_code == 0 and not self.failed_packages
 
 
-def Build(board=None, images=None, config=None):
+def Build(board=None, images=None, config=None, extra_env=None):
   """Build an image.
 
   Args:
     board (str): The board name.
     images (list): The image types to build.
     config (BuildConfig): The build configuration options.
+    extra_env (dict): Environment variables to set for build_image.
 
   Returns:
     BuildResult
@@ -117,12 +127,14 @@ def Build(board=None, images=None, config=None):
   cmd.extend(config.GetArguments())
   cmd.extend(images)
 
+  extra_env_local = extra_env.copy() if extra_env else {}
+
   with osutils.TempDir() as tempdir:
     status_file = os.path.join(tempdir, PARALLEL_EMERGE_STATUS_FILE_NAME)
-    extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
+    extra_env_local[constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR] = status_file
     result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                       error_code_ok=True, extra_env=extra_env)
-
+                                       error_code_ok=True,
+                                       extra_env=extra_env_local)
     try:
       content = osutils.ReadFile(status_file).strip()
     except IOError:

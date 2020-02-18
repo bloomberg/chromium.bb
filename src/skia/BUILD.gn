@@ -486,7 +486,7 @@ component("skia") {
 
   if (is_android) {
     deps += [
-      "//third_party/android_sdk:cpu_features",
+      "//third_party/android_ndk:cpu_features",
       "//third_party/expat",
     ]
   }
@@ -873,12 +873,12 @@ test("skia_unittests") {
   ]
 
   if (!is_ios) {
-    sources += [ "public/interfaces/test/struct_traits_unittest.cc" ]
+    sources += [ "public/mojom/test/mojom_traits_unittest.cc" ]
     deps += [
       # TODO: Fix this test to not depend on cc.
       "//cc:test_support",
       "//mojo/public/cpp/bindings",
-      "//skia/public/interfaces:test_interfaces",
+      "//skia/public/mojom:test_interfaces",
     ]
   }
 

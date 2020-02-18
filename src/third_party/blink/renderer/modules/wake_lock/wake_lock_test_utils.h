@@ -7,8 +7,10 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
@@ -32,7 +34,7 @@ class MockWakeLock : public device::mojom::blink::WakeLock {
 
   bool is_acquired() const { return is_acquired_; }
 
-  void Bind(device::mojom::blink::WakeLockRequest request);
+  void Bind(mojo::PendingReceiver<device::mojom::blink::WakeLock> receiver);
 
   // Forcefully terminate a binding to test connection errors.
   void Unbind();
@@ -49,7 +51,8 @@ class MockWakeLock : public device::mojom::blink::WakeLock {
   // device::mojom::blink::WakeLock implementation
   void RequestWakeLock() override;
   void CancelWakeLock() override;
-  void AddClient(device::mojom::blink::WakeLockRequest) override;
+  void AddClient(
+      mojo::PendingReceiver<device::mojom::blink::WakeLock>) override;
   void ChangeType(device::mojom::blink::WakeLockType,
                   ChangeTypeCallback) override;
   void HasWakeLockForTests(HasWakeLockForTestsCallback) override;
@@ -59,7 +62,7 @@ class MockWakeLock : public device::mojom::blink::WakeLock {
   base::OnceClosure request_wake_lock_callback_;
   base::OnceClosure cancel_wake_lock_callback_;
 
-  mojo::Binding<device::mojom::blink::WakeLock> binding_{this};
+  mojo::Receiver<device::mojom::blink::WakeLock> receiver_{this};
 };
 
 // Mock WakeLockService implementation that creates a MockWakeLock in its
@@ -75,13 +78,14 @@ class MockWakeLockService : public mojom::blink::WakeLockService {
 
  private:
   // mojom::blink::WakeLockService implementation
-  void GetWakeLock(device::mojom::blink::WakeLockType type,
-                   device::mojom::blink::WakeLockReason reason,
-                   const String& description,
-                   device::mojom::blink::WakeLockRequest request) override;
+  void GetWakeLock(
+      device::mojom::blink::WakeLockType type,
+      device::mojom::blink::WakeLockReason reason,
+      const String& description,
+      mojo::PendingReceiver<device::mojom::blink::WakeLock> receiver) override;
 
   MockWakeLock mock_wake_lock_[kWakeLockTypeCount];
-  mojo::BindingSet<mojom::blink::WakeLockService> bindings_;
+  mojo::ReceiverSet<mojom::blink::WakeLockService> receivers_;
 };
 
 // Mock PermissionService implementation. It only implements the bits required
@@ -115,13 +119,14 @@ class MockPermissionService final : public mojom::blink::PermissionService {
       RequestPermissionsCallback) override;
   void RevokePermission(mojom::blink::PermissionDescriptorPtr permission,
                         RevokePermissionCallback) override;
-  void AddPermissionObserver(mojom::blink::PermissionDescriptorPtr permission,
-                             mojom::blink::PermissionStatus last_known_status,
-                             mojom::blink::PermissionObserverPtr) override;
+  void AddPermissionObserver(
+      mojom::blink::PermissionDescriptorPtr permission,
+      mojom::blink::PermissionStatus last_known_status,
+      mojo::PendingRemote<mojom::blink::PermissionObserver>) override;
 
   void OnConnectionError();
 
-  mojo::Binding<mojom::blink::PermissionService> binding_{this};
+  mojo::Receiver<mojom::blink::PermissionService> receiver_{this};
 
   base::Optional<mojom::blink::PermissionStatus>
       permission_responses_[kWakeLockTypeCount];
@@ -135,9 +140,9 @@ class MockPermissionService final : public mojom::blink::PermissionService {
 // TEST(Foo, Bar) {
 //   MockWakeLockService mock_service;
 //   WakeLockTestingContext context(&mock_service);
-//   mojom::blink::WakeLockServicePtr service;
+//   mojo::Remote<mojom::blink::WakeLockService> service;
 //   context.GetDocument()->GetInterfaceProvider()->GetInterface(
-//       mojo::MakeRequest(&service));
+//       service.BindNewPipeAndPassReceiver());
 //   service->GetWakeLock(...);  // Will call mock_service.GetWakeLock().
 // }
 class WakeLockTestingContext final {

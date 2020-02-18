@@ -60,21 +60,24 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   gfx::RRectF rounded_corner_bounds;
   // This rect lives in the target content space.
   gfx::Rect clip_rect;
-  bool is_clipped;
+  bool is_clipped = false;
   // Indicates whether the content in |quad_layer_rect| are fully opaque.
-  bool are_contents_opaque;
-  float opacity;
-  SkBlendMode blend_mode;
-  int sorting_context_id;
-  // An internal flag used only by the SurfaceAggregator to decide whether to
-  // merge quads for a surface into their target render pass. It is a
-  // performance optimization by avoiding render passes as much as possible.
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+  SkBlendMode blend_mode = SkBlendMode::kSrcOver;
+  int sorting_context_id = 0;
+  // Used by SurfaceAggregator to decide whether to merge quads for a surface
+  // into their target render pass. It is a performance optimization by avoiding
+  // render passes as much as possible.
   bool is_fast_rounded_corner = false;
   // This is for underlay optimization and used only in the SurfaceAggregator
   // and the OverlayProcessor. This damage rect contains union of damage from
   // occluding surfaces and is only for quads that are the only quad in
   // their surface. SetAll() doesn't update this data.
   base::Optional<gfx::Rect> occluding_damage_rect;
+
+  // The amount to skew quads in this layer. For experimental de-jelly effect.
+  float de_jelly_delta_y = 0.0f;
 };
 
 }  // namespace viz

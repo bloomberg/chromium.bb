@@ -19,84 +19,72 @@ cca.views = cca.views || {};
  */
 cca.views.camera = cca.views.camera || {};
 
+/* eslint-disable no-unused-vars */
+
 /**
- * Callback for saving photo capture result. It's called with parameter of photo
- * capture result and filename to be saved to.
- * @typedef {function(cca.views.camera.PhotoResult, string): Promise}
- *     DoSavePhoto
+ * Contains video recording result.
+ * @typedef {{
+ *     resolution: {width: number, height: number},
+ *     duration: number,
+ *     videoSaver: !cca.models.VideoSaver,
+ * }}
+ */
+cca.views.camera.VideoResult;
+
+/**
+ * Contains photo taking result.
+ * @typedef {{
+ *     resolution: {width: number, height: number},
+ *     blob: !Blob,
+ * }}
+ */
+cca.views.camera.PhotoResult;
+
+/* eslint-enable no-unused-vars */
+
+/**
+ * Callback to trigger mode switching.
+ * @callback DoSwitchMode
+ * @return {!Promise}
  */
 
 /**
- * Callback for saving video capture result. It's called with parameter of video
- * capture result and filename to be saved to.
- * @typedef {function(cca.views.camera.VideoResult, string): Promise}
- *     DoSaveVideo
+ * Callback for saving photo capture result.
+ * @callback DoSavePhoto
+ * @param {!cca.views.camera.PhotoResult} Captured photo result.
+ * @param {string} Name of the photo result to be saved as.
+ * @return {!Promise}
  */
 
 /**
- * Object contains video recording result.
- * @param {number} width Resolution width of the video.
- * @param {number} height Resolution height of the video.
- * @param {number} duration Recorded time in minutes.
- * @param {FileEntry} chunkfile File saving recorded chunks.
- * @constructor
+ * Callback for allocating VideoSaver to save video capture result.
+ * @callback CreateVideoSaver
+ * @return {!Promise<!cca.models.VideoSaver>}
  */
-cca.views.camera.VideoResult = function(width, height, duration, chunkfile) {
-  /**
-   * @type {[number, number]} Resolution of the video.
-   */
-  this.resolution = [width, height];
-
-  /**
-   * @type {number}
-   */
-  this.duration = duration;
-
-  /**
-   * @type {FileEntry}
-   */
-  this.chunkfile = chunkfile;
-
-  // End of properties, seal the object.
-  Object.seal(this);
-};
 
 /**
- * Object contains photo taking result.
- * @param {number} width Resolution width of the photo.
- * @param {number} height Resolution height of the photo.
- * @param {?Blob} blob Blob saving photo result.
- * @constructor
+ * Callback for saving video capture result.
+ * @callback DoSaveVideo
+ * @param {!cca.views.camera.VideoResult} Captured video result.
+ * @param {string} Name of the video result to be saved as.
+ * @return {!Promise}
  */
-cca.views.camera.PhotoResult = function(width, height, blob) {
-  /**
-   * @type {[number, number]} Resolution of the photo.
-   */
-  this.resolution = [width, height];
-
-  /**
-   * @type {?Blob}
-   */
-  this.blob = blob;
-
-  // End of properties, seal the object.
-  Object.seal(this);
-};
 
 /**
  * Mode controller managing capture sequence of different camera mode.
  * @param {cca.device.PhotoResolPreferrer} photoResolPreferrer
  * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
- * @param {function()} doSwitchMode Callback to trigger mode switching.
- * @param {DoSavePhoto} doSavePhoto
- * @param {DoSaveVideo} doSaveVideo
+ * @param {!DoSwitchMode} doSwitchMode
+ * @param {!DoSavePhoto} doSavePhoto
+ * @param {!CreateVideoSaver} createVideoSaver
+ * @param {!DoSaveVideo} doSaveVideo
  * @constructor
  */
 cca.views.camera.Modes = function(
     photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
-    doSaveVideo) {
+    createVideoSaver, doSaveVideo) {
   /**
-   * @type {function()}
+   * @type {!DoSwitchMode}
    * @private
    */
   this.doSwitchMode_ = doSwitchMode;
@@ -133,12 +121,13 @@ cca.views.camera.Modes = function(
    */
   this.allModes_ = {
     'video-mode': {
-      captureFactory: () =>
-          new cca.views.camera.Video(this.stream_, doSaveVideo),
+      captureFactory: () => new cca.views.camera.Video(
+          this.stream_, createVideoSaver, doSaveVideo),
       isSupported: async () => true,
       resolutionConfig: videoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, true),
       nextMode: 'photo-mode',
+      captureIntent: cros.mojom.CaptureIntent.VIDEO_RECORD,
     },
     'photo-mode': {
       captureFactory: () => new cca.views.camera.Photo(
@@ -147,6 +136,7 @@ cca.views.camera.Modes = function(
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'square-mode',
+      captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
     },
     'square-mode': {
       captureFactory: () => new cca.views.camera.Square(
@@ -155,28 +145,23 @@ cca.views.camera.Modes = function(
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'portrait-mode',
+      captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
     },
     'portrait-mode': {
       captureFactory: () => new cca.views.camera.Portrait(
           this.stream_, doSavePhoto, this.captureResolution_),
       isSupported: async (stream) => {
-        try {
-          const imageCapture =
-              new cca.mojo.ImageCapture(stream.getVideoTracks()[0]);
-          const capabilities = await imageCapture.getPhotoCapabilities();
-          return capabilities.supportedEffects &&
-              capabilities.supportedEffects.includes(
-                  cros.mojom.Effect.PORTRAIT_MODE);
-        } catch (e) {
-          // The mode is considered unsupported for given stream. This includes
-          // the case where underlying camera HAL is V1 causing mojo connection
-          // unable to work.
+        const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+        if (!deviceOperator) {
           return false;
         }
+        const deviceId = stream.getVideoTracks()[0].getSettings().deviceId;
+        return await deviceOperator.isPortraitModeSupported(deviceId);
       },
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'photo-mode',
+      captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
     },
   };
 
@@ -196,6 +181,10 @@ cca.views.camera.Modes = function(
         this.doSwitchMode_().then(() => cca.state.set('mode-switching', false));
       }
     });
+  });
+
+  ['expert', 'save-metadata'].forEach((state) => {
+    cca.state.addObserver(state, this.updateSaveMetadata_.bind(this));
   });
 
   // Set default mode when app started.
@@ -309,6 +298,15 @@ cca.views.camera.Modes.prototype.getResolutionCandidatesV1 = function(
 };
 
 /**
+ * Gets capture intent for the given mode.
+ * @param {string} mode
+ * @return {cros.mojom.CaptureIntent} Capture intent for the given mode.
+ */
+cca.views.camera.Modes.prototype.getCaptureIntent = function(mode) {
+  return this.allModes_[mode].captureIntent;
+};
+
+/**
  * Gets supported modes for video device of the given stream.
  * @param {MediaStream} stream Stream of the video device.
  * @return {Array<string>} Names of all supported mode for the video device.
@@ -332,8 +330,8 @@ cca.views.camera.Modes.prototype.updateModeSelectionUI = function(
     supportedModes) {
   document.querySelectorAll('.mode-item').forEach((element) => {
     const radio = element.querySelector('input[type=radio]');
-    element.style.display =
-        supportedModes.includes(radio.dataset.mode) ? '' : 'none';
+    element.classList.toggle(
+        'hide', !supportedModes.includes(radio.dataset.mode));
   });
 };
 
@@ -358,6 +356,42 @@ cca.views.camera.Modes.prototype.updateMode =
   if (deviceId && this.captureResolution_) {
     this.allModes_[mode].resolutionConfig.updateValues(
         deviceId, stream, ...this.captureResolution_);
+  }
+  await this.updateSaveMetadata_();
+};
+
+/**
+ * Checks whether to save image metadata or not.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Modes.prototype.updateSaveMetadata_ = async function() {
+  if (cca.state.get('expert') && cca.state.get('save-metadata')) {
+    await this.enableSaveMetadata_();
+  } else {
+    await this.disableSaveMetadata_();
+  }
+};
+
+/**
+ * Enables save metadata of subsequent photos in the current mode.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Modes.prototype.enableSaveMetadata_ = async function() {
+  if (this.current !== null) {
+    await this.current.addMetadataObserver();
+  }
+};
+
+/**
+ * Disables save metadata of subsequent photos in the current mode.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Modes.prototype.disableSaveMetadata_ = async function() {
+  if (this.current !== null) {
+    await this.current.removeMetadataObserver();
   }
 };
 
@@ -414,6 +448,18 @@ cca.views.camera.Mode.prototype.stopCapture = async function() {
 };
 
 /**
+ * Adds an observer to save image metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Mode.prototype.addMetadataObserver = async function() {};
+
+/**
+ * Remove the observer that saves metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Mode.prototype.removeMetadataObserver = async function() {};
+
+/**
  * Initiates video/photo capture operation under this mode.
  * @async
  * @protected
@@ -429,16 +475,22 @@ cca.views.camera.Mode.prototype.stop_ = function() {};
 /**
  * Video mode capture controller.
  * @param {MediaStream} stream
- * @param {DoSaveVideo} doSaveVideo
+ * @param {!CreateVideoSaver} createVideoSaver
+ * @param {!DoSaveVideo} doSaveVideo
  * @constructor
  */
-cca.views.camera.Video = function(stream, doSaveVideo) {
+cca.views.camera.Video = function(stream, createVideoSaver, doSaveVideo) {
   cca.views.camera.Mode.call(this, stream, null);
 
   /**
-   * Callback for saving video.
-   * @type {DoSaveVideo} doSaveVideo
-   * @protected
+   * @type {!CreateVideoSaver}
+   * @private
+   */
+  this.createVideoSaver_ = createVideoSaver;
+
+  /**
+   * @type {!DoSaveVideo}
+   * @private
    */
   this.doSaveVideo_ = doSaveVideo;
 
@@ -458,7 +510,7 @@ cca.views.camera.Video = function(stream, doSaveVideo) {
 
   /**
    * Record-time for the elapsed recording time.
-   * @type {cca.views.camera.RecordTime}
+   * @type {!cca.views.camera.RecordTime}
    * @private
    */
   this.recordTime_ = new cca.views.camera.RecordTime();
@@ -498,7 +550,7 @@ cca.views.camera.Video.prototype.start_ = async function() {
 
   this.recordTime_.start();
   try {
-    var chunkfile = await this.createChunkfile_();
+    var videoSaver = await this.captureVideo_();
   } catch (e) {
     cca.toast.show('error_msg_empty_recording');
     throw e;
@@ -509,7 +561,7 @@ cca.views.camera.Video.prototype.start_ = async function() {
 
   const {width, height} = this.stream_.getVideoTracks()[0].getSettings();
   await this.doSaveVideo_(
-      new cca.views.camera.VideoResult(width, height, duration, chunkfile),
+      {resolution: {width, height}, duration, videoSaver},
       (new cca.models.Filenamer()).newVideoName());
 };
 
@@ -536,47 +588,31 @@ cca.views.camera.Video.VIDEO_MIMETYPE = 'video/x-matroska;codecs=avc1';
 /**
  * Starts recording and waits for stop recording event triggered by stop
  * shutter.
- * @return {FileEntry} File saving recorded chunks.
- * @async
+ * @return {!Promise<!cca.models.VideoSaver>} Saves recorded video.
  * @private
  */
-cca.views.camera.Video.prototype.createChunkfile_ = async function() {
-  const chunkfile = await cca.models.FileSystem.createTempVideoFile();
-  const writer = await new Promise(
-      (resolve, reject) => chunkfile.createWriter(resolve, reject));
+cca.views.camera.Video.prototype.captureVideo_ = async function() {
+  const saver = await this.createVideoSaver_();
 
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     let noChunk = true;
-    let prevWrite = Promise.resolve();
 
     var ondataavailable = (event) => {
       if (event.data && event.data.size > 0) {
         noChunk = false;
-        prevWrite = (async () => {
-          await prevWrite;
-          await new Promise((resolve) => {
-            writer.onwriteend = resolve;
-            writer.write(event.data);
-          });
-        })();
+        saver.write(event.data);
       }
     };
     var onstop = (event) => {
       this.mediaRecorder_.removeEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.removeEventListener('stop', onstop);
 
-      prevWrite.then(() => {
-        if (noChunk) {
-          reject(new Error('Video blob error.'));
-        } else {
-          resolve(chunkfile);
-        }
-      });
-
-      prevWrite.catch(
-          (e) => {
-              // TODO(yuli): Handle insufficient storage.
-          });
+      if (noChunk) {
+        reject(new Error('Video blob error.'));
+      } else {
+        // TODO(yuli): Handle insufficient storage.
+        resolve(saver);
+      }
     };
     this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
     this.mediaRecorder_.addEventListener('stop', onstop);
@@ -587,7 +623,7 @@ cca.views.camera.Video.prototype.createChunkfile_ = async function() {
 /**
  * Photo mode capture controller.
  * @param {MediaStream} stream
- * @param {DoSavePhoto} doSavePhoto
+ * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
  * @constructor
  */
@@ -596,7 +632,7 @@ cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
 
   /**
    * Callback for saving picture.
-   * @type {DoSavePhoto}
+   * @type {!DoSavePhoto}
    * @protected
    */
   this.doSavePhoto_ = doSavePhoto;
@@ -607,6 +643,20 @@ cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
    * @private
    */
   this.imageCapture_ = null;
+
+  /**
+   * The observer id for saving metadata.
+   * @type {?number}
+   * @private
+   */
+  this.metadataObserverId_ = null;
+
+  /**
+   * Metadata names ready to be saved.
+   * @type {!Array<string>}
+   * @private
+   */
+  this.metadataNames_ = [];
 };
 
 cca.views.camera.Photo.prototype = {
@@ -617,6 +667,7 @@ cca.views.camera.Photo.prototype = {
  * @override
  */
 cca.views.camera.Photo.prototype.start_ = async function() {
+  cca.sound.play('#sound-shutter');
   if (this.imageCapture_ == null) {
     try {
       this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
@@ -626,20 +677,25 @@ cca.views.camera.Photo.prototype.start_ = async function() {
     }
   }
 
+  const imageName = (new cca.models.Filenamer()).newImageName();
+  if (this.metadataObserverId_ !== null) {
+    this.metadataNames_.push(cca.models.Filenamer.getMetadataName(imageName));
+  }
+
   try {
     var result = await this.createPhotoResult_();
   } catch (e) {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
-  cca.sound.play('#sound-shutter');
-  await this.doSavePhoto_(result, (new cca.models.Filenamer()).newImageName());
+
+  await this.doSavePhoto_(result, imageName);
 };
 
 /**
  * Takes a photo and returns capture result.
  * @async
- * @return {cca.views.camera.PhotoResult} Image capture result.
+ * @return {!cca.views.camera.PhotoResult} Image capture result.
  * @private
  */
 cca.views.camera.Photo.prototype.createPhotoResult_ = async function() {
@@ -656,14 +712,85 @@ cca.views.camera.Photo.prototype.createPhotoResult_ = async function() {
     };
   }
   const blob = await this.imageCapture_.takePhoto(photoSettings);
-  const image = await cca.util.blobToImage(blob);
-  return new cca.views.camera.PhotoResult(image.width, image.height, blob);
+  const {width, height} = await cca.util.blobToImage(blob);
+  return {resolution: {width, height}, blob};
+};
+
+/**
+ * Adds an observer to save metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Photo.prototype.addMetadataObserver = async function() {
+  if (!this.stream_) {
+    return;
+  }
+
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+  if (!deviceOperator) {
+    return;
+  }
+
+  const cameraMetadataTagInverseLookup = {};
+  Object.keys(cros.mojom.CameraMetadataTag).entries((key, value) => {
+    if (key === 'MIN_VALUE' || key === 'MAX_VALUE') {
+      return;
+    }
+    cameraMetadataTagInverseLookup[value] = key;
+  });
+
+  const callback = (metadata) => {
+    const parsedMetadata = {};
+    for (const entry of metadata.entries) {
+      const key = cameraMetadataTagInverseLookup[entry.tag];
+      if (key === undefined) {
+        // TODO(kaihsien): Add support for vendor tags.
+        continue;
+      }
+
+      const val = cca.mojo.parseMetadataData(entry);
+      parsedMetadata[key] = val;
+    }
+
+    cca.models.FileSystem.saveBlob(
+        new Blob(
+            [JSON.stringify(parsedMetadata, null, 2)],
+            {type: 'application/json'}),
+        this.metadataNames_.shift());
+  };
+
+  const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+  this.metadataObserverId_ = await deviceOperator.addMetadataObserver(
+      deviceId, callback, cros.mojom.StreamType.JPEG_OUTPUT);
+};
+
+/**
+ * Removes the observer that saves metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Photo.prototype.removeMetadataObserver = async function() {
+  if (!this.stream_ || this.metadataObserverId_ === null) {
+    return;
+  }
+
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+  if (!deviceOperator) {
+    return;
+  }
+
+  const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+  const isSuccess = await deviceOperator.removeMetadataObserver(
+      deviceId, this.metadataObserverId_);
+  if (!isSuccess) {
+    console.error(`Failed to remove metadata observer with id: ${
+        this.metadataObserverId_}`);
+  }
+  this.metadataObserverId_ = null;
 };
 
 /**
  * Square mode capture controller.
  * @param {MediaStream} stream
- * @param {DoSavePhoto} doSavePhoto
+ * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
  * @constructor
  */
@@ -672,7 +799,7 @@ cca.views.camera.Square = function(stream, doSavePhoto, captureResolution) {
 
   /**
    * Photo saving callback from parent.
-   * @type {DoSavePhoto}
+   * @type {!DoSavePhoto}
    * @private
    */
   this.doAscentSave_ = this.doSavePhoto_;
@@ -681,9 +808,12 @@ cca.views.camera.Square = function(stream, doSavePhoto, captureResolution) {
   Object.seal(this);
 
   this.doSavePhoto_ = async (result, ...args) => {
-    if (result.blob) {
-      result.blob = await this.cropSquare(result.blob);
-    }
+    // Since the image blob after square cut will lose its EXIF including
+    // orientation information. Corrects the orientation before the square cut.
+    result.blob = await new Promise(
+        (resolve, reject) =>
+            cca.util.orientPhoto(result.blob, resolve, reject));
+    result.blob = await this.cropSquare(result.blob);
     await this.doAscentSave_(result, ...args);
   };
 };
@@ -694,8 +824,8 @@ cca.views.camera.Square.prototype = {
 
 /**
  * Crops out maximum possible centered square from the image blob.
- * @param {Blob} blob
- * @return {Blob} Promise with result cropped square image.
+ * @param {!Blob} blob
+ * @return {!Blob} Promise with result cropped square image.
  * @async
  */
 cca.views.camera.Square.prototype.cropSquare = async function(blob) {
@@ -718,7 +848,7 @@ cca.views.camera.Square.prototype.cropSquare = async function(blob) {
 /**
  * Portrait mode capture controller.
  * @param {MediaStream} stream
- * @param {DoSavePhoto} doSavePhoto
+ * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
  * @constructor
  */
@@ -744,6 +874,7 @@ cca.views.camera.Portrait.prototype = {
  * @override
  */
 cca.views.camera.Portrait.prototype.start_ = async function() {
+  cca.sound.play('#sound-shutter');
   if (this.crosImageCapture_ == null) {
     try {
       this.crosImageCapture_ =
@@ -765,6 +896,17 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
       imageHeight: caps.imageHeight.max,
     };
   }
+
+  const filenamer = new cca.models.Filenamer();
+  const refImageName = filenamer.newBurstName(false);
+  const portraitImageName = filenamer.newBurstName(true);
+
+  if (this.metadataObserverId_ !== null) {
+    [refImageName, portraitImageName].forEach((imageName) => {
+      this.metadataNames_.push(cca.models.Filenamer.getMetadataName(imageName));
+    });
+  }
+
   try {
     var [reference, portrait] = this.crosImageCapture_.takePhoto(
         photoSettings, [cros.mojom.Effect.PORTRAIT_MODE]);
@@ -772,9 +914,11 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
-  let filenamer = new cca.models.Filenamer();
-  let playSound = false;
-  const [refSave, portraitSave] = [reference, portrait].map(async (p) => {
+
+  const [refSave, portraitSave] = [
+    [reference, refImageName],
+    [portrait, portraitImageName],
+  ].map(async ([p, imageName]) => {
     const isPortrait = Object.is(p, portrait);
     try {
       var blob = await p;
@@ -784,14 +928,8 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
                        'error_msg_take_photo_failed');
       throw e;
     }
-    if (!playSound) {
-      playSound = true;
-      cca.sound.play('#sound-shutter');
-    }
-    const image = await cca.util.blobToImage(blob);
-    await this.doSavePhoto_(
-        new cca.views.camera.PhotoResult(image.width, image.height, blob),
-        filenamer.newBurstName(!isPortrait));
+    const {width, height} = await cca.util.blobToImage(blob);
+    await this.doSavePhoto_({resolution: {width, height}, blob}, imageName);
   });
   try {
     await portraitSave;

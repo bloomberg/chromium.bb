@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "constants/form_fields.h"
 #include "constants/stream_dict_common.h"
-#include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -19,11 +18,6 @@
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fpdfdoc/cpdf_metadata.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
-#include "public/fpdf_ext.h"
-
-#ifdef PDF_ENABLE_XFA
-#include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
-#endif
 
 namespace {
 
@@ -32,18 +26,14 @@ constexpr char kQuadPoints[] = "QuadPoints";
 // 0 bit: FPDF_POLICY_MACHINETIME_ACCESS
 uint32_t g_sandbox_policy = 0xFFFFFFFF;
 
-#if !defined(OS_WIN)
-int g_last_error = 0;
-#endif
+UNSUPPORT_INFO* g_unsupport_info = nullptr;
 
 bool RaiseUnsupportedError(int nError) {
-  auto* pAdapter = CPDF_ModuleMgr::Get()->GetUnsupportInfoAdapter();
-  if (!pAdapter)
+  if (!g_unsupport_info)
     return false;
 
-  UNSUPPORT_INFO* info = static_cast<UNSUPPORT_INFO*>(pAdapter->info());
-  if (info && info->FSDK_UnSupport_Handler)
-    info->FSDK_UnSupport_Handler(info, nError);
+  if (g_unsupport_info->FSDK_UnSupport_Handler)
+    g_unsupport_info->FSDK_UnSupport_Handler(g_unsupport_info, nError);
   return true;
 }
 
@@ -296,7 +286,7 @@ unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
                                                /*decode=*/true);
 }
 
-void FSDK_SetSandBoxPolicy(FPDF_DWORD policy, FPDF_BOOL enable) {
+void SetPDFSandboxPolicy(FPDF_DWORD policy, FPDF_BOOL enable) {
   switch (policy) {
     case FPDF_POLICY_MACHINETIME_ACCESS: {
       if (enable)
@@ -309,13 +299,21 @@ void FSDK_SetSandBoxPolicy(FPDF_DWORD policy, FPDF_BOOL enable) {
   }
 }
 
-FPDF_BOOL FSDK_IsSandBoxPolicyEnabled(FPDF_DWORD policy) {
+FPDF_BOOL IsPDFSandboxPolicyEnabled(FPDF_DWORD policy) {
   switch (policy) {
     case FPDF_POLICY_MACHINETIME_ACCESS:
       return !!(g_sandbox_policy & 0x01);
     default:
       return false;
   }
+}
+
+void SetPDFUnsupportInfo(UNSUPPORT_INFO* unsp_info) {
+  g_unsupport_info = unsp_info;
+}
+
+UNSUPPORT_INFO* GetPDFUnssuportInto() {
+  return g_unsupport_info;
 }
 
 void ReportUnsupportedFeatures(CPDF_Document* pDoc) {
@@ -398,16 +396,6 @@ void CheckForUnsupportedAnnot(const CPDF_Annot* pAnnot) {
   }
 }
 
-#if !defined(OS_WIN)
-void SetLastError(int err) {
-  g_last_error = err;
-}
-
-int GetLastError() {
-  return g_last_error;
-}
-#endif
-
 void ProcessParseError(CPDF_Parser::Error err) {
   uint32_t err_code = FPDF_ERR_SUCCESS;
   // Translate FPDFAPI error code to FPDFVIEW error code
@@ -428,5 +416,5 @@ void ProcessParseError(CPDF_Parser::Error err) {
       err_code = FPDF_ERR_SECURITY;
       break;
   }
-  SetLastError(err_code);
+  FXSYS_SetLastError(err_code);
 }

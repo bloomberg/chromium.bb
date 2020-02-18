@@ -23,9 +23,9 @@ namespace openscreen {
 //
 // Further details about how these macros are used can be found in
 // docs/trace_logging.md.
-// TODO(rwkeane): Add option to compile these macros out entirely.
 // TODO(rwkeane): Add support for user-provided properties.
 
+#ifndef TRACE_FORCE_DISABLE
 #define TRACE_SET_RESULT(result)                                        \
   do {                                                                  \
     if (TRACE_IS_ENABLED(TraceCategory::Value::Any)) {                  \
@@ -60,6 +60,17 @@ namespace openscreen {
   ? openscreen::platform::internal::TraceBase::TraceAsyncEnd( \
         __LINE__, __FILE__, id, result)                       \
   : false
+
+#else  // TRACE_FORCE_DISABLE defined
+#define TRACE_SET_RESULT(result)
+#define TRACE_SET_HIERARCHY(ids)
+#define TRACE_HIERARCHY TraceIdHierarchy::Empty()
+#define TRACE_CURRENT_ID kEmptyTraceId
+#define TRACE_ROOT_ID kEmptyTraceId
+#define TRACE_SCOPED(category, name, ...)
+#define TRACE_ASYNC_START(category, name, ...)
+#define TRACE_ASYNC_END(category, id, result) false
+#endif  // TRACE_FORCE_DISABLE
 
 }  // namespace openscreen
 

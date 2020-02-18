@@ -22,6 +22,8 @@
 #include "Pipeline/ComputeProgram.hpp"
 #include "Pipeline/SpirvShader.hpp"
 
+#include "Yarn/Trace.hpp"
+
 #include "spirv-tools/optimizer.hpp"
 
 #include <iostream>
@@ -163,17 +165,16 @@ std::vector<uint32_t> preprocessSpirv(
 	spvtools::Optimizer opt{SPV_ENV_VULKAN_1_1};
 
 	opt.SetMessageConsumer([](spv_message_level_t level, const char*, const spv_position_t& p, const char* m) {
-		const char* category = "";
 		switch (level)
 		{
-		case SPV_MSG_FATAL:          category = "FATAL";          break;
-		case SPV_MSG_INTERNAL_ERROR: category = "INTERNAL_ERROR"; break;
-		case SPV_MSG_ERROR:          category = "ERROR";          break;
-		case SPV_MSG_WARNING:        category = "WARNING";        break;
-		case SPV_MSG_INFO:           category = "INFO";           break;
-		case SPV_MSG_DEBUG:          category = "DEBUG";          break;
+		case SPV_MSG_FATAL:          vk::warn("SPIR-V FATAL: %d:%d %s\n", int(p.line), int(p.column), m);
+		case SPV_MSG_INTERNAL_ERROR: vk::warn("SPIR-V INTERNAL_ERROR: %d:%d %s\n", int(p.line), int(p.column), m);
+		case SPV_MSG_ERROR:          vk::warn("SPIR-V ERROR: %d:%d %s\n", int(p.line), int(p.column), m);
+		case SPV_MSG_WARNING:        vk::warn("SPIR-V WARNING: %d:%d %s\n", int(p.line), int(p.column), m);
+		case SPV_MSG_INFO:           vk::trace("SPIR-V INFO: %d:%d %s\n", int(p.line), int(p.column), m);
+		case SPV_MSG_DEBUG:          vk::trace("SPIR-V DEBUG: %d:%d %s\n", int(p.line), int(p.column), m);
+		default:                     vk::trace("SPIR-V MESSAGE: %d:%d %s\n", int(p.line), int(p.column), m);
 		}
-		vk::trace("%s: %d:%d %s", category, int(p.line), int(p.column), m);
 	});
 
 	// If the pipeline uses specialization, apply the specializations before freezing
@@ -258,6 +259,8 @@ std::shared_ptr<sw::SpirvShader> createShader(const vk::PipelineCache::SpirvShad
 
 std::shared_ptr<sw::ComputeProgram> createProgram(const vk::PipelineCache::ComputeProgramKey& key)
 {
+	YARN_SCOPED_EVENT("createProgram");
+
 	vk::DescriptorSet::Bindings descriptorSets;  // FIXME(b/129523279): Delay code generation until invoke time.
 	// TODO(b/119409619): use allocator.
 	auto program = std::make_shared<sw::ComputeProgram>(key.getShader(), key.getLayout(), descriptorSets);
@@ -379,8 +382,7 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 
 	const VkPipelineRasterizationStateCreateInfo* rasterizationState = pCreateInfo->pRasterizationState;
 	if((rasterizationState->flags != 0) ||
-	   (rasterizationState->depthClampEnable != VK_FALSE) ||
-	   (rasterizationState->polygonMode != VK_POLYGON_MODE_FILL))
+	   (rasterizationState->depthClampEnable != VK_FALSE))
 	{
 		UNIMPLEMENTED("pCreateInfo->pRasterizationState settings");
 	}
@@ -388,13 +390,15 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 	context.rasterizerDiscard = (rasterizationState->rasterizerDiscardEnable == VK_TRUE);
 	context.cullMode = rasterizationState->cullMode;
 	context.frontFace = rasterizationState->frontFace;
+	context.polygonMode = rasterizationState->polygonMode;
 	context.depthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasConstantFactor : 0.0f;
 	context.slopeDepthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasSlopeFactor : 0.0f;
 
 	const VkPipelineMultisampleStateCreateInfo* multisampleState = pCreateInfo->pMultisampleState;
 	if(multisampleState)
 	{
-		switch (multisampleState->rasterizationSamples) {
+		switch (multisampleState->rasterizationSamples)
+		{
 		case VK_SAMPLE_COUNT_1_BIT:
 			context.sampleCount = 1;
 			break;
@@ -406,7 +410,9 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 		}
 
 		if (multisampleState->pSampleMask)
+		{
 			context.sampleMask = multisampleState->pSampleMask[0];
+		}
 
 		context.alphaToCoverage = (multisampleState->alphaToCoverageEnable == VK_TRUE);
 
@@ -465,20 +471,14 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 		{
 			const VkPipelineColorBlendAttachmentState& attachment = colorBlendState->pAttachments[i];
 			context.colorWriteMask[i] = attachment.colorWriteMask;
-		}
 
-		if(colorBlendState->attachmentCount > 0)
-		{
-			const VkPipelineColorBlendAttachmentState& attachment = colorBlendState->pAttachments[0];
-			context.alphaBlendEnable = (attachment.blendEnable == VK_TRUE);
-			context.blendOperationStateAlpha = attachment.alphaBlendOp;
-			context.blendOperationState = attachment.colorBlendOp;
-			context.destBlendFactorStateAlpha = attachment.dstAlphaBlendFactor;
-			context.destBlendFactorState = attachment.dstColorBlendFactor;
-			context.sourceBlendFactorStateAlpha = attachment.srcAlphaBlendFactor;
-			context.sourceBlendFactorState = attachment.srcColorBlendFactor;
+			context.setBlendState(i, { (attachment.blendEnable == VK_TRUE),
+				attachment.srcColorBlendFactor, attachment.dstColorBlendFactor, attachment.colorBlendOp,
+				attachment.srcAlphaBlendFactor, attachment.dstAlphaBlendFactor, attachment.alphaBlendOp });
 		}
 	}
+
+	context.multiSampleMask = context.sampleMask & ((unsigned) 0xFFFFFFFF >> (32 - context.sampleCount));
 }
 
 void GraphicsPipeline::destroyPipeline(const VkAllocationCallbacks* pAllocator)

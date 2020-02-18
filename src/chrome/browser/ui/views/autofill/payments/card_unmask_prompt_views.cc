@@ -24,7 +24,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -145,11 +144,10 @@ void CardUnmaskPromptViews::GotVerificationResult(
       // Replace the throbber with a warning icon. Since this is a permanent
       // error we do not intend to return to a previous state.
       auto error_icon = std::make_unique<views::ImageView>();
-      // The icon doesn't look good with the dark mode warning text color,
-      // so use the same color in light mode and dark mode.
-      // See https://crbug.com/924507
-      error_icon->SetImage(
-          gfx::CreateVectorIcon(kBrowserToolsErrorIcon, gfx::kGoogleRed700));
+      error_icon->SetImage(gfx::CreateVectorIcon(
+          kBrowserToolsErrorIcon,
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityHigh)));
 
       layout->StartRow(1.0, 0);
       layout->AddView(std::move(error_icon));
@@ -233,7 +231,7 @@ std::unique_ptr<views::View> CardUnmaskPromptViews::CreateFootnoteView() {
   storage_checkbox->SetChecked(controller_->GetStoreLocallyStartState());
   storage_checkbox->SetEnabledTextColors(views::style::GetColor(
       *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      STYLE_SECONDARY));
+      views::style::STYLE_SECONDARY));
   storage_checkbox_ = storage_checkbox.get();
 
   return storage_checkbox;
@@ -302,7 +300,7 @@ bool CardUnmaskPromptViews::IsDialogButtonEnabled(
   DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
 
   return cvc_input_->GetEnabled() &&
-         controller_->InputCvcIsValid(cvc_input_->text()) &&
+         controller_->InputCvcIsValid(cvc_input_->GetText()) &&
          ExpirationDateIsValid();
 }
 
@@ -322,15 +320,16 @@ bool CardUnmaskPromptViews::Accept() {
   if (!controller_)
     return true;
 
-  controller_->OnUnmaskResponse(
-      cvc_input_->text(),
+  controller_->OnUnmaskPromptAccepted(
+      cvc_input_->GetText(),
       month_input_->GetVisible()
           ? month_input_->GetTextForRow(month_input_->GetSelectedIndex())
           : base::string16(),
       year_input_->GetVisible()
           ? year_input_->GetTextForRow(year_input_->GetSelectedIndex())
           : base::string16(),
-      storage_checkbox_ ? storage_checkbox_->GetChecked() : false);
+      storage_checkbox_ ? storage_checkbox_->GetChecked() : false,
+      /*enable_fido_auth=*/false);
   return false;
 }
 
@@ -388,7 +387,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       std::make_unique<views::Label>(controller_->GetInstructionsMessage());
   instructions->SetEnabledColor(views::style::GetColor(
       *instructions.get(), ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-      STYLE_SECONDARY));
+      views::style::STYLE_SECONDARY));
   instructions->SetMultiLine(true);
   instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   instructions_ = controls_container_->AddChildView(std::move(instructions));

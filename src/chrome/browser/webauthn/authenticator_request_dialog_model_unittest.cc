@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
@@ -96,8 +96,8 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
   ~AuthenticatorRequestDialogModelTest() override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::ListValue test_paired_device_list_;
 
  private:
@@ -108,6 +108,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
   enum class TransportAvailabilityParam {
     kHasTouchIdCredential,
     kHasWinNativeAuthenticator,
+    kHasCableExtension,
   };
   const struct {
     RequestType request_type;
@@ -145,7 +146,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
 
       // The last used transport is available (and caBLE is not).
@@ -225,13 +226,13 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kGetAssertion,
        kAllTransports,
        base::nullopt,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
         AuthenticatorTransport::kUsbHumanInterfaceDevice},
        AuthenticatorTransport::kUsbHumanInterfaceDevice,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
 
       // caBLE should not enjoy this same high priority for MakeCredential
@@ -277,7 +278,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
@@ -294,7 +295,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
-       {TransportAvailabilityParam::kHasWinNativeAuthenticator},
+       {TransportAvailabilityParam::kHasWinNativeAuthenticator,
+        TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
   };
 
@@ -316,6 +318,12 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
     }
 
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
+
+    if (base::Contains(test_case.transport_params,
+                       TransportAvailabilityParam::kHasCableExtension)) {
+      model.set_cable_transport_info(true, base::nullopt);
+    }
+
     model.StartFlow(std::move(transports_info), test_case.last_used_transport,
                     &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
@@ -490,6 +498,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterAlreadyPowered) {
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.set_cable_transport_info(true, base::nullopt);
     model.StartFlow(std::move(transports_info), base::nullopt,
                     &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_final_step, model.current_step());
@@ -519,6 +528,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterNeedToBeManuallyPowered) {
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.AddObserver(&mock_observer);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.set_cable_transport_info(true, base::nullopt);
     model.StartFlow(std::move(transports_info), base::nullopt,
                     &test_paired_device_list_);
 
@@ -559,6 +569,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.set_cable_transport_info(true, base::nullopt);
     model.StartFlow(std::move(transports_info), base::nullopt,
                     &test_paired_device_list_);
 

@@ -36,17 +36,9 @@
 
 using content::WebContents;
 using extensions::ContextMenuMatcher;
+using ContextType = extensions::ExtensionBrowserTest::ContextType;
 using extensions::MenuItem;
 using ui::MenuModel;
-
-namespace {
-
-enum class ContextType {
-  kBackgroundPage,
-  kServiceWorker,
-};
-
-}  // namespace
 
 class ExtensionContextMenuBrowserTest
     : public extensions::ExtensionBrowserTest,
@@ -63,7 +55,7 @@ class ExtensionContextMenuBrowserTest
   }
 
   std::string GetExtensionDirectory(base::StringPiece root) {
-    if (GetParam() == ContextType::kBackgroundPage)
+    if (GetParam() == ContextType::kEventPage)
       return std::string(root);
     DCHECK_EQ(ContextType::kServiceWorker, GetParam());
     return base::StrCat({root, "/service_worker"});
@@ -734,9 +726,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, TargetURLs) {
 #endif
 
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
-  // TODO(crbug.com/939664): Not yet implemented.
-  if (GetParam() == ContextType::kServiceWorker)
-    return;
   ExtensionTestMessageListener created("created item regular", false);
   ExtensionTestMessageListener created_incognito("created item incognito",
                                                  false);
@@ -941,13 +930,13 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, UpdateCheckboxes) {
                                 false);
 }
 
-INSTANTIATE_TEST_SUITE_P(BackgroundPage,
+INSTANTIATE_TEST_SUITE_P(EventPage,
                          ExtensionContextMenuBrowserTest,
-                         ::testing::Values(ContextType::kBackgroundPage));
+                         ::testing::Values(ContextType::kEventPage));
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          ExtensionContextMenuBrowserTest,
                          ::testing::Values(ContextType::kServiceWorker));
 // TODO(crbug.com/939664): Enable this test for service workers?
-INSTANTIATE_TEST_SUITE_P(BackgroundPage,
+INSTANTIATE_TEST_SUITE_P(EventPage,
                          ExtensionContextMenuBrowserLazyTest,
-                         ::testing::Values(ContextType::kBackgroundPage));
+                         ::testing::Values(ContextType::kEventPage));

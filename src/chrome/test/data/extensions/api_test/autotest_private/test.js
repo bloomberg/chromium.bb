@@ -234,21 +234,21 @@ var defaultTests = [
   function setAssistantEnabled() {
     chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 9'));
+            'Assistant not allowed - state: 8'));
   },
   function sendAssistantTextQuery() {
     chrome.autotestPrivate.sendAssistantTextQuery(
         'what time is it?' /* query */,
         1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 9'));
+            'Assistant not allowed - state: 8'));
   },
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 9'));
+            'Assistant not allowed - state: 8'));
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.
@@ -321,6 +321,42 @@ var defaultTests = [
       chrome.test.assertNoLastError();
       chrome.test.succeed();
     });
+  },
+  // This test verifies that autotetPrivate can correctly query installed apps.
+  function getAllInstalledApps() {
+    chrome.autotestPrivate.getAllInstalledApps(chrome.test.callbackPass(
+      apps => {
+        // Limit apps to chromium to filter out default apps.
+        const chromium = apps.find(
+          app => app.appId == 'mgndgikekgjfcpckkfioiadnlibdjbkf');
+        chrome.test.assertTrue(!!chromium);
+        // Only check that name and shortName are set for Chromium because
+        // their values change if chrome_branded is true.
+        chrome.test.assertTrue(!!chromium.name);
+        chrome.test.assertTrue(!!chromium.shortName);
+        chrome.test.assertEq(chromium.additionalSearchTerms, []);
+        chrome.test.assertEq(chromium.readiness, 'Ready');
+        chrome.test.assertEq(chromium.showInLauncher, true);
+        chrome.test.assertEq(chromium.showInSearch, true);
+        chrome.test.assertEq(chromium.type, 'Extension');
+    }));
+  },
+  // This test verifies that only Chromium is available by default.
+  function getShelfItems() {
+    chrome.autotestPrivate.getShelfItems(chrome.test.callbackPass(items => {
+      chrome.test.assertEq(1, items.length);
+      item = items[0];
+      // Only check that appId and title are set because their values change if
+      // chrome_branded is true.
+      chrome.test.assertTrue(!!item.appId);
+      chrome.test.assertTrue(!!item.title);
+      chrome.test.assertEq('', item.launchId);
+      chrome.test.assertEq('BrowserShortcut', item.type);
+      chrome.test.assertEq('Running', item.status);
+      chrome.test.assertTrue(item.showsTooltip);
+      chrome.test.assertFalse(item.pinnedByPolicy);
+      chrome.test.assertFalse(item.hasNotification);
+    }));
   },
   // This test verifies that changing the shelf behavior works as expected.
   function setShelfAutoHideBehavior() {

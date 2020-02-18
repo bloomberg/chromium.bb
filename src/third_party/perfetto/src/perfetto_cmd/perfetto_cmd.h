@@ -28,29 +28,20 @@
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/unix_task_runner.h"
+#include "perfetto/ext/base/uuid.h"
 #include "perfetto/ext/tracing/core/consumer.h"
 #include "perfetto/ext/tracing/ipc/consumer_ipc_client.h"
 #include "src/perfetto_cmd/rate_limiter.h"
 
 #include "src/perfetto_cmd/perfetto_cmd_state.pb.h"
 
-#if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-#include "perfetto/ext/base/android_task_runner.h"
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-
 namespace perfetto {
 
 class PacketWriter;
 
-// Temporary directory for DropBox traces. Note that this is automatically
+// Directory for local state and temporary files. This is automatically
 // created by the system by setting setprop persist.traced.enable=1.
-extern const char* kTempDropBoxTraceDir;
-
-#if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-using PlatformTaskRunner = base::AndroidTaskRunner;
-#else
-using PlatformTaskRunner = base::UnixTaskRunner;
-#endif
+extern const char* kStateDir;
 
 class PerfettoCmd : public Consumer {
  public:
@@ -77,10 +68,24 @@ class PerfettoCmd : public Consumer {
   void OnTimeout();
   bool is_detach() const { return !detach_key_.empty(); }
   bool is_attach() const { return !attach_key_.empty(); }
+
+  // Once we call ReadBuffers we expect one or more calls to OnTraceData
+  // with the last call having |has_more| set to false. However we should
+  // gracefully handle the service failing to ever call OnTraceData or
+  // setting |has_more| incorrectly. To do this we maintain a timeout
+  // which finalizes and exits the client if we don't receive OnTraceData
+  // within OnTraceDataTimeoutMs of when we expected to.
+  void CheckTraceDataTimeout();
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+  static base::ScopedFile OpenDropboxTmpFile();
+  void SaveTraceIntoDropboxAndIncidentOrCrash();
   void SaveOutputToDropboxOrCrash();
   void SaveOutputToIncidentTraceOrCrash();
+#endif
 
-  PlatformTaskRunner task_runner_;
+  base::UnixTaskRunner task_runner_;
+
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
       consumer_endpoint_;
   std::unique_ptr<TraceConfig> trace_config_;
@@ -99,6 +104,10 @@ class PerfettoCmd : public Consumer {
   bool redetach_once_attached_ = false;
   bool query_service_ = false;
   bool query_service_output_raw_ = false;
+
+  // How long we expect to trace for or 0 if the trace is indefinite.
+  uint32_t expected_duration_ms_ = 0;
+  bool trace_data_timeout_armed_ = false;
 };
 
 }  // namespace perfetto

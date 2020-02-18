@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/app.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/crx_file/id_util.h"
 #include "ui/gfx/canvas.h"
@@ -107,8 +107,7 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
     AppListControllerDelegate* list_controller)
     : data_(std::move(data)),
       profile_(profile),
-      list_controller_(list_controller),
-      weak_ptr_factory_(this) {
+      list_controller_(list_controller) {
   SetTitle(base::UTF8ToUTF16(label().value()));
   set_id(kPlayAppPrefix +
          crx_file::id_util::GenerateId(install_intent_uri().value()));

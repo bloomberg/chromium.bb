@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -20,7 +19,7 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void DidCreateAnchor(int selector_count);
 
-  void DidFindMatch();
+  void DidFindMatch(const String text);
   void ResetMatchCount();
 
   void DidFindAmbiguousMatch();
@@ -33,6 +32,8 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void ReportMetrics();
 
+  void Dismissed();
+
   void Trace(blink::Visitor*);
 
  private:
@@ -42,8 +43,8 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
   bool metrics_reported_ = false;
 #endif
 
-  int selector_count_ = 0;
-  int match_count_ = 0;
+  wtf_size_t selector_count_ = 0;
+  Vector<String> matches_;
   bool ambiguous_match_ = false;
   bool scroll_cancelled_ = false;
   base::TimeTicks create_time_;

@@ -10,7 +10,7 @@
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,8 +76,8 @@ class MockCastSessionObserver : public CastSessionTracker::Observer {
 class CastSessionTrackerTest : public testing::Test {
  public:
   CastSessionTrackerTest()
-      : socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI})),
+      : socket_service_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_),
         session_tracker_(&media_sink_service_,
                          &message_handler_,
@@ -106,7 +106,7 @@ class CastSessionTrackerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   cast_channel::MockCastSocketService socket_service_;
   cast_channel::MockCastMessageHandler message_handler_;

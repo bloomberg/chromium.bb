@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
-
 namespace gfx {
 enum class SwapResult;
 struct PresentationFeedback;
@@ -22,6 +20,8 @@ namespace ui {
 // the buffer.
 class WaylandSurfaceGpu {
  public:
+  virtual ~WaylandSurfaceGpu() {}
+
   // Tells the surface the result of the last swap of buffer with the
   // |buffer_id|.
   virtual void OnSubmission(uint32_t buffer_id,

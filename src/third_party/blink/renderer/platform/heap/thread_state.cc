@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
@@ -72,7 +73,6 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
@@ -130,18 +130,10 @@ ThreadState::ThreadState()
     : thread_(CurrentThread()),
       persistent_region_(std::make_unique<PersistentRegion>()),
       weak_persistent_region_(std::make_unique<PersistentRegion>()),
-      start_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
-      end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
-      gc_state_(kNoGCScheduled),
-      gc_phase_(GCPhase::kNone),
-      reason_for_scheduled_gc_(BlinkGC::GCReason::kForcedGCForTesting),
+      start_of_stack_(reinterpret_cast<Address*>(WTF::GetStackStart())),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
-#if defined(LEAK_SANITIZER)
-      disabled_static_persistent_registration_(0),
-#endif
-      reported_memory_to_v8_(0),
       sweeper_scheduler_(base::MakeRefCounted<WorkerPoolTaskRunner>()) {
   DCHECK(CheckThread());
   DCHECK(!**thread_specific_);
@@ -281,10 +273,10 @@ void ThreadState::RunTerminationGC() {
 
 NO_SANITIZE_ADDRESS
 void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
-                                               Address ptr) {
+                                               Address ptr,
+                                               Address* start_of_stack,
+                                               Address* end_of_stack) {
 #if defined(ADDRESS_SANITIZER)
-  Address* start = reinterpret_cast<Address*>(start_of_stack_);
-  Address* end = reinterpret_cast<Address*>(end_of_stack_);
   Address* fake_frame_start = nullptr;
   Address* fake_frame_end = nullptr;
   Address* maybe_fake_frame = reinterpret_cast<Address*>(ptr);
@@ -294,7 +286,8 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
                                    reinterpret_cast<void**>(&fake_frame_end)));
   if (real_frame_for_fake_frame) {
     // This is a fake frame from the asan fake stack.
-    if (real_frame_for_fake_frame > end && start > real_frame_for_fake_frame) {
+    if (real_frame_for_fake_frame > end_of_stack &&
+        start_of_stack > real_frame_for_fake_frame) {
       // The real stack address for the asan fake frame is
       // within the stack range that we need to scan so we need
       // to visit the values in the fake frame.
@@ -302,7 +295,7 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
         heap_->CheckAndMarkPointer(visitor, *p);
     }
   }
-#endif
+#endif  // ADDRESS_SANITIZER
 }
 
 // Stack scanning may overrun the bounds of local objects and/or race with
@@ -310,18 +303,15 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
 NO_SANITIZE_ADDRESS
 NO_SANITIZE_HWADDRESS
 NO_SANITIZE_THREAD
-void ThreadState::VisitStack(MarkingVisitor* visitor) {
+void ThreadState::VisitStack(MarkingVisitor* visitor, Address* end_of_stack) {
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
-
-  Address* start = reinterpret_cast<Address*>(start_of_stack_);
-  Address* end = reinterpret_cast<Address*>(end_of_stack_);
 
   // Ensure that current is aligned by address size otherwise the loop below
   // will read past start address.
   Address* current = reinterpret_cast<Address*>(
-      reinterpret_cast<intptr_t>(end) & ~(sizeof(Address) - 1));
+      reinterpret_cast<intptr_t>(end_of_stack) & ~(sizeof(Address) - 1));
 
-  for (; current < start; ++current) {
+  for (; current < start_of_stack_; ++current) {
     Address ptr = *current;
 #if defined(MEMORY_SANITIZER)
     // |ptr| may be uninitialized by design. Mark it as initialized to keep
@@ -332,7 +322,7 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
     __msan_unpoison(&ptr, sizeof(ptr));
 #endif
     heap_->CheckAndMarkPointer(visitor, ptr);
-    VisitAsanFakeStackForPointer(visitor, ptr);
+    VisitAsanFakeStackForPointer(visitor, ptr, start_of_stack_, end_of_stack);
   }
 }
 
@@ -352,8 +342,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
     ThreadHeapStatsCollector::Scope inner_stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
-    // See ProcessHeap::CrossThreadPersistentMutex().
-    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
     ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
   }
   {
@@ -524,16 +513,6 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 }
 
 void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
-#if defined(ADDRESS_SANITIZER)
-  // In case of running with ASAN we eagerly poison all unmarked objects on
-  // Oilpan garbage collections. Those objects may contain v8 handles which may
-  // be suspect to being removed. Removing requires clearing out the Oilpan
-  // memory. For this reason we need to finish sweeping (which would remove the
-  // handles) before V8 is allowed to continue with its garbage collection.
-  CompleteSweep();
-  return;
-#endif  // ADDRESS_SANITIZER
-
   // Finish Oilpan's complete sweeping before running a V8 major GC.
   // This will let the GC collect more V8 objects.
   if (gc_type == BlinkGC::kV8MajorGC)
@@ -630,6 +609,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   bool sweep_completed = false;
   {
     AtomicPauseScope atomic_pause_scope(this);
+    ScriptForbiddenScope script_forbidden_scope;
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
@@ -645,7 +625,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   }
 
   if (sweep_completed) {
-    PostSweep();
+    NotifySweepDone();
   }
 }
 
@@ -886,13 +866,17 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();
   Heap().ClearArenaAges();
+  // AtomicPauseMarkPrologue is the common entry point for marking. The
+  // requirement is to lock from roots marking to weakness processing which is
+  // why the lock is taken at the end of the prologue.
+  static_cast<MutexBase&>(ProcessHeap::CrossThreadPersistentMutex()).lock();
 }
 
 void ThreadState::AtomicPauseEpilogue() {
   if (!IsSweepingInProgress()) {
     // Sweeping was finished during the atomic pause. Update statistics needs to
     // run outside of the top-most stats scope.
-    UpdateStatisticsAfterSweeping();
+    PostSweep();
   }
 }
 
@@ -926,7 +910,7 @@ void ThreadState::CompleteSweep() {
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
   }
-  PostSweep();
+  NotifySweepDone();
 }
 
 void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
@@ -1018,8 +1002,12 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", event.gc_cycle_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
                       event.incremental_marking_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking.Foreground",
+                      event.foreground_marking_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking.Background",
+                      event.background_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", event.marking_time());
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8);
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingForeground",
                       event.foreground_sweeping_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingBackground",
@@ -1097,51 +1085,33 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
 #undef COUNT_BY_GC_REASON
   }
-
-  static constexpr size_t kSupportedMaxSizeInMB = 4 * 1024;
-  static size_t max_committed_size_in_mb = 0;
-
-  // +1 for rounding up the size to the next MB.
-  size_t size_in_mb =
-      event.allocated_space_in_bytes_before_sweeping / 1024 / 1024 + 1;
-  if (size_in_mb >= kSupportedMaxSizeInMB)
-    size_in_mb = kSupportedMaxSizeInMB - 1;
-  if (size_in_mb > max_committed_size_in_mb) {
-    // Only update the counter for the maximum value.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, commited_size_histogram,
-                        ("BlinkGC.CommittedSize", kSupportedMaxSizeInMB));
-    commited_size_histogram.Count(
-        base::saturated_cast<base::Histogram::Sample>(size_in_mb));
-    max_committed_size_in_mb = size_in_mb;
-  }
 }
 
 }  // namespace
 
-void ThreadState::UpdateStatisticsAfterSweeping() {
-  DCHECK(!IsSweepingInProgress());
-  DCHECK(Heap().stats_collector()->is_started());
-  Heap().stats_collector()->NotifySweepingCompleted();
-  if (IsMainThread())
-    UpdateHistograms(Heap().stats_collector()->previous());
-  // Emit trace counters for all threads.
-  UpdateTraceCounters(*Heap().stats_collector());
+void ThreadState::NotifySweepDone() {
+  DCHECK(CheckThread());
+  SetGCPhase(GCPhase::kNone);
+  if (!in_atomic_pause()) {
+    PostSweep();
+  }
 }
 
 void ThreadState::PostSweep() {
-  DCHECK(CheckThread());
-
-  SetGCPhase(GCPhase::kNone);
+  DCHECK(!in_atomic_pause());
+  DCHECK(!IsSweepingInProgress());
 
   gc_age_++;
 
   for (auto* const observer : observers_)
     observer->OnCompleteSweepDone();
 
-  if (!in_atomic_pause()) {
-    // Immediately update the statistics if running outside of the atomic pause.
-    UpdateStatisticsAfterSweeping();
-  }
+  Heap().stats_collector()->NotifySweepingCompleted();
+
+  if (IsMainThread())
+    UpdateHistograms(Heap().stats_collector()->previous());
+  // Emit trace counters for all threads.
+  UpdateTraceCounters(*Heap().stats_collector());
 }
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
@@ -1153,16 +1123,18 @@ void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
 using PushAllRegistersCallback = void (*)(ThreadState*, intptr_t*);
 extern "C" void PushAllRegisters(ThreadState*, PushAllRegistersCallback);
 
-static void DidPushRegisters(ThreadState* state, intptr_t* stack_end) {
-  state->RecordStackEnd(stack_end);
+// static
+void ThreadState::VisitStackAfterPushingRegisters(ThreadState* state,
+                                                  intptr_t* end_of_stack) {
+  state->VisitStack(static_cast<MarkingVisitor*>(state->CurrentVisitor()),
+                    reinterpret_cast<Address*>(end_of_stack));
 }
 
 void ThreadState::PushRegistersAndVisitStack() {
   DCHECK(CheckThread());
   DCHECK(IsGCForbidden());
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
-  PushAllRegisters(this, DidPushRegisters);
-  VisitStack(static_cast<MarkingVisitor*>(CurrentVisitor()));
+  PushAllRegisters(this, ThreadState::VisitStackAfterPushingRegisters);
 }
 
 void ThreadState::AddObserver(BlinkGCObserver* observer) {
@@ -1190,26 +1162,30 @@ void ThreadState::ReportMemoryToV8() {
   reported_memory_to_v8_ = current_heap_size;
 }
 
-void ThreadState::RegisterStaticPersistentNode(
-    PersistentNode* node,
-    PersistentClearCallback callback) {
-#if defined(LEAK_SANITIZER)
-  if (disabled_static_persistent_registration_)
+void ThreadState::EnterStaticReferenceRegistrationDisabledScope() {
+  static_persistent_registration_disabled_count_++;
+}
+
+void ThreadState::LeaveStaticReferenceRegistrationDisabledScope() {
+  DCHECK(static_persistent_registration_disabled_count_);
+  static_persistent_registration_disabled_count_--;
+}
+
+void ThreadState::RegisterStaticPersistentNode(PersistentNode* node) {
+  if (static_persistent_registration_disabled_count_)
     return;
-#endif
 
   DCHECK(!static_persistents_.Contains(node));
-  static_persistents_.insert(node, callback);
+  static_persistents_.insert(node);
 }
 
 void ThreadState::ReleaseStaticPersistentNodes() {
-  HashMap<PersistentNode*, ThreadState::PersistentClearCallback>
-      static_persistents;
+  HashSet<PersistentNode*> static_persistents;
   static_persistents.swap(static_persistents_);
 
   PersistentRegion* persistent_region = GetPersistentRegion();
-  for (const auto& it : static_persistents)
-    persistent_region->ReleasePersistentNode(it.key, it.value);
+  for (PersistentNode* it : static_persistents)
+    persistent_region->ReleasePersistentNode(it);
 }
 
 void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
@@ -1224,17 +1200,6 @@ void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
     DCHECK(!static_persistents_.Contains(persistent_node));
 }
 
-#if defined(LEAK_SANITIZER)
-void ThreadState::enterStaticReferenceRegistrationDisabledScope() {
-  disabled_static_persistent_registration_++;
-}
-
-void ThreadState::leaveStaticReferenceRegistrationDisabledScope() {
-  DCHECK(disabled_static_persistent_registration_);
-  disabled_static_persistent_registration_--;
-}
-#endif
-
 void ThreadState::InvokePreFinalizers() {
   DCHECK(CheckThread());
   DCHECK(!SweepForbidden());
@@ -1242,9 +1207,8 @@ void ThreadState::InvokePreFinalizers() {
   ThreadHeapStatsCollector::Scope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kInvokePreFinalizers);
   SweepForbiddenScope sweep_forbidden(this);
-  // Pre finalizers may access unmarked objects but are forbidden from
-  // ressurecting them.
-  ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
+  // Pre finalizers are forbidden from allocating objects
+  NoAllocationScope no_allocation_scope(this);
 
   // Call the prefinalizers in the opposite order to their registration.
   //
@@ -1293,12 +1257,16 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
         ThreadHeapStatsCollector::kIncrementalMarkingStartMarking, "reason",
         BlinkGC::ToString(reason));
     AtomicPauseScope atomic_pause_scope(this);
+    ScriptForbiddenScope script_forbidden_scope;
     next_incremental_marking_step_duration_ =
         kDefaultIncrementalMarkingStepDuration;
     previous_incremental_marking_time_left_ = base::TimeDelta::Max();
     MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                       BlinkGC::kIncrementalMarking, reason);
-    MarkPhaseVisitRoots();
+    {
+      MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+      MarkPhaseVisitRoots();
+    }
     EnableIncrementalMarkingBarrier();
     ScheduleIncrementalMarkingStep();
     DCHECK(IsMarkingInProgress());
@@ -1315,6 +1283,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
           << "IncrementalMarking: Step "
           << "Reason: " << BlinkGC::ToString(current_gc_data_.reason);
   AtomicPauseScope atomic_pause_scope(this);
+  ScriptForbiddenScope script_forbidden_scope;
   if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
     Heap().FlushNotFullyConstructedObjects();
   }
@@ -1464,7 +1433,44 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   MarkPhaseEpilogue(marking_type);
   LeaveAtomicPause();
   LeaveGCForbiddenScope();
+  static_cast<MutexBase&>(ProcessHeap::CrossThreadPersistentMutex()).unlock();
 }
+
+namespace {
+
+class ClearReferencesInDeadObjectsVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
+ public:
+  explicit ClearReferencesInDeadObjectsVisitor(ThreadHeap* heap)
+      : heap_(heap) {}
+
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t class_id) final {
+    if (InDeadObject(value))
+      value->Reset();
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    // TODO(mlippautz): Avoid const_cast after changing the API to allow
+    // modificaton of the TracedGlobal handle.
+    if (InDeadObject(&const_cast<v8::TracedGlobal<v8::Value>&>(value)))
+      const_cast<v8::TracedGlobal<v8::Value>&>(value).Reset();
+  }
+
+ private:
+  bool InDeadObject(void* address) {
+    // Filter slots not on the heap.
+    if (!heap_->LookupPageForAddress(reinterpret_cast<Address>(address)))
+      return false;
+
+    return !HeapObjectHeader::FromInnerAddress(address)->IsMarked();
+  }
+
+  ThreadHeap* const heap_;
+};
+
+}  // namespace
 
 void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::MarkingType marking_type,
@@ -1474,6 +1480,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
       ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_,
       "forced", IsForcedGC(current_gc_data_.reason));
   AtomicPauseScope atomic_pause_scope(this);
+  ScriptForbiddenScope script_forbidden_scope;
 
   DCHECK(InAtomicMarkingPause());
   DCHECK(CheckThread());
@@ -1500,6 +1507,15 @@ void ThreadState::AtomicPauseSweepAndCompact(
   // to disallow a GC during the pre-finalizers.
   SetGCPhase(GCPhase::kSweeping);
 
+  if (!IsUnifiedHeapGC() && GetIsolate()) {
+    // Clear any Blink->V8 references in dead objects in case of a stand-alone
+    // garbage collection. This is necessary to avoid calling destructors on the
+    // references.
+    ClearReferencesInDeadObjectsVisitor visitor(&Heap());
+    GetIsolate()->VisitHandlesWithClassIds(&visitor);
+    unified_heap_controller()->IterateTracedGlobalHandles(&visitor);
+  }
+
   // Allocation is allowed during the pre-finalizers and destructors.
   // However, they must not mutate an object graph in a way in which
   // a dead object gets resurrected.
@@ -1511,6 +1527,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kAtomicPauseCompaction);
+    Heap().Compaction()->UpdateBackingStoreCallbacks();
     Heap().Compaction()->FilterNonLiveSlots();
   }
 
@@ -1532,8 +1549,8 @@ void ThreadState::AtomicPauseSweepAndCompact(
   }
 
 #if defined(ADDRESS_SANITIZER)
-  Heap().PoisonAllHeaps();
-#endif
+  PoisonUnmarkedObjects();
+#endif  // ADDRESS_SANITIZER
   DCHECK(IsSweepingInProgress());
   if (sweeping_type == BlinkGC::kEagerSweeping) {
     // Eager sweeping should happen only in testing.
@@ -1544,6 +1561,80 @@ void ThreadState::AtomicPauseSweepAndCompact(
     ScheduleConcurrentAndLazySweep();
   }
 }
+
+#if defined(ADDRESS_SANITIZER)
+namespace {
+
+// Visitor unpoisoning all handles. Unpoisoning is required when dead objects
+// are poisoned until they are later on processed.
+//
+// The raceful operations are:
+// a. Running destructor that clears the handle.
+// b. Running a stand-alone V8 GC (e.g. Scavenger) that clears the handle.
+//
+// Both operations run on the main thread and not concurrent.
+class UnpoisonHandlesVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
+ public:
+  explicit UnpoisonHandlesVisitor(ThreadHeap* heap) : heap_(heap) {}
+
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t class_id) final {
+    VisitSlot(value, sizeof(v8::Persistent<v8::Value>));
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    // TODO(mlippautz): Avoid const_cast after changing the API to allow
+    // modificaton of the TracedGlobal handle.
+    VisitSlot(&const_cast<v8::TracedGlobal<v8::Value>&>(value),
+              sizeof(v8::TracedGlobal<v8::Value>));
+  }
+
+ private:
+  void VisitSlot(void* address, size_t size) {
+    // Filter slots not on the heap.
+    if (!heap_->LookupPageForAddress(reinterpret_cast<Address>(address)))
+      return;
+
+    HeapObjectHeader* header = HeapObjectHeader::FromInnerAddress(address);
+    if (!header->IsMarked()) {
+      DCHECK(ASAN_REGION_IS_POISONED(address, size));
+      ASAN_UNPOISON_MEMORY_REGION(address, size);
+    }
+  }
+
+  ThreadHeap* const heap_;
+};
+
+}  // namespace
+
+void ThreadState::PoisonUnmarkedObjects() {
+  {
+    // This lock must be held because other threads may access cross-thread
+    // persistents and should not observe them in a poisoned state.
+    MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+
+    Heap().PoisonUnmarkedObjects();
+
+    // CrossThreadPersistents in unmarked objects may be accessed from other
+    // threads (e.g. in CrossThreadPersistentRegion::ShouldTracePersistent) and
+    // that would be fine.
+    ProcessHeap::GetCrossThreadPersistentRegion()
+        .UnpoisonCrossThreadPersistents();
+    ProcessHeap::GetCrossThreadWeakPersistentRegion()
+        .UnpoisonCrossThreadPersistents();
+  }
+
+  // Similarly, unmarked object may contain handles to V8 that may be accessed
+  // (cleared) until the destructors are run.
+  if (GetIsolate()) {
+    UnpoisonHandlesVisitor visitor(&Heap());
+    GetIsolate()->VisitHandlesWithClassIds(&visitor);
+    unified_heap_controller()->IterateTracedGlobalHandles(&visitor);
+  }
+}
+#endif  // ADDRESS_SANITIZER
 
 void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,
@@ -1638,7 +1729,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
       deadline);
 }
 
-bool ThreadState::VerifyMarkingEnabled() const {
+bool ThreadState::IsVerifyMarkingEnabled() const {
   bool should_verify_marking = base::FeatureList::IsEnabled(
       blink::features::kBlinkHeapIncrementalMarkingStress);
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
@@ -1653,10 +1744,9 @@ void ThreadState::MarkPhaseVisitNotFullyConstructedObjects() {
 }
 
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
-  Visitor* visitor = current_gc_data_.visitor.get();
+  MarkingVisitor* visitor = current_gc_data_.visitor.get();
   {
-    // See ProcessHeap::CrossThreadPersistentMutex().
-    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
     VisitWeakPersistents(visitor);
     Heap().WeakProcessing(visitor);
   }
@@ -1669,8 +1759,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   current_gc_data_.visitor.reset();
 
   Heap().stats_collector()->NotifyMarkingCompleted(marked_bytes);
-
-  WTF::Partitions::ReportMemoryUsageHistogram();
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, total_object_space_histogram,
@@ -1687,7 +1775,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
   DCHECK_NE(BlinkGC::kTakeSnapshot, marking_type);
 
-  if (VerifyMarkingEnabled())
+  if (IsVerifyMarkingEnabled())
     Heap().VerifyMarking();
 }
 

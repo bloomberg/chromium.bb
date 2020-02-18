@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import exceptions
 import filecmp
 import os
 import re
@@ -19,11 +18,11 @@ import mock
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import depgraph
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
-from chromite.scripts import parallel_emerge
 
 # This left in, but disabled, until we can get GetCurrentVersionsTest
 # working again.
@@ -2541,13 +2540,13 @@ class CommitTest(CpuTestBase):
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
     body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^efg:\supgraded\spackage\sto\supstream\n # Summary
+    regexp = re.compile(r"""^efg:\supgraded\spackage\sto\supstream\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
                             ^BUG=\s.+\n                       # BUG line
                             ^TEST=\s                          # TEST line
-                            ''' % body,
+                            """ % body,
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 
@@ -2566,13 +2565,13 @@ class CommitTest(CpuTestBase):
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
     body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^efg,\spqr,\suvw:\supgraded\spackages.*\n # Summary
+    regexp = re.compile(r"""^efg,\spqr,\suvw:\supgraded\spackages.*\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
                             ^BUG=\s.+\n                       # BUG line
                             ^TEST=\s                          # TEST line
-                            ''' % body,
+                            """ % body,
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 
@@ -2597,13 +2596,13 @@ class CommitTest(CpuTestBase):
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
     body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^Upgraded\s.*10.*\spackages\n     # Summary
+    regexp = re.compile(r"""^Upgraded\s.*10.*\spackages\n     # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
                             ^BUG=\s.+\n                       # BUG line
                             ^TEST=\s                          # TEST line
-                            ''' % body,
+                            """ % body,
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 
@@ -3059,7 +3058,7 @@ class GetPreOrderDepGraphTest(CpuTestBase):
     # Verify.
     pm_argv = cpu.Upgrader._GenParallelEmergeArgv(mocked_upgrader, [pkg])
     pm_argv.append('--root-deps')
-    deps = parallel_emerge.DepGraphGenerator()
+    deps = depgraph.DepGraphGenerator()
     deps.Initialize(pm_argv)
     deps_tree, deps_info = deps.GenDependencyTree()
     deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
@@ -3092,7 +3091,7 @@ class MainTest(CpuTestBase):
     """
     try:
       cpu.main(args)
-    except exceptions.SystemExit as e:
+    except SystemExit as e:
       if expect_zero:
         self.assertEquals(e.args[0], 0,
                           msg='expected call to main() to exit cleanly, '
@@ -3109,7 +3108,7 @@ class MainTest(CpuTestBase):
       # Running with --help should exit with code==0.
       try:
         cpu.main(['--help'])
-      except exceptions.SystemExit as e:
+      except SystemExit as e:
         self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed.
@@ -3122,7 +3121,7 @@ class MainTest(CpuTestBase):
       # Running without --board should exit with code!=0.
       try:
         cpu.main([])
-      except exceptions.SystemExit as e:
+      except SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that an error message was printed.

@@ -41,6 +41,7 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
+#include "sdk/android/generated_peerconnection_jni/CandidatePairChangeEvent_jni.h"
 #include "sdk/android/generated_peerconnection_jni/PeerConnection_jni.h"
 #include "sdk/android/native_api/jni/java_types.h"
 #include "sdk/android/src/jni/jni_helpers.h"
@@ -120,7 +121,23 @@ SdpSemantics JavaToNativeSdpSemantics(JNIEnv* jni,
   return SdpSemantics::kPlanB;
 }
 
+ScopedJavaLocalRef<jobject> NativeToJavaCandidatePairChange(
+    JNIEnv* env,
+    const cricket::CandidatePairChangeEvent& event) {
+  const auto& selected_pair = event.selected_candidate_pair;
+  return Java_CandidatePairChangeEvent_Constructor(
+      env, NativeToJavaCandidate(env, selected_pair.local_candidate()),
+      NativeToJavaCandidate(env, selected_pair.remote_candidate()),
+      static_cast<int>(event.last_data_received_ms),
+      NativeToJavaString(env, event.reason));
+}
+
 }  // namespace
+
+ScopedJavaLocalRef<jobject> NativeToJavaAdapterType(JNIEnv* env,
+                                                    int adapterType) {
+  return Java_AdapterType_fromNativeIndex(env, adapterType);
+}
 
 void JavaToNativeRTCConfiguration(
     JNIEnv* jni,
@@ -258,6 +275,12 @@ void JavaToNativeRTCConfiguration(
                                                                 j_rtc_config);
   rtc_config->crypto_options =
       JavaToNativeOptionalCryptoOptions(jni, j_crypto_options);
+
+  ScopedJavaLocalRef<jstring> j_turn_logging_id =
+      Java_RTCConfiguration_getTurnLoggingId(jni, j_rtc_config);
+  if (!IsNull(jni, j_turn_logging_id)) {
+    rtc_config->turn_logging_id = JavaToNativeString(jni, j_turn_logging_id);
+  }
 }
 
 rtc::KeyType GetRtcConfigKeyType(JNIEnv* env,
@@ -323,6 +346,13 @@ void PeerConnectionObserverJni::OnIceConnectionReceivingChange(bool receiving) {
   JNIEnv* env = AttachCurrentThreadIfNeeded();
   Java_Observer_onIceConnectionReceivingChange(env, j_observer_global_,
                                                receiving);
+}
+
+void PeerConnectionObserverJni::OnIceSelectedCandidatePairChanged(
+    const cricket::CandidatePairChangeEvent& event) {
+  JNIEnv* env = AttachCurrentThreadIfNeeded();
+  Java_Observer_onSelectedCandidatePairChanged(
+      env, j_observer_global_, NativeToJavaCandidatePairChange(env, event));
 }
 
 void PeerConnectionObserverJni::OnIceGatheringChange(
@@ -569,7 +599,7 @@ static jboolean JNI_PeerConnection_SetConfiguration(
   if (owned_pc->constraints()) {
     CopyConstraintsIntoRtcConfiguration(owned_pc->constraints(), &rtc_config);
   }
-  return owned_pc->pc()->SetConfiguration(rtc_config);
+  return owned_pc->pc()->SetConfiguration(rtc_config).ok();
 }
 
 static jboolean JNI_PeerConnection_AddIceCandidate(

@@ -135,10 +135,9 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
 class PrintServersProviderImpl : public PrintServersProvider {
  public:
   PrintServersProviderImpl()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-        weak_ptr_factory_(this) {
+      : task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   }
 
@@ -229,7 +228,7 @@ class PrintServersProviderImpl : public PrintServersProvider {
   std::vector<PrintServer> servers_;
 
   base::ObserverList<PrintServersProvider::Observer>::Unchecked observers_;
-  base::WeakPtrFactory<PrintServersProviderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintServersProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintServersProviderImpl);
 };

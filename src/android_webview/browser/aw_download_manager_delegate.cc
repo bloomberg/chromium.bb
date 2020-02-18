@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "services/network/public/cpp/features.h"
 
 namespace android_webview {
 
@@ -73,9 +72,6 @@ bool AwDownloadManagerDelegate::InterceptDownloadIfApplicable(
     int64_t content_length,
     bool is_transient,
     content::WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return false;
-
   if (!web_contents)
     return false;
 
@@ -84,11 +80,10 @@ bool AwDownloadManagerDelegate::InterceptDownloadIfApplicable(
     // use default user agent if nothing is provided
     aw_user_agent = user_agent.empty() ? GetUserAgent() : user_agent;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DownloadStartingOnUIThread, web_contents, url,
-                     aw_user_agent, content_disposition, mime_type,
-                     content_length));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&DownloadStartingOnUIThread, web_contents, url,
+                                aw_user_agent, content_disposition, mime_type,
+                                content_length));
   return true;
 }
 

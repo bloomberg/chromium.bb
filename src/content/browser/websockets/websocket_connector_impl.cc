@@ -6,7 +6,6 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/features.h"
@@ -26,8 +25,8 @@ void WebSocketConnectorImpl::Connect(
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     const base::Optional<std::string>& user_agent,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client,
-    network::mojom::WebSocketClientPtr websocket_client) {
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   if (!process) {
@@ -37,19 +36,12 @@ void WebSocketConnectorImpl::Connect(
   const uint32_t options =
       GetContentClient()->browser()->GetWebSocketOptions(frame);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    WebSocketManager::CreateWebSocket(
-        url, requested_protocols, site_for_cookies, user_agent, process,
-        frame_id_, origin_, options, std::move(handshake_client),
-        std::move(websocket_client));
-    return;
-  }
   if (GetContentClient()->browser()->WillInterceptWebSocket(frame)) {
     GetContentClient()->browser()->CreateWebSocket(
         frame,
         base::BindOnce(ConnectCalledByContentBrowserClient, requested_protocols,
                        site_for_cookies, process_id_, frame_id_, origin_,
-                       options, std::move(websocket_client)),
+                       options),
         url, site_for_cookies, user_agent, std::move(handshake_client));
     return;
   }
@@ -61,7 +53,7 @@ void WebSocketConnectorImpl::Connect(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, std::move(headers),
       process_id_, frame_id_, origin_, options, std::move(handshake_client),
-      std::move(websocket_client), nullptr, nullptr);
+      mojo::NullRemote(), mojo::NullRemote());
 }
 
 void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
@@ -71,24 +63,14 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     int frame_id,
     const url::Origin& origin,
     uint32_t options,
-    network::mojom::WebSocketClientPtr websocket_client,
     const GURL& url,
     std::vector<network::mojom::HttpHeaderPtr> additional_headers,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client,
-    network::mojom::AuthenticationHandlerPtr auth_handler,
-    network::mojom::TrustedHeaderClientPtr trusted_header_client) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(ConnectCalledByContentBrowserClient, requested_protocols,
-                       site_for_cookies, process_id, frame_id, origin, options,
-                       std::move(websocket_client), url,
-                       std::move(additional_headers),
-                       std::move(handshake_client), std::move(auth_handler),
-                       std::move(trusted_header_client)));
-    return;
-  }
-
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client,
+    mojo::PendingRemote<network::mojom::AuthenticationHandler> auth_handler,
+    mojo::PendingRemote<network::mojom::TrustedHeaderClient>
+        trusted_header_client) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* process = RenderProcessHost::FromID(process_id);
   if (!process) {
     return;
@@ -96,7 +78,7 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, std::move(additional_headers),
       process_id, frame_id, origin, options, std::move(handshake_client),
-      std::move(websocket_client), std::move(auth_handler),
-      std::move(trusted_header_client));
+      std::move(auth_handler), std::move(trusted_header_client));
 }
+
 }  // namespace content

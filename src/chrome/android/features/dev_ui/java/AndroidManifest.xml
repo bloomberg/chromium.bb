@@ -10,8 +10,8 @@
     <dist:module
         dist:onDemand="true"
         dist:title="@string/dev_ui_module_title">
-        <dist:fusing dist:include="false" />
+        <dist:fusing dist:include="true" />
     </dist:module>
 
-    <application></application>
+    <application />
 </manifest>

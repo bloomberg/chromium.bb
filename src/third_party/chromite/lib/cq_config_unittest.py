@@ -7,9 +7,10 @@
 
 from __future__ import print_function
 
-import ConfigParser
-import mock
 import os
+
+import mock
+from six.moves import configparser
 
 from chromite.lib import constants
 from chromite.lib import cq_config
@@ -375,7 +376,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'foo.ini')
       osutils.WriteFile(path, 'foobar')
-      self.assertRaises(ConfigParser.Error, self.GetOption, path)
+      self.assertRaises(configparser.Error, self.GetOption, path)
 
   def testGetOptionFromConfigFileOnMissingConfigFile(self):
     """Test if we can handle a missing config file."""

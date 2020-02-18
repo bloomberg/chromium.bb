@@ -4,10 +4,9 @@
 
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
-#include <algorithm>
 #include <utility>
-#include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
@@ -15,49 +14,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace notifications {
-namespace {
-using FirstAndLastIters = std::pair<std::deque<Impression>::const_iterator,
-                                    std::deque<Impression>::const_iterator>;
-
-base::Optional<FirstAndLastIters> FindFirstAndLastNotificationShownToday(
-    const std::deque<Impression>& impressions,
-    const base::Time& now,
-    const base::Time& beginning_of_today) {
-  if (impressions.empty() || impressions.cbegin()->create_time > now ||
-      impressions.crbegin()->create_time < beginning_of_today)
-    return base::nullopt;
-
-  auto last =
-      std::upper_bound(impressions.cbegin(), impressions.cend(), now,
-                       [](const base::Time& lhs, const Impression& rhs) {
-                         return lhs < rhs.create_time;
-                       });
-
-  auto first =
-      std::lower_bound(impressions.cbegin(), last, beginning_of_today,
-                       [](const Impression& lhs, const base::Time& rhs) {
-                         return lhs.create_time < rhs;
-                       });
-  return base::make_optional<FirstAndLastIters>(first, last - 1);
-}
-
-// Converts SkBitmap to String.
-std::string ConvertIconToStringOnIOThread(SkBitmap image) {
-  base::AssertLongCPUWorkAllowed();
-  std::vector<unsigned char> image_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(std::move(image), false, &image_data);
-  std::string result(image_data.begin(), image_data.end());
-  return result;
-}
-
-// Converts SkBitmap to String.
-SkBitmap ConvertStringToIconOnIOThread(std::string data) {
-  SkBitmap image;
-  gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(data.data()),
-                        data.length(), &image);
-  return image;
-}
-}  // namespace
 
 bool ToLocalHour(int hour,
                  const base::Time& today,
@@ -97,30 +53,24 @@ void NotificationsShownToday(
     int* shown_total,
     SchedulerClientType* last_shown_type,
     base::Clock* clock) {
-  base::Time last_shown_time;
   base::Time now = clock->Now();
   base::Time beginning_of_today;
   bool success = ToLocalHour(0, now, 0, &beginning_of_today);
+  base::Time last_shown_time = beginning_of_today;
   DCHECK(success);
   for (const auto& state : client_states) {
     auto* client_state = state.second;
-
-    auto iter_pair = FindFirstAndLastNotificationShownToday(
-        client_state->impressions, now, beginning_of_today);
-
-    if (!iter_pair)
-      continue;
-
-    if (iter_pair->second != client_state->impressions.cend())
-      DLOG(ERROR) << "Wrong format: time stamped to the future! "
-                  << iter_pair->second->create_time;
-
-    if (iter_pair->second->create_time > last_shown_time) {
-      last_shown_time = iter_pair->second->create_time;
-      *last_shown_type = client_state->type;
+    int count = 0;
+    for (const auto& impression : client_state->impressions) {
+      if (impression.create_time >= beginning_of_today &&
+          impression.create_time <= now) {
+        count++;
+        if (impression.create_time >= last_shown_time) {
+          last_shown_time = impression.create_time;
+          *last_shown_type = client_state->type;
+        }
+      }
     }
-
-    int count = std::distance(iter_pair->first, iter_pair->second) + 1;
     (*shown_per_type)[client_state->type] = count;
     (*shown_total) += count;
   }
@@ -133,26 +83,6 @@ std::unique_ptr<ClientState> CreateNewClientState(
   client_state->type = type;
   client_state->current_max_daily_show = config.initial_daily_shown_per_type;
   return client_state;
-}
-
-// Converts SkBitmap to String.
-void ConvertIconToString(SkBitmap image,
-                         base::OnceCallback<void(std::string)> callback) {
-  DCHECK(callback);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&ConvertIconToStringOnIOThread, std::move(image)),
-      std::move(callback));
-}
-
-// Converts String to SkBitmap.
-void ConvertStringToIcon(std::string data,
-                         base::OnceCallback<void(SkBitmap)> callback) {
-  DCHECK(callback);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&ConvertStringToIconOnIOThread, std::move(data)),
-      std::move(callback));
 }
 
 }  // namespace notifications

@@ -44,6 +44,19 @@ using AtkAttributes = std::unique_ptr<AtkAttributeSet, AtkAttributeSetDeleter>;
 
 namespace ui {
 
+enum class AXTextBoundaryDirection;
+
+struct FindInPageResultInfo {
+  AtkObject* node;
+  int start_offset;
+  int end_offset;
+
+  bool operator==(const FindInPageResultInfo& other) const {
+    return (node == other.node) && (start_offset == other.start_offset) &&
+           (end_offset == other.end_offset);
+  }
+};
+
 // AtkTableCell was introduced in ATK 2.12. Ubuntu Trusty has ATK 2.10.
 // Compile-time checks are in place for ATK versions that are older than 2.12.
 // However, we also need runtime checks in case the version we are building
@@ -58,24 +71,15 @@ namespace ui {
 // supported version.
 struct AX_EXPORT AtkTableCellInterface {
   typedef struct _AtkTableCell AtkTableCell;
-  typedef struct _AtkTableCellIface AtkTableCellIface;
-  typedef GType (*GetTypeFunc)();
-  typedef GPtrArray* (*GetColumnHeaderCellsFunc)(AtkTableCell* cell);
-  typedef GPtrArray* (*GetRowHeaderCellsFunc)(AtkTableCell* cell);
-  typedef bool (*GetRowColumnSpanFunc)(AtkTableCell* cell,
-                                       gint* row,
-                                       gint* column,
-                                       gint* row_span,
-                                       gint* col_span);
-
-  base::ProtectedMemory<GetTypeFunc>* GetType = nullptr;
-  base::ProtectedMemory<GetColumnHeaderCellsFunc>* GetColumnHeaderCells =
-      nullptr;
-  base::ProtectedMemory<GetRowHeaderCellsFunc>* GetRowHeaderCells = nullptr;
-  base::ProtectedMemory<GetRowColumnSpanFunc>* GetRowColumnSpan = nullptr;
-  bool initialized = false;
-
-  static base::Optional<AtkTableCellInterface> Get();
+  static GType GetType();
+  static GPtrArray* GetColumnHeaderCells(AtkTableCell* cell);
+  static GPtrArray* GetRowHeaderCells(AtkTableCell* cell);
+  static bool GetRowColumnSpan(AtkTableCell* cell,
+                               gint* row,
+                               gint* column,
+                               gint* row_span,
+                               gint* col_span);
+  static bool Exists();
 };
 
 // Implements accessibility on Aura Linux using ATK.
@@ -112,8 +116,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                                         gint y,
                                         AtkCoordType coord_type);
   bool GrabFocus();
+  bool FocusFirstFocusableAncestorInWebContent();
   bool GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset);
   bool GrabFocusOrSetSequentialFocusNavigationStartingPoint();
+  bool SetSequentialFocusNavigationStartingPoint();
   bool DoDefaultAction();
   const gchar* GetDefaultActionName();
   AtkAttributeSet* GetAtkAttributes();
@@ -158,6 +164,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnDocumentTitleChanged();
   void OnSubtreeCreated();
   void OnSubtreeWillBeDeleted();
+  void OnParentChanged();
   void OnWindowVisibilityChanged();
 
   bool SupportsSelectionWithAtkSelection();
@@ -180,8 +187,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
   size_t UnicodeToUTF16OffsetInText(int unicode_offset);
 
-  void SetEmbeddedDocument(AtkObject* new_document);
-  void SetEmbeddingWindow(AtkObject* new_embedding_window);
+  // Called on a toplevel frame to set the document parent, which is the parent
+  // of the toplevel document. This is used to properly express the ATK embeds
+  // relationship between a toplevel frame and its embedded document.
+  void SetDocumentParent(AtkObject* new_document_parent);
 
   int GetCaretOffset();
   bool SetCaretOffset(int offset);
@@ -204,6 +213,13 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // The return value AtkAttributeSet should be freed with
   // atk_attribute_set_free.
   AtkAttributeSet* GetDefaultTextAttributes();
+
+  void ActivateFindInPageResult(int start_offset, int end_offset);
+  void TerminateFindInPage();
+
+  // If there is a find in page result for the toplevel document of this node,
+  // return it, otherwise return base::nullopt;
+  base::Optional<FindInPageResultInfo> GetSelectionOffsetsFromFindInPage();
 
   std::string accessible_name_;
 
@@ -256,7 +272,25 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
       int offset,
       std::map<int, AtkAttributes>* text_attributes);
   AtkAttributes ComputeTextAttributes() const;
-  int FindStartOfStyle(int start_offset, ui::TextBoundaryDirection direction);
+  int FindStartOfStyle(int start_offset, AXTextBoundaryDirection direction);
+
+  // Reset any find in page operations for the toplevel document of this node.
+  void ForgetCurrentFindInPageResult();
+
+  // Activate a find in page result for the toplevel document of this node.
+  void ActivateFindInPageInParent(int start_offset, int end_offset);
+
+  // If this node is the toplevel document node, find its parent and set it on
+  // the toplevel frame which contains the node.
+  void SetDocumentParentOnFrameIfNecessary();
+
+  // Find the first child which is a document containing web content.
+  AtkObject* FindFirstWebContentDocument();
+
+  // If the given argument can be found as a child of this node, return its
+  // hypertext extents, otherwise return base::nullopt;
+  base::Optional<std::pair<int, int>> GetHypertextExtentsOfChild(
+      AXPlatformNodeAuraLinux* child);
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();
@@ -269,9 +303,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AtkObject* atk_object_ = nullptr;
   AtkHyperlink* atk_hyperlink_ = nullptr;
 
-  // Some weak pointers which help us track ATK embeds / embedded by relations.
-  AtkObject* embedded_document_ = nullptr;
-  AtkObject* embedding_window_ = nullptr;
+  // A weak pointers which help us track the ATK embeds relation.
+  AtkObject* document_parent_ = nullptr;
 
   // Whether or not this node (if it is a frame or a window) was
   // minimized the last time it's visibility changed.

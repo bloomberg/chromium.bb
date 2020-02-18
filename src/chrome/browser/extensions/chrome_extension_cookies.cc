@@ -62,17 +62,16 @@ ChromeExtensionCookies* ChromeExtensionCookies::Get(
 
 void ChromeExtensionCookies::CreateRestrictedCookieManager(
     const url::Origin& origin,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!io_data_)
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&IOData::CreateRestrictedCookieManager,
-                     base::Unretained(io_data_.get()), origin,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&IOData::CreateRestrictedCookieManager,
+                                base::Unretained(io_data_.get()), origin,
+                                std::move(receiver)));
 }
 
 void ChromeExtensionCookies::ClearCookies(const GURL& origin) {
@@ -81,10 +80,9 @@ void ChromeExtensionCookies::ClearCookies(const GURL& origin) {
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&IOData::ClearCookies, base::Unretained(io_data_.get()),
-                     origin));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&IOData::ClearCookies,
+                                base::Unretained(io_data_.get()), origin));
 }
 
 net::CookieStore* ChromeExtensionCookies::GetCookieStoreForTesting() {
@@ -111,17 +109,17 @@ ChromeExtensionCookies::IOData::~IOData() {
 
 void ChromeExtensionCookies::IOData::CreateRestrictedCookieManager(
     const url::Origin& origin,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  restricted_cookie_managers_.AddBinding(
+  restricted_cookie_managers_.Add(
       std::make_unique<network::RestrictedCookieManager>(
           network::mojom::RestrictedCookieManagerRole::SCRIPT,
           GetOrCreateCookieStore(), &network_cookie_settings_, origin,
           /* null network_context_client disables logging, making later
              arguments irrelevant */
           nullptr, false, -1, -1),
-      std::move(request));
+      std::move(receiver));
 }
 
 void ChromeExtensionCookies::IOData::ClearCookies(const GURL& origin) {
@@ -178,7 +176,7 @@ void ChromeExtensionCookies::OnContentSettingChanged(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&IOData::OnContentSettingChanged,
                      base::Unretained(io_data_.get()), std::move(settings)));
@@ -191,11 +189,10 @@ void ChromeExtensionCookies::OnThirdPartyCookieBlockingChanged(
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&IOData::OnThirdPartyCookieBlockingChanged,
-                     base::Unretained(io_data_.get()),
-                     block_third_party_cookies));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&IOData::OnThirdPartyCookieBlockingChanged,
+                                base::Unretained(io_data_.get()),
+                                block_third_party_cookies));
 }
 
 void ChromeExtensionCookies::Shutdown() {

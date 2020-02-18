@@ -59,6 +59,11 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     BuildInputArgumentValues(style_value);
   }
 
+  CSSPaintValue* ComputedCSSValue(const ComputedStyle&,
+                                  bool allow_visited_style) {
+    return this;
+  }
+
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
@@ -93,6 +98,8 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   Member<Observer> paint_image_generator_observer_;
   Member<CSSStyleValueVector> parsed_input_arguments_;
   Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;
+  // TODO(crbug.com/987974): Make this variable reset when there is a style
+  // change.
   bool paint_off_thread_;
 };
 

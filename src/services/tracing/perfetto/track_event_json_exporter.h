@@ -58,6 +58,7 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     int32_t tid = -1;
     int64_t time_us = -1;
     int64_t thread_time_us = -1;
+    int64_t thread_instruction_count = -1;
 
     // We only want to add metadata events about the process or threads once.
     // This is to prevent duplicate events in the json since the packets
@@ -76,7 +77,7 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     std::unordered_map<uint32_t, std::string> interned_event_categories_;
     std::unordered_map<uint32_t, std::pair<std::string, std::string>>
         interned_source_locations_;
-    std::unordered_map<uint32_t, std::string> interned_legacy_event_names_;
+    std::unordered_map<uint32_t, std::string> interned_event_names_;
     std::unordered_map<uint32_t, std::string> interned_debug_annotation_names_;
 
     struct Frame {
@@ -124,6 +125,8 @@ class TrackEventJSONExporter : public JSONTraceExporter {
   // thread timestamp) we should output to the json.
   int64_t ComputeTimeUs(const perfetto::protos::TrackEvent& event);
   base::Optional<int64_t> ComputeThreadTimeUs(
+      const perfetto::protos::TrackEvent& event);
+  base::Optional<int64_t> ComputeThreadInstructionCount(
       const perfetto::protos::TrackEvent& event);
 
   // Gather all the interned strings of different types.

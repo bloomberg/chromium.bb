@@ -313,7 +313,6 @@ var SharedOption = Object.freeze({
  */
 var RootPath = Object.seal({
   DOWNLOADS: '/must-be-filled-in-test-setup',
-  DOWNLOADS_PATH: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
   ANDROID_FILES: '/must-be-filled-in-test-setup',
 });
@@ -910,6 +909,17 @@ var ENTRIES = {
     nameText: 'package.deb',
     sizeText: '724 bytes',
     typeText: 'DEB file'
+  }),
+
+  tiniFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive.tar.gz',
+    targetPath: 'test.tini',
+    mimeType: 'application/gzip',
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'test.tini',
+    sizeText: '439 bytes',
+    typeText: 'Crostini image file'
   }),
 
   hiddenFile: new TestEntryInfo({

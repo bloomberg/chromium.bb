@@ -37,6 +37,7 @@
   X("blink.net")                                                         \
   X("blink_style")                                                       \
   X("blink.user_timing")                                                 \
+  X("blink.worker")                                                      \
   X("Blob")                                                              \
   X("browser")                                                           \
   X("browsing_data")                                                     \
@@ -85,6 +86,7 @@
   X("latencyInfo")                                                       \
   X("leveldb")                                                           \
   X("loading")                                                           \
+  X("log")                                                               \
   X("login")                                                             \
   X("media")                                                             \
   X("media_router")                                                      \

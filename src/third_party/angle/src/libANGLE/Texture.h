@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright 2002 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -134,6 +134,7 @@ class TextureState final : private angle::NonCopyable
     const SamplerState &getSamplerState() const { return mSamplerState; }
     GLenum getUsage() const { return mUsage; }
     GLenum getDepthStencilTextureMode() const { return mDepthStencilTextureMode; }
+    bool isStencilMode() const { return mDepthStencilTextureMode == GL_STENCIL_INDEX; }
 
     // Returns the desc of the base level. Only valid for cube-complete/mip-complete textures.
     const ImageDesc &getBaseLevelDesc() const;
@@ -214,7 +215,7 @@ bool operator!=(const TextureState &a, const TextureState &b);
 class Texture final : public RefCountObject, public egl::ImageSibling, public LabeledObject
 {
   public:
-    Texture(rx::GLImplFactory *factory, GLuint id, TextureType type);
+    Texture(rx::GLImplFactory *factory, TextureID id, TextureType type);
     ~Texture() override;
 
     void onDestroy(const Context *context) override;

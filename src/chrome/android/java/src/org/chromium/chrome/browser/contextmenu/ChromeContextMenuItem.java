@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.text.style.ForegroundColorSpan;
@@ -13,7 +12,6 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -33,8 +31,8 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             Item.OPEN_IN_OTHER_WINDOW, Item.OPEN_IN_EPHEMERAL_TAB, Item.COPY_LINK_ADDRESS,
             Item.COPY_LINK_TEXT, Item.SAVE_LINK_AS, Item.LOAD_ORIGINAL_IMAGE, Item.SAVE_IMAGE,
             Item.OPEN_IMAGE, Item.OPEN_IMAGE_IN_NEW_TAB, Item.OPEN_IMAGE_IN_EPHEMERAL_TAB,
-            Item.SEARCH_BY_IMAGE, Item.CALL, Item.SEND_MESSAGE, Item.ADD_TO_CONTACTS, Item.COPY,
-            Item.SAVE_VIDEO, Item.OPEN_IN_CHROME})
+            Item.SEARCH_BY_IMAGE, Item.SEARCH_WITH_GOOGLE_LENS, Item.CALL, Item.SEND_MESSAGE,
+            Item.ADD_TO_CONTACTS, Item.COPY, Item.SAVE_VIDEO, Item.OPEN_IN_CHROME})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Item {
         // Values are numerated from 0 and can't have gaps.
@@ -58,17 +56,18 @@ public class ChromeContextMenuItem implements ContextMenuItem {
         int OPEN_IMAGE_IN_NEW_TAB = 13;
         int OPEN_IMAGE_IN_EPHEMERAL_TAB = 14;
         int SEARCH_BY_IMAGE = 15;
+        int SEARCH_WITH_GOOGLE_LENS = 16;
         // Message Group
-        int CALL = 16;
-        int SEND_MESSAGE = 17;
-        int ADD_TO_CONTACTS = 18;
-        int COPY = 19;
+        int CALL = 17;
+        int SEND_MESSAGE = 18;
+        int ADD_TO_CONTACTS = 19;
+        int COPY = 20;
         // Video Group
-        int SAVE_VIDEO = 20;
+        int SAVE_VIDEO = 21;
         // Other
-        int OPEN_IN_CHROME = 21;
+        int OPEN_IN_CHROME = 22;
         // ALWAYS UPDATE!
-        int NUM_ENTRIES = 22;
+        int NUM_ENTRIES = 23;
     }
 
     /**
@@ -91,6 +90,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.id.contextmenu_open_image_in_new_tab, // Item.OPEN_IMAGE_IN_NEW_TAB
             R.id.contextmenu_open_image_in_ephemeral_tab, // Item.OPEN_IMAGE_IN_EPHEMERAL_TAB
             R.id.contextmenu_search_by_image, // Item.SEARCH_BY_IMAGE
+            R.id.contextmenu_search_with_google_lens, // Item.SEARCH_WITH_GOOGLE_LENS
             R.id.contextmenu_call, // Item.CALL
             R.id.contextmenu_send_message, // Item.SEND_MESSAGE
             R.id.contextmenu_add_to_contacts, // Item.ADD_TO_CONTACTS
@@ -119,6 +119,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.string.contextmenu_open_image_in_new_tab, // Item.OPEN_IMAGE_IN_NEW_TAB:
             R.string.contextmenu_open_image_in_ephemeral_tab, // Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
             R.string.contextmenu_search_web_for_image, // Item.SEARCH_BY_IMAGE:
+            R.string.contextmenu_search_with_google_lens, // Item.SEARCH_WITH_GOOGLE_LENS:
             R.string.contextmenu_call, // Item.CALL:
             R.string.contextmenu_send_message, // Item.SEND_MESSAGE:
             R.string.contextmenu_add_to_contacts, // Item.ADD_TO_CONTACTS:
@@ -144,7 +145,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
      * @param item #Item Item ID.
      * @return Returns the string that describes the action of the item.
      */
-    private static @StringRes int getStringID(@Item int item) {
+    private static @StringRes int getStringId(@Item int item) {
         assert STRING_IDS.length == Item.NUM_ENTRIES;
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled() && item == Item.OPEN_IN_NEW_TAB) {
@@ -166,24 +167,20 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             case Item.OPEN_IN_BROWSER_ID:
                 return DefaultBrowserInfo.getTitleOpenInDefaultBrowser(false);
             case Item.SEARCH_BY_IMAGE:
-                return context.getString(getStringID(mItem),
+                return context.getString(getStringId(mItem),
                         TemplateUrlServiceFactory.get()
                                 .getDefaultSearchEngineTemplateUrl()
                                 .getShortName());
             case Item.OPEN_IN_EPHEMERAL_TAB:
             case Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
-                return SpanApplier.applySpans(context.getString(getStringID(mItem)),
+            case Item.SEARCH_WITH_GOOGLE_LENS:
+                return SpanApplier.applySpans(context.getString(getStringId(mItem)),
                         new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
                                 new RelativeSizeSpan(0.75f),
                                 new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
                                         context.getResources(), R.color.default_text_color_blue))));
             default:
-                return context.getString(getStringID(mItem));
+                return context.getString(getStringId(mItem));
         }
-    }
-
-    @Override
-    public void getDrawableAsync(Context context, Callback<Drawable> callback) {
-        callback.onResult(null);
     }
 }

@@ -18,10 +18,25 @@
 
 namespace dawn_wire { namespace client {
 
-    bool Client::DoDeviceErrorCallback(const char* message) {
-        DAWN_ASSERT(message != nullptr);
-        mDevice->HandleError(message);
+    bool Client::DoDeviceUncapturedErrorCallback(DawnErrorType errorType, const char* message) {
+        switch (errorType) {
+            case DAWN_ERROR_TYPE_NO_ERROR:
+            case DAWN_ERROR_TYPE_VALIDATION:
+            case DAWN_ERROR_TYPE_OUT_OF_MEMORY:
+            case DAWN_ERROR_TYPE_UNKNOWN:
+            case DAWN_ERROR_TYPE_DEVICE_LOST:
+                break;
+            default:
+                return false;
+        }
+        mDevice->HandleError(errorType, message);
         return true;
+    }
+
+    bool Client::DoDevicePopErrorScopeCallback(uint64_t requestSerial,
+                                               DawnErrorType errorType,
+                                               const char* message) {
+        return mDevice->PopErrorScope(requestSerial, errorType, message);
     }
 
     bool Client::DoBufferMapReadAsyncCallback(Buffer* buffer,
@@ -88,7 +103,7 @@ namespace dawn_wire { namespace client {
         if (!GetMappedData()) {
             // Dawn promises that all callbacks are called in finite time. Even if a fatal error
             // occurs, the callback is called.
-            request.readCallback(DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST, nullptr, 0,
+            request.readCallback(DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST, nullptr, 0,
                                  request.userdata);
             return false;
         } else {
@@ -152,7 +167,7 @@ namespace dawn_wire { namespace client {
         if (!GetMappedData()) {
             // Dawn promises that all callbacks are called in finite time. Even if a fatal error
             // occurs, the callback is called.
-            request.writeCallback(DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST, nullptr, 0,
+            request.writeCallback(DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST, nullptr, 0,
                                   request.userdata);
             return false;
         } else {

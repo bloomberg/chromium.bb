@@ -61,7 +61,6 @@ class HTMLPlugInElement;
 class LocalFrame;
 class PaintLayerCompositor;
 class UserGestureToken;
-class WebLayerTreeView;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
@@ -125,14 +124,13 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   PaintLayerCompositor* Compositor() const;
 
   // WebFrameWidgetBase overrides:
-  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
+  void SetAnimationHost(cc::AnimationHost*) override;
   bool ForSubframe() const override { return true; }
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
 
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  WebLayerTreeView* GetLayerTreeView() const override;
   cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
@@ -186,7 +184,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   Member<HTMLPlugInElement> mouse_capture_element_;
   scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
-  WebLayerTreeView* layer_tree_view_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
   GraphicsLayer* root_graphics_layer_ = nullptr;

@@ -61,20 +61,20 @@ void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
   DCHECK(!document_);
   worker_ = query->DetachWorker();
   worker_->SetPrintJob(this);
-  const PrintSettings& settings = query->settings();
-
-  auto new_doc =
-      base::MakeRefCounted<PrintedDocument>(settings, name, query->cookie());
-  new_doc->set_page_count(page_count);
-  UpdatePrintedDocument(new_doc);
+  std::unique_ptr<PrintSettings> settings = query->ExtractSettings();
 
 #if defined(OS_WIN)
-  pdf_page_mapping_ = PageRange::GetPages(settings.ranges());
+  pdf_page_mapping_ = PageRange::GetPages(settings->ranges());
   if (pdf_page_mapping_.empty()) {
     for (int i = 0; i < page_count; i++)
       pdf_page_mapping_.push_back(i);
   }
 #endif
+
+  auto new_doc = base::MakeRefCounted<PrintedDocument>(std::move(settings),
+                                                       name, query->cookie());
+  new_doc->set_page_count(page_count);
+  UpdatePrintedDocument(new_doc);
 
   // Don't forget to register to our own messages.
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
@@ -219,8 +219,8 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
 
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   quit_closure_ = loop.QuitClosure();
-  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  loop.QuitClosure(), timeout);
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        loop.QuitClosure(), timeout);
 
   loop.Run();
 
@@ -238,6 +238,22 @@ PrintedDocument* PrintJob::document() const {
 const PrintSettings& PrintJob::settings() const {
   return document()->settings();
 }
+
+#if defined(OS_CHROMEOS)
+void PrintJob::SetSource(PrintJob::Source source,
+                         const std::string& source_id) {
+  source_ = source;
+  source_id_ = source_id;
+}
+
+PrintJob::Source PrintJob::source() const {
+  return source_;
+}
+
+const std::string& PrintJob::source_id() const {
+  return source_id_;
+}
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 class PrintJob::PdfConversionState {
@@ -451,8 +467,8 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     }
     case JobEventDetails::DOC_DONE: {
       // This will call Stop() and broadcast a JOB_DONE message.
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&PrintJob::OnDocumentDone, this));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
     }
 #if defined(OS_WIN)
@@ -508,7 +524,7 @@ void PrintJob::ControlledWorkerShutdown() {
   // Delay shutdown until the worker terminates.  We want this code path
   // to wait on the thread to quit before continuing.
   if (worker_->IsRunning()) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
         base::TimeDelta::FromMilliseconds(100));
@@ -518,9 +534,9 @@ void PrintJob::ControlledWorkerShutdown() {
 
   // Now make sure the thread object is cleaned up. Do this on a worker
   // thread because it may block.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
@@ -533,8 +549,8 @@ void PrintJob::ControlledWorkerShutdown() {
 
 bool PrintJob::PostTask(const base::Location& from_here,
                         base::OnceClosure task) {
-  return base::PostTaskWithTraits(from_here, {content::BrowserThread::UI},
-                                  std::move(task));
+  return base::PostTask(from_here, {content::BrowserThread::UI},
+                        std::move(task));
 }
 
 void PrintJob::HoldUntilStopIsCalled() {

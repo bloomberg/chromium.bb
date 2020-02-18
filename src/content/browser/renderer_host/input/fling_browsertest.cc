@@ -84,7 +84,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 
   void LoadURL(const std::string& page_data) {
     const GURL data_url("data:text/html," + page_data);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
     host->GetView()->SetSize(gfx::Size(400, 400));
@@ -116,7 +116,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
       deleted_observer.WaitUntilDeleted();
     }
 
-    WaitForHitTestDataOrChildSurfaceReady(iframe_node->current_frame_host());
+    WaitForHitTestData(iframe_node->current_frame_host());
     FrameTreeVisualizer visualizer;
     ASSERT_EQ(
         " Site A ------------ proxies for B\n"
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   // Navigate to a second page with the same domain.
   GURL second_url(
       embedded_test_server()->GetURL("a.com", "/scrollable_page.html"));
-  NavigateToURL(shell(), second_url);
+  EXPECT_TRUE(NavigateToURL(shell(), second_url));
   SynchronizeThreads();
 
   // Wait for 100ms. Then check that the second page has not scrolled.

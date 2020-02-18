@@ -67,8 +67,9 @@ class WebUIDataSource {
   // MAX_SAFE_INTEGER in /v8/src/globals.h.
   virtual void AddInteger(base::StringPiece name, int32_t value) = 0;
 
-  // Sets the path which will return the JSON strings.
-  virtual void SetJsonPath(base::StringPiece path) = 0;
+  // Call this to enable a virtual "strings.js" (or "strings.m.js" for modules)
+  // URL that provides translations and dynamic data when requested.
+  virtual void UseStringsJs() = 0;
 
   // Adds a mapping between a path name and a resource to return.
   virtual void AddResourcePath(base::StringPiece path, int resource_id) = 0;
@@ -116,7 +117,13 @@ class WebUIDataSource {
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyChildSrc(
       const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyWorkerSrc(
+      const std::string& data) = 0;
   virtual void DisableDenyXFrameOptions() = 0;
+
+  // Replace i18n template strings in JS files. Needed for Web UIs that are
+  // using Polymer 3.
+  virtual void EnableReplaceI18nInJS() = 0;
 
   // The |source_name| this WebUIDataSource was created with.
   virtual std::string GetSource() = 0;

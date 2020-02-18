@@ -18,8 +18,8 @@
 #include "media/base/overlay_info.h"
 #include "media/base/video_thumbnail_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
-#include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -60,10 +60,9 @@ DownloadMediaParser::DownloadMediaParser(const std::string& mime_type,
                                          const base::FilePath& file_path)
     : mime_type_(mime_type),
       file_path_(file_path),
-      file_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})),
-      decode_done_(false),
-      weak_factory_(this) {}
+      file_task_runner_(base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
+      decode_done_(false) {}
 
 DownloadMediaParser::~DownloadMediaParser() = default;
 
@@ -96,20 +95,21 @@ void DownloadMediaParser::OnReadFileSize(int64_t file_size) {
   }
 
   size_ = file_size;
-  RetrieveMediaParser(content::GetSystemConnector());
+  RetrieveMediaParser();
 }
 
 void DownloadMediaParser::OnMediaParserCreated() {
   auto media_source_factory = std::make_unique<LocalMediaDataSourceFactory>(
       file_path_, file_task_runner_);
-  chrome::mojom::MediaDataSourcePtr source_ptr;
+  mojo::PendingRemote<chrome::mojom::MediaDataSource> source;
   media_data_source_ = media_source_factory->CreateMediaDataSource(
-      &source_ptr, base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
-                                       weak_factory_.GetWeakPtr()));
+      source.InitWithNewPipeAndPassReceiver(),
+      base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
+                          weak_factory_.GetWeakPtr()));
 
   RecordMediaMetadataEvent(MediaMetadataEvent::kMetadataStart);
   media_parser()->ParseMediaMetadata(
-      mime_type_, size_, false /* get_attached_images */, std::move(source_ptr),
+      mime_type_, size_, false /* get_attached_images */, std::move(source),
       base::BindOnce(&DownloadMediaParser::OnMediaMetadataParsed,
                      weak_factory_.GetWeakPtr()));
 }
@@ -153,13 +153,14 @@ void DownloadMediaParser::RetrieveEncodedVideoFrame() {
 
   auto media_source_factory = std::make_unique<LocalMediaDataSourceFactory>(
       file_path_, file_task_runner_);
-  chrome::mojom::MediaDataSourcePtr source_ptr;
+  mojo::PendingRemote<chrome::mojom::MediaDataSource> source;
   media_data_source_ = media_source_factory->CreateMediaDataSource(
-      &source_ptr, base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
-                                       weak_factory_.GetWeakPtr()));
+      source.InitWithNewPipeAndPassReceiver(),
+      base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
+                          weak_factory_.GetWeakPtr()));
 
   media_parser()->ExtractVideoFrame(
-      mime_type_, base::saturated_cast<uint32_t>(size_), std::move(source_ptr),
+      mime_type_, base::saturated_cast<uint32_t>(size_), std::move(source),
       base::BindOnce(&DownloadMediaParser::OnVideoFrameRetrieved,
                      weak_factory_.GetWeakPtr()));
 }

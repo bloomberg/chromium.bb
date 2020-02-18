@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
@@ -131,7 +131,7 @@ class NetworkQualityEstimatorManagerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::BoundTestNetLog> net_log_;
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;

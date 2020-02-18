@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/data_batch.h"
@@ -399,7 +399,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   int change_count_ = 0;
 
   // In memory model type store needs to be able to post tasks.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
 

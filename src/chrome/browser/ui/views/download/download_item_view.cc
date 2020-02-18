@@ -30,6 +30,7 @@
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -41,6 +42,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
@@ -61,6 +63,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -137,6 +140,36 @@ base::string16 SplitStringWithNewLineAtPosition(const base::string16& text,
   return new_text;
 }
 
+// A stub subclass of Button that has no visuals.
+class TransparentButton : public views::Button {
+ public:
+  explicit TransparentButton(views::ButtonListener* listener)
+      : Button(listener) {
+    SetFocusForPlatform();
+    SetInkDropMode(InkDropMode::ON);
+  }
+  ~TransparentButton() override {}
+
+  // Button subclasses need to provide this because the default color is
+  // kPlaceholderColor. In theory we could statically compute it in the
+  // constructor but then it won't be correct after dark mode changes, and to
+  // deal with that this class would have to observe NativeTheme and so on.
+  SkColor GetInkDropBaseColor() const override {
+    return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonEnabledColor));
+  }
+
+  const char* GetClassName() const override { return "TransparentButton"; }
+
+  // Forward dragging events, since this class doesn't have enough context to
+  // handle them.
+  bool OnMouseDragged(const ui::MouseEvent& event) override {
+    return parent()->OnMouseDragged(event);
+  }
+
+  void OnMouseCaptureLost() override { parent()->OnMouseCaptureLost(); }
+};
+
 }  // namespace
 
 DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
@@ -159,22 +192,27 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       announce_accessible_alert_soon_(false) {
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   model_->AddObserver(this);
-  set_context_menu_controller(this);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   font_list_ = rb.GetFontListWithDelta(1);
   status_font_list_ = rb.GetFontListWithDelta(-2);
 
+  auto open_button = std::make_unique<TransparentButton>(this);
+  open_button->set_context_menu_controller(this);
+  open_button_ = AddChildView(std::move(open_button));
+
   auto file_name_label = std::make_unique<views::Label>();
   file_name_label->SetFontList(font_list_);
   file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   file_name_label->SetText(ElidedFilename());
+  file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
   file_name_label_ = AddChildView(std::move(file_name_label));
 
   auto status_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING));
   status_label->SetFontList(status_font_list_);
   status_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  status_label->GetViewAccessibility().OverrideIsIgnored(true);
   status_label_ = AddChildView(std::move(status_label));
 
   auto dropdown_button = views::CreateVectorImageButton(this);
@@ -184,12 +222,10 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   dropdown_button->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
   dropdown_button->set_has_ink_drop_action_on_click(false);
+  dropdown_button->SetFocusForPlatform();
   dropdown_button_ = AddChildView(std::move(dropdown_button));
 
   LoadIcon();
-
-  focus_ring_ = views::FocusRing::Install(this);
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   OnDownloadUpdated();
 
@@ -259,6 +295,8 @@ void DownloadItemView::OnDownloadUpdated() {
     ToggleWarningDialog();
   } else {
     status_label_->SetText(GetStatusText());
+    status_label_->GetViewAccessibility().OverrideIsIgnored(
+        status_label_->GetText().empty());
     file_name_label_->SetY(GetYForFilenameText());
     switch (model_->GetState()) {
       case DownloadItem::IN_PROGRESS:
@@ -280,7 +318,7 @@ void DownloadItemView::OnDownloadUpdated() {
                 model_->GetFileNameToReportUser().LossyDisplayName()),
             true);
         StopDownloadProgress();
-        complete_animation_.reset(new gfx::SlideAnimation(this));
+        complete_animation_ = std::make_unique<gfx::SlideAnimation>(this);
         complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
@@ -297,7 +335,7 @@ void DownloadItemView::OnDownloadUpdated() {
           return;
         }
         StopDownloadProgress();
-        complete_animation_.reset(new gfx::SlideAnimation(this));
+        complete_animation_ = std::make_unique<gfx::SlideAnimation>(this);
         complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
@@ -364,6 +402,8 @@ void DownloadItemView::Layout() {
   InkDropHostView::Layout();
 
   UpdateColorsFromTheme();
+
+  open_button_->SetBoundsRect(GetLocalBounds());
 
   if (IsShowingWarningDialog()) {
     gfx::Point child_origin(
@@ -447,11 +487,6 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
                                    2 * kMinimumVerticalPadding + child_height));
 }
 
-bool DownloadItemView::OnMousePressed(const ui::MouseEvent& event) {
-  HandlePressEvent(event, event.IsOnlyLeftMouseButton());
-  return true;
-}
-
 // Handle drag (file copy) operations.
 bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
   // Mouse should not activate us in dangerous mode.
@@ -482,10 +517,6 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-void DownloadItemView::OnMouseReleased(const ui::MouseEvent& event) {
-  HandleClickEvent(event, event.IsOnlyLeftMouseButton());
-}
-
 void DownloadItemView::OnMouseCaptureLost() {
   // Mouse should not activate us in dangerous mode.
   if (mode_ != NORMAL_MODE)
@@ -498,30 +529,13 @@ void DownloadItemView::OnMouseCaptureLost() {
   }
 }
 
-bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
-  // Key press should not activate us in dangerous mode.
-  if (IsShowingWarningDialog())
-    return true;
-
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, nullptr /* &event */);
-    // OpenDownload may delete this, so don't add any code after this line.
-    OpenDownload();
-    return true;
-  }
-  return false;
-}
-
 base::string16 DownloadItemView::GetTooltipText(const gfx::Point& p) const {
   return IsShowingWarningDialog() ? base::string16() : tooltip_text_;
 }
 
 void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
-  node_data->role = ax::mojom::Role::kButton;
-  if (model_->IsDangerous())
-    node_data->SetRestriction(ax::mojom::Restriction::kDisabled);
+  node_data->role = ax::mojom::Role::kGroup;
 
   // Set the description to the empty string, otherwise the tooltip will be
   // used, which is redundant with the accessible name.
@@ -542,22 +556,6 @@ void DownloadItemView::OnThemeChanged() {
 
 void DownloadItemView::OnInkDropCreated() {
   ConfigureInkDrop();
-}
-
-void DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    HandlePressEvent(*event, true);
-    event->SetHandled();
-    return;
-  }
-
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    HandleClickEvent(*event, true);
-    event->SetHandled();
-    return;
-  }
-
-  views::View::OnGestureEvent(event);
 }
 
 void DownloadItemView::ShowContextMenuForViewImpl(
@@ -595,6 +593,15 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     // This will call ValidateDangerousDownload(), change download state and
     // notify us.
     MaybeSubmitDownloadToFeedbackService(DownloadCommands::KEEP);
+    return;
+  }
+
+  if (sender == open_button_) {
+    if (IsShowingWarningDialog())
+      return;
+    if (complete_animation_.get() && complete_animation_->is_animating())
+      complete_animation_->End();
+    OpenDownload();
     return;
   }
 
@@ -684,18 +691,6 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawImageInt(*icon->ToImageSkia(), icon_x, icon_y, flags);
 }
 
-void DownloadItemView::OnFocus() {
-  View::OnFocus();
-  // We render differently when focused.
-  SchedulePaint();
-}
-
-void DownloadItemView::OnBlur() {
-  View::OnBlur();
-  // We render differently when focused.
-  SchedulePaint();
-}
-
 void DownloadItemView::OpenDownload() {
   DCHECK(!IsShowingWarningDialog());
   // We're interested in how long it takes users to open downloads.  If they
@@ -713,7 +708,7 @@ void DownloadItemView::OpenDownload() {
 
 bool DownloadItemView::SubmitDownloadToFeedbackService(
     DownloadCommands::Command download_command) {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   if (!sb_service)
@@ -756,8 +751,9 @@ void DownloadItemView::UpdateColorsFromTheme() {
   if (!GetThemeProvider())
     return;
 
-  SetBorder(std::make_unique<SeparatorBorder>(GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR)));
+  open_button_->SetBorder(
+      std::make_unique<SeparatorBorder>(GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR)));
 
   // Use a slightly dimmed version of the base text color.
   SkColor dimmed_text_color = SkColorSetA(GetTextColor(), 0xC7);
@@ -793,39 +789,10 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 
   if (!context_menu_.get())
-    context_menu_.reset(new DownloadShelfContextMenuView(this));
+    context_menu_ = std::make_unique<DownloadShelfContextMenuView>(this);
   context_menu_->Run(GetWidget()->GetTopLevelWidget(), rect, source_type,
                      base::Bind(&DownloadItemView::ReleaseDropdown,
                                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DownloadItemView::HandlePressEvent(const ui::LocatedEvent& event,
-                                        bool active_event) {
-  // The event should not activate us in dangerous/malicious mode.
-  if (IsShowingWarningDialog())
-    return;
-
-  // Stop any completion animation.
-  if (complete_animation_.get() && complete_animation_->is_animating())
-    complete_animation_->End();
-
-  // Don't show the ripple for right clicks.
-  if (!active_event)
-    return;
-
-  AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
-}
-
-void DownloadItemView::HandleClickEvent(const ui::LocatedEvent& event,
-                                        bool active_event) {
-  // The event should not activate us in dangerous/malicious mode.
-  if (!active_event || IsShowingWarningDialog())
-    return;
-
-  AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, &event);
-
-  // OpenDownload may delete this, so don't add any code after this line.
-  OpenDownload();
 }
 
 void DownloadItemView::SetDropdownState(State new_state) {
@@ -894,6 +861,7 @@ void DownloadItemView::ClearWarningDialog() {
   // We need to load the icon now that the download has the real path.
   LoadIcon();
 
+  open_button_->SetEnabled(true);
   file_name_label_->SetVisible(true);
   status_label_->SetVisible(true);
   dropdown_button_->SetVisible(true);
@@ -904,7 +872,7 @@ void DownloadItemView::ShowWarningDialog() {
   time_download_warning_shown_ = base::Time::Now();
   download::DownloadDangerType danger_type = model_->GetDangerType();
   RecordDangerousDownloadWarningShown(danger_type);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (model_->ShouldAllowDownloadFeedback()) {
     safe_browsing::DownloadFeedbackService::RecordEligibleDownloadShown(
         danger_type);
@@ -932,6 +900,7 @@ void DownloadItemView::ShowWarningDialog() {
   dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
   SizeLabelToMinWidth();
 
+  open_button_->SetEnabled(false);
   file_name_label_->SetVisible(false);
   status_label_->SetVisible(false);
   dropdown_button_->SetVisible(mode_ == MALICIOUS_MODE);
@@ -939,23 +908,27 @@ void DownloadItemView::ShowWarningDialog() {
 
 gfx::ImageSkia DownloadItemView::GetWarningIcon() {
   switch (model_->GetDangerType()) {
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      if (safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+              model()->profile())
+              ->RequestsAdvancedProtectionVerdicts()) {
+        return gfx::CreateVectorIcon(
+            vector_icons::kErrorIcon, kErrorIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_AlertSeverityMedium));
+      }
+      FALLTHROUGH;
+
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return gfx::CreateVectorIcon(vector_icons::kWarningIcon, kWarningIconSize,
-                                   gfx::kGoogleRed700);
+      return gfx::CreateVectorIcon(
+          vector_icons::kWarningIcon, kWarningIconSize,
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityHigh));
 
-    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      if (safe_browsing::AdvancedProtectionStatusManager::
-              RequestsAdvancedProtectionVerdicts(model()->profile())) {
-        return gfx::CreateVectorIcon(vector_icons::kErrorIcon, kErrorIconSize,
-                                     gfx::kGoogleYellow500);
-      } else {
-        return gfx::CreateVectorIcon(vector_icons::kWarningIcon,
-                                     kWarningIconSize, gfx::kGoogleRed700);
-      }
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -1118,6 +1091,7 @@ void DownloadItemView::UpdateAccessibleName() {
   // status changes via the accessible alert notifications, and text change
   // notifications would be redundant.
   accessible_name_ = new_name;
+  open_button_->SetAccessibleName(new_name);
 }
 
 base::string16 DownloadItemView::GetInProgressAccessibleAlertText() {

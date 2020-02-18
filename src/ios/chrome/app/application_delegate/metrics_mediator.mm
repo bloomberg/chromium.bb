@@ -31,8 +31,14 @@
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
+
+// Make sure symbols for GTMTimeUtils are decorated as C otherwise the linker
+// looks for CPP decorated symbols and fails.
+extern "C" {
+#include "third_party/google_toolbox_for_mac/src/Foundation/GTMTimeUtils.h"
+}
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -100,6 +106,13 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
   base::TimeDelta startDuration =
       base::TimeTicks::Now() - [startupInformation appLaunchTime];
+
+  base::TimeDelta startDurationFromProcess =
+      base::TimeDelta::FromSecondsD(-GTMAppLaunchDate().timeIntervalSinceNow);
+
+  UMA_HISTOGRAM_TIMES("Startup.ColdStartFromProcessCreationTime",
+                      startDurationFromProcess);
+
   if ([startupInformation startupParameters]) {
     UMA_HISTOGRAM_TIMES("Startup.ColdStartWithExternalURLTime", startDuration);
   } else {
@@ -246,7 +259,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     callback = ^(NSData* log_content) {
       std::string log(static_cast<const char*>([log_content bytes]),
                       static_cast<size_t>([log_content length]));
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
             GetApplicationContext()->GetMetricsService()->PushExternalLog(log);
           }));
@@ -256,8 +269,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   }
 
   app_group::main_app::RecordWidgetUsage();
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&app_group::main_app::ProcessPendingLogs, callback));
 }
 

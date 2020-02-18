@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
@@ -41,6 +41,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   static Widget* CreateDialogWidget(WidgetDelegate* delegate,
                                     gfx::NativeWindow context,
                                     gfx::NativeView parent);
+
+  // Whether using custom dialog frame is supported for this dialog.
+  static bool CanSupportCustomFrame(gfx::NativeView parent);
 
   // Returns the dialog widget InitParams for a given |context| or |parent|.
   // If |bounds| is not empty, used to initially place the dialog, otherwise

@@ -37,6 +37,7 @@ namespace blink {
 
 class AffineTransform;
 class Document;
+class FloatRect;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
@@ -54,8 +55,6 @@ class CORE_EXPORT SVGElement : public Element {
 
  public:
   ~SVGElement() override;
-  void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(bool performing_reattach) override;
 
   int tabIndex() const override;
   bool SupportsFocus() const override { return false; }
@@ -235,6 +234,8 @@ class CORE_EXPORT SVGElement : public Element {
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
   void ChildrenChanged(const ChildrenChange&) override;
+
+  void DetachLayoutTree(bool performing_reattach) override;
 
   static CSSPropertyID CssPropertyIdForSVGAttributeName(const QualifiedName&);
   void UpdateRelativeLengthsInformation() {

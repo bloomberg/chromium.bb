@@ -20,9 +20,11 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -182,7 +184,7 @@ bool DoCopyFile(const FilePath& from_path,
 
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
 
   // Unlike the posix implementation that copies the file manually and discards
   // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access
@@ -732,18 +734,19 @@ bool DevicePathToDriveLetterPath(const FilePath& nt_device_path,
 FilePath MakeLongFilePath(const FilePath& input) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
-  DWORD path_long_len = ::GetLongPathName(input.value().c_str(), nullptr, 0);
+  DWORD path_long_len = ::GetLongPathName(as_wcstr(input.value()), nullptr, 0);
   if (path_long_len == 0UL)
     return FilePath();
 
-  base::string16 path_long_str;
+  string16 path_long_str;
   path_long_len = ::GetLongPathName(
-      input.value().c_str(), base::WriteInto(&path_long_str, path_long_len),
+      as_wcstr(input.value()),
+      as_writable_wcstr(WriteInto(&path_long_str, path_long_len)),
       path_long_len);
   if (path_long_len == 0UL)
     return FilePath();
 
-  return base::FilePath(path_long_str);
+  return FilePath(path_long_str);
 }
 
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle
@@ -924,6 +927,60 @@ bool SetNonBlocking(int fd) {
   if (ioctlsocket(fd, FIONBIO, &nonblocking) == 0)
     return true;
   return false;
+}
+
+namespace {
+
+// ::PrefetchVirtualMemory() is only available on Windows 8 and above. Chrome
+// supports Windows 7, so we need to check for the function's presence
+// dynamically.
+using PrefetchVirtualMemoryPtr = decltype(&::PrefetchVirtualMemory);
+
+// Returns null if ::PrefetchVirtualMemory() is not available.
+PrefetchVirtualMemoryPtr GetPrefetchVirtualMemoryPtr() {
+  HMODULE kernel32_dll = ::GetModuleHandleA("kernel32.dll");
+  return reinterpret_cast<decltype(&::PrefetchVirtualMemory)>(
+      GetProcAddress(kernel32_dll, "PrefetchVirtualMemory"));
+}
+
+}  // namespace
+
+bool PreReadFile(const FilePath& file_path,
+                 bool is_executable,
+                 int64_t max_bytes) {
+  DCHECK_GE(max_bytes, 0);
+
+  // On Win8 and higher use ::PrefetchVirtualMemory(). This is better than a
+  // simple data file read, more from a RAM perspective than CPU. This is
+  // because reading the file as data results in double mapping to
+  // Image/executable pages for all pages of code executed.
+  static PrefetchVirtualMemoryPtr prefetch_virtual_memory =
+      GetPrefetchVirtualMemoryPtr();
+
+  if (prefetch_virtual_memory == nullptr)
+    return internal::PreReadFileSlow(file_path, max_bytes);
+
+  if (max_bytes == 0) {
+    // PrefetchVirtualMemory() fails when asked to read zero bytes.
+    // base::MemoryMappedFile::Initialize() fails on an empty file.
+    return true;
+  }
+
+  // PrefetchVirtualMemory() fails if the file is opened with write access.
+  MemoryMappedFile::Access access = is_executable
+                                        ? MemoryMappedFile::READ_CODE_IMAGE
+                                        : MemoryMappedFile::READ_ONLY;
+  MemoryMappedFile mapped_file;
+  if (!mapped_file.Initialize(file_path, access))
+    return false;
+
+  const ::SIZE_T length =
+      std::min(base::saturated_cast<::SIZE_T>(max_bytes),
+               base::saturated_cast<::SIZE_T>(mapped_file.length()));
+  ::_WIN32_MEMORY_RANGE_ENTRY address_range = {mapped_file.data(), length};
+  return (*prefetch_virtual_memory)(::GetCurrentProcess(),
+                                    /*NumberOfEntries=*/1, &address_range,
+                                    /*Flags=*/0);
 }
 
 // -----------------------------------------------------------------------------

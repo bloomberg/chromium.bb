@@ -206,6 +206,11 @@ class TranslatePrefs {
                          const int offset,
                          const std::vector<std::string>& enabled_languages);
 
+  // Sets the language order to the provided order.
+  // This function is called from the language preference manager in Chrome for
+  // Android.
+  void SetLanguageOrder(const std::vector<std::string>& new_order);
+
   // Returns the list of TranslateLanguageInfo for all languages that are
   // available in the given locale.
   // The list returned in |languages| is sorted alphabetically based on the
@@ -298,6 +303,7 @@ class TranslatePrefs {
   // Stores and retrieves the last-observed translate target language. Used to
   // determine which target language to offer in future.
   void SetRecentTargetLanguage(const std::string& target_language);
+  void ResetRecentTargetLanguage();
   std::string GetRecentTargetLanguage() const;
 
   // Gets the value for the pref that represents how often the

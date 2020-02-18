@@ -37,10 +37,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
 
-// Enables user preference to control media keys on the lock screen.
-ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaKeys;
-
-// Enables lock screen media controls UI.
+// Enables lock screen media controls UI and use of media keys on the lock
+// screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
 
 // Enables hiding of ARC media notifications. If this is enabled, all ARC
@@ -48,6 +46,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
 // is because they will be replaced by native media session notifications.
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
+
+// Enables the redesigned managed device info UI in the system tray.
+ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
 
 // Enables the media session notification. If this is enabled, we will show
 // a notification that shows the currently playing media with controls.
@@ -58,8 +59,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 // TODO(crbug.com/952461): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
 
-// Enables the redesigned managed device info UI in the system tray.
-ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
+// Enables new layout for overview mode.
+// TODO(sammiequon): Cleanup this flag when feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewLayout;
 
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
@@ -83,14 +85,17 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables running an external binary which provides lock screen authentication.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
 
-// Enables the KioskNextShell feature.
-ASH_PUBLIC_EXPORT extern const base::Feature kKioskNextShell;
-
 // Enables views login.
 ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 
 // Enables the Virtual Desks feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesks;
+
+// Enables the touchpad 3-finger gestures to switch desks. It also changes tab
+// scrubbing as well as overview highlight to use 4-finger gestures.
+// This flag is only effective if the Virtual Desks feature is enabled (see
+// `kVirtualDesks`).
+ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesksGestures;
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
@@ -106,6 +111,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 // launched.
 ASH_PUBLIC_EXPORT extern const base::Feature
     kSwapSideVolumeButtonsForOrientation;
+
+// Enables refactored UnifiedMessageCenter which is completely separated from
+// the UnifiedSystemTrayView.
+ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
 
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
@@ -133,11 +142,15 @@ ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 
+ASH_PUBLIC_EXPORT bool IsVirtualDesksGesturesEnabled();
+
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
 
 }  // namespace features
 }  // namespace ash

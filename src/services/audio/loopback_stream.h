@@ -23,8 +23,8 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "media/base/audio_parameters.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -251,7 +251,7 @@ class LoopbackStream : public media::mojom::AudioInputStream,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<LoopbackStream> weak_factory_;
+  base::WeakPtrFactory<LoopbackStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoopbackStream);
 };

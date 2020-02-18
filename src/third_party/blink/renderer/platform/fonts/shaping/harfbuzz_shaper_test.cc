@@ -7,6 +7,7 @@
 #include <unicode/uscript.h>
 
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,6 +88,22 @@ class HarfBuzzShaperTest : public testing::Test {
 
   void TearDown() override {}
 
+  void SelectDevanagariFont() {
+    FontFamily devanagari_family;
+    // Windows 10
+    devanagari_family.SetFamily("Nirmala UI");
+    // Windows 7
+    devanagari_family.AppendFamily("Mangal");
+    // Linux
+    devanagari_family.AppendFamily("Lohit Devanagari");
+    // Mac
+    devanagari_family.AppendFamily("ITF Devanagari");
+
+    font_description.SetFamily(devanagari_family);
+    font = Font(font_description);
+    font.Update(nullptr);
+  }
+
   Font CreateAhem(float size) {
     FontDescription::VariantLigatures ligatures;
     return blink::test::CreateTestFont(
@@ -113,6 +130,7 @@ class HarfBuzzShaperTest : public testing::Test {
     return result;
   }
 
+  base::test::TaskEnvironment task_environment_;
   FontCachePurgePreventer font_cache_purge_preventer;
   FontDescription font_description;
   Font font;
@@ -268,49 +286,44 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
+  SelectDevanagariFont();
   UChar devanagari_common_string[] = {0x915, 0x94d, 0x930, 0x28, 0x20, 0x29};
   String devanagari_common_latin(devanagari_common_string, 6);
   HarfBuzzShaper shaper(devanagari_common_latin);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
-  EXPECT_EQ(2u, TestInfo(result)->NumberOfRunsForTesting());
-  ASSERT_TRUE(
-      TestInfo(result)->RunInfoForTesting(0, start_index, num_glyphs, script));
-  EXPECT_EQ(0u, start_index);
-  EXPECT_EQ(1u, num_glyphs);
-  EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
+  // Depending on font coverage we cannot assume that all text is in one
+  // run, the parenthesis U+0029 may be in a separate font.
+  EXPECT_GT(TestInfo(result)->NumberOfRunsForTesting(), 0u);
+  EXPECT_LE(TestInfo(result)->NumberOfRunsForTesting(), 2u);
 
-  ASSERT_TRUE(
-      TestInfo(result)->RunInfoForTesting(1, start_index, num_glyphs, script));
-  EXPECT_EQ(3u, start_index);
-  EXPECT_EQ(3u, num_glyphs);
-  EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
+  // Common part of the run must be resolved as Devanagari.
+  for (unsigned i = 0; i < TestInfo(result)->NumberOfRunsForTesting(); ++i) {
+    ASSERT_TRUE(TestInfo(result)->RunInfoForTesting(i, start_index, num_glyphs,
+                                                    script));
+    EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
+  }
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
+  SelectDevanagariFont();
   UChar devanagari_common_latin_string[] = {0x915, 0x94d, 0x930, 0x20,
                                             0x61,  0x62,  0x2E};
   HarfBuzzShaper shaper(String(devanagari_common_latin_string, 7));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
-  EXPECT_EQ(3u, TestInfo(result)->NumberOfRunsForTesting());
-  ASSERT_TRUE(
-      TestInfo(result)->RunInfoForTesting(0, start_index, num_glyphs, script));
-  EXPECT_EQ(0u, start_index);
-  EXPECT_EQ(1u, num_glyphs);
-  EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
+  // Ensure that there are only two scripts, Devanagari first, then Latin.
+  EXPECT_GT(TestInfo(result)->NumberOfRunsForTesting(), 0u);
+  EXPECT_LE(TestInfo(result)->NumberOfRunsForTesting(), 3u);
 
-  ASSERT_TRUE(
-      TestInfo(result)->RunInfoForTesting(1, start_index, num_glyphs, script));
-  EXPECT_EQ(3u, start_index);
-  EXPECT_EQ(1u, num_glyphs);
-  EXPECT_EQ(HB_SCRIPT_DEVANAGARI, script);
-
-  ASSERT_TRUE(
-      TestInfo(result)->RunInfoForTesting(2, start_index, num_glyphs, script));
-  EXPECT_EQ(4u, start_index);
-  EXPECT_EQ(3u, num_glyphs);
-  EXPECT_EQ(HB_SCRIPT_LATIN, script);
+  bool finished_devanagari = false;
+  for (unsigned i = 0; i < TestInfo(result)->NumberOfRunsForTesting(); ++i) {
+    ASSERT_TRUE(TestInfo(result)->RunInfoForTesting(i, start_index, num_glyphs,
+                                                    script));
+    finished_devanagari = finished_devanagari | (script == HB_SCRIPT_LATIN);
+    EXPECT_EQ(script,
+              finished_devanagari ? HB_SCRIPT_LATIN : HB_SCRIPT_DEVANAGARI);
+  }
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
@@ -1555,6 +1568,35 @@ TEST_P(ShapeParameterTest, CopyRangeMissingRun) {
   EXPECT_EQ(sub->StartIndex(), 7u);
   EXPECT_EQ(sub->EndIndex(), 9u);
   EXPECT_EQ(sub->NumCharacters(), 2u);
+}
+
+TEST_P(ShapeParameterTest, CopyRangeNoRuns) {
+  TextDirection direction = GetParam();
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(&font, 0, 2, direction);
+
+  scoped_refptr<ShapeResult> sub0 = result->SubRange(0, 1);
+  EXPECT_EQ(sub0->StartIndex(), 0u);
+  EXPECT_EQ(sub0->EndIndex(), 1u);
+  EXPECT_EQ(sub0->NumCharacters(), 1u);
+
+  scoped_refptr<ShapeResult> sub1 = result->SubRange(1, 2);
+  EXPECT_EQ(sub1->StartIndex(), 1u);
+  EXPECT_EQ(sub1->EndIndex(), 2u);
+  EXPECT_EQ(sub1->NumCharacters(), 1u);
+
+  Vector<scoped_refptr<ShapeResult>> range_results;
+  Vector<ShapeResult::ShapeRange> ranges;
+  range_results.push_back(ShapeResult::CreateEmpty(*result));
+  ranges.push_back(ShapeResult::ShapeRange{0, 1, range_results[0].get()});
+  result->CopyRanges(ranges.data(), ranges.size());
+  for (unsigned i = 0; i < ranges.size(); i++) {
+    const ShapeResult::ShapeRange& range = ranges[i];
+    const ShapeResult& result = *range_results[i];
+    EXPECT_EQ(result.StartIndex(), range.start);
+    EXPECT_EQ(result.EndIndex(), range.end);
+    EXPECT_EQ(result.NumCharacters(), range.end - range.start);
+  }
 }
 
 TEST_P(ShapeParameterTest, ShapeResultViewMissingRun) {

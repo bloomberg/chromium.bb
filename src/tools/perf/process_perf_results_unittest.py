@@ -6,14 +6,11 @@
 import json
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
 from core import path_util
-sys.path.insert(1, path_util.GetTelemetryDir())
-sys.path.insert(
-    1, os.path.join(path_util.GetTelemetryDir(), 'third_party', 'mock'))
+path_util.AddTelemetryToPath()
 
 from telemetry import decorators
 
@@ -68,10 +65,6 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
   def setUp(self):
     self.test_dir = tempfile.mkdtemp()
     self.output_json = os.path.join(self.test_dir, 'output.json')
-    self.service_account_file = os.path.join(
-        self.test_dir, 'fake_service_account.json')
-    with open(self.service_account_file, 'w') as f:
-      json.dump([1,2,3,4], f)
     self.task_output_dir = os.path.join(
         os.path.dirname(__file__), 'testdata', 'task_output_dir')
 
@@ -126,7 +119,6 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
 
     return_code, benchmark_upload_result_map = ppr_module.process_perf_results(
         self.output_json, configuration_name='test-builder',
-        service_account_file=self.service_account_file,
         build_properties=build_properties,
         task_output_dir=self.task_output_dir,
         smoke_test_mode=False,

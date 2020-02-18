@@ -914,9 +914,9 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_TRUE(ax_position_left.IsValid());
-  EXPECT_FALSE(ax_position_left.IsTextPosition());
-  EXPECT_EQ(ax_hidden, ax_position_left.ContainerObject());
-  EXPECT_EQ(0, ax_position_left.ChildIndex());
+  EXPECT_TRUE(ax_position_left.IsTextPosition());
+  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_left.ContainerObject());
+  EXPECT_EQ(0, ax_position_left.TextOffset());
   // This is an "after children" position.
   EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 
@@ -924,9 +924,9 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveRight);
   EXPECT_TRUE(ax_position_right.IsValid());
-  EXPECT_FALSE(ax_position_right.IsTextPosition());
-  EXPECT_EQ(ax_hidden, ax_position_right.ContainerObject());
-  EXPECT_EQ(0, ax_position_right.ChildIndex());
+  EXPECT_TRUE(ax_position_right.IsTextPosition());
+  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_right.ContainerObject());
+  EXPECT_EQ(0, ax_position_right.TextOffset());
   EXPECT_EQ(nullptr, ax_position_right.ChildAfterTreePosition());
 
   const auto position_before = Position::BeforeNode(*hidden);
@@ -956,7 +956,7 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_TRUE(ax_position_left.IsValid());
   EXPECT_FALSE(ax_position_left.IsTextPosition());
   EXPECT_EQ(ax_hidden, ax_position_left.ContainerObject());
-  EXPECT_EQ(0, ax_position_left.ChildIndex());
+  EXPECT_EQ(1, ax_position_left.ChildIndex());
   // This is an "after children" position.
   EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 
@@ -1234,6 +1234,36 @@ TEST_F(AccessibilityTest, PositionInCSSContent) {
       AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_EQ(text, position_after.AnchorNode());
   EXPECT_EQ(12, position_after.GetPosition().OffsetInContainerNode());
+}
+
+TEST_F(AccessibilityTest, PositionInCSSImageContent) {
+  constexpr char css_content_no_text[] = R"HTML(
+   <style>
+   .heading::before {
+    content: url(data:image/gif;base64,);
+   }
+   </style>
+   <h1 id="heading" class="heading">Heading</h1>)HTML";
+  SetBodyInnerHTML(css_content_no_text);
+
+  const Node* heading = GetElementById("heading");
+  ASSERT_NE(nullptr, heading);
+
+  const AXObject* ax_heading = GetAXObjectByElementId("heading");
+  ASSERT_NE(nullptr, ax_heading);
+  ASSERT_EQ(ax::mojom::Role::kHeading, ax_heading->RoleValue());
+  ASSERT_EQ(2, ax_heading->ChildCount());
+
+  const AXObject* ax_css_before = ax_heading->FirstChild();
+  ASSERT_NE(nullptr, ax_css_before);
+  ASSERT_EQ(ax::mojom::Role::kImage, ax_css_before->RoleValue());
+
+  const auto ax_position_before =
+      AXPosition::CreateFirstPositionInObject(*ax_css_before);
+  const auto position = ax_position_before.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveLeft);
+  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
+  EXPECT_EQ(3, position.GetPosition().OffsetInContainerNode());
 }
 
 TEST_F(AccessibilityTest, PositionInTableWithCSSContent) {

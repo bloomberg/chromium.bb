@@ -12,8 +12,8 @@
 #include "absl/memory/memory.h"
 #include "call/call.h"
 #include "call/fake_network_pipe.h"
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "rtc_base/time_utils.h"
+#include "test/rtp_header_parser.h"
 #include "test/single_threaded_task_queue.h"
 
 namespace webrtc {
@@ -37,7 +37,7 @@ MediaType Demuxer::GetMediaType(const uint8_t* packet_data,
 }
 
 DirectTransport::DirectTransport(
-    SingleThreadedTaskQueueForTesting* task_queue,
+    DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue,
     std::unique_ptr<SimulatedPacketReceiverInterface> pipe,
     Call* send_call,
     const std::map<uint8_t, MediaType>& payload_type_map)

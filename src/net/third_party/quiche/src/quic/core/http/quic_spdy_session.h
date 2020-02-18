@@ -18,6 +18,8 @@
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_sender.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_sender.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_send_stream.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
@@ -50,7 +52,7 @@ class QUIC_EXPORT_PRIVATE QuicHpackDebugVisitor {
   virtual void OnUseEntry(QuicTime::Delta elapsed) = 0;
 };
 
-// A QUIC session with a headers stream.
+// A QUIC session for HTTP.
 class QUIC_EXPORT_PRIVATE QuicSpdySession
     : public QuicSession,
       public QpackEncoder::DecoderStreamErrorDelegate,
@@ -76,8 +78,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // Called by |headers_stream_| when headers with a priority have been
   // received for a stream.  This method will only be called for server streams.
-  virtual void OnStreamHeadersPriority(QuicStreamId stream_id,
-                                       spdy::SpdyPriority priority);
+  virtual void OnStreamHeadersPriority(
+      QuicStreamId stream_id,
+      const spdy::SpdyStreamPrecedence& precedence);
 
   // Called by |headers_stream_| when headers have been completely received
   // for a stream.  |fin| will be true if the fin flag was set in the headers
@@ -98,7 +101,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Called by |headers_stream_| when a PRIORITY frame has been received for a
   // stream. This method will only be called for server streams.
   virtual void OnPriorityFrame(QuicStreamId stream_id,
-                               spdy::SpdyPriority priority);
+                               const spdy::SpdyStreamPrecedence& precedence);
 
   // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov);
@@ -111,7 +114,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
       QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
-      spdy::SpdyPriority priority,
+      const spdy::SpdyStreamPrecedence& precedence,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Writes a PRIORITY frame the to peer. Returns the size in bytes of the
@@ -142,9 +145,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   bool server_push_enabled() const { return server_push_enabled_; }
 
-  // Called by |QuicHeadersStream::UpdateEnableServerPush()| with
-  // value from SETTINGS_ENABLE_PUSH.
-  void set_server_push_enabled(bool enable) { server_push_enabled_ = enable; }
+  // Called when a setting is parsed from an incoming SETTINGS frame.
+  void OnSetting(uint64_t id, uint64_t value);
 
   // Return true if this session wants to release headers stream's buffer
   // aggressively.
@@ -153,14 +155,25 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   void CloseConnectionWithDetails(QuicErrorCode error,
                                   const std::string& details);
 
-  // Must be called before Initialize().
+  // Must not be called after Initialize().
+  // TODO(bnc): Move to constructor argument.
+  void set_qpack_maximum_dynamic_table_capacity(
+      uint64_t qpack_maximum_dynamic_table_capacity) {
+    qpack_maximum_dynamic_table_capacity_ =
+        qpack_maximum_dynamic_table_capacity;
+  }
+
+  // Must not be called after Initialize().
+  // TODO(bnc): Move to constructor argument.
+  void set_qpack_maximum_blocked_streams(
+      uint64_t qpack_maximum_blocked_streams) {
+    qpack_maximum_blocked_streams_ = qpack_maximum_blocked_streams;
+  }
+
+  // Must not be called after Initialize().
   // TODO(bnc): Move to constructor argument.
   void set_max_inbound_header_list_size(size_t max_inbound_header_list_size) {
     max_inbound_header_list_size_ = max_inbound_header_list_size;
-  }
-
-  void set_max_outbound_header_list_size(size_t max_outbound_header_list_size) {
-    max_outbound_header_list_size_ = max_outbound_header_list_size;
   }
 
   size_t max_outbound_header_list_size() const {
@@ -173,6 +186,28 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // Returns true if the session has active request streams.
   bool HasActiveRequestStreams() const;
+
+  // Called when the size of the compressed frame payload is available.
+  void OnCompressedFrameSize(size_t frame_len);
+
+  // Called when a PUSH_PROMISE frame has been received.
+  void OnPushPromise(spdy::SpdyStreamId stream_id,
+                     spdy::SpdyStreamId promised_stream_id);
+
+  // Called when the complete list of headers is available.
+  void OnHeaderList(const QuicHeaderList& header_list);
+
+  QuicStreamId promised_stream_id() const { return promised_stream_id_; }
+
+  // Initialze HTTP/3 unidirectional streams if |unidirectional| is true and
+  // those streams are not initialized yet.
+  void OnCanCreateNewOutgoingStream(bool unidirectional) override;
+
+  void set_max_allowed_push_id(QuicStreamId max_allowed_push_id);
+
+  QuicStreamId max_allowed_push_id() { return max_allowed_push_id_; }
+
+  int32_t destruction_indicator() const { return destruction_indicator_; }
 
  protected:
   // Override CreateIncomingStream(), CreateOutgoingBidirectionalStream() and
@@ -233,6 +268,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   bool IsConnected() { return connection()->connected(); }
 
+  const QuicReceiveControlStream* receive_control_stream() const {
+    return receive_control_stream_;
+  }
+
+  // Initializes HTTP/3 unidirectional streams if not yet initialzed.
+  virtual void MaybeInitializeHttp3UnidirectionalStreams();
+
+  void set_max_uncompressed_header_bytes(
+      size_t set_max_uncompressed_header_bytes);
+
+  void SendMaxPushId(QuicStreamId max_allowed_push_id);
+
  private:
   friend class test::QuicSpdySessionPeer;
 
@@ -243,21 +290,15 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Called when a HEADERS frame has been received.
   void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
-                 spdy::SpdyPriority priority,
+                 const spdy::SpdyStreamPrecedence& precedence,
                  bool fin);
 
-  // Called when a PUSH_PROMISE frame has been received.
-  void OnPushPromise(spdy::SpdyStreamId stream_id,
-                     spdy::SpdyStreamId promised_stream_id);
-
   // Called when a PRIORITY frame has been received.
-  void OnPriority(spdy::SpdyStreamId stream_id, spdy::SpdyPriority priority);
+  void OnPriority(spdy::SpdyStreamId stream_id,
+                  const spdy::SpdyStreamPrecedence& precedence);
 
-  // Called when the complete list of headers is available.
-  void OnHeaderList(const QuicHeaderList& header_list);
-
-  // Called when the size of the compressed frame payload is available.
-  void OnCompressedFrameSize(size_t frame_len);
+  void CloseConnectionOnDuplicateHttp3UnidirectionalStreams(
+      QuicStringPiece type);
 
   std::unique_ptr<QpackEncoder> qpack_encoder_;
   std::unique_ptr<QpackDecoder> qpack_decoder_;
@@ -265,13 +306,32 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Pointer to the header stream in stream_map_.
   QuicHeadersStream* headers_stream_;
 
-  // HTTP/3 control streams. They are owned by QuicSession inside dynamic
+  // HTTP/3 control streams. They are owned by QuicSession inside
   // stream map, and can be accessed by those unowned pointers below.
   QuicSendControlStream* send_control_stream_;
   QuicReceiveControlStream* receive_control_stream_;
 
+  // Pointers to HTTP/3 QPACK streams in stream map.
+  QpackReceiveStream* qpack_encoder_receive_stream_;
+  QpackReceiveStream* qpack_decoder_receive_stream_;
+  QpackSendStream* qpack_encoder_send_stream_;
+  QpackSendStream* qpack_decoder_send_stream_;
+
+  // Maximum dynamic table capacity as defined at
+  // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#maximum-dynamic-table-capacity
+  // for the decoding context.  Value will be sent via
+  // SETTINGS_QPACK_MAX_TABLE_CAPACITY.
+  uint64_t qpack_maximum_dynamic_table_capacity_;
+
+  // Maximum number of blocked streams as defined at
+  // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#blocked-streams
+  // for the decoding context.  Value will be sent via
+  // SETTINGS_QPACK_BLOCKED_STREAMS.
+  uint64_t qpack_maximum_blocked_streams_;
+
   // The maximum size of a header block that will be accepted from the peer,
   // defined per spec as key + value + overhead per field (uncompressed).
+  // Value will be sent via SETTINGS_MAX_HEADER_LIST_SIZE.
   size_t max_inbound_header_list_size_;
 
   // The maximum size of a header block that can be sent to the peer. This field
@@ -288,17 +348,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   QuicStreamId promised_stream_id_;
   bool fin_;
   size_t frame_len_;
-  size_t uncompressed_frame_len_;
 
   bool supports_push_promise_;
 
   spdy::SpdyFramer spdy_framer_;
   http2::Http2DecoderAdapter h2_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
+  QuicStreamId max_allowed_push_id_;
 
-  // TODO(renjietang): Replace these two members with actual QPACK send streams.
-  NoopQpackStreamSenderDelegate encoder_stream_sender_delegate_;
-  NoopQpackStreamSenderDelegate decoder_stream_sender_delegate_;
+  // An integer used for live check. The indicator is assigned a value in
+  // constructor. As long as it is not the assigned value, that would indicate
+  // an use-after-free.
+  int32_t destruction_indicator_;
 };
 
 }  // namespace quic

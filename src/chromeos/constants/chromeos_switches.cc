@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -28,33 +27,7 @@ const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 // all stored user keys will be converted to GaiaId)
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
-// Controls whether Instant Tethering supports hosts which use the background
-// advertisement model.
-const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
-    "InstantTetheringBackgroundAdvertisementSupport",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace
-
-// Controls whether to enable Chrome OS Account Manager.
-// Rollout controlled by Finch.
-const base::Feature kAccountManager{"ChromeOSAccountManager",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to enable the Parental Controls section of settings.
-const base::Feature kParentalControlsSettings{
-    "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to enable Google Assistant feature.
-const base::Feature kAssistantFeature{"ChromeOSAssistant",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to enable Ambient mode feature.
-const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).
@@ -345,6 +318,11 @@ const char kFakeDriveFsLauncherChrootPath[] =
 const char kFakeDriveFsLauncherSocketPath[] =
     "fake-drivefs-launcher-socket-path";
 
+// Fingerprint sensor location indicates the physical sensor's location. The
+// value is a string with possible values: "power-button-top-left",
+// "keyboard-top-right", "keyboard-bottom-right".
+const char kFingerprintSensorLocation[] = "fingerprint-sensor-location";
+
 // Forces Chrome to use CertVerifyProcBuiltin for verification of server
 // certificates, ignoring the status of
 // net::features::kCertVerifierBuiltinFeature.
@@ -372,9 +350,6 @@ const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
-
-// Forces to use chrome camera app when camera icon is clicked.
-const char kForceUseChromeCamera[] = "force-use-chrome-camera";
 
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
@@ -453,6 +428,15 @@ const char kOobeSkipToLogin[] = "oobe-skip-to-login";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
+// SAML assertion consumer URL, used to detect when Gaia-less SAML flows end
+// (e.g. for SAML managed guest sessions)
+// TODO(984021): Remove when URL is sent by DMServer.
+const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
+
+// Url address of SAML provider for a SAML public session.
+// TODO(984021): Remove when URL is sent by DMServer.
+const char kPublicAccountsSamlUrl[] = "public-accounts-saml-url";
+
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
@@ -463,8 +447,8 @@ const char kRedirectLibassistantLogging[] = "redirect-libassistant-logging";
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
-// Password change url for SAML users. Remove when https://crbug.com/941489 is
-// fixed.
+// Password change url for SAML users.
+// TODO(941489): Remove when the bug is fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
 // Smaller, denser shelf in clamshell mode.
@@ -512,6 +496,9 @@ const char kTetherStub[] = "tether-stub";
 const char kTetherHostScansIgnoreWiredConnections[] =
     "tether-host-scans-ignore-wired-connections";
 
+// Shows all Bluetooth devices in UI (System Tray/Settings Page.)
+const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
+
 // Used to tell the policy infrastructure to not let profile initialization
 // complete until policy is manually set by a test. This is used to provide
 // backward compatibility with a few tests that incorrectly use the
@@ -554,26 +541,6 @@ bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
 }
 
-bool IsAccountManagerEnabled() {
-  return base::FeatureList::IsEnabled(kAccountManager);
-}
-
-bool IsParentalControlsSettingsEnabled() {
-  return base::FeatureList::IsEnabled(kParentalControlsSettings);
-}
-
-bool IsAssistantFlagsEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantFeature);
-}
-
-bool IsAssistantEnabled() {
-  return IsAssistantFlagsEnabled();
-}
-
-bool IsAmbientModeEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeFeature);
-}
-
 bool IsSigninFrameClientCertsEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCerts);
@@ -601,18 +568,9 @@ bool ShouldShowScrollableShelf() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
 }
 
-bool IsInstantTetheringBackgroundAdvertisingSupported() {
-  return base::FeatureList::IsEnabled(
-      kInstantTetheringBackgroundAdvertisementSupport);
-}
-
 bool ShouldTetherHostScansIgnoreWiredConnections() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kTetherHostScansIgnoreWiredConnections);
-}
-
-bool ShouldShowPlayStoreInDemoMode() {
-  return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
 }
 
 bool ShouldSkipOobePostLogin() {
@@ -627,6 +585,11 @@ bool IsGaiaServicesDisabled() {
 bool IsArcCpuRestrictionDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableArcCpuRestriction);
+}
+
+bool IsUnfilteredBluetoothDevicesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kUnfilteredBluetoothDevices);
 }
 
 }  // namespace switches

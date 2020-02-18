@@ -27,40 +27,17 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 
-namespace content {
-class WebContents;
-}
-
 class DownloadController : public DownloadControllerBase {
  public:
   static DownloadController* GetInstance();
 
   // DownloadControllerBase implementation.
   void AcquireFileAccessPermission(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       AcquireFileAccessPermissionCallback callback) override;
-  void CreateAndroidDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const DownloadInfo& info) override;
+  void CreateAndroidDownload(const content::WebContents::Getter& wc_getter,
+                             const DownloadInfo& info) override;
   void AboutToResumeDownload(download::DownloadItem* download_item) override;
-
-  // UMA histogram enum for download cancellation reasons. Keep this
-  // in sync with MobileDownloadCancelReason in histograms.xml. This should be
-  // append only.
-  enum DownloadCancelReason {
-    CANCEL_REASON_NOT_CANCELED = 0,
-    CANCEL_REASON_ACTION_BUTTON,
-    CANCEL_REASON_NOTIFICATION_DISMISSED,
-    CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED,
-    CANCEL_REASON_NO_STORAGE_PERMISSION,
-    CANCEL_REASON_DANGEROUS_DOWNLOAD_INFOBAR_DISMISSED,
-    CANCEL_REASON_NO_EXTERNAL_STORAGE,
-    CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET,
-    CANCEL_REASON_OTHER_NATIVE_RESONS,
-    CANCEL_REASON_USER_CANCELED,
-    CANCEL_REASON_MAX
-  };
-  static void RecordDownloadCancelReason(DownloadCancelReason reason);
 
   // UMA histogram enum for download storage permission requests. Keep this
   // in sync with MobileDownloadStoragePermission in histograms.xml. This should
@@ -102,12 +79,12 @@ class DownloadController : public DownloadControllerBase {
   void OnDangerousDownload(download::DownloadItem* item);
 
   // Helper methods to start android download on UI thread.
-  void StartAndroidDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const DownloadInfo& info);
+  void StartAndroidDownload(const content::WebContents::Getter& wc_getter,
+                            const DownloadInfo& info);
   void StartAndroidDownloadInternal(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const DownloadInfo& info, bool allowed);
+      const content::WebContents::Getter& wc_getter,
+      const DownloadInfo& info,
+      bool allowed);
 
   // Check if an interrupted download item can be auto resumed.
   bool IsInterruptedDownloadAutoResumable(

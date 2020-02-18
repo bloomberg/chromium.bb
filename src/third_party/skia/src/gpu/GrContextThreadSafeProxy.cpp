@@ -64,16 +64,18 @@ SkSurfaceCharacterization GrContextThreadSafeProxy::createCharacterization(
         return SkSurfaceCharacterization(); // return an invalid characterization
     }
 
-    sampleCnt = this->caps()->getRenderTargetSampleCount(sampleCnt, grColorType, backendFormat);
-    if (!sampleCnt) {
+    if (!this->caps()->isFormatAsColorTypeRenderable(grColorType, backendFormat, sampleCnt)) {
         return SkSurfaceCharacterization(); // return an invalid characterization
     }
+
+    sampleCnt = this->caps()->getRenderTargetSampleCount(sampleCnt, backendFormat);
+    SkASSERT(sampleCnt);
 
     if (willUseGLFBO0 && isTextureable) {
         return SkSurfaceCharacterization(); // return an invalid characterization
     }
 
-    if (isTextureable && !this->caps()->isFormatTexturable(grColorType, backendFormat)) {
+    if (isTextureable && !this->caps()->isFormatTexturable(backendFormat)) {
         // Skia doesn't agree that this is textureable.
         return SkSurfaceCharacterization(); // return an invalid characterization
     }

@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -94,7 +94,7 @@ class PaymentRequestPaymentResponseHelperTest : public PlatformTest {
   TestPaymentRequest* payment_request() { return payment_request_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+  base::test::TaskEnvironment scoped_task_evironment_;
 
   autofill::AutofillProfile profile_;
   autofill::CreditCard credit_card_;

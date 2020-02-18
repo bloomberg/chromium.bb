@@ -66,12 +66,11 @@ namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
 
-void CreateContextMenuDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const content::ContextMenuParams& params,
-    bool is_link,
-    const std::string& extra_headers,
-    bool granted) {
+void CreateContextMenuDownload(const content::WebContents::Getter& wc_getter,
+                               const content::ContextMenuParams& params,
+                               bool is_link,
+                               const std::string& extra_headers,
+                               bool granted) {
   content::WebContents* web_contents = wc_getter.Run();
   if (!granted)
     return;
@@ -151,7 +150,7 @@ void RemoveDownloadItem(std::unique_ptr<DownloadManagerGetter> getter,
 }
 
 void OnRequestFileAccessResult(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     DownloadControllerBase::AcquireFileAccessPermissionCallback cb,
     bool granted,
     const std::string& permission_to_update) {
@@ -168,10 +167,6 @@ void OnRequestFileAccessResult(
     return;
   }
 
-  if (!granted) {
-    DownloadController::RecordDownloadCancelReason(
-        DownloadController::CANCEL_REASON_NO_STORAGE_PERMISSION);
-  }
   std::move(cb).Run(granted);
 }
 
@@ -229,13 +224,6 @@ void DownloadControllerBase::SetDownloadControllerBase(
 }
 
 // static
-void DownloadController::RecordDownloadCancelReason(
-    DownloadCancelReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "MobileDownload.CancelReason", reason, CANCEL_REASON_MAX);
-}
-
-// static
 void DownloadController::RecordStoragePermission(StoragePermissionType type) {
   UMA_HISTOGRAM_ENUMERATION("MobileDownload.StoragePermission", type,
                             STORAGE_PERMISSION_MAX);
@@ -251,7 +239,7 @@ DownloadController::DownloadController() = default;
 DownloadController::~DownloadController() = default;
 
 void DownloadController::AcquireFileAccessPermission(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     DownloadControllerBase::AcquireFileAccessPermissionCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -262,14 +250,14 @@ void DownloadController::AcquireFileAccessPermission(
         StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
     RecordStoragePermission(
         StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(cb), true));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(cb), true));
     return;
   } else if (vr::VrTabHelper::IsUiSuppressedInVr(
                  web_contents,
                  vr::UiSuppressedElement::kFileAccessPermission)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(cb), false));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(cb), false));
     return;
   }
 
@@ -285,12 +273,11 @@ void DownloadController::AcquireFileAccessPermission(
 }
 
 void DownloadController::CreateAndroidDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DownloadController::StartAndroidDownload,
-                     base::Unretained(this), wc_getter, info));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DownloadController::StartAndroidDownload,
+                                base::Unretained(this), wc_getter, info));
 }
 
 void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
@@ -315,7 +302,7 @@ void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
 }
 
 void DownloadController::StartAndroidDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -325,8 +312,9 @@ void DownloadController::StartAndroidDownload(
 }
 
 void DownloadController::StartAndroidDownloadInternal(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const DownloadInfo& info, bool allowed) {
+    const content::WebContents::Getter& wc_getter,
+    const DownloadInfo& info,
+    bool allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!allowed)
     return;
@@ -429,14 +417,10 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 
       // Call onDownloadCompleted
       Java_DownloadController_onDownloadCompleted(env, j_item);
-      DownloadController::RecordDownloadCancelReason(
-             DownloadController::CANCEL_REASON_NOT_CANCELED);
       break;
     case DownloadItem::CANCELLED:
       strong_validators_map_.erase(item->GetGuid());
       Java_DownloadController_onDownloadCancelled(env, j_item);
-      DownloadController::RecordDownloadCancelReason(
-          DownloadController::CANCEL_REASON_OTHER_NATIVE_RESONS);
       break;
     case DownloadItem::INTERRUPTED:
       if (item->IsDone())
@@ -458,7 +442,7 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
     auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
         BrowserContext::GetDownloadManager(
             content::DownloadItemUtils::GetBrowserContext(item)));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
                        item->GetGuid()));
@@ -476,7 +460,7 @@ void DownloadController::StartContextMenuDownload(
   int process_id = web_contents->GetRenderViewHost()->GetProcess()->GetID();
   int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
 
-  const content::ResourceRequestInfo::WebContentsGetter& wc_getter(
+  const content::WebContents::Getter& wc_getter(
       base::Bind(&GetWebContents, process_id, routing_id));
 
   AcquireFileAccessPermission(

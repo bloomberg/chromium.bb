@@ -7,7 +7,6 @@
 
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkBitmapController.h"
-#include "src/core/SkBitmapProvider.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkColorSpaceXformSteps.h"
 #include "src/core/SkRasterPipeline.h"
@@ -135,7 +134,7 @@ SkShaderBase::Context* SkImageShader::onMakeContext(const ContextRec& rec,
     }
 
     return SkBitmapProcLegacyShader::MakeContext(*this, fTileModeX, fTileModeY,
-                                                 SkBitmapProvider(fImage.get()), rec, alloc);
+                                                 as_IB(fImage.get()), rec, alloc);
 }
 #endif
 
@@ -184,7 +183,6 @@ static GrSamplerState::WrapMode tile_mode_to_wrap_mode(const SkTileMode tileMode
             return GrSamplerState::WrapMode::kClampToBorder;
     }
     SK_ABORT("Unknown tile mode.");
-    return GrSamplerState::WrapMode::kClamp;
 }
 
 std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
@@ -220,7 +218,7 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
     // are provided by the caller.
     bool doBicubic;
     GrSamplerState::Filter textureFilterMode = GrSkFilterQualityToGrFilterMode(
-            args.fFilterQuality, *args.fViewMatrix, *lm,
+            fImage->width(), fImage->height(), args.fFilterQuality, *args.fViewMatrix, *lm,
             args.fContext->priv().options().fSharpenMipmappedTextures, &doBicubic);
     GrSamplerState samplerState(wrapModes, textureFilterMode);
     SkScalar scaleAdjust[2] = { 1.0f, 1.0f };
@@ -293,18 +291,48 @@ sk_sp<SkShader> SkMakeBitmapShaderForPaint(const SkPaint& paint, const SkBitmap&
 
 void SkShaderBase::RegisterFlattenables() { SK_REGISTER_FLATTENABLE(SkImageShader); }
 
-bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
+class SkImageStageUpdater : public SkStageUpdater {
+public:
+    const SkImageShader* fShader;
+
+    float fMatrixStorage[6];
+
+#if 0   // TODO: when we support mipmaps
+    SkRasterPipeline_GatherCtx* fGather;
+    SkRasterPipeline_TileCtx* fLimitX;
+    SkRasterPipeline_TileCtx* fLimitY;
+    SkRasterPipeline_DecalTileCtx* fDecal;
+#endif
+
+    bool update(const SkMatrix& ctm, const SkMatrix* localM) override {
+        SkMatrix matrix;
+        return fShader->computeTotalInverse(ctm, localM, &matrix) &&
+               matrix.asAffine(fMatrixStorage);
+    }
+};
+
+bool SkImageShader::doStages(const SkStageRec& rec, SkImageStageUpdater* updater) const {
+    if (updater &&
+        (rec.fPaint.getFilterQuality() == kMedium_SkFilterQuality ||
+         rec.fCTM.hasPerspective()))
+    {
+        // TODO: handle these cases
+        // medium: recall RequestBitmap and update width/height accordingly
+        // perspt: store 9 floats and use persp stage
+        return false;
+    }
+
     SkRasterPipeline* p = rec.fPipeline;
     SkArenaAlloc* alloc = rec.fAlloc;
+    auto quality = rec.fPaint.getFilterQuality();
 
     SkMatrix matrix;
     if (!this->computeTotalInverse(rec.fCTM, rec.fLocalM, &matrix)) {
         return false;
     }
-    auto quality = rec.fPaint.getFilterQuality();
 
-    SkBitmapProvider provider(fImage.get());
-    const auto* state = SkBitmapController::RequestBitmap(provider, matrix, quality, alloc);
+    const auto* state = SkBitmapController::RequestBitmap(as_IB(fImage.get()),
+                                                          matrix, quality, alloc);
     if (!state) {
         return false;
     }
@@ -314,28 +342,32 @@ bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
     quality = state->quality();
     auto info = pm.info();
 
-    // When the matrix is just an integer translate, bilerp == nearest neighbor.
-    if (quality == kLow_SkFilterQuality &&
-        matrix.getType() <= SkMatrix::kTranslate_Mask &&
-        matrix.getTranslateX() == (int)matrix.getTranslateX() &&
-        matrix.getTranslateY() == (int)matrix.getTranslateY()) {
-        quality = kNone_SkFilterQuality;
-    }
-
-    // See skia:4649 and the GM image_scale_aligned.
-    if (quality == kNone_SkFilterQuality) {
-        if (matrix.getScaleX() >= 0) {
-            matrix.setTranslateX(nextafterf(matrix.getTranslateX(),
-                                            floorf(matrix.getTranslateX())));
-        }
-        if (matrix.getScaleY() >= 0) {
-            matrix.setTranslateY(nextafterf(matrix.getTranslateY(),
-                                            floorf(matrix.getTranslateY())));
-        }
-    }
-
     p->append(SkRasterPipeline::seed_shader);
-    p->append_matrix(alloc, matrix);
+
+    if (updater) {
+        p->append(SkRasterPipeline::matrix_2x3, updater->fMatrixStorage);
+    } else {
+        // When the matrix is just an integer translate, bilerp == nearest neighbor.
+        if (quality == kLow_SkFilterQuality &&
+            matrix.getType() <= SkMatrix::kTranslate_Mask &&
+            matrix.getTranslateX() == (int)matrix.getTranslateX() &&
+            matrix.getTranslateY() == (int)matrix.getTranslateY()) {
+            quality = kNone_SkFilterQuality;
+        }
+
+        // See skia:4649 and the GM image_scale_aligned.
+        if (quality == kNone_SkFilterQuality) {
+            if (matrix.getScaleX() >= 0) {
+                matrix.setTranslateX(nextafterf(matrix.getTranslateX(),
+                                                floorf(matrix.getTranslateX())));
+            }
+            if (matrix.getScaleY() >= 0) {
+                matrix.setTranslateY(nextafterf(matrix.getTranslateY(),
+                                                floorf(matrix.getTranslateY())));
+            }
+        }
+        p->append_matrix(alloc, matrix);
+    }
 
     auto gather = alloc->make<SkRasterPipeline_GatherCtx>();
     gather->pixels = pm.addr();
@@ -357,6 +389,16 @@ bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
         decal_ctx->limit_x = limit_x->scale;
         decal_ctx->limit_y = limit_y->scale;
     }
+
+#if 0   // TODO: when we support kMedium
+    if (updator && (quality == kMedium_SkFilterQuality)) {
+        // if we change levels in mipmap, we need to update the scales (and invScales)
+        updator->fGather = gather;
+        updator->fLimitX = limit_x;
+        updator->fLimitY = limit_y;
+        updator->fDecal = decal_ctx;
+    }
+#endif
 
     auto append_tiling_and_gather = [&] {
         if (decal_x_and_y) {
@@ -441,7 +483,7 @@ bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
         return true;
     };
 
-    // We've got a fast path for 8888 bilinear clamp/clamp sampling.
+    // Check for fast-path stages.
     auto ct = info.colorType();
     if (true
         && (ct == kRGBA_8888_SkColorType || ct == kBGRA_8888_SkColorType)
@@ -452,6 +494,49 @@ bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
         if (ct == kBGRA_8888_SkColorType) {
             p->append(SkRasterPipeline::swap_rb);
         }
+        return append_misc();
+    }
+    if (true
+        && (ct == kRGBA_8888_SkColorType || ct == kBGRA_8888_SkColorType) // TODO: all formats
+        && quality == kLow_SkFilterQuality
+        && fTileModeX != SkTileMode::kDecal // TODO decal too?
+        && fTileModeY != SkTileMode::kDecal) {
+
+        auto ctx = alloc->make<SkRasterPipeline_SamplerCtx2>();
+        *(SkRasterPipeline_GatherCtx*)(ctx) = *gather;
+        ctx->ct = ct;
+        ctx->tileX = fTileModeX;
+        ctx->tileY = fTileModeY;
+        ctx->invWidth  = 1.0f / ctx->width;
+        ctx->invHeight = 1.0f / ctx->height;
+        p->append(SkRasterPipeline::bilinear, ctx);
+        return append_misc();
+    }
+    if (true
+        && (ct == kRGBA_8888_SkColorType || ct == kBGRA_8888_SkColorType)
+        && quality == kHigh_SkFilterQuality
+        && fTileModeX == SkTileMode::kClamp && fTileModeY == SkTileMode::kClamp) {
+
+        p->append(SkRasterPipeline::bicubic_clamp_8888, gather);
+        if (ct == kBGRA_8888_SkColorType) {
+            p->append(SkRasterPipeline::swap_rb);
+        }
+        return append_misc();
+    }
+    if (true
+        && (ct == kRGBA_8888_SkColorType || ct == kBGRA_8888_SkColorType) // TODO: all formats
+        && quality == kHigh_SkFilterQuality
+        && fTileModeX != SkTileMode::kDecal // TODO decal too?
+        && fTileModeY != SkTileMode::kDecal) {
+
+        auto ctx = alloc->make<SkRasterPipeline_SamplerCtx2>();
+        *(SkRasterPipeline_GatherCtx*)(ctx) = *gather;
+        ctx->ct = ct;
+        ctx->tileX = fTileModeX;
+        ctx->tileY = fTileModeY;
+        ctx->invWidth  = 1.0f / ctx->width;
+        ctx->invHeight = 1.0f / ctx->height;
+        p->append(SkRasterPipeline::bicubic, ctx);
         return append_misc();
     }
 
@@ -470,7 +555,6 @@ bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
 
     if (quality == kNone_SkFilterQuality) {
         append_tiling_and_gather();
-
     } else if (quality == kLow_SkFilterQuality) {
         p->append(SkRasterPipeline::save_xy, sampler);
 
@@ -509,3 +593,14 @@ bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
 
     return append_misc();
 }
+
+bool SkImageShader::onAppendStages(const SkStageRec& rec) const {
+    return this->doStages(rec, nullptr);
+}
+
+SkStageUpdater* SkImageShader::onAppendUpdatableStages(const SkStageRec& rec) const {
+    auto updater = rec.fAlloc->make<SkImageStageUpdater>();
+    updater->fShader = this;
+    return this->doStages(rec, updater) ? updater : nullptr;
+}
+

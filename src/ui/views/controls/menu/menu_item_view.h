@@ -100,14 +100,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   };
 
   // Where the menu should be drawn, above or below the bounds (when
-  // the bounds is non-empty).  POSITION_BEST_FIT (default) positions
+  // the bounds is non-empty).  MenuPosition::kBestFit (default) positions
   // the menu below the bounds unless the menu does not fit on the
   // screen and the re is more space above.
-  enum MenuPosition {
-    POSITION_BEST_FIT,
-    POSITION_ABOVE_BOUNDS,
-    POSITION_BELOW_BOUNDS
-  };
+  enum class MenuPosition { kBestFit, kAboveBounds, kBelowBounds };
 
   // The data structure which is used for the menu size
   struct MenuItemDimensions {
@@ -155,10 +151,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
                               const base::string16& label,
-                              const base::string16& sublabel,
                               const base::string16& minor_text,
                               const gfx::VectorIcon* minor_icon,
                               const gfx::ImageSkia& icon,
+                              const gfx::VectorIcon* vector_icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
 
@@ -218,7 +214,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const base::string16& label,
-                                   const base::string16& sublabel,
                                    const base::string16& minor_text,
                                    const gfx::VectorIcon* minor_icon,
                                    const gfx::ImageSkia& icon,
@@ -245,9 +240,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets/Gets the title.
   void SetTitle(const base::string16& title);
   const base::string16& title() const { return title_; }
-
-  // Sets the subtitle.
-  void SetSubtitle(const base::string16& subtitle);
 
   // Sets the minor text.
   void SetMinorText(const base::string16& minor_text);
@@ -283,10 +275,14 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets the icon of this menu item.
   void SetIcon(const gfx::ImageSkia& icon);
 
+  // Sets the icon as a vector icon which gets its color from the NativeTheme.
+  void SetIcon(const gfx::VectorIcon* icon);
+
   // Sets the view used to render the icon. This clobbers any icon set via
   // SetIcon(). MenuItemView takes ownership of |icon_view|.
-  void SetIconView(View* icon_view);
-  View* icon_view() { return icon_view_; }
+  void SetIconView(ImageView* icon_view);
+
+  void UpdateIconViewFromVectorIconAndTheme();
 
   // Sets the command id of this menu item.
   void SetCommand(int command) { command_ = command; }
@@ -304,6 +300,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // from GetPreferredSize().width() if the item has a child view with flexible
   // dimensions.
   int GetHeightForWidth(int width) const override;
+
+  void OnThemeChanged() override;
 
   // Returns the bounds of the submenu part of the ACTIONABLE_SUBMENU.
   gfx::Rect GetSubmenuAreaOfActionableSubmenu() const;
@@ -453,7 +451,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void DestroyAllMenuHosts();
 
   // Returns the text that should be displayed on the end (right) of the menu
-  // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
+  // item. This will be the accelerator (if one exists).
   base::string16 GetMinorText() const;
 
   // Returns the icon that should be displayed to the left of the minor text.
@@ -544,14 +542,15 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Title.
   base::string16 title_;
 
-  // Subtitle/sublabel.
-  base::string16 subtitle_;
-
   // Minor text.
   base::string16 minor_text_;
 
   // Minor icon.
   const gfx::VectorIcon* minor_icon_ = nullptr;
+
+  // The icon used for |icon_view_| when a vector icon has been set instead of a
+  // gfx::Image.
+  const gfx::VectorIcon* vector_icon_ = nullptr;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;
@@ -564,7 +563,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   bool has_icons_;
 
   // Pointer to a view with a menu icon.
-  View* icon_view_;
+  ImageView* icon_view_;
 
   // The tooltip to show on hover for this menu item.
   base::string16 tooltip_;

@@ -17,7 +17,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/media_player_id.h"
@@ -185,6 +185,12 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  WillStartNavigationRequestImpl(navigation_handle);
+  has_navigated_ = true;
+}
+
+void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
+    content::NavigationHandle* navigation_handle) {
   UserInitiatedInfo user_initiated_info(
       CreateUserInitiatedInfo(navigation_handle, committed_load_.get()));
   std::unique_ptr<PageLoadTracker> last_aborted =
@@ -217,7 +223,6 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
                                : GURL::EmptyGURL();
   const GURL& currently_committed_url =
       committed_load_ ? committed_load_->url() : opener_url;
-  has_navigated_ = true;
 
   // We can have two provisional loads in some cases. E.g. a same-site
   // navigation can have a concurrent cross-process navigation started
@@ -231,7 +236,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
       navigation_handle,
       std::make_unique<PageLoadTracker>(
           in_foreground_, embedder_interface_.get(), currently_committed_url,
-          navigation_handle, user_initiated_info, chain_size,
+          !has_navigated_, navigation_handle, user_initiated_info, chain_size,
           chain_size_same_url)));
   DCHECK(insertion_result.second)
       << "provisional_loads_ already contains NavigationHandle.";
@@ -384,10 +389,20 @@ void MetricsWebContentsObserver::OnCookieChange(
                                     blocked_by_policy);
 }
 
-const PageLoadExtraInfo
-MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
+void MetricsWebContentsObserver::OnDomStorageAccessed(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool local,
+    bool blocked_by_policy) {
+  if (committed_load_)
+    committed_load_->OnDomStorageAccessed(url, first_party_url, local,
+                                          blocked_by_policy);
+}
+
+const PageLoadMetricsObserverDelegate&
+MetricsWebContentsObserver::GetDelegateForCommittedLoad() {
   DCHECK(committed_load_);
-  return committed_load_->ComputePageLoadExtraInfo();
+  return *committed_load_.get();
 }
 
 void MetricsWebContentsObserver::ReadyToCommitNavigation(
@@ -408,6 +423,12 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     }
     return;
   }
+
+  // Not all navigations trigger the WillStartNavigationRequest callback (for
+  // example, navigations to about:blank). DidFinishNavigation is guaranteed to
+  // be called for every navigation, so we also update has_navigated_ here, to
+  // ensure it is set consistently for all navigations.
+  has_navigated_ = true;
 
   std::unique_ptr<PageLoadTracker> finished_nav(
       std::move(provisional_loads_[navigation_handle]));
@@ -477,9 +498,8 @@ void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
   const net::Error error = navigation_handle->GetNetErrorCode();
 
   // net::OK: This case occurs when the NavigationHandle finishes and reports
-  // !HasCommitted(), but reports no net::Error. This should not occur
-  // pre-PlzNavigate, but afterwards it should represent the navigation stopped
-  // by the user before it was ready to commit.
+  // !HasCommitted(), but reports no net::Error. This represents the navigation
+  // being stopped by the user before it was ready to commit.
   // net::ERR_ABORTED: An aborted provisional load has error net::ERR_ABORTED.
   const bool is_aborted_provisional_load =
       error == net::OK || error == net::ERR_ABORTED;
@@ -805,6 +825,11 @@ MetricsWebContentsObserver::TestingObserver::~TestingObserver() {
 
 void MetricsWebContentsObserver::TestingObserver::OnGoingAway() {
   observer_ = nullptr;
+}
+
+const PageLoadMetricsObserverDelegate&
+MetricsWebContentsObserver::TestingObserver::GetDelegateForCommittedLoad() {
+  return observer_->GetDelegateForCommittedLoad();
 }
 
 void MetricsWebContentsObserver::BroadcastEventToObservers(

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
@@ -36,6 +37,9 @@ class LoginScreenClient : public ash::LoginScreenClient {
         base::OnceCallback<void(bool)> callback) = 0;
     virtual void HandleAuthenticateUserWithEasyUnlock(
         const AccountId& account_id) = 0;
+    virtual void HandleAuthenticateUserWithChallengeResponse(
+        const AccountId& account_id,
+        base::OnceCallback<void(bool)> callback) = 0;
     virtual void HandleHardlockPod(const AccountId& account_id) = 0;
     virtual void HandleOnFocusPod(const AccountId& account_id) = 0;
     virtual void HandleOnNoPodFocused() = 0;
@@ -85,8 +89,12 @@ class LoginScreenClient : public ash::LoginScreenClient {
   void EnrollUserWithExternalBinary(
       base::OnceCallback<void(bool)> callback) override;
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id) override;
+  void AuthenticateUserWithChallengeResponse(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) override;
   bool ValidateParentAccessCode(const AccountId& account_id,
-                                const std::string& access_code) override;
+                                const std::string& access_code,
+                                base::Time validation_time) override;
   void HardlockPod(const AccountId& account_id) override;
   void OnFocusPod(const AccountId& account_id) override;
   void OnNoPodFocused() override;
@@ -109,6 +117,7 @@ class LoginScreenClient : public ash::LoginScreenClient {
   void ShowFeedback() override;
   void ShowResetScreen() override;
   void ShowAccountAccessHelpApp() override;
+  void ShowParentAccessHelpApp() override;
   void ShowLockScreenNotificationSettings() override;
   void OnFocusLeavingSystemTray(bool reverse) override;
   void OnUserActivity() override;

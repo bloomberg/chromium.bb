@@ -31,9 +31,20 @@ swiftshader_source_set("WSI") {
     ]
   }
 
+  if (is_win) {
+    sources += [
+      "Win32SurfaceKHR.cpp",
+      "Win32SurfaceKHR.hpp",
+    ]
+  }
+
   include_dirs = [
     "..",
     "../../include",
     "../../third_party/SPIRV-Headers/include",
+  ]
+
+  deps = [
+    "../Vulkan:swiftshader_libvulkan_headers",
   ]
 }

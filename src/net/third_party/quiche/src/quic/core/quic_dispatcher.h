@@ -113,10 +113,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
                                            QuicConnectionId,
                                            QuicConnectionIdHash>;
 
-  const ConnectionIdMap& connection_id_map() const {
-    return connection_id_map_;
-  }
-
   // The largest packet number we expect to receive with a connection
   // ID for a connection that is not established yet.  The current design will
   // send a handshake and then up to 50 or so data packets, and then it may
@@ -151,6 +147,13 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // processed by existing session, processed by time wait list, etc.),
   // otherwise, returns false and the packet needs further processing.
   virtual bool MaybeDispatchPacket(const ReceivedPacketInfo& packet_info);
+
+  // Generate a connection ID with a length that is expected by the dispatcher.
+  // Note that this MUST produce a deterministic result (calling this method
+  // with two connection IDs that are equal must produce the same result).
+  virtual QuicConnectionId GenerateNewServerConnectionId(
+      ParsedQuicVersion version,
+      QuicConnectionId connection_id) const;
 
   // Values to be returned by ValidityChecks() to indicate what should be done
   // with a packet. Fates with greater values are considered to be higher
@@ -254,6 +257,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       QuicConnectionId server_connection_id,
       PacketHeaderFormat format,
       bool version_flag,
+      bool use_length_prefix,
       ParsedQuicVersion version,
       QuicErrorCode error_code,
       const std::string& error_details,
@@ -325,9 +329,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   WriteBlockedList write_blocked_list_;
 
   SessionMap session_map_;
-
-  // Map of connection IDs with bad lengths to their replacements.
-  ConnectionIdMap connection_id_map_;
 
   // Entity that manages connection_ids in time wait state.
   std::unique_ptr<QuicTimeWaitListManager> time_wait_list_manager_;

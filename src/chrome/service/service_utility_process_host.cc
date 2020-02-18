@@ -27,6 +27,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/win_util.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
@@ -157,6 +158,21 @@ class ConnectionFilterImpl : public content::ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
 
+service_manager::Manifest GetContentSystemManifest() {
+  // TODO(https://crbug.com/961869): This is a bit of a temporary hack so that
+  // we can make the global service instance a singleton. For now we just mirror
+  // the per-BrowserContext manifest (formerly also used for the global
+  // singleton instance), sans packaged services, since those are only meant to
+  // be tied to a BrowserContext. The per-BrowserContext service should go away
+  // soon, and then this can be removed.
+  service_manager::Manifest manifest = content::GetContentBrowserManifest();
+  manifest.service_name = content::mojom::kSystemServiceName;
+  manifest.packaged_services.clear();
+  manifest.options.instance_sharing_policy =
+      service_manager::Manifest::InstanceSharingPolicy::kSingleton;
+  return manifest;
+}
+
 }  // namespace
 
 class ServiceUtilityProcessHost::PdfToEmfState {
@@ -258,8 +274,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     base::SingleThreadTaskRunner* client_task_runner)
     : client_(client),
       client_task_runner_(client_task_runner),
-      waiting_for_reply_(false),
-      weak_ptr_factory_(this) {
+      waiting_for_reply_(false) {
   child_process_host_ = ChildProcessHost::Create(this);
 }
 
@@ -344,8 +359,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   // child process, which exists ostensibly as the only instance of
   // "content_utility". This is all set up here.
   std::vector<service_manager::Manifest> manifests{
-      content::GetContentBrowserManifest(),
-      content::GetContentUtilityManifest()};
+      GetContentSystemManifest(), content::GetContentUtilityManifest()};
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
       manifests,
       service_manager::ServiceManager::ServiceExecutablePolicy::kNotSupported);
@@ -359,7 +373,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
 
   mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   service_manager_->RegisterService(
-      service_manager::Identity(content::mojom::kBrowserServiceName,
+      service_manager::Identity(content::mojom::kSystemServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom()),
       std::move(browser_proxy), metadata.BindNewPipeAndPassReceiver());
@@ -405,13 +419,16 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
   const base::CommandLine& service_command_line =
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
-      switches::kDisableLogging,
-      switches::kEnableLogging,
-      switches::kIPCConnectionTimeout,
-      switches::kLoggingLevel,
-      switches::kUtilityStartupDialog,
-      switches::kV,
-      switches::kVModule,
+    switches::kDisableLogging,
+    switches::kEnableLogging,
+    switches::kIPCConnectionTimeout,
+    switches::kLoggingLevel,
+    switches::kUtilityStartupDialog,
+    switches::kV,
+    switches::kVModule,
+#if defined(OS_WIN)
+    switches::kDisableHighResTimer,
+#endif
   };
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
                              base::size(kForwardSwitches));

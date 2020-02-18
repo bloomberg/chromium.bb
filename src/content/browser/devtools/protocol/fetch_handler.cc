@@ -14,11 +14,11 @@
 #include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/network_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 
 namespace content {
 namespace protocol {
@@ -99,12 +99,6 @@ void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
                           Maybe<bool> handleAuth,
                           std::unique_ptr<EnableCallback> callback) {
   if (!interceptor_) {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      callback->sendFailure(
-          Response::Error("Fetch domain is only supported with "
-                          "--enable-features=NetworkService"));
-      return;
-    }
     interceptor_ =
         std::make_unique<DevToolsURLLoaderInterceptor>(base::BindRepeating(
             &FetchHandler::RequestIntercepted, weak_factory_.GetWeakPtr()));
@@ -331,6 +325,7 @@ void FetchHandler::OnResponseBodyPipeTaken(
     Response response,
     mojo::ScopedDataPipeConsumerHandle pipe,
     const std::string& mime_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(response.isSuccess(), pipe.is_valid());
   if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));

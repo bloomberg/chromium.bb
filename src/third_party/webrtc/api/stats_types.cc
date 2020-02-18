@@ -489,6 +489,8 @@ const char* StatsReport::Value::display_name() const {
       return "googDecodingNormal";
     case kStatsValueNameDecodingPLC:
       return "googDecodingPLC";
+    case kStatsValueNameDecodingCodecPLC:
+      return "googDecodingCodecPLC";
     case kStatsValueNameDecodingCNG:
       return "googDecodingCNG";
     case kStatsValueNameDecodingPLCCNG:
@@ -651,6 +653,8 @@ const char* StatsReport::Value::display_name() const {
       return "googTypingNoiseState";
     case kStatsValueNameWritable:
       return "googWritable";
+    case kStatsValueNameAudioDeviceUnderrunCounter:
+      return "googAudioDeviceUnderrunCounter";
   }
 
   return nullptr;

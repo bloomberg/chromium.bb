@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/conversion_utils.h"
@@ -25,7 +24,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 namespace extensions {
 
@@ -101,9 +99,7 @@ class MediaPerceptionAPIManager::MediaPerceptionControllerClient
   void ConnectToVideoCaptureService(
       video_capture::mojom::VideoSourceProviderRequest request) override {
     DCHECK(delegate_) << "Delegate not set.";
-    delegate_->BindDeviceFactoryProviderToVideoCaptureService(
-        &device_factory_provider_);
-    device_factory_provider_->ConnectToVideoSourceProvider(std::move(request));
+    delegate_->BindVideoSourceProvider(std::move(request));
   }
 
  private:
@@ -114,10 +110,6 @@ class MediaPerceptionAPIManager::MediaPerceptionControllerClient
   mojo::Binding<
       chromeos::media_perception::mojom::MediaPerceptionControllerClient>
       binding_;
-
-  // Bound to the VideoCaptureService to establish the connection to the
-  // media analytics process.
-  video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionControllerClient);
 };
@@ -141,9 +133,7 @@ MediaPerceptionAPIManager::GetFactoryInstance() {
 MediaPerceptionAPIManager::MediaPerceptionAPIManager(
     content::BrowserContext* context)
     : browser_context_(context),
-      analytics_process_state_(AnalyticsProcessState::IDLE),
-      scoped_observer_(this),
-      weak_ptr_factory_(this) {
+      analytics_process_state_(AnalyticsProcessState::IDLE) {
   scoped_observer_.Add(chromeos::MediaAnalyticsClient::Get());
 }
 
@@ -204,10 +194,15 @@ void MediaPerceptionAPIManager::SetAnalyticsComponent(
 
 void MediaPerceptionAPIManager::LoadComponentCallback(
     APISetAnalyticsComponentCallback callback,
-    bool success,
+    const extensions::api::media_perception_private::ComponentInstallationError
+        installation_error,
     const base::FilePath& mount_point) {
-  if (!success) {
-    std::move(callback).Run(GetFailedToInstallComponentState());
+  if (installation_error != extensions::api::media_perception_private::
+                                COMPONENT_INSTALLATION_ERROR_NONE) {
+    extensions::api::media_perception_private::ComponentState component_state =
+        GetFailedToInstallComponentState();
+    component_state.installation_error_code = installation_error;
+    std::move(callback).Run(std::move(component_state));
     return;
   }
 

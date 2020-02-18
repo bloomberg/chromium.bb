@@ -241,7 +241,7 @@ void WebTestBackgroundFetchDelegate::GetIconDisplaySize(
 
 void WebTestBackgroundFetchDelegate::GetPermissionForOrigin(
     const url::Origin& origin,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     GetPermissionForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::move(callback).Run(BackgroundFetchPermission::ALLOWED);
@@ -281,7 +281,7 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
           simple_key, std::move(clients), GetNetworkConnectionTracker(),
           base::FilePath(),
           std::make_unique<TestBlobContextGetterFactory>(browser_context_),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
           url_loader_factory);
     }
   }

@@ -12,16 +12,15 @@ suite('SiteFavicon', function() {
   });
 
   function assertIconEquals(expected) {
-    const background = siteFavicon.style.backgroundImage;
+    const background = siteFavicon.$.favicon.style.backgroundImage;
     assertEquals(background, expected);
   }
 
   function formExpected(url) {
-    // TODO(victorvianna): Stop depending on the order of the parameters.
     return '-webkit-image-set(' +
-        'url("chrome://favicon2/?size=16&scale_factor=1x&url_type=page_url&url=' +
+        'url("chrome://favicon2/?size=16&scale_factor=1x&page_url=' +
         encodeURIComponent(url) + '&allow_google_server_fallback=0") 1x, ' +
-        'url("chrome://favicon2/?size=16&scale_factor=2x&url_type=page_url&url=' +
+        'url("chrome://favicon2/?size=16&scale_factor=2x&page_url=' +
         encodeURIComponent(url) + '&allow_google_server_fallback=0") 2x)';
   }
 

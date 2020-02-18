@@ -18,7 +18,7 @@
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/task_manager/test_task_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using task_manager::TaskId;
@@ -143,7 +143,7 @@ class ResourceReporterTest : public testing::Test {
   base::test::FakeMemoryPressureMonitor* monitor() { return &monitor_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::test::FakeMemoryPressureMonitor monitor_;
 

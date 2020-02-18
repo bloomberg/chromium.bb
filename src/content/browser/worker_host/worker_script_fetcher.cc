@@ -11,10 +11,9 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -53,11 +52,10 @@ const net::NetworkTrafficAnnotationTag kWorkerScriptLoadTrafficAnnotation =
 
 void WorkerScriptFetcher::CreateAndStart(
     std::unique_ptr<WorkerScriptLoaderFactory> script_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     std::unique_ptr<network::ResourceRequest> resource_request,
     CreateAndStartCallback callback) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // This fetcher will delete itself. See the class level comment.
   (new WorkerScriptFetcher(std::move(script_loader_factory),
                            std::move(resource_request), std::move(callback)))
@@ -72,16 +70,16 @@ WorkerScriptFetcher::WorkerScriptFetcher(
       resource_request_(std::move(resource_request)),
       callback_(std::move(callback)),
       response_url_loader_binding_(this) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 WorkerScriptFetcher::~WorkerScriptFetcher() {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void WorkerScriptFetcher::Start(
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto shared_url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -104,14 +102,14 @@ void WorkerScriptFetcher::Start(
 }
 
 void WorkerScriptFetcher::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+    network::mojom::URLResponseHeadPtr response_head) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   response_head_ = response_head;
 }
 
 void WorkerScriptFetcher::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle response_body) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::WeakPtr<WorkerScriptLoader> script_loader =
       script_loader_factory_->GetScriptLoader();
@@ -172,8 +170,8 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
 
 void WorkerScriptFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+    network::mojom::URLResponseHeadPtr response_head) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   redirect_infos_.push_back(redirect_info);
   redirect_response_heads_.push_back(response_head);
   url_loader_->FollowRedirect({}, /* removed_headers */
@@ -196,7 +194,7 @@ void WorkerScriptFetcher::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void WorkerScriptFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We can reach here only when loading fails before receiving a response_head.
   DCHECK_NE(net::OK, status.error_code);
   std::move(callback_).Run(nullptr /* main_script_load_params */,

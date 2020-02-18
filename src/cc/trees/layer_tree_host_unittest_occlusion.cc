@@ -67,8 +67,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> child_;
 };
@@ -122,8 +120,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> child_;
 };
@@ -155,7 +151,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
-    child_->SetMaskLayer(mask.get());
+    child_->SetMaskLayer(mask);
 
     scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 12));
@@ -193,8 +189,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   scoped_refptr<Layer> child_;
@@ -228,7 +222,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
     scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
-    child_->SetMaskLayer(mask.get());
+    child_->SetMaskLayer(mask);
 
     scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 11));
@@ -257,8 +251,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
         mask->draw_properties().occlusion_in_content_space);
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;

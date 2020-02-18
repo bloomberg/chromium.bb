@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/validating_authenticator.h"
@@ -77,7 +77,7 @@ class ValidatingAuthenticatorTest : public testing::Test {
   std::unique_ptr<ValidatingAuthenticator> validating_authenticator_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidatingAuthenticatorTest);
 };

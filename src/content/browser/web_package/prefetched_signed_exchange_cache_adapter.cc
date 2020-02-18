@@ -5,9 +5,9 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 
 #include "base/task/post_task.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
@@ -21,10 +21,9 @@ void AbortAndDeleteBlobBuilder(
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&storage::BlobBuilderFromStream::Abort,
-                     std::move(blob_builder)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&storage::BlobBuilderFromStream::Abort,
+                                std::move(blob_builder)));
 }
 
 }  // namespace
@@ -85,21 +84,15 @@ void PrefetchedSignedExchangeCacheAdapter::OnStartLoadingResponseBody(
     length_hint = cached_exchange_->inner_response()->content_length;
   }
   blob_is_streaming_ = true;
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream,
-            weak_factory_.GetWeakPtr(), std::move(body), length_hint,
-            blob_context_getter_),
-        base::BindOnce(
-            &PrefetchedSignedExchangeCacheAdapter::SetBlobBuilderFromStream,
-            weak_factory_.GetWeakPtr()));
-  } else {
-    blob_builder_from_stream_ =
-        CreateBlobBuilderFromStream(weak_factory_.GetWeakPtr(), std::move(body),
-                                    length_hint, blob_context_getter_);
-  }
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream,
+          weak_factory_.GetWeakPtr(), std::move(body), length_hint,
+          blob_context_getter_),
+      base::BindOnce(
+          &PrefetchedSignedExchangeCacheAdapter::SetBlobBuilderFromStream,
+          weak_factory_.GetWeakPtr()));
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnComplete(
@@ -113,12 +106,8 @@ void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
   blob_is_streaming_ = false;
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                              std::move(blob_builder_from_stream_));
-  } else {
-    blob_builder_from_stream_.reset();
-  }
+  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                            std::move(blob_builder_from_stream_));
   cached_exchange_->SetBlobDataHandle(std::move(result));
   MaybeCallOnSignedExchangeStored();
 }
@@ -166,8 +155,9 @@ PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream(
               &PrefetchedSignedExchangeCacheAdapter::StreamingBlobDoneOnIO,
               std::move(adapter)));
 
-  blob_builder_from_stream->Start(length_hint, std::move(body),
-                                  nullptr /*  progress_client */);
+  blob_builder_from_stream->Start(
+      length_hint, std::move(body),
+      mojo::NullAssociatedRemote() /*  progress_client */);
   return blob_builder_from_stream;
 }
 
@@ -190,8 +180,8 @@ void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDoneOnIO(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
-      FROM_HERE,
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone,
                      adapter, builder, std::move(result)));
 }

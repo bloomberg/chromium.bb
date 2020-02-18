@@ -37,7 +37,7 @@ struct TlsSocketMessage {
 
 class TlsSocket {
  public:
-  class Delegate {
+  class Client {
    public:
     // Provides a unique ID for use by the TlsSocketFactory.
     virtual const std::string& GetNewSocketId() = 0;
@@ -48,12 +48,15 @@ class TlsSocket {
     // Called when |socket| is closed.
     virtual void OnClosed(TlsSocket* socket) = 0;
 
+    // Called when |socket| experiences an error, such as a read error.
+    virtual void OnError(TlsSocket* socket, Error error) = 0;
+
     // Called when a |message| arrives on |socket|.
     virtual void OnMessage(TlsSocket* socket,
                            const TlsSocketMessage& message) = 0;
 
    protected:
-    virtual ~Delegate() = default;
+    virtual ~Client() = default;
   };
 
   enum CloseReason {
@@ -68,17 +71,14 @@ class TlsSocket {
   static ErrorOr<TlsSocketUniquePtr> Create(IPAddress::Version version);
 
   // Returns true if |socket| belongs to the IPv4/IPv6 address family.
-  bool IsIPv4() const;
-  bool IsIPv6() const;
+  virtual bool IsIPv4() const = 0;
+  virtual bool IsIPv6() const = 0;
 
   // Closes this socket. Delegate::OnClosed is called when complete.
   virtual void Close(CloseReason reason) = 0;
 
-  // Start reading data. Delegate::OnMessage is called when new data arrives.
-  virtual Error Read() = 0;
-
-  // Sends a message and returns the number of bytes sent, on success.
-  virtual Error SendMessage(const TlsSocketMessage& message) = 0;
+  // Sends a message.
+  virtual void Write(const TlsSocketMessage& message) = 0;
 
   // Returns the unique identifier of the factory that created this socket.
   virtual const std::string& GetFactoryId() const = 0;
@@ -87,14 +87,14 @@ class TlsSocket {
   const std::string& id() const { return id_; }
 
  protected:
-  Delegate* delegate() const { return delegate_; }
+  Client* client() const { return client_; }
 
-  explicit TlsSocket(Delegate* delegate) {}
+  explicit TlsSocket(Client* client) : client_(client) {}
   virtual ~TlsSocket() = 0;
 
  private:
   const std::string id_;
-  Delegate* const delegate_;
+  Client* const client_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsSocket);
 };
@@ -111,7 +111,7 @@ class TlsSocketFactory {
   // Gets the local address, if set, otherwise nullptr.
   virtual IPEndpoint* GetLocalAddress() = 0;
 
-  // Start accepting new sockets. Should call Delegate::OnAccepted().
+  // Start accepting new sockets. Should call Client::OnAccepted().
   virtual void Accept() = 0;
 
   // Stop accepting new sockets.
@@ -121,11 +121,12 @@ class TlsSocketFactory {
   virtual void SetCredentials(const TlsSocketCreds& creds) = 0;
 
  protected:
-  virtual TlsSocket::Delegate* GetDelegate() const = 0;
+  virtual TlsSocket::Client* GetClient() const = 0;
 
  private:
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsSocketFactory);
-}
+};
+
 }  // namespace platform
 }  // namespace openscreen
 

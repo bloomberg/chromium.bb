@@ -29,7 +29,6 @@
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_file_task_runner.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/file_util.h"
@@ -78,8 +77,8 @@ void VerifyContent(const VerifyContentInfo& info) {
 
 void ForwardVerifyContentToIO(const VerifyContentInfo& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&VerifyContent, info));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&VerifyContent, info));
 }
 
 // Loads user scripts from the extension who owns these scripts.
@@ -116,7 +115,7 @@ bool LoadScriptContent(const HostID& host_id,
     if (verifier.get()) {
       // Call VerifyContent() after yielding on UI thread so it is ensured that
       // ContentVerifierIOData is populated at the time we call VerifyContent().
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &ForwardVerifyContentToIO,
@@ -194,10 +193,9 @@ void LoadScriptsOnFileTaskRunner(
   LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
   base::ReadOnlySharedMemoryRegion memory =
       UserScriptLoader::Serialize(*user_scripts);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback), std::move(user_scripts),
-                     std::move(memory)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(user_scripts),
+                                std::move(memory)));
 }
 
 }  // namespace
@@ -208,8 +206,7 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     bool listen_for_extension_system_loaded)
     : UserScriptLoader(browser_context, host_id),
       content_verifier_(
-          ExtensionSystem::Get(browser_context)->content_verifier()),
-      extension_registry_observer_(this) {
+          ExtensionSystem::Get(browser_context)->content_verifier()) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
     ExtensionSystem::Get(browser_context)

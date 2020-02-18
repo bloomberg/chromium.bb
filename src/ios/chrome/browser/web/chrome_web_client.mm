@@ -10,10 +10,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/services/patch/patch_service.h"
-#include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/unzip_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -27,15 +23,13 @@
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
-#include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
-#include "ios/web/public/service/service_names.mojom.h"
-#include "ios/web/public/user_agent.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -151,22 +145,6 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool ChromeWebClient::IsDataResourceGzipped(int resource_id) const {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
-base::Optional<service_manager::Manifest>
-ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == web::mojom::kBrowserServiceName)
-    return GetChromeWebBrowserOverlayManifest();
-  return base::nullopt;
-}
-
-std::vector<service_manager::Manifest>
-ChromeWebClient::GetExtraServiceManifests() {
-  return GetChromeWebPackagedServicesOverlayManifest().packaged_services;
-}
-
 void ChromeWebClient::GetAdditionalWebUISchemes(
     std::vector<std::string>* additional_schemes) {
   additional_schemes->push_back(dom_distiller::kDomDistillerScheme);
@@ -215,43 +193,34 @@ void ChromeWebClient::AllowCertificateError(
                                      overridable, callback);
 }
 
-void ChromeWebClient::PrepareErrorPage(web::WebState* web_state,
-                                       const GURL& url,
-                                       NSError* error,
-                                       bool is_post,
-                                       bool is_off_the_record,
-                                       NSString** error_html) {
+void ChromeWebClient::PrepareErrorPage(
+    web::WebState* web_state,
+    const GURL& url,
+    NSError* error,
+    bool is_post,
+    bool is_off_the_record,
+    base::OnceCallback<void(NSString*)> callback) {
   if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
     OfflinePageTabHelper* offline_page_tab_helper =
         OfflinePageTabHelper::FromWebState(web_state);
-    // WebState that are not attached to a tab may not have a
+    // WebState that are not attached to a tab may not have an
     // OfflinePageTabHelper.
     if (offline_page_tab_helper &&
         offline_page_tab_helper->HasDistilledVersionForOnlineUrl(url)) {
       // An offline version of the page will be displayed to replace this error
-      // page. Return an empty error page to avoid having the error page
-      // flash vefore the offline version is loaded.
-      *error_html = @"";
+      // page. Loading an error page here can cause a race between the
+      // navigation to load the error page and the navigation to display the
+      // offline version of the page. If the latter navigation interrupts the
+      // former and causes it to fail, this can incorrectly appear to be a
+      // navigation back to the previous committed URL. To avoid this race,
+      // return a nil error page here to avoid an error page load. See
+      // crbug.com/980912.
+      std::move(callback).Run(nil);
       return;
     }
   }
   DCHECK(error);
-  *error_html = GetErrorPage(url, error, is_post, is_off_the_record);
-}
-
-std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  if (service_name == unzip::mojom::kServiceName) {
-    // The Unzip service is used by the component updater.
-    return std::make_unique<unzip::UnzipService>(std::move(request));
-  }
-  if (service_name == patch::mojom::kServiceName) {
-    // The Patch service is used by the component updater.
-    return std::make_unique<patch::PatchService>(std::move(request));
-  }
-
-  return nullptr;
+  std::move(callback).Run(GetErrorPage(url, error, is_post, is_off_the_record));
 }
 
 UIView* ChromeWebClient::GetWindowedContainer() {

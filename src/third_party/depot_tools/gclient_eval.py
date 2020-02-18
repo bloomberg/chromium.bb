@@ -11,18 +11,13 @@ import tokenize
 import gclient_utils
 
 from third_party import schema
+from third_party import six
 
-if sys.version_info.major == 2:
+if six.PY2:
   # We use cStringIO.StringIO because it is equivalent to Py3's io.StringIO.
   from cStringIO import StringIO
 else:
   from io import StringIO
-
-
-# TODO(crbug.com/953884): Remove this when python3 migration is done.
-try:
-  basestring
-except NameError:
   # pylint: disable=redefined-builtin
   basestring = str
 
@@ -57,7 +52,7 @@ class _NodeDict(collections.MutableMapping):
   def MoveTokens(self, origin, delta):
     if self.tokens:
       new_tokens = {}
-      for pos, token in self.tokens.iteritems():
+      for pos, token in six.iteritems(self.tokens):
         if pos[0] >= origin:
           pos = (pos[0] + delta, pos[1])
           token = token[:2] + (pos,) + token[3:]
@@ -245,7 +240,7 @@ def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
         raise KeyError(
             '%s was used as a variable, but was not declared in the vars dict '
             '(file %r, line %s)' % (
-                e.message, filename, getattr(node, 'lineno', '<unknown>')))
+                e.args[0], filename, getattr(node, 'lineno', '<unknown>')))
     elif isinstance(node, ast.Num):
       return node.n
     elif isinstance(node, ast.Tuple):
@@ -514,14 +509,14 @@ def Parse(content, validate_syntax, filename, vars_override=None,
 
   if 'deps_os' in result:
     deps = result.setdefault('deps', {})
-    for os_name, os_deps in result['deps_os'].iteritems():
+    for os_name, os_deps in six.iteritems(result['deps_os']):
       os_deps = _StandardizeDeps(os_deps, vars_dict)
       _MergeDepsOs(deps, os_deps, os_name)
     del result['deps_os']
 
   if 'hooks_os' in result:
     hooks = result.setdefault('hooks', [])
-    for os_name, os_hooks in result['hooks_os'].iteritems():
+    for os_name, os_hooks in six.iteritems(result['hooks_os']):
       for hook in os_hooks:
         UpdateCondition(hook, 'and', 'checkout_' + os_name)
       hooks.extend(os_hooks)
@@ -569,6 +564,9 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
         # between arguments for GN to be passed verbatim, and ones to
         # be evaluated.
         return node.id
+    elif not sys.version_info[:2] < (3, 4) and isinstance(
+        node, ast.NameConstant):  # Since Python 3.4
+      return node.value
     elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
       if len(node.values) != 2:
         raise ValueError(
@@ -690,7 +688,7 @@ def AddVar(gclient_dict, var_name, value):
   col = node.keys[0].col_offset
 
   # We use a minimal Python dictionary, so that ast can parse it.
-  var_content = '{\n%s"%s": "%s",\n}' % (' ' * col, var_name, value)
+  var_content = '{\n%s"%s": "%s",\n}\n' % (' ' * col, var_name, value)
   var_ast = ast.parse(var_content).body[0].value
 
   # Set the ast nodes for the key and value.
@@ -709,7 +707,7 @@ def AddVar(gclient_dict, var_name, value):
   var_tokens = {
       token[2]: list(token)
       # Ignore the tokens corresponding to braces and new lines.
-      for token in var_tokens[2:-2]
+      for token in var_tokens[2:-3]
   }
 
   gclient_dict.tokens = _ShiftLinesInTokens(gclient_dict.tokens, 1, line)

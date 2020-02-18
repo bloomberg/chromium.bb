@@ -8,11 +8,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
 
@@ -24,9 +26,10 @@ class IconStore;
 // Class to manage in-memory scheduled notifications loaded from the storage.
 class ScheduledNotificationManager {
  public:
-  using InitCallback = base::OnceCallback<void(bool)>;
   using Notifications =
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
+  using InitCallback = base::OnceCallback<void(bool)>;
+  using ScheduleCallback = base::OnceCallback<void(bool)>;
 
   // Delegate that receives events from the manager.
   class Delegate {
@@ -54,7 +57,8 @@ class ScheduledNotificationManager {
 
   // Adds a new notification.
   virtual void ScheduleNotification(
-      std::unique_ptr<NotificationParams> notification_params) = 0;
+      std::unique_ptr<NotificationParams> notification_params,
+      ScheduleCallback callback) = 0;
 
   // Displays a notification, the scheduled notification will be removed from
   // storage, then Delegate::DisplayNotification() should be invoked.

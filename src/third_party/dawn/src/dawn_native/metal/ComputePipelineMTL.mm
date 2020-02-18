@@ -23,22 +23,23 @@ namespace dawn_native { namespace metal {
         : ComputePipelineBase(device, descriptor) {
         auto mtlDevice = ToBackend(GetDevice())->GetMTLDevice();
 
-        const ShaderModule* computeModule = ToBackend(descriptor->computeStage->module);
-        const char* computeEntryPoint = descriptor->computeStage->entryPoint;
+        const ShaderModule* computeModule = ToBackend(descriptor->computeStage.module);
+        const char* computeEntryPoint = descriptor->computeStage.entryPoint;
         ShaderModule::MetalFunctionData computeData = computeModule->GetFunction(
-            computeEntryPoint, ShaderStage::Compute, ToBackend(GetLayout()));
+            computeEntryPoint, SingleShaderStage::Compute, ToBackend(GetLayout()));
 
         NSError* error = nil;
         mMtlComputePipelineState =
             [mtlDevice newComputePipelineStateWithFunction:computeData.function error:&error];
         if (error != nil) {
             NSLog(@" error => %@", error);
-            GetDevice()->HandleError("Error creating pipeline state");
+            GetDevice()->HandleError(dawn::ErrorType::DeviceLost, "Error creating pipeline state");
             return;
         }
 
         // Copy over the local workgroup size as it is passed to dispatch explicitly in Metal
         mLocalWorkgroupSize = computeData.localWorkgroupSize;
+        mRequiresStorageBufferLength = computeData.needsStorageBufferLength;
     }
 
     ComputePipeline::~ComputePipeline() {
@@ -51,6 +52,10 @@ namespace dawn_native { namespace metal {
 
     MTLSize ComputePipeline::GetLocalWorkGroupSize() const {
         return mLocalWorkgroupSize;
+    }
+
+    bool ComputePipeline::RequiresStorageBufferLength() const {
+        return mRequiresStorageBufferLength;
     }
 
 }}  // namespace dawn_native::metal

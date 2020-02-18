@@ -29,17 +29,20 @@ class QpackRoundTripTest : public QuicTestWithParam<FragmentMode> {
       const spdy::SpdyHeaderBlock& header_list) {
     NoopDecoderStreamErrorDelegate decoder_stream_error_delegate;
     NoopQpackStreamSenderDelegate encoder_stream_sender_delegate;
-    QpackEncoder encoder(&decoder_stream_error_delegate,
-                         &encoder_stream_sender_delegate);
+    QpackEncoder encoder(&decoder_stream_error_delegate);
+    encoder.set_qpack_stream_sender_delegate(&encoder_stream_sender_delegate);
     std::string encoded_header_block =
-        encoder.EncodeHeaderList(/* stream_id = */ 1, &header_list);
+        encoder.EncodeHeaderList(/* stream_id = */ 1, header_list);
 
     TestHeadersHandler handler;
     NoopEncoderStreamErrorDelegate encoder_stream_error_delegate;
     NoopQpackStreamSenderDelegate decoder_stream_sender_delegate;
-    QpackDecode(&encoder_stream_error_delegate, &decoder_stream_sender_delegate,
-                &handler, FragmentModeToFragmentSizeGenerator(GetParam()),
-                encoded_header_block);
+    // TODO(b/112770235): Test dynamic table and blocked streams.
+    QpackDecode(
+        /* maximum_dynamic_table_capacity = */ 0,
+        /* maximum_blocked_streams = */ 0, &encoder_stream_error_delegate,
+        &decoder_stream_sender_delegate, &handler,
+        FragmentModeToFragmentSizeGenerator(GetParam()), encoded_header_block);
 
     EXPECT_TRUE(handler.decoding_completed());
     EXPECT_FALSE(handler.decoding_error_detected());

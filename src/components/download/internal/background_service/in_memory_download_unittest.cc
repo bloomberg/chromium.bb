@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -89,7 +89,7 @@ class InMemoryDownloadTest : public testing::Test {
 
   void SetUp() override {
     io_thread_.reset(new base::Thread("Network and Blob IO thread"));
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     io_thread_->StartWithOptions(options);
 
     base::RunLoop loop;
@@ -172,7 +172,7 @@ class InMemoryDownloadTest : public testing::Test {
   std::unique_ptr<base::Thread> io_thread_;
 
   // Created before other objects to provide test environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<InMemoryDownloadImpl> download_;
   std::unique_ptr<NiceMock<MockDelegate>> mock_delegate_;

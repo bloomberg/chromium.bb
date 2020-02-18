@@ -14,8 +14,8 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -39,8 +39,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = new storage::QuotaManager(
         false, dir_.GetPath(),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
-        nullptr, storage::GetQuotaSettingsFunc());
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), nullptr,
+        storage::GetQuotaSettingsFunc());
     helper_ = new BrowsingDataQuotaHelperImpl(quota_manager_.get());
   }
 
@@ -111,7 +111,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     fetching_completed_ = true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
 
   base::ScopedTempDir dir_;

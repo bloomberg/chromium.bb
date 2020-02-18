@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -364,9 +365,8 @@ void StyleEngine::WatchedSelectorsChanged() {
   DCHECK(global_rule_set_);
   global_rule_set_->InitWatchedSelectorsRuleSet(GetDocument());
   // TODO(futhark@chromium.org): Should be able to use RuleSetInvalidation here.
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kDeclarativeContent));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kDeclarativeContent));
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
@@ -722,6 +722,11 @@ void StyleEngine::MarkUserStyleDirty() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+void StyleEngine::MarkViewportStyleDirty() {
+  viewport_style_dirty_ = true;
+  GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
+}
+
 CSSStyleSheet* StyleEngine::CreateSheet(Element& element,
                                         const String& text,
                                         TextPosition start_position,
@@ -806,8 +811,8 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
 
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  MarkViewportStyleDirty();
+  MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
   probe::FontsUpdated(document_, nullptr, String(), nullptr);
 }
@@ -823,19 +828,21 @@ void StyleEngine::SetFontSelector(CSSFontSelector* font_selector) {
 void StyleEngine::PlatformColorsChanged() {
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kPlatformColorChange));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kPlatformColorChange));
 }
 
 bool StyleEngine::ShouldSkipInvalidationFor(const Element& element) const {
-  if (GetDocument().GetStyleChangeType() >= kSubtreeStyleChange)
-    return true;
   if (!element.InActiveDocument())
+    return true;
+  if (GetDocument().GetStyleChangeType() == kSubtreeStyleChange)
+    return true;
+  Element* root = GetDocument().documentElement();
+  if (!root || root->GetStyleChangeType() == kSubtreeStyleChange)
     return true;
   if (!element.parentNode())
     return true;
-  return element.parentNode()->GetStyleChangeType() >= kSubtreeStyleChange;
+  return element.parentNode()->GetStyleChangeType() == kSubtreeStyleChange;
 }
 
 void StyleEngine::ClassChangedForElement(
@@ -1033,7 +1040,7 @@ void StyleEngine::ScheduleInvalidationsForInsertedSibling(
     Element& inserted_element) {
   unsigned affected_siblings =
       inserted_element.parentNode()->ChildrenAffectedByIndirectAdjacentRules()
-          ? UINT_MAX
+          ? SiblingInvalidationSet::kDirectAdjacentMax
           : MaxDirectAdjacentSelectors();
 
   ContainerNode* scheduling_parent =
@@ -1058,7 +1065,7 @@ void StyleEngine::ScheduleInvalidationsForRemovedSibling(
     Element& after_element) {
   unsigned affected_siblings =
       after_element.parentNode()->ChildrenAffectedByIndirectAdjacentRules()
-          ? UINT_MAX
+          ? SiblingInvalidationSet::kDirectAdjacentMax
           : MaxDirectAdjacentSelectors();
 
   ContainerNode* scheduling_parent = after_element.ParentElementOrShadowRoot();
@@ -1198,7 +1205,7 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
   if (auto* shadow_root = DynamicTo<ShadowRoot>(&tree_scope.RootNode())) {
     Element& host = shadow_root->host();
     ScheduleRuleSetInvalidationsForElement(host, rule_sets);
-    if (host.GetStyleChangeType() >= kSubtreeStyleChange)
+    if (host.GetStyleChangeType() == kSubtreeStyleChange)
       return;
     for (auto rule_set : rule_sets) {
       if (rule_set->HasSlottedRules()) {
@@ -1286,9 +1293,8 @@ void StyleEngine::InitialStyleChanged() {
   // Media queries may rely on the initial font size relative lengths which may
   // have changed.
   MediaQueryAffectingValueChanged();
-
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  MarkViewportStyleDirty();
+  MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kSettings));
 }
 
@@ -1322,10 +1328,8 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
   if (ScopedStyleResolver* resolver = GetDocument().GetScopedStyleResolver()) {
     MarkDocumentDirty();
     resolver->SetNeedsAppendAllSheets();
-    GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kActiveStylesheetsUpdate));
+    MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+        style_change_reason::kActiveStylesheetsUpdate));
   }
 }
 
@@ -1376,21 +1380,14 @@ void StyleEngine::InvalidateForRuleSetChanges(
     InvalidationScope invalidation_scope) {
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
-
-  if (!tree_scope.GetDocument().body()) {
-    tree_scope.GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kCleanupPlaceholderStyles));
+  if (!tree_scope.GetDocument().documentElement())
     return;
-  }
-
   if (changed_rule_sets.IsEmpty())
     return;
 
-  Node& invalidation_root =
+  Element& invalidation_root =
       ScopedStyleResolver::InvalidationRootForTreeScope(tree_scope);
-  if (invalidation_root.GetStyleChangeType() >= kSubtreeStyleChange)
+  if (invalidation_root.GetStyleChangeType() == kSubtreeStyleChange)
     return;
 
   if (changed_rule_flags & kFullRecalcRules ||
@@ -1586,18 +1583,16 @@ bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
 
 void StyleEngine::CustomPropertyRegistered() {
   // TODO(timloh): Invalidate only elements with this custom property set
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kPropertyRegistration));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
   InvalidateInitialData();
 }
 
 void StyleEngine::EnvironmentVariableChanged() {
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kPropertyRegistration));
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
 }
@@ -1771,21 +1766,15 @@ scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
   return initial_data_;
 }
 
-void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
+void StyleEngine::RecalcStyle() {
   DCHECK(GetDocument().documentElement());
-  DCHECK(GetDocument().ChildNeedsStyleRecalc() || change.RecalcDescendants());
+  Element* root_element = &style_recalc_root_.RootElement();
+  Element* parent = root_element->ParentOrShadowHostElement();
 
-  Element& root_element = style_recalc_root_.RootElement();
-  if (change.RecalcChildren() ||
-      &root_element == GetDocument().documentElement()) {
-    GetDocument().documentElement()->RecalcStyle(change);
-  } else {
-    Element* parent = root_element.ParentOrShadowHostElement();
-    DCHECK(parent);
-    SelectorFilterAncestorScope filter_scope(*parent);
-    root_element.RecalcStyle(change);
-  }
-  for (ContainerNode* ancestor = root_element.ParentOrShadowHostNode();
+  SelectorFilterRootScope filter_scope(parent);
+  root_element->RecalcStyle({});
+
+  for (ContainerNode* ancestor = root_element->ParentOrShadowHostNode();
        ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
     if (auto* ancestor_element = DynamicTo<Element>(ancestor))
       ancestor_element->RecalcStyleForTraversalRootAncestor();
@@ -1796,9 +1785,12 @@ void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
 
 void StyleEngine::RebuildLayoutTree() {
   DCHECK(GetDocument().documentElement());
-  DCHECK(GetDocument().ChildNeedsReattachLayoutTree());
   DCHECK(!InRebuildLayoutTree());
   in_layout_tree_rebuild_ = true;
+
+  // We need a root scope here in case we recalc style for ::first-letter
+  // elements as part of UpdateFirstLetterPseudoElement.
+  SelectorFilterRootScope filter_scope(nullptr);
 
   Element& root_element = layout_tree_rebuild_root_.RootElement();
   {
@@ -1912,7 +1904,7 @@ void StyleEngine::UpdateColorSchemeBackground() {
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();
     if (style) {
-      if (style->UsedColorScheme() == ColorScheme::kDark)
+      if (style->UsedColorScheme() == WebColorScheme::kDark)
         use_dark_background = true;
     } else if (SupportsDarkColorScheme()) {
       use_dark_background = true;
@@ -1920,6 +1912,33 @@ void StyleEngine::UpdateColorSchemeBackground() {
   }
 
   view->SetUseDarkSchemeBackground(use_dark_background);
+}
+
+void StyleEngine::MarkAllElementsForStyleRecalc(
+    const StyleChangeReasonForTracing& reason) {
+  if (Element* root = GetDocument().documentElement())
+    root->SetNeedsStyleRecalc(kSubtreeStyleChange, reason);
+}
+
+void StyleEngine::UpdateViewportStyle() {
+  if (!viewport_style_dirty_)
+    return;
+
+  viewport_style_dirty_ = false;
+
+  // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver()
+  // before calling StyleForViewport() below because apparently the
+  // StyleResolver's constructor has side effects. We should fix it. See
+  // printing/setPrinting.html, printing/width-overflow.html though they only
+  // fail on mac when accessing the resolver by what appears to be a viewport
+  // size difference.
+  scoped_refptr<ComputedStyle> viewport_style =
+      StyleResolver::StyleForViewport(GetDocument());
+  if (ComputedStyle::ComputeDifference(
+          viewport_style.get(), GetDocument().GetLayoutView()->Style()) !=
+      ComputedStyle::Difference::kEqual) {
+    GetDocument().GetLayoutView()->SetStyle(std::move(viewport_style));
+  }
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

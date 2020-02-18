@@ -289,8 +289,8 @@ class CONTENT_EXPORT RenderFrameHostManager
                        SiteInstance* source_site_instance);
 
   // Creates and initializes a RenderFrameHost.
-  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
-                                                         bool hidden);
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(
+      SiteInstance* instance);
 
   // Helper method to create and initialize a RenderFrameProxyHost.
   void CreateRenderFrameProxy(SiteInstance* instance);
@@ -314,10 +314,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool DeleteFromPendingList(RenderFrameHostImpl* render_frame_host);
 
   // BackForwardCache:
-  // During an history navigation, try to swap back a document from the
-  // BackForwardCache. The document is referenced from its navigation entry ID.
-  // Returns true when it succeed.
+  // During a history navigation, unfreezes and swaps in a document from the
+  // BackForwardCache, making it active.
   void RestoreFromBackForwardCache(std::unique_ptr<RenderFrameHostImpl>);
+  void EvictFromBackForwardCache(RenderFrameHostImpl*);
+
+  // BackForwardCache:
+  // Unfreezes the current frame host. This is called after committing a
+  // navigation to a frame that was restored from the back-forward cache.
+  void UnfreezeCurrentFrameHost();
 
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.
@@ -711,7 +716,6 @@ class CONTENT_EXPORT RenderFrameHostManager
       int32_t view_routing_id,
       int32_t frame_routing_id,
       int32_t widget_routing_id,
-      bool hidden,
       bool renderer_initiated_creation);
 
   // Create and initialize a speculative RenderFrameHost for an ongoing
@@ -820,6 +824,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // behavior. The speculative RenderFrameHost might be discarded later on if
   // the final URL's SiteInstance isn't compatible with the one used to create
   // it.
+  //
+  // This is also used by the BackForwardCache, which
+  // sets speculative_render_frame_host_ to the restored frame before
+  // committing.
   std::unique_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
 
   // This callback is used when attaching an inner Delegate to |delegate_|

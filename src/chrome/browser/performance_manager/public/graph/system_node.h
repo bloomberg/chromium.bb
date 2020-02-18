@@ -41,12 +41,9 @@ class SystemNodeObserver {
   // Called before the |system_node| is removed from the graph.
   virtual void OnBeforeSystemNodeRemoved(const SystemNode* system_node) = 0;
 
-  // Events with no property changes.
-
-  // Fired when a batch of consistent process CPU measurements is available on
-  // the graph.
-  // TODO(siggi): Deprecate this as the CPU measurement code is reworked.
-  virtual void OnProcessCPUUsageReady(const SystemNode* system_node) = 0;
+  // Called when a new set of process memory metrics is available.
+  virtual void OnProcessMemoryMetricsAvailable(
+      const SystemNode* system_node) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemNodeObserver);
@@ -63,7 +60,8 @@ class SystemNode::ObserverDefaultImpl : public SystemNodeObserver {
   // SystemNodeObserver implementation:
   void OnSystemNodeAdded(const SystemNode* system_node) override {}
   void OnBeforeSystemNodeRemoved(const SystemNode* system_node) override {}
-  void OnProcessCPUUsageReady(const SystemNode* system_node) override {}
+  void OnProcessMemoryMetricsAvailable(const SystemNode* system_node) override {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

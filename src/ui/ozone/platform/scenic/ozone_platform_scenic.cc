@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -29,7 +30,7 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/system_input_injector.h"
@@ -44,7 +45,7 @@ constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
     /*requires_mojo=*/true,
-    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_IO};
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::IO};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:
@@ -60,7 +61,7 @@ class OzonePlatformScenic
     : public OzonePlatform,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  OzonePlatformScenic() {}
+  OzonePlatformScenic() = default;
   ~OzonePlatformScenic() override = default;
 
   // OzonePlatform implementation.
@@ -97,7 +98,8 @@ class OzonePlatformScenic
       return nullptr;
     }
     return std::make_unique<ScenicWindow>(window_manager_.get(), delegate,
-                                          std::move(properties.view_token));
+                                          std::move(properties.view_token),
+                                          std::move(properties.view_ref_pair));
   }
 
   const PlatformProperties& GetPlatformProperties() override {

@@ -68,7 +68,7 @@ namespace sw
 		Float4 vDelta;
 		Float4 M;  // Major axis
 
-		if(state.textureType == TEXTURE_CUBE)
+		if(state.textureType == VK_IMAGE_VIEW_TYPE_CUBE)
 		{
 			Int4 face = cubeFace(uuuu, vvvv, u, v, w, M);
 			wwww = As<Float4>(face);
@@ -76,9 +76,9 @@ namespace sw
 
 		if(function == Implicit || function == Bias || function == Grad || function == Query)
 		{
-			if(state.textureType != TEXTURE_3D)
+			if(state.textureType != VK_IMAGE_VIEW_TYPE_3D)
 			{
-				if(state.textureType != TEXTURE_CUBE)
+				if(state.textureType != VK_IMAGE_VIEW_TYPE_CUBE)
 				{
 					computeLod(texture, sampler, lod, anisotropy, uDelta, vDelta, uuuu, vvvv, dsx, dsy, function);
 				}
@@ -92,14 +92,21 @@ namespace sw
 				computeLod3D(texture, sampler, lod, uuuu, vvvv, wwww, dsx, dsy, function);
 			}
 
+			Float bias = *Pointer<Float>(sampler + OFFSET(vk::Sampler, mipLodBias));
+
 			if(function == Bias)
 			{
-				lod += lodOrBias;
+				// Add SPIR-V Bias operand to the sampler provided bias and clamp to maxSamplerLodBias limit.
+				bias = Min(Max(bias + lodOrBias, -vk::MAX_SAMPLER_LOD_BIAS), vk::MAX_SAMPLER_LOD_BIAS);
 			}
+
+			lod += bias;
 		}
 		else if(function == Lod)
 		{
-			lod = lodOrBias;
+			// Vulkan 1.1: "The absolute value of mipLodBias must be less than or equal to VkPhysicalDeviceLimits::maxSamplerLodBias"
+			// Hence no explicit clamping to maxSamplerLodBias is required in this case.
+			lod = lodOrBias + *Pointer<Float>(sampler + OFFSET(vk::Sampler, mipLodBias));
 		}
 		else if(function == Fetch)
 		{
@@ -114,8 +121,6 @@ namespace sw
 
 		if(function != Base && function != Fetch && function != Gather)
 		{
-			lod += *Pointer<Float>(sampler + OFFSET(vk::Sampler, mipLodBias));
-
 			if(function == Query)
 			{
 				c.y = Float4(lod);  // Unclamped LOD.
@@ -441,7 +446,7 @@ namespace sw
 
 	Vector4s SamplerCore::sampleQuad(Pointer<Byte> &texture, Float4 &u, Float4 &v, Float4 &w, Vector4f &offset, Float &lod, bool secondLOD, SamplerFunction function)
 	{
-		if(state.textureType != TEXTURE_3D)
+		if(state.textureType != VK_IMAGE_VIEW_TYPE_3D)
 		{
 			return sampleQuad2D(texture, u, v, w, offset, lod, secondLOD, function);
 		}
@@ -862,7 +867,7 @@ namespace sw
 
 	Vector4f SamplerCore::sampleFloat(Pointer<Byte> &texture, Float4 &u, Float4 &v, Float4 &w, Float4 &q, Vector4f &offset, Float &lod, bool secondLOD, SamplerFunction function)
 	{
-		if(state.textureType != TEXTURE_3D)
+		if(state.textureType != VK_IMAGE_VIEW_TYPE_3D)
 		{
 			return sampleFloat2D(texture, u, v, w, q, offset, lod, secondLOD, function);
 		}
@@ -1237,7 +1242,7 @@ namespace sw
 		switch(mode)
 		{
 		case AddressingMode::ADDRESSING_WRAP:
-			tmp = (tmp + whd * Int4(-MIN_PROGRAM_TEXEL_OFFSET)) % whd;
+			tmp = (tmp + whd * Int4(-MIN_TEXEL_OFFSET)) % whd;
 			break;
 		case AddressingMode::ADDRESSING_CLAMP:
 		case AddressingMode::ADDRESSING_MIRROR:
@@ -1283,7 +1288,7 @@ namespace sw
 
 		if(hasThirdCoordinate())
 		{
-			if(state.textureType == TEXTURE_3D)
+			if(state.textureType == VK_IMAGE_VIEW_TYPE_3D)
 			{
 				if(!texelFetch)
 				{
@@ -2356,9 +2361,9 @@ namespace sw
 
 	bool SamplerCore::hasThirdCoordinate() const
 	{
-		return (state.textureType == TEXTURE_3D) ||
-		       (state.textureType == TEXTURE_2D_ARRAY) ||
-		       (state.textureType == TEXTURE_1D_ARRAY);  // Treated as 2D texture with second coordinate 0. TODO(b/134669567)
+		return (state.textureType == VK_IMAGE_VIEW_TYPE_3D) ||
+		       (state.textureType == VK_IMAGE_VIEW_TYPE_2D_ARRAY) ||
+		       (state.textureType == VK_IMAGE_VIEW_TYPE_1D_ARRAY);  // Treated as 2D texture with second coordinate 0. TODO(b/134669567)
 	}
 
 	bool SamplerCore::has16bitTextureFormat() const

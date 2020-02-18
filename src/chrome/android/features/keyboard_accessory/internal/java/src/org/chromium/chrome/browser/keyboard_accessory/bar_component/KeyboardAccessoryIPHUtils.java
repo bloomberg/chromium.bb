@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.widget.textbubble.ImageTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.ViewRectProvider;
 
 /**
@@ -50,18 +51,25 @@ class KeyboardAccessoryIPHUtils {
      * session or other config restrictions apply.
      * @param feature A String identifying the IPH feature and its appropriate help text.
      * @param view The {@link View} providing context and the Rect to which the bubble will point.
+     * @param rootView The {@link View} used to determine the maximal dimensions for the bubble.
      */
-    static void showHelpBubble(String feature, View view) {
+    static void showHelpBubble(String feature, ChipView view, View rootView) {
         final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         if (!tracker.isInitialized()) return;
         if (!tracker.shouldTriggerHelpUI(feature)) return; // This call records the IPH intent.
         @StringRes
         int helpText = getHelpTextForFeature(feature);
-        ImageTextBubble helpBubble = new ImageTextBubble(view.getContext(), view, helpText,
+        ImageTextBubble helpBubble = new ImageTextBubble(view.getContext(), rootView, helpText,
                 helpText, true, new ViewRectProvider(view), R.drawable.ic_chrome);
         helpBubble.setDismissOnTouchInteraction(true);
         helpBubble.show();
-        helpBubble.addOnDismissListener(() -> tracker.dismissed(feature));
+        // To emphasize which chip is pointed to, set selected to true for the built-in highlight.
+        // Prefer ViewHighlighter for views without a LayerDrawable background.
+        view.setSelected(true);
+        helpBubble.addOnDismissListener(() -> {
+            tracker.dismissed(feature);
+            view.setSelected(false);
+        });
     }
 
     /**

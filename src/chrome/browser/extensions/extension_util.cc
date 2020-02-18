@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
@@ -47,6 +46,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
 namespace extensions {
@@ -78,6 +78,25 @@ std::string ReloadExtensionIfEnabled(const std::string& extension_id,
 }
 
 }  // namespace
+
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context) {
+  const Extension* extension = ExtensionRegistry::Get(context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(extension_site_url);
+
+#if defined(OS_CHROMEOS)
+  const bool is_policy_extension =
+      extension && Manifest::IsPolicyLocation(extension->location());
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (profile && chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      is_policy_extension) {
+    return true;
+  }
+#endif
+
+  return extension && AppIsolationInfo::HasIsolatedStorage(extension);
+}
 
 void SetIsIncognitoEnabled(const std::string& extension_id,
                            content::BrowserContext* context,
@@ -323,34 +342,6 @@ const Extension* GetInstalledPwaForUrl(
       return app.get();
   }
   return nullptr;
-}
-
-const Extension* GetPwaForSecureActiveTab(Browser* browser) {
-  switch (browser->location_bar_model()->GetSecurityLevel()) {
-    case security_state::SECURITY_LEVEL_COUNT:
-      NOTREACHED();
-      FALLTHROUGH;
-    case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
-    case security_state::DANGEROUS:
-      return nullptr;
-    case security_state::EV_SECURE:
-    case security_state::SECURE:
-    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      break;
-  }
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  return GetInstalledPwaForUrl(
-      web_contents->GetBrowserContext(),
-      web_contents->GetMainFrame()->GetLastCommittedURL());
-}
-
-bool IsWebContentsInAppWindow(content::WebContents* web_contents) {
-  // TODO(loyso): Unify this check as a util (including
-  // MaybeCreateHostedAppController).
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  return browser && browser->app_controller();
 }
 
 }  // namespace util

@@ -32,7 +32,7 @@ class TextureValidationTest : public ValidationTest {
         descriptor.sampleCount = kDefaultSampleCount;
         descriptor.dimension = dawn::TextureDimension::e2D;
         descriptor.format = kDefaultTextureFormat;
-        descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::Sampled;
+        descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::Sampled;
         return descriptor;
     }
 
@@ -194,7 +194,7 @@ TEST_F(TextureValidationTest, DestroyDestroyedTexture) {
 TEST_F(TextureValidationTest, DestroyEncodeSubmit) {
     dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
     dawn::Texture texture = device.CreateTexture(&descriptor);
-    dawn::TextureView textureView = texture.CreateDefaultView();
+    dawn::TextureView textureView = texture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass({textureView});
 
@@ -217,7 +217,7 @@ TEST_F(TextureValidationTest, DestroyEncodeSubmit) {
 TEST_F(TextureValidationTest, EncodeDestroySubmit) {
     dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
     dawn::Texture texture = device.CreateTexture(&descriptor);
-    dawn::TextureView textureView = texture.CreateDefaultView();
+    dawn::TextureView textureView = texture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass({textureView});
 
@@ -239,27 +239,45 @@ TEST_F(TextureValidationTest, EncodeDestroySubmit) {
 TEST_F(TextureValidationTest, NonRenderableAndOutputAttachment) {
     dawn::TextureDescriptor descriptor;
     descriptor.size = {1, 1, 1};
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+    descriptor.usage = dawn::TextureUsage::OutputAttachment;
 
     // Succeeds because RGBA8Unorm is renderable
     descriptor.format = dawn::TextureFormat::RGBA8Unorm;
     device.CreateTexture(&descriptor);
 
-    // Fails because RG11B10Float is non-renderable
-    descriptor.format = dawn::TextureFormat::RG11B10Float;
+    dawn::TextureFormat nonRenderableFormats[] = {
+        dawn::TextureFormat::RG11B10Float, dawn::TextureFormat::R8Snorm,
+        dawn::TextureFormat::RG8Snorm,     dawn::TextureFormat::RGBA8Snorm,
+    };
+
+    for (dawn::TextureFormat format : nonRenderableFormats) {
+        // Fails because `format` is non-renderable
+        descriptor.format = format;
+        ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+}
+
+// Test it is an error to create a texture with format "Undefined".
+TEST_F(TextureValidationTest, TextureFormatUndefined) {
+    dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+    descriptor.format = dawn::TextureFormat::Undefined;
     ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
 }
 
-// TODO(jiawei.shao@intel.com): use compressed texture formats as extensions.
 // TODO(jiawei.shao@intel.com): add tests to verify we cannot create 1D or 3D textures with
 // compressed texture formats.
 class CompressedTextureFormatsValidationTests : public TextureValidationTest {
+  public:
+    CompressedTextureFormatsValidationTests() : TextureValidationTest() {
+        device = CreateDeviceFromAdapter(adapter, {"texture_compression_bc"});
+    }
+
   protected:
     dawn::TextureDescriptor CreateDefaultTextureDescriptor() {
         dawn::TextureDescriptor descriptor =
             TextureValidationTest::CreateDefaultTextureDescriptor();
-        descriptor.usage = dawn::TextureUsageBit::CopySrc | dawn::TextureUsageBit::CopyDst |
-                           dawn::TextureUsageBit::Sampled;
+        descriptor.usage =
+            dawn::TextureUsage::CopySrc | dawn::TextureUsage::CopyDst | dawn::TextureUsage::Sampled;
         return descriptor;
     }
 
@@ -309,6 +327,18 @@ TEST_F(CompressedTextureFormatsValidationTests, TextureSize) {
     }
 }
 
+// Test the creation of a texture with BC format will fail when the extension textureCompressionBC
+// is not enabled.
+TEST_F(CompressedTextureFormatsValidationTests, UseBCFormatWithoutEnablingExtension) {
+    const std::vector<const char*> kEmptyVector;
+    dawn::Device deviceWithoutExtension = CreateDeviceFromAdapter(adapter, kEmptyVector);
+    for (dawn::TextureFormat format : kBCFormats) {
+        dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+        descriptor.format = format;
+        ASSERT_DEVICE_ERROR(deviceWithoutExtension.CreateTexture(&descriptor));
+    }
+}
+
 // Test the validation of texture usages when creating textures in compressed texture formats.
 TEST_F(CompressedTextureFormatsValidationTests, TextureUsage) {
     // Test that only CopySrc, CopyDst and Sampled are accepted as the texture usage of the
@@ -317,21 +347,21 @@ TEST_F(CompressedTextureFormatsValidationTests, TextureUsage) {
         {
             dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
             descriptor.format = format;
-            descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+            descriptor.usage = dawn::TextureUsage::OutputAttachment;
             ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
         }
 
         {
             dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
             descriptor.format = format;
-            descriptor.usage = dawn::TextureUsageBit::Storage;
+            descriptor.usage = dawn::TextureUsage::Storage;
             ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
         }
 
         {
             dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
             descriptor.format = format;
-            descriptor.usage = dawn::TextureUsageBit::Present;
+            descriptor.usage = dawn::TextureUsage::Present;
             ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
         }
     }

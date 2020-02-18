@@ -116,13 +116,15 @@ void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *
         // enabled automatically by examining format capabilities.
         testFunction = HasNonFilterableTextureFormatSupport;
     }
-    if (format.isSnorm())
+    if (format.isSnorm() || format.isBlock)
     {
         // Rendering to SNORM textures is not supported on Android, and it's
         // enabled by the extension EXT_render_snorm.
+        // Compressed textures also need to perform this check.
         testFunction = HasNonRenderableTextureFormatSupport;
     }
-    int i = FindSupportedFormat(renderer, info + skip, numInfo - skip, testFunction);
+    int i = FindSupportedFormat(renderer, info + skip, static_cast<uint32_t>(numInfo - skip),
+                                testFunction);
     i += skip;
 
     imageFormatID            = info[i].format;
@@ -133,7 +135,8 @@ void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *
 void Format::initBufferFallback(RendererVk *renderer, const BufferFormatInitInfo *info, int numInfo)
 {
     size_t skip = renderer->getFeatures().forceFallbackFormat.enabled ? 1 : 0;
-    int i = FindSupportedFormat(renderer, info + skip, numInfo - skip, HasFullBufferFormatSupport);
+    int i       = FindSupportedFormat(renderer, info + skip, static_cast<uint32_t>(numInfo - skip),
+                                HasFullBufferFormatSupport);
     i += skip;
 
     bufferFormatID               = info[i].format;
@@ -331,6 +334,7 @@ void ComposeSwizzleState(const gl::SwizzleState &first,
 
 void MapSwizzleState(const ContextVk *contextVk,
                      const vk::Format &format,
+                     const bool sized,
                      const gl::SwizzleState &swizzleState,
                      gl::SwizzleState *swizzleStateOut)
 {
@@ -364,7 +368,8 @@ void MapSwizzleState(const ContextVk *contextVk,
                 bool hasRed = angleFormat.depthBits > 0;
                 // In OES_depth_texture/ARB_depth_texture, depth
                 // textures are treated as luminance.
-                bool hasGB = hasRed && contextVk->getClientMajorVersion() <= 2;
+                // If the internalformat was not sized, use OES_depth_texture behavior
+                bool hasGB = hasRed && !sized;
 
                 internalSwizzle.swizzleRed   = hasRed ? GL_RED : GL_ZERO;
                 internalSwizzle.swizzleGreen = hasGB ? GL_RED : GL_ZERO;

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -42,13 +41,6 @@ inline bool ShouldCreateLineBox(const NGInlineItemResults& item_results) {
 
 inline bool HasUnpositionedFloats(const NGInlineItemResults& item_results) {
   return !item_results.IsEmpty() && item_results.back().has_unpositioned_floats;
-}
-
-bool IsImage(const NGInlineItem& item) {
-  if (!item.GetLayoutObject() || !item.GetLayoutObject()->IsLayoutImage())
-    return false;
-  DCHECK(item.Type() == NGInlineItem::kAtomicInline);
-  return true;
 }
 
 LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
@@ -131,26 +123,6 @@ scoped_refptr<const NGPhysicalTextFragment> CreateHyphenFragment(
   return builder.ToTextFragment();
 }
 
-void PreventBreakBeforeStickyImage(
-    NGLineBreaker::WhitespaceState trailing_whitespace,
-    const String& text,
-    NGLineInfo* line_info) {
-  if (trailing_whitespace != NGLineBreaker::WhitespaceState::kNone &&
-      trailing_whitespace != NGLineBreaker::WhitespaceState::kUnknown)
-    return;
-
-  NGInlineItemResults* results = line_info->MutableResults();
-  if (results->IsEmpty())
-    return;
-
-  // If this image follows a <wbr> the image isn't sticky.
-  NGInlineItemResult* last = &results->back();
-  if (text[last->start_offset] == kZeroWidthSpaceCharacter)
-    return;
-
-  last->can_break_after = false;
-}
-
 inline void ClearNeedsLayout(const NGInlineItem& item) {
   LayoutObject* layout_object = item.GetLayoutObject();
   if (layout_object->NeedsLayout())
@@ -177,6 +149,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
                              NGExclusionSpace* exclusion_space)
     : line_opportunity_(line_opportunity),
       node_(node),
+      mode_(mode),
       is_first_formatted_line_((!break_token || (!break_token->ItemIndex() &&
                                                  !break_token->TextOffset())) &&
                                node.CanContainFirstFormattedLine()),
@@ -184,13 +157,15 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
                             node.UseFirstLineStyle()),
       in_line_height_quirks_mode_(node.InLineHeightQuirksMode()),
       items_data_(node.ItemsData(use_first_line_style_)),
-      mode_(mode),
+      text_content_(mode == NGLineBreakerMode::kContent
+                        ? items_data_.text_content
+                        : node.TextContentForContentSize(items_data_)),
       constraint_space_(space),
       exclusion_space_(exclusion_space),
       break_token_(break_token),
-      break_iterator_(items_data_.text_content),
-      shaper_(items_data_.text_content),
-      spacing_(items_data_.text_content),
+      break_iterator_(text_content_),
+      shaper_(text_content_),
+      spacing_(text_content_),
       leading_floats_(leading_floats),
       handled_leading_floats_index_(handled_leading_floats_index),
       base_direction_(node_.BaseDirection()) {
@@ -198,27 +173,15 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
   break_iterator_.SetBreakSpace(BreakSpaceType::kBeforeSpaceRun);
 
   if (break_token) {
-    current_style_ = break_token->Style();
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     break_iterator_.SetStartOffset(offset_);
     is_after_forced_break_ = break_token->IsForcedBreak();
     items_data_.AssertOffset(item_index_, offset_);
-    ignore_floats_ = break_token->IgnoreFloats();
+    // TODO(crbug.com/1013040): |break_token->Style()| should not be nullptr.
+    if (const ComputedStyle* line_initial_style = break_token->Style())
+      SetCurrentStyle(*line_initial_style);
   }
-
-  // There's a special intrinsic size measure quirk for images that are direct
-  // children of table cells that have auto inline-size: When measuring
-  // intrinsic min/max inline sizes, we pretend that it's not possible to break
-  // between images, or between text and images. Note that this only applies
-  // when measuring. During actual layout, on the other hand, standard breaking
-  // rules are to be followed.
-  // See https://quirks.spec.whatwg.org/#the-table-cell-width-calculation-quirk
-  if (node.GetDocument().InQuirksMode() &&
-      node.Style().Display() == EDisplay::kTableCell &&
-      node.Style().LogicalWidth().IsIntrinsicOrAuto() &&
-      mode != NGLineBreakerMode::kContent)
-    sticky_images_quirk_ = true;
 }
 
 // Define the destructor here, so that we can forward-declare more in the
@@ -313,11 +276,13 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
     line_info->SetTextIndent(MinimumValueForLength(length, maximum_value));
   }
 
-  // Set the initial style of this line from the break token. Example:
+  // Set the initial style of this line from the line style, if the style from
+  // the end of previous line is not available. Example:
   //   <p>...<span>....</span></p>
   // When the line wraps in <span>, the 2nd line needs to start with the style
   // of the <span>.
-  SetCurrentStyle(current_style_ ? *current_style_ : line_info->LineStyle());
+  if (!current_style_)
+    SetCurrentStyle(line_info->LineStyle());
   ComputeBaseDirection();
   line_info->SetBaseDirection(base_direction_);
 
@@ -414,13 +379,6 @@ void NGLineBreaker::BreakLine(
         continue;
       return;
     }
-    if (item.Type() == NGInlineItem::kAtomicInline) {
-      if (HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
-                             line_info)) {
-        continue;
-      }
-      return;
-    }
     if (item.Type() == NGInlineItem::kCloseTag) {
       HandleCloseTag(item, line_info);
       continue;
@@ -446,8 +404,14 @@ void NGLineBreaker::BreakLine(
       return;
     }
 
+    if (item.Type() == NGInlineItem::kAtomicInline) {
+      HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
+                         line_info);
+      continue;
+    }
     if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      AddItem(item, line_info);
+      NGInlineItemResult* item_result = AddItem(item, line_info);
+      ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
       MoveToNextOf(item);
     } else if (item.Length()) {
       NOTREACHED();
@@ -473,13 +437,59 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   // Negative margins can make the position negative, but the inline size is
   // always positive or 0.
   LayoutUnit available_width = AvailableWidth();
-  DCHECK_EQ(position_, line_info->ComputeWidth());
+
+  // Text measurement is done using floats which may introduce small rounding
+  // errors for near-saturated values.
+  DCHECK_EQ(position_.Round(), line_info->ComputeWidth().Round());
 
   line_info->SetWidth(available_width, position_);
   line_info->SetBfcOffset(
       {line_opportunity_.line_left_offset, line_opportunity_.bfc_block_offset});
   if (mode_ == NGLineBreakerMode::kContent)
     line_info->UpdateTextAlign();
+}
+
+// For Web-compatibility, allow break between an atomic inline and any adjacent
+// U+00A0 NO-BREAK SPACE character.
+// https://www.w3.org/TR/css-text-3/#line-break-details
+bool NGLineBreaker::IsAtomicInlineBeforeNoBreakSpace(
+    const NGInlineItemResult& item_result) const {
+  DCHECK(auto_wrap_);
+  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kAtomicInline);
+  const String& text = Text();
+  DCHECK_GE(text.length(), item_result.end_offset);
+  return text.length() > item_result.end_offset &&
+         text[item_result.end_offset] == kNoBreakSpaceCharacter &&
+         // Except when sticky images quirk was applied.
+         text[item_result.start_offset] != kNoBreakSpaceCharacter;
+}
+
+bool NGLineBreaker::IsAtomicInlineAfterNoBreakSpace(
+    const NGInlineItemResult& item_result) const {
+  DCHECK(auto_wrap_);
+  DCHECK_EQ(item_result.item->Type(), NGInlineItem::kText);
+  const String& text = Text();
+  DCHECK_GE(text.length(), item_result.end_offset);
+  if (text[item_result.end_offset - 1] != kNoBreakSpaceCharacter ||
+      text.length() <= item_result.end_offset ||
+      text[item_result.end_offset] != kObjectReplacementCharacter)
+    return false;
+  // This kObjectReplacementCharacter can be any objects, such as a floating or
+  // an OOF object. Check if it's really an atomic inline.
+  const Vector<NGInlineItem>& items = Items();
+  for (const NGInlineItem* item = std::next(item_result.item);
+       item != items.end(); ++item) {
+    DCHECK_EQ(item->StartOffset(), item_result.end_offset);
+    if (item->Type() == NGInlineItem::kAtomicInline) {
+      // Except when sticky images quirk was applied.
+      if (UNLIKELY(text[item->StartOffset()] == kNoBreakSpaceCharacter))
+        return false;
+      return true;
+    }
+    if (item->EndOffset() > item_result.end_offset)
+      break;
+  }
+  return false;
 }
 
 void NGLineBreaker::HandleText(const NGInlineItem& item,
@@ -542,7 +552,6 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
             !override_break_anywhere_));
     position_ += item_result->inline_size;
     DCHECK_EQ(break_result == kSuccess, position_ <= available_width);
-    item_result->may_break_inside = break_result == kSuccess;
     MoveToNextOf(*item_result);
 
     if (break_result == kSuccess ||
@@ -640,12 +649,12 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   unsigned try_count = 0;
 #endif
   LayoutUnit inline_size;
+  ShapingLineBreaker::Result result;
   while (true) {
 #if DCHECK_IS_ON()
     ++try_count;
     DCHECK_LE(try_count, 2u);
 #endif
-    ShapingLineBreaker::Result result;
     scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
         item_result->start_offset, available_width.ClampNegativeToZero(),
         options, &result);
@@ -710,8 +719,18 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     DCHECK_EQ(item_result->end_offset, item.EndOffset());
     item_result->can_break_after =
         break_iterator_.IsBreakable(item_result->end_offset);
+    if (!item_result->can_break_after && item.Type() == NGInlineItem::kText &&
+        IsAtomicInlineAfterNoBreakSpace(*item_result))
+      item_result->can_break_after = true;
     trailing_whitespace_ = WhitespaceState::kUnknown;
   }
+
+  // This result is not breakable any further if overflow. This information is
+  // useful to optimize |HandleOverflow()|.
+  item_result->may_break_inside = !result.is_overflow;
+
+  // TODO(crbug.com/1003742): We should use |result.is_overflow| here. For now,
+  // use |inline_size| because some tests rely on this behavior.
   return inline_size <= available_width ? kSuccess : kOverflow;
 }
 
@@ -1179,30 +1198,13 @@ void NGLineBreaker::HandleBidiControlItem(const NGInlineItem& item,
   MoveToNextOf(item);
 }
 
-bool NGLineBreaker::HandleAtomicInline(
+void NGLineBreaker::HandleAtomicInline(
     const NGInlineItem& item,
     LayoutUnit percentage_resolution_block_size_for_min_max,
     NGLineInfo* line_info) {
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
-  const NGInlineItemResults& item_results = line_info->Results();
-
-  // If the sticky images quirk is enabled, and this is an image that
-  // follows text that doesn't end with something breakable, we cannot break
-  // between the two items.
-  bool is_sticky_image = sticky_images_quirk_ && IsImage(item);
-  if (UNLIKELY(is_sticky_image)) {
-    PreventBreakBeforeStickyImage(trailing_whitespace_, Text(), line_info);
-  }
-
-  // Atomic inline is handled as if it is trailable, because it can prevent
-  // break-before. Check if the line should break before this item, after the
-  // last item's |can_break_after| is finalized for the quirk above.
-  if (state_ == LineBreakState::kTrailing && CanBreakAfterLast(item_results)) {
-    line_info->SetIsLastLine(false);
-    return false;
-  }
 
   NGInlineItemResult* item_result = AddItem(item, line_info);
   item_result->should_create_line_box = true;
@@ -1251,21 +1253,11 @@ bool NGLineBreaker::HandleAtomicInline(
   trailing_whitespace_ = WhitespaceState::kNone;
   position_ += item_result->inline_size;
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+  if (!item_result->can_break_after && auto_wrap_ &&
+      IsAtomicInlineBeforeNoBreakSpace(*item_result))
+    item_result->can_break_after = true;
 
-  if (UNLIKELY(is_sticky_image)) {
-    const auto& items = Items();
-    if (item_index_ + 1 < items.size()) {
-      DCHECK_EQ(&item, &items[item_index_]);
-      const auto& next_item = items[item_index_ + 1];
-      // This is an image, and we don't want to break after it, unless what
-      // comes after provides a break opportunity. Look ahead. We only want to
-      // break if the next item is an atomic inline that's not an image.
-      if (next_item.Type() != NGInlineItem::kAtomicInline || IsImage(next_item))
-        item_result->can_break_after = false;
-    }
-  }
   MoveToNextOf(item);
-  return true;
 }
 
 // Performs layout and positions a float.
@@ -1305,9 +1297,6 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     out_floats_for_min_max->push_back(item.GetLayoutObject());
     return;
   }
-
-  if (ignore_floats_)
-    return;
 
   // Make sure we populate the positioned_float inside the |item_result|.
   if (item_index_ <= handled_leading_floats_index_ &&
@@ -1372,7 +1361,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
-        constraint_space_.AvailableSize().inline_size, LogicalSize());
+        constraint_space_.AvailableSize().inline_size);
 
     DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());
 
@@ -1759,6 +1748,23 @@ const ComputedStyle& NGLineBreaker::ComputeCurrentStyle(
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
+  if (&style == current_style_.get()) {
+#if DCHECK_IS_ON()
+    // Check that cache fields are already setup correctly.
+    DCHECK_EQ(auto_wrap_, style.AutoWrap());
+    if (auto_wrap_) {
+      DCHECK_EQ(enable_soft_hyphen_, style.GetHyphens() != Hyphens::kNone);
+      DCHECK_EQ(break_iterator_.Locale(), style.LocaleForLineBreakIterator());
+    }
+    ShapeResultSpacing<String> spacing(spacing_.Text());
+    spacing.SetSpacing(style.GetFontDescription());
+    DCHECK_EQ(spacing.LetterSpacing(), spacing_.LetterSpacing());
+    DCHECK_EQ(spacing.WordSpacing(), spacing_.WordSpacing());
+#endif
+    return;
+  }
+  current_style_ = &style;
+
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
@@ -1794,17 +1800,10 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
 
     if (style.WhiteSpace() == EWhiteSpace::kBreakSpaces)
       break_iterator_.SetBreakSpace(BreakSpaceType::kAfterEverySpace);
+
+    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   }
 
-  // The above calls are cheap & necessary. But the following are expensive
-  // and do not need to be reset every time if the style doesn't change,
-  // so avoid them if possible.
-  if (&style == current_style_.get())
-    return;
-
-  current_style_ = &style;
-  if (auto_wrap_)
-    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   spacing_.SetSpacing(style.GetFontDescription());
 }
 

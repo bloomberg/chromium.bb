@@ -46,8 +46,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,6 +109,8 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
                     types.Has(syncer::UserSelectableType::kExtensions));
   result.SetBoolean("passwordsSynced",
                     types.Has(syncer::UserSelectableType::kPasswords));
+  result.SetBoolean("wifiConfigurationsSynced",
+                    types.Has(syncer::UserSelectableType::kWifiConfigurations));
   result.SetBoolean("preferencesSynced",
                     types.Has(syncer::UserSelectableType::kPreferences));
   result.SetBoolean("tabsSynced", types.Has(syncer::UserSelectableType::kTabs));
@@ -164,6 +166,8 @@ void CheckConfigDataTypeArguments(const base::DictionaryValue* dictionary,
             types.Has(syncer::UserSelectableType::kExtensions));
   CheckBool(dictionary, "passwordsSynced",
             types.Has(syncer::UserSelectableType::kPasswords));
+  CheckBool(dictionary, "wifiConfigurationsSynced",
+            types.Has(syncer::UserSelectableType::kWifiConfigurations));
   CheckBool(dictionary, "preferencesSynced",
             types.Has(syncer::UserSelectableType::kPreferences));
   CheckBool(dictionary, "tabsSynced",
@@ -249,7 +253,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
                     &PeopleHandlerTest::OnSetupInProgressHandleDestroyed,
                     base::Unretained(this))))));
 
-    handler_.reset(new TestingPeopleHandler(&web_ui_, profile()));
+    handler_ = std::make_unique<TestingPeopleHandler>(&web_ui_, profile());
     handler_->AllowJavascript();
     web_ui_.set_web_contents(web_contents());
   }
@@ -262,12 +266,9 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  content::BrowserContext* CreateBrowserContext() override {
-    // Setup the profile.
-    std::unique_ptr<TestingProfile> profile =
-        IdentityTestEnvironmentProfileAdaptor::
-            CreateProfileForIdentityTestEnvironment();
-    return profile.release();
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactories();
   }
 
   // Setup the expectations for calls made when displaying the config page.
@@ -1107,6 +1108,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "bookmarksRegistered", true);
   CheckBool(dictionary, "extensionsRegistered", true);
   CheckBool(dictionary, "passwordsRegistered", true);
+  CheckBool(dictionary, "wifiConfigurationsRegistered", true);
   CheckBool(dictionary, "preferencesRegistered", true);
   CheckBool(dictionary, "tabsRegistered", true);
   CheckBool(dictionary, "themesRegistered", true);
@@ -1402,7 +1404,7 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNoFirstRun);
   ASSERT_FALSE(first_run::IsChromeFirstRun());
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // Decode test parameters.
   bool dice_enabled;

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_test_api.h"
@@ -30,14 +30,13 @@ class SlideAnimationTest : public testing::Test {
 
  protected:
   SlideAnimationTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-    slide_animation_.reset(new SlideAnimation(nullptr));
-    animation_api_.reset(new AnimationTestApi(slide_animation_.get()));
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
+    slide_animation_ = std::make_unique<SlideAnimation>(nullptr);
+    animation_api_ = std::make_unique<AnimationTestApi>(slide_animation_.get());
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests animation construction.

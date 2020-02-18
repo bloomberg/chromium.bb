@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "net/base/completion_once_callback.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 
 class GURL;
 
@@ -248,7 +248,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<BlobReader> weak_factory_;
+  base::WeakPtrFactory<BlobReader> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BlobReader);
 };
 

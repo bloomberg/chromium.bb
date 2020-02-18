@@ -20,6 +20,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/match.h"
 #include "api/media_transport_config.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtp_parameters.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "api/test/fake_media_transport.h"
@@ -39,7 +40,6 @@
 #include "api/video_codecs/video_encoder_factory.h"
 #include "call/flexfec_receive_stream.h"
 #include "common_video/h264/profile_level_id.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "media/base/fake_frame_source.h"
 #include "media/base/fake_network_interface.h"
 #include "media/base/fake_video_renderer.h"
@@ -51,7 +51,6 @@
 #include "media/engine/fake_webrtc_video_engine.h"
 #include "media/engine/simulcast.h"
 #include "media/engine/webrtc_voice_engine.h"
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/fake_clock.h"
 #include "rtc_base/gunit.h"
@@ -60,6 +59,7 @@
 #include "test/field_trial.h"
 #include "test/frame_generator.h"
 #include "test/gmock.h"
+#include "test/rtp_header_parser.h"
 
 using ::testing::Field;
 using ::testing::IsEmpty;
@@ -86,6 +86,8 @@ static const uint32_t kRtxSsrcs1[] = {4};
 static const uint32_t kFlexfecSsrc = 5;
 static const uint32_t kIncomingUnsignalledSsrc = 0xC0FFEE;
 static const uint32_t kDefaultRecvSsrc = 0;
+
+constexpr uint32_t kRtpHeaderSize = 12;
 
 static const char kUnsupportedExtensionName[] =
     "urn:ietf:params:rtp-hdrext:unsupported";
@@ -270,7 +272,7 @@ class WebRtcVideoEngineTest : public ::testing::Test {
   // race condition in the clock access.
   rtc::ScopedFakeClock fake_clock_;
   std::unique_ptr<webrtc::test::ScopedFieldTrials> override_field_trials_;
-  webrtc::RtcEventLogNullImpl event_log_;
+  webrtc::RtcEventLogNull event_log_;
   std::unique_ptr<webrtc::TaskQueueFactory> task_queue_factory_;
   // Used in WebRtcVideoEngineVoiceTest, but defined here so it's properly
   // initialized when the constructor is called.
@@ -1144,7 +1146,7 @@ TEST(WebRtcVideoEngineNewVideoCodecFactoryTest, Vp8) {
       .WillOnce(::testing::Return(decoder));
 
   // Create a call.
-  webrtc::RtcEventLogNullImpl event_log;
+  webrtc::RtcEventLogNull event_log;
   auto task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
   webrtc::Call::Config call_config(&event_log);
   call_config.task_queue_factory = task_queue_factory.get();
@@ -1214,7 +1216,7 @@ TEST(WebRtcVideoEngineNewVideoCodecFactoryTest, NullDecoder) {
       .WillOnce(::testing::Return(nullptr));
 
   // Create a call.
-  webrtc::RtcEventLogNullImpl event_log;
+  webrtc::RtcEventLogNull event_log;
   auto task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
   webrtc::Call::Config call_config(&event_log);
   call_config.task_queue_factory = task_queue_factory.get();
@@ -1415,7 +1417,7 @@ class WebRtcVideoChannelBaseTest : public ::testing::Test {
   static bool ParseRtpPacket(const rtc::CopyOnWriteBuffer* p,
                              webrtc::RTPHeader* header) {
     std::unique_ptr<webrtc::RtpHeaderParser> parser(
-        webrtc::RtpHeaderParser::Create());
+        webrtc::RtpHeaderParser::CreateForTest());
     return parser->Parse(p->cdata(), p->size(), header);
   }
 
@@ -1489,7 +1491,7 @@ class WebRtcVideoChannelBaseTest : public ::testing::Test {
     return cricket::StreamParams::CreateLegacy(kSsrc);
   }
 
-  webrtc::RtcEventLogNullImpl event_log_;
+  webrtc::RtcEventLogNull event_log_;
   std::unique_ptr<webrtc::TaskQueueFactory> task_queue_factory_;
   std::unique_ptr<webrtc::Call> call_;
   std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
@@ -1593,6 +1595,10 @@ TEST_F(WebRtcVideoChannelBaseTest, InvalidRecvBufferSize) {
 
 // Test that stats work properly for a 1-1 call.
 TEST_F(WebRtcVideoChannelBaseTest, GetStats) {
+  webrtc::test::ScopedFieldTrials field_trials(
+      "WebRTC-UseStandardBytesStats/Enabled/");
+  SetUp();
+
   const int kDurationSec = 3;
   const int kFps = 10;
   SendReceiveManyAndGetStats(DefaultCodec(), kDurationSec, kFps);
@@ -1603,7 +1609,8 @@ TEST_F(WebRtcVideoChannelBaseTest, GetStats) {
   ASSERT_EQ(1U, info.senders.size());
   // TODO(whyuan): bytes_sent and bytes_rcvd are different. Are both payload?
   // For webrtc, bytes_sent does not include the RTP header length.
-  EXPECT_GT(info.senders[0].bytes_sent, 0);
+  EXPECT_EQ(info.senders[0].bytes_sent,
+            NumRtpBytes() - kRtpHeaderSize * NumRtpPackets());
   EXPECT_EQ(NumRtpPackets(), info.senders[0].packets_sent);
   EXPECT_EQ(0.0, info.senders[0].fraction_lost);
   ASSERT_TRUE(info.senders[0].codec_payload_type);
@@ -1626,7 +1633,8 @@ TEST_F(WebRtcVideoChannelBaseTest, GetStats) {
   EXPECT_EQ(info.senders[0].ssrcs()[0], info.receivers[0].ssrcs()[0]);
   ASSERT_TRUE(info.receivers[0].codec_payload_type);
   EXPECT_EQ(DefaultCodec().id, *info.receivers[0].codec_payload_type);
-  EXPECT_EQ(NumRtpBytes(), info.receivers[0].bytes_rcvd);
+  EXPECT_EQ(NumRtpBytes() - kRtpHeaderSize * NumRtpPackets(),
+            info.receivers[0].bytes_rcvd);
   EXPECT_EQ(NumRtpPackets(), info.receivers[0].packets_rcvd);
   EXPECT_EQ(0, info.receivers[0].packets_lost);
   // TODO(asapersson): Not set for webrtc. Handle missing stats.
@@ -1647,6 +1655,10 @@ TEST_F(WebRtcVideoChannelBaseTest, GetStats) {
 
 // Test that stats work properly for a conf call with multiple recv streams.
 TEST_F(WebRtcVideoChannelBaseTest, GetStatsMultipleRecvStreams) {
+  webrtc::test::ScopedFieldTrials field_trials(
+      "WebRTC-UseStandardBytesStats/Enabled/");
+  SetUp();
+
   cricket::FakeVideoRenderer renderer1, renderer2;
   EXPECT_TRUE(SetOneCodec(DefaultCodec()));
   cricket::VideoSendParameters parameters;
@@ -1677,7 +1689,8 @@ TEST_F(WebRtcVideoChannelBaseTest, GetStatsMultipleRecvStreams) {
   ASSERT_EQ(1U, info.senders.size());
   // TODO(whyuan): bytes_sent and bytes_rcvd are different. Are both payload?
   // For webrtc, bytes_sent does not include the RTP header length.
-  EXPECT_GT(GetSenderStats(0).bytes_sent, 0);
+  EXPECT_EQ_WAIT(NumRtpBytes() - kRtpHeaderSize * NumRtpPackets(),
+                 GetSenderStats(0).bytes_sent, kTimeout);
   EXPECT_EQ_WAIT(NumRtpPackets(), GetSenderStats(0).packets_sent, kTimeout);
   EXPECT_EQ(kVideoWidth, GetSenderStats(0).send_frame_width);
   EXPECT_EQ(kVideoHeight, GetSenderStats(0).send_frame_height);
@@ -1686,7 +1699,8 @@ TEST_F(WebRtcVideoChannelBaseTest, GetStatsMultipleRecvStreams) {
   for (size_t i = 0; i < info.receivers.size(); ++i) {
     EXPECT_EQ(1U, GetReceiverStats(i).ssrcs().size());
     EXPECT_EQ(i + 1, GetReceiverStats(i).ssrcs()[0]);
-    EXPECT_EQ_WAIT(NumRtpBytes(), GetReceiverStats(i).bytes_rcvd, kTimeout);
+    EXPECT_EQ_WAIT(NumRtpBytes() - kRtpHeaderSize * NumRtpPackets(),
+                   GetReceiverStats(i).bytes_rcvd, kTimeout);
     EXPECT_EQ_WAIT(NumRtpPackets(), GetReceiverStats(i).packets_rcvd, kTimeout);
     EXPECT_EQ_WAIT(kVideoWidth, GetReceiverStats(i).frame_width, kTimeout);
     EXPECT_EQ_WAIT(kVideoHeight, GetReceiverStats(i).frame_height, kTimeout);
@@ -3834,6 +3848,28 @@ TEST_F(WebRtcVideoChannelFlexfecRecvTest,
   EXPECT_EQ(1, video_stream.GetNumRemovedSecondarySinks());
 }
 
+TEST_F(WebRtcVideoChannelFlexfecRecvTest, DuplicateFlexfecCodecIsDropped) {
+  constexpr int kUnusedPayloadType1 = 127;
+
+  cricket::VideoRecvParameters recv_parameters;
+  recv_parameters.codecs.push_back(GetEngineCodec("VP8"));
+  recv_parameters.codecs.push_back(GetEngineCodec("flexfec-03"));
+  cricket::VideoCodec duplicate = GetEngineCodec("flexfec-03");
+  duplicate.id = kUnusedPayloadType1;
+  recv_parameters.codecs.push_back(duplicate);
+  ASSERT_TRUE(channel_->SetRecvParameters(recv_parameters));
+
+  AddRecvStream(
+      CreatePrimaryWithFecFrStreamParams("cname", kSsrcs1[0], kFlexfecSsrc));
+
+  const std::vector<FakeFlexfecReceiveStream*>& streams =
+      fake_call_->GetFlexfecReceiveStreams();
+  ASSERT_EQ(1U, streams.size());
+  const FakeFlexfecReceiveStream* stream = streams.front();
+  const webrtc::FlexfecReceiveStream::Config& config = stream->GetConfig();
+  EXPECT_EQ(GetEngineCodec("flexfec-03").id, config.payload_type);
+}
+
 // TODO(brandtr): When FlexFEC is no longer behind a field trial, merge all
 // tests that use this test fixture into the corresponding "non-field trial"
 // tests.
@@ -4541,6 +4577,40 @@ TEST_F(WebRtcVideoChannelTest, SetRecvCodecsWithPacketizationRecreatesStream) {
   EXPECT_EQ(fake_call_->GetNumCreatedReceiveStreams(), 2);
 }
 
+TEST_F(WebRtcVideoChannelTest, DuplicateUlpfecCodecIsDropped) {
+  constexpr int kFirstUlpfecPayloadType = 126;
+  constexpr int kSecondUlpfecPayloadType = 127;
+
+  cricket::VideoRecvParameters parameters;
+  parameters.codecs.push_back(GetEngineCodec("VP8"));
+  parameters.codecs.push_back(
+      cricket::VideoCodec(kFirstUlpfecPayloadType, cricket::kUlpfecCodecName));
+  parameters.codecs.push_back(
+      cricket::VideoCodec(kSecondUlpfecPayloadType, cricket::kUlpfecCodecName));
+  ASSERT_TRUE(channel_->SetRecvParameters(parameters));
+
+  FakeVideoReceiveStream* recv_stream = AddRecvStream();
+  EXPECT_EQ(kFirstUlpfecPayloadType,
+            recv_stream->GetConfig().rtp.ulpfec_payload_type);
+}
+
+TEST_F(WebRtcVideoChannelTest, DuplicateRedCodecIsDropped) {
+  constexpr int kFirstRedPayloadType = 126;
+  constexpr int kSecondRedPayloadType = 127;
+
+  cricket::VideoRecvParameters parameters;
+  parameters.codecs.push_back(GetEngineCodec("VP8"));
+  parameters.codecs.push_back(
+      cricket::VideoCodec(kFirstRedPayloadType, cricket::kRedCodecName));
+  parameters.codecs.push_back(
+      cricket::VideoCodec(kSecondRedPayloadType, cricket::kRedCodecName));
+  ASSERT_TRUE(channel_->SetRecvParameters(parameters));
+
+  FakeVideoReceiveStream* recv_stream = AddRecvStream();
+  EXPECT_EQ(kFirstRedPayloadType,
+            recv_stream->GetConfig().rtp.red_payload_type);
+}
+
 TEST_F(WebRtcVideoChannelTest, SetRecvCodecsWithChangedRtxPayloadType) {
   const int kUnusedPayloadType1 = 126;
   const int kUnusedPayloadType2 = 127;
@@ -5158,25 +5228,25 @@ TEST_F(WebRtcVideoChannelTest, GetStatsTranslatesDecodeStatsCorrectly) {
 }
 
 TEST_F(WebRtcVideoChannelTest, GetStatsTranslatesReceivePacketStatsCorrectly) {
+  webrtc::test::ScopedFieldTrials field_trials(
+      "WebRTC-UseStandardBytesStats/Enabled/");
+
   FakeVideoReceiveStream* stream = AddRecvStream();
   webrtc::VideoReceiveStream::Stats stats;
-  stats.rtp_stats.transmitted.payload_bytes = 2;
-  stats.rtp_stats.transmitted.header_bytes = 3;
-  stats.rtp_stats.transmitted.padding_bytes = 4;
-  stats.rtp_stats.transmitted.packets = 5;
-  stats.rtcp_stats.packets_lost = 6;
-  stats.rtcp_stats.fraction_lost = 7;
+  stats.rtp_stats.packet_counter.payload_bytes = 2;
+  stats.rtp_stats.packet_counter.header_bytes = 3;
+  stats.rtp_stats.packet_counter.padding_bytes = 4;
+  stats.rtp_stats.packet_counter.packets = 5;
+  stats.rtp_stats.packets_lost = 6;
   stream->SetStats(stats);
 
   cricket::VideoMediaInfo info;
   ASSERT_TRUE(channel_->GetStats(&info));
-  EXPECT_EQ(stats.rtp_stats.transmitted.payload_bytes +
-                stats.rtp_stats.transmitted.header_bytes +
-                stats.rtp_stats.transmitted.padding_bytes,
+  EXPECT_EQ(stats.rtp_stats.packet_counter.payload_bytes,
             rtc::checked_cast<size_t>(info.receivers[0].bytes_rcvd));
-  EXPECT_EQ(stats.rtp_stats.transmitted.packets,
+  EXPECT_EQ(stats.rtp_stats.packet_counter.packets,
             rtc::checked_cast<unsigned int>(info.receivers[0].packets_rcvd));
-  EXPECT_EQ(stats.rtcp_stats.packets_lost, info.receivers[0].packets_lost);
+  EXPECT_EQ(stats.rtp_stats.packets_lost, info.receivers[0].packets_lost);
 }
 
 TEST_F(WebRtcVideoChannelTest, TranslatesCallStatsCorrectly) {
@@ -7524,7 +7594,7 @@ class WebRtcVideoChannelSimulcastTest : public ::testing::Test {
     return streams[streams.size() - 1];
   }
 
-  webrtc::RtcEventLogNullImpl event_log_;
+  webrtc::RtcEventLogNull event_log_;
   FakeCall fake_call_;
   cricket::FakeWebRtcVideoEncoderFactory* encoder_factory_;
   cricket::FakeWebRtcVideoDecoderFactory* decoder_factory_;

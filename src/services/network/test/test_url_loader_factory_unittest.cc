@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "services/network/test/test_url_loader_factory.h"
+
 #include "base/logging.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -51,7 +52,7 @@ class TestURLLoaderFactoryTest : public testing::Test {
   TestURLLoaderClient* client() { return &client_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestURLLoaderFactory factory_;
   mojom::URLLoaderPtr loader_;
   TestURLLoaderClient client_;

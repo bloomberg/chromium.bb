@@ -10,15 +10,13 @@
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -29,6 +27,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 using testing::_;
 
@@ -58,10 +57,11 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     ~MockURLLoaderClient() override {}
 
     // network::mojom::URLLoaderClient overrides:
-    MOCK_METHOD1(OnReceiveResponse, void(const network::ResourceResponseHead&));
+    MOCK_METHOD1(OnReceiveResponse,
+                 void(const network::mojom::URLResponseHeadPtr));
     MOCK_METHOD2(OnReceiveRedirect,
                  void(const net::RedirectInfo&,
-                      const network::ResourceResponseHead&));
+                      network::mojom::URLResponseHeadPtr));
     MOCK_METHOD3(OnUploadProgress,
                  void(int64_t, int64_t, base::OnceCallback<void()> callback));
     MOCK_METHOD1(OnReceiveCachedMetadata, void(mojo_base::BigBuffer));
@@ -86,7 +86,6 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
                  void(const std::vector<std::string>&,
                       const net::HttpRequestHeaders&,
                       const base::Optional<GURL>&));
-    MOCK_METHOD0(ProceedWithResponse, void());
     MOCK_METHOD2(SetPriority,
                  void(net::RequestPriority priority,
                       int32_t intra_priority_value));
@@ -128,9 +127,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     return ping_loader_factory_.ping_loader_client_.get();
   }
 
-  static std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  static std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   ThrottlesGetter() {
-    return std::vector<std::unique_ptr<content::URLLoaderThrottle>>();
+    return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> CreateMockPingLoaderFactory() {
@@ -139,11 +138,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
 
-  // For kSignedHTTPExchangePingValidity.
-  ResourceDispatcherHostImpl resource_dispatcher_host_;
   MockValidityPingURLLoaderFactory ping_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoaderTest);

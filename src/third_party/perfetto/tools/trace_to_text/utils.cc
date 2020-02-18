@@ -24,11 +24,12 @@
 #include <utility>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/string_splitter.h"
 #include "perfetto/ext/traced/sys_stats_counters.h"
-#include "perfetto/trace/ftrace/ftrace_stats.pb.h"
+#include "protos/perfetto/trace/ftrace/ftrace_stats.pb.h"
 
-#include "perfetto/trace/trace.pb.h"
-#include "perfetto/trace/trace_packet.pb.h"
+#include "protos/perfetto/trace/trace.pb.h"
+#include "protos/perfetto/trace/trace_packet.pb.h"
 
 namespace perfetto {
 namespace trace_to_text {
@@ -92,6 +93,16 @@ void ForEachPacketInTrace(
         f(packet);
       });
   fprintf(stderr, "\n");
+}
+
+std::vector<std::string> GetPerfettoBinaryPath() {
+  std::vector<std::string> roots;
+  const char* root = getenv("PERFETTO_BINARY_PATH");
+  if (root != nullptr) {
+    for (base::StringSplitter sp(std::string(root), ':'); sp.Next();)
+      roots.emplace_back(sp.cur_token(), sp.cur_token_size());
+  }
+  return roots;
 }
 
 }  // namespace trace_to_text

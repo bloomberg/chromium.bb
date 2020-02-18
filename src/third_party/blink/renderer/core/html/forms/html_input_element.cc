@@ -409,6 +409,7 @@ void HTMLInputElement::UpdateType() {
       input_type_->ShouldRespectHeightAndWidthAttributes();
   bool could_be_successful_submit_button = CanBeSuccessfulSubmitButton();
 
+  input_type_view_->ClosePopupView();
   input_type_view_->DestroyShadowSubtree();
   DropInnerEditorElement();
   SetForceReattachLayoutTree();
@@ -1985,6 +1986,15 @@ void HTMLInputElement::ChildrenChanged(const ChildrenChange& change) {
   // created when children are added for the first time.
   EnsureUserAgentShadowRoot();
   ContainerNode::ChildrenChanged(change);
+}
+
+PaintLayerScrollableArea* HTMLInputElement::GetScrollableArea() const {
+  // If it's LayoutTextControlSingleLine, return InnerEditorElement's scrollable
+  // area.
+  if (IsTextField() && InnerEditorElement())
+    return InnerEditorElement()->GetScrollableArea();
+
+  return Element::GetScrollableArea();
 }
 
 }  // namespace blink

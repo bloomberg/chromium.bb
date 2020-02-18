@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,6 +33,7 @@
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
@@ -44,6 +46,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -66,7 +69,7 @@
 #include "extensions/common/constants.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #endif
 
@@ -89,6 +92,7 @@ using sessions::SerializedNavigationEntry;
 using testing::_;
 using testing::NiceMock;
 using testing::Return;
+using testing::StrictMock;
 
 namespace {
 // TODO(crbug.com/474577): Get rid of the mocked client in the client's own
@@ -100,14 +104,14 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
   explicit MockChromePasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, nullptr) {
     ON_CALL(*this, GetMainFrameCertStatus()).WillByDefault(testing::Return(0));
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
     password_protection_service_ =
         std::make_unique<safe_browsing::MockPasswordProtectionService>();
 #endif
   }
   ~MockChromePasswordManagerClient() override {}
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override {
     return password_protection_service_.get();
@@ -119,7 +123,7 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
 #endif
 
  private:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<safe_browsing::MockPasswordProtectionService>
       password_protection_service_;
 #endif
@@ -686,7 +690,7 @@ TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {
   }
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 TEST_F(ChromePasswordManagerClientTest,
        VerifyMaybeStartPasswordFieldOnFocusRequestCalled) {
   std::unique_ptr<WebContents> test_web_contents(
@@ -746,9 +750,8 @@ TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
   // delegate. It can happen on ChromeOS login form, for example.
   GURL kUrl("https://example.com/");
   NavigateAndCommit(kUrl);
-  std::unique_ptr<password_manager::PasswordFormManager> form_manager;
   PasswordManagerClient* client = GetClient();
-  client->ShowManualFallbackForSaving(std::move(form_manager), false, false);
+  client->ShowManualFallbackForSaving(nullptr, false, false);
   client->HideManualFallbackForSaving();
 }
 
@@ -763,6 +766,7 @@ class ChromePasswordManagerClientAndroidTest
 
  private:
   autofill::TestAutofillClient test_autofill_client_;
+  std::unique_ptr<StrictMock<favicon::MockFaviconService>> favicon_service_;
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
@@ -778,8 +782,9 @@ ChromePasswordManagerClientAndroidTest::CreateContentPasswordManagerDriver(
 void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
     content::WebContents* web_contents) {
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
-      web_contents, mock_pwd_controller_.AsWeakPtr(),
+      web_contents, favicon_service_.get(), mock_pwd_controller_.AsWeakPtr(),
       mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
+      GetClient()->GetOrCreateTouchToFillController()->AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }
 

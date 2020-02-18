@@ -18,7 +18,7 @@
 #include "net/third_party/quiche/src/quic/core/http/http_decoder.h"
 #include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream_body_manager.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoded_headers_accumulator.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
@@ -78,7 +78,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Called by the session when headers with a priority have been received
   // for this stream.  This method will only be called for server streams.
-  virtual void OnStreamHeadersPriority(spdy::SpdyPriority priority);
+  virtual void OnStreamHeadersPriority(
+      const spdy::SpdyStreamPrecedence& precedence);
 
   // Called by the session when decompressed headers have been completely
   // delivered to this stream.  If |fin| is true, then this stream
@@ -95,7 +96,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Called by the session when a PRIORITY frame has been been received for this
   // stream. This method will only be called for server streams.
-  void OnPriorityFrame(spdy::SpdyPriority priority);
+  void OnPriorityFrame(const spdy::SpdyStreamPrecedence& precedence);
 
   // Override the base class to not discard response when receiving
   // QUIC_STREAM_NO_ERROR.
@@ -125,6 +126,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
       spdy::SpdyHeaderBlock trailer_block,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
+  // Serializes |frame| and writes the encoded push promise data.
+  void WritePushPromise(const PushPromiseFrame& frame);
+
   // Override to report newly acked bytes via ack_listener_.
   bool OnStreamFrameAcked(QuicStreamOffset offset,
                           QuicByteCount data_length,
@@ -139,12 +143,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Does the same thing as WriteOrBufferBody except this method takes iovec
   // as the data input. Right now it only calls WritevData.
-  // TODO(renjietang): Write data frame header before writing body.
   QuicConsumedData WritevBody(const struct iovec* iov, int count, bool fin);
 
   // Does the same thing as WriteOrBufferBody except this method takes
   // memslicespan as the data input. Right now it only calls WriteMemSlices.
-  // TODO(renjietang): Write data frame header before writing body.
   QuicConsumedData WriteBodySlices(QuicMemSliceSpan slices, bool fin);
 
   // Marks the trailers as consumed. This applies to the case where this object
@@ -248,19 +250,23 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   class HttpDecoderVisitor;
 
   // Called by HttpDecoderVisitor.
-  bool OnDataFrameStart(Http3FrameLengths frame_lengths);
+  bool OnDataFrameStart(QuicByteCount header_length);
   bool OnDataFramePayload(QuicStringPiece payload);
   bool OnDataFrameEnd();
-  bool OnHeadersFrameStart(Http3FrameLengths frame_length);
+  bool OnHeadersFrameStart(QuicByteCount header_length);
   bool OnHeadersFramePayload(QuicStringPiece payload);
   bool OnHeadersFrameEnd();
+  bool OnPushPromiseFrameStart(PushId push_id,
+                               QuicByteCount header_length,
+                               QuicByteCount push_id_length);
+  bool OnPushPromiseFramePayload(QuicStringPiece payload);
+  bool OnPushPromiseFrameEnd();
+  bool OnUnknownFrameStart(uint64_t frame_type, QuicByteCount header_length);
+  bool OnUnknownFramePayload(QuicStringPiece payload);
+  bool OnUnknownFrameEnd();
 
   // Called internally when headers are decoded.
   void ProcessDecodedHeaders(const QuicHeaderList& headers);
-
-  // Call QuicStreamSequencer::MarkConsumed() with
-  // |headers_bytes_to_be_marked_consumed_| if appropriate.
-  void MaybeMarkHeadersBytesConsumed();
 
   // Given the interval marked by [|offset|, |offset| + |data_length|), return
   // the number of frame header bytes contained in it.
@@ -294,9 +300,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // True if the stream has already sent an priority frame.
   bool priority_sent_;
 
-  // Number of bytes consumed while decoding HEADERS frames that cannot be
-  // marked consumed in QuicStreamSequencer until later.
-  QuicByteCount headers_bytes_to_be_marked_consumed_;
   // The parsed trailers received from the peer.
   spdy::SpdyHeaderBlock received_trailers_;
 
@@ -309,8 +312,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   std::unique_ptr<HttpDecoderVisitor> http_decoder_visitor_;
   // HttpDecoder for processing raw incoming stream frames.
   HttpDecoder decoder_;
-  // Buffer that contains decoded data of the stream.
-  QuicSpdyStreamBodyBuffer body_buffer_;
+  // Object that manages references to DATA frame payload fragments buffered by
+  // the sequencer and calculates how much data should be marked consumed with
+  // the sequencer each time new stream data is processed.
+  QuicSpdyStreamBodyManager body_manager_;
 
   // Sequencer offset keeping track of how much data HttpDecoder has processed.
   // Initial value is zero for fresh streams, or sequencer()->NumBytesConsumed()

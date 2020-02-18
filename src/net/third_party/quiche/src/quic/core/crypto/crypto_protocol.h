@@ -170,6 +170,14 @@ const QuicTag kSMHL = TAG('S', 'M', 'H', 'L');   // Support MAX_HEADER_LIST_SIZE
 const QuicTag kNSTP = TAG('N', 'S', 'T', 'P');   // No stop waiting frames.
 const QuicTag kNRTT = TAG('N', 'R', 'T', 'T');   // Ignore initial RTT
 
+const QuicTag k1PTO = TAG('1', 'P', 'T', 'O');   // Send 1 packet upon PTO.
+const QuicTag k2PTO = TAG('2', 'P', 'T', 'O');   // Send 2 packets upon PTO.
+
+const QuicTag k7PTO = TAG('7', 'P', 'T', 'O');   // Closes connection on 7
+                                                 // consecutive PTOs.
+const QuicTag k8PTO = TAG('8', 'P', 'T', 'O');   // Closes connection on 8
+                                                 // consecutive PTOs.
+
 // Optional support of truncated Connection IDs.  If sent by a peer, the value
 // is the minimum number of bytes allowed for the connection ID sent to the
 // peer.
@@ -197,6 +205,13 @@ const QuicTag kBWS5 = TAG('B', 'W', 'S', '5');  // QUIC Initial CWND up and down
 const QuicTag kMTUH = TAG('M', 'T', 'U', 'H');  // High-target MTU discovery.
 const QuicTag kMTUL = TAG('M', 'T', 'U', 'L');  // Low-target MTU discovery.
 
+// Enable Priority scheme experiment.
+const QuicTag kH2PR = TAG('H', '2', 'P', 'R');  // HTTP2 priorities.
+const QuicTag kFIFO = TAG('F', 'I', 'F', 'O');  // Stream with the smallest ID
+                                                // has the highest priority.
+const QuicTag kLIFO = TAG('L', 'I', 'F', 'O');  // Stream with the largest ID
+                                                // has the highest priority.
+
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
 // is allowed and is equivalent to specifying only kX509.
@@ -219,6 +234,8 @@ const QuicTag kICSL = TAG('I', 'C', 'S', 'L');   // Idle network timeout
 const QuicTag kSCLS = TAG('S', 'C', 'L', 'S');   // Silently close on timeout
 const QuicTag kMIBS = TAG('M', 'I', 'D', 'S');   // Max incoming bidi streams
 const QuicTag kMIUS = TAG('M', 'I', 'U', 'S');   // Max incoming unidi streams
+const QuicTag kADE  = TAG('A', 'D', 'E', 0);     // Ack Delay Exponent (IETF
+                                                 // QUIC ACK Frame Only).
 const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');   // Estimated initial RTT in us.
 const QuicTag kSNI  = TAG('S', 'N', 'I', '\0');  // Server name
                                                  // indication
@@ -237,6 +254,8 @@ const QuicTag kCFCW = TAG('C', 'F', 'C', 'W');   // Initial session/connection
                                                  // flow control receive window.
 const QuicTag kUAID = TAG('U', 'A', 'I', 'D');   // Client's User Agent ID.
 const QuicTag kXLCT = TAG('X', 'L', 'C', 'T');   // Expected leaf certificate.
+
+const QuicTag kMAD  = TAG('M', 'A', 'D', 0);     // Max Ack Delay (IETF QUIC)
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending

@@ -52,6 +52,8 @@ _MAIN_DEX_REGEX = re.compile(r'^\s*(?:@(?:\w+\.)*\w+\s+)*@MainDex\b',
 # doesn't require name to be prefixed with native, and does not
 # require a native qualifier.
 _EXTRACT_METHODS_REGEX = re.compile(
+    r'(@NativeClassQualifiedName'
+    r'\(\"(?P<native_class_name>.*?)\"\)\s*)?'
     r'(?P<qualifiers>'
     r'((public|private|static|final|abstract|protected|native)\s*)*)\s+'
     r'(?P<return_type>\S*)\s+'
@@ -137,25 +139,16 @@ class NativeMethod(object):
 
     self.proxy_name = kwargs.get('proxy_name', self.name)
 
-    has_jcaller = False
     if self.params:
       assert type(self.params) is list
       assert type(self.params[0]) is Param
 
-      for p in self.params[1:]:
-        assert '@JCaller' not in p.annotations, ('Only the first parameter can '
-                                                 'be annotated with @JCaller')
 
-      if '@JCaller' in self.params[0].annotations:
-        has_jcaller = True
-
-    ptr_index = 1 if has_jcaller else 0
-
-    if (self.params and len(self.params) > ptr_index
-        and self.params[ptr_index].datatype == kwargs.get('ptr_type', 'int')
-        and self.params[ptr_index].name.startswith('native')):
+    if (self.params
+        and self.params[0].datatype == kwargs.get('ptr_type', 'int')
+        and self.params[0].name.startswith('native')):
       self.type = 'method'
-      self.p0_type = self.params[ptr_index].name[len('native'):]
+      self.p0_type = self.params[0].name[len('native'):]
       if kwargs.get('native_class_name'):
         self.p0_type = kwargs['native_class_name']
     else:
@@ -260,14 +253,9 @@ def JavaReturnValueToC(java_type):
   return java_pod_type_map.get(java_type, 'NULL')
 
 
-def _GetJNIFirstParamType(native):
-  if native.type == 'function' and native.static:
-    return 'jclass'
-  return 'jobject'
-
-
 def _GetJNIFirstParam(native, for_declaration):
-  c_type = _GetJNIFirstParamType(native)
+  c_type = 'jclass' if native.static else 'jobject'
+
   if for_declaration:
     c_type = WrapCTypeForDeclaration(c_type)
   return [c_type + ' jcaller']
@@ -933,7 +921,6 @@ class ProxyHelpers(object):
         name = method.group('name')
         params = JniParams.Parse(method.group('params'), use_proxy_types=True)
         return_type = JavaTypeToProxyCast(method.group('return_type'))
-
         unescaped_proxy_name = ProxyHelpers.CreateProxyMethodName(
             fully_qualified_class, name, use_hash)
         native = NativeMethod(
@@ -941,6 +928,7 @@ class ProxyHelpers(object):
             java_class_name=None,
             return_type=return_type,
             name=name,
+            native_class_name=method.group('native_class_name'),
             params=params,
             is_proxy=True,
             proxy_name=unescaped_proxy_name,
@@ -1226,10 +1214,6 @@ $METHOD_STUBS
             name,
         })
 
-  def GetJNIFirstParamForCall(self, native):
-    c_type = _GetJNIFirstParamType(native)
-    return [self.GetJavaParamRefForCall(c_type, 'jcaller')]
-
   def GetImplementationMethodName(self, native):
     class_name = self.class_name
     if native.java_class_name is not None:
@@ -1242,17 +1226,14 @@ $METHOD_STUBS
     is_method = native.type == 'method'
 
     if is_method:
-      if '@JCaller' in native.params[0].annotations:
-        # Native pointer is second param.
-        params = [native.params[0]] + native.params[2:]
-      else:
-        params = native.params[1:]
+      params = native.params[1:]
     else:
       params = native.params
 
     params_in_call = ['env']
-    if not native.static or is_method:
-      params_in_call.extend(self.GetJNIFirstParamForCall(native))
+    if not native.static:
+      # Add jcaller param.
+      params_in_call.append(self.GetJavaParamRefForCall('jobject', 'jcaller'))
 
     for p in params:
       c_type = JavaDataTypeToC(p.datatype)
@@ -1262,27 +1243,6 @@ $METHOD_STUBS
         params_in_call.append(p.name)
 
     params_in_declaration = _GetParamsInDeclaration(native)
-    native_ptr_index = 0
-    if native.static:
-      # If a param is annotation with @JCaller we bind it in the same way
-      # as we'd bind a non-static function (JavaParamRef<jobject> caller will
-      # be the first parameter).
-      # This allows for conversion of non-static to static functions without
-      # touching the native implementation and allows for the JNI annotation
-      # processor to generate bindings for methods that can behave like
-      # non-static methods.
-      if native.params:
-        if '@JCaller' in native.params[0].annotations:
-          if is_method:
-            # Since is_method we have an extra param that isn't in the call
-            # (long nativePtr).
-            native_ptr_index = 1
-            # Replace <jobject> jcaller with @JCaller.
-            params_in_call[1:2] = []
-          # Don't need to do anything for functions since the jobject
-          # will be passed first anyways since we exclude jclass from our
-          # impl signature.
-
     params_in_call = ', '.join(params_in_call)
 
     return_type = return_declaration = JavaDataTypeToC(native.return_type)
@@ -1316,7 +1276,7 @@ $METHOD_STUBS
         optional_error_return = ', ' + optional_error_return
       values.update({
           'OPTIONAL_ERROR_RETURN': optional_error_return,
-          'PARAM0_NAME': native.params[native_ptr_index].name,
+          'PARAM0_NAME': native.params[0].name,
           'P0_TYPE': native.p0_type,
       })
       if self.options.enable_tracing:

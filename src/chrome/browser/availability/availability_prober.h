@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AVAILABILITY_AVAILABILITY_PROBER_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -72,10 +73,11 @@ class AvailabilityProber
   // enum is mapped to a string value which is then used in histograms and
   // prefs.
   enum class ClientName {
-    // TODO(crbug.com/971918): Use in litepages.
     kLitepages = 0,
 
-    kMaxValue = kLitepages,
+    kLitepagesOriginCheck = 1,
+
+    kMaxValue = kLitepagesOriginCheck,
   };
 
   // This enum describes the different algorithms that can be used to calculate
@@ -150,11 +152,20 @@ class AvailabilityProber
   // Registers the prefs used in this class.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Clears the prefs used in this class.
+  static void ClearData(PrefService* pref_service);
+
   // Sends a probe now if the prober is currently inactive. If the probe is
   // active (i.e.: there are probes in flight), this is a no-op. If
   // |send_only_in_foreground| is set, the probe will only be sent when the app
   // is in the foreground (work on Android only).
   void SendNowIfInactive(bool send_only_in_foreground);
+
+  // Calls |SendNowIfInactive| immediately with |send_only_in_foreground| and
+  // repeats every |interval|. Calling this multiple times with different
+  // |interval| will change the interval to the most recently provided value.
+  // Only stops when |this| is deleted.
+  void RepeatedlyProbe(base::TimeDelta interval, bool send_only_in_foreground);
 
   // Returns the successfulness of the last probe, if there was one. If the last
   // probe status was cached and needs to be revalidated, this may activate the
@@ -168,7 +179,7 @@ class AvailabilityProber
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Sets a repeating callback to notify the completion of a probe and whether
-  // it was successful.
+  // it was successful. It is safe to delete |this| during the callback.
   void SetOnCompleteCallback(AvailabilityProberOnCompleteCallback callback);
 
  protected:
@@ -201,9 +212,15 @@ class AvailabilityProber
   void RecordProbeResult(bool success);
   std::string GetCacheKeyForCurrentNetwork() const;
   std::string AppendNameToHistogram(const std::string& histogram) const;
+  void RunCallback(bool success);
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif
+
+  // This is called whenever the prober goes inactive. This is caused whenever
+  // the probe succeeds, fails and there are no more retries, or the delegate
+  // stops the probing.
+  void OnProbingEnd();
 
   // Must outlive |this|.
   Delegate* delegate_;
@@ -254,9 +271,14 @@ class AvailabilityProber
   // If a probe is being attempted, this will be running until the TTL.
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
+  // If we are repeatedly probing, this will be running.
+  std::unique_ptr<base::RepeatingTimer> repeating_timer_;
+
   // Caches past probe results in a mapping of one tuple to another:
   //   (network_id, url_) -> (last_probe_status, last_modification_time).
   // No more than |max_cache_entries_| will be kept in this dictionary.
+  // |cached_probe_results_| may differ from what is on disk in the event
+  // browsing history is cleared during the limetime of |this|.
   std::unique_ptr<base::DictionaryValue> cached_probe_results_;
 
   // The tick clock used within this class.

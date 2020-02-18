@@ -195,9 +195,11 @@ TestTransactionConsumer::~TestTransactionConsumer() = default;
 void TestTransactionConsumer::Start(const HttpRequestInfo* request,
                                     const NetLogWithSource& net_log) {
   state_ = STARTING;
-  int result = trans_->Start(
-      request, base::Bind(&TestTransactionConsumer::OnIOComplete,
-                          base::Unretained(this)), net_log);
+  int result =
+      trans_->Start(request,
+                    base::BindOnce(&TestTransactionConsumer::OnIOComplete,
+                                   base::Unretained(this)),
+                    net_log);
   if (result != ERR_IO_PENDING)
     DidStart(result);
 }
@@ -229,10 +231,10 @@ void TestTransactionConsumer::DidFinish(int result) {
 void TestTransactionConsumer::Read() {
   state_ = READING;
   read_buf_ = base::MakeRefCounted<IOBuffer>(1024);
-  int result = trans_->Read(read_buf_.get(),
-                            1024,
-                            base::Bind(&TestTransactionConsumer::OnIOComplete,
-                                       base::Unretained(this)));
+  int result =
+      trans_->Read(read_buf_.get(), 1024,
+                   base::BindOnce(&TestTransactionConsumer::OnIOComplete,
+                                  base::Unretained(this)));
   if (result != ERR_IO_PENDING)
     DidRead(result);
 }
@@ -368,11 +370,6 @@ void MockNetworkTransaction::StopCaching() {
     transaction_factory_->TransactionStopCaching();
 }
 
-bool MockNetworkTransaction::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  return false;
-}
-
 int64_t MockNetworkTransaction::GetTotalReceivedBytes() const {
   return received_bytes_;
 }
@@ -500,6 +497,11 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
 
   if (request_->load_flags & LOAD_PREFETCH)
     response_.unused_since_prefetch = true;
+
+  if (request_->load_flags & LOAD_RESTRICTED_PREFETCH) {
+    DCHECK(response_.unused_since_prefetch);
+    response_.restricted_prefetch = true;
+  }
 
   // Pause and resume.
   if (!before_network_start_callback_.is_null()) {

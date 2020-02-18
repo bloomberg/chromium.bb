@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_updater.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_layer_assigner.h"
@@ -269,38 +268,6 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
          Lifecycle().GetState() == DocumentLifecycle::kCompositingClean);
   if (target_state == DocumentLifecycle::kCompositingInputsClean)
     return;
-
-  // When printing a document, there is no use in updating composited animations
-  // since we won't use the results.
-  //
-  // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
-  // browser normally, but renders every page as if it were being printed.  See
-  // crbug.com/667547
-  if (!layout_view_.GetDocument().Printing() ||
-      RuntimeEnabledFeatures::PrintBrowserEnabled()) {
-    // Although BlinkGenPropertyTreesEnabled still uses PaintLayerCompositor to
-    // generate the composited layer tree/list, it also has the CAP behavior of
-    // removing layers that do not draw content. As such, we use the same path
-    // as CAP for updating composited animations once we know the final set of
-    // composited elements (see LocalFrameView::UpdateLifecyclePhasesInternal,
-    // during kPaintClean).
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
-                                           DocumentLifecycle::kCompositingClean,
-                                           nullptr);
-    }
-
-    layout_view_.GetFrameView()
-        ->GetScrollableArea()
-        ->UpdateCompositorScrollAnimations();
-    if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
-            layout_view_.GetFrameView()->AnimatingScrollableAreas()) {
-      for (PaintLayerScrollableArea* scrollable_area :
-           *animating_scrollable_areas) {
-        scrollable_area->UpdateCompositorScrollAnimations();
-      }
-    }
-  }
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
@@ -569,15 +536,6 @@ void PaintLayerCompositor::UpdateIfNeeded(
         layers_needing_paint_invalidation[i]->GetLayoutObject());
   }
 
-  // When BlinkGenPropertyTrees is enabled, layer attachment, including the root
-  // layer, must occur in the paint lifecycle step.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    AttachRootLayerViaChromeClient();
-
-  // Inform the inspector that the layer tree has changed.
-  if (IsMainFrame() && !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    probe::LayerTreeDidChange(layout_view_.GetFrame());
-
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
 }
 
@@ -775,13 +733,6 @@ GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
   return RootGraphicsLayer();
 }
 
-GraphicsLayer* PaintLayerCompositor::ScrollLayer() const {
-  if (ScrollableArea* scrollable_area =
-          layout_view_.GetFrameView()->GetScrollableArea())
-    return scrollable_area->LayerForScrolling();
-  return nullptr;
-}
-
 void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
     PaintLayer& layer) {
   auto reasons = CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
@@ -808,21 +759,6 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
          !layer->GetLayoutObject().IsSVGForeignObject();
 }
 
-// Return true if the given layer is a stacking context and has compositing
-// child layers that it needs to clip, or is an embedded object with a border
-// radius. In these cases we insert a clipping GraphicsLayer into the hierarchy
-// between this layer and its children in the z-order hierarchy.
-bool PaintLayerCompositor::ClipsCompositingDescendants(
-    const PaintLayer* layer) const {
-  if (!layer->HasCompositingDescendant())
-    return false;
-  if (!layer->GetLayoutObject().IsBox())
-    return false;
-  const LayoutBox& box = ToLayoutBox(layer->GetLayoutObject());
-  return box.ShouldClipOverflow() || box.HasClip() ||
-         (box.IsLayoutEmbeddedContent() && box.StyleRef().HasBorderRadius());
-}
-
 // If an element has composited negative z-index children, those children paint
 // in front of the layer background, so we need an extra 'contents' layer for
 // the foreground of the layer object.
@@ -845,10 +781,6 @@ static void UpdateTrackingRasterInvalidationsRecursive(
 
   if (GraphicsLayer* mask_layer = graphics_layer->MaskLayer())
     UpdateTrackingRasterInvalidationsRecursive(mask_layer);
-
-  if (GraphicsLayer* clipping_mask_layer =
-          graphics_layer->ContentsClippingMaskLayer())
-    UpdateTrackingRasterInvalidationsRecursive(clipping_mask_layer);
 }
 
 void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
@@ -941,28 +873,6 @@ bool PaintLayerCompositor::IsMainFrame() const {
 
 VisualViewport& PaintLayerCompositor::GetVisualViewport() const {
   return layout_view_.GetFrameView()->GetPage()->GetVisualViewport();
-}
-
-bool PaintLayerCompositor::IsRootScrollerAncestor() const {
-  const TopDocumentRootScrollerController& global_rsc =
-      layout_view_.GetDocument().GetPage()->GlobalRootScrollerController();
-  PaintLayer* root_scroller_layer = global_rsc.RootScrollerPaintLayer();
-
-  if (root_scroller_layer) {
-    Frame* frame = root_scroller_layer->GetLayoutObject().GetFrame();
-    while (frame) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        PaintLayerCompositor* plc =
-            local_frame->View()->GetLayoutView()->Compositor();
-        if (plc == this)
-          return true;
-      }
-
-      frame = frame->Tree().Parent();
-    }
-  }
-
-  return false;
 }
 
 }  // namespace blink

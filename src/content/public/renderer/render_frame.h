@@ -31,6 +31,7 @@
 namespace blink {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
+class BrowserInterfaceBrokerProxy;
 class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
@@ -172,6 +173,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual blink::mojom::DocumentInterfaceBroker*
   GetDocumentInterfaceBroker() = 0;
 
+  // Returns the BrowserInterfaceBrokerProxy that this process can use to bind
+  // interfaces exposed to it by the application running in this frame.
+  virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() = 0;
+
   // Returns the AssociatedInterfaceRegistry this frame can use to expose
   // frame-specific Channel-associated interfaces to the remote RenderFrameHost.
   virtual blink::AssociatedInterfaceRegistry*
@@ -271,8 +276,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                               const GURL& unreachable_url,
                               bool replace_current_item) = 0;
 
-  // If PlzNavigate is enabled, returns true in between teh time that Blink
-  // requests navigation until the browser responds with the result.
+  // Returns true in between the time that Blink requests navigation until the
+  // browser responds with the result.
+  // TODO(ahemery): Rename this to be more explicit.
   virtual bool IsBrowserSideNavigationPending() = 0;
 
   // Renderer scheduler frame-specific task queues handles.
@@ -311,6 +317,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // a frame to the viz display compositor. Does nothing if RenderFrame is not
   // a local root.
   virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() = 0;
+
+  // Sets that cross browsing instance frame lookup is allowed.
+  virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
 
  protected:
   ~RenderFrame() override {}

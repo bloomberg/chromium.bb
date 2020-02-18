@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
+import android.content.Context;
 import android.support.annotation.IntDef;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -13,7 +14,6 @@ import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.AppHooks;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,7 +44,11 @@ public class NavigationHandler {
     }
 
     private final ViewGroup mParentView;
+    private final Context mContext;
     private final Supplier<NavigationGlow> mGlowEffectSupplier;
+
+    private final HistoryNavigationDelegate mDelegate;
+    private final ActionDelegate mActionDelegate;
 
     private NavigationGlow mGlowEffect;
 
@@ -52,6 +56,8 @@ public class NavigationHandler {
 
     // Frame layout where the main logic turning the gesture into corresponding UI resides.
     private SideSlideLayout mSideSlideLayout;
+
+    private NavigationSheet mNavigationSheet;
 
     // Async runnable for ending the refresh animation after the page first
     // loads a frame. This is used to provide a reasonable minimum animation time.
@@ -82,29 +88,23 @@ public class NavigationHandler {
          */
         boolean willBackExitApp();
     }
-    private final ActionDelegate mDelegate;
 
-    public NavigationHandler(ViewGroup parentView, ActionDelegate delegate,
-            Supplier<NavigationGlow> glowEffectSupplier) {
+    public NavigationHandler(ViewGroup parentView, Context context,
+            HistoryNavigationDelegate delegate, Supplier<NavigationGlow> glowEffectSupplier) {
         mParentView = parentView;
+        mContext = context;
         mDelegate = delegate;
+        mActionDelegate = delegate.createActionDelegate();
         mGlowEffectSupplier = glowEffectSupplier;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
-        parentView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                AppHooks.get().createNavigationInputAreaSetter(v, left, top, right, bottom).run();
-            }
-        });
     }
 
     private void createLayout() {
-        mSideSlideLayout = new SideSlideLayout(mParentView.getContext());
+        mSideSlideLayout = new SideSlideLayout(mContext);
         mSideSlideLayout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mSideSlideLayout.setOnNavigationListener((forward) -> {
-            mDelegate.navigate(forward);
+            mActionDelegate.navigate(forward);
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
         });
@@ -117,6 +117,11 @@ public class NavigationHandler {
             };
             mSideSlideLayout.post(mDetachLayoutRunnable);
         });
+
+        mNavigationSheet = NavigationSheet.isEnabled()
+                ? NavigationSheet.create(mParentView, mContext,
+                        mDelegate.getBottomSheetController(), mDelegate.createSheetDelegate())
+                : NavigationSheet.DUMMY;
     }
 
     /**
@@ -125,7 +130,8 @@ public class NavigationHandler {
     public void onTouchEvent(int action) {
         if (action == MotionEvent.ACTION_UP) {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
-                mSideSlideLayout.release(true);
+                mSideSlideLayout.release(mNavigationSheet.isHidden());
+                mNavigationSheet.release();
             } else if (mState == GestureState.GLOW && mGlowEffect != null) {
                 mGlowEffect.release();
             }
@@ -156,7 +162,7 @@ public class NavigationHandler {
         if (mState == GestureState.STARTED) {
             if (shouldTriggerUi(startX, distanceX, distanceY)) {
                 boolean forward = distanceX > 0;
-                if (mDelegate.canNavigate(forward)) {
+                if (mActionDelegate.canNavigate(forward)) {
                     showArrowWidget(forward);
                 } else {
                     // |forward| should be true if we get here, since navigating back
@@ -185,9 +191,11 @@ public class NavigationHandler {
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
         mSideSlideLayout.setDirection(forward);
-        mSideSlideLayout.setEnableCloseIndicator(shouldShowCloseIndicator(forward));
+        boolean showCloseIndicator = shouldShowCloseIndicator(forward);
+        mSideSlideLayout.setEnableCloseIndicator(showCloseIndicator);
         attachLayoutIfNecessary();
         mSideSlideLayout.start();
+        mNavigationSheet.start(forward, showCloseIndicator);
         mState = GestureState.DRAGGED;
     }
 
@@ -206,7 +214,7 @@ public class NavigationHandler {
     private boolean shouldShowCloseIndicator(boolean forward) {
         // Some tabs, upon back at the beginning of the history stack, should be just closed
         // than closing the entire app. In such case we do not show the close indicator.
-        return !forward && mDelegate.willBackExitApp();
+        return !forward && mActionDelegate.willBackExitApp();
     }
 
     /**
@@ -217,6 +225,14 @@ public class NavigationHandler {
     public void pull(float delta) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             mSideSlideLayout.pull(delta);
+            mNavigationSheet.onScroll(
+                    delta, mSideSlideLayout.getOverscroll(), mSideSlideLayout.willNavigate());
+
+            mSideSlideLayout.fadeArrow(!mNavigationSheet.isHidden(), /* animate= */ true);
+            if (mNavigationSheet.isExpanded()) {
+                mSideSlideLayout.hideArrow();
+                mState = GestureState.NONE;
+            }
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.onScroll(-delta);
         }
@@ -246,7 +262,8 @@ public class NavigationHandler {
     public void release(boolean allowNav) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
-            mSideSlideLayout.release(allowNav);
+            mSideSlideLayout.release(allowNav && mNavigationSheet.isHidden());
+            mNavigationSheet.release();
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.release();
         }

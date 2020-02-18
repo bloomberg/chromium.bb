@@ -88,10 +88,11 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/net_buildflags.h"
@@ -266,7 +267,7 @@ class RemoveCookieTester {
     cookie_manager_->GetCookieList(
         kOrigin1, net::CookieOptions(),
         base::BindLambdaForTesting(
-            [&](const net::CookieList& cookie_list,
+            [&](const net::CookieStatusList& cookie_list,
                 const net::CookieStatusList& excluded_cookies) {
               std::string cookie_line =
                   net::CanonicalCookie::BuildCookieLine(cookie_list);
@@ -284,27 +285,26 @@ class RemoveCookieTester {
 
   void AddCookie() {
     base::RunLoop run_loop;
-    net::CookieOptions options;
-    auto cookie = net::CanonicalCookie::Create(kOrigin1, "A=1",
-                                               base::Time::Now(), options);
+    auto cookie = net::CanonicalCookie::Create(
+        kOrigin1, "A=1", base::Time::Now(), base::nullopt /* server_time */);
     cookie_manager_->SetCanonicalCookie(
-        *cookie, "http", options,
+        *cookie, "http", net::CookieOptions(),
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus result) {
-              EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-                        result);
+              EXPECT_TRUE(result.IsInclude());
               run_loop.Quit();
             }));
     run_loop.Run();
   }
 
  protected:
-  void SetCookieManager(network::mojom::CookieManagerPtr cookie_manager) {
+  void SetCookieManager(
+      mojo::Remote<network::mojom::CookieManager> cookie_manager) {
     cookie_manager_ = std::move(cookie_manager);
   }
 
  private:
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
@@ -325,9 +325,9 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
     // Make sure the safe browsing cookie store has no cookies.
     // TODO(mmenke): Is this really needed?
     base::RunLoop run_loop;
-    network::mojom::CookieManagerPtr cookie_manager;
+    mojo::Remote<network::mojom::CookieManager> cookie_manager;
     sb_service->GetNetworkContext()->GetCookieManager(
-        mojo::MakeRequest(&cookie_manager));
+        cookie_manager.BindNewPipeAndPassReceiver());
     cookie_manager->DeleteCookies(
         network::mojom::CookieDeletionFilter::New(),
         base::BindLambdaForTesting(
@@ -1126,7 +1126,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
 
     // Make sure the Network Service is started before making a NetworkContext.
     content::GetNetworkService();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     auto network_context = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
@@ -1232,7 +1232,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   // Cached pointer to BrowsingDataRemover for access to testing methods.
   content::BrowsingDataRemover* remover_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   network::NetworkContext* network_context_;
   std::unique_ptr<TestingProfile> profile_;
@@ -2139,11 +2139,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
   base::Time one_hour_ago = base::Time::Now() - base::TimeDelta::FromHours(1);
   base::Time yesterday = base::Time::Now() - base::TimeDelta::FromDays(1);
   registry->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler::CreateProtocolHandler("test1", kOrigin1));
+      ProtocolHandler::CreateProtocolHandler("news", kOrigin1));
   registry->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test2", kOrigin1, yesterday));
-  EXPECT_TRUE(registry->IsHandledProtocol("test1"));
-  EXPECT_TRUE(registry->IsHandledProtocol("test2"));
+      ProtocolHandler("mailto", kOrigin1, yesterday));
+  EXPECT_TRUE(registry->IsHandledProtocol("news"));
+  EXPECT_TRUE(registry->IsHandledProtocol("mailto"));
   EXPECT_EQ(
       2U,
       registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
@@ -2151,8 +2151,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
   BlockUntilBrowsingDataRemoved(
       one_hour_ago, base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
-  EXPECT_FALSE(registry->IsHandledProtocol("test1"));
-  EXPECT_TRUE(registry->IsHandledProtocol("test2"));
+  EXPECT_FALSE(registry->IsHandledProtocol("news"));
+  EXPECT_TRUE(registry->IsHandledProtocol("mailto"));
   EXPECT_EQ(
       1U,
       registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
@@ -2160,8 +2160,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
-  EXPECT_FALSE(registry->IsHandledProtocol("test1"));
-  EXPECT_FALSE(registry->IsHandledProtocol("test2"));
+  EXPECT_FALSE(registry->IsHandledProtocol("news"));
+  EXPECT_FALSE(registry->IsHandledProtocol("mailto"));
   EXPECT_EQ(
       0U,
       registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
@@ -2578,8 +2578,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 // Check the |CONTENT_SETTINGS_TYPE_PLUGINS_DATA| content setting is cleared
 // with browsing data.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearFlashPreviouslyChanged) {
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      GetProfile(), GetProfile()->GetResourceContext());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(GetProfile());
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());

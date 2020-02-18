@@ -52,7 +52,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   // definitions from JS to C++.
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
-                                           IDS_BOOKMARK_BAR_UNDO_DESCRIPTION,
+                                           IDS_UNDO_DESCRIPTION,
                                            undoAccelerator.GetShortcutText()));
 
   // Localized strings (alphabetical order).
@@ -73,7 +73,10 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
       {"listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL},
       {"menuAddBookmark", IDS_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK},
       {"menuAddFolder", IDS_BOOKMARK_MANAGER_MENU_ADD_FOLDER},
+      {"menuCut", IDS_BOOKMARK_MANAGER_MENU_CUT},
+      {"menuCopy", IDS_BOOKMARK_MANAGER_MENU_COPY},
       {"menuCopyURL", IDS_BOOKMARK_MANAGER_MENU_COPY_URL},
+      {"menuPaste", IDS_BOOKMARK_MANAGER_MENU_PASTE},
       {"menuDelete", IDS_DELETE},
       {"menuEdit", IDS_EDIT},
       {"menuExport", IDS_BOOKMARK_MANAGER_MENU_EXPORT},
@@ -90,6 +93,8 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
       {"menuSort", IDS_BOOKMARK_MANAGER_MENU_SORT},
       {"moreActionsButtonTitle", IDS_BOOKMARK_MANAGER_MORE_ACTIONS},
       {"moreActionsButtonAxLabel", IDS_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL},
+      {"moreActionsMultiButtonAxLabel",
+       IDS_BOOKMARK_MANAGER_MORE_ACTIONS_MULTI_AX_LABEL},
       {"noSearchResults", IDS_SEARCH_NO_RESULTS},
       {"openDialogBody", IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL},
       {"openDialogConfirm", IDS_BOOKMARK_MANAGER_OPEN_DIALOG_CONFIRM},
@@ -167,7 +172,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_BOOKMARKS_BOOKMARKS_HTML);
 #endif
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }

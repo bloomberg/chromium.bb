@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Ocultar filtros de transmissões de eventos</translation>
 <translation id="1088219014394087294">Não existe nenhum título.</translation>
 <translation id="1106741348836243114">Ativar ou desativar respostas sonoras (ícones sonoros).</translation>
-<translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Deslizar rapidamente com dois dedos para cima</translation>
 <translation id="1124771028211010580">O estilo atual do ecrã é lado a lado.</translation>
 <translation id="1126928665165112660">Sem itálico</translation>
@@ -69,7 +69,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1385214448885562192">Prima Enter para aceitar ou escape para cancelar, seta para baixo para seguinte e seta para cima para anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Anunciar atributos de texto rico</translation>
 <translation id="1405567553485452995">Verde-claro</translation>
 <translation id="1417889266572670458">Azul-marinho</translation>
 <translation id="1431911867058218151">Ameixa</translation>
@@ -170,6 +169,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2220529011494928058">Comunicar um problema</translation>
 <translation id="2223693656926968778">Exercer ação sobre o item atual</translation>
 <translation id="225732394367814946">Aumentar a velocidade de voz</translation>
+<translation id="2267538686624070261">A sair do erro ortográfico…</translation>
 <translation id="2267945578749931355">Caráter seguinte</translation>
 <translation id="2278490101488436824">Deslizar rapidamente com três dedos para a esquerda</translation>
 <translation id="2281234842553884450">Controlo de deslize anterior</translation>
@@ -208,6 +208,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">À parte</translation>
 <translation id="2592212930811759050">Toque duas vezes para começar a editar.</translation>
+<translation id="2598495320872286378">Erro gramatical</translation>
 <translation id="2606210917827248971">com {COUNT,plural, =1{# item}other{# itens}}</translation>
 <translation id="2614981083756825552">Esquema de Matemática ML</translation>
 <translation id="2624431853467395961">Abrir modo de aprendizagem</translation>
@@ -423,7 +424,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4039983576244166038">Cabeçalho da linha vazio</translation>
 <translation id="4042843249978639960">Não existe nenhum título de nível 2 seguinte.</translation>
 <translation id="4043348641337972076">Não existe nenhum ponto de referência ARIA anterior.</translation>
-<translation id="4045764028670444336">Início de erro ortográfico</translation>
 <translation id="4047216625641135770">Mark</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Verde-lima</translation>
@@ -485,6 +485,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4372705107434148843">Parar voz</translation>
 <translation id="4373197658375206385">Não existe nenhum item anterior que não seja um link.</translation>
 <translation id="4376316291247992553">Ver gráfico como braille</translation>
+<translation id="437809255587011096">Anunciar definição de estilos de texto</translation>
 <translation id="4378308539633073595">Deslocar para a frente</translation>
 <translation id="4384583879834880242">Perg e Resp</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -505,7 +506,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4547556996012970016">Título de nível 5 seguinte</translation>
 <translation id="4562381607973973258">Cabeçalho</translation>
 <translation id="4569941707103739422">Prima a seta para cima ou para baixo para navegar. Prima Enter para ativar.</translation>
-<translation id="4570424871453628777">Fim de erro ortográfico</translation>
 <translation id="4591507479202817876">, selecionado</translation>
 <translation id="4597532268155981612">formulário</translation>
 <translation id="4597896406374528575">Abril</translation>
@@ -728,7 +728,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="6037602951055904232">Deslocar para a frente</translation>
 <translation id="6042826534790431634">Prima Pesquisar + Espaço para ativar.</translation>
 <translation id="6044160928851315051">Escurecer ecrã</translation>
-<translation id="6065293622157674001">Início de erro de gramática</translation>
 <translation id="6082768461603900813">Navegação básica</translation>
 <translation id="6118126368611144850">Aplicações Android para o Chrome. Se tiver a Play Store instalada no seu dispositivo, conheça em primeira mão o ChromeVox com aplicações para Android. Transfira o Google Chrome Canary a partir da Play Store para experimentar o suporte experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -761,7 +760,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="6348869651006731065">Cinzento fosco</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{marca}other{# marcas}}</translation>
 <translation id="6355910664415701303">Não existe nenhum item de lista anterior.</translation>
-<translation id="6360318852623800555">Atributos do texto rico</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Título anterior</translation>
 <translation id="6376999910001533545">Mogno</translation>
@@ -825,6 +823,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="6833103209700200188">Rodapé</translation>
 <translation id="6858047746862060282">Prólogo</translation>
 <translation id="6859876496651143278">Deslizar com um dedo para a esquerda</translation>
+<translation id="6865519907510167493">Erro ortográfico</translation>
 <translation id="6871161210040114857">A ignorar maiúsculas e minúsculas.</translation>
 <translation id="6877435256196695200">Não existe nenhum gráfico seguinte.</translation>
 <translation id="6897341342232909480">Mover para a esquerda</translation>
@@ -870,7 +869,6 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="7143207342074048698">A ligar</translation>
 <translation id="7153618581592392745">Lilás</translation>
 <translation id="7157306005867877619">Resumo</translation>
-<translation id="7161425887892204659">Fim de correspondência de texto</translation>
 <translation id="7161771961008409533">Botão pop-up</translation>
 <translation id="7165714724802225287">O estilo atual do ecrã é intercalado.</translation>
 <translation id="7167657087543110">eco dos carateres</translation>
@@ -908,7 +906,6 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">A sair da tabela.</translation>
 <translation id="738899727977260036">Azul-ardósia</translation>
-<translation id="7392145451309930991">Início de correspondência de texto</translation>
 <translation id="739763518212184081">Linha anterior</translation>
 <translation id="7400575256015741911">Erro ortográfico detetado</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}other{# sublinhados}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">Detetar e alterar automaticamente o idioma do ChromeVox.</translation>
 <translation id="8184828902145951186">linha</translation>
 <translation id="8186185314313222077">ativar/desativar ecrã inteiro</translation>
 <translation id="8199231515320852133">Anunciar os cabeçalhos da célula atual</translation>
@@ -1118,12 +1114,13 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8446884382197647889">Saiba Mais</translation>
 <translation id="8455868257606149352">Máx.: <ph name="X" /></translation>
 <translation id="84575901236241018">tem chave de acesso, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">A sair do erro gramatical…</translation>
 <translation id="847154984256717791">ocupado</translation>
 <translation id="8476408756881832830">Colocar reprodução em pausa quando o ChromeVox estiver a falar</translation>
 <translation id="8476508772960940536">vista geral das janelas</translation>
 <translation id="8503360654911991865">Diminuir nível de detalhe da navegação</translation>
-<translation id="8504695234784218301">Fim de erro de gramática</translation>
 <translation id="8520472399088452386">Botão giratório</translation>
+<translation id="8534394844575788431">Formatação</translation>
 <translation id="8538744478902126321">Adivinhar o cabeçalho da linha da célula atual</translation>
 <translation id="8540054775867439484">Direcionado para o início</translation>
 <translation id="8542271685829952264">Para explorar todos os comandos e atalhos do ChromeVox, prima Pesquisar + Ponto e, em seguida, utilize as teclas de seta para navegar nos menus e a tecla Enter para ativar um comando. Volte aqui ao premir Pesquisar + o e, em seguida, t.</translation>
@@ -1203,6 +1200,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tabulação</translation>
 <translation id="9151211641321628915">Anuncia uma breve descrição da posição atual</translation>
+<translation id="9151249085738989067">Alterar automaticamente a voz do ChromeVox com base no idioma</translation>
 <translation id="9153606228985488238">Timbre: <ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">Ir para o fim da coluna atual</translation>
 <translation id="9173115498289768110">Volume: <ph name="PERCENT" />%</translation>

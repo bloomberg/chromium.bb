@@ -20,7 +20,6 @@ class GraphicsContext;
 class Page;
 class LinkHighlightImpl;
 class CompositorAnimationTimeline;
-class WebLayerTreeView;
 class LocalFrame;
 class LayoutObject;
 
@@ -47,8 +46,8 @@ class CORE_EXPORT LinkHighlights final
 
   void StartHighlightAnimationIfNeeded();
 
-  void LayerTreeViewInitialized(WebLayerTreeView&, cc::AnimationHost&);
-  void WillCloseLayerTreeView(WebLayerTreeView&);
+  void AnimationHostInitialized(cc::AnimationHost&);
+  void WillCloseAnimationHost();
 
   bool IsEmpty() const { return link_highlights_.IsEmpty(); }
 
@@ -69,6 +68,7 @@ class CORE_EXPORT LinkHighlights final
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, multipleHighlights);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightLayerEffectNode);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, MultiColumn);
+  FRIEND_TEST_ALL_PREFIXES(LinkHighlightSquashingImplTest, SquashingLayer);
 
   void RemoveAllHighlights();
 

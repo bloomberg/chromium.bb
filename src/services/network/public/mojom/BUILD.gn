@@ -40,9 +40,6 @@ mojom("data_pipe_interfaces") {
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }
 
 mojom("mutable_network_traffic_annotation_interface") {
@@ -72,21 +69,24 @@ mojom("websocket_mojom") {
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }
 
 mojom("mojom") {
   sources = [
+    "content_security_policy.mojom",
     "cookie_manager.mojom",
     "cors.mojom",
     "cors_origin_pattern.mojom",
+    "default_credentials.mojom",
+    "dhcp_wpad_url_client.mojom",
     "digitally_signed.mojom",
     "fetch_api.mojom",
     "host_resolver.mojom",
     "http_raw_headers.mojom",
+    "http_raw_request_response_info.mojom",
     "http_request_headers.mojom",
+    "ip_address_space.mojom",
+    "load_timing_info.mojom",
     "mdns_responder.mojom",
     "net_log.mojom",
     "network_change_manager.mojom",
@@ -112,6 +112,7 @@ mojom("mojom") {
     "udp_socket.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
+    "url_response_head.mojom",
   ]
 
   public_deps = [
@@ -157,7 +158,4 @@ mojom("mojom") {
     enabled_features += [ "is_trial_comparison_cert_verifier_supported" ]
     sources += [ "trial_comparison_cert_verifier.mojom" ]
   }
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }

@@ -227,6 +227,12 @@ RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     const gfx::PointF& point,
     gfx::PointF* local_point) {
+  // This method must only be called on a local root, which is guaranteed to
+  // have a WebWidget.
+  // TODO(https://crbug.com/995981): Eventually we should be able to remove this
+  // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
+  // synchronized with the WebWidget.
+  DCHECK(widget_->GetWebWidget());
   gfx::PointF point_in_pixel(point);
   if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
     point_in_pixel = gfx::ConvertPointToPixel(
@@ -243,8 +249,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   // call the hit-testing API. Either way it might be better to have
   // a DCHECK for the node rather than a null check here.
   if (result_node.IsNull()) {
-    return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
-                            widget_->routing_id());
+    return widget_->GetFrameSinkId();
   }
 
   viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result);
@@ -260,12 +265,18 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   // Return the FrameSinkId for the current widget if the point did not hit
   // test to a remote frame, or the point is outside of the remote frame's
   // content box, or the remote frame doesn't have a valid FrameSinkId yet.
-  return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
-                          widget_->routing_id());
+  return widget_->GetFrameSinkId();
 }
 
 WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
     const blink::WebCoalescedInputEvent& coalesced_event) {
+  // This method must only be called on non-frozen RenderWidget, which is
+  // guaranteed to have a WebWidget.
+  // TODO(https://crbug.com/995981): Eventually we should be able to remote this
+  // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
+  // synchronized with the WebWidget.
+  DCHECK(widget_->GetWebWidget());
+
   const WebInputEvent& input_event = coalesced_event.Event();
 
   if (input_event.GetType() == WebInputEvent::kTouchScrollStarted) {
@@ -298,6 +309,13 @@ void RenderWidgetInputHandler::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
+  // This method must only be called on non-frozen RenderWidget, which is
+  // guaranteed to have a WebWidget.
+  // TODO(https://crbug.com/995981): Eventually we should be able to remote this
+  // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
+  // synchronized with the WebWidget.
+  DCHECK(widget_->GetWebWidget());
+
   const WebInputEvent& input_event = coalesced_event.Event();
   base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
                                                       true);
@@ -585,6 +603,13 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
     std::vector<InjectScrollGestureParams> injected_scroll_params,
     const WebInputEvent& input_event,
     const ui::LatencyInfo& original_latency_info) {
+  // This method must only be called on non-frozen RenderWidget, which is
+  // guaranteed to have a WebWidget.
+  // TODO(https://crbug.com/995981): Eventually we should be able to remote this
+  // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
+  // synchronized with the WebWidget.
+  DCHECK(widget_->GetWebWidget());
+
   DCHECK(injected_scroll_params.size());
 
   base::TimeTicks original_timestamp;

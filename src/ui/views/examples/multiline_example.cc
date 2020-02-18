@@ -111,9 +111,7 @@ class MultilineExample::RenderTextView : public View {
 
  private:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    gfx::Rect bounds = GetLocalBounds();
-    bounds.Inset(GetInsets());
-    render_text_->SetDisplayRect(bounds);
+    render_text_->SetDisplayRect(GetContentsBounds());
   }
 
   std::unique_ptr<gfx::RenderText> render_text_;
@@ -188,7 +186,7 @@ void MultilineExample::ContentsChanged(Textfield* sender,
 
 void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == label_checkbox_) {
-    label_->SetText(label_checkbox_->GetChecked() ? textfield_->text()
+    label_->SetText(label_checkbox_->GetChecked() ? textfield_->GetText()
                                                   : base::string16());
   } else if (sender == elision_checkbox_) {
     render_text_view_->SetMaxLines(elision_checkbox_->GetChecked() ? 3 : 0);

@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
@@ -26,6 +27,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.content.browser.contacts.ContactsPickerPropertiesRequested;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
 
@@ -43,6 +45,12 @@ public class PickerCategoryView extends RelativeLayout
         implements View.OnClickListener, RecyclerView.RecyclerListener,
                    SelectionDelegate.SelectionObserver<ContactDetails>,
                    SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback {
+    // These values are written to logs.  New enum values can be added, but existing
+    // enums must never be renumbered or deleted and reused.
+    private static final int ACTION_CANCEL = 0;
+    private static final int ACTION_CONTACTS_SELECTED = 1;
+    private static final int ACTION_BOUNDARY = 2;
+
     // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 36;
     private static final int ICON_CORNER_RADIUS_DP = 20;
@@ -112,7 +120,7 @@ public class PickerCategoryView extends RelativeLayout
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed,
             boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
-            String formattedOrigin) {
+            String formattedOrigin, ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
         super(context);
 
         mActivity = (ChromeActivity) context;
@@ -147,6 +155,8 @@ public class PickerCategoryView extends RelativeLayout
                 false);
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
+        mToolbar.setDelegate(delegate);
+        mToolbar.showBackArrow();
 
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);
@@ -177,7 +187,8 @@ public class PickerCategoryView extends RelativeLayout
         mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
+                executeAction(
+                        ContactsPickerListener.ContactsPickerAction.CANCEL, null, ACTION_CANCEL);
             }
         });
 
@@ -201,7 +212,6 @@ public class PickerCategoryView extends RelativeLayout
     public void onEndSearch() {
         mPickerAdapter.setSearchString("");
         mPickerAdapter.setSearchMode(false);
-        mToolbar.showCloseButton();
         mToolbar.setNavigationOnClickListener(this);
         mDoneButton.setVisibility(VISIBLE);
         mSearchButton.setVisibility(VISIBLE);
@@ -259,12 +269,14 @@ public class PickerCategoryView extends RelativeLayout
             mSelectionDelegate.setSelectedItems(
                     new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null);
+                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, /*contacts=*/null,
+                    /*percentageShared=*/0, /*propertiesRequested=*/0);
         } else {
             mSelectionDelegate.setSelectedItems(new HashSet<ContactDetails>());
             mPreviousSelection = null;
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null);
+                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, /*contacts=*/null,
+                    /*percentageShared=*/0, /*propertiesRequested=*/0);
         }
     }
 
@@ -278,7 +290,7 @@ public class PickerCategoryView extends RelativeLayout
         } else if (id == R.id.search) {
             onStartSearch();
         } else {
-            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
+            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null, ACTION_CANCEL);
         }
     }
 
@@ -349,19 +361,55 @@ public class PickerCategoryView extends RelativeLayout
                     getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),
                             contactDetails.getPhoneNumbers())));
         }
-        executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts);
+        executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts,
+                ACTION_CONTACTS_SELECTED);
     }
 
     /**
      * Report back what the user selected in the dialog, report UMA and clean up.
      * @param action The action taken.
      * @param contacts The contacts that were selected (if any).
+     * @param umaId The UMA value to record with the action.
      */
     private void executeAction(@ContactsPickerListener.ContactsPickerAction int action,
-            List<ContactsPickerListener.Contact> contacts) {
-        mListener.onContactsPickerUserAction(action, contacts);
+            List<ContactsPickerListener.Contact> contacts, int umaId) {
+        int selectCount = contacts != null ? contacts.size() : 0;
+        int contactCount = mPickerAdapter.getAllContacts().size();
+        int percentageShared = (100 * selectCount) / contactCount;
+
+        int propertiesRequested = ContactsPickerPropertiesRequested.PROPERTIES_NONE;
+        if (includeNames) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_NAMES;
+        if (includeEmails) {
+            propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_EMAILS;
+        }
+        if (includeTel) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_TELS;
+
+        mListener.onContactsPickerUserAction(
+                action, contacts, percentageShared, propertiesRequested);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
+        recordFinalUmaStats(
+                umaId, contactCount, selectCount, percentageShared, propertiesRequested);
+    }
+
+    /**
+     * Record UMA statistics (what action was taken in the dialog and other performance stats).
+     * @param action The action the user took in the dialog.
+     * @param contactCount The number of contacts in the contact list.
+     * @param selectCount The number of contacts selected.
+     * @param percentageShared The percentage shared (of the whole contact list).
+     * @param propertiesRequested The properties (names/emails/tels) requested by the website.
+     */
+    private void recordFinalUmaStats(int action, int contactCount, int selectCount,
+            int percentageShared, int propertiesRequested) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.ContactsPicker.DialogAction", action, ACTION_BOUNDARY);
+        RecordHistogram.recordCountHistogram("Android.ContactsPicker.ContactCount", contactCount);
+        RecordHistogram.recordCountHistogram("Android.ContactsPicker.SelectCount", selectCount);
+        RecordHistogram.recordPercentageHistogram(
+                "Android.ContactsPicker.SelectPercentage", percentageShared);
+        RecordHistogram.recordEnumeratedHistogram("Android.ContactsPicker.PropertiesRequested",
+                propertiesRequested, ContactsPickerPropertiesRequested.PROPERTIES_BOUNDARY);
     }
 
     @VisibleForTesting

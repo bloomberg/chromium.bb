@@ -1323,13 +1323,14 @@ void UDPSocketPosix::FlushPending() {
 
 // TODO(ckrasic) Sad face.  Do this lazily because many tests exploded
 // otherwise.  |threading_and_tasks.md| advises to instantiate a
-// |base::test::ScopedTaskEnvironment| in the test, implementing that
+// |base::test::TaskEnvironment| in the test, implementing that
 // for all tests that might exercise QUIC is too daunting.  Also, in
 // some tests it seemed like following the advice just broke in other
 // ways.
 base::SequencedTaskRunner* UDPSocketPosix::GetTaskRunner() {
   if (task_runner_ == nullptr) {
-    task_runner_ = CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+    task_runner_ =
+        CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
   }
   return task_runner_.get();
 }

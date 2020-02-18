@@ -55,7 +55,7 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
   ~ChromeContentVerifierDelegate() override;
 
   // ContentVerifierDelegate:
-  bool ShouldBeVerified(const Extension& extension) override;
+  VerifierSourceType GetVerifierSourceType(const Extension& extension) override;
   ContentVerifierKey GetPublicKey() override;
   GURL GetSignatureFetchUrl(const std::string& extension_id,
                             const base::Version& version) override;
@@ -66,8 +66,8 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
   void Shutdown() override;
 
  private:
-  // Returns what verification mode is appropriate for the given extension, or
-  // NONE if no verification is needed.
+  // Returns what action should be taken if given extension fails verification
+  // in some way, or NONE if no verification is needed.
   Mode GetVerifyMode(const Extension& extension);
 
   content::BrowserContext* context_;

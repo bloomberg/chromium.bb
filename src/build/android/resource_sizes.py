@@ -613,6 +613,9 @@ def ResourceSizes(args):
 
     json.dump(chartjson, json_file, indent=2)
 
+    if json_file is not sys.stdout:
+      json_file.close()
+
     # We would ideally generate a histogram set directly instead of generating
     # chartjson then converting. However, perf_tests_results_helper is in
     # //build, which doesn't seem to have any precedent for depending on

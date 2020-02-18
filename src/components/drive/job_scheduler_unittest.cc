@@ -26,7 +26,7 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -154,7 +154,7 @@ class JobSchedulerTest : public testing::Test {
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
         network::TestNetworkConnectionTracker::GetInstance(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
+        base::ThreadTaskRunnerHandle::Get().get(), mojo::NullRemote());
     scheduler_->SetDisableThrottling(true);
   }
 
@@ -191,7 +191,7 @@ class JobSchedulerTest : public testing::Test {
     return JobScheduler::kMaxJobCount[JobScheduler::METADATA_QUEUE];
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<EventLogger> logger_;
   std::unique_ptr<CancelTestableFakeDriveService> fake_drive_service_;

@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client.h"
 #include "chrome/chrome_cleaner/engines/broker/sandbox_setup.h"
@@ -283,7 +283,7 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   base::ScopedPathOverride program_files_override_{base::DIR_PROGRAM_FILES};
   const std::vector<UwS::TraceLocation> trace_locations_{
       chrome_cleaner::UwS_TraceLocation_FOUND_IN_SHELL};
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<EngineClient> SetupEngineClient() {
     SandboxConnectionErrorCallback connection_error_callback =

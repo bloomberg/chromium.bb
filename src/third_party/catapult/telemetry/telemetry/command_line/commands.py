@@ -12,7 +12,7 @@ import sys
 from telemetry import benchmark
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options
-from telemetry.internal.util import command_line
+from telemetry.internal import story_runner
 from telemetry.util import matching
 
 
@@ -32,8 +32,7 @@ def _IsBenchmarkEnabled(bench, possible_browser, expectations_file):
       any(t.ShouldDisable(possible_browser.platform, possible_browser)
           for t in b.SUPPORTED_PLATFORMS) and
       # Test that expectations say it is enabled.
-      not expectations.IsBenchmarkDisabled(possible_browser.platform,
-                                           possible_browser))
+      not expectations.IsBenchmarkDisabled())
 
 
 def _GetStoriesWithTags(b):
@@ -155,20 +154,19 @@ def PrintBenchmarkList(
                                    sort_keys=True, separators=(',', ': ')),
 
 
-class List(command_line.OptparseCommand):
+class List(object):
   """Lists the available benchmarks"""
 
-  usage = '[benchmark_name] [<options>]'
-
   @classmethod
-  def AddCommandLineArgs(cls, parser, _):
+  def AddCommandLineArgs(cls, parser, args, environment):
+    del args, environment  # Unused.
     parser.add_option('--json', action='store', dest='json_filename',
                       help='Output the list in JSON')
 
   @classmethod
   def CreateParser(cls):
     options = browser_options.BrowserFinderOptions()
-    parser = options.CreateParser('%%prog %s %s' % (cls.Name(), cls.usage))
+    parser = options.CreateParser('%prog run [benchmark_name] [<options>]')
     return parser
 
   @classmethod
@@ -204,24 +202,22 @@ class List(command_line.OptparseCommand):
     return 0
 
 
-class Run(command_line.OptparseCommand):
+class Run(object):
   """Run one or more benchmarks (default)"""
-
-  usage = 'benchmark_name [<options>]'
 
   @classmethod
   def CreateParser(cls):
     options = browser_options.BrowserFinderOptions()
-    parser = options.CreateParser('%%prog %s %s' % (cls.Name(), cls.usage))
+    parser = options.CreateParser('%prog run benchmark_name [<options>]')
     return parser
 
   @classmethod
-  def AddCommandLineArgs(cls, parser, environment):
-    benchmark.AddCommandLineArgs(parser)
+  def AddCommandLineArgs(cls, parser, args, environment):
+    story_runner.AddCommandLineArgs(parser)
 
     # Allow benchmarks to add their own command line options.
     matching_benchmarks = []
-    for arg in sys.argv[1:]:
+    for arg in args:
       matching_benchmark = environment.GetBenchmarkByName(arg)
       if matching_benchmark is not None:
         matching_benchmarks.append(matching_benchmark)
@@ -268,7 +264,7 @@ class Run(command_line.OptparseCommand):
     assert issubclass(benchmark_class,
                       benchmark.Benchmark), ('Trying to run a non-Benchmark?!')
 
-    benchmark.ProcessCommandLineArgs(parser, options)
+    story_runner.ProcessCommandLineArgs(parser, options)
     benchmark_class.ProcessCommandLineArgs(parser, options)
 
     cls._benchmark = benchmark_class

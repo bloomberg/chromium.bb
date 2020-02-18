@@ -21,7 +21,6 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -43,7 +42,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/public/cpp/features.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -155,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
   RenderProcessHost* rph =
       shell()->web_contents()->GetMainFrame()->GetProcess();
   // Make it believe it's a guest.
@@ -168,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   replace_host.SetHostStr("localhost");
   GURL another_url = embedded_test_server()->GetURL("/simple_page.html");
   another_url = another_url.ReplaceComponents(replace_host);
-  NavigateToURL(CreateBrowser(), another_url);
+  EXPECT_TRUE(NavigateToURL(CreateBrowser(), another_url));
 
   // Expect that we got another process (the guest renderer was not reused).
   EXPECT_EQ(2, RenderProcessHost::GetCurrentRenderProcessCountForTesting());
@@ -185,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostTaken) {
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   Shell* window = CreateBrowser();
-  NavigateToURL(window, test_url);
+  EXPECT_TRUE(NavigateToURL(window, test_url));
 
   EXPECT_EQ(spare_renderer,
             window->web_contents()->GetMainFrame()->GetProcess());
@@ -213,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostNotTaken) {
       RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   Shell* window = CreateBrowser();
-  NavigateToURL(window, test_url);
+  EXPECT_TRUE(NavigateToURL(window, test_url));
 
   // There should have been another process created for the navigation.
   EXPECT_NE(spare_renderer,
@@ -289,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // rather than picked up via MaybeTakeSpareRenderProcessHost().
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   Shell* new_window = CreateBrowser();
-  NavigateToURL(new_window, test_url);
+  EXPECT_TRUE(NavigateToURL(new_window, test_url));
   // Outside of RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes mode, the
   // spare RPH should have been dropped during CreateBrowser() and given to the
   // new window.  OTOH, even in the IsSpareProcessKeptAtAllTimes mode, the spare
@@ -421,9 +419,6 @@ class CustomStoragePartitionForSomeSites : public TestContentBrowserClient {
 // for StoragePartition differences when handing out the spare process.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        SpareProcessVsCustomStoragePartition) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Provide custom storage partition for test sites.
@@ -631,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
 
   std::string logging_string;
   ShellCloser shell_closer(shell(), &logging_string);
@@ -670,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
   RenderProcessHost* rph =
       shell()->web_contents()->GetMainFrame()->GetProcess();
 
@@ -776,8 +771,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             media::BindToCurrentLoop(run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -813,8 +808,8 @@ class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        GetUserMediaIncrementsVideoCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/media/getusermedia.html")));
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
@@ -829,8 +824,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        StopResetsVideoCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/media/getusermedia.html")));
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
@@ -846,8 +841,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosVideoCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/media/getusermedia.html")));
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
@@ -876,8 +871,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             media::BindToCurrentLoop(run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -893,8 +888,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        GetUserMediaAudioOnlyIncrementsMediaStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/media/getusermedia.html")));
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
@@ -911,8 +906,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosAudioCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/media/getusermedia.html")));
   RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   std::string result;
@@ -942,8 +937,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             media::BindToCurrentLoop(run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -966,7 +961,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
                              {"foo.com"});
   }
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/send-beacon.html")));
 
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
@@ -980,8 +976,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
 
   // Navigate to a site that will be in a different process.
   base::TimeTicks start = base::TimeTicks::Now();
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
 
   WaitUntilProcessExits(1);
 
@@ -1003,7 +999,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/send-beacon.html")));
 
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
@@ -1016,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   rfh->SetKeepAliveTimeoutForTesting(base::TimeDelta::FromSeconds(1));
 
   base::TimeTicks start = base::TimeTicks::Now();
-  NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>")));
 
   WaitUntilProcessExits(1);
 
@@ -1039,8 +1036,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/fetch-keepalive.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/fetch-keepalive.html")));
 
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
@@ -1053,7 +1050,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   rfh->SetKeepAliveTimeoutForTesting(base::TimeDelta::FromSeconds(1));
 
   base::TimeTicks start = base::TimeTicks::Now();
-  NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>")));
 
   WaitUntilProcessExits(1);
 

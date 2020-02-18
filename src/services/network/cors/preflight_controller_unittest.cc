@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -19,7 +19,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
-#include "services/network/public/cpp/cors/preflight_timing_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +89,6 @@ TEST(PreflightControllerCreatePreflightRequestTest, Credentials) {
       PreflightController::CreatePreflightRequestForTesting(request);
 
   EXPECT_EQ(mojom::CredentialsMode::kOmit, preflight->credentials_mode);
-  EXPECT_FALSE(preflight->allow_credentials);
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest,
@@ -222,8 +221,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, RenderFrameId) {
 class PreflightControllerTest : public testing::Test {
  public:
   PreflightControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     mojom::NetworkServicePtr network_service_ptr;
     mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
@@ -243,10 +241,8 @@ class PreflightControllerTest : public testing::Test {
   }
 
  protected:
-  void HandleRequestCompletion(
-      int net_error,
-      base::Optional<CorsErrorStatus> status,
-      base::Optional<PreflightTimingInfo> timing_info) {
+  void HandleRequestCompletion(int net_error,
+                               base::Optional<CorsErrorStatus> status) {
     net_error_ = net_error;
     status_ = status;
     run_loop_->Quit();
@@ -273,7 +269,8 @@ class PreflightControllerTest : public testing::Test {
 
  private:
   void SetUp() override {
-    preflight_controller_ = std::make_unique<PreflightController>();
+    preflight_controller_ =
+        std::make_unique<PreflightController>(std::vector<std::string>());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &PreflightControllerTest::ServePreflight, base::Unretained(this)));
@@ -311,7 +308,7 @@ class PreflightControllerTest : public testing::Test {
     return response;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   std::unique_ptr<mojom::NetworkService> network_service_;

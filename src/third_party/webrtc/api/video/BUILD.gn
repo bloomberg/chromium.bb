@@ -159,10 +159,12 @@ rtc_source_set("video_bitrate_allocation") {
 rtc_source_set("video_bitrate_allocator") {
   visibility = [ "*" ]
   sources = [
+    "video_bitrate_allocator.cc",
     "video_bitrate_allocator.h",
   ]
   deps = [
     ":video_bitrate_allocation",
+    "../units:data_rate",
   ]
 }
 
@@ -221,14 +223,15 @@ rtc_source_set("video_stream_encoder") {
   ]
 
   deps = [
+    ":video_bitrate_allocation",
     ":video_bitrate_allocator",
     ":video_bitrate_allocator_factory",
+    ":video_codec_constants",
     ":video_frame",
+    "..:rtp_parameters",
     "../:fec_controller_api",
+    "../:rtp_parameters",
     "../units:data_rate",
-
-    # For rtpparameters.h
-    "..:libjingle_peerconnection_api",
     "../video_codecs:video_codecs_api",
     "//third_party/abseil-cpp/absl/types:optional",
   ]

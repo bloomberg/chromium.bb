@@ -16,7 +16,7 @@ import time
 from googleapiclient import discovery
 import google.protobuf.internal.well_known_types as types
 from infra_libs import ts_mon
-import inotify_simple
+import inotify_simple  # pylint: disable=import-error
 from oauth2client.client import GoogleCredentials
 
 from chromite.lib import commandline
@@ -94,7 +94,7 @@ class _DirWatcher(object):
       lines = tuple(_ReadBatch(files))
       _CleanupBatch(files)
       if files:
-        log.debug("Found changes in %s", pprint.pformat(files))
+        log.debug('Found changes in %s', pprint.pformat(files))
       yield lines
 
 
@@ -192,7 +192,7 @@ def _BatchAndSendSpans(project_id, client, batch_sequence):
   """
   batch_size_metric = metrics.CumulativeDistribution(
       _BATCH_SIZE_METRIC,
-      description="The size of batches emitted by export_to_cloud_trace",
+      description='The size of batches emitted by export_to_cloud_trace',
       bucketer=ts_mon.FixedWidthBucketer(1, MIN_BATCH_SIZE*2),
       field_spec=None)
 
@@ -222,7 +222,7 @@ def _ReadAndDeletePreexisting(log_dir):
   """
   preexisting_files = [os.path.join(log_dir, f)
                        for f in os.listdir(SPAN_LOG_DIR)]
-  log.info("Processing pre-existing logs: %s",
+  log.info('Processing pre-existing logs: %s',
            pprint.pformat(preexisting_files))
   preexisting_lines = tuple(_ReadBatch(preexisting_files))
   _CleanupBatch(preexisting_files)
@@ -240,7 +240,7 @@ def _RecordDurationMetric(batches):
   """
   m = metrics.CumulativeSecondsDistribution(
       _SPAN_DURATION_METRIC,
-      description="The durations of Spans consumed by export_to_cloud_trace",
+      description='The durations of Spans consumed by export_to_cloud_trace',
       field_spec=[ts_mon.StringField('name')])
 
   for batch in batches:

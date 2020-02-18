@@ -29,7 +29,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -220,7 +220,7 @@ class ArcPolicyBridgeTestBase {
   TestingProfile* profile() { return profile_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

@@ -17,8 +17,8 @@
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/interfaces/device_cursor.mojom.h"
-#include "ui/ozone/public/interfaces/drm_device.mojom.h"
+#include "ui/ozone/public/mojom/device_cursor.mojom.h"
+#include "ui/ozone/public/mojom/drm_device.mojom.h"
 
 namespace display {
 class DisplaySnapshot;
@@ -38,16 +38,12 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
  public:
   explicit HostDrmDevice(DrmCursor* cursor);
 
-  // Blocks until the DRM service has come up. Use this entry point only when
-  // supporting launch of the service where the ozone UI and GPU
-  // reponsibilities are performed by the same underlying thread.
-  void BlockingStartDrmDevice();
-
   void ProvideManagers(DrmDisplayHostManager* display_manager,
                        DrmOverlayManagerHost* overlay_manager);
 
-  void OnGpuServiceLaunched(
-      ui::ozone::mojom::DrmDevicePtrInfo drm_device_ptr_info);
+  void OnGpuServiceLaunchedOnIOThread(
+      ui::ozone::mojom::DrmDevicePtr drm_device_ptr,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_runner);
 
   // Invoked by DrmDeviceConnector on loss of GPU service.
   void OnGpuServiceLost();
@@ -65,8 +61,10 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   bool GpuTakeDisplayControl() override;
   bool GpuRefreshNativeDisplays() override;
   bool GpuRelinquishDisplayControl() override;
-  bool GpuAddGraphicsDevice(const base::FilePath& path,
-                            base::ScopedFD fd) override;
+  bool GpuAddGraphicsDeviceOnUIThread(const base::FilePath& path,
+                                      base::ScopedFD fd) override;
+  void GpuAddGraphicsDeviceOnIOThread(const base::FilePath& path,
+                                      base::ScopedFD fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
   // Services needed for DrmOverlayManagerHost.
@@ -93,7 +91,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   // Services needed by DrmWindowHost
   bool GpuDestroyWindow(gfx::AcceleratedWidget widget) override;
-  bool GpuCreateWindow(gfx::AcceleratedWidget widget) override;
+  bool GpuCreateWindow(gfx::AcceleratedWidget widget,
+                       const gfx::Rect& initial_bounds) override;
   bool GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
                               const gfx::Rect& bounds) override;
 
@@ -116,8 +115,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   // TODO(rjkroege): Get rid of the need for this method in a subsequent CL.
   void PollForSingleThreadReady(int previous_delay);
 
-  void RunObservers();
-
   void GpuCheckOverlayCapabilitiesCallback(
       gfx::AcceleratedWidget widget,
       const OverlaySurfaceCandidateList& overlays,
@@ -136,8 +133,12 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
                                display::HDCPState state) const;
   void GpuSetHDCPStateCallback(int64_t display_id, bool success) const;
 
+  void OnGpuServiceLaunchedOnUIThread(
+      ui::ozone::mojom::DrmDevicePtrInfo drm_device_ptr_info);
+
   // Mojo implementation of the DrmDevice. Will be bound on the "main" thread.
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr_;
+  ui::ozone::mojom::DrmDevicePtr drm_device_ptr_on_io_thread_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
   DrmOverlayManagerHost* overlay_manager_;  // Not owned.

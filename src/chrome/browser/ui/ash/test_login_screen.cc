@@ -50,7 +50,8 @@ void TestLoginScreen::ShowParentAccessWidget(
     const AccountId& child_account_id,
     base::RepeatingCallback<void(bool success)> callback,
     ash::ParentAccessRequestReason reason,
-    bool extra_dimmer) {}
+    bool extra_dimmer,
+    base::Time validation_time) {}
 
 void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
 
@@ -58,3 +59,8 @@ std::unique_ptr<ash::ScopedGuestButtonBlocker>
 TestLoginScreen::GetScopedGuestButtonBlocker() {
   return std::make_unique<ScopedGuestButtonBlockerTestImpl>();
 }
+
+void TestLoginScreen::RequestSecurityTokenPin(
+    ash::SecurityTokenPinRequest request) {}
+
+void TestLoginScreen::ClearSecurityTokenPinRequest() {}

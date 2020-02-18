@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
+// Copyright 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -76,8 +76,8 @@ namespace angle
 {
 struct GLColorRGB
 {
-    GLColorRGB();
-    GLColorRGB(GLubyte r, GLubyte g, GLubyte b);
+    constexpr GLColorRGB() : R(0), G(0), B(0) {}
+    constexpr GLColorRGB(GLubyte r, GLubyte g, GLubyte b) : R(r), G(g), B(b) {}
     GLColorRGB(const angle::Vector3 &floatColor);
 
     const GLubyte *data() const { return &R; }
@@ -94,8 +94,8 @@ struct GLColorRGB
 
 struct GLColor
 {
-    GLColor();
-    GLColor(GLubyte r, GLubyte g, GLubyte b, GLubyte a);
+    constexpr GLColor() : R(0), G(0), B(0), A(0) {}
+    constexpr GLColor(GLubyte r, GLubyte g, GLubyte b, GLubyte a) : R(r), G(g), B(b), A(a) {}
     GLColor(const angle::Vector4 &floatColor);
     GLColor(GLuint colorValue);
 
@@ -289,6 +289,8 @@ class ANGLETestBase
 
     virtual void overrideWorkaroundsD3D(angle::FeaturesD3D *featuresD3D) {}
     virtual void overrideFeaturesVk(angle::FeaturesVk *featuresVulkan) {}
+
+    static void ReleaseFixtures();
 
   protected:
     void ANGLETestSetUp();
@@ -573,15 +575,5 @@ bool IsGLExtensionEnabled(const std::string &extName);
 bool IsGLExtensionRequestable(const std::string &extName);
 
 extern angle::PlatformMethods gDefaultPlatformMethods;
-
-#define ANGLE_SKIP_TEST_IF(COND)                                  \
-    do                                                            \
-    {                                                             \
-        if (COND)                                                 \
-        {                                                         \
-            std::cout << "Test skipped: " #COND "." << std::endl; \
-            return;                                               \
-        }                                                         \
-    } while (0)
 
 #endif  // ANGLE_TESTS_ANGLE_TEST_H_

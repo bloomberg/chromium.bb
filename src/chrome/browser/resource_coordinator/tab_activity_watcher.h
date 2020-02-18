@@ -35,9 +35,9 @@ class TabActivityWatcher : public BrowserListObserver,
   // Uses the Tab Ranker model to predict a score for the tab, where a higher
   // value indicates a higher likelihood of being reactivated.
   // Returns the score if the tab could be scored.
+  // This is only used in chrome://discards and unit tests.
   base::Optional<float> CalculateReactivationScore(
-      content::WebContents* web_contents,
-      bool log_this_query = false);
+      content::WebContents* web_contents);
 
   // Log TabFeatures for oldest n tabs.
   void LogOldestNTabFeatures();
@@ -45,9 +45,6 @@ class TabActivityWatcher : public BrowserListObserver,
   // |tabs| are sorted by descending importance, so that the last tab is
   // the first candidate that will be discarded.
   void SortLifecycleUnitWithTabRanker(std::vector<LifecycleUnit*>* tabs);
-
-  // Returns an int64_t number as label_id or query_id.
-  int64_t NewInt64ForLabelIdOrQueryId();
 
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
@@ -94,13 +91,10 @@ class TabActivityWatcher : public BrowserListObserver,
   BrowserTabStripTracker browser_tab_strip_tracker_;
 
   // Loads the Tab Ranker model on first use and calculates tab scores.
-  tab_ranker::TabScorePredictor predictor_;
+  std::unique_ptr<tab_ranker::TabScorePredictor> predictor_;
 
   // All WebContentsData of the browser that is currently in closing_all mode.
   base::flat_set<WebContentsData*> all_closing_tabs_;
-
-  // Used for generating label_ids and query_ids.
-  int64_t internal_id_for_logging_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcher);
 };

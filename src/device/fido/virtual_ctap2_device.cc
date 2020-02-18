@@ -249,50 +249,40 @@ bool IsMakeCredentialOptionMapFormatCorrect(
     const cbor::Value::MapValue& option_map) {
   return std::all_of(
       option_map.begin(), option_map.end(), [](const auto& param) {
-        if (!param.first.is_string())
-          return false;
-
-        const auto& key = param.first.GetString();
-        return ((key == kResidentKeyMapKey || key == kUserVerificationMapKey) &&
-                param.second.is_bool());
+        return param.first.is_string() &&
+               (param.first.GetString() == kResidentKeyMapKey ||
+                param.first.GetString() == kUserVerificationMapKey) &&
+               param.second.is_bool();
       });
 }
 
 bool AreMakeCredentialRequestMapKeysCorrect(
     const cbor::Value::MapValue& request_map) {
-  return std::all_of(request_map.begin(), request_map.end(),
-                     [](const auto& param) {
-                       if (!param.first.is_integer())
-                         return false;
-
-                       const auto& key = param.first.GetInteger();
-                       return (key <= 9u && key >= 1u);
-                     });
+  return std::all_of(
+      request_map.begin(), request_map.end(), [](const auto& param) {
+        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
+                param.first.GetInteger() <= 9u);
+      });
 }
 
 bool IsGetAssertionOptionMapFormatCorrect(
     const cbor::Value::MapValue& option_map) {
   return std::all_of(
       option_map.begin(), option_map.end(), [](const auto& param) {
-        if (!param.first.is_string())
-          return false;
-
-        const auto& key = param.first.GetString();
-        return (key == kUserPresenceMapKey || key == kUserVerificationMapKey) &&
+        return param.first.is_string() &&
+               (param.first.GetString() == kUserPresenceMapKey ||
+                param.first.GetString() == kUserVerificationMapKey) &&
                param.second.is_bool();
       });
 }
 
 bool AreGetAssertionRequestMapKeysCorrect(
     const cbor::Value::MapValue& request_map) {
-  return std::all_of(request_map.begin(), request_map.end(),
-                     [](const auto& param) {
-                       if (!param.first.is_integer())
-                         return false;
-
-                       const auto& key = param.first.GetInteger();
-                       return (key <= 7u || key >= 1u);
-                     });
+  return std::all_of(
+      request_map.begin(), request_map.end(), [](const auto& param) {
+        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
+                param.first.GetInteger() <= 7u);
+      });
 }
 
 base::Optional<std::vector<uint8_t>> GetPINBytestring(
@@ -525,17 +515,14 @@ VirtualCtap2Device::Config& VirtualCtap2Device::Config::operator=(
     const Config&) = default;
 VirtualCtap2Device::Config::~Config() = default;
 
-VirtualCtap2Device::VirtualCtap2Device()
-    : VirtualFidoDevice(), weak_factory_(this) {
+VirtualCtap2Device::VirtualCtap2Device() : VirtualFidoDevice() {
   device_info_ =
       AuthenticatorGetInfoResponse({ProtocolVersion::kCtap2}, kDeviceAaguid);
 }
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
                                        const Config& config)
-    : VirtualFidoDevice(std::move(state)),
-      config_(config),
-      weak_factory_(this) {
+    : VirtualFidoDevice(std::move(state)), config_(config) {
   std::vector<ProtocolVersion> versions = {ProtocolVersion::kCtap2};
   if (config.u2f_support) {
     versions.emplace_back(ProtocolVersion::kU2f);
@@ -864,6 +851,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
     registration.is_resident = true;
     registration.user = request.user;
+    registration.rp = request.rp;
   }
 
   if (request.cred_protect) {

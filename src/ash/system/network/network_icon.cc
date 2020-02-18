@@ -10,6 +10,7 @@
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/tray/tray_constants.h"
@@ -17,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -135,14 +137,6 @@ bool IsTrayIcon(IconType icon_type) {
          icon_type == ICON_TYPE_TRAY_OOBE;
 }
 
-SkColor GetDefaultColorForIconType(IconType icon_type) {
-  if (icon_type == ICON_TYPE_TRAY_REGULAR)
-    return kTrayIconColor;
-  if (icon_type == ICON_TYPE_TRAY_OOBE)
-    return kOobeTrayIconColor;
-  return kUnifiedMenuIconColor;
-}
-
 bool IconTypeIsDark(IconType icon_type) {
   // Dark icon is used for OOBE tray icon because the background is white.
   return icon_type == ICON_TYPE_TRAY_OOBE;
@@ -231,11 +225,14 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
 gfx::ImageSkia ConnectingVpnImage(double animation) {
   float floored_animation_value =
       std::floor(animation * kNumFadeImages) / kNumFadeImages;
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kLight);
   return gfx::CreateVectorIcon(
       kNetworkVpnIcon,
       gfx::Tween::ColorValueBetween(
           floored_animation_value,
-          SkColorSetA(kMenuIconColor, kConnectingImageAlpha), kMenuIconColor));
+          SkColorSetA(icon_color, kConnectingImageAlpha), icon_color));
 }
 
 int StrengthIndex(int strength) {
@@ -447,6 +444,14 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
 //------------------------------------------------------------------------------
 // Public interface
 
+SkColor GetDefaultColorForIconType(IconType icon_type) {
+  const bool light_icon = icon_type == network_icon::ICON_TYPE_TRAY_OOBE;
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      light_icon ? AshColorProvider::AshColorMode::kLight
+                 : AshColorProvider::AshColorMode::kDark);
+}
+
 const gfx::ImageSkia GetBasicImage(IconType icon_type,
                                    NetworkType network_type,
                                    bool connected) {
@@ -535,17 +540,6 @@ gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
 
 gfx::ImageSkia GetDisconnectedImageForNetworkType(NetworkType network_type) {
   return GetBasicImage(ICON_TYPE_LIST, network_type, false /* connected */);
-}
-
-gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
-                                         SkColor badge_color) {
-  gfx::ImageSkia icon =
-      gfx::CanvasImageSource::MakeImageSkia<SignalStrengthImageSource>(
-          ImageTypeForNetworkType(NetworkType::kWiFi), icon_color,
-          GetSizeForIconType(ICON_TYPE_LIST), kNumNetworkImages - 1);
-  Badges badges;
-  badges.bottom_right = {&kNetworkBadgeAddOtherIcon, badge_color};
-  return CreateNetworkIconImage(icon, badges);
 }
 
 base::string16 GetLabelForNetworkList(const NetworkStateProperties* network) {

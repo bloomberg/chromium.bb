@@ -25,8 +25,16 @@ enum QuicConnectionIdIncluded : uint8_t {
   CONNECTION_ID_ABSENT = 2,
 };
 
-// Connection IDs can be 0-18 bytes per IETF specifications.
-const uint8_t kQuicMaxConnectionIdLength = 18;
+// Maximum connection ID length that we support in any packet or version.
+const uint8_t kQuicMaxConnectionIdAllVersionsLength = 20;
+
+// Maximum connection ID length supported by versions that use the encoding from
+// draft-ietf-quic-invariants-06.
+const uint8_t kQuicMaxConnectionIdWithLengthPrefixLength = 20;
+
+// Maximum connection ID length supported by versions that use the encoding from
+// draft-ietf-quic-invariants-05.
+const uint8_t kQuicMaxConnectionId4BitLength = 18;
 
 // kQuicDefaultConnectionIdLength is the only supported length for QUIC
 // versions < v99, and is the default picked for all versions.
@@ -97,15 +105,12 @@ class QUIC_EXPORT_PRIVATE QuicConnectionId {
   uint8_t length_;  // length of the connection ID, in bytes.
   // The connection ID is represented in network byte order.
   union {
-    // When quic_use_allocated_connection_ids is false, the connection ID is
-    // stored in the first |length_| bytes of |data_|.
-    char data_[kQuicMaxConnectionIdLength];
-    // When quic_use_allocated_connection_ids is true, if the connection ID
-    // fits in |data_short_|, it is stored in the first |length_| bytes of
-    // |data_short_|. Otherwise it is stored in |data_long_| which is
-    // guaranteed to have a size equal to |length_|. A value of 11 was chosen
-    // because our commonly used connection ID length is 8 and with the length,
-    // the class is padded to 12 bytes anyway.
+    // If the connection ID fits in |data_short_|, it is stored in the
+    // first |length_| bytes of |data_short_|.
+    // Otherwise it is stored in |data_long_| which is guaranteed to have a size
+    // equal to |length_|.
+    // A value of 11 was chosen because our commonly used connection ID length
+    // is 8 and with the length, the class is padded to 12 bytes anyway.
     char data_short_[11];
     char* data_long_;
   };

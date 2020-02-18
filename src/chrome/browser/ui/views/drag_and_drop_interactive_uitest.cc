@@ -728,7 +728,7 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     DCHECK(frame);
 
     // Wait until hit testing data is ready.
-    WaitForHitTestDataOrChildSurfaceReady(frame);
+    WaitForHitTestData(frame);
 
     return true;
   }
@@ -747,8 +747,8 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DragAndDropBrowserTest);
 };
 
-#if defined(OS_CHROMEOS)
-// Flaky: https://crbug.com/835774
+#if defined(OS_WIN)
+// Flaky: https://crbug.com/988938
 #define MAYBE_DropTextFromOutside DISABLED_DropTextFromOutside
 #else
 #define MAYBE_DropTextFromOutside DropTextFromOutside
@@ -789,8 +789,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
   }
 }
 
-#if defined(OS_CHROMEOS) || !defined(NDEBUG)
-// Flaky: https://crbug.com/835774
+#if !defined(NDEBUG) || defined(OS_WIN)
+// Flaky: https://crbug.com/988938
 #define MAYBE_DragStartInFrame DISABLED_DragStartInFrame
 #else
 #define MAYBE_DragStartInFrame DragStartInFrame
@@ -860,8 +860,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DragStartInFrame) {
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
 #define MAYBE_DragImageBetweenFrames DISABLED_DragImageBetweenFrames
-#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
-// Flakiness on CrOS tracked by https://crbug.com/835573.
+#elif defined(OS_LINUX)
 #define MAYBE_DragImageBetweenFrames DISABLED_DragImageBetweenFrames
 #else
 #define MAYBE_DragImageBetweenFrames DragImageBetweenFrames
@@ -1079,10 +1078,6 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
 // a drag-and-drop loop run by Windows OS.
 #define MAYBE_DragImageFromDisappearingFrame \
   DISABLED_DragImageFromDisappearingFrame
-#elif defined(OS_CHROMEOS)
-// Flakiness on CrOS tracked by https://crbug.com/835572.
-#define MAYBE_DragImageFromDisappearingFrame \
-  DISABLED_DragImageFromDisappearingFrame
 #else
 #define MAYBE_DragImageFromDisappearingFrame DragImageFromDisappearingFrame
 #endif
@@ -1197,9 +1192,6 @@ void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step3(
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
 #if defined(OS_WIN)
-#define MAYBE_CrossSiteDrag DISABLED_CrossSiteDrag
-#elif defined(OS_CHROMEOS)
-// Flaky: https://crbug.com/835774
 #define MAYBE_CrossSiteDrag DISABLED_CrossSiteDrag
 #else
 #define MAYBE_CrossSiteDrag CrossSiteDrag

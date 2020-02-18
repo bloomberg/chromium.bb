@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -46,8 +47,21 @@ Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params =
       GetDialogWidgetInitParams(delegate, context, parent, gfx::Rect());
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
+}
+
+// static
+bool DialogDelegate::CanSupportCustomFrame(gfx::NativeView parent) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The new style doesn't support unparented dialogs on Linux desktop.
+  return parent != nullptr;
+#elif defined(OS_WIN)
+  // The new style doesn't support unparented dialogs on Windows Classic themes.
+  if (!ui::win::IsAeroGlassEnabled())
+    return parent != nullptr;
+#endif
+  return true;
 }
 
 // static
@@ -61,15 +75,8 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   params.bounds = bounds;
   DialogDelegate* dialog = delegate->AsDialogDelegate();
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // The new style doesn't support unparented dialogs on Linux desktop.
   if (dialog)
-    dialog->supports_custom_frame_ &= parent != nullptr;
-#elif defined(OS_WIN)
-  // The new style doesn't support unparented dialogs on Windows Classic themes.
-  if (dialog && !ui::win::IsAeroGlassEnabled())
-    dialog->supports_custom_frame_ &= parent != nullptr;
-#endif
+    dialog->supports_custom_frame_ &= CanSupportCustomFrame(parent);
 
   if (!dialog || dialog->ShouldUseCustomFrame()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;

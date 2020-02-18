@@ -22,7 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -506,7 +506,7 @@ class SyncerTest : public testing::Test,
   }
 
   Cryptographer* GetCryptographer(syncable::BaseTransaction* trans) {
-    return directory()->GetCryptographer(trans);
+    return test_user_share_.GetCryptographer(trans);
   }
 
   // Configures SyncCycleContext and NudgeTracker so Syncer won't call
@@ -519,7 +519,7 @@ class SyncerTest : public testing::Test,
     ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.

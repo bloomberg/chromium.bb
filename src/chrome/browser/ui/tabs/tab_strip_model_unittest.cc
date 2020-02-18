@@ -30,11 +30,12 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using content::WebContents;
 
@@ -200,6 +201,15 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     states_.push_back(s);
   }
 
+  struct TabGroupVisualDataUpdate {
+    TabGroupId group;
+    TabGroupVisualData visual_data;
+  };
+
+  const std::vector<TabGroupVisualDataUpdate>& visual_data_updates() const {
+    return visual_data_updates_;
+  }
+
   // TabStripModelObserver overrides:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -258,6 +268,14 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     }
   }
 
+  void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data) override {
+    visual_data_updates_.push_back(
+        TabGroupVisualDataUpdate{group, *visual_data});
+  }
+
   void TabChangedAt(WebContents* contents,
                     int index,
                     TabChangeType change_type) override {
@@ -287,6 +305,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
  private:
   std::vector<State> states_;
+  std::vector<TabGroupVisualDataUpdate> visual_data_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
@@ -379,7 +398,7 @@ class TabStripModelTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   const std::unique_ptr<TestingProfile> profile_;
 
@@ -1092,68 +1111,6 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
 }
 
 // Tests IsContextMenuCommandEnabled and ExecuteContextMenuCommand with
-// CommandCloseTabs.
-TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
-  TestTabStripModelDelegate delegate;
-  TabStripModel tabstrip(&delegate, profile());
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Create three tabs, select two tabs, CommandCloseOtherTabs should be enabled
-  // and close two tabs.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1"));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      0, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Select two tabs, CommandCloseOtherTabs should be enabled and invoking it
-  // with a non-selected index should close the two other tabs.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1"));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      2, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Select all, CommandCloseOtherTabs should not be enabled.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1 2"));
-  EXPECT_FALSE(tabstrip.IsContextMenuCommandEnabled(
-      2, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Three tabs, pin one, select the two non-pinned.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 1, "1 2"));
-  EXPECT_FALSE(tabstrip.IsContextMenuCommandEnabled(
-      1, TabStripModel::CommandCloseOtherTabs));
-  // If we don't pass in the pinned index, the command should be enabled.
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      0, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // 3 tabs, one pinned.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 1, "1"));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      1, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      0, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.ExecuteContextMenuCommand(1, TabStripModel::CommandCloseOtherTabs);
-  // The pinned tab shouldn't be closed.
-  EXPECT_EQ("0p 1", GetTabStripStateString(tabstrip));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-}
-
-// Tests IsContextMenuCommandEnabled and ExecuteContextMenuCommand with
 // CommandCloseTabsToRight.
 TEST_F(TabStripModelTest, CommandCloseTabsToRight) {
   TestTabStripModelDelegate delegate;
@@ -1209,7 +1166,6 @@ TEST_F(TabStripModelTest, CommandTogglePinned) {
 
 // Tests the following context menu commands:
 //  - Close Tab
-//  - Close Other Tabs
 //  - Close Tabs To Right
 TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   TestTabStripModelDelegate delegate;
@@ -1234,26 +1190,6 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTabsToRight);
   EXPECT_EQ(1, tabstrip.count());
   EXPECT_EQ(raw_opener, tabstrip.GetActiveWebContents());
-
-  std::unique_ptr<WebContents> dummy = CreateWebContents();
-  WebContents* raw_dummy = dummy.get();
-  tabstrip.AppendWebContents(std::move(dummy), false);
-
-  contents1 = CreateWebContents();
-  contents2 = CreateWebContents();
-  contents3 = CreateWebContents();
-  InsertWebContentses(&tabstrip, std::move(contents1), std::move(contents2),
-                      std::move(contents3));
-  EXPECT_EQ(5, tabstrip.count());
-
-  int dummy_index = tabstrip.count() - 1;
-  tabstrip.ActivateTabAt(dummy_index, {TabStripModel::GestureType::kOther});
-  EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
-
-  tabstrip.ExecuteContextMenuCommand(dummy_index,
-                                     TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ(1, tabstrip.count());
-  EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -1285,11 +1221,6 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
   EXPECT_EQ("4 3 2",
             indicesClosedAsString(1, TabStripModel::CommandCloseTabsToRight));
 
-  EXPECT_EQ("4 3 2 1",
-            indicesClosedAsString(0, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_EQ("4 3 2 0",
-            indicesClosedAsString(1, TabStripModel::CommandCloseOtherTabs));
-
   // Pin the first two tabs. Pinned tabs shouldn't be closed by the close other
   // commands.
   tabstrip.SetTabPinned(0, true);
@@ -1299,11 +1230,6 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
             indicesClosedAsString(0, TabStripModel::CommandCloseTabsToRight));
   EXPECT_EQ("4 3",
             indicesClosedAsString(2, TabStripModel::CommandCloseTabsToRight));
-
-  EXPECT_EQ("4 3 2",
-            indicesClosedAsString(0, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_EQ("4 3",
-            indicesClosedAsString(2, TabStripModel::CommandCloseOtherTabs));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -3380,4 +3306,53 @@ TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooLow) {
   EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, SetVisualDataForGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 1);
+  const TabGroupId group = strip.AddToNewGroup({0});
+
+  const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
+  strip.SetVisualDataForGroup(group, new_data);
+  const TabGroupVisualData* data = strip.GetVisualDataForGroup(group);
+  EXPECT_EQ(data->title(), new_data.title());
+  EXPECT_EQ(data->color(), new_data.color());
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, VisualDataChangeNotifiesObservers) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer;
+  strip.AddObserver(&observer);
+  PrepareTabs(&strip, 1);
+  const TabGroupId group = strip.AddToNewGroup({0});
+
+  // Check that we are notified about the placeholder TabGroupVisualData.
+  ASSERT_EQ(1u, observer.visual_data_updates().size());
+  EXPECT_EQ(group, observer.visual_data_updates()[0].group);
+
+  const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorBLUE);
+  strip.SetVisualDataForGroup(group, new_data);
+
+  // Now check that we are notified when we change it.
+  ASSERT_EQ(2u, observer.visual_data_updates().size());
+  EXPECT_EQ(group, observer.visual_data_updates()[1].group);
+  EXPECT_EQ(new_data.title(),
+            observer.visual_data_updates()[1].visual_data.title());
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, ObserverCanBeDestroyedEarly) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+
+  {
+    MockTabStripModelObserver observer;
+    strip.AddObserver(&observer);
+  }
 }

@@ -35,7 +35,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/net_buildflags.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -49,7 +48,7 @@
 using content::BrowserThread;
 
 OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
-    : io_data_(new OffTheRecordProfileIOData(profile->GetProfileType())),
+    : io_data_(new OffTheRecordProfileIOData),
       profile_(profile),
       initialized_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -87,23 +86,11 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  io_data_->safe_browsing_whitelist_domains()->Init(
-      prefs::kSafeBrowsingWhitelistDomains, profile_->GetPrefs());
-  io_data_->safe_browsing_whitelist_domains()->MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-#if BUILDFLAG(ENABLE_PLUGINS)
-  io_data_->always_open_pdf_externally()->Init(
-      prefs::kPluginsAlwaysOpenPdfExternally, profile_->GetPrefs());
-  io_data_->always_open_pdf_externally()->MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-#endif
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   io_data_->InitializeOnUIThread(profile_);
 }
 
-OffTheRecordProfileIOData::OffTheRecordProfileIOData(
-    Profile::ProfileType profile_type)
-    : ProfileIOData(profile_type) {}
+OffTheRecordProfileIOData::OffTheRecordProfileIOData() = default;
 
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
   DestroyResourceContext();

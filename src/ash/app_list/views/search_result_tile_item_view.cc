@@ -82,8 +82,7 @@ SearchResultTileItemView::SearchResultTileItemView(
           app_list_features::IsPlayStoreAppSearchEnabled()),
       is_app_reinstall_recommendation_enabled_(
           app_list_features::IsAppReinstallZeroStateEnabled()),
-      show_in_apps_page_(show_in_apps_page),
-      weak_ptr_factory_(this) {
+      show_in_apps_page_(show_in_apps_page) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // When |result_| is null, the tile is invisible. Calling SetSearchResult with
@@ -531,9 +530,9 @@ void SearchResultTileItemView::Layout() {
 
   if (IsSuggestedAppTileShownInAppPage()) {
     icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
-        rect, icon_->GetImage().size()));
+        AppListConfig::instance(), rect, icon_->GetImage().size()));
     title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
-        rect, title_->GetPreferredSize()));
+        AppListConfig::instance(), rect, title_->GetPreferredSize()));
   } else {
     gfx::Rect icon_rect(rect);
     icon_rect.ClampToCenteredSize(icon_->GetImage().size());

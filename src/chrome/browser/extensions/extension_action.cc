@@ -214,6 +214,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   title_.erase(tab_id);
   icon_.erase(tab_id);
   badge_text_.erase(tab_id);
+  dnr_action_count_.erase(tab_id);
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);
   is_visible_.erase(tab_id);
@@ -251,6 +252,18 @@ gfx::Image ExtensionAction::GetPlaceholderIconImage() const {
   return placeholder_icon_image_;
 }
 
+std::string ExtensionAction::GetDisplayBadgeText(int tab_id) const {
+  return UseDNRActionCountAsBadgeText(tab_id)
+             ? base::NumberToString(GetDNRActionCount(tab_id))
+             : GetExplicitlySetBadgeText(tab_id);
+}
+
+bool ExtensionAction::UseDNRActionCountAsBadgeText(int tab_id) const {
+  // Tab specific badge text set by an extension overrides the automatically set
+  // action count.
+  return !HasBadgeText(tab_id) && HasDNRActionCount(tab_id);
+}
+
 bool ExtensionAction::HasPopupUrl(int tab_id) const {
   return HasValue(popup_url_, tab_id);
 }
@@ -277,6 +290,10 @@ bool ExtensionAction::HasIsVisible(int tab_id) const {
 
 bool ExtensionAction::HasIcon(int tab_id) const {
   return HasValue(icon_, tab_id);
+}
+
+bool ExtensionAction::HasDNRActionCount(int tab_id) const {
+  return HasValue(dnr_action_count_, tab_id);
 }
 
 void ExtensionAction::SetDefaultIconForTest(

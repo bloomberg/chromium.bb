@@ -9,7 +9,8 @@ from telemetry.util import js_template
 from contrib.media_router_benchmarks.media_router_base_page import MediaRouterBasePage
 
 
-SESSION_TIME = 300  # 5 minutes
+SESSION_WAIT_TIME = 300  # 5 minutes
+WAIT_TIME_SEC = 10
 
 class SharedState(shared_page_state.SharedPageState):
   """Shared state that restarts the browser for every single story."""
@@ -26,19 +27,19 @@ class SharedState(shared_page_state.SharedPageState):
 class CastIdlePage(MediaRouterBasePage):
   """Cast page to open a cast-enabled page and do nothing."""
 
-  def __init__(self, page_set):
+  def __init__(self, page_set, name='basic_test.html'):
     super(CastIdlePage, self).__init__(
         page_set=page_set,
         url='file://test_site/basic_test.html',
         shared_page_state_class=SharedState,
-        name='basic_test.html')
+        name=name)
 
   def RunPageInteractions(self, action_runner):
     # Wait for 5s after Chrome is opened in order to get consistent results.
     action_runner.Wait(5)
     with action_runner.CreateInteraction('Idle'):
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(SESSION_TIME)
+      action_runner.Wait(SESSION_WAIT_TIME)
 
 
 class CastFlingingPage(MediaRouterBasePage):
@@ -76,11 +77,12 @@ class CastFlingingPage(MediaRouterBasePage):
 
       # Start session
       action_runner.TapElement(selector='#start_session_button')
+      action_runner.Wait(WAIT_TIME_SEC)
       self._WaitForResult(
         action_runner,
         lambda: action_runner.EvaluateJavaScript('currentSession'),
          'Failed to start session',
-         timeout=10)
+         timeout=WAIT_TIME_SEC)
 
       # Load Media
       self.ExecuteAsyncJavaScript(
@@ -93,7 +95,7 @@ class CastFlingingPage(MediaRouterBasePage):
 
       action_runner.Wait(5)
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(SESSION_TIME)
+      action_runner.Wait(SESSION_WAIT_TIME)
       # Stop session
       self.ExecuteAsyncJavaScript(
           action_runner,
@@ -130,13 +132,14 @@ class CastMirroringPage(MediaRouterBasePage):
               sink_name, str(action_runner.tab.GetCastSinks())))
 
       # Start session
+      action_runner.Wait(WAIT_TIME_SEC)
       action_runner.tab.StartTabMirroring(sink_name)
 
       # Make sure the route is created.
       if action_runner.tab.GetCastIssue():
         raise RuntimeError(action_runner.tab.GetCastIssue())
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(SESSION_TIME)
+      action_runner.Wait(SESSION_WAIT_TIME)
       action_runner.tab.StopCasting(sink_name)
 
 
@@ -157,4 +160,4 @@ class CPUMemoryPageSet(story.StorySet):
   def __init__(self):
     super(CPUMemoryPageSet, self).__init__(
         cloud_storage_bucket=story.PARTNER_BUCKET)
-    self.AddStory(CastIdlePage(self))
+    self.AddStory(CastIdlePage(self, 'basic_test.html#no_component_extension'))

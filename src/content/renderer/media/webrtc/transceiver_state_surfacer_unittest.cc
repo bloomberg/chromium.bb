@@ -12,13 +12,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -209,13 +209,13 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
                 receiver_state->webrtc_dtls_transport_information().state());
     }
     // Inspect transceiver states.
-    EXPECT_TRUE(
-        OptionalEquals(transceiver_state.mid(), webrtc_transceiver->mid()));
+    EXPECT_TRUE(blink::OptionalEquals(transceiver_state.mid(),
+                                      webrtc_transceiver->mid()));
     EXPECT_EQ(transceiver_state.stopped(), webrtc_transceiver->stopped());
     EXPECT_TRUE(transceiver_state.direction() ==
                 webrtc_transceiver->direction());
-    EXPECT_TRUE(OptionalEquals(transceiver_state.current_direction(),
-                               webrtc_transceiver->current_direction()));
+    EXPECT_TRUE(blink::OptionalEquals(transceiver_state.current_direction(),
+                                      webrtc_transceiver->current_direction()));
   }
 
  private:
@@ -270,7 +270,7 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
     run_loop->Quit();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  protected:
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;

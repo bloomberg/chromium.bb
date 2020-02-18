@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/common/volume_mounter.mojom.h"
+#include "components/arc/mojom/volume_mounter.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -55,29 +55,20 @@ class ArcVolumeMounterBridge
   // mojom::VolumeMounterHost overrides:
   void RequestAllMountPoints() override;
 
-  bool files_app_toast_shown() const { return files_app_toast_shown_; }
-  void set_files_app_toast_shown(bool files_app_toast_shown) {
-    files_app_toast_shown_ = files_app_toast_shown;
-  }
-
  private:
   void SendAllMountEvents();
 
   void SendMountEventForMyFiles();
 
-  bool HasAccessToRemovableMedia() const;
-  void OnPrefChanged();
+  bool IsVisibleToAndroidApps(const std::string& uuid) const;
+  void OnVisibleStoragesChanged();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   PrefService* const pref_service_;
   PrefChangeRegistrar change_registerar_;
 
-  // A flag to remember if the ARC toast UI in Files.app has been shown in the
-  // current user session.
-  bool files_app_toast_shown_ = false;
-
-  base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcVolumeMounterBridge);
 };

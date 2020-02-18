@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017 The ANGLE Project Authors. All rights reserved.
+// Copyright 2017 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -248,7 +248,8 @@ class UniformBlockEncodingVisitor : public sh::VariableNameVisitor
     void visitNamedVariable(const sh::ShaderVariable &variable,
                             bool isRowMajor,
                             const std::string &name,
-                            const std::string &mappedName) override
+                            const std::string &mappedName,
+                            const std::vector<unsigned int> &arraySizes) override
     {
         // If getBlockMemberInfo returns false, the variable is optimized out.
         sh::BlockMemberInfo variableInfo;
@@ -308,7 +309,8 @@ class ShaderStorageBlockVisitor : public sh::BlockEncoderVisitor
     void visitNamedVariable(const sh::ShaderVariable &variable,
                             bool isRowMajor,
                             const std::string &name,
-                            const std::string &mappedName) override
+                            const std::string &mappedName,
+                            const std::vector<unsigned int> &arraySizes) override
     {
         if (mSkipEnabled)
             return;
@@ -397,15 +399,17 @@ class FlattenUniformVisitor : public sh::VariableNameVisitor
 
     void visitNamedSampler(const sh::ShaderVariable &sampler,
                            const std::string &name,
-                           const std::string &mappedName) override
+                           const std::string &mappedName,
+                           const std::vector<unsigned int> &arraySizes) override
     {
-        visitNamedVariable(sampler, false, name, mappedName);
+        visitNamedVariable(sampler, false, name, mappedName, arraySizes);
     }
 
     void visitNamedVariable(const sh::ShaderVariable &variable,
                             bool isRowMajor,
                             const std::string &name,
-                            const std::string &mappedName) override
+                            const std::string &mappedName,
+                            const std::vector<unsigned int> &arraySizes) override
     {
         bool isSampler                          = IsSamplerType(variable.type);
         bool isImage                            = IsImageType(variable.type);
@@ -468,6 +472,7 @@ class FlattenUniformVisitor : public sh::VariableNameVisitor
             linkedUniform.mappedName = fullMappedNameWithArrayIndex;
             linkedUniform.active     = mMarkActive;
             linkedUniform.staticUse  = mMarkStaticUse;
+            linkedUniform.outerArraySizes = arraySizes;
             if (variable.hasParentArrayIndex())
             {
                 linkedUniform.setParentArrayIndex(variable.parentArrayIndex());
@@ -1320,7 +1325,8 @@ void ProgramLinkedResourcesLinker::getAtomicCounterBufferSizeMap(
         // uniform and adding size of the uniform. For arrays, the size is the number of elements
         // times the element size (should always by 4 for atomic_units).
         unsigned dataOffset =
-            glUniform.offset + (glUniform.getBasicTypeElementCount() * glUniform.getElementSize());
+            glUniform.offset + static_cast<unsigned int>(glUniform.getBasicTypeElementCount() *
+                                                         glUniform.getElementSize());
         if (dataOffset > bufferDataSize)
         {
             bufferDataSize = dataOffset;

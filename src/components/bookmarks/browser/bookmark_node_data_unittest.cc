@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -27,8 +27,7 @@ namespace bookmarks {
 class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     model_ = TestBookmarkClient::CreateModel();
@@ -56,7 +55,7 @@ class BookmarkNodeDataTest : public testing::Test {
  private:
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<BookmarkModel> model_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);
 };
@@ -289,7 +288,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
   EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
 }
 
@@ -319,7 +318,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
   combined_text = base::UTF8ToUTF16(url.spec()) + new_line
     + base::UTF8ToUTF16(url2.spec());
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
@@ -335,7 +334,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardEmptyFolder) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
@@ -354,7 +353,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderWithChildren) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
@@ -382,7 +381,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderAndURL) {
   base::string16 folder_title = ASCIIToUTF16("g1");
   combined_text = base::ASCIIToUTF16(url.spec()) + new_line + folder_title;
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
   EXPECT_EQ(combined_text, clipboard_result);
 }
 

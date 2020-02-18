@@ -10,10 +10,11 @@ from __future__ import print_function
 import contextlib
 import functools
 import datetime
-import mock
 import numbers
 import os
 import string
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -994,7 +995,7 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
 
   def testRetrySSLTimeout(self):
     """Verify retry behavior when read operation timed out."""
-    error = 'ssl.SSLError: (\'The read operation timed out\',)'
+    error = "ssl.SSLError: ('The read operation timed out',)"
     e = self._getException(['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH],
                            error)
     self.assertEqual(self.ctx._RetryFilter(e), True)

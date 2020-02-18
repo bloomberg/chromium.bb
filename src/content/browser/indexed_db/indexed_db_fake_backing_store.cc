@@ -4,9 +4,12 @@
 
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 
 namespace content {
 namespace {
@@ -37,7 +40,8 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
 leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
-    const base::string16& name) {
+    const base::string16& name,
+    TransactionalLevelDBTransaction* transaction) {
   return leveldb::Status::OK();
 }
 
@@ -154,12 +158,13 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
 
 IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
     leveldb::Status result)
-    : IndexedDBBackingStore::Transaction(nullptr), result_(result) {}
-void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
+    : IndexedDBBackingStore::Transaction(nullptr, true), result_(result) {}
+void IndexedDBFakeBackingStore::FakeTransaction::Begin(
+    std::vector<ScopeLock> locks) {}
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
     BlobWriteCallback callback) {
   return std::move(callback).Run(
-      IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC);
+      IndexedDBBackingStore::BlobWriteResult::kRunPhaseTwoAndReturnResult);
 }
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
   return result_;
@@ -167,6 +172,13 @@ leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
 uint64_t IndexedDBFakeBackingStore::FakeTransaction::GetTransactionSize() {
   return 0;
 }
-void IndexedDBFakeBackingStore::FakeTransaction::Rollback() {}
+leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::Rollback() {
+  return leveldb::Status::OK();
+}
+
+std::unique_ptr<IndexedDBBackingStore::Transaction>
+IndexedDBFakeBackingStore::CreateTransaction(bool relaxed_durability) {
+  return std::make_unique<FakeTransaction>(leveldb::Status::OK());
+}
 
 }  // namespace content

@@ -86,7 +86,6 @@
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_preferences.h"
-#include "third_party/angle/src/image_util/loadimage.h"
 #include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -117,7 +116,14 @@
 #include <IOSurface/IOSurface.h>
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
-#endif
+#endif  // OS_MACOSX
+
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
+#endif  // OS_WIN
+
+// Note: this undefs far and near so include this after other Windows headers.
+#include "third_party/angle/src/image_util/loadimage.h"
 
 namespace gpu {
 namespace gles2 {
@@ -1204,8 +1210,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoFlushMappedBufferRange(
       GLenum target, GLintptr offset, GLsizeiptr size);
 
-  void DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                 GLuint uv_texture_id,
+  void DoScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                 GLuint texture_1,
                                  GLint z_order,
                                  GLint content_x,
                                  GLint content_y,
@@ -4226,7 +4232,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
-
+#if defined(OS_WIN)
+  caps.shared_image_swap_chain =
+      SharedImageBackingFactoryD3D::IsSwapChainSupported();
+#endif  // OS_WIN
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
   caps.blend_equation_advanced_coherent =
@@ -7562,6 +7571,14 @@ bool GLES2DecoderImpl::GetHelper(
         Sampler* sampler =
             state_.sampler_units[state_.active_texture_unit].get();
         *params = sampler ? sampler->client_id() : 0;
+
+#if DCHECK_IS_ON()
+        if (sampler) {
+          GLint bound_sampler = 0;
+          glGetIntegerv(GL_SAMPLER_BINDING, &bound_sampler);
+          DCHECK_EQ(static_cast<GLuint>(bound_sampler), sampler->service_id());
+        }
+#endif
       }
       return true;
     case GL_TRANSFORM_FEEDBACK_BINDING:
@@ -8244,19 +8261,12 @@ void GLES2DecoderImpl::DoFramebufferParameteri(GLenum target,
                                                GLenum pname,
                                                GLint param) {
   const char* func_name = "glFramebufferParameteri";
-  DCHECK(pname == GL_FRAMEBUFFER_FLIP_Y_MESA);
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no framebuffer bound");
     return;
   }
-  if (param != GL_TRUE && param != GL_FALSE) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
-                       "invalid parameter, only GL_TRUE or GL_FALSE accepted");
-    return;
-  }
   api()->glFramebufferParameteriFn(target, pname, param);
-  framebuffer->SetFlipY(param == GL_TRUE);
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
@@ -17383,6 +17393,8 @@ error::Error GLES2DecoderImpl::HandleQueryCounterEXT(
   uint32_t submit_count = static_cast<GLuint>(c.submit_count);
 
   switch (target) {
+    case GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM:
+      break;
     case GL_TIMESTAMP:
       if (!query_manager_->GPUTimingAvailable()) {
         LOCAL_SET_GL_ERROR(
@@ -18059,6 +18071,12 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
   }
 #endif
 
+  // Use DRAW instead of COPY if the workaround is enabled.
+  if (method == CopyTextureMethod::DIRECT_COPY &&
+      workarounds().prefer_draw_to_copy) {
+    method = CopyTextureMethod::DIRECT_DRAW;
+  }
+
   copy_texture_chromium_->DoCopySubTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
@@ -18530,7 +18548,13 @@ void GLES2DecoderImpl::DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
     return;
   }
 
-  if (!shared_image->BeginAccess(mode)) {
+  if (texture_ref->shared_image_scoped_access()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
+                       "shared image is being accessed");
+    return;
+  }
+
+  if (!texture_ref->BeginAccessSharedImage(mode)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
                        "Unable to begin access");
     return;
@@ -18553,7 +18577,13 @@ void GLES2DecoderImpl::DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id) {
     return;
   }
 
-  shared_image->EndAccess();
+  if (!texture_ref->shared_image_scoped_access()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoEndSharedImageAccessCHROMIUM",
+                       "shared image is not being accessed");
+    return;
+  }
+
+  texture_ref->EndAccessSharedImage();
 }
 
 void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
@@ -19384,8 +19414,8 @@ void GLES2DecoderImpl::DoFlushMappedBufferRange(
   api()->glFlushMappedBufferRangeFn(target, offset, size);
 }
 
-void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
-                                                 GLuint uv_texture_id,
+void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint texture_0,
+                                                 GLuint texture_1,
                                                  GLint z_order,
                                                  GLint content_x,
                                                  GLint content_y,
@@ -19414,35 +19444,33 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
     return;
   }
 
-  GLuint texture_ids[] = {y_texture_id, uv_texture_id};
-  scoped_refptr<gl::GLImage> images[2];
+  if (!texture_0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                       "invalid texture");
+    return;
+  }
+
+  ui::DCRendererLayerParams params;
+  GLuint texture_ids[] = {texture_0, texture_1};
   size_t i = 0;
-  for (auto& texture_id : texture_ids) {
-    if (!texture_id) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
-                         "invalid texture");
-      return;
-    }
+  for (GLuint texture_id : texture_ids) {
+    if (!texture_id)
+      break;
     TextureRef* ref = texture_manager()->GetTexture(texture_id);
     if (!ref) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
                          "unknown texture");
       return;
     }
-    Texture::ImageState image_state;
-    gl::GLImage* image = ref->texture()->GetLevelImage(ref->texture()->target(),
-                                                       0, &image_state);
+    gl::GLImage* image =
+        ref->texture()->GetLevelImage(ref->texture()->target(), 0);
     if (!image) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
                          "unsupported texture format");
       return;
     }
-    images[i++] = scoped_refptr<gl::GLImage>(image);
+    params.images[i++] = scoped_refptr<gl::GLImage>(image);
   }
-
-  ui::DCRendererLayerParams params;
-  params.y_image = std::move(images[0]);
-  params.uv_image = std::move(images[1]);
   params.z_order = z_order;
   params.content_rect =
       gfx::Rect(content_x, content_y, content_width, content_height);

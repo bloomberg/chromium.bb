@@ -9,6 +9,7 @@ This module implements the concept of an operation, which has regular progress
 updates, verbose text display and perhaps some errors.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import collections
@@ -17,17 +18,12 @@ import fcntl
 import multiprocessing
 import os
 import pty
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 import re
 import struct
 import sys
 import termios
+
+from six.moves import queue as Queue
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -294,7 +290,7 @@ class ParallelEmergeOperation(ProgressBarOperation):
       self._printed_no_packages = True
 
     if self._total:
-      progress = float(self._completed) / self._total
+      progress = self._completed / self._total
       self.ProgressBar(progress)
       return progress
     else:

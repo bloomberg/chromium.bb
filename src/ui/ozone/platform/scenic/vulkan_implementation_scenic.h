@@ -10,7 +10,7 @@
 
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_host.mojom.h"
 
 namespace ui {
 
@@ -20,7 +20,9 @@ class SysmemBufferManager;
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
   VulkanImplementationScenic(ScenicSurfaceFactory* scenic_surface_factory,
-                             SysmemBufferManager* sysmem_buffer_manager);
+                             SysmemBufferManager* sysmem_buffer_manager,
+                             bool allow_protected_memory,
+                             bool enforce_protected_memory);
   ~VulkanImplementationScenic() override;
 
   // VulkanImplementation:
@@ -52,16 +54,18 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
       VkImage* vk_image,
       VkImageCreateInfo* vk_image_info,
       VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size) override;
+      VkDeviceSize* mem_allocation_size,
+      base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) override;
+  std::unique_ptr<gpu::SysmemBufferCollection> RegisterSysmemBufferCollection(
+      VkDevice device,
+      gfx::SysmemBufferCollectionId id,
+      zx::channel token) override;
 
  private:
   ScenicSurfaceFactory* const scenic_surface_factory_;
   SysmemBufferManager* const sysmem_buffer_manager_;
 
   gpu::VulkanInstance vulkan_instance_;
-
-  PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIA_ =
-      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationScenic);
 };

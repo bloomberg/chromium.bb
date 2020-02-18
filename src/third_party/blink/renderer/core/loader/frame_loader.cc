@@ -41,6 +41,7 @@
 
 #include "base/auto_reset.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
@@ -61,6 +62,7 @@
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -156,11 +158,9 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // header and instead use a separate member. See https://crbug.com/850813.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
     request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-                                frame_->GetDocument()->GetReferrerPolicy(),
-                                frame_->GetDocument()->Url(),
-                                frame_->GetDocument()->OutgoingReferrer()),
-                            ResourceRequest::SetHttpReferrerLocation::
-                                kFrameLoaderResourceRequestForReload);
+        frame_->GetDocument()->GetReferrerPolicy(),
+        frame_->GetDocument()->Url(),
+        frame_->GetDocument()->OutgoingReferrer()));
   }
 
   request.SetSkipServiceWorker(frame_load_type ==
@@ -364,7 +364,7 @@ void FrameLoader::FinishedParsing() {
 // TODO(dgozman): we are calling this method too often, hoping that it
 // does not do anything when navigation is in progress, or when loading
 // has finished already. We should call it at the right times.
-void FrameLoader::DidFinishNavigation() {
+void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
   // We should have either finished the provisional or committed navigation if
   // this is called. Only delcare the whole frame finished if neither is in
   // progress.
@@ -385,7 +385,7 @@ void FrameLoader::DidFinishNavigation() {
     RestoreScrollPositionAndViewState();
     if (document_loader_)
       document_loader_->SetLoadType(WebFrameLoadType::kStandard);
-    frame_->FinishedLoading();
+    frame_->FinishedLoading(state);
   }
 
   // When a subframe finishes loading, the parent should check if *all*
@@ -672,14 +672,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);
 
-  mojom::blink::NavigationInitiatorPtr navigation_initiator;
+  mojo::PendingRemote<mojom::blink::NavigationInitiator> navigation_initiator;
   WebContentSecurityPolicyList initiator_csp;
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
     initiator_csp = origin_document->GetContentSecurityPolicy()
                         ->ExposeForNavigationalChecks();
-    auto mojo_request = mojo::MakeRequest(&navigation_initiator);
-    origin_document->BindNavigationInitiatorRequest(std::move(mojo_request));
+    origin_document->NavigationInitiator().BindReceiver(
+        navigation_initiator.InitWithNewPipeAndPassReceiver());
   }
 
   if (origin_document && origin_document->GetContentSecurityPolicy()) {
@@ -761,6 +761,10 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                     request.ClientRedirectReason());
   }
 
+  const network::mojom::IPAddressSpace initiator_address_space =
+      origin_document ? origin_document->AddressSpace()
+                      : network::mojom::IPAddressSpace::kUnknown;
+
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_document,
       nullptr /* document_loader */, navigation_type,
@@ -770,7 +774,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
       request.HrefTranslate().GetString(), std::move(initiator_csp),
-      std::move(navigation_initiator));
+      initiator_address_space, std::move(navigation_initiator));
 }
 
 static void FillStaticResponseIfNeeded(WebNavigationParams* params,
@@ -788,7 +792,7 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
     // committing navigation.
     String srcdoc;
     HTMLFrameOwnerElement* owner_element = frame->DeprecatedLocalOwner();
-    if (!IsHTMLIFrameElement(owner_element) ||
+    if (!IsA<HTMLIFrameElement>(owner_element) ||
         !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
       // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
       // cleared) - load empty instead.
@@ -852,6 +856,7 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    base::OnceClosure call_before_attaching_new_document,
     bool is_javascript_url) {
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
@@ -895,7 +900,7 @@ void FrameLoader::CommitNavigation(
 
   FillStaticResponseIfNeeded(navigation_params.get(), frame_);
   if (!ShouldNavigate(navigation_params.get(), frame_)) {
-    DidFinishNavigation();
+    DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
     return;
   }
 
@@ -941,6 +946,8 @@ void FrameLoader::CommitNavigation(
     if (!DetachDocument())
       return;
   }
+
+  std::move(call_before_attaching_new_document).Run();
 
   CommitDocumentLoader(provisional_document_loader_.Release());
 
@@ -990,7 +997,7 @@ void FrameLoader::StopAllLoaders() {
     document_loader_->StopLoading();
   DetachDocumentLoader(provisional_document_loader_);
   CancelClientNavigation();
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   TakeObjectSnapshot();
 }
@@ -1214,7 +1221,7 @@ void FrameLoader::Detach() {
   }
   ClearClientNavigation();
   committing_navigation_ = false;
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   if (progress_tracker_) {
     progress_tracker_->Dispose();
@@ -1244,7 +1251,7 @@ bool FrameLoader::MaybeRenderFallbackContent() {
 
   frame_->Owner()->RenderFallbackContent(frame_);
   ClearClientNavigation();
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
   return true;
 }
 
@@ -1369,7 +1376,7 @@ void FrameLoader::DidDropNavigation() {
   // TODO(dgozman): should we ClearClientNavigation instead and not
   // notify the client in response to its own call?
   CancelClientNavigation();
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   // Forcibly instantiate WindowProxy for initial frame document.
   // This is only required when frame navigation is aborted, e.g. due to

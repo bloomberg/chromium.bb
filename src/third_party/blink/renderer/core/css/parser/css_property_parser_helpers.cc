@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -185,6 +186,7 @@ CSSParserTokenRange ConsumeFunction(CSSParserTokenRange& range) {
 
 // TODO(rwlbuis): consider pulling in the parsing logic from
 // CSSCalculationValue.cpp.
+// TODO(xiaochengh): Rename to |MathFunctionParser|.
 class CalcParser {
   STACK_ALLOCATED();
 
@@ -198,6 +200,25 @@ class CalcParser {
       calc_value_ = CSSMathFunctionValue::Create(
           CSSMathExpressionNode::ParseCalc(ConsumeFunction(range_)),
           value_range);
+      return;
+    }
+
+    if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
+      switch (token.FunctionId()) {
+        case CSSValueID::kMin:
+          calc_value_ = CSSMathFunctionValue::Create(
+              CSSMathExpressionNode::ParseMin(ConsumeFunction(range_)),
+              value_range);
+          return;
+        case CSSValueID::kMax:
+          calc_value_ = CSSMathFunctionValue::Create(
+              CSSMathExpressionNode::ParseMax(ConsumeFunction(range_)),
+              value_range);
+          return;
+        default:
+          // TODO(crbug.com/825895): Support clamp() when min()/max() are done.
+          break;
+      }
     }
   }
 
@@ -414,6 +435,17 @@ CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange& range,
   return nullptr;
 }
 
+CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range) {
+  if (CSSPrimitiveValue* value = ConsumeNumber(range, kValueRangeAll)) {
+    return value;
+  }
+  if (CSSPrimitiveValue* value = ConsumePercent(range, kValueRangeAll)) {
+    return CSSNumericLiteralValue::Create(value->GetDoubleValue() / 100.0,
+                                          CSSPrimitiveValue::UnitType::kNumber);
+  }
+  return nullptr;
+}
+
 bool CanConsumeCalcValue(CalculationCategory category,
                          CSSParserMode css_parser_mode) {
   if (category == kCalcLength || category == kCalcPercent ||
@@ -450,14 +482,24 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
 namespace {
 
 bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
-  // TODO(crbug.com/979895): This is the result of a refactoring, which might
-  // have revealed an existing bug in handling user units in math functions. Fix
-  // it if necessary.
-  const auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
-  return numeric_literal &&
-         numeric_literal->GetType() ==
-             CSSPrimitiveValue::UnitType::kUserUnits &&
-         value->GetDoubleValue() != 0;
+  if (!value)
+    return false;
+  if (const auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value)) {
+    return numeric_literal->GetType() ==
+               CSSPrimitiveValue::UnitType::kUserUnits &&
+           value->GetDoubleValue() != 0;
+  }
+  const auto& math_value = To<CSSMathFunctionValue>(*value);
+  switch (math_value.Category()) {
+    case kCalcNumber:
+      return math_value.DoubleValue() != 0;
+    case kCalcPercentNumber:
+    case kCalcLengthNumber:
+    case kCalcPercentLengthNumber:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace
@@ -817,6 +859,23 @@ static bool ParseColorFunction(CSSParserTokenRange& range, RGBA32& result) {
   return true;
 }
 
+static CSSValuePair* ParseLightDarkColor(CSSParserTokenRange& range,
+                                         CSSParserMode mode) {
+  if (range.Peek().FunctionId() != CSSValueID::kInternalLightDarkColor)
+    return nullptr;
+  if (!isValueAllowedInMode(CSSValueID::kInternalLightDarkColor, mode))
+    return nullptr;
+  CSSParserTokenRange args = ConsumeFunction(range);
+  CSSValue* light_color = ConsumeColor(args, kUASheetMode);
+  if (!light_color || !ConsumeCommaIncludingWhitespace(args))
+    return nullptr;
+  CSSValue* dark_color = ConsumeColor(args, kUASheetMode);
+  if (!dark_color || !args.AtEnd())
+    return nullptr;
+  return MakeGarbageCollected<CSSValuePair>(light_color, dark_color,
+                                            CSSValuePair::kKeepIdenticalValues);
+}
+
 CSSValue* ConsumeColor(CSSParserTokenRange& range,
                        CSSParserMode css_parser_mode,
                        bool accept_quirky_colors) {
@@ -824,12 +883,19 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
   if (StyleColor::IsColorKeyword(id)) {
     if (!isValueAllowedInMode(id, css_parser_mode))
       return nullptr;
-    return ConsumeIdent(range);
+    CSSIdentifierValue* color = ConsumeIdent(range);
+    if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
+        (color->GetValueID() == CSSValueID::kLinktext ||
+         color->GetValueID() == CSSValueID::kVisitedtext)) {
+      return nullptr;
+    }
+    return color;
   }
   RGBA32 color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&
-      !ParseColorFunction(range, color))
-    return nullptr;
+      !ParseColorFunction(range, color)) {
+    return ParseLightDarkColor(range, css_parser_mode);
+  }
   return CSSColorValue::Create(color);
 }
 
@@ -1897,6 +1963,11 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
     case CSSPropertyID::kDisplay:
       if (value_id == CSSValueID::kContents)
         context.Count(WebFeature::kCSSValueDisplayContents);
+      break;
+    case CSSPropertyID::kOverflowX:
+    case CSSPropertyID::kOverflowY:
+      if (value_id == CSSValueID::kOverlay)
+        context.Count(WebFeature::kCSSValueOverflowOverlay);
       break;
     default:
       break;

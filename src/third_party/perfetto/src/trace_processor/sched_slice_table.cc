@@ -23,7 +23,7 @@ SchedSliceTable::SchedSliceTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {}
 
 void SchedSliceTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
-  Table::Register<SchedSliceTable>(db, storage, "sched");
+  SqliteTable::Register<SchedSliceTable>(db, storage, "sched");
 }
 
 StorageSchema SchedSliceTable::CreateStorageSchema() {
@@ -202,8 +202,8 @@ StorageColumn::Comparator SchedSliceTable::EndStateColumn::Sort(
   };
 }
 
-Table::ColumnType SchedSliceTable::EndStateColumn::GetType() const {
-  return Table::ColumnType::kString;
+SqlValue::Type SchedSliceTable::EndStateColumn::GetType() const {
+  return SqlValue::Type::kString;
 }
 
 }  // namespace trace_processor

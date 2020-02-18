@@ -135,6 +135,7 @@ template("chrome_extra_paks") {
     } else {
       # New paks should be added here by default.
       sources += [
+        "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
         "$root_gen_dir/chrome/component_extension_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
         "$root_gen_dir/chrome/local_ntp_resources.pak",
@@ -147,6 +148,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:downloads_resources",
         "//chrome/browser/resources:local_ntp_resources",
         "//chrome/browser/resources:settings_resources",
+        "//chrome/browser/resources/bluetooth_internals:resources",
         "//content/browser/devtools:devtools_resources",
         "//headless:resources",
       ]
@@ -174,8 +176,8 @@ template("chrome_extra_paks") {
       ]
     }
     if (!is_android && !is_chromeos) {
-      sources += [ "$root_gen_dir/chrome/onboarding_welcome_resources.pak" ]
-      deps += [ "//chrome/browser/resources:onboarding_welcome_resources" ]
+      sources += [ "$root_gen_dir/chrome/welcome_resources.pak" ]
+      deps += [ "//chrome/browser/resources:welcome_resources" ]
     }
     if (enable_extensions) {
       sources += [
@@ -194,6 +196,10 @@ template("chrome_extra_paks") {
       sources += [ "$root_gen_dir/chrome/print_preview_resources.pak" ]
       deps += [ "//chrome/browser/resources:print_preview_resources" ]
     }
+    if (enable_webui_tab_strip) {
+      sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
+      deps += [ "//chrome/browser/resources:tab_strip_resources" ]
+    }
   }
 }
 
@@ -203,7 +209,7 @@ template("chrome_extra_paks") {
 # * resources.pak
 # * locale .pak files
 #
-# Paramters:
+# Parameters:
 #   output_dir [required]: Directory to output .pak files. Locale .pak files
 #       will always be place in $output_dir/locales
 #   additional_extra_paks: List of extra .pak sources for resources.pak.

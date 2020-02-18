@@ -42,12 +42,16 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AppListPage:
+  void OnShown() override;
+  void OnAnimationStarted(ash::AppListState from_state,
+                          ash::AppListState to_state) override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
@@ -61,8 +65,10 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
       base::Optional<ash::AssistantEntryPoint> entry_point,
       base::Optional<ash::AssistantExitPoint> exit_point) override;
 
+  const AssistantMainView* GetMainViewForTest() const;
+
  private:
-  int GetChildViewPreferredHeight() const;
+  int GetChildViewHeightForWidth(int width) const;
   void MaybeUpdateAppListState(int child_height);
   gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 

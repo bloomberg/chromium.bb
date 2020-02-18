@@ -10,20 +10,13 @@ Chrome's install size smaller.
 
 ## Limitations
 
-Currently (March 2019), DFMs have the following limitations:
+DFMs have the following limitations:
 
 * **WebView:** We don't support DFMs for WebView. If your feature is used by
-  WebView you cannot put it into a DFM. See
-  [crbug/949717](https://bugs.chromium.org/p/chromium/issues/detail?id=949717)
-  for progress.
+  WebView you cannot put it into a DFM.
 * **Android K:** DFMs are based on split APKs, a feature introduced in Android
   L. Therefore, we don't support DFMs on Android K. As a workaround
-  you can add your feature to the Android K APK build. See
-  [crbug/881354](https://bugs.chromium.org/p/chromium/issues/detail?id=881354)
-  for progress.
-* **Native Code:** We cannot move native Chrome code into a DFM. See
-  [crbug/874564](https://bugs.chromium.org/p/chromium/issues/detail?id=874564)
-  for progress.
+  you can add your feature to the Android K APK build. See below for details.
 
 ## Getting started
 
@@ -43,10 +36,11 @@ DFMs are APKs. They have a manifest and can contain Java and native code as well
 as resources. This section walks you through creating the module target in our
 build system.
 
-First, create the file `//chrome/android/features/foo/java/AndroidManifest.xml`
-and add:
+First, create the file
+`//chrome/android/features/foo/internal/java/AndroidManifest.xml` and add:
 
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
     featureSplit="foo">
@@ -57,9 +51,9 @@ and add:
     <dist:module
         dist:onDemand="true"
         dist:title="@string/foo_module_title">
-        <!-- This will prevent the module to become part of the Android K
-             build in case we ever want to use bundles on Android K. -->
-        <dist:fusing dist:include="false" />
+        <!-- This will fuse the module into the base APK if a system image
+             APK is built from this bundle. -->
+        <dist:fusing dist:include="true" />
     </dist:module>
 
     <!-- Remove android:hasCode="false" when adding Java code. -->
@@ -84,7 +78,8 @@ Next, create a descriptor configuring the Foo module. To do this, create
 ```gn
 foo_module_desc = {
   name = "foo"
-  manifest = "//chrome/android/features/foo/java/AndroidManifest.xml"
+  android_manifest =
+      "//chrome/android/features/foo/internal/java/AndroidManifest.xml"
 }
 ```
 
@@ -211,7 +206,7 @@ be defined in their own package name, distinct from the chrome package - i.e.
 ***
 
 Next, define an implementation that goes into the module in the new file
-`//chrome/android/features/foo/java/src/org/chromium/chrome/features/foo/FooImpl.java`:
+`//chrome/android/features/foo/internal/java/src/org/chromium/chrome/features/foo/FooImpl.java`:
 
 ```java
 package org.chromium.chrome.features.foo;
@@ -254,7 +249,7 @@ Then add this list to `chrome_java in //chrome/android/BUILD.gn`:
 
 ```gn
 ...
-import("modules/foo/public/foo_public_java_sources.gni")
+import("//chrome/android/features/foo/public/foo_public_java_sources.gni")
 ...
 android_library("chrome_java") {
   ...
@@ -264,8 +259,8 @@ android_library("chrome_java") {
 ```
 
 The actual implementation, however, should go into the Foo DFM. For this
-purpose, create a new file `//chrome/android/features/foo/BUILD.gn` and make a
-library with the module Java code in it:
+purpose, create a new file `//chrome/android/features/foo/internal/BUILD.gn` and
+make a library with the module Java code in it:
 
 ```gn
 import("//build/config/android/rules.gni")
@@ -295,15 +290,15 @@ Then, add this new library as a dependency of the Foo module descriptor in
 foo_module_desc = {
   ...
   java_deps = [
-    "//chrome/android/features/foo:java",
+    "//chrome/android/features/foo/internal:java",
   ]
 }
 ```
 
 Finally, tell Android that your module is now containing code. Do that by
 removing the `android:hasCode="false"` attribute from the `<application>` tag in
-`//chrome/android/features/foo/java/AndroidManifest.xml`. You should be left
-with an empty tag like so:
+`//chrome/android/features/foo/internal/java/AndroidManifest.xml`. You should be
+left with an empty tag like so:
 
 ```xml
 ...
@@ -316,15 +311,11 @@ flow that tries to executes `bar()`. Depending on whether you installed your
 module (`-m foo`) "`bar in module`" or "`module not installed`" is printed to
 logcat. Yay!
 
+### Adding third-party native code
 
-### Adding native code
-
-Coming soon (
-[crbug/874564](https://bugs.chromium.org/p/chromium/issues/detail?id=874564)).
-
-You can already add third party native code or native Chrome code that has no
-dependency on other Chrome code. To add such code add it as a loadable module to
-the module descriptor in `//chrome/android/features/foo/foo_module.gni`:
+You can add a third-party native library (or any standalone library that doesn't
+depend on Chrome code) by adding it as a loadable module to the module descriptor in
+`//chrome/android/features/foo/foo_module.gni`:
 
 ```gn
 foo_module_desc = {
@@ -334,14 +325,229 @@ foo_module_desc = {
 }
 ```
 
+### Adding Chrome native code
 
-### Adding android resources
+Chrome native code may be placed in a DFM.
+
+A linker-assisted partitioning system automates the placement of code into
+either the main Chrome library or feature-specific .so libraries. Feature code
+may continue to make use of core Chrome code (eg. base::) without modification,
+but Chrome must call feature code through a virtual interface.
+
+Partitioning is explained in [Android Native
+Libraries](android_native_libraries.md#partitioned-libraries).
+
+#### Creating an interface to feature code
+
+One way of creating an interface to a feature library is through an interface
+definition. Feature Foo could define the following in
+`//chrome/android/features/foo/public/foo_interface.h`:
+
+```c++
+class FooInterface {
+ public:
+  virtual ~FooInterface() = default;
+
+  virtual void ProcessInput(const std::string& input) = 0;
+}
+```
+
+Alongside the interface definition, also in
+`//chrome/android/features/foo/public/foo_interface.h`, it's helpful to define a
+factory function type that can be used to create a Foo instance:
+
+```c++
+typedef FooInterface* CreateFooFunction(bool arg1, bool arg2);
+```
+
+<!--- TODO(cjgrant): Add a full, pastable Foo implementation. -->
+The feature library implements class Foo, hiding its implementation within the
+library. The library may then expose a single entrypoint, a Foo factory
+function. Here, C naming is (optionally) used so that the entrypoint symbol
+isn't mangled. In `//chrome/android/features/foo/internal/foo.cc`:
+
+```c++
+extern "C" {
+// This symbol is retrieved from the Foo feature module library via dlsym(),
+// where it's bare address is type-cast to its actual type and executed.
+// The forward declaration here ensures that CreateFoo()'s signature is correct.
+CreateFooFunction CreateFoo;
+
+__attribute__((visibility("default"))) FooInterface* CreateFoo(
+    bool arg1, bool arg2) {
+  return new Foo(arg1, arg2);
+}
+}  // extern "C"
+```
+
+Ideally, the interface to the feature will avoid feature-specific types. If a
+feature defines complex data types, and uses them in its own interface, then its
+likely the main library will utilize the code backing these types. That code,
+and anything it references, will in turn be pulled back into the main library.
+
+Therefore, designing the feature inferface to use C types, C++ standard types,
+or classes that aren't expected to move out of Chrome's main library is ideal.
+If feature-specific classes are needed, they simply need to avoid referencing
+feature library internals.
+
+*** note
+**Note:** To help enforce separation between the feature interface and
+implementation, the interface class is best placed in its own GN target, on
+which the feature and main library code both depend.
+***
+
+#### Marking feature entrypoints
+
+Foo's feature module descriptor needs to pull in the appropriate native GN code
+dependencies, and also indicate the name of the file that lists the entrypoint
+symbols. In `//chrome/android/features/foo/foo_module.gni`:
+
+```gn
+foo_module_desc = {
+  ...
+  native_deps = [ "//chrome/android/features/foo/internal:foo" ]
+  native_entrypoints = "//chrome/android/features/foo/internal/module_entrypoints.lst"
+}
+```
+
+The module entrypoint file is a text file listing symbols. In this example,
+`//chrome/android/features/foo/internal/module_entrypoints.lst` has only a
+single factory function exposed:
+
+```shell
+# This file lists entrypoints exported from the Foo native feature library.
+
+CreateFoo
+```
+
+These symbols will be pulled into a version script for the linker, indicating
+that they should be exported in the dynamic symbol table of the feature library.
+
+*** note
+**Note:** If C++ symbol names are chosen as entrypoints, the full mangled names
+must be listed.
+***
+
+Additionally, it's necessary to map entrypoints to a particular partition. To
+follow compiler/linker convention, this is done at the compiler stage. A cflag
+is applied to source file(s) that may supply entrypoints (it's okay to apply the
+flag to all feature source - the attribute is utilized only on modules that
+export symbols). In `//chrome/android/features/foo/internal/BUILD.gn`:
+
+```gn
+static_library("foo") {
+  sources = [
+    ...
+  ]
+
+  # Mark symbols in this target as belonging to the Foo library partition. Only
+  # exported symbols (entrypoints) are affected, and only if this build supports
+  # native modules.
+  if (use_native_modules) {
+    cflags = [ "-fsymbol-partition=libfoo.so" ]
+  }
+}
+```
+
+Feature code is free to use any existing Chrome code (eg. logging, base::,
+skia::, cc::, etc), as well as other feature targets. From a GN build config
+perspective, the dependencies are defined as they normally would. The
+partitioning operation works independently of GN's dependency tree.
+
+```gn
+static_library("foo") {
+  ...
+
+  # It's fine to depend on base:: and other Chrome code.
+  deps = [
+    "//base",
+    "//cc/animation",
+    ...
+  ]
+
+  # Also fine to depend on other feature sub-targets.
+  deps += [
+    ":some_other_foo_target"
+  ]
+
+  # And fine to depend on the interface.
+  deps += [
+    ":foo_interface"
+  ]
+}
+```
+
+#### Opening the feature library
+
+Now, code in the main library can open the feature library and create an
+instance of feature Foo. Note that in this example, no care is taken to scope
+the lifetime of the opened library. Depending on the feature, it may be
+preferable to open and close the library as a feature is used.
+`//chrome/android/features/foo/factory/foo_factory.cc` may contain this:
+
+```c++
+std::unique_ptr<FooInterface> FooFactory(bool arg1, bool arg2) {
+  // Open the feature library, using the partition library helper to map it into
+  // the correct memory location. Specifying partition name *foo* will open
+  // libfoo.so.
+  void* foo_library_handle =
+        base::android::BundleUtils::DlOpenModuleLibraryPartition("foo");
+  }
+  DCHECK(foo_library_handle != nullptr) << "Could not open foo library:"
+      << dlerror();
+
+  // Pull the Foo factory function out of the library. The function name isn't
+  // mangled because it was extern "C".
+  CreateFooFunction* create_foo = reinterpret_cast<CreateFooFunction*>(
+      dlsym(foo_library_handle, "CreateFoo"));
+  DCHECK(create_foo != nullptr);
+
+  // Make and return a Foo!
+  return base::WrapUnique(create_foo(arg1, arg2));
+}
+
+```
+
+*** note
+**Note:** Component builds do not support partitioned libraries (code splitting
+happens across component boundaries instead). As such, an alternate, simplified
+feature factory implementation must be supplied (either by linking in a
+different factory source file, or using #defines in the factory) that simply
+instantiates a Foo object directly.
+***
+
+Finally, the main library is free to utilize Foo:
+
+```c++
+  auto foo = FooFactory::Create(arg1, arg2);
+  foo->ProcessInput(const std::string& input);
+```
+
+#### JNI
+
+Read the `jni_generator` [docs](../base/android/jni_generator/README.md) before
+reading this section.
+
+There are some subtleties to how JNI registration works with DFMs:
+
+* Generated wrapper `ClassNameJni` classes are packaged into the DFM's dex file
+* The class containing the actual native definitions, `GEN_JNI.java`, is always
+  stored in the base module
+* If the DFM is only included in bundles that use
+  [implicit JNI registration](android_native_libraries.md#JNI-Native-Methods-Resolution)
+  (i.e. Monochrome and newer), then no extra consideration is necessary
+* Otherwise, the DFM will need to provide a `generate_jni_registration` target
+  that will generate all of the native registration functions
+
+
+### Adding Android resources
 
 In this section we will add the required build targets to add Android resources
 to the Foo DFM.
 
-First, add a resources target to `//chrome/android/features/foo/BUILD.gn` and
-add it as a dependency on Foo's `java` target in the same file:
+First, add a resources target to
+`//chrome/android/features/foo/internal/BUILD.gn` and add it as a dependency on
+Foo's `java` target in the same file:
 
 ```gn
 ...
@@ -362,7 +568,8 @@ android_library("java") {
 To add strings follow steps
 [here](http://dev.chromium.org/developers/design-documents/ui-localization) to
 add new Java GRD file. Then create
-`//chrome/android/features/foo/java/strings/android_foo_strings.grd` as follows:
+`//chrome/android/features/foo/internal/java/strings/android_foo_strings.grd` as
+follows:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -396,7 +603,7 @@ add new Java GRD file. Then create
 ```
 
 Then, create a new GRD target and add it as a dependency on `java_resources` in
-`//chrome/android/features/foo/BUILD.gn`:
+`//chrome/android/features/foo/internal/BUILD.gn`:
 
 ```gn
 ...
@@ -420,7 +627,7 @@ android_resources("java_resources") {
 
 You can then access Foo's resources using the
 `org.chromium.chrome.features.foo.R` class. To do this change
-`//chrome/android/features/foo/java/src/org/chromium/chrome/features/foo/FooImpl.java`
+`//chrome/android/features/foo/internal/java/src/org/chromium/chrome/features/foo/FooImpl.java`
 to:
 
 ```java
@@ -455,8 +662,8 @@ for progress on making this more robust.
 
 So far, we have installed the Foo DFM as a true split (`-m foo` option on the
 install script). In production, however, we have to explicitly install the Foo
-DFM for users to get it. There are two install options: _on-demand_ and
-_deferred_.
+DFM for users to get it. There are three install options: _on-demand_,
+_deferred_ and _conditional_.
 
 
 #### On-demand install
@@ -490,13 +697,12 @@ public static void installModuleWithUi(
                     R.string.foo_module_title,
                     new ModuleInstallUi.FailureUiListener() {
                         @Override
-                        public void onRetry() {
-                            installModuleWithUi(tab, onFinishedListener);
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            onFinishedListener.onFinished(false);
+                        public void onFailureUiResponse(retry) {
+                            if (retry) {
+                                installModuleWithUi(tab, onFinishedListener);
+                            } else {
+                                onFinishedListener.onFinished(false);
+                            }
                         }
                     });
     // At the time of writing, shows toast informing user about install start.
@@ -551,6 +757,42 @@ To defer install Foo do the following:
 FooModule.installDeferred();
 ```
 
+#### Conditional install
+
+Conditional install means the DFM will be installed automatically upon first
+installing or updating Chrome if the device supports a particular feature.
+Conditional install is configured in the module's manifest. To install your
+module on all Daydream-ready devices for instance, your
+`//chrome/android/features/foo/internal/java/AndroidManifest.xml` should look
+like this:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    featureSplit="foo">
+
+    <dist:module
+      dist:instant="false"
+      dist:title="@string/foo_module_title">
+      <dist:fusing dist:include="true" />
+      <dist:delivery>
+        <dist:install-time>
+          <dist:conditions>
+            <dist:device-feature
+              dist:name="android.hardware.vr.high_performance" />
+          </dist:conditions>
+        </dist:install-time>
+        <!-- Allows on-demand or deferred install on non-Daydream-ready
+             devices. -->
+        <dist:on-demand />
+      </dist:delivery>
+    </dist:module>
+
+    <application />
+</manifest>
+```
+
 
 ### Integration test APK and Android K support
 
@@ -566,7 +808,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     ...
     if (_target_type != "android_app_bundle_module") {
       deps += [
-        "//chrome/android/features/foo:java",
+        "//chrome/android/features/foo/internal:java",
       ]
     }
   }

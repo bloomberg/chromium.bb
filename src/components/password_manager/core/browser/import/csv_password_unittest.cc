@@ -15,11 +15,6 @@ namespace password_manager {
 using ::autofill::PasswordForm;
 
 TEST(CSVPassword, Construction) {
-  // Default.
-  CSVPassword empty;
-  EXPECT_FALSE(empty.Parse(nullptr));
-
-  // From CSV.
   CSVPassword::ColumnMap col_map = {
       {0, CSVPassword::Label::kOrigin},
       {1, CSVPassword::Label::kUsername},
@@ -32,19 +27,6 @@ TEST(CSVPassword, Construction) {
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
   EXPECT_EQ(base::ASCIIToUTF16("user"), result.username_value);
   EXPECT_EQ(base::ASCIIToUTF16("password"), result.password_value);
-
-  // Copy, move and operator=.
-  CSVPassword copy = csv_pwd;
-  EXPECT_EQ(copy.ParseValid(), csv_pwd.ParseValid());
-
-  CSVPassword moved = std::move(copy);
-  EXPECT_EQ(moved.ParseValid(), csv_pwd.ParseValid());
-
-  CSVPassword target;
-  target = csv_pwd;
-  EXPECT_EQ(target.ParseValid(), csv_pwd.ParseValid());
-  target = std::move(moved);
-  EXPECT_EQ(target.ParseValid(), csv_pwd.ParseValid());
 }
 
 struct TestCase {
@@ -164,6 +146,16 @@ INSTANTIATE_TEST_SUITE_P(
                           .SignonRealm("android://example")
                           .Username("the-user")
                           .Password("pwd")
+                          .Build(),
+                      TestCaseBuilder("Escaped")
+                          .Map({{0, CSVPassword::Label::kOrigin},
+                                {2, CSVPassword::Label::kUsername},
+                                {3, CSVPassword::Label::kPassword}})
+                          .CSV(R"(http://example.org,"a""b","u,+,c","p""")")
+                          .Origin("http://example.org")
+                          .SignonRealm("http://example.org/")
+                          .Username("u,+,c")
+                          .Password("p\"")
                           .Build(),
                       TestCaseBuilder("path discarded")
                           .Map({{2, CSVPassword::Label::kOrigin},

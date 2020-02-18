@@ -57,11 +57,17 @@ CallTest::CallTest()
       task_queue_("CallTestTaskQueue") {}
 
 CallTest::~CallTest() {
-  task_queue_.SendTask([this]() {
-    fake_send_audio_device_ = nullptr;
-    fake_recv_audio_device_ = nullptr;
-    video_sources_.clear();
-  });
+  // In most cases the task_queue_ should have been stopped by now, assuming
+  // the regular path of using CallTest to call PerformTest (followed by
+  // cleanup). However, there are some tests that don't use the class that way
+  // hence we need this special handling for cleaning up.
+  if (task_queue_.IsRunning()) {
+    task_queue_.SendTask([this]() {
+      fake_send_audio_device_ = nullptr;
+      fake_recv_audio_device_ = nullptr;
+      video_sources_.clear();
+    });
+  }
 }
 
 void CallTest::RegisterRtpExtension(const RtpExtension& extension) {
@@ -194,10 +200,23 @@ void CallTest::RunBaseTest(BaseTest* test) {
     DestroyStreams();
     send_transport_.reset();
     receive_transport_.reset();
+
     frame_generator_capturer_ = nullptr;
     video_sources_.clear();
     DestroyCalls();
+
+    fake_send_audio_device_ = nullptr;
+    fake_recv_audio_device_ = nullptr;
   });
+
+  // To avoid a race condition during destruction, which can happen while
+  // a derived class is being destructed but pending tasks might still run
+  // because the |task_queue_| is still in scope, we stop the TQ here.
+  // Note that tests should not be posting more tasks during teardown but
+  // as is, that's hard to control with the current test harness. E.g. transport
+  // classes continue to issue callbacks (e.g. OnSendRtp) during teardown, which
+  // can have a ripple effect.
+  task_queue_.Stop();
 }
 
 void CallTest::CreateCalls() {
@@ -759,7 +778,7 @@ void BaseTest::ModifyReceiverBitrateConfig(BitrateConstraints* bitrate_config) {
 void BaseTest::OnCallsCreated(Call* sender_call, Call* receiver_call) {}
 
 test::PacketTransport* BaseTest::CreateSendTransport(
-    SingleThreadedTaskQueueForTesting* task_queue,
+    DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue,
     Call* sender_call) {
   return new PacketTransport(
       task_queue, sender_call, this, test::PacketTransport::kSender,
@@ -770,7 +789,7 @@ test::PacketTransport* BaseTest::CreateSendTransport(
 }
 
 test::PacketTransport* BaseTest::CreateReceiveTransport(
-    SingleThreadedTaskQueueForTesting* task_queue) {
+    DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue) {
   return new PacketTransport(
       task_queue, nullptr, this, test::PacketTransport::kReceiver,
       CallTest::payload_type_map_,

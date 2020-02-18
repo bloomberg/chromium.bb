@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
@@ -70,9 +70,9 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       base::TimeDelta timeout,
-      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
+      mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
       std::unique_ptr<RequestPeer> peer) override {
     *response = std::move(sync_load_response_);
   }
@@ -85,7 +85,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       std::unique_ptr<NavigationResponseOverrideParameters>
           navigation_response_override_params) override {
     EXPECT_FALSE(peer_);
@@ -230,13 +230,11 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     NOTREACHED();
   }
 
-  void DidFinishLoading(
-      base::TimeTicks finishTime,
-      int64_t totalEncodedDataLength,
-      int64_t totalEncodedBodyLength,
-      int64_t totalDecodedBodyLength,
-      bool should_report_corb_blocking,
-      const blink::WebVector<network::cors::PreflightTimingInfo>&) override {
+  void DidFinishLoading(base::TimeTicks finishTime,
+                        int64_t totalEncodedDataLength,
+                        int64_t totalEncodedBodyLength,
+                        int64_t totalDecodedBodyLength,
+                        bool should_report_corb_blocking) override {
     EXPECT_TRUE(loader_);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
@@ -388,7 +386,7 @@ class WebURLLoaderImplTest : public testing::Test {
   RequestPeer* peer() { return dispatcher()->peer(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestResourceDispatcher dispatcher_;
   mojo::ScopedDataPipeProducerHandle body_handle_;
   std::unique_ptr<TestWebURLLoaderClient> client_;
@@ -468,7 +466,7 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   request.SetPriority(blink::WebURLRequest::Priority::kVeryLow);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
-  response_override->response_head.mime_type = kMimeType;
+  response_override->response_head->mime_type = kMimeType;
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
   request.SetExtraData(std::move(extra_data));
@@ -481,7 +479,8 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
 
   response_override = dispatcher()->TakeNavigationResponseOverrideParams();
   ASSERT_TRUE(response_override);
-  peer()->OnReceivedResponse(response_override->response_head);
+  peer()->OnReceivedResponse(
+      network::ResourceResponseHead(response_override->response_head));
 
   EXPECT_TRUE(client()->did_receive_response());
 

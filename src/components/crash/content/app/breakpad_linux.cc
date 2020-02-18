@@ -45,8 +45,6 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/content_switches.h"
-#include "services/service_manager/embedder/switches.h"
 #include "third_party/breakpad/breakpad/src/client/linux/crash_generation/crash_generation_client.h"
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/directory_reader.h"
@@ -63,6 +61,11 @@
 #include "base/debug/leak_annotations.h"
 #endif
 #include "third_party/lss/linux_syscall_support.h"
+
+#if defined(OS_CHROMEOS)
+#include "content/public/common/content_switches.h"      // nogncheck
+#include "services/service_manager/embedder/switches.h"  // nogncheck
+#endif
 
 #if defined(ADDRESS_SANITIZER)
 #include <ucontext.h>  // for getcontext().
@@ -1065,7 +1068,12 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
 #if !defined(ADDRESS_SANITIZER)
     static_assert(5 == kCrashIovSize - 1, "kCrashIovSize should equal 6");
 #else
-    iov[6].iov_base = const_cast<char*>(g_asan_report_str);
+    if (g_asan_report_str != nullptr) {
+      iov[6].iov_base = const_cast<char*>(g_asan_report_str);
+    } else {
+      static char empty_asan_report[kMaxAsanReportSize + 1];
+      iov[6].iov_base = empty_asan_report;
+    }
     iov[6].iov_len = kMaxAsanReportSize + 1;
     static_assert(6 == kCrashIovSize - 1, "kCrashIovSize should equal 7");
 #endif
@@ -1146,10 +1154,6 @@ void InitCrashKeys() {
 void SetCrashLoopBeforeTime(const std::string& process_type,
                             const base::CommandLine& parsed_command_line) {
 #if defined(OS_CHROMEOS)
-  if (!ShouldPassCrashLoopBefore(process_type)) {
-    return;
-  }
-
   std::string crash_loop_before =
       parsed_command_line.GetSwitchValueASCII(switches::kCrashLoopBefore);
   if (crash_loop_before.empty()) {
@@ -2160,21 +2164,6 @@ void SuppressDumpGeneration() {
   g_dumps_suppressed = G_DUMPS_SUPPRESSED_MAGIC;
 }
 #endif  // OS_ANDROID
-
-#if defined(OS_CHROMEOS)
-bool ShouldPassCrashLoopBefore(const std::string& process_type) {
-  if (process_type == ::switches::kRendererProcess ||
-      process_type == ::switches::kUtilityProcess ||
-      process_type == ::switches::kPpapiPluginProcess ||
-      process_type == service_manager::switches::kZygoteProcess) {
-    // These process types never cause a log-out, even if they crash. So the
-    // normal crash handling process should work fine; we shouldn't need to
-    // invoke the special crash-loop mode.
-    return false;
-  }
-  return true;
-}
-#endif  // defined(OS_CHROMEOS)
 
 bool IsCrashReporterEnabled() {
   return g_is_crash_reporter_enabled;

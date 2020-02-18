@@ -13,6 +13,8 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -36,6 +38,8 @@ class HostContentSettingsMap;
 class Profile;
 class PageInfoUI;
 class PageInfoBubbleViewBrowserTest;
+
+using password_manager::metrics_util::PasswordType;
 
 // The |PageInfo| provides information about a website's permissions,
 // connection state and its identity. It owns a UI that displays the
@@ -71,9 +75,6 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SITE_IDENTITY_STATUS_CERT,
     // The website provided a valid EV certificate.
     SITE_IDENTITY_STATUS_EV_CERT,
-    // The website provided a valid certificate but no revocation check could be
-    // performed.
-    SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN,
     // Site identity could not be verified because the site did not provide a
     // certificate. This is the expected state for HTTP connections.
     SITE_IDENTITY_STATUS_NO_CERT,
@@ -98,7 +99,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SAFE_BROWSING_STATUS_MALWARE,
     SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING,
     SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE,
-    SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
+    SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+    SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE,
     SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE,
     SAFE_BROWSING_STATUS_BILLING,
   };
@@ -235,7 +237,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // presented in a headset.
   void PresentPageFeatureInfo();
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Records a password reuse event. If FULL_SAFE_BROWSING is defined, this
   // function WILL record an event. Callers should check conditions beforehand.
   void RecordPasswordReuseEvent();
@@ -272,6 +274,10 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   // Safe Browsing status of the website.
   SafeBrowsingStatus safe_browsing_status_;
+
+  // Safety tip status of the website. Set regardless of whether the feature is
+  // enabled to show the UI.
+  security_state::SafetyTipStatus safety_tip_status_;
 
   // For secure connection |certificate_| is set to the server certificate.
   scoped_refptr<net::X509Certificate> certificate_;
@@ -321,7 +327,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   security_state::SecurityLevel security_level_;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Used to handle changing password, and whitelisting site.
   safe_browsing::ChromePasswordProtectionService* password_protection_service_;
 #endif

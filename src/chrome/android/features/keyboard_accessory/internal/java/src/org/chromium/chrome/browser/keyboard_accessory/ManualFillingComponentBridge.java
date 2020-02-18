@@ -11,11 +11,13 @@ import android.util.SparseArray;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo.FaviconProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.content_public.browser.WebContents;
@@ -76,8 +78,9 @@ class ManualFillingComponentBridge {
                             : "Controller has been destroyed but the bridge wasn't cleaned up!";
                         ManualFillingMetricsRecorder.recordActionSelected(
                                 AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-                        nativeOnOptionSelected(
-                                mNativeView, AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+                        ManualFillingComponentBridgeJni.get().onOptionSelected(mNativeView,
+                                ManualFillingComponentBridge.this,
+                                AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                     })};
         } else {
             generationAction = new Action[0];
@@ -119,13 +122,14 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private static Object createAccessorySheetData(@AccessoryTabType int type, String title) {
-        return new AccessorySheetData(type, title);
+    private static Object createAccessorySheetData(
+            @AccessoryTabType int type, String title, String warning) {
+        return new AccessorySheetData(type, title, warning);
     }
 
     @CalledByNative
-    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData, String title) {
-        UserInfo userInfo = new UserInfo(title, this::fetchFavicon);
+    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData, String origin) {
+        UserInfo userInfo = new UserInfo(origin, this::fetchFavicon);
         ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
         return userInfo;
     }
@@ -140,7 +144,8 @@ class ManualFillingComponentBridge {
                 assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
                 ManualFillingMetricsRecorder.recordSuggestionSelected(
                         sheetType, field.isObfuscated());
-                nativeOnFillingTriggered(mNativeView, sheetType, field);
+                ManualFillingComponentBridgeJni.get().onFillingTriggered(
+                        mNativeView, ManualFillingComponentBridge.this, sheetType, field);
             };
         }
         ((UserInfo) objUserInfo)
@@ -155,42 +160,54 @@ class ManualFillingComponentBridge {
                 .getFooterCommands()
                 .add(new FooterCommand(displayText, (footerCommand) -> {
                     assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                    nativeOnOptionSelected(mNativeView, accessoryAction);
+                    ManualFillingComponentBridgeJni.get().onOptionSelected(
+                            mNativeView, ManualFillingComponentBridge.this, accessoryAction);
                 }));
     }
 
-    public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {
+    private void fetchFavicon(String origin, @Px int desiredSize,
+            Callback<FaviconProvider.FaviconResult> faviconCallback) {
         assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
-        nativeOnFaviconRequested(mNativeView, desiredSize, faviconCallback);
+        ManualFillingComponentBridgeJni.get().onFaviconRequested(mNativeView,
+                ManualFillingComponentBridge.this, origin, desiredSize, faviconCallback);
+    }
+
+    @CalledByNative
+    public static Object createFaviconResult(String origin, Bitmap favicon) {
+        return new FaviconProvider.FaviconResult(origin, favicon);
     }
 
     @VisibleForTesting
     public static void cachePasswordSheetData(
             WebContents webContents, String[] userNames, String[] passwords) {
-        nativeCachePasswordSheetDataForTesting(webContents, userNames, passwords);
+        ManualFillingComponentBridgeJni.get().cachePasswordSheetDataForTesting(
+                webContents, userNames, passwords);
     }
 
     @VisibleForTesting
     public static void notifyFocusedFieldType(WebContents webContents, int focusedFieldType) {
-        nativeNotifyFocusedFieldTypeForTesting(webContents, focusedFieldType);
+        ManualFillingComponentBridgeJni.get().notifyFocusedFieldTypeForTesting(
+                webContents, focusedFieldType);
     }
 
     @VisibleForTesting
     public static void signalAutoGenerationStatus(WebContents webContents, boolean available) {
-        nativeSignalAutoGenerationStatusForTesting(webContents, available);
+        ManualFillingComponentBridgeJni.get().signalAutoGenerationStatusForTesting(
+                webContents, available);
     }
 
-    private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
-            int desiredSizeInPx, Callback<Bitmap> faviconCallback);
-    private native void nativeOnFillingTriggered(
-            long nativeManualFillingViewAndroid, int tabType, UserInfoField userInfoField);
-    private native void nativeOnOptionSelected(
-            long nativeManualFillingViewAndroid, int accessoryAction);
-
-    private static native void nativeCachePasswordSheetDataForTesting(
-            WebContents webContents, String[] userNames, String[] passwords);
-    private static native void nativeNotifyFocusedFieldTypeForTesting(
-            WebContents webContents, int focusedFieldType);
-    private static native void nativeSignalAutoGenerationStatusForTesting(
-            WebContents webContents, boolean available);
+    @NativeMethods
+    interface Natives {
+        void onFaviconRequested(long nativeManualFillingViewAndroid,
+                ManualFillingComponentBridge caller, String origin, int desiredSizeInPx,
+                Callback<FaviconProvider.FaviconResult> faviconCallback);
+        void onFillingTriggered(long nativeManualFillingViewAndroid,
+                ManualFillingComponentBridge caller, int tabType, UserInfoField userInfoField);
+        void onOptionSelected(long nativeManualFillingViewAndroid,
+                ManualFillingComponentBridge caller, int accessoryAction);
+        void cachePasswordSheetDataForTesting(
+                WebContents webContents, String[] userNames, String[] passwords);
+        void notifyFocusedFieldTypeForTesting(WebContents webContents, int focusedFieldType);
+        void signalAutoGenerationStatusForTesting(WebContents webContents, boolean available);
+    }
 }

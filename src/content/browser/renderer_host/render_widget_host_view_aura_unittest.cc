@@ -664,7 +664,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   bool is_guest_view_hack_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::vector<std::unique_ptr<MockRenderWidgetHostDelegate>> delegates_;
@@ -2603,7 +2603,8 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
     EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
     EXPECT_EQ("100x100",
               std::get<0>(params)
-                  .compositor_viewport_pixel_size.ToString());  // backing size
+                  .compositor_viewport_pixel_rect.size()
+                  .ToString());  // backing size
   }
 
   widget_host_->ResetSentVisualProperties();
@@ -5476,7 +5477,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
 
   // Lock the mouse, simulate, and ensure they are forwarded.
-  view_->LockMouse();
+  view_->LockMouse(false /* request_unadjusted_movement */);
 
   mouse_event =
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -5561,6 +5562,81 @@ TEST_P(TouchpadRenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
   // end of the pinch, the GesturePinchBegin and GesturePinchEnd events should
   // be elided.
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
+}
+
+TEST_F(RenderWidgetHostViewAuraTest,
+       TouchpadScrollThenPinchFiresImmediateScrollEnd) {
+  // Set the max_time_between_phase_ended_and_momentum_phase_began timer
+  // timeout to a large value to make sure that the timer is still running
+  // when the wheel event with phase == end is sent.
+  view_->event_handler()
+      ->set_max_time_between_phase_ended_and_momentum_phase_began(
+          TestTimeouts::action_max_timeout());
+
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  sink_->ClearMessages();
+
+  ui::ScrollEvent begin_scroll(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2, 2, 2, 2,
+      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
+  view_->OnScrollEvent(&begin_scroll);
+  base::RunLoop().RunUntilIdle();
+
+  // If a pinch is coming next, then a ScrollEvent is created with
+  // momentum_phase == BLOCKED so that the end phase event can be dispatched
+  // immediately, rather than scheduling for later dispatch.
+  ui::ScrollEvent end_scroll_with_pinch_next(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2,
+      ui::EventMomentumPhase::BLOCKED, ui::ScrollEventPhase::kEnd);
+  view_->OnScrollEvent(&end_scroll_with_pinch_next);
+  base::RunLoop().RunUntilIdle();
+
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(5U, events.size());
+  EXPECT_EQ(
+      "GestureScrollBegin GestureScrollUpdate MouseWheel GestureScrollEnd "
+      "MouseWheel",
+      GetMessageNames(events));
+  EXPECT_FALSE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(
+          events[4]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBlocked,
+            wheel_event->momentum_phase);
+
+  // Now, try the same thing as above, but without knowing if pinch is next.
+  ui::ScrollEvent begin_scroll2(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2, 2, 2, 2,
+      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
+  view_->OnScrollEvent(&begin_scroll2);
+  base::RunLoop().RunUntilIdle();
+
+  // If its unknown what is coming next, set the event momentum_phase to NONE.
+  // This results in the phase end event being scheduled for dispatch, but not
+  // ultimately dispatched in this test.
+  ui::ScrollEvent end_scroll_with_momentum_next_maybe(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2,
+      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kEnd);
+  view_->OnScrollEvent(&end_scroll_with_momentum_next_maybe);
+  base::RunLoop().RunUntilIdle();
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(4U, events.size());
+  EXPECT_EQ(
+      "GestureScrollBegin GestureScrollUpdate MouseWheel GestureScrollEnd",
+      GetMessageNames(events));
+  EXPECT_TRUE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
@@ -6356,7 +6432,7 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
   EXPECT_TRUE(!!clipboard);
   std::vector<std::string> texts = {"text0", "text1", "text2", "text3"};
   for (auto index : active_view_sequence_) {
-    clipboard->Clear(ui::ClipboardType::kSelection);
+    clipboard->Clear(ui::ClipboardBuffer::kSelection);
 
     // Focus the corresponding widget.
     render_widget_host_delegate()->set_focused_widget(
@@ -6369,7 +6445,7 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
 
     // Retrieve the selected text from clipboard and verify it is as expected.
     base::string16 result_text;
-    clipboard->ReadText(ui::ClipboardType::kSelection, &result_text);
+    clipboard->ReadText(ui::ClipboardBuffer::kSelection, &result_text);
     EXPECT_EQ(expected_text, result_text);
   }
 }

@@ -124,13 +124,8 @@ void CreateConfigurationPolicyProvider(
   //   |UserCloudPolicyManagerChromeOS| is created here.
   // All other user types do not have user policy.
   const AccountId& account_id = user->GetAccountId();
-  const bool is_stub_user =
-      user_manager::UserManager::Get()->IsStubAccountId(account_id);
-  const bool is_child_user_with_enabled_policy =
-      user->GetType() == user_manager::USER_TYPE_CHILD &&
-      base::FeatureList::IsEnabled(arc::kAvailableForChildAccountFeature);
-  if (!is_child_user_with_enabled_policy &&
-      (user->GetType() == user_manager::USER_TYPE_SUPERVISED ||
+  if (user->GetType() == user_manager::USER_TYPE_SUPERVISED ||
+      (user->GetType() != user_manager::USER_TYPE_CHILD &&
        BrowserPolicyConnector::IsNonEnterpriseUser(
            account_id.GetUserEmail()))) {
     DLOG(WARNING) << "No policy loaded for known non-enterprise user";
@@ -166,6 +161,8 @@ void CreateConfigurationPolicyProvider(
       user_manager::known_user::GetProfileRequiresPolicy(account_id);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+  const bool is_stub_user =
+      user_manager::UserManager::Get()->IsStubAccountId(account_id);
 
   // If true, we don't know if we've ever checked for policy for this user, so
   // we need to do a policy check during initialization. This differs from
@@ -277,8 +274,9 @@ void CreateConfigurationPolicyProvider(
           account_id, policy_key_dir, is_active_directory);
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<CloudExternalDataManager> external_data_manager(
       new UserCloudExternalDataManager(

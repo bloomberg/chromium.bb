@@ -2,7 +2,6 @@
 cc_library_static {
   name: "perfetto_cts_deps",
   srcs: [
-    "src/base/android_task_runner.cc",
     "src/base/test/test_task_runner.cc",
     "src/traced/probes/ftrace/cpu_reader.cc",
     "src/traced/probes/ftrace/event_info.cc",
@@ -17,9 +16,6 @@ cc_library_static {
     "test/task_runner_thread_delegates.cc",
     "test/test_helper.cc",
   ],
-  export_include_dirs: [
-    ".",
-  ],
   shared_libs: [
     "libprotobuf-cpp-lite",
   ],
@@ -29,15 +25,14 @@ cc_library_static {
     "perfetto_src_tracing_ipc",
     "perfetto_trace_protos",
   ],
-  cflags: [
-    "-DPERFETTO_BUILD_WITH_ANDROID",
+  defaults: [
+    "perfetto_defaults",
   ],
 }
 
 cc_library_static {
   name: "perfetto_cts_jni_deps",
   srcs: [
-    "src/base/android_task_runner.cc",
     "src/base/test/test_task_runner.cc",
     "test/fake_producer.cc",
     "test/task_runner_thread_delegates.cc",
@@ -45,15 +40,12 @@ cc_library_static {
   shared_libs: [
     "libprotobuf-cpp-lite",
   ],
-  export_include_dirs: [
-    ".",
-  ],
   static_libs: [
     "libgtest",
     "perfetto_src_tracing_ipc",
   ],
-  cflags: [
-    "-DPERFETTO_BUILD_WITH_ANDROID",
+  defaults: [
+    "perfetto_defaults",
   ],
 }
 
@@ -83,12 +75,11 @@ cc_binary {
     "libprotobuf-cpp-lite",
     "liblog",
   ],
-  local_include_dirs: [
-    "include",
-  ],
   cflags: [
     "-DGOOGLE_PROTOBUF_NO_RTTI",
     "-DGOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
-    "-DPERFETTO_BUILD_WITH_ANDROID",
+  ],
+  defaults: [
+    "perfetto_defaults",
   ],
 }

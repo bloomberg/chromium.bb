@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include "base/gtest_prod_util.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
@@ -18,9 +20,10 @@ namespace blink {
 
 class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
  public:
-  WebIDBCursorImpl(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
-                   int64_t transaction_id,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  WebIDBCursorImpl(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor,
+      int64_t transaction_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBCursorImpl() override;
 
   void Advance(uint32_t count, WebIDBCallbacks* callback) override;
@@ -50,7 +53,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
  private:
   void AdvanceCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
                        mojom::blink::IDBCursorResultPtr result);
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
@@ -65,7 +68,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
 
   int64_t transaction_id_;
 
-  mojom::blink::IDBCursorAssociatedPtr cursor_;
+  mojo::AssociatedRemote<mojom::blink::IDBCursor> cursor_;
 
   // Prefetch cache. Keys and values are stored in reverse order so that a
   // cache'd continue can pop a value off of the back and prevent new memory

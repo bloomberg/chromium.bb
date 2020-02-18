@@ -18,7 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -42,8 +42,9 @@ constexpr base::ProcessId kProducerPid = 1234;
 class ThreadedPerfettoService : public mojom::TracingSessionClient {
  public:
   ThreadedPerfettoService()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+      : task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::WithBaseSyncPrimitives(),
              base::TaskPriority::BEST_EFFORT})) {
     perfetto_service_ = std::make_unique<PerfettoService>(task_runner_);
@@ -399,7 +400,7 @@ class TracingConsumerTest : public testing::Test,
   bool IsTracingEnabled() {
     // Flush any other pending tasks on the perfetto task runner to ensure that
     // any pending data source start callbacks have propagated.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     return threaded_service_->IsTracingEnabled();
   }
@@ -412,7 +413,7 @@ class TracingConsumerTest : public testing::Test,
 
  private:
   std::unique_ptr<ThreadedPerfettoService> threaded_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::OnceClosure on_data_complete_;
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   std::vector<uint8_t> received_data_;

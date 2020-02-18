@@ -147,13 +147,16 @@ void ScenicSurfaceFactory::CreateNativePixmapAsync(
 
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
-ScenicSurfaceFactory::CreateVulkanImplementation() {
+ScenicSurfaceFactory::CreateVulkanImplementation(
+    bool allow_protected_memory,
+    bool enforce_protected_memory) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!gpu_host_)
     LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
 
   return std::make_unique<ui::VulkanImplementationScenic>(
-      this, &sysmem_buffer_manager_);
+      this, &sysmem_buffer_manager_, allow_protected_memory,
+      enforce_protected_memory);
 }
 #endif
 
@@ -162,7 +165,7 @@ void ScenicSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
   base::AutoLock lock(surface_lock_);
   DCHECK(!base::Contains(surface_map_, widget));
   surface->AssertBelongsToCurrentThread();
-  surface_map_.insert(std::make_pair(widget, surface));
+  surface_map_.emplace(widget, surface);
 }
 
 void ScenicSurfaceFactory::RemoveSurface(gfx::AcceleratedWidget widget) {

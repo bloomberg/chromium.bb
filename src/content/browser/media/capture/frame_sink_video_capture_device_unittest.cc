@@ -13,14 +13,14 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -53,12 +53,12 @@ namespace {
 
 // Convenience macro to post a task to run on the device thread.
 #define POST_DEVICE_TASK(closure) \
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, closure)
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, closure)
 
 // Convenience macro to block the test procedure until all pending tasks have
 // run on the device thread.
-#define WAIT_FOR_DEVICE_TASKS()            \
-  browser_threads_.RunIOThreadUntilIdle(); \
+#define WAIT_FOR_DEVICE_TASKS()             \
+  task_environment_.RunIOThreadUntilIdle(); \
   RUN_UI_TASKS()
 
 // Capture parameters.
@@ -263,14 +263,13 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
 
  protected:
   void CreateCapturer(viz::mojom::FrameSinkVideoCapturerRequest request) final {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            [](MockFrameSinkVideoCapturer* capturer,
-               viz::mojom::FrameSinkVideoCapturerRequest request) {
-              capturer->Bind(std::move(request));
-            },
-            capturer_, std::move(request)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(
+                       [](MockFrameSinkVideoCapturer* capturer,
+                          viz::mojom::FrameSinkVideoCapturerRequest request) {
+                         capturer->Bind(std::move(request));
+                       },
+                       capturer_, std::move(request)));
   }
 
   MockFrameSinkVideoCapturer* const capturer_;
@@ -289,7 +288,7 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
 class FrameSinkVideoCaptureDeviceTest : public testing::Test {
  public:
   FrameSinkVideoCaptureDeviceTest()
-      : browser_threads_(TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   ~FrameSinkVideoCaptureDeviceTest() override { EXPECT_FALSE(device_); }
 
@@ -412,7 +411,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
 
  protected:
   // See the threading notes at top of this file.
-  TestBrowserThreadBundle browser_threads_;
+  BrowserTaskEnvironment task_environment_;
 
   NiceMock<MockFrameSinkVideoCapturer> capturer_;
   std::unique_ptr<FrameSinkVideoCaptureDevice> device_;

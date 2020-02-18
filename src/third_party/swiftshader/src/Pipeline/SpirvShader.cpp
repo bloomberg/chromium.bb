@@ -45,6 +45,22 @@ namespace
 		return rr::SignMask(~ints) != 0;
 	}
 
+	template <typename T>
+	rr::RValue<T> AndAll(rr::RValue<T> const &mask)
+	{
+		T v1 = mask;              // [x]    [y]    [z]    [w]
+		T v2 = v1.xzxz & v1.ywyw; // [xy]   [zw]   [xy]   [zw]
+		return v2.xxxx & v2.yyyy; // [xyzw] [xyzw] [xyzw] [xyzw]
+	}
+
+	template <typename T>
+	rr::RValue<T> OrAll(rr::RValue<T> const &mask)
+	{
+		T v1 = mask;              // [x]    [y]    [z]    [w]
+		T v2 = v1.xzxz | v1.ywyw; // [xy]   [zw]   [xy]   [zw]
+		return v2.xxxx | v2.yyyy; // [xyzw] [xyzw] [xyzw] [xyzw]
+	}
+
 	rr::RValue<sw::SIMD::Float> Sign(rr::RValue<sw::SIMD::Float> const &val)
 	{
 		return rr::As<sw::SIMD::Float>((rr::As<sw::SIMD::UInt>(val) & sw::SIMD::UInt(0x80000000)) | sw::SIMD::UInt(0x3f800000));
@@ -60,6 +76,21 @@ namespace
 		auto whole = Floor(abs) * sign;
 		auto frac = Frac(abs) * sign;
 		return std::make_pair(whole, frac);
+	}
+
+	// Returns the number of 1s in bits, per lane.
+	sw::SIMD::UInt CountBits(rr::RValue<sw::SIMD::UInt> const &bits)
+	{
+		// TODO: Add an intrinsic to reactor. Even if there isn't a
+		// single vector instruction, there may be target-dependent
+		// ways to make this faster.
+		// https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
+		sw::SIMD::UInt c = bits - ((bits >> 1) & sw::SIMD::UInt(0x55555555));
+		c = ((c >> 2) & sw::SIMD::UInt(0x33333333)) + (c & sw::SIMD::UInt(0x33333333));
+		c = ((c >> 4) + c) & sw::SIMD::UInt(0x0F0F0F0F);
+		c = ((c >> 8) + c) & sw::SIMD::UInt(0x00FF00FF);
+		c = ((c >> 16) + c) & sw::SIMD::UInt(0x0000FFFF);
+		return c;
 	}
 
 	// Returns 1 << bits.
@@ -262,6 +293,9 @@ namespace
 		case spv::ImageFormatRgba16f: return VK_FORMAT_R16G16B16A16_SFLOAT;
 		case spv::ImageFormatRgba16i: return VK_FORMAT_R16G16B16A16_SINT;
 		case spv::ImageFormatRgba16ui: return VK_FORMAT_R16G16B16A16_UINT;
+		case spv::ImageFormatRg32f: return VK_FORMAT_R32G32_SFLOAT;
+		case spv::ImageFormatRg32i: return VK_FORMAT_R32G32_SINT;
+		case spv::ImageFormatRg32ui: return VK_FORMAT_R32G32_UINT;
 
 		default:
 			UNIMPLEMENTED("SPIR-V ImageFormat %u", format);
@@ -486,7 +520,7 @@ namespace sw
 			bool robustBufferAccess)
 				: insns{insns}, inputs{MAX_INTERFACE_COMPONENTS},
 				  outputs{MAX_INTERFACE_COMPONENTS},
-				  codeSerialID(codeSerialID), modes{},
+				  codeSerialID(codeSerialID),
 				  robustBufferAccess(robustBufferAccess)
 	{
 		ASSERT(insns.size() > 0);
@@ -800,20 +834,23 @@ namespace sw
 				auto capability = static_cast<spv::Capability>(insn.word(1));
 				switch (capability)
 				{
-				case spv::CapabilityMatrix:
-				case spv::CapabilityShader:
-				case spv::CapabilityInputAttachment:
-				case spv::CapabilitySampled1D:
-				case spv::CapabilityImage1D:
-				case spv::CapabilitySampledBuffer:
-				case spv::CapabilityImageBuffer:
-				case spv::CapabilityImageQuery:
-				case spv::CapabilityDerivativeControl:
-				case spv::CapabilityMultiView:
-				case spv::CapabilityDeviceGroup:
-				case spv::CapabilityGroupNonUniform:
-					break;
-
+				case spv::CapabilityMatrix: capabilities.Matrix = true; break;
+				case spv::CapabilityShader: capabilities.Shader = true; break;
+				case spv::CapabilityInputAttachment: capabilities.InputAttachment = true; break;
+				case spv::CapabilitySampled1D: capabilities.Sampled1D = true; break;
+				case spv::CapabilityImage1D: capabilities.Image1D = true; break;
+				case spv::CapabilitySampledBuffer: capabilities.SampledBuffer = true; break;
+				case spv::CapabilityImageBuffer: capabilities.ImageBuffer = true; break;
+				case spv::CapabilityImageQuery: capabilities.ImageQuery = true; break;
+				case spv::CapabilityDerivativeControl: capabilities.DerivativeControl = true; break;
+				case spv::CapabilityGroupNonUniform: capabilities.GroupNonUniform = true; break;
+				case spv::CapabilityMultiView: capabilities.MultiView = true; break;
+				case spv::CapabilityDeviceGroup: capabilities.DeviceGroup = true; break;
+				case spv::CapabilityGroupNonUniformVote: capabilities.GroupNonUniformVote = true; break;
+				case spv::CapabilityGroupNonUniformBallot: capabilities.GroupNonUniformBallot = true; break;
+				case spv::CapabilityGroupNonUniformShuffle: capabilities.GroupNonUniformShuffle = true; break;
+				case spv::CapabilityGroupNonUniformShuffleRelative: capabilities.GroupNonUniformShuffleRelative = true; break;
+				case spv::CapabilityStorageImageExtendedFormats: capabilities.StorageImageExtendedFormats = true; break;
 				default:
 					UNSUPPORTED("Unsupported capability %u", insn.word(1));
 				}
@@ -1055,6 +1092,21 @@ namespace sw
 			case spv::OpImageRead:
 			case spv::OpImageTexelPointer:
 			case spv::OpGroupNonUniformElect:
+			case spv::OpGroupNonUniformAll:
+			case spv::OpGroupNonUniformAny:
+			case spv::OpGroupNonUniformAllEqual:
+			case spv::OpGroupNonUniformBroadcast:
+			case spv::OpGroupNonUniformBroadcastFirst:
+			case spv::OpGroupNonUniformBallot:
+			case spv::OpGroupNonUniformInverseBallot:
+			case spv::OpGroupNonUniformBallotBitExtract:
+			case spv::OpGroupNonUniformBallotBitCount:
+			case spv::OpGroupNonUniformBallotFindLSB:
+			case spv::OpGroupNonUniformBallotFindMSB:
+			case spv::OpGroupNonUniformShuffle:
+			case spv::OpGroupNonUniformShuffleXor:
+			case spv::OpGroupNonUniformShuffleUp:
+			case spv::OpGroupNonUniformShuffleDown:
 			case spv::OpCopyObject:
 			case spv::OpArrayLength:
 				// Instructions that yield an intermediate value or divergent pointer
@@ -1083,6 +1135,7 @@ namespace sw
 				if (!strcmp(ext, "SPV_KHR_16bit_storage")) break;
 				if (!strcmp(ext, "SPV_KHR_variable_pointers")) break;
 				if (!strcmp(ext, "SPV_KHR_device_group")) break;
+				if (!strcmp(ext, "SPV_KHR_multiview")) break;
 				UNSUPPORTED("SPIR-V Extension: %s", ext);
 				break;
 			}
@@ -1311,6 +1364,19 @@ namespace sw
 		default:
 			UNREACHABLE("%s", OpcodeName(insn.opcode()).c_str());
 			return 0;
+		}
+	}
+
+	bool SpirvShader::StoresInHelperInvocation(spv::StorageClass storageClass)
+	{
+		switch (storageClass)
+		{
+		case spv::StorageClassUniform:
+		case spv::StorageClassStorageBuffer:
+		case spv::StorageClassImage:
+			return false;
+		default:
+			return true;
 		}
 	}
 
@@ -2057,6 +2123,25 @@ namespace sw
 				routine->phis.emplace(resultId, SpirvRoutine::Variable(type.sizeInComponents));
 				break;
 			}
+
+			case spv::OpImageDrefGather:
+			case spv::OpImageFetch:
+			case spv::OpImageGather:
+			case spv::OpImageQueryLod:
+			case spv::OpImageSampleDrefExplicitLod:
+			case spv::OpImageSampleDrefImplicitLod:
+			case spv::OpImageSampleExplicitLod:
+			case spv::OpImageSampleImplicitLod:
+			case spv::OpImageSampleProjDrefExplicitLod:
+			case spv::OpImageSampleProjDrefImplicitLod:
+			case spv::OpImageSampleProjExplicitLod:
+			case spv::OpImageSampleProjImplicitLod:
+			{
+				Object::ID resultId = insn.word(2);
+				routine->samplerCache.emplace(resultId, SpirvRoutine::SamplerCache{});
+				break;
+			}
+
 			default:
 				// Nothing else produces interface variables, so can all be safely ignored.
 				break;
@@ -2064,9 +2149,9 @@ namespace sw
 		}
 	}
 
-	void SpirvShader::emit(SpirvRoutine *routine, RValue<SIMD::Int> const &activeLaneMask, const vk::DescriptorSet::Bindings &descriptorSets) const
+	void SpirvShader::emit(SpirvRoutine *routine, RValue<SIMD::Int> const &activeLaneMask, RValue<SIMD::Int> const &storesAndAtomicsMask, const vk::DescriptorSet::Bindings &descriptorSets) const
 	{
-		EmitState state(routine, entryPoint, activeLaneMask, descriptorSets, robustBufferAccess, executionModel);
+		EmitState state(routine, entryPoint, activeLaneMask, storesAndAtomicsMask, descriptorSets, robustBufferAccess, executionModel);
 
 		// Emit everything up to the first label
 		// TODO: Separate out dispatch of block from non-block instructions?
@@ -2209,17 +2294,18 @@ namespace sw
 			return; // Already emitted this loop.
 		}
 
-		std::unordered_set<Block::ID> incomingBlocks;
+		// Gather all the blocks that make up the loop.
 		std::unordered_set<Block::ID> loopBlocks;
+		loopBlocks.emplace(block.mergeBlock);
+		function.TraverseReachableBlocks(blockId, loopBlocks);
+
+		// incomingBlocks are block ins that are not back-edges.
+		std::unordered_set<Block::ID> incomingBlocks;
 		for (auto in : block.ins)
 		{
-			if (!function.ExistsPath(blockId, in, mergeBlockId)) // if not a loop back-edge
+			if (loopBlocks.count(in) == 0)
 			{
 				incomingBlocks.emplace(in);
-			}
-			else
-			{
-				loopBlocks.emplace(in);
 			}
 		}
 
@@ -2341,7 +2427,7 @@ namespace sw
 		{
 			if (insn.opcode() == spv::OpPhi)
 			{
-				StorePhi(mergeBlockId, insn, state, mergeBlock.ins);
+				StorePhi(mergeBlockId, insn, state, loopBlocks);
 			}
 		}
 
@@ -2682,6 +2768,21 @@ namespace sw
 			return EmitMemoryBarrier(insn, state);
 
 		case spv::OpGroupNonUniformElect:
+		case spv::OpGroupNonUniformAll:
+		case spv::OpGroupNonUniformAny:
+		case spv::OpGroupNonUniformAllEqual:
+		case spv::OpGroupNonUniformBroadcast:
+		case spv::OpGroupNonUniformBroadcastFirst:
+		case spv::OpGroupNonUniformBallot:
+		case spv::OpGroupNonUniformInverseBallot:
+		case spv::OpGroupNonUniformBallotBitExtract:
+		case spv::OpGroupNonUniformBallotBitCount:
+		case spv::OpGroupNonUniformBallotFindLSB:
+		case spv::OpGroupNonUniformBallotFindMSB:
+		case spv::OpGroupNonUniformShuffle:
+		case spv::OpGroupNonUniformShuffleXor:
+		case spv::OpGroupNonUniformShuffleUp:
+		case spv::OpGroupNonUniformShuffleDown:
 			return EmitGroupNonUniform(insn, state);
 
 		case spv::OpArrayLength:
@@ -2887,6 +2988,12 @@ namespace sw
 		bool interleavedByLane = IsStorageInterleavedByLane(pointerTy.storageClass);
 		auto robustness = state->getOutOfBoundsBehavior(pointerTy.storageClass);
 
+		SIMD::Int mask = state->activeLaneMask();
+		if (!StoresInHelperInvocation(pointerTy.storageClass))
+		{
+			mask = mask & state->storesAndAtomicsMask();
+		}
+
 		if (object.kind == Object::Kind::Constant)
 		{
 			// Constant source data.
@@ -2895,7 +3002,7 @@ namespace sw
 			{
 				auto p = ptr + offset;
 				if (interleavedByLane) { p = interleaveByLane(p); }
-				SIMD::Store(p, SIMD::Float(src[i]), robustness, state->activeLaneMask(), atomic, memoryOrder);
+				SIMD::Store(p, SIMD::Float(src[i]), robustness, mask, atomic, memoryOrder);
 			});
 		}
 		else
@@ -2906,7 +3013,7 @@ namespace sw
 			{
 				auto p = ptr + offset;
 				if (interleavedByLane) { p = interleaveByLane(p); }
-				SIMD::Store(p, src.Float(i), robustness, state->activeLaneMask(), atomic, memoryOrder);
+				SIMD::Store(p, src.Float(i), robustness, mask, atomic, memoryOrder);
 			});
 		}
 
@@ -3272,20 +3379,8 @@ namespace sw
 				break;
 			}
 			case spv::OpBitCount:
-			{
-				// TODO: Add an intrinsic to reactor. Even if there isn't a
-				// single vector instruction, there may be target-dependent
-				// ways to make this faster.
-				// https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-				auto v = src.UInt(i);
-				SIMD::UInt c = v - ((v >> 1) & SIMD::UInt(0x55555555));
-				c = ((c >> 2) & SIMD::UInt(0x33333333)) + (c & SIMD::UInt(0x33333333));
-				c = ((c >> 4) + c) & SIMD::UInt(0x0F0F0F0F);
-				c = ((c >> 8) + c) & SIMD::UInt(0x00FF00FF);
-				c = ((c >> 16) + c) & SIMD::UInt(0x0000FFFF);
-				dst.move(i, c);
+				dst.move(i, CountBits(src.UInt(i)));
 				break;
-			}
 			case spv::OpSNegate:
 				dst.move(i, -src.Int(i));
 				break;
@@ -4838,7 +4933,7 @@ namespace sw
 	{
 		Type::ID resultTypeId = insn.word(1);
 		Object::ID resultId = insn.word(2);
-		Object::ID sampledImageId = insn.word(3);
+		Object::ID sampledImageId = insn.word(3);  // For OpImageFetch this is just an Image, not a SampledImage.
 		Object::ID coordinateId = insn.word(4);
 		auto &resultType = getType(resultTypeId);
 
@@ -4855,6 +4950,14 @@ namespace sw
 
 		Pointer<Byte> sampler = samplerDescriptor + OFFSET(vk::SampledImageDescriptor, sampler); // vk::Sampler*
 		Pointer<Byte> texture = imageDescriptor + OFFSET(vk::SampledImageDescriptor, texture);  // sw::Texture*
+
+		// Above we assumed that if the SampledImage operand is not the result of an OpSampledImage,
+		// it must be a combined image sampler loaded straight from the descriptor set. For OpImageFetch
+		// it's just an Image operand, so there's no sampler descriptor data.
+		if(getType(sampledImage.type).opcode() != spv::OpTypeSampledImage)
+		{
+			sampler = Pointer<Byte>(nullptr);
+		}
 
 		uint32_t imageOperands = spv::ImageOperandsMaskNone;
 		bool lodOrBias = false;
@@ -5013,10 +5116,20 @@ namespace sw
 			in[i] = sampleValue.Float(0);
 		}
 
-		auto samplerFunc = Call(getImageSampler, instruction.parameters, imageDescriptor, sampler);
+		auto cacheIt = state->routine->samplerCache.find(resultId);
+		ASSERT(cacheIt != state->routine->samplerCache.end());
+		auto &cache = cacheIt->second;
+		auto cacheHit = cache.imageDescriptor == imageDescriptor && cache.sampler == sampler;
+
+		If(!cacheHit)
+		{
+			cache.function = Call(getImageSampler, instruction.parameters, imageDescriptor, sampler);
+			cache.imageDescriptor = imageDescriptor;
+			cache.sampler = sampler;
+		}
 
 		Array<SIMD::Float> out(4);
-		Call<ImageSampler>(samplerFunc, texture, sampler, &in[0], &out[0], state->routine->constants);
+		Call<ImageSampler>(cache.function, texture, sampler, &in[0], &out[0], state->routine->constants);
 
 		for (auto i = 0u; i < resultType.sizeInComponents; i++) { result.move(i, out[i]); }
 
@@ -5242,6 +5355,12 @@ namespace sw
 		if (isArrayed)
 		{
 			ptr += coordinate.Int(dims) * slicePitch;
+		}
+
+		if (dim == spv::DimSubpassData)
+		{
+			// Multiview input attachment access is to the layer corresponding to the current view
+			ptr += SIMD::Int(routine->viewID) * slicePitch;
 		}
 
 		if (sampleId.value())
@@ -5537,8 +5656,14 @@ namespace sw
 			dst.move(2, SIMD::Float((packed[0]) & SIMD::Int(0x1F)) * SIMD::Float(1.0f / 0x1F));
 			dst.move(3, SIMD::Float(1));
 			break;
+		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+			dst.move(0, SIMD::Float((packed[0] >> 10) & SIMD::Int(0x1F)) * SIMD::Float(1.0f / 0x1F));
+			dst.move(1, SIMD::Float((packed[0] >> 5) & SIMD::Int(0x1F)) * SIMD::Float(1.0f / 0x1F));
+			dst.move(2, SIMD::Float((packed[0]) & SIMD::Int(0x1F)) * SIMD::Float(1.0f / 0x1F));
+			dst.move(3, SIMD::Float((packed[0] >> 15) & SIMD::Int(0x1)));
+			break;
 		default:
-			UNIMPLEMENTED("spv::ImageFormat %d", int(vkFormat));
+			UNIMPLEMENTED("VkFormat %d", int(vkFormat));
 			break;
 		}
 
@@ -5629,6 +5754,14 @@ namespace sw
 			numPackedElements = 2;
 			break;
 		case spv::ImageFormatRg32f:
+		case spv::ImageFormatRg32i:
+		case spv::ImageFormatRg32ui:
+			texelSize = 8;
+			packed[0] = texel.Int(0);
+			packed[1] = texel.Int(1);
+			numPackedElements = 2;
+			break;
+
 		case spv::ImageFormatRg16f:
 		case spv::ImageFormatR11fG11fB10f:
 		case spv::ImageFormatR16f:
@@ -5643,13 +5776,11 @@ namespace sw
 		case spv::ImageFormatRg8Snorm:
 		case spv::ImageFormatR16Snorm:
 		case spv::ImageFormatR8Snorm:
-		case spv::ImageFormatRg32i:
 		case spv::ImageFormatRg16i:
 		case spv::ImageFormatRg8i:
 		case spv::ImageFormatR16i:
 		case spv::ImageFormatR8i:
 		case spv::ImageFormatRgb10a2ui:
-		case spv::ImageFormatRg32ui:
 		case spv::ImageFormatRg16ui:
 		case spv::ImageFormatRg8ui:
 		case spv::ImageFormatR16ui:
@@ -5731,10 +5862,11 @@ namespace sw
 		auto ptr = state->getPointer(insn.word(3));
 		auto ptrOffsets = ptr.offsets();
 
-		SIMD::UInt x;
+		SIMD::UInt x(0);
+		auto mask = state->activeLaneMask() & state->storesAndAtomicsMask();
 		for (int j = 0; j < SIMD::Width; j++)
 		{
-			If(Extract(state->activeLaneMask(), j) != 0)
+			If(Extract(mask, j) != 0)
 			{
 				auto offset = Extract(ptrOffsets, j);
 				auto laneValue = Extract(value, j);
@@ -5802,10 +5934,11 @@ namespace sw
 		auto ptr = state->getPointer(insn.word(3));
 		auto ptrOffsets = ptr.offsets();
 
-		SIMD::UInt x;
+		SIMD::UInt x(0);
+		auto mask = state->activeLaneMask() & state->storesAndAtomicsMask();
 		for (int j = 0; j < SIMD::Width; j++)
 		{
-			If(Extract(state->activeLaneMask(), j) != 0)
+			If(Extract(mask, j) != 0)
 			{
 				auto offset = Extract(ptrOffsets, j);
 				auto laneValue = Extract(value.UInt(0), j);
@@ -5879,8 +6012,9 @@ namespace sw
 		switch (executionScope)
 		{
 		case spv::ScopeWorkgroup:
-		case spv::ScopeSubgroup:
 			Yield(YieldResult::ControlBarrier);
+			break;
+		case spv::ScopeSubgroup:
 			break;
 		default:
 			// See Vulkan 1.1 spec, Appendix A, Validation Rules within a Module.
@@ -5911,6 +6045,8 @@ namespace sw
 
 	SpirvShader::EmitResult SpirvShader::EmitGroupNonUniform(InsnIterator insn, EmitState *state) const
 	{
+		static_assert(SIMD::Width == 4, "EmitGroupNonUniform makes many assumptions that the SIMD vector width is 4");
+
 		auto &type = getType(Type::ID(insn.word(1)));
 		Object::ID resultId = insn.word(2);
 		auto scope = spv::Scope(GetConstScalarInt(insn.word(3)));
@@ -5932,6 +6068,221 @@ namespace sw
 			dst.move(0, elect);
 			break;
 		}
+
+		case spv::OpGroupNonUniformAll:
+		{
+			GenericValue predicate(this, state, insn.word(4));
+			dst.move(0, AndAll(predicate.UInt(0) | ~As<SIMD::UInt>(state->activeLaneMask())));
+			break;
+		}
+
+		case spv::OpGroupNonUniformAny:
+		{
+			GenericValue predicate(this, state, insn.word(4));
+			dst.move(0, OrAll(predicate.UInt(0) & As<SIMD::UInt>(state->activeLaneMask())));
+			break;
+		}
+
+		case spv::OpGroupNonUniformAllEqual:
+		{
+			GenericValue value(this, state, insn.word(4));
+			auto res = SIMD::UInt(0xffffffff);
+			SIMD::UInt active = As<SIMD::UInt>(state->activeLaneMask());
+			SIMD::UInt inactive = ~active;
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				SIMD::UInt v = value.UInt(i) & active;
+				SIMD::UInt filled = v;
+				for (int j = 0; j < SIMD::Width - 1; j++)
+				{
+					filled |= filled.yzwx & inactive; // Populate inactive 'holes' with a live value
+				}
+				res &= AndAll(CmpEQ(filled.xyzw, filled.yzwx));
+			}
+			dst.move(0, res);
+			break;
+		}
+
+		case spv::OpGroupNonUniformBroadcast:
+		{
+			auto valueId = Object::ID(insn.word(4));
+			auto id = SIMD::Int(GetConstScalarInt(insn.word(5)));
+			GenericValue value(this, state, valueId);
+			auto mask = CmpEQ(id, SIMD::Int(0, 1, 2, 3));
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				dst.move(i, OrAll(value.Int(i) & mask));
+			}
+			break;
+		}
+
+		case spv::OpGroupNonUniformBroadcastFirst:
+		{
+			auto valueId = Object::ID(insn.word(4));
+			GenericValue value(this, state, valueId);
+			// Result is true only in the active invocation with the lowest id
+			// in the group, otherwise result is false.
+			SIMD::Int active = state->activeLaneMask();
+			// TODO: Would be nice if we could write this as:
+			//   elect = active & ~(active.Oxyz | active.OOxy | active.OOOx)
+			auto v0111 = SIMD::Int(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+			auto elect = active & ~(v0111 & (active.xxyz | active.xxxy | active.xxxx));
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				dst.move(i, OrAll(value.Int(i) & elect));
+			}
+			break;
+		}
+
+		case spv::OpGroupNonUniformBallot:
+		{
+			ASSERT(type.sizeInComponents == 4);
+			GenericValue predicate(this, state, insn.word(4));
+			dst.move(0, SIMD::Int(SignMask(state->activeLaneMask() & predicate.Int(0))));
+			dst.move(1, SIMD::Int(0));
+			dst.move(2, SIMD::Int(0));
+			dst.move(3, SIMD::Int(0));
+			break;
+		}
+
+		case spv::OpGroupNonUniformInverseBallot:
+		{
+			auto valueId = Object::ID(insn.word(4));
+			ASSERT(type.sizeInComponents == 1);
+			ASSERT(getType(getObject(valueId).type).sizeInComponents == 4);
+			GenericValue value(this, state, valueId);
+			auto bit = (value.Int(0) >> SIMD::Int(0, 1, 2, 3)) & SIMD::Int(1);
+			dst.move(0, -bit);
+			break;
+		}
+
+		case spv::OpGroupNonUniformBallotBitExtract:
+		{
+			auto valueId = Object::ID(insn.word(4));
+			auto indexId = Object::ID(insn.word(5));
+			ASSERT(type.sizeInComponents == 1);
+			ASSERT(getType(getObject(valueId).type).sizeInComponents == 4);
+			ASSERT(getType(getObject(indexId).type).sizeInComponents == 1);
+			GenericValue value(this, state, valueId);
+			GenericValue index(this, state, indexId);
+			auto vecIdx = index.Int(0) / SIMD::Int(32);
+			auto bitIdx = index.Int(0) & SIMD::Int(31);
+			auto bits =	(value.Int(0) & CmpEQ(vecIdx, SIMD::Int(0))) |
+			            (value.Int(1) & CmpEQ(vecIdx, SIMD::Int(1))) |
+			            (value.Int(2) & CmpEQ(vecIdx, SIMD::Int(2))) |
+			            (value.Int(3) & CmpEQ(vecIdx, SIMD::Int(3)));
+			dst.move(0, -((bits >> bitIdx) & SIMD::Int(1)));
+			break;
+		}
+
+		case spv::OpGroupNonUniformBallotBitCount:
+		{
+			auto operation = spv::GroupOperation(insn.word(4));
+			auto valueId = Object::ID(insn.word(5));
+			ASSERT(type.sizeInComponents == 1);
+			ASSERT(getType(getObject(valueId).type).sizeInComponents == 4);
+			GenericValue value(this, state, valueId);
+			switch (operation)
+			{
+			case spv::GroupOperationReduce:
+				dst.move(0, CountBits(value.UInt(0) & SIMD::UInt(15)));
+				break;
+			case spv::GroupOperationInclusiveScan:
+				dst.move(0, CountBits(value.UInt(0) & SIMD::UInt(1, 3, 7, 15)));
+				break;
+			case spv::GroupOperationExclusiveScan:
+				dst.move(0, CountBits(value.UInt(0) & SIMD::UInt(0, 1, 3, 7)));
+				break;
+			default:
+				UNSUPPORTED("GroupOperation %d", int(operation));
+			}
+			break;
+		}
+
+		case spv::OpGroupNonUniformBallotFindLSB:
+		{
+			auto valueId = Object::ID(insn.word(4));
+			ASSERT(type.sizeInComponents == 1);
+			ASSERT(getType(getObject(valueId).type).sizeInComponents == 4);
+			GenericValue value(this, state, valueId);
+			dst.move(0, Cttz(value.UInt(0) & SIMD::UInt(15), true));
+			break;
+		}
+
+		case spv::OpGroupNonUniformBallotFindMSB:
+		{
+			auto valueId = Object::ID(insn.word(4));
+			ASSERT(type.sizeInComponents == 1);
+			ASSERT(getType(getObject(valueId).type).sizeInComponents == 4);
+			GenericValue value(this, state, valueId);
+			dst.move(0, SIMD::UInt(31) - Ctlz(value.UInt(0) & SIMD::UInt(15), false));
+			break;
+		}
+
+		case spv::OpGroupNonUniformShuffle:
+		{
+			GenericValue value(this, state, insn.word(4));
+			GenericValue id(this, state, insn.word(5));
+			auto x = CmpEQ(SIMD::Int(0), id.Int(0));
+			auto y = CmpEQ(SIMD::Int(1), id.Int(0));
+			auto z = CmpEQ(SIMD::Int(2), id.Int(0));
+			auto w = CmpEQ(SIMD::Int(3), id.Int(0));
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				SIMD::Int v = value.Int(i);
+				dst.move(i, (x & v.xxxx) | (y & v.yyyy) | (z & v.zzzz) | (w & v.wwww));
+			}
+			break;
+		}
+
+		case spv::OpGroupNonUniformShuffleXor:
+		{
+			GenericValue value(this, state, insn.word(4));
+			GenericValue mask(this, state, insn.word(5));
+			auto x = CmpEQ(SIMD::Int(0), SIMD::Int(0, 1, 2, 3) ^ mask.Int(0));
+			auto y = CmpEQ(SIMD::Int(1), SIMD::Int(0, 1, 2, 3) ^ mask.Int(0));
+			auto z = CmpEQ(SIMD::Int(2), SIMD::Int(0, 1, 2, 3) ^ mask.Int(0));
+			auto w = CmpEQ(SIMD::Int(3), SIMD::Int(0, 1, 2, 3) ^ mask.Int(0));
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				SIMD::Int v = value.Int(i);
+				dst.move(i, (x & v.xxxx) | (y & v.yyyy) | (z & v.zzzz) | (w & v.wwww));
+			}
+			break;
+		}
+
+		case spv::OpGroupNonUniformShuffleUp:
+		{
+			GenericValue value(this, state, insn.word(4));
+			GenericValue delta(this, state, insn.word(5));
+			auto d0 = CmpEQ(SIMD::Int(0), delta.Int(0));
+			auto d1 = CmpEQ(SIMD::Int(1), delta.Int(0));
+			auto d2 = CmpEQ(SIMD::Int(2), delta.Int(0));
+			auto d3 = CmpEQ(SIMD::Int(3), delta.Int(0));
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				SIMD::Int v = value.Int(i);
+				dst.move(i, (d0 & v.xyzw) | (d1 & v.xxyz) | (d2 & v.xxxy) | (d3 & v.xxxx));
+			}
+			break;
+		}
+
+		case spv::OpGroupNonUniformShuffleDown:
+		{
+			GenericValue value(this, state, insn.word(4));
+			GenericValue delta(this, state, insn.word(5));
+			auto d0 = CmpEQ(SIMD::Int(0), delta.Int(0));
+			auto d1 = CmpEQ(SIMD::Int(1), delta.Int(0));
+			auto d2 = CmpEQ(SIMD::Int(2), delta.Int(0));
+			auto d3 = CmpEQ(SIMD::Int(3), delta.Int(0));
+			for (auto i = 0u; i < type.sizeInComponents; i++)
+			{
+				SIMD::Int v = value.Int(i);
+				dst.move(i, (d0 & v.xyzw) | (d1 & v.yzww) | (d2 & v.zwww) | (d3 & v.wwww));
+			}
+			break;
+		}
+
 		default:
 			UNIMPLEMENTED("EmitGroupNonUniform op: %s", OpcodeName(type.opcode()).c_str());
 		}
@@ -6394,8 +6745,7 @@ namespace sw
 		}
 	}
 
-
-	void SpirvShader::Function::TraverseReachableBlocks(Block::ID id, SpirvShader::Block::Set& reachable)
+	void SpirvShader::Function::TraverseReachableBlocks(Block::ID id, SpirvShader::Block::Set& reachable) const
 	{
 		if (reachable.count(id) == 0)
 		{
@@ -6537,4 +6887,64 @@ namespace sw
 	{
 	}
 
+	void SpirvRoutine::setImmutableInputBuiltins(SpirvShader const *shader)
+	{
+		setInputBuiltin(shader, spv::BuiltInSubgroupLocalInvocationId, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 1);
+			value[builtin.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 1, 2, 3));
+		});
+
+		setInputBuiltin(shader, spv::BuiltInSubgroupEqMask, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 4);
+			value[builtin.FirstComponent + 0] = As<SIMD::Float>(SIMD::Int(1, 2, 4, 8));
+			value[builtin.FirstComponent + 1] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 2] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 3] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		});
+
+		setInputBuiltin(shader, spv::BuiltInSubgroupGeMask, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 4);
+			value[builtin.FirstComponent + 0] = As<SIMD::Float>(SIMD::Int(15, 14, 12, 8));
+			value[builtin.FirstComponent + 1] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 2] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 3] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		});
+
+		setInputBuiltin(shader, spv::BuiltInSubgroupGtMask, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 4);
+			value[builtin.FirstComponent + 0] = As<SIMD::Float>(SIMD::Int(14, 12, 8, 0));
+			value[builtin.FirstComponent + 1] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 2] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 3] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		});
+
+		setInputBuiltin(shader, spv::BuiltInSubgroupLeMask, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 4);
+			value[builtin.FirstComponent + 0] = As<SIMD::Float>(SIMD::Int(1, 3, 7, 15));
+			value[builtin.FirstComponent + 1] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 2] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 3] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		});
+
+		setInputBuiltin(shader, spv::BuiltInSubgroupLtMask, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 4);
+			value[builtin.FirstComponent + 0] = As<SIMD::Float>(SIMD::Int(0, 1, 3, 7));
+			value[builtin.FirstComponent + 1] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 2] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+			value[builtin.FirstComponent + 3] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		});
+
+		setInputBuiltin(shader, spv::BuiltInDeviceIndex, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			ASSERT(builtin.SizeInComponents == 1);
+			// Only a single physical device is supported.
+			value[builtin.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
+		});
+	}
 }

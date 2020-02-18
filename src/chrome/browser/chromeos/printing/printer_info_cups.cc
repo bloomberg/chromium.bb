@@ -2,26 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printer_info.h"
-
 #include <algorithm>
 #include <array>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
+#include "chrome/browser/chromeos/printing/printer_info.h"
 #include "printing/backend/cups_jobs.h"
 
 namespace {
 
 const char kPdfMimeType[] = "application/pdf";
 const char kPwgRasterMimeType[] = "image/pwg-raster";
+
+const char kPwgRasterDocumentResolutionSupported[] =
+    "Printing.CUPS.PwgRasterDocumentResolutionSupported";
 
 // List of known multi-word printer manufacturers to help with make-and-model
 // string parsing.  Keep in UPPER CASE as that's how matches are performed.
@@ -125,6 +128,9 @@ void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
     model = make_and_model;
   }
 
+  base::UmaHistogramBoolean(kPwgRasterDocumentResolutionSupported,
+                            printer_info.supports_pwg_raster_resolution);
+
   std::move(callback).Run(
       result, make.as_string(), model.as_string(), printer_info.make_and_model,
       printer_info.document_formats, IsAutoconf(printer_info));
@@ -144,9 +150,10 @@ void QueryIppPrinter(const std::string& host,
   // QueryPrinterImpl could block on a network call for a noticable amount of
   // time (100s of ms). Also the user is waiting on this result.  Thus, run at
   // USER_VISIBLE with MayBlock.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits(base::TaskPriority::USER_VISIBLE, base::MayBlock()),
+      base::TaskTraits{base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+                       base::MayBlock()},
       base::BindOnce(&QueryPrinterImpl, host, port, path, encrypted),
       base::BindOnce(&OnPrinterQueried, std::move(callback)));
 }

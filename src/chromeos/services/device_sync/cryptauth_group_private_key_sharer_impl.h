@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor.h"
@@ -83,13 +84,16 @@ class CryptAuthGroupPrivateKeySharerImpl
       const cryptauthv2::ShareGroupPrivateKeyResponse& response);
   void OnShareGroupPrivateKeyFailure(NetworkRequestError error);
 
-  void FinishAttempt(const CryptAuthDeviceSyncResult::ResultCode& result_code);
+  void FinishAttempt(CryptAuthDeviceSyncResult::ResultCode result_code);
 
   // Used for batch encrypting the group private key with each encrypting key.
   std::unique_ptr<CryptAuthEciesEncryptor> encryptor_;
 
   // Used to make the ShareGroupPrivateKey API call to CryptAuth.
   std::unique_ptr<CryptAuthClient> cryptauth_client_;
+
+  // The time of the last state change. Used for execution time metrics.
+  base::TimeTicks last_state_change_timestamp_;
 
   bool did_non_fatal_error_occur_ = false;
   State state_ = State::kNotStarted;

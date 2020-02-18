@@ -8,14 +8,6 @@
 <translation id="1199593201721843963">השבת חיבורים מרוחקים</translation>
 <translation id="1291443878853470558">‏אם ברצונך להשתמש ב-Chromoting כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="1297009705180977556">אירעה שגיאת התחברות אל <ph name="HOSTNAME" /></translation>
-<translation id="1300633907480909701">‏גישה מאובטחת למחשבים שלך ממכשיר Android שלך.
-
-• בכל אחד מהמחשבים שלך, מגדירים גישה מרחוק באמצעות אפליקציית Chrome Remote Desktop, שבחנות האינטרנט של Chrome‏: https://chrome.google.com/remotedesktop
-• במכשיר Android, פותחים את האפליקציה ומקישים על מחשב הנמצא במצב מקוון כדי להתחבר אליו.
-
-מחשבים מרוחקים שאין להם מקלדות עבור אנגלית של ארה"ב עשויים לקבל קלט טקסט שגוי. בקרוב נוסיף תמיכה לפריסות מקלדת נוספות!
-
-למידע על פרטיות, ניתן לעיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ובמדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
 <translation id="1342297293546459414">הצג תוכן של מחשב משותף ושלוט בו.</translation>
 <translation id="1389790901665088353">‏הורדת מנהל ההתקנה של מארח Chrome Remote Desktop</translation>
@@ -28,7 +20,6 @@
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
-<translation id="1727412735341161734">Chrome Remote Desktop</translation>
 <translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, יש להתקין את Chrome Remote Desktop במחשב היעד וללחוץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="1742469581923031760">מתחבר…</translation>
 <translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
@@ -46,13 +37,6 @@
 <translation id="2078880767960296260">תהליך מארח</translation>
 <translation id="20876857123010370">מצב משטח מגע</translation>
 <translation id="2089514346391228378">הופעלו חיבורים מרוחקים למחשב זה.</translation>
-<translation id="2118549242412205620">‏גישה מאובטחת למחשבים שלך ממכשיר Android שלך.
-
-• בכל אחד מהמחשבים, מגדירים גישה מרחוק באמצעות אפליקציית Chrome Remote Desktop, שבחנות האינטרנט של Chrome‏: https://chrome.google.com/remotedesktop
-• במכשיר Android, פותחים את האפליקציה ומקישים על מחשב הנמצא במצב מקוון כדי להתחבר אליו.
-
-למידע על פרטיות, ניתן לעיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ובמדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
-<translation id="2124408767156847088">‏גש למחשבים שלך באופן מאובטח ממכשיר Android שלך.</translation>
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח Chrome Remote Desktop. יש לפנות למנהל המערכת שלך לקבלת סיוע.</translation>
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2221097377466213233">‏השתמש במקש Ctrl למקש Win (⌘ ב-Mac)</translation>
@@ -70,15 +54,11 @@
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
 <translation id="2370754117186920852">המארח <ph name="OPTIONAL_OFFLINE_REASON" />  נראה לאחרונה במצב מקוון <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">‏האפליקציה הזו כבר לא נתמכת. כדי לוודא שיש לך גישה לתכונות ולעדכוני האבטחה העדכניים ביותר, יש להשתמש ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">יש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
-
-להפעלת הפונקציונליות הזו, בוחרים '<ph name="BUTTON_NAME" />' כדי להציג את חלונית העדפות האבטחה והפרטיות, ואז מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-אם '<ph name="SERVICE_SCRIPT_NAME" />' כבר מוצג ומסומן, ייתכן שצריך להסיר אותו ואז להוסיף אותו מחדש.</translation>
 <translation id="2499160551253595098">‏רוצה לעזור לנו לשפר את Chrome Remote Desktop? אנחנו זקוקים לאישורך כדי לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏הערה: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chrome Remote Desktop ל'פתח כחלון'.</translation>
 <translation id="2540992418118313681">האם ברצונך לשתף מחשב זה כך שמשתמש אחר יראה אותו וישלוט בו?</translation>
+<translation id="254771646005658629">‏הענקת שליטה במחשב ה-Mac הזה למשתמשים מרוחקים</translation>
 <translation id="2579271889603567289">המארח קרס או שלא הופעל.</translation>
 <translation id="2599300881200251572">‏שירות זה מאפשר חיבורים נכנסים מלקוחות Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
@@ -91,11 +71,6 @@
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
 <translation id="2891243864890517178">‏בשביל Mac (‏OS X Yosemite 10.10 ואילך)</translation>
-<translation id="289405675947420287">‏האפליקציה מאפשרת לגשת למחשב באופן מאובטח ממכשיר iOS. זה מהיר, פשוט ובחינם.
-
-• יש להוריד את האפליקציה Chrome Remote Desktop מחנות האינטרנט של Chrome למחשב שאליו רוצים לגשת מרחוק.
-• יש להתקין את התוכנה של Chrome Remote Desktop ולפעול לפי ההוראות לסיום תהליך ההגדרה.
-• במכשיר iOS, יש לפתוח את האפליקציה ולהקיש על אחד מהמחשבים המחוברים כדי להתחבר אליו.</translation>
 <translation id="2894654864775534701">המחשב הזו משותף כרגע כחלק מחשבון אחר.</translation>
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
 <translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Chromium<ph name="LINK_END" /> עם החשבון והתקן מחדש את Chromoting.</translation>
@@ -109,7 +84,6 @@
 <translation id="310979712355504754">מחק הכל</translation>
 <translation id="3150823315463303127">המארח לא הצליח לקרוא את המדיניות.</translation>
 <translation id="3171922709365450819">המכשיר הזה לא נתמך על-ידי הלקוח הזה כי נדרש עבורו אימות של צד שלישי.</translation>
-<translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="324272851072175193">שליחת ההוראות באימייל</translation>
 <translation id="3258789396564295715">‏ניתן לגשת למחשב זה באופן מאובטח באמצעות Chrome Remote Desktop.</translation>
@@ -174,13 +148,6 @@
 <translation id="4660011489602794167">הצגת מקלדת</translation>
 <translation id="4703302905453407178">רכיב נדרש הפסיק לפעול. דיווח על בעיה זו למפתחים.</translation>
 <translation id="4703799847237267011">‏הפעילות של Chromoting הסתיימה.</translation>
-<translation id="4706355010316049867">‏Chrome
-Remote
-Desktop
-גישה
-תמיכה
-מחשב
-מחשב PC</translation>
 <translation id="4736223761657662401">היסטוריית חיבורים</translation>
 <translation id="4741792197137897469">‏האימות נכשל. היכנס שוב ל-Chrome.</translation>
 <translation id="477305884757156764">היישום איטי מדי.</translation>
@@ -208,6 +175,7 @@ Desktop
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של Chrome Remote Desktop.</translation>
 <translation id="5308380583665731573">התחברות</translation>
+<translation id="5327248766486351172">שם</translation>
 <translation id="533625276787323658">אין מחשבים שניתן להתחבר אליהם</translation>
 <translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
 <translation id="5379087427956679853">‏Chrome Remote Desktop מאפשר לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את האפליקציה Chrome Remote Desktop, שניתן למצוא בכתובת <ph name="URL" />.</translation>
@@ -215,6 +183,11 @@ Desktop
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="5419418238395129586">חיבור אחרון לרשת: <ph name="DATE" /></translation>
 <translation id="544077782045763683">המארח כבה.</translation>
+<translation id="5463789431147491241">‏כדי להשתמש ב-<ph name="PRODUCT_NAME" /> במחשב ה-Mac הזה:
+
+לוחצים למטה על '<ph name="BUTTON_NAME" />'. בהעדפות של 'אבטחה ופרטיות' מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מסומנת, מבטלים את הסימון ואז מסמנים שוב.</translation>
 <translation id="5510035215749041527">נתק עכשיו</translation>
 <translation id="5593560073513909978">באופן זמני, השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -252,7 +225,6 @@ Desktop
 <translation id="6381670701864002291">משהו אחר.</translation>
 <translation id="6398765197997659313">צא ממסך מלא</translation>
 <translation id="6441316101718669559">שילוב של שולחן עבודה אינו נתמך בפלטפורמה זו. תוכל עדיין להשתמש ביישום, אבל תהיה לכך השפעה שלילית על חוויית המשתמש.</translation>
-<translation id="6502629188777329097">גישה מאובטחת למחשב שלך</translation>
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
 <translation id="6527303717912515753">שיתוף</translation>
 <translation id="6541219117979389420">‏יומני יישומים עשויים לכלול פרטים אישיים, כולל הזהות שלך (כתובת אימייל) וגם השמות והתכונות של קבצים ותיקיות ב-Google Drive.</translation>
@@ -286,7 +258,6 @@ Desktop
 <translation id="7116737094673640201">‏ברוכים הבאים אל Chrome Remote Desktop</translation>
 <translation id="7144878232160441200">נסה שוב</translation>
 <translation id="7149517134817561223">‏אפליקציה לשליחת פקודות אל המארח של Chrome Remote Desktop.</translation>
-<translation id="7213491505512310433">שיפורים ביציבות ותיקוני באגים.</translation>
 <translation id="7215059001581613786">‏הזן PIN המורכב משש ספרות או יותר.</translation>
 <translation id="7312846573060934304">המארח אינו מקוון.</translation>
 <translation id="7319983568955948908">הפסק את השיתוף</translation>
@@ -313,6 +284,7 @@ Desktop
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
 <translation id="7981525049612125370">פג התוקף של ההפעלה המרוחקת.</translation>
+<translation id="8038111231936746805">(ברירת מחדל)</translation>
 <translation id="8041089156583427627"> שליחת משוב</translation>
 <translation id="8041721485428375115">‏הורדת מנהל ההתקנה של מארח Chrome Remote Desktop מהווה את הסכמתך לל<ph name="LINK_BEGIN" />תנאים ולהגבלות<ph name="LINK_END" /> של Google.</translation>
 <translation id="8060029310790625334">מרכז העזרה</translation>
@@ -322,7 +294,6 @@ Desktop
 <translation id="809687642899217504">המחשבים שלי</translation>
 <translation id="811307782653349804">גש למחשב שלך מכל מקום.</translation>
 <translation id="8116630183974937060">אירעה שגיאת רשת. בדוק שהמכשיר מקוון ונסה שוב.</translation>
-<translation id="8123581458650016326">משתמשים מרוחקים יוכלו לשלוט במחשב הזה</translation>
 <translation id="8178433417677596899">שיתוף מסך ממשתמש למשתמש, הפתרון המושלם לתמיכה טכנית מרחוק.</translation>
 <translation id="8187079423890319756">‏Copyright 2013 The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8196755618196986400">כדי שנוכל ליצור איתך קשר ולקבל מידע נוסף, כתובת האימייל שלך תיכלל בכל משוב שתשלח.</translation>
@@ -333,12 +304,14 @@ Desktop
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="8383794970363966105">‏כדי להשתמש ב-Chromoting, עליך להוסיף חשבון Google למכשיר שלך.</translation>
 <translation id="8386846956409881180">‏בהגדרת המארח נעשה שימוש בפרטי כניסת OAuth לא חוקיים.</translation>
+<translation id="8406498562923498210">‏יש לבחור את הסשן שברצונך להפעיל בסביבה של Chrome Remote Desktop. (לתשומת ליבך, ייתכן שחלק מסוגי הסשנים לא יתמכו בהפעלה בו-זמנית ב-Chrome Remote Desktop ובמסוף המקומי.)</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8445362773033888690">‏הצג בחנות Google Play</translation>
 <translation id="8509907436388546015">תהליך השילוב של שולחנות עבודה</translation>
 <translation id="8513093439376855948">מארח העברת הודעות ייעודי עבור ניהול אירוח מרחוק</translation>
 <translation id="8525306231823319788">מסך מלא</translation>
 <translation id="8548209692293300397">‏נכנסת בעבר כ-<ph name="USER_NAME" /> ‏(<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />יש להיכנס אל Google Chrome<ph name="LINK_END" /> עם החשבון ולהתקין מחדש את Chrome Remote Desktop.</translation>
+<translation id="858006550102277544">הערה</translation>
 <translation id="8642984861538780905">איכות סבירה</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8743328882720071828">האם ברצונך לאפשר ל-<ph name="CLIENT_USERNAME" /> לראות את המחשב שלך ולשלוט בו?</translation>
@@ -356,6 +329,7 @@ Desktop
 <translation id="9126115402994542723">‏אל תבקש שוב PIN בעת התחברות למארח הזה ממכשיר זה.</translation>
 <translation id="9149580767411232853">הצגה של כל שולחן העבודה המרוחק במסך</translation>
 <translation id="9149992051684092333">כדי להתחיל לשתף את שולחן העבודה שלך, תן את קוד הגישה שלמטה לאדם שיסייע לך.</translation>
+<translation id="916856682307586697">‏הפעלת ה-XSession שמוגדר כברירת מחדל</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="9213184081240281106">תצורה לא חוקית של המארח.</translation>
 <translation id="951991426597076286">דחה</translation>

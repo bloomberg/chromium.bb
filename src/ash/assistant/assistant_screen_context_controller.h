@@ -11,8 +11,9 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_screen_context_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -80,7 +81,7 @@ class ASH_EXPORT AssistantScreenContextController
 
   // Weak pointer factory used for screen context requests.
   base::WeakPtrFactory<AssistantScreenContextController>
-      screen_context_request_factory_;
+      screen_context_request_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantScreenContextController);
 };

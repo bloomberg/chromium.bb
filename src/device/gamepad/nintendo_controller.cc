@@ -408,6 +408,7 @@ bool UpdateGamepadFromControllerData(
     const NintendoController::SwitchCalibrationData& cal,
     Gamepad& pad) {
   bool buttons_changed =
+      pad.buttons_length != SWITCH_BUTTON_INDEX_COUNT ||
       pad.buttons[BUTTON_INDEX_PRIMARY].pressed != data.button_b ||
       pad.buttons[BUTTON_INDEX_SECONDARY].pressed != data.button_a ||
       pad.buttons[BUTTON_INDEX_TERTIARY].pressed != data.button_y ||
@@ -435,6 +436,7 @@ bool UpdateGamepadFromControllerData(
       pad.buttons[SWITCH_BUTTON_INDEX_RIGHT_SR].pressed != data.button_right_sr;
 
   if (buttons_changed) {
+    pad.buttons_length = SWITCH_BUTTON_INDEX_COUNT;
     pad.buttons[BUTTON_INDEX_PRIMARY].pressed = data.button_b;
     pad.buttons[BUTTON_INDEX_PRIMARY].value = data.button_b ? 1.0 : 0.0;
     pad.buttons[BUTTON_INDEX_SECONDARY].pressed = data.button_a;
@@ -510,11 +512,13 @@ bool UpdateGamepadFromControllerData(
       rdead ? 0.0 : NormalizeAndClampAxis(axis_rx, cal.rx_min, cal.rx_max);
   double ry =
       rdead ? 0.0 : -NormalizeAndClampAxis(axis_ry, cal.ry_min, cal.ry_max);
-  bool axes_changed = pad.axes[device::AXIS_INDEX_LEFT_STICK_X] != lx ||
+  bool axes_changed = pad.axes_length != AXIS_INDEX_COUNT ||
+                      pad.axes[device::AXIS_INDEX_LEFT_STICK_X] != lx ||
                       pad.axes[device::AXIS_INDEX_LEFT_STICK_Y] != ly ||
                       pad.axes[device::AXIS_INDEX_RIGHT_STICK_X] != rx ||
                       pad.axes[device::AXIS_INDEX_RIGHT_STICK_Y] != ry;
   if (axes_changed) {
+    pad.axes_length = AXIS_INDEX_COUNT;
     pad.axes[device::AXIS_INDEX_LEFT_STICK_X] = lx;
     pad.axes[device::AXIS_INDEX_LEFT_STICK_Y] = ly;
     pad.axes[device::AXIS_INDEX_RIGHT_STICK_X] = rx;
@@ -812,8 +816,7 @@ NintendoController::NintendoController(int source_id,
       bus_type_(GAMEPAD_BUS_UNKNOWN),
       output_report_size_bytes_(0),
       device_info_(std::move(device_info)),
-      hid_manager_(hid_manager),
-      weak_factory_(this) {
+      hid_manager_(hid_manager) {
   if (device_info_) {
     bus_type_ = BusTypeFromDeviceInfo(device_info_.get());
     output_report_size_bytes_ = device_info_->max_output_report_size;
@@ -829,10 +832,7 @@ NintendoController::NintendoController(
     std::unique_ptr<NintendoController> composite1,
     std::unique_ptr<NintendoController> composite2,
     mojom::HidManager* hid_manager)
-    : source_id_(source_id),
-      is_composite_(true),
-      hid_manager_(hid_manager),
-      weak_factory_(this) {
+    : source_id_(source_id), is_composite_(true), hid_manager_(hid_manager) {
   // Require exactly one left component and one right component, but allow them
   // to be provided in either order.
   DCHECK(composite1);
@@ -886,6 +886,9 @@ bool NintendoController::IsNintendoController(uint16_t vendor_id,
 
 std::vector<std::unique_ptr<NintendoController>>
 NintendoController::Decompose() {
+  // Stop any ongoing vibration effects before decomposing the device.
+  SetZeroVibration();
+
   std::vector<std::unique_ptr<NintendoController>> decomposed_devices;
   if (composite_left_)
     decomposed_devices.push_back(std::move(composite_left_));
@@ -951,7 +954,7 @@ bool NintendoController::IsUsable() const {
   if (state_ != kInitialized)
     return false;
   if (is_composite_)
-    return true;
+    return composite_left_ && composite_right_;
   switch (gamepad_id_) {
     case GamepadId::kNintendoProduct2009:
     case GamepadId::kNintendoProduct2006:
@@ -968,10 +971,12 @@ bool NintendoController::IsUsable() const {
 }
 
 bool NintendoController::HasGuid(const std::string& guid) const {
-  if (is_composite_)
+  if (is_composite_) {
+    DCHECK(composite_left_);
+    DCHECK(composite_right_);
     return composite_left_->HasGuid(guid) || composite_right_->HasGuid(guid);
-  else
-    return device_info_->guid == guid;
+  }
+  return device_info_->guid == guid;
 }
 
 GamepadStandardMappingFunction NintendoController::GetMappingFunction() const {
@@ -1027,6 +1032,8 @@ void NintendoController::UpdatePadConnected() {
 
 void NintendoController::UpdateGamepadState(Gamepad& pad) const {
   if (is_composite_) {
+    DCHECK(composite_left_);
+    DCHECK(composite_right_);
     // If this is a composite device, update the gamepad state using the state
     // of the subcomponents.
     pad.connected = true;
@@ -1080,10 +1087,14 @@ void NintendoController::UpdateLeftGamepadState(Gamepad& pad,
   };
   const size_t kLeftAxisIndicesSize = base::size(kLeftAxisIndices);
 
-  for (size_t i = 0; i < kLeftButtonIndicesSize; ++i)
-    UpdateButtonForLeftSide(pad_, pad, kLeftButtonIndices[i], horizontal);
-  for (size_t i = 0; i < kLeftAxisIndicesSize; ++i)
-    UpdateAxisForLeftSide(pad_, pad, kLeftAxisIndices[i], horizontal);
+  if (pad_.buttons_length == SWITCH_BUTTON_INDEX_COUNT) {
+    for (size_t i = 0; i < kLeftButtonIndicesSize; ++i)
+      UpdateButtonForLeftSide(pad_, pad, kLeftButtonIndices[i], horizontal);
+  }
+  if (pad_.axes_length == AXIS_INDEX_COUNT) {
+    for (size_t i = 0; i < kLeftAxisIndicesSize; ++i)
+      UpdateAxisForLeftSide(pad_, pad, kLeftAxisIndices[i], horizontal);
+  }
   pad.timestamp = std::max(pad.timestamp, pad_.timestamp);
   if (!pad_.connected)
     pad.connected = false;
@@ -1114,10 +1125,14 @@ void NintendoController::UpdateRightGamepadState(Gamepad& pad,
   };
   const size_t kRightAxisIndicesSize = base::size(kRightAxisIndices);
 
-  for (size_t i = 0; i < kRightButtonIndicesSize; ++i)
-    UpdateButtonForRightSide(pad_, pad, kRightButtonIndices[i], horizontal);
-  for (size_t i = 0; i < kRightAxisIndicesSize; ++i)
-    UpdateAxisForRightSide(pad_, pad, kRightAxisIndices[i], horizontal);
+  if (pad_.buttons_length == SWITCH_BUTTON_INDEX_COUNT) {
+    for (size_t i = 0; i < kRightButtonIndicesSize; ++i)
+      UpdateButtonForRightSide(pad_, pad, kRightButtonIndices[i], horizontal);
+  }
+  if (pad_.axes_length == AXIS_INDEX_COUNT) {
+    for (size_t i = 0; i < kRightAxisIndicesSize; ++i)
+      UpdateAxisForRightSide(pad_, pad, kRightAxisIndices[i], horizontal);
+  }
   pad.timestamp = std::max(pad.timestamp, pad_.timestamp);
   if (!pad_.connected)
     pad.connected = false;
@@ -1126,7 +1141,8 @@ void NintendoController::UpdateRightGamepadState(Gamepad& pad,
 void NintendoController::Connect(mojom::HidManager::ConnectCallback callback) {
   DCHECK(!is_composite_);
   DCHECK(hid_manager_);
-  hid_manager_->Connect(device_info_->guid, /*connection_client=*/nullptr,
+  hid_manager_->Connect(device_info_->guid,
+                        mojo::PendingRemote<mojom::HidConnectionClient>(),
                         std::move(callback));
 }
 
@@ -1700,8 +1716,10 @@ void NintendoController::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
   if (is_composite_) {
     // Split the vibration effect between the left and right subdevices.
-    composite_left_->SetVibration(strong_magnitude, 0);
-    composite_right_->SetVibration(0, weak_magnitude);
+    if (composite_left_ && composite_right_) {
+      composite_left_->SetVibration(strong_magnitude, 0);
+      composite_right_->SetVibration(0, weak_magnitude);
+    }
   } else {
     RequestVibration(kVibrationFrequencyStrongRumble,
                      kVibrationAmplitudeStrongRumbleMax * strong_magnitude,
@@ -1735,6 +1753,10 @@ void NintendoController::OnTimeout() {
     retry_count_ = 0;
     StartInitSequence();
   }
+}
+
+base::WeakPtr<AbstractHapticGamepad> NintendoController::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device

@@ -52,10 +52,9 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
 
   AdjustToClearance(clearance_offset, &adjusted_origin_point);
 
-  LogicalSize float_size(inline_size + fragment_margins.InlineSum(),
-                         LayoutUnit());
   return exclusion_space.FindLayoutOpportunity(
-      adjusted_origin_point, float_available_size.inline_size, float_size);
+      adjusted_origin_point, float_available_size.inline_size,
+      inline_size + fragment_margins.InlineSum() /* minimum_inline_size */);
 }
 
 // Creates a constraint space for an unpositioned float. origin_block_offset
@@ -67,7 +66,8 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     const NGUnpositionedFloat& unpositioned_float,
     const NGConstraintSpace& parent_space,
     const ComputedStyle& parent_style,
-    base::Optional<LayoutUnit> origin_block_offset = base::nullopt) {
+    base::Optional<LayoutUnit> origin_block_offset = base::nullopt,
+    bool is_resuming_after_break = false) {
   const ComputedStyle& style = unpositioned_float.node.Style();
   NGConstraintSpaceBuilder builder(parent_space, style.GetWritingMode(),
                                    /* is_new_fc */ true);
@@ -78,17 +78,24 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     DCHECK(parent_space.HasBlockFragmentation());
     DCHECK_EQ(style.GetWritingMode(), parent_space.GetWritingMode());
 
-    SetupFragmentation(parent_space, *origin_block_offset, &builder);
+    SetupFragmentation(parent_space, *origin_block_offset, &builder,
+                       /* is_new_fc */ true);
   } else {
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
   }
 
-  return builder.SetAvailableSize(float_available_size)
-      .SetPercentageResolutionSize(float_percentage_size)
-      .SetReplacedPercentageResolutionSize(float_replaced_percentage_size)
-      .SetIsShrinkToFit(style.LogicalWidth().IsAuto())
-      .SetTextDirection(style.Direction())
-      .ToConstraintSpace();
+  // If we're resuming layout of this float after a fragmentainer break, the
+  // margins of its children may be adjoining with the fragmentainer
+  // block-start, in which case they may get truncated.
+  if (is_resuming_after_break)
+    builder.SetDiscardingMarginStrut();
+
+  builder.SetAvailableSize(float_available_size);
+  builder.SetPercentageResolutionSize(float_percentage_size);
+  builder.SetReplacedPercentageResolutionSize(float_replaced_percentage_size);
+  builder.SetIsShrinkToFit(style.LogicalWidth().IsAuto());
+  builder.SetTextDirection(style.Direction());
+  return builder.ToConstraintSpace();
 }
 
 std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
@@ -208,7 +215,7 @@ LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
   DCHECK(unpositioned_float->layout_result);
 
   const auto& fragment = unpositioned_float->layout_result->PhysicalFragment();
-  DCHECK(!fragment.BreakToken() || fragment.BreakToken()->IsFinished());
+  DCHECK(!fragment.BreakToken());
 
   return (NGFragment(parent_space.GetWritingMode(), fragment).InlineSize() +
           unpositioned_float->margins.InlineSum())
@@ -246,24 +253,20 @@ NGPositionedFloat PositionFloat(
     layout_result = unpositioned_float->layout_result;
     fragment_margins = unpositioned_float->margins;
   } else {
+    bool is_resuming_after_break =
+        IsResumingLayout(unpositioned_float->token.get());
     NGConstraintSpace space = CreateConstraintSpaceForFloat(
         float_available_size, float_percentage_size,
         float_replaced_percentage_size, *unpositioned_float, parent_space,
-        parent_style, origin_bfc_offset.block_offset);
+        parent_style, origin_bfc_offset.block_offset, is_resuming_after_break);
     layout_result =
         unpositioned_float->node.Layout(space, unpositioned_float->token.get());
     fragment_margins = ComputeMarginsFor(
         space, unpositioned_float->node.Style(), parent_space);
 
-    // Make the margins fragmentation aware.
-    if (ShouldIgnoreBlockStartMargin(parent_space, unpositioned_float->node,
-                                     unpositioned_float->token.get()))
-      fragment_margins.block_start = LayoutUnit();
     if (const NGBreakToken* break_token =
-            layout_result->PhysicalFragment().BreakToken()) {
-      if (!break_token->IsFinished())
-        fragment_margins.block_end = LayoutUnit();
-    }
+            layout_result->PhysicalFragment().BreakToken())
+      fragment_margins.block_end = LayoutUnit();
   }
 
   NGFragment float_fragment(parent_space.GetWritingMode(),

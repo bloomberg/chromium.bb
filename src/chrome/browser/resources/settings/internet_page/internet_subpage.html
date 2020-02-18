@@ -5,12 +5,15 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="internet_page_browser_proxy.html">
+<link rel="import" href="../i18n_setup.html">
+<link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-internet-subpage">
@@ -154,16 +157,17 @@
         <!-- Text shown if no networks exist. -->
         <div hidden="[[shouldShowNetworkList_(networkStateList_)]]"
           inner-h-t-m-l=
-              "[[getNoNetworksString_(deviceState, tetherDeviceState)]]"
+              "[[getNoNetworksInnerHtml_(deviceState, tetherDeviceState)]]"
           class="no-networks">
         </div>
 
         <template is="dom-if" if="[[matchesType_('VPN', deviceState)]]">
           <!-- Third party VPNs. -->
-          <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
-            <div id="[[item.ProviderName]]"
+          <template is="dom-repeat"
+              items="[[getVpnProviders_(vpnProviders, thirdPartyVpns_)]]">
+            <div id="[[item.providerName]]"
                 class="vpn-header layout horizontal center">
-              <div class="flex settings-box-text">[[item.ProviderName]]</div>
+              <div class="flex settings-box-text">[[item.providerName]]</div>
               <cr-icon-button class="icon-add-circle"
                   aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
                   on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
@@ -176,26 +180,6 @@
             </cr-network-list>
             <div hidden$="[[haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
                 class="no-networks settings-box-text">
-              $i18n{internetNoNetworks}
-            </div>
-          </template>
-          <!-- Arc VPNs. -->
-          <template is="dom-repeat" items="[[arcVpnProviders]]">
-            <div id="[[item.ProviderName]]"
-                class="vpn-header layout horizontal center">
-              <div class="flex settings-box-text">[[item.ProviderName]]</div>
-              <cr-icon-button class="icon-add-circle"
-                  aria-label$="[[getAddArcVpnAllyString_(item)]]"
-                  on-click="onAddArcVpnTap_" tabindex$="[[tabindex]]">
-              </cr-icon-button>
-            </div>
-            <cr-network-list show-buttons
-                hidden$="[[!haveArcVpnNetwork_(arcVpns_, item)]]"
-                networks="[[getArcVpnNetworks_(arcVpns_, item)]]"
-                on-selected="onNetworkSelected_">
-            </cr-network-list>
-            <div hidden$="[[haveArcVpnNetwork_(arcVpns_, item)]]"
-                class="no-networks">
               $i18n{internetNoNetworks}
             </div>
           </template>

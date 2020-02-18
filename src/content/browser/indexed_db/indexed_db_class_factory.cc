@@ -10,8 +10,8 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/scopes/leveldb_scope.h"
 
 namespace content {
 
@@ -35,8 +35,7 @@ IndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
-    IndexedDBDatabase::ErrorCallback error_callback,
-    base::OnceClosure destroy_me,
+    TasksAvailableCallback tasks_available_callback,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
@@ -44,9 +43,9 @@ IndexedDBClassFactory::CreateIndexedDBDatabase(
   DCHECK(factory);
   std::unique_ptr<IndexedDBDatabase> database =
       base::WrapUnique(new IndexedDBDatabase(
-          name, backing_store, factory, this, std::move(error_callback),
-          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
-          transaction_lock_manager));
+          name, backing_store, factory, this,
+          std::move(tasks_available_callback), std::move(metadata_coding),
+          unique_identifier, transaction_lock_manager));
   leveldb::Status s = database->OpenInternal();
   if (!s.ok())
     database = nullptr;
@@ -57,13 +56,14 @@ std::unique_ptr<IndexedDBTransaction>
 IndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
-    ErrorCallback error_callback,
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
+    TasksAvailableCallback tasks_available_callback,
+    IndexedDBTransaction::TearDownCallback tear_down_callback,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  return base::WrapUnique(
-      new IndexedDBTransaction(id, connection, std::move(error_callback), scope,
-                               mode, backing_store_transaction));
+  return base::WrapUnique(new IndexedDBTransaction(
+      id, connection, scope, mode, std::move(tasks_available_callback),
+      std::move(tear_down_callback), backing_store_transaction));
 }
 
 }  // namespace content

@@ -14,9 +14,13 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 
+class CPDF_IconFit;
+class CPDF_Stream;
+
 class CPWL_Icon final : public CPWL_Wnd {
  public:
-  CPWL_Icon(const CreateParams& cp, std::unique_ptr<PrivateData> pAttachedData);
+  CPWL_Icon(const CreateParams& cp,
+            std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
   ~CPWL_Icon() override;
 
   void SetIconFit(CPDF_IconFit* pIconFit) { m_pIconFit = pIconFit; }

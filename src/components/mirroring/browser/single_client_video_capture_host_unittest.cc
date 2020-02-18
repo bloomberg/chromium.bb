@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -133,7 +133,8 @@ class MockVideoCaptureObserver final
   void Start() {
     media::mojom::VideoCaptureObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(0, 0, VideoCaptureParams(), std::move(observer));
+    host_->Start(device_id_, session_id_, VideoCaptureParams(),
+                 std::move(observer));
   }
 
   void FinishConsumingBuffer(int32_t buffer_id, double utilization) {
@@ -141,12 +142,14 @@ class MockVideoCaptureObserver final
     const auto iter = frame_infos_.find(buffer_id);
     EXPECT_TRUE(iter != frame_infos_.end());
     frame_infos_.erase(iter);
-    host_->ReleaseBuffer(0, buffer_id, utilization);
+    host_->ReleaseBuffer(device_id_, buffer_id, utilization);
   }
 
-  void Stop() { host_->Stop(0); }
+  void Stop() { host_->Stop(device_id_); }
 
  private:
+  const base::UnguessableToken device_id_ = base::UnguessableToken::Create();
+  const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
   media::mojom::VideoCaptureHostPtr host_;
   mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
@@ -239,7 +242,7 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockVideoCaptureObserver> consumer_;
   base::WeakPtr<VideoFrameReceiver> frame_receiver_;
   MockVideoCaptureDevice* launched_device_ = nullptr;
@@ -277,7 +280,7 @@ TEST_F(SingleClientVideoCaptureHostTest, ReuseBufferId) {
   {
     EXPECT_CALL(*consumer_, OnBufferDestroyedCall(0)).Times(0);
     frame_receiver_->OnBufferRetired(0);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Re-use buffer 0.

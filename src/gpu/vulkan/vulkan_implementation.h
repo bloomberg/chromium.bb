@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_export.h"
@@ -35,12 +36,21 @@ class VulkanSurface;
 class VulkanInstance;
 struct VulkanYCbCrInfo;
 
+#if defined(OS_FUCHSIA)
+class SysmemBufferCollection {
+ public:
+  virtual ~SysmemBufferCollection() {}
+};
+#endif  // defined(OS_FUCHSIA)
+
 // Base class which provides functions for creating vulkan objects for different
 // platforms that use platform-specific extensions (e.g. for creation of
 // VkSurfaceKHR objects). It also provides helper/utility functions.
 class VULKAN_EXPORT VulkanImplementation {
  public:
-  explicit VulkanImplementation(bool use_swiftshader = false);
+  VulkanImplementation(bool use_swiftshader = false,
+                       bool allow_protected_memory = false,
+                       bool enforce_protected_memory = false);
 
   virtual ~VulkanImplementation();
 
@@ -105,7 +115,8 @@ class VULKAN_EXPORT VulkanImplementation {
       VkImage* vk_image,
       VkImageCreateInfo* vk_image_info,
       VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size) = 0;
+      VkDeviceSize* mem_allocation_size,
+      base::Optional<VulkanYCbCrInfo>* ycbcr_info) = 0;
 
 #if defined(OS_ANDROID)
   // Create a VkImage, import Android AHardwareBuffer object created outside of
@@ -130,10 +141,26 @@ class VULKAN_EXPORT VulkanImplementation {
       VulkanYCbCrInfo* ycbcr_info) = 0;
 #endif
 
+#if defined(OS_FUCHSIA)
+  // Registers as sysmem buffer collection. The collection can be released by
+  // destroying the returned SysmemBufferCollection object. Once a collection is
+  // registered the individual buffers in the collection can be referenced by
+  // using the |id| as |buffer_collection_id| in |gmb_handle| passed to
+  // CreateImageFromGpuMemoryHandle().
+  virtual std::unique_ptr<SysmemBufferCollection>
+  RegisterSysmemBufferCollection(VkDevice device,
+                                 gfx::SysmemBufferCollectionId id,
+                                 zx::channel token) = 0;
+#endif  // defined(OS_FUCHSIA)
+
   bool use_swiftshader() const { return use_swiftshader_; }
+  bool allow_protected_memory() const { return allow_protected_memory_; }
+  bool enforce_protected_memory() const { return enforce_protected_memory_; }
 
  private:
   const bool use_swiftshader_;
+  const bool allow_protected_memory_;
+  const bool enforce_protected_memory_;
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);
 };
 

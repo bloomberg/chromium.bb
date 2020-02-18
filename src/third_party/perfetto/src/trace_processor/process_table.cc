@@ -17,8 +17,8 @@
 #include "src/trace_processor/process_table.h"
 
 #include "perfetto/base/logging.h"
-#include "src/trace_processor/query_constraints.h"
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/query_constraints.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -33,25 +33,27 @@ ProcessTable::ProcessTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {}
 
 void ProcessTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
-  Table::Register<ProcessTable>(db, storage, "process");
+  SqliteTable::Register<ProcessTable>(db, storage, "process");
 }
 
 util::Status ProcessTable::Init(int, const char* const*, Schema* schema) {
   *schema = Schema(
       {
-          Table::Column(Column::kUpid, "upid", ColumnType::kInt),
-          Table::Column(Column::kName, "name", ColumnType::kString),
-          Table::Column(Column::kPid, "pid", ColumnType::kUint),
-          Table::Column(Column::kStartTs, "start_ts", ColumnType::kLong),
-          Table::Column(Column::kEndTs, "end_ts", ColumnType::kLong),
-          Table::Column(Column::kParentUpid, "parent_upid", ColumnType::kInt),
+          SqliteTable::Column(Column::kUpid, "upid", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kName, "name", SqlValue::Type::kString),
+          SqliteTable::Column(Column::kPid, "pid", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kStartTs, "start_ts",
+                              SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kEndTs, "end_ts", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kParentUpid, "parent_upid",
+                              SqlValue::Type::kLong),
       },
       {Column::kUpid});
   return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> ProcessTable::CreateCursor() {
-  return std::unique_ptr<Table::Cursor>(new Cursor(this));
+std::unique_ptr<SqliteTable::Cursor> ProcessTable::CreateCursor() {
+  return std::unique_ptr<SqliteTable::Cursor>(new Cursor(this));
 }
 
 int ProcessTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
@@ -68,7 +70,7 @@ int ProcessTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
 }
 
 ProcessTable::Cursor::Cursor(ProcessTable* table)
-    : Table::Cursor(table), storage_(table->storage_) {}
+    : SqliteTable::Cursor(table), storage_(table->storage_) {}
 
 int ProcessTable::Cursor::Filter(const QueryConstraints& qc,
                                  sqlite3_value** argv) {

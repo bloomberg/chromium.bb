@@ -5,7 +5,7 @@
 #include "components/ui_devtools/devtools_server.h"
 
 #include "base/command_line.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/ui_devtools/switches.h"
 #include "net/base/address_list.h"
@@ -32,8 +32,8 @@ TEST(UIDevToolsServerTest, MAYBE_ConnectionToViewsServer) {
   static constexpr int fake_port = 80;
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableUiDevTools);
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   network::mojom::NetworkServicePtr network_service_ptr;
   network::mojom::NetworkServiceRequest network_service_request =

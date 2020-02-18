@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace network {
 namespace features {
@@ -40,7 +41,18 @@ extern const base::Feature kProactivelyThrottleLowPriorityRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginEmbedderPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kBlockNonSecureExternalRequests;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kPrefetchMainResourceNetworkIsolationKey;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kDnsOverHttpsUpgrade;
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kMdnsResponderGeneratedNameListing;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<std::string>
+    kDnsOverHttpsUpgradeDisabledProvidersParam;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kDisableKeepaliveFetch;
 
 COMPONENT_EXPORT(NETWORK_CPP) bool ShouldEnableOutOfBlinkCors();
 

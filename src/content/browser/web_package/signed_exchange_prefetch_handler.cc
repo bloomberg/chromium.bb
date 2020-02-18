@@ -10,10 +10,8 @@
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
-#include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -29,8 +27,6 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     network::mojom::URLLoaderClientRequest network_client_request,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter loader_throttles_getter,
-    ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     network::mojom::URLLoaderClient* forwarding_client,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
@@ -41,18 +37,18 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
           std::move(network_client_request));
   network::mojom::URLLoaderClientPtr client;
   loader_client_binding_.Bind(mojo::MakeRequest(&client));
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    url_loader_factory = base::MakeRefCounted<
-        SignedExchangeURLLoaderFactoryForNonNetworkService>(
-        resource_context, request_context_getter.get());
-  } else {
-    url_loader_factory = std::move(network_loader_factory);
-  }
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      std::move(network_loader_factory);
+
+  // We need the SSLInfo as the prefetched signed exchange may be used as a main
+  // frame main resource. Users can inspect the certificate for the main frame
+  // using the info bubble in Omnibox.
+  const uint32_t url_loader_options =
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
+
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, response_head, std::move(response_body),
-      std::move(client), std::move(endpoints),
-      network::mojom::kURLLoadOptionNone,
+      std::move(client), std::move(endpoints), url_loader_options,
       false /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
           resource_request.url, response_head, frame_tree_node_id_getter,
@@ -93,14 +89,14 @@ base::Time SignedExchangePrefetchHandler::GetSignatureExpireTime() const {
 }
 
 void SignedExchangePrefetchHandler::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   NOTREACHED();
 }
 
 void SignedExchangePrefetchHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
-  forwarding_client_->OnReceiveRedirect(redirect_info, head);
+    network::mojom::URLResponseHeadPtr head) {
+  forwarding_client_->OnReceiveRedirect(redirect_info, std::move(head));
 }
 
 void SignedExchangePrefetchHandler::OnUploadProgress(

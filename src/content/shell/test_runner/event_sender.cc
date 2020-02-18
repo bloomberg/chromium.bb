@@ -733,9 +733,6 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
       .SetMethod("setTouchCancelable", &EventSenderBindings::SetTouchCancelable)
       .SetMethod("dumpFilenameBeingDragged",
                  &EventSenderBindings::DumpFilenameBeingDragged)
-      .SetMethod("gestureFlingCancel", &EventSenderBindings::GestureFlingCancel)
-      .SetMethod("gestureFlingStart", &EventSenderBindings::GestureFlingStart)
-      .SetMethod("isFlinging", &EventSenderBindings::IsFlinging)
       .SetMethod("gestureScrollFirstPoint",
                  &EventSenderBindings::GestureScrollFirstPoint)
       .SetMethod("touchStart", &EventSenderBindings::TouchStart)
@@ -888,26 +885,6 @@ void EventSenderBindings::SetTouchCancelable(bool cancelable) {
 void EventSenderBindings::DumpFilenameBeingDragged() {
   if (sender_)
     sender_->DumpFilenameBeingDragged();
-}
-
-void EventSenderBindings::GestureFlingCancel() {
-  if (sender_)
-    sender_->GestureFlingCancel();
-}
-
-void EventSenderBindings::GestureFlingStart(float x,
-                                            float y,
-                                            float velocity_x,
-                                            float velocity_y,
-                                            gin::Arguments* args) {
-  if (sender_)
-    sender_->GestureFlingStart(x, y, velocity_x, velocity_y, args);
-}
-
-bool EventSenderBindings::IsFlinging() {
-  if (sender_)
-    return sender_->IsFlinging();
-  return false;
 }
 
 void EventSenderBindings::GestureScrollFirstPoint(float x, float y) {
@@ -1379,6 +1356,9 @@ int EventSender::ModifiersForPointer(int pointer_id) {
 
 void EventSender::DoDragDrop(const WebDragData& drag_data,
                              WebDragOperationsMask mask) {
+  if (!mainFrameWidget())
+    return;
+
   WebMouseEvent raw_event(WebInputEvent::kMouseDown,
                           ModifiersForPointer(kRawMousePointerId),
                           GetCurrentEventTime());
@@ -1947,65 +1927,6 @@ void EventSender::DumpFilenameBeingDragged() {
       return;
     }
   }
-}
-
-void EventSender::GestureFlingCancel() {
-  WebGestureEvent event(WebInputEvent::kGestureFlingCancel,
-                        WebInputEvent::kNoModifiers, GetCurrentEventTime(),
-                        blink::WebGestureDevice::kTouchpad);
-  // Generally it won't matter what device we use here, and since it might
-  // be cumbersome to expect all callers to specify a device, we'll just
-  // choose Touchpad here.
-
-  if (force_layout_on_events_)
-    UpdateLifecycleToPrePaint();
-
-  HandleInputEventOnViewOrPopup(event);
-}
-
-void EventSender::GestureFlingStart(float x,
-                                    float y,
-                                    float velocity_x,
-                                    float velocity_y,
-                                    gin::Arguments* args) {
-  WebGestureEvent event(WebInputEvent::kGestureFlingStart,
-                        WebInputEvent::kNoModifiers, GetCurrentEventTime());
-
-  std::string device_string;
-  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString())
-    args->GetNext(&device_string);
-
-  if (device_string == kSourceDeviceStringTouchpad) {
-    event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
-  } else if (device_string == kSourceDeviceStringTouchscreen) {
-    event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
-  } else {
-    args->ThrowError();
-    return;
-  }
-
-  float max_start_velocity = std::max(fabs(velocity_x), fabs(velocity_y));
-  if (!max_start_velocity) {
-    v8::Isolate* isolate = blink::MainThreadIsolate();
-    isolate->ThrowException(v8::Exception::TypeError(
-        gin::StringToV8(isolate, "Invalid max start velocity.")));
-    return;
-  }
-
-  event.SetPositionInWidget(WebFloatPoint(x, y));
-  event.SetPositionInScreen(WebFloatPoint(x, y));
-
-  event.data.fling_start.velocity_x = velocity_x;
-  event.data.fling_start.velocity_y = velocity_y;
-
-  if (force_layout_on_events_)
-    UpdateLifecycleToPrePaint();
-
-  HandleInputEventOnViewOrPopup(event);
-}
-
-bool EventSender::IsFlinging() {
-  return mainFrameWidget()->IsFlinging();
 }
 
 void EventSender::GestureScrollFirstPoint(float x, float y) {
@@ -2923,6 +2844,8 @@ blink::WebWidget* EventSender::widget() {
 }
 
 blink::WebFrameWidget* EventSender::mainFrameWidget() {
+  if (!view() || !view()->MainFrame())
+    return nullptr;
   DCHECK(view()->MainFrame()->IsWebLocalFrame())
       << "Event Sender doesn't support being run in a remote frame for this "
          "operation.";

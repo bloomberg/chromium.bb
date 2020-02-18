@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -205,7 +205,7 @@ class SyncSettingsTableViewControllerTest
   }
 
   unified_consent::ScopedUnifiedConsent unified_consent_disabled_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Weak, owned by |profile_|.
   NiceMock<SyncSetupServiceMock>* mock_sync_setup_service_;

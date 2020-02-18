@@ -4,6 +4,8 @@
 
 #include "platform/impl/text_trace_logging_platform.h"
 
+#include <sstream>
+
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -27,30 +29,31 @@ void TextTraceLoggingPlatform::LogTrace(const char* name,
                                         const char* file,
                                         Clock::time_point start_time,
                                         Clock::time_point end_time,
-                                        TraceId trace_id,
-                                        TraceId parent_id,
-                                        TraceId root_id,
+                                        TraceIdHierarchy ids,
                                         Error::Code error) {
   auto total_runtime = std::chrono::duration_cast<std::chrono::microseconds>(
                            end_time - start_time)
                            .count();
   constexpr auto microseconds_symbol = "\u03BCs";  // Greek Mu + 's'
-  OSP_LOG << "TRACE [" << std::hex << root_id << ":" << parent_id << ":"
-          << trace_id << "] (" << std::dec << total_runtime
-          << microseconds_symbol << ") " << name << "<" << file << ":" << line
-          << "> " << error;
+  std::stringstream ss;
+  ss << "TRACE [" << std::hex << ids.root << ":" << ids.parent << ":"
+     << ids.current << "] (" << std::dec << total_runtime << microseconds_symbol
+     << ") " << name << "<" << file << ":" << line << "> " << error;
+
+  OSP_LOG << ss.str();
 }
 
 void TextTraceLoggingPlatform::LogAsyncStart(const char* name,
                                              const uint32_t line,
                                              const char* file,
                                              Clock::time_point timestamp,
-                                             TraceId trace_id,
-                                             TraceId parent_id,
-                                             TraceId root_id) {
-  OSP_LOG << "ASYNC TRACE START [" << std::hex << root_id << ":" << parent_id
-          << ":" << trace_id << std::dec << "] (" << timestamp << ") " << name
-          << "<" << file << ":" << line << ">";
+                                             TraceIdHierarchy ids) {
+  std::stringstream ss;
+  ss << "ASYNC TRACE START [" << std::hex << ids.root << ":" << ids.parent
+     << ":" << ids.current << std::dec << "] (" << timestamp << ") " << name
+     << "<" << file << ":" << line << ">";
+
+  OSP_LOG << ss.str();
 }
 
 void TextTraceLoggingPlatform::LogAsyncEnd(const uint32_t line,

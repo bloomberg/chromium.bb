@@ -11,6 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace headless {
@@ -40,7 +41,6 @@ class RedirectLoader : public network::mojom::URLLoader {
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
 
-  void ProceedWithResponse() override { DCHECK(false); }
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -91,9 +91,9 @@ class TestNetworkInterceptor::Impl {
   }
 
   Response* FindResponse(const std::string& method, const std::string& url) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&TestNetworkInterceptor::LogRequest,
-                                            interceptor_, method, url));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&TestNetworkInterceptor::LogRequest,
+                                  interceptor_, method, url));
     auto it = response_map_.find(StripFragment(url));
     return it == response_map_.end() ? nullptr : it->second.get();
   }
@@ -164,7 +164,7 @@ TestNetworkInterceptor::Response::Response(Response&& r) = default;
 
 TestNetworkInterceptor::Response::~Response() {}
 
-TestNetworkInterceptor::TestNetworkInterceptor() : weak_factory_(this) {
+TestNetworkInterceptor::TestNetworkInterceptor() {
   impl_.reset(new Impl(weak_factory_.GetWeakPtr()));
   interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
       base::BindRepeating(&TestNetworkInterceptor::Impl::RequestHandler,
@@ -178,7 +178,7 @@ TestNetworkInterceptor::~TestNetworkInterceptor() {
 
 void TestNetworkInterceptor::InsertResponse(std::string url,
                                             Response response) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::InsertResponse, base::Unretained(impl_.get()),
                      std::move(url), std::move(response)));

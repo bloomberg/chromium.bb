@@ -219,6 +219,9 @@ class V4L2BuffersList : public base::RefCountedThreadSafe<V4L2BuffersList> {
   size_t size() const;
 
  private:
+  friend class base::RefCountedThreadSafe<V4L2BuffersList>;
+  ~V4L2BuffersList() = default;
+
   mutable base::Lock lock_;
   std::set<size_t> free_buffers_ GUARDED_BY(lock_);
   DISALLOW_COPY_AND_ASSIGN(V4L2BuffersList);
@@ -499,6 +502,26 @@ size_t V4L2WritableBufferRef::GetPlaneSize(const size_t plane) const {
   return buffer_data_->v4l2_buffer_.m.planes[plane].length;
 }
 
+void V4L2WritableBufferRef::SetPlaneSize(const size_t plane,
+                                         const size_t size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsValid());
+
+  enum v4l2_memory memory = Memory();
+  if (memory == V4L2_MEMORY_MMAP) {
+    DCHECK_EQ(buffer_data_->v4l2_buffer_.m.planes[plane].length, size);
+    return;
+  }
+  DCHECK(memory == V4L2_MEMORY_USERPTR || memory == V4L2_MEMORY_DMABUF);
+
+  if (plane >= PlanesCount()) {
+    VLOGF(1) << "Invalid plane " << plane << " requested.";
+    return;
+  }
+
+  buffer_data_->v4l2_buffer_.m.planes[plane].length = size;
+}
+
 void* V4L2WritableBufferRef::GetPlaneMapping(const size_t plane) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsValid());
@@ -551,9 +574,22 @@ size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
   return buffer_data_->v4l2_buffer_.m.planes[plane].bytesused;
 }
 
+void V4L2WritableBufferRef::SetPlaneDataOffset(const size_t plane,
+                                               const size_t data_offset) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsValid());
+
+  if (plane >= PlanesCount()) {
+    VLOGF(1) << "Invalid plane " << plane << " requested.";
+    return;
+  }
+
+  buffer_data_->v4l2_buffer_.m.planes[plane].data_offset = data_offset;
+}
+
 void V4L2WritableBufferRef::PrepareQueueBuffer(
-    scoped_refptr<V4L2DecodeSurface> surface) {
-  surface->PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
+    const V4L2DecodeSurface& surface) {
+  surface.PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
 }
 
 size_t V4L2WritableBufferRef::BufferId() const {
@@ -590,6 +626,13 @@ bool V4L2ReadableBuffer::IsLast() const {
   return buffer_data_->v4l2_buffer_.flags & V4L2_BUF_FLAG_LAST;
 }
 
+bool V4L2ReadableBuffer::IsKeyframe() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  return buffer_data_->v4l2_buffer_.flags & V4L2_BUF_FLAG_KEYFRAME;
+}
+
 struct timeval V4L2ReadableBuffer::GetTimeStamp() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
@@ -604,6 +647,13 @@ size_t V4L2ReadableBuffer::PlanesCount() const {
   return buffer_data_->v4l2_buffer_.length;
 }
 
+const void* V4L2ReadableBuffer::GetPlaneMapping(const size_t plane) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  return buffer_data_->GetPlaneMapping(plane);
+}
+
 size_t V4L2ReadableBuffer::GetPlaneBytesUsed(const size_t plane) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
@@ -614,6 +664,18 @@ size_t V4L2ReadableBuffer::GetPlaneBytesUsed(const size_t plane) const {
   }
 
   return buffer_data_->v4l2_planes_[plane].bytesused;
+}
+
+size_t V4L2ReadableBuffer::GetPlaneDataOffset(const size_t plane) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  if (plane >= PlanesCount()) {
+    VLOGF(1) << "Invalid plane " << plane << " requested.";
+    return 0;
+  }
+
+  return buffer_data_->v4l2_planes_[plane].data_offset;
 }
 
 size_t V4L2ReadableBuffer::BufferId() const {
@@ -1004,8 +1066,19 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
     case V4L2_PIX_FMT_NV12M:
       return PIXEL_FORMAT_NV12;
 
+    // V4L2_PIX_FMT_MT21C is only used for MT8173 hardware video decoder output
+    // and should be converted by MT8173 image processor for compositor to
+    // render. Since it is an intermediate format for video decoder,
+    // VideoPixelFormat shall not have its mapping. However, we need to create a
+    // VideoFrameLayout for the format to process the intermediate frame. Hence
+    // we map V4L2_PIX_FMT_MT21C to PIXEL_FORMAT_NV12 as their layout are the
+    // same.
     case V4L2_PIX_FMT_MT21C:
-      return PIXEL_FORMAT_MT21;
+    // V4L2_PIX_FMT_MM21 is used for MT8183 hardware video decoder. It is
+    // similar to V4L2_PIX_FMT_MT21C but is not compressed ; thus it can also
+    // be mapped to PIXEL_FORMAT_NV12.
+    case V4L2_PIX_FMT_MM21:
+      return PIXEL_FORMAT_NV12;
 
     case V4L2_PIX_FMT_YUV420:
     case V4L2_PIX_FMT_YUV420M:
@@ -1033,15 +1106,14 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
   switch (format) {
     case PIXEL_FORMAT_NV12:
       return single_planar ? V4L2_PIX_FMT_NV12 : V4L2_PIX_FMT_NV12M;
-    case PIXEL_FORMAT_MT21:
-      // No single plane format for MT21.
-      return single_planar ? 0 : V4L2_PIX_FMT_MT21C;
     case PIXEL_FORMAT_I420:
       return single_planar ? V4L2_PIX_FMT_YUV420 : V4L2_PIX_FMT_YUV420M;
     case PIXEL_FORMAT_YV12:
       return single_planar ? V4L2_PIX_FMT_YVU420 : V4L2_PIX_FMT_YVU420M;
     default:
-      LOG(FATAL) << "Add more cases as needed";
+      LOG(ERROR) << "Add more cases as needed, format: "
+                 << VideoPixelFormatToString(format)
+                 << ", single_planar: " << single_planar;
       return 0;
   }
 }
@@ -1072,7 +1144,7 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
     else
       return V4L2_PIX_FMT_VP9;
   } else {
-    LOG(FATAL) << "Add more cases as needed";
+    LOG(ERROR) << "Unknown profile: " << GetProfileName(profile);
     return 0;
   }
 }
@@ -1512,8 +1584,8 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 // static
 bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
   constexpr uint32_t kMultiV4L2PixFmts[] = {
-      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_YUV420M,
-      V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
+      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_MM21,
+      V4L2_PIX_FMT_YUV420M, V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
   };
   return std::find(std::cbegin(kMultiV4L2PixFmts), std::cend(kMultiV4L2PixFmts),
                    pix_fmt) != std::cend(kMultiV4L2PixFmts);

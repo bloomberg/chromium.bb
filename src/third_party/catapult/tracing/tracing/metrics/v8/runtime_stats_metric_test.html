@@ -39,328 +39,6 @@ tr.b.unittest.testSuite(function() {
     }
   }
 
-  test('runtimeStatsMetricUsingTTI', function() {
-    // The renderer thread timeline looks like:
-    //
-    // * [V8.NewInstance] * [BlinkRuntimeCallStats,V8.Execute] * ...[V8.Ignored]
-    // |                  |                                    |
-    // |                  |                                    |
-    // v                  v                                    v
-    // First navigation   FMP                                  TTI
-    // 200                9200                                 15400
-    const model = tr.e.chrome.ChromeTestUtils.newChromeModel(function(model) {
-      const rendererProcess = model.rendererProcess;
-      const mainThread = model.rendererMain;
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'blink.user_timing',
-        title: 'navigationStart',
-        start: 200,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-      model.rendererMain.asyncSliceGroup.push(tr.c.TestUtils.newSliceEx({
-        cat: 'disabled-by-default-network',
-        title: 'ResourceLoad',
-        start: 200,
-        duration: 5.0
-      }));
-      rendererProcess.objects.addSnapshot('ptr', 'loading', 'FrameLoader', 300,
-          {isLoadingMainFrame: true, frame: {id_ref: '0xdeadbeef'},
-            documentLoaderURL: 'http://example.com'});
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'loading',
-        title: 'firstMeaningfulPaintCandidate',
-        start: 9200,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'blink.user_timing',
-        title: 'domContentLoadedEventEnd',
-        start: 10000,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'v8',
-        title: 'V8.newInstance',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 12555,
-        duration: 990,
-        args: {
-          'runtime-call-stats': {
-            JS_Execution: [1, 11],
-            HandleApiCall: [2, 22],
-            CompileFullCode: [3, 33],
-            LoadIC_Miss: [4, 44],
-            ParseLazy: [5, 55],
-            OptimizeCode: [6, 66],
-            FunctionCallback: [7, 77],
-            AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99]
-          }
-        }
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'loading',
-        title: 'firstMeaningfulPaintCandidate',
-        start: 9180,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'loading',
-        title: 'firstMeaningfulPaintCandidate',
-        start: 9200,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'blink.user_timing',
-        title: 'domContentLoadedEventEnd',
-        start: 9200,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'toplevel',
-        title: tr.e.chrome.SCHEDULER_TOP_LEVEL_TASK_TITLE,
-        start: 9350,
-        duration: 100,
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'toplevel',
-        title: tr.e.chrome.SCHEDULER_TOP_LEVEL_TASK_TITLE,
-        start: 11150,
-        duration: 100,
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'toplevel',
-        title: tr.e.chrome.SCHEDULER_TOP_LEVEL_TASK_TITLE,
-        start: 12550,
-        duration: 1000,
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'disabled-by-default-v8.runtime_stats',
-        title: 'runtime-call-stats',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 13550,
-        duration: 1000,
-        args: {
-          'runtime-call-stats': {
-            Blink_Layout_UpdateLayout: [15, 60],
-          }
-        }
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'v8',
-        title: 'V8.Execute',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 13555,
-        duration: 990,
-        args: {
-          'runtime-call-stats': {
-            JS_Execution: [1, 11],
-            HandleApiCall: [2, 22],
-            CompileFullCode: [3, 33],
-            StoreIC_Miss: [4, 44],
-            ParseLazy: [5, 55],
-            OptimizeCode: [6, 66],
-            FunctionCallback: [7, 77],
-            AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99],
-            ParseBackgroundFunctionLiteral: [2, 22],
-            CompileBackgroundIgnition: [3, 33]
-          }
-        }
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'toplevel',
-        title: tr.e.chrome.SCHEDULER_TOP_LEVEL_TASK_TITLE,
-        start: 14950,
-        duration: 500,
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'toplevel',
-        title: tr.e.chrome.SCHEDULER_TOP_LEVEL_TASK_TITLE,
-        start: 22150,
-        duration: 10,
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'v8',
-        title: 'V8.Ignored',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 30000,
-        duration: 1000,
-        args: {
-          'runtime-call-stats': {
-            JS_Execution: [1, 11],
-            HandleApiCall: [2, 22],
-            CompileFullCode: [3, 33],
-            LoadIC_Miss: [4, 44],
-            ParseLazy: [5, 55],
-            OptimizeCode: [6, 66],
-            FunctionCallback: [7, 77],
-            AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99],
-            ParseBackgroundFunctionLiteral: [2, 22],
-            CompileBackgroundIgnition: [3, 33]
-          }
-        }
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'disabled-by-default-v8.runtime_stats',
-        title: 'V8.Ignored',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 30000,
-        duration: 1000,
-        args: {
-          'runtime-call-stats': {
-            Blink_Layout_UpdateLayout: [15, 60],
-          }
-        }
-      }));
-    });
-
-    const histograms = new tr.v.HistogramSet();
-    tr.metrics.v8.runtimeStatsMetric(histograms, model);
-    assert.strictEqual(histograms.length, 54);
-    assert.strictEqual(histograms.sourceHistograms.length, 52);
-
-    // A few of the top level ones.
-    checkRuntimeHistogram_(histograms, 'IC', 8, 0.088);
-    checkRuntimeHistogram_(histograms, 'API', 18, 0.198);
-    checkRuntimeHistogram_(histograms, 'Compile', 6, 0.066);
-    checkRuntimeHistogram_(histograms, 'Total', 95, 1.045);
-    // Lower level one for Blink.
-    checkRuntimeHistogram_(histograms, 'Blink_UpdateLayout', 15, 0.06);
-  });
-
-  test('runtimeStatsMetricUsingDomContentLoaded', function() {
-    // The renderer thread timeline looks like:
-    //
-    // *   [V8.NewInstance]   *    [  V8.Execute ]   * [V8.Ignored]
-    // |                      |                      |
-    // |                      |                      |
-    // v                      v                      v
-    // First navigation      DCL                    DCL
-    // 200                   1300                   2400
-    const model = tr.e.chrome.ChromeTestUtils.newChromeModel(function(model) {
-      const rendererProcess = model.rendererProcess;
-      const mainThread = model.rendererMain;
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'blink.user_timing',
-        title: 'navigationStart',
-        start: 200,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'v8',
-        title: 'V8.newInstance',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 300,
-        duration: 990,
-        args: {
-          'runtime-call-stats': {
-            JS_Execution: [1, 11],
-            HandleApiCall: [2, 22],
-            CompileFullCode: [3, 33],
-            LoadIC_Miss: [4, 44],
-            ParseLazy: [5, 55],
-            OptimizeCode: [6, 66],
-            FunctionCallback: [7, 77],
-            AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99]
-          }
-        }
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'blink.user_timing',
-        title: 'domContentLoadedEventEnd',
-        start: 1300,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'v8',
-        title: 'V8.Execute',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 1400,
-        duration: 990,
-        args: {
-          'runtime-call-stats': {
-            JS_Execution: [1, 11],
-            HandleApiCall: [2, 22],
-            CompileFullCode: [3, 33],
-            StoreIC_Miss: [4, 44],
-            ParseLazy: [5, 55],
-            OptimizeCode: [6, 66],
-            FunctionCallback: [7, 77],
-            AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99]
-          }
-        }
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'blink.user_timing',
-        title: 'domContentLoadedEventEnd',
-        start: 2400,
-        duration: 0.0,
-        args: {frame: '0xdeadbeef'}
-      }));
-
-      mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
-        cat: 'v8',
-        title: 'V8.Ignored',
-        type: tr.e.v8.V8ThreadSlice,
-        start: 2450,
-        duration: 1000,
-        args: {
-          'runtime-call-stats': {
-            JS_Execution: [1, 11],
-            HandleApiCall: [2, 22],
-            CompileFullCode: [3, 33],
-            LoadIC_Miss: [4, 44],
-            ParseLazy: [5, 55],
-            OptimizeCode: [6, 66],
-            FunctionCallback: [7, 77],
-            AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99]
-          }
-        }
-      }));
-    });
-
-    const histograms = new tr.v.HistogramSet();
-    tr.metrics.v8.runtimeStatsMetric(histograms, model);
-    assert.strictEqual(histograms.length, 38);
-    assert.strictEqual(histograms.sourceHistograms.length, 38);
-
-    // A few of the top level ones.
-    checkRuntimeHistogram_(histograms, 'IC', 8, 0.088);
-    checkRuntimeHistogram_(histograms, 'API', 18, 0.198);
-    checkRuntimeHistogram_(histograms, 'Compile', 6, 0.066);
-    checkRuntimeHistogram_(histograms, 'Total', 90, 0.99);
-  });
-
   test('runtimeStatsMetricBucketOnUE', function() {
     // Test that v8 statistics are properly bucketed when UEs overlap.
     // The renderer thread timeline looks like:
@@ -415,7 +93,8 @@ tr.b.unittest.testSuite(function() {
             OptimizeCode: [6, 15],
             FunctionCallback: [7, 16],
             AllocateInTargetSpace: [8, 17],
-            API_Object_Get: [9, 18]
+            API_Object_Get: [9, 18],
+            RecompileConcurrent: [10, 19]
           }
         }
       }));
@@ -450,7 +129,8 @@ tr.b.unittest.testSuite(function() {
             OptimizeCode: [6, 66],
             FunctionCallback: [7, 77],
             AllocateInTargetSpace: [8, 88],
-            API_Object_Get: [9, 99]
+            API_Object_Get: [9, 99],
+            CompileBackgroundIgnition: [10, 10]
           }
         }
       }));
@@ -576,22 +256,25 @@ tr.b.unittest.testSuite(function() {
 
     const histograms = new tr.v.HistogramSet();
     tr.metrics.v8.runtimeStatsTotalMetric(histograms, model);
-    assert.strictEqual(histograms.length, 270);
+    assert.strictEqual(histograms.length, 290);
 
     // Check total:
     checkRuntimeHistogram_(histograms, 'IC', 20, 0.109);
     checkRuntimeHistogram_(histograms, 'API', 45, 0.234);
-    checkRuntimeHistogram_(histograms, 'Total', 225, 1.21);
+    checkRuntimeHistogram_(histograms, 'Total', 245, 1.239);
     checkRuntimeHistogram_(histograms, 'Blink C++', 35, 0.184);
-    checkRuntimeHistogram_(histograms, 'V8-Only', 190, 1.026);
+    checkRuntimeHistogram_(histograms, 'V8-Only', 210, 1.055);
     checkRuntimeHistogram_(histograms, 'Blink_Layout', 62, 0.67);
+    checkRuntimeHistogram_(histograms, 'Total-Main-Thread', 225, 1.21);
+    checkRuntimeHistogram_(histograms, 'V8-Only-Main-Thread', 190, 1.026);
 
     // Check Load bucket:
     checkRuntimeHistogram_(histograms, 'Load_Parse', 5, 0.014);
     checkRuntimeHistogram_(histograms, 'Load_JavaScript', 1, 0.01);
     checkRuntimeHistogram_(histograms, 'Load_Blink C++', 7, 0.016);
-    checkRuntimeHistogram_(histograms, 'Load_V8-Only', 38, 0.11);
+    checkRuntimeHistogram_(histograms, 'Load_V8-Only', 48, 0.129);
     checkRuntimeHistogram_(histograms, 'Load_Blink_Style', 20, 0.1);
+    checkRuntimeHistogram_(histograms, 'Load_V8-Only-Main-Thread', 38, 0.11);
 
     // Check Response bucket:
     checkRuntimeHistogram_(histograms, 'Response_Parse', 10, 0.06);
@@ -680,7 +363,8 @@ tr.b.unittest.testSuite(function() {
             OptimizeCode: [6, 66],
             FunctionCallback: [7, 77],
             AllocateInTargetSpace: [8, 88],
-            API_Context_New: [9, 99]
+            API_Context_New: [9, 99],
+            ParseBackgroundProgram: [10, 111]
           }
         }
       }));
@@ -702,17 +386,20 @@ tr.b.unittest.testSuite(function() {
 
     const histograms = new tr.v.HistogramSet();
     tr.metrics.v8.runtimeStatsTotalMetric(histograms, model);
-    assert.strictEqual(histograms.length, 54);
+    assert.strictEqual(histograms.length, 58);
 
     // Check total:
     checkRuntimeHistogram_(histograms, 'IC', 8, 0.057);
     checkRuntimeHistogram_(histograms, 'API', 18, 0.117);
     checkRuntimeHistogram_(histograms, 'Parse', 10, 0.069);
-    checkRuntimeHistogram_(histograms, 'Total', 90, 0.621);
+    checkRuntimeHistogram_(histograms, 'Parse-Background', 10, 0.111);
+    checkRuntimeHistogram_(histograms, 'Total', 100, 0.732);
     checkRuntimeHistogram_(histograms, 'Blink C++', 14, 0.093);
-    checkRuntimeHistogram_(histograms, 'V8-Only', 76, 0.528);
+    checkRuntimeHistogram_(histograms, 'V8-Only', 86, 0.639);
     checkRuntimeHistogram_(histograms, 'Blink_Layout', 15, 0.3);
     checkRuntimeHistogram_(histograms, 'Blink_Style', 12, 0.15);
+    checkRuntimeHistogram_(histograms, 'V8-Only-Main-Thread', 76, 0.528);
+    checkRuntimeHistogram_(histograms, 'Total-Main-Thread', 90, 0.621);
   });
 });
 </script>

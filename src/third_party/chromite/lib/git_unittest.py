@@ -8,8 +8,9 @@
 from __future__ import print_function
 
 import functools
-import mock
 import os
+
+import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -108,11 +109,11 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
   """Tests for small git wrappers"""
 
   CHANGE_ID = 'I0da12ef6d2c670305f0281641bc53db22faf5c1a'
-  COMMIT_LOG = '''
+  COMMIT_LOG = """
   foo: Change to foo.
 
   Change-Id: %s
-  ''' % CHANGE_ID
+  """ % CHANGE_ID
 
   PUSH_REMOTE = 'fake_remote'
   PUSH_BRANCH = 'fake_branch'
@@ -243,7 +244,7 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
     osutils.Touch(other_file)
 
     ret = git.GetGitGitdir(self.fake_git_dir)
-    self.assertEqual(ret, os.path.join(self.fake_git_dir, ".git"))
+    self.assertEqual(ret, os.path.join(self.fake_git_dir, '.git'))
 
   def testGetGitGitdir_bare(self):
     git.Init(self.fake_git_dir)
@@ -350,12 +351,12 @@ class RawDiffTest(cros_test_lib.MockTestCase):
   def testRawDiff(self):
     """Test the parsing of the git.RawDiff function."""
 
-    diff_output = '''
+    diff_output = """
 :100644 100644 ac234b2... 077d1f8... M\tchromeos-base/chromeos-chrome/Manifest
 :100644 100644 9e5d11b... 806bf9b... R099\tchromeos-base/chromeos-chrome/chromeos-chrome-40.0.2197.0_rc-r1.ebuild\tchromeos-base/chromeos-chrome/chromeos-chrome-40.0.2197.2_rc-r1.ebuild
 :100644 100644 70d6e94... 821c642... M\tchromeos-base/chromeos-chrome/chromeos-chrome-9999.ebuild
 :100644 100644 be445f9... be445f9... R100\tchromeos-base/chromium-source/chromium-source-40.0.2197.0_rc-r1.ebuild\tchromeos-base/chromium-source/chromium-source-40.0.2197.2_rc-r1.ebuild
-'''
+"""
     result = cros_build_lib.CommandResult(output=diff_output)
     self.PatchObject(git, 'RunGit', return_value=result)
 
@@ -385,7 +386,7 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
   NON_FF_PUSH_ERROR = (
       'To https://localhost/repo.git\n'
       '! [remote rejected] master -> master (non-fast-forward)\n'
-      'error: failed to push some refs to \'https://localhost/repo.git\'\n')
+      "error: failed to push some refs to 'https://localhost/repo.git'\n")
 
   # List of possible GoB transient errors.
   TRANSIENT_ERRORS = (
@@ -393,19 +394,19 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
       ('remote: Processing changes: (-)To https://localhost/repo.git\n'
        '! [remote rejected] 6c78ca083c3a9d64068c945fd9998eb1e0a3e739 -> '
        'stabilize-4636.B (error in hook)\n'
-       'error: failed to push some refs to \'https://localhost/repo.git\'\n'),
+       "error: failed to push some refs to 'https://localhost/repo.git'\n"),
 
       # 'failed to lock' error when creating a new branch from SHA1 ref.
       ('remote: Processing changes: done\nTo https://localhost/repo.git\n'
        '! [remote rejected] 4ea09c129b5fedb261bae2431ce2511e35ac3923 -> '
        'stabilize-daisy-4319.96.B (failed to lock)\n'
-       'error: failed to push some refs to \'https://localhost/repo.git\'\n'),
+       "error: failed to push some refs to 'https://localhost/repo.git'\n"),
 
       # Hook error when pushing branch.
       ('remote: Processing changes: (\\)To https://localhost/repo.git\n'
        '! [remote rejected] temp_auto_checkin_branch -> '
        'master (error in hook)\n'
-       'error: failed to push some refs to \'https://localhost/repo.git\'\n'),
+       "error: failed to push some refs to 'https://localhost/repo.git'\n"),
 
       # Another kind of error when pushing a branch.
       'fatal: remote error: Internal Server Error',
@@ -417,7 +418,7 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
        'fatal: HTTP request failed'),
 
       # crbug.com/298189
-      ('fatal: unable to access \'https://localhost/repo.git\': GnuTLS recv '
+      ("fatal: unable to access 'https://localhost/repo.git': GnuTLS recv "
        'error (-9): A TLS packet with unexpected length was received.'),
   )
 

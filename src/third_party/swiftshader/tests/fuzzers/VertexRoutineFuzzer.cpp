@@ -203,11 +203,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	sw::VertexProgram program(state, bytecodeShader.get());
 	program.generate();
 
-	sw::Routine *routine = program("VertexRoutine");
+	auto routine = program("VertexRoutine");
 	assert(routine);
 	const void *entry = routine->getEntry();
 	assert(entry); (void)entry;
-	delete routine;
 
 	return 0;
 }

@@ -29,9 +29,10 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -85,8 +86,10 @@ void RemoveBrowsingData() {
                                  block:^BOOL {
                                    return browsing_data_removed;
                                  }];
-  GREYAssert([condition waitWithTimeout:base::test::ios::kWaitForActionTimeout],
-             @"Browsing data was not removed.");
+  GREYAssert(
+      [condition
+          waitWithTimeout:base::test::ios::kWaitForClearBrowsingDataTimeout],
+      @"Browsing data was not removed.");
 }
 
 }  // namespace
@@ -162,12 +165,13 @@ void RemoveBrowsingData() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
 
-  // Synchronization off due to an infinite spinner.
-  SetEarlGreySynchronizationEnabled(NO);
-  WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
-      IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
-  TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
-  SetEarlGreySynchronizationEnabled(YES);
+  {
+    // Synchronization off due to an infinite spinner.
+    ScopedSynchronizationDisabler disabler;
+    WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
+        IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
+    TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
+  }
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
   [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
@@ -242,6 +246,8 @@ void RemoveBrowsingData() {
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
+  // Wait until the page is opened.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
@@ -309,6 +315,8 @@ void RemoveBrowsingData() {
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
+  // Wait until the page is opened.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
@@ -348,6 +356,8 @@ void RemoveBrowsingData() {
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
+  // Wait until the page is opened.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.

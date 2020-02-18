@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1057,7 +1057,7 @@ bool ValidateWebGLVertexAttribPointer(Context *context,
     return true;
 }
 
-Program *GetValidProgramNoResolve(Context *context, GLuint id)
+Program *GetValidProgramNoResolve(Context *context, ShaderProgramID id)
 {
     // ES3 spec (section 2.11.1) -- "Commands that accept shader or program object names will
     // generate the error INVALID_VALUE if the provided name is not the name of either a shader
@@ -1081,7 +1081,7 @@ Program *GetValidProgramNoResolve(Context *context, GLuint id)
     return validProgram;
 }
 
-Program *GetValidProgram(Context *context, GLuint id)
+Program *GetValidProgram(Context *context, ShaderProgramID id)
 {
     Program *program = GetValidProgramNoResolve(context, id);
     if (program)
@@ -1091,7 +1091,7 @@ Program *GetValidProgram(Context *context, GLuint id)
     return program;
 }
 
-Shader *GetValidShader(Context *context, GLuint id)
+Shader *GetValidShader(Context *context, ShaderProgramID id)
 {
     // See ValidProgram for spec details.
 
@@ -1219,7 +1219,7 @@ bool ValidateFramebufferRenderbufferParameters(Context *context,
                                                GLenum target,
                                                GLenum attachment,
                                                GLenum renderbuffertarget,
-                                               GLuint renderbuffer)
+                                               RenderbufferID renderbuffer)
 {
     if (!ValidFramebufferTarget(context, target))
     {
@@ -1230,7 +1230,7 @@ bool ValidateFramebufferRenderbufferParameters(Context *context,
     Framebuffer *framebuffer = context->getState().getTargetFramebuffer(target);
 
     ASSERT(framebuffer);
-    if (framebuffer->id() == 0)
+    if (framebuffer->isDefault())
     {
         context->validationError(GL_INVALID_OPERATION, kDefaultFramebufferTarget);
         return false;
@@ -1245,7 +1245,7 @@ bool ValidateFramebufferRenderbufferParameters(Context *context,
     // [OpenGL ES 3.0.2] Section 4.4.2 page 201
     // 'renderbuffer' must be either zero or the name of an existing renderbuffer object of
     // type 'renderbuffertarget', otherwise an INVALID_OPERATION error is generated.
-    if (renderbuffer != 0)
+    if (renderbuffer.value != 0)
     {
         if (!context->getRenderbuffer(renderbuffer))
         {
@@ -1314,7 +1314,12 @@ bool ValidateBlitFramebufferParameters(Context *context,
         return false;
     }
 
-    if (readFramebuffer->id() == drawFramebuffer->id())
+    // The draw and read framebuffers can only match if:
+    // - They are the default framebuffer AND
+    // - The read/draw surfaces are different
+    if ((readFramebuffer->id() == drawFramebuffer->id()) &&
+        ((drawFramebuffer->id() != Framebuffer::kDefaultDrawFramebufferHandle) ||
+         (context->getCurrentDrawSurface() == context->getCurrentReadSurface())))
     {
         context->validationError(GL_INVALID_OPERATION, kBlitFeedbackLoop);
         return false;
@@ -1595,7 +1600,7 @@ bool ValidateReadnPixelsRobustANGLE(Context *context,
     return true;
 }
 
-bool ValidateGenQueriesEXT(Context *context, GLsizei n, GLuint *ids)
+bool ValidateGenQueriesEXT(Context *context, GLsizei n, QueryID *ids)
 {
     if (!context->getExtensions().occlusionQueryBoolean &&
         !context->getExtensions().disjointTimerQuery)
@@ -1607,7 +1612,7 @@ bool ValidateGenQueriesEXT(Context *context, GLsizei n, GLuint *ids)
     return ValidateGenOrDelete(context, n);
 }
 
-bool ValidateDeleteQueriesEXT(Context *context, GLsizei n, const GLuint *ids)
+bool ValidateDeleteQueriesEXT(Context *context, GLsizei n, const QueryID *ids)
 {
     if (!context->getExtensions().occlusionQueryBoolean &&
         !context->getExtensions().disjointTimerQuery)
@@ -1619,7 +1624,7 @@ bool ValidateDeleteQueriesEXT(Context *context, GLsizei n, const GLuint *ids)
     return ValidateGenOrDelete(context, n);
 }
 
-bool ValidateIsQueryEXT(Context *context, GLuint id)
+bool ValidateIsQueryEXT(Context *context, QueryID id)
 {
     if (!context->getExtensions().occlusionQueryBoolean &&
         !context->getExtensions().disjointTimerQuery)
@@ -1631,7 +1636,7 @@ bool ValidateIsQueryEXT(Context *context, GLuint id)
     return true;
 }
 
-bool ValidateBeginQueryBase(Context *context, QueryType target, GLuint id)
+bool ValidateBeginQueryBase(Context *context, QueryType target, QueryID id)
 {
     if (!ValidQueryType(context, target))
     {
@@ -1639,7 +1644,7 @@ bool ValidateBeginQueryBase(Context *context, QueryType target, GLuint id)
         return false;
     }
 
-    if (id == 0)
+    if (id.value == 0)
     {
         context->validationError(GL_INVALID_OPERATION, kInvalidQueryId);
         return false;
@@ -1686,7 +1691,7 @@ bool ValidateBeginQueryBase(Context *context, QueryType target, GLuint id)
     return true;
 }
 
-bool ValidateBeginQueryEXT(Context *context, QueryType target, GLuint id)
+bool ValidateBeginQueryEXT(Context *context, QueryType target, QueryID id)
 {
     if (!context->getExtensions().occlusionQueryBoolean &&
         !context->getExtensions().disjointTimerQuery && !context->getExtensions().syncQuery)
@@ -1729,7 +1734,7 @@ bool ValidateEndQueryEXT(Context *context, QueryType target)
     return ValidateEndQueryBase(context, target);
 }
 
-bool ValidateQueryCounterEXT(Context *context, GLuint id, QueryType target)
+bool ValidateQueryCounterEXT(Context *context, QueryID id, QueryType target)
 {
     if (!context->getExtensions().disjointTimerQuery)
     {
@@ -1844,7 +1849,7 @@ bool ValidateGetQueryivRobustANGLE(Context *context,
     return true;
 }
 
-bool ValidateGetQueryObjectValueBase(Context *context, GLuint id, GLenum pname, GLsizei *numParams)
+bool ValidateGetQueryObjectValueBase(Context *context, QueryID id, GLenum pname, GLsizei *numParams)
 {
     if (numParams)
     {
@@ -1895,7 +1900,7 @@ bool ValidateGetQueryObjectValueBase(Context *context, GLuint id, GLenum pname, 
     return true;
 }
 
-bool ValidateGetQueryObjectivEXT(Context *context, GLuint id, GLenum pname, GLint *params)
+bool ValidateGetQueryObjectivEXT(Context *context, QueryID id, GLenum pname, GLint *params)
 {
     if (!context->getExtensions().disjointTimerQuery)
     {
@@ -1906,7 +1911,7 @@ bool ValidateGetQueryObjectivEXT(Context *context, GLuint id, GLenum pname, GLin
 }
 
 bool ValidateGetQueryObjectivRobustANGLE(Context *context,
-                                         GLuint id,
+                                         QueryID id,
                                          GLenum pname,
                                          GLsizei bufSize,
                                          GLsizei *length,
@@ -1940,7 +1945,7 @@ bool ValidateGetQueryObjectivRobustANGLE(Context *context,
     return true;
 }
 
-bool ValidateGetQueryObjectuivEXT(Context *context, GLuint id, GLenum pname, GLuint *params)
+bool ValidateGetQueryObjectuivEXT(Context *context, QueryID id, GLenum pname, GLuint *params)
 {
     if (!context->getExtensions().disjointTimerQuery &&
         !context->getExtensions().occlusionQueryBoolean && !context->getExtensions().syncQuery)
@@ -1952,7 +1957,7 @@ bool ValidateGetQueryObjectuivEXT(Context *context, GLuint id, GLenum pname, GLu
 }
 
 bool ValidateGetQueryObjectuivRobustANGLE(Context *context,
-                                          GLuint id,
+                                          QueryID id,
                                           GLenum pname,
                                           GLsizei bufSize,
                                           GLsizei *length,
@@ -1987,7 +1992,7 @@ bool ValidateGetQueryObjectuivRobustANGLE(Context *context,
     return true;
 }
 
-bool ValidateGetQueryObjecti64vEXT(Context *context, GLuint id, GLenum pname, GLint64 *params)
+bool ValidateGetQueryObjecti64vEXT(Context *context, QueryID id, GLenum pname, GLint64 *params)
 {
     if (!context->getExtensions().disjointTimerQuery)
     {
@@ -1998,7 +2003,7 @@ bool ValidateGetQueryObjecti64vEXT(Context *context, GLuint id, GLenum pname, GL
 }
 
 bool ValidateGetQueryObjecti64vRobustANGLE(Context *context,
-                                           GLuint id,
+                                           QueryID id,
                                            GLenum pname,
                                            GLsizei bufSize,
                                            GLsizei *length,
@@ -2032,7 +2037,7 @@ bool ValidateGetQueryObjecti64vRobustANGLE(Context *context,
     return true;
 }
 
-bool ValidateGetQueryObjectui64vEXT(Context *context, GLuint id, GLenum pname, GLuint64 *params)
+bool ValidateGetQueryObjectui64vEXT(Context *context, QueryID id, GLenum pname, GLuint64 *params)
 {
     if (!context->getExtensions().disjointTimerQuery)
     {
@@ -2043,7 +2048,7 @@ bool ValidateGetQueryObjectui64vEXT(Context *context, GLuint id, GLenum pname, G
 }
 
 bool ValidateGetQueryObjectui64vRobustANGLE(Context *context,
-                                            GLuint id,
+                                            QueryID id,
                                             GLenum pname,
                                             GLsizei bufSize,
                                             GLsizei *length,
@@ -2471,7 +2476,8 @@ bool ValidateCopyTexImageParametersBase(Context *context,
         return false;
     }
 
-    if (readFramebuffer->id() != 0 && !ValidateFramebufferNotMultisampled(context, readFramebuffer))
+    if (!readFramebuffer->isDefault() &&
+        !ValidateFramebufferNotMultisampled(context, readFramebuffer))
     {
         return false;
     }
@@ -3025,7 +3031,7 @@ bool ValidateDrawElementsInstancedEXT(Context *context,
 bool ValidateFramebufferTextureBase(Context *context,
                                     GLenum target,
                                     GLenum attachment,
-                                    GLuint texture,
+                                    TextureID texture,
                                     GLint level)
 {
     if (!ValidFramebufferTarget(context, target))
@@ -3039,7 +3045,7 @@ bool ValidateFramebufferTextureBase(Context *context,
         return false;
     }
 
-    if (texture != 0)
+    if (texture.value != 0)
     {
         Texture *tex = context->getTexture(texture);
 
@@ -3059,7 +3065,7 @@ bool ValidateFramebufferTextureBase(Context *context,
     const Framebuffer *framebuffer = context->getState().getTargetFramebuffer(target);
     ASSERT(framebuffer);
 
-    if (framebuffer->id() == 0)
+    if (framebuffer->isDefault())
     {
         context->validationError(GL_INVALID_OPERATION, kDefaultFramebufferTarget);
         return false;
@@ -3068,9 +3074,9 @@ bool ValidateFramebufferTextureBase(Context *context,
     return true;
 }
 
-bool ValidateGetUniformBase(Context *context, GLuint program, GLint location)
+bool ValidateGetUniformBase(Context *context, ShaderProgramID program, GLint location)
 {
-    if (program == 0)
+    if (program.value == 0)
     {
         context->validationError(GL_INVALID_VALUE, kProgramDoesNotExist);
         return false;
@@ -3098,7 +3104,7 @@ bool ValidateGetUniformBase(Context *context, GLuint program, GLint location)
 }
 
 static bool ValidateSizedGetUniform(Context *context,
-                                    GLuint program,
+                                    ShaderProgramID program,
                                     GLint location,
                                     GLsizei bufSize,
                                     GLsizei *length)
@@ -3140,7 +3146,7 @@ static bool ValidateSizedGetUniform(Context *context,
 }
 
 bool ValidateGetnUniformfvEXT(Context *context,
-                              GLuint program,
+                              ShaderProgramID program,
                               GLint location,
                               GLsizei bufSize,
                               GLfloat *params)
@@ -3149,7 +3155,7 @@ bool ValidateGetnUniformfvEXT(Context *context,
 }
 
 bool ValidateGetnUniformfvRobustANGLE(Context *context,
-                                      GLuint program,
+                                      ShaderProgramID program,
                                       GLint location,
                                       GLsizei bufSize,
                                       GLsizei *length,
@@ -3160,7 +3166,7 @@ bool ValidateGetnUniformfvRobustANGLE(Context *context,
 }
 
 bool ValidateGetnUniformivEXT(Context *context,
-                              GLuint program,
+                              ShaderProgramID program,
                               GLint location,
                               GLsizei bufSize,
                               GLint *params)
@@ -3169,7 +3175,7 @@ bool ValidateGetnUniformivEXT(Context *context,
 }
 
 bool ValidateGetnUniformivRobustANGLE(Context *context,
-                                      GLuint program,
+                                      ShaderProgramID program,
                                       GLint location,
                                       GLsizei bufSize,
                                       GLsizei *length,
@@ -3180,7 +3186,7 @@ bool ValidateGetnUniformivRobustANGLE(Context *context,
 }
 
 bool ValidateGetnUniformuivRobustANGLE(Context *context,
-                                       GLuint program,
+                                       ShaderProgramID program,
                                        GLint location,
                                        GLsizei bufSize,
                                        GLsizei *length,
@@ -3191,7 +3197,7 @@ bool ValidateGetnUniformuivRobustANGLE(Context *context,
 }
 
 bool ValidateGetUniformfvRobustANGLE(Context *context,
-                                     GLuint program,
+                                     ShaderProgramID program,
                                      GLint location,
                                      GLsizei bufSize,
                                      GLsizei *length,
@@ -3216,7 +3222,7 @@ bool ValidateGetUniformfvRobustANGLE(Context *context,
 }
 
 bool ValidateGetUniformivRobustANGLE(Context *context,
-                                     GLuint program,
+                                     ShaderProgramID program,
                                      GLint location,
                                      GLsizei bufSize,
                                      GLsizei *length,
@@ -3241,7 +3247,7 @@ bool ValidateGetUniformivRobustANGLE(Context *context,
 }
 
 bool ValidateGetUniformuivRobustANGLE(Context *context,
-                                      GLuint program,
+                                      ShaderProgramID program,
                                       GLint location,
                                       GLsizei bufSize,
                                       GLsizei *length,
@@ -3472,12 +3478,12 @@ bool ValidateEGLImageTargetRenderbufferStorageOES(Context *context,
     return true;
 }
 
-bool ValidateBindVertexArrayBase(Context *context, GLuint array)
+bool ValidateBindVertexArrayBase(Context *context, VertexArrayID array)
 {
     if (!context->isVertexArrayGenerated(array))
     {
         // The default VAO should always exist
-        ASSERT(array != 0);
+        ASSERT(array.value != 0);
         context->validationError(GL_INVALID_OPERATION, kInvalidVertexArray);
         return false;
     }
@@ -3486,7 +3492,7 @@ bool ValidateBindVertexArrayBase(Context *context, GLuint array)
 }
 
 bool ValidateProgramBinaryBase(Context *context,
-                               GLuint program,
+                               ShaderProgramID program,
                                GLenum binaryFormat,
                                const void *binary,
                                GLint length)
@@ -3516,7 +3522,7 @@ bool ValidateProgramBinaryBase(Context *context,
 }
 
 bool ValidateGetProgramBinaryBase(Context *context,
-                                  GLuint program,
+                                  ShaderProgramID program,
                                   GLsizei bufSize,
                                   GLsizei *length,
                                   GLenum *binaryFormat,
@@ -3558,8 +3564,8 @@ bool ValidateDrawBuffersBase(Context *context, GLsizei n, const GLenum *bufs)
     }
 
     ASSERT(context->getState().getDrawFramebuffer());
-    GLuint frameBufferId      = context->getState().getDrawFramebuffer()->id();
-    GLuint maxColorAttachment = GL_COLOR_ATTACHMENT0_EXT + context->getCaps().maxColorAttachments;
+    FramebufferID frameBufferId = context->getState().getDrawFramebuffer()->id();
+    GLuint maxColorAttachment   = GL_COLOR_ATTACHMENT0_EXT + context->getCaps().maxColorAttachments;
 
     // This should come first before the check for the default frame buffer
     // because when we switch to ES3.1+, invalid enums will return INVALID_ENUM
@@ -3586,7 +3592,7 @@ bool ValidateDrawBuffersBase(Context *context, GLsizei n, const GLenum *bufs)
             return false;
         }
         else if (bufs[colorAttachment] != GL_NONE && bufs[colorAttachment] != attachment &&
-                 frameBufferId != 0)
+                 frameBufferId.value != 0)
         {
             // INVALID_OPERATION-GL is bound to buffer and ith argument
             // is not COLOR_ATTACHMENTi or NONE
@@ -3597,7 +3603,7 @@ bool ValidateDrawBuffersBase(Context *context, GLsizei n, const GLenum *bufs)
 
     // INVALID_OPERATION is generated if GL is bound to the default framebuffer
     // and n is not 1 or bufs is bound to value other than BACK and NONE
-    if (frameBufferId == 0)
+    if (frameBufferId.value == 0)
     {
         if (n != 1)
         {
@@ -3965,7 +3971,7 @@ bool ValidateGetFramebufferAttachmentParameterivBase(Context *context,
     const Framebuffer *framebuffer = context->getState().getTargetFramebuffer(target);
     ASSERT(framebuffer);
 
-    if (framebuffer->id() == 0)
+    if (framebuffer->isDefault())
     {
         if (clientVersion < 3)
         {
@@ -4202,7 +4208,10 @@ bool ValidateGetBufferParameteri64vRobustANGLE(Context *context,
     return true;
 }
 
-bool ValidateGetProgramivBase(Context *context, GLuint program, GLenum pname, GLsizei *numParams)
+bool ValidateGetProgramivBase(Context *context,
+                              ShaderProgramID program,
+                              GLenum pname,
+                              GLsizei *numParams)
 {
     // Currently, all GetProgramiv queries return 1 parameter
     if (numParams)
@@ -4345,7 +4354,7 @@ bool ValidateGetProgramivBase(Context *context, GLuint program, GLenum pname, GL
 }
 
 bool ValidateGetProgramivRobustANGLE(Context *context,
-                                     GLuint program,
+                                     ShaderProgramID program,
                                      GLenum pname,
                                      GLsizei bufSize,
                                      GLsizei *length,
@@ -4403,7 +4412,7 @@ bool ValidateGetRenderbufferParameterivRobustANGLE(Context *context,
 }
 
 bool ValidateGetShaderivRobustANGLE(Context *context,
-                                    GLuint shader,
+                                    ShaderProgramID shader,
                                     GLenum pname,
                                     GLsizei bufSize,
                                     GLsizei *length,
@@ -4558,7 +4567,7 @@ bool ValidateTexParameterIuivRobustANGLE(Context *context,
 }
 
 bool ValidateGetSamplerParameterfvRobustANGLE(Context *context,
-                                              GLuint sampler,
+                                              SamplerID sampler,
                                               GLenum pname,
                                               GLsizei bufSize,
                                               GLsizei *length,
@@ -4586,7 +4595,7 @@ bool ValidateGetSamplerParameterfvRobustANGLE(Context *context,
 }
 
 bool ValidateGetSamplerParameterivRobustANGLE(Context *context,
-                                              GLuint sampler,
+                                              SamplerID sampler,
                                               GLenum pname,
                                               GLsizei bufSize,
                                               GLsizei *length,
@@ -4614,7 +4623,7 @@ bool ValidateGetSamplerParameterivRobustANGLE(Context *context,
 }
 
 bool ValidateGetSamplerParameterIivRobustANGLE(Context *context,
-                                               GLuint sampler,
+                                               SamplerID sampler,
                                                GLenum pname,
                                                GLsizei bufSize,
                                                GLsizei *length,
@@ -4625,7 +4634,7 @@ bool ValidateGetSamplerParameterIivRobustANGLE(Context *context,
 }
 
 bool ValidateGetSamplerParameterIuivRobustANGLE(Context *context,
-                                                GLuint sampler,
+                                                SamplerID sampler,
                                                 GLenum pname,
                                                 GLsizei bufSize,
                                                 GLsizei *length,
@@ -4636,7 +4645,7 @@ bool ValidateGetSamplerParameterIuivRobustANGLE(Context *context,
 }
 
 bool ValidateSamplerParameterfvRobustANGLE(Context *context,
-                                           GLuint sampler,
+                                           SamplerID sampler,
                                            GLenum pname,
                                            GLsizei bufSize,
                                            const GLfloat *params)
@@ -4650,7 +4659,7 @@ bool ValidateSamplerParameterfvRobustANGLE(Context *context,
 }
 
 bool ValidateSamplerParameterivRobustANGLE(Context *context,
-                                           GLuint sampler,
+                                           SamplerID sampler,
                                            GLenum pname,
                                            GLsizei bufSize,
                                            const GLint *params)
@@ -4664,7 +4673,7 @@ bool ValidateSamplerParameterivRobustANGLE(Context *context,
 }
 
 bool ValidateSamplerParameterIivRobustANGLE(Context *context,
-                                            GLuint sampler,
+                                            SamplerID sampler,
                                             GLenum pname,
                                             GLsizei bufSize,
                                             const GLint *param)
@@ -4674,7 +4683,7 @@ bool ValidateSamplerParameterIivRobustANGLE(Context *context,
 }
 
 bool ValidateSamplerParameterIuivRobustANGLE(Context *context,
-                                             GLuint sampler,
+                                             SamplerID sampler,
                                              GLenum pname,
                                              GLsizei bufSize,
                                              const GLuint *param)
@@ -4828,7 +4837,7 @@ bool ValidateGetVertexAttribIuivRobustANGLE(Context *context,
 }
 
 bool ValidateGetActiveUniformBlockivRobustANGLE(Context *context,
-                                                GLuint program,
+                                                ShaderProgramID program,
                                                 GLuint uniformBlockIndex,
                                                 GLenum pname,
                                                 GLsizei bufSize,
@@ -5087,7 +5096,10 @@ bool ValidateGetRenderbufferParameterivBase(Context *context,
     return true;
 }
 
-bool ValidateGetShaderivBase(Context *context, GLuint shader, GLenum pname, GLsizei *length)
+bool ValidateGetShaderivBase(Context *context,
+                             ShaderProgramID shader,
+                             GLenum pname,
+                             GLsizei *length)
 {
     if (length)
     {
@@ -5422,27 +5434,26 @@ bool ValidateReadPixelsBase(Context *context,
     }
 
     Framebuffer *readFramebuffer = context->getState().getReadFramebuffer();
+    ASSERT(readFramebuffer);
 
     if (!ValidateFramebufferComplete(context, readFramebuffer))
     {
         return false;
     }
 
-    if (readFramebuffer->id() != 0 && !ValidateFramebufferNotMultisampled(context, readFramebuffer))
+    if (!readFramebuffer->isDefault() &&
+        !ValidateFramebufferNotMultisampled(context, readFramebuffer))
     {
         return false;
     }
 
-    Framebuffer *framebuffer = context->getState().getReadFramebuffer();
-    ASSERT(framebuffer);
-
-    if (framebuffer->getReadBufferState() == GL_NONE)
+    if (readFramebuffer->getReadBufferState() == GL_NONE)
     {
         context->validationError(GL_INVALID_OPERATION, kReadBufferNone);
         return false;
     }
 
-    const FramebufferAttachment *readBuffer = framebuffer->getReadColorAttachment();
+    const FramebufferAttachment *readBuffer = readFramebuffer->getReadColorAttachment();
     // WebGL 1.0 [Section 6.26] Reading From a Missing Attachment
     // In OpenGL ES it is undefined what happens when an operation tries to read from a missing
     // attachment and WebGL defines it to be an error. We do the check unconditionnaly as the
@@ -5456,7 +5467,7 @@ bool ValidateReadPixelsBase(Context *context,
     // OVR_multiview2, Revision 1:
     // ReadPixels generates an INVALID_FRAMEBUFFER_OPERATION error if
     // the number of views in the current read framebuffer is more than one.
-    if (framebuffer->readDisallowedByMultiview())
+    if (readFramebuffer->readDisallowedByMultiview())
     {
         context->validationError(GL_INVALID_FRAMEBUFFER_OPERATION, kMultiviewReadFramebuffer);
         return false;
@@ -5485,10 +5496,11 @@ bool ValidateReadPixelsBase(Context *context,
     }
 
     GLenum currentFormat = GL_NONE;
-    ANGLE_VALIDATION_TRY(framebuffer->getImplementationColorReadFormat(context, &currentFormat));
+    ANGLE_VALIDATION_TRY(
+        readFramebuffer->getImplementationColorReadFormat(context, &currentFormat));
 
     GLenum currentType = GL_NONE;
-    ANGLE_VALIDATION_TRY(framebuffer->getImplementationColorReadType(context, &currentType));
+    ANGLE_VALIDATION_TRY(readFramebuffer->getImplementationColorReadType(context, &currentType));
 
     GLenum currentComponentType = readBuffer->getFormat().info->componentType;
 
@@ -5944,7 +5956,7 @@ bool ValidateVertexAttribIndex(Context *context, GLuint index)
 }
 
 bool ValidateGetActiveUniformBlockivBase(Context *context,
-                                         GLuint program,
+                                         ShaderProgramID program,
                                          GLuint uniformBlockIndex,
                                          GLenum pname,
                                          GLsizei *length)
@@ -6007,7 +6019,7 @@ bool ValidateGetActiveUniformBlockivBase(Context *context,
 
 template <typename ParamType>
 bool ValidateSamplerParameterBase(Context *context,
-                                  GLuint sampler,
+                                  SamplerID sampler,
                                   GLenum pname,
                                   GLsizei bufSize,
                                   bool vectorParams,
@@ -6115,21 +6127,26 @@ bool ValidateSamplerParameterBase(Context *context,
 }
 
 template bool ValidateSamplerParameterBase(Context *,
-                                           GLuint,
+                                           SamplerID,
                                            GLenum,
                                            GLsizei,
                                            bool,
                                            const GLfloat *);
-template bool ValidateSamplerParameterBase(Context *, GLuint, GLenum, GLsizei, bool, const GLint *);
 template bool ValidateSamplerParameterBase(Context *,
-                                           GLuint,
+                                           SamplerID,
+                                           GLenum,
+                                           GLsizei,
+                                           bool,
+                                           const GLint *);
+template bool ValidateSamplerParameterBase(Context *,
+                                           SamplerID,
                                            GLenum,
                                            GLsizei,
                                            bool,
                                            const GLuint *);
 
 bool ValidateGetSamplerParameterBase(Context *context,
-                                     GLuint sampler,
+                                     SamplerID sampler,
                                      GLenum pname,
                                      GLsizei *length)
 {

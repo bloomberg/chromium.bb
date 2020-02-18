@@ -11,6 +11,8 @@ namespace cast_streaming {
 
 RtcpSession::RtcpSession(Ssrc sender_ssrc, Ssrc receiver_ssrc)
     : sender_ssrc_(sender_ssrc), receiver_ssrc_(receiver_ssrc) {
+  OSP_DCHECK_NE(sender_ssrc_, kNullSsrc);
+  OSP_DCHECK_NE(receiver_ssrc_, kNullSsrc);
   OSP_DCHECK_NE(sender_ssrc_, receiver_ssrc_);
 }
 

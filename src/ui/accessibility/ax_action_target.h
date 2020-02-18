@@ -5,7 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_ACTION_TARGET_H_
 #define UI_ACCESSIBILITY_AX_ACTION_TARGET_H_
 
-#include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -18,7 +18,7 @@ class AXActionTarget {
  public:
   virtual ~AXActionTarget() = default;
 
-  enum class Type { kNull, kBlink };
+  enum class Type { kNull, kBlink, kPdf };
   virtual Type GetType() const = 0;
 
   virtual bool ClearAccessibilityFocus() const = 0;

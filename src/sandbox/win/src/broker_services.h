@@ -55,12 +55,6 @@ class BrokerServicesBase final : public BrokerServices,
                          PROCESS_INFORMATION* target) override;
   ResultCode WaitForAllTargets() override;
 
-  // Checks if the supplied process ID matches one of the broker's active
-  // target processes
-  // Returns:
-  //   true if there is an active target process for this ID, otherwise false.
-  bool IsActiveTarget(DWORD process_id);
-
  private:
   // The routine that the worker thread executes. It is in charge of
   // notifications and cleanup-related tasks.
@@ -88,8 +82,7 @@ class BrokerServicesBase final : public BrokerServices,
   std::list<std::unique_ptr<JobTracker>> tracker_list_;
 
   // Provides a fast lookup to identify sandboxed processes that belong to a
-  // job. Consult |jobless_process_handles_| for handles of processes without
-  // jobs.
+  // job.
   std::set<DWORD> child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);

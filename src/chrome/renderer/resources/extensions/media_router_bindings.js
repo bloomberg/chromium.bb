@@ -9,16 +9,16 @@ if ((typeof mojo === 'undefined') || !mojo.bindingsLibraryInitialized) {
 }
 mojo.config.autoLoadMojomDeps = false;
 
-loadScript('chrome/common/media_router/mojo/media_controller.mojom');
-loadScript('chrome/common/media_router/mojo/media_router.mojom');
-loadScript('chrome/common/media_router/mojo/media_status.mojom');
+loadScript('chrome/common/media_router/mojom/media_controller.mojom');
+loadScript('chrome/common/media_router/mojom/media_router.mojom');
+loadScript('chrome/common/media_router/mojom/media_status.mojom');
 loadScript('components/mirroring/mojom/cast_message_channel.mojom');
 loadScript('components/mirroring/mojom/mirroring_service_host.mojom');
 loadScript('components/mirroring/mojom/session_observer.mojom');
 loadScript('components/mirroring/mojom/session_parameters.mojom');
 loadScript('extensions/common/mojom/keep_alive.mojom');
-loadScript('media/mojo/interfaces/mirror_service_remoting.mojom');
-loadScript('media/mojo/interfaces/remoting_common.mojom');
+loadScript('media/mojo/mojom/mirror_service_remoting.mojom');
+loadScript('media/mojo/mojom/remoting_common.mojom');
 loadScript('mojo/public/mojom/base/time.mojom');
 loadScript('mojo/public/mojom/base/unguessable_token.mojom');
 loadScript('net/interfaces/ip_address.mojom');
@@ -153,11 +153,14 @@ function MediaStatusAdapter(fields) {
   this.can_mute = false;
   this.can_set_volume = false;
   this.can_seek = false;
+  this.can_skip_to_next_track = false;
+  this.can_skip_to_previous_track = false;
   this.is_muted = false;
   this.play_state = 0;
   this.volume = 0;
   this.duration = null;
   this.current_time = null;
+  this.images = null;
 
   assignFields(this, fields);
 }
@@ -171,11 +174,14 @@ MediaStatusAdapter.prototype.toNewVersion = function() {
     'canMute': this.can_mute,
     'canSetVolume': this.can_set_volume,
     'canSeek': this.can_seek,
+    'canSkipToNextTrack': this.can_skip_to_next_track,
+    'canSkipToPreviousTrack': this.can_skip_to_previous_track,
     'isMuted': this.is_muted,
     'playState': this.play_state,
     'volume': this.volume,
     'duration': this.duration,
     'currentTime': this.current_time,
+    'images': this.images || [],
   });
 };
 

@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
@@ -69,7 +69,7 @@ class UserTypeFilterTest : public testing::Test {
 
  private:
   // To support context of browser threads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(UserTypeFilterTest);
 };

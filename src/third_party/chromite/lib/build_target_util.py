@@ -14,7 +14,7 @@ class Error(Exception):
   """Base module error class."""
 
 
-class InvalidNameError(Exception):
+class InvalidNameError(Error):
   """Error for invalid target name argument."""
 
 
@@ -32,7 +32,7 @@ class BuildTarget(object):
     if not name:
       raise InvalidNameError('Name is required.')
 
-    self.name = name
+    self._name = name
     self.board, _, self.variant = name.partition('_')
     self.profile = profile
 
@@ -41,8 +41,22 @@ class BuildTarget(object):
     else:
       self.root = GetDefaultSysrootPath(self.name)
 
+  def __eq__(self, other):
+    if self.__class__ is other.__class__:
+      return (self.name == other.name and self.profile == other.profile and
+              self.root == other.root)
+
+    return NotImplemented
+
+  def __hash__(self):
+    return hash(self.name)
+
   def __str__(self):
     return self.name
+
+  @property
+  def name(self):
+    return self._name
 
 
 def GetDefaultSysrootPath(target_name):

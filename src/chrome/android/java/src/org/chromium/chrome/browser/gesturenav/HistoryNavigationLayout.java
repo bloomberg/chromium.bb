@@ -19,9 +19,9 @@ import android.widget.FrameLayout;
  * TODO(jinsukkim): Write a test verifying UI logic.
  */
 public class HistoryNavigationLayout extends FrameLayout {
-    private boolean mNavigationEnabled;
     private GestureDetector mDetector;
     private NavigationHandler mNavigationHandler;
+    private HistoryNavigationDelegate mDelegate = HistoryNavigationDelegateFactory.DEFAULT;
 
     public HistoryNavigationLayout(Context context) {
         this(context, null);
@@ -36,11 +36,16 @@ public class HistoryNavigationLayout extends FrameLayout {
      * @param delegate {@link HistoryNavigationDelegate} providing info and a factory method.
      */
     public void setNavigationDelegate(HistoryNavigationDelegate delegate) {
-        mNavigationEnabled = delegate.isEnabled();
-        if (!mNavigationEnabled) return;
-        mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-        mNavigationHandler = new NavigationHandler(
-                this, delegate.createActionDelegate(), NavigationGlowFactory.forJavaLayer(this));
+        mDelegate = delegate;
+
+        // Navigation is potentially enabled only when the delegate is set.
+        delegate.setWindowInsetsChangeObserver(this, () -> updateNavigationHandler());
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        updateNavigationHandler();
     }
 
     @Override
@@ -54,11 +59,27 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
-        if (mDetector != null) {
+        if (mNavigationHandler != null) {
             mDetector.onTouchEvent(e);
             mNavigationHandler.onTouchEvent(e.getAction());
         }
         return super.dispatchTouchEvent(e);
+    }
+
+    private void updateNavigationHandler() {
+        if (mDelegate.isNavigationEnabled(this)) {
+            if (mNavigationHandler == null) {
+                mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
+                mNavigationHandler = new NavigationHandler(
+                        this, getContext(), mDelegate, NavigationGlowFactory.forJavaLayer(this));
+            }
+        } else {
+            mDetector = null;
+            if (mNavigationHandler != null) {
+                mNavigationHandler.destroy();
+                mNavigationHandler = null;
+            }
+        }
     }
 
     @Override
@@ -80,24 +101,9 @@ public class HistoryNavigationLayout extends FrameLayout {
             // invoke |wasLastSideSwipeGestureConsumed| which may be expensive less often.
             if (mNavigationHandler.isStopped()) return true;
 
-            if (wasLastSideSwipeGestureConsumed()) {
-                mNavigationHandler.reset();
-                return true;
-            }
             return mNavigationHandler.onScroll(
                     e1.getX(), distanceX, distanceY, e2.getX(), e2.getY());
         }
-    }
-
-    /**
-     * Checks if the gesture event was consumed by one of children views, in which case
-     * history navigation should not proceed. Whatever the child view does with the gesture
-     * events should take precedence and not be disturbed by the navigation.
-     *
-     * @return {@code true} if gesture event is consumed by one of the children.
-     */
-    public boolean wasLastSideSwipeGestureConsumed() {
-        return false;
     }
 
     /**

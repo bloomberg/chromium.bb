@@ -18,12 +18,13 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -103,14 +104,14 @@ void InitLogging(const base::CommandLine& command_line) {
   base::FilePath log_dir;
   GetProductDirectory(&log_dir);
   const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
-  settings.log_file = log_file.value().c_str();
+  settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
   logging::InitLogging(settings);
   logging::SetLogItems(true,    // enable_process_id
                        true,    // enable_thread_id
                        true,    // enable_timestamp
                        false);  // enable_tickcount
-  VLOG(1) << "Log file " << settings.log_file;
+  VLOG(1) << "Log file " << settings.log_file_path;
 }
 
 void InitializeUpdaterMain() {
@@ -144,50 +145,19 @@ int UpdaterInstall() {
 
 int UpdaterUninstall() {
 #if defined(OS_WIN)
-  return updater::Uninstall();
+  return Uninstall();
 #else
   return -1;
 #endif
 }
 
-}  // namespace
-
-int UpdaterMain(int argc, const char* const* argv) {
-  base::PlatformThread::SetName("UpdaterMain");
-  base::AtExitManager exit_manager;
-
-  base::CommandLine::Init(argc, argv);
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kTestSwitch))
-    return 0;
-
-  InitLogging(*command_line);
-
-  if (command_line->HasSwitch(kCrashHandlerSwitch))
-    return CrashReporterMain();
-
-  InitializeUpdaterMain();
-
-  if (command_line->HasSwitch(kCrashMeSwitch)) {
-    int* ptr = nullptr;
-    return *ptr;
-  }
-
-  if (command_line->HasSwitch(kInstall)) {
-    return UpdaterInstall();
-  }
-
-  if (command_line->HasSwitch(kUninstall)) {
-    return UpdaterUninstall();
-  }
-
+int UpdaterUpdateApps() {
   auto installer = base::MakeRefCounted<Installer>(
       std::vector<uint8_t>(std::cbegin(mimo_hash), std::cend(mimo_hash)));
   installer->FindInstallOfApp();
   const auto component = installer->MakeCrxComponent();
 
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop runloop;
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
@@ -248,8 +218,53 @@ int UpdaterMain(int argc, const char* const* argv) {
     runloop.Run();
   }
 
-  TerminateUpdaterMain();
   return 0;
+}
+
+}  // namespace
+
+int HandleUpdaterCommands(const base::CommandLine* command_line) {
+  DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
+
+  if (command_line->HasSwitch(kCrashMeSwitch)) {
+    int* ptr = nullptr;
+    return *ptr;
+  }
+
+  if (command_line->HasSwitch(kInstallSwitch)) {
+    return UpdaterInstall();
+  }
+
+  if (command_line->HasSwitch(kUninstallSwitch)) {
+    return UpdaterUninstall();
+  }
+
+  if (command_line->HasSwitch(kUpdateAppsSwitch)) {
+    return UpdaterUpdateApps();
+  }
+
+  VLOG(1) << "Unknown command line switch.";
+  return -1;
+}
+
+int UpdaterMain(int argc, const char* const* argv) {
+  base::PlatformThread::SetName("UpdaterMain");
+  base::AtExitManager exit_manager;
+
+  base::CommandLine::Init(argc, argv);
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kTestSwitch))
+    return 0;
+
+  InitLogging(*command_line);
+
+  if (command_line->HasSwitch(kCrashHandlerSwitch))
+    return CrashReporterMain();
+
+  InitializeUpdaterMain();
+  const auto result = HandleUpdaterCommands(command_line);
+  TerminateUpdaterMain();
+  return result;
 }
 
 }  // namespace updater

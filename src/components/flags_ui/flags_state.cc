@@ -672,6 +672,7 @@ void FlagsState::GetFlagFeatureEntries(
       supported = true;
     }
 #endif
+
     if (supported)
       supported_entries->Append(std::move(data));
     else

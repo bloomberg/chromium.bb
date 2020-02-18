@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
+#include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -17,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -188,7 +191,8 @@ void PreloadHelper::PreconnectIfNeeded(
         Platform::Current()->PrescientNetworking();
     if (web_prescient_networking) {
       web_prescient_networking->Preconnect(
-          params.href, params.cross_origin != kCrossOriginAttributeAnonymous);
+          WebLocalFrameImpl::FromFrame(frame), params.href,
+          params.cross_origin != kCrossOriginAttributeAnonymous);
     }
   }
 }
@@ -282,9 +286,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet));
 
-  resource_request.SetReferrerPolicy(
-      params.referrer_policy,
-      ResourceRequest::SetReferrerPolicyLocation::kPreloadIfNeeded);
+  resource_request.SetReferrerPolicy(params.referrer_policy);
 
   resource_request.SetFetchImportanceMode(
       GetFetchImportanceAttributeValue(params.importance));
@@ -481,11 +483,27 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
-    resource_request.SetReferrerPolicy(
-        params.referrer_policy,
-        ResourceRequest::SetReferrerPolicyLocation::kPrefetchIfNeeded);
+
+    // TODO(domfarolino): When SplitCache is enabled by default and we can
+    // remove this feature check, also remove the exceptions in
+    // net/base/features.h DEPS as well as audit_non_blink_usage.py.
+    if (base::FeatureList::IsEnabled(
+            network::features::kPrefetchMainResourceNetworkIsolationKey) &&
+        EqualIgnoringASCIICase(params.as, "document")) {
+      resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
+    }
+
+    resource_request.SetReferrerPolicy(params.referrer_policy);
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));
+
+    if (base::FeatureList::IsEnabled(features::kPrefetchPrivacyChanges)) {
+      resource_request.SetRedirectMode(network::mojom::RedirectMode::kError);
+      resource_request.SetReferrerPolicy(
+          network::mojom::ReferrerPolicy::kNever);
+      // TODO(domfarolino): Implement more privacy-preserving prefetch changes.
+      // See crbug.com/988956.
+    }
 
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kLink;
@@ -527,13 +545,6 @@ void PreloadHelper::LoadLinksFromHeader(
       continue;
     if (media_policy == kOnlyLoadNonMedia && header.IsViewportDependent())
       continue;
-
-    // TODO(domfarolino): Remove the following UseCounter-related lines when
-    // data on link stylesheet headers has been collected. See
-    // https://crbug.com/19237.
-    DCHECK_EQ(header.Rel(), header.Rel().DeprecatedLower());
-    if (header.Rel() == "stylesheet")
-      UseCounter::Count(document, WebFeature::kLinkHeaderStylesheet);
 
     LinkLoadParameters params(header, base_url);
     if (alternate_resource_info && params.rel.IsLinkPreload()) {

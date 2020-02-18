@@ -144,25 +144,29 @@ static bool validate_levels(int w, int h, const GrMipLevel texels[], int mipLeve
     return levelsWithPixelsCnt == mipLevelCount;
 }
 
-sk_sp<GrTexture> GrGpu::createTexture(const GrSurfaceDesc& origDesc, GrRenderable renderable,
-                                      int renderTargetSampleCnt, SkBudgeted budgeted,
-                                      GrProtected isProtected, const GrMipLevel texels[],
+sk_sp<GrTexture> GrGpu::createTexture(const GrSurfaceDesc& desc,
+                                      const GrBackendFormat& format,
+                                      GrRenderable renderable,
+                                      int renderTargetSampleCnt,
+                                      SkBudgeted budgeted,
+                                      GrProtected isProtected,
+                                      const GrMipLevel texels[],
                                       int mipLevelCount) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
-    if (GrPixelConfigIsCompressed(origDesc.fConfig)) {
+    if (this->caps()->isFormatCompressed(format)) {
         // Call GrGpu::createCompressedTexture.
         return nullptr;
     }
-    GrSurfaceDesc desc = origDesc;
 
     GrMipMapped mipMapped = mipLevelCount > 1 ? GrMipMapped::kYes : GrMipMapped::kNo;
-    if (!this->caps()->validateSurfaceDesc(desc, renderable, renderTargetSampleCnt, mipMapped)) {
+    if (!this->caps()->validateSurfaceParams({desc.fWidth, desc.fHeight}, format, desc.fConfig,
+                                             renderable, renderTargetSampleCnt, mipMapped)) {
         return nullptr;
     }
 
     if (renderable == GrRenderable::kYes) {
         renderTargetSampleCnt =
-                this->caps()->getRenderTargetSampleCount(renderTargetSampleCnt, desc.fConfig);
+                this->caps()->getRenderTargetSampleCount(renderTargetSampleCnt, format);
     }
     // Attempt to catch un- or wrongly initialized sample counts.
     SkASSERT(renderTargetSampleCnt > 0 && renderTargetSampleCnt <= 64);
@@ -179,8 +183,14 @@ sk_sp<GrTexture> GrGpu::createTexture(const GrSurfaceDesc& origDesc, GrRenderabl
     }
 
     this->handleDirtyContext();
-    sk_sp<GrTexture> tex = this->onCreateTexture(desc, renderable, renderTargetSampleCnt, budgeted,
-                                                 isProtected, texels, mipLevelCount);
+    sk_sp<GrTexture> tex = this->onCreateTexture(desc,
+                                                 format,
+                                                 renderable,
+                                                 renderTargetSampleCnt,
+                                                 budgeted,
+                                                 isProtected,
+                                                 texels,
+                                                 mipLevelCount);
     if (tex) {
         if (!this->caps()->reuseScratchTextures() && renderable == GrRenderable::kNo) {
             tex->resourcePriv().removeScratchKey();
@@ -191,21 +201,32 @@ sk_sp<GrTexture> GrGpu::createTexture(const GrSurfaceDesc& origDesc, GrRenderabl
                 fStats.incTextureUploads();
             }
         }
+        SkASSERT(tex->backendFormat() == format);
+        SkASSERT(!tex || GrRenderable::kNo == renderable || tex->asRenderTarget());
+        if (renderTargetSampleCnt > 1 && !this->caps()->msaaResolvesAutomatically()) {
+            SkASSERT(GrRenderable::kYes == renderable);
+            tex->asRenderTarget()->setRequiresManualMSAAResolve();
+        }
     }
     return tex;
 }
 
-sk_sp<GrTexture> GrGpu::createTexture(const GrSurfaceDesc& desc, GrRenderable renderable,
-                                      int renderTargetSampleCnt, SkBudgeted budgeted,
-                                      GrProtected isProtected) {
-    return this->createTexture(desc, renderable, renderTargetSampleCnt, budgeted, isProtected,
-                               nullptr, 0);
+sk_sp<GrTexture> GrGpu::createTexture(const GrSurfaceDesc& desc, const GrBackendFormat& format,
+                                      GrRenderable renderable, int renderTargetSampleCnt,
+                                      SkBudgeted budgeted, GrProtected isProtected) {
+    return this->createTexture(desc, format, renderable, renderTargetSampleCnt, budgeted,
+                               isProtected, nullptr, 0);
 }
 
 sk_sp<GrTexture> GrGpu::createCompressedTexture(int width, int height,
+                                                const GrBackendFormat& format,
                                                 SkImage::CompressionType compressionType,
                                                 SkBudgeted budgeted, const void* data,
                                                 size_t dataSize) {
+    // If we ever add a new CompressionType, we should add a check here to make sure the
+    // GrBackendFormat and CompressionType are compatible with eachother.
+    SkASSERT(compressionType == SkImage::kETC1_CompressionType);
+
     this->handleDirtyContext();
     if (width  < 1 || width  > this->caps()->maxTextureSize() ||
         height < 1 || height > this->caps()->maxTextureSize()) {
@@ -216,13 +237,13 @@ sk_sp<GrTexture> GrGpu::createCompressedTexture(int width, int height,
     if (!data) {
         return nullptr;
     }
-    if (!this->caps()->isConfigTexturable(GrCompressionTypePixelConfig(compressionType))) {
+    if (!this->caps()->isFormatTexturable(format)) {
         return nullptr;
     }
     if (dataSize < GrCompressedDataSize(compressionType, width, height)) {
         return nullptr;
     }
-    return this->onCreateCompressedTexture(width, height, compressionType, budgeted, data);
+    return this->onCreateCompressedTexture(width, height, format, compressionType, budgeted, data);
 }
 
 sk_sp<GrTexture> GrGpu::wrapBackendTexture(const GrBackendTexture& backendTex,
@@ -235,18 +256,13 @@ sk_sp<GrTexture> GrGpu::wrapBackendTexture(const GrBackendTexture& backendTex,
     const GrCaps* caps = this->caps();
     SkASSERT(caps);
 
-    if (!caps->isFormatTexturable(colorType, backendTex.getBackendFormat())) {
+    if (!caps->isFormatTexturable(backendTex.getBackendFormat())) {
         return nullptr;
     }
     if (backendTex.width() > caps->maxTextureSize() ||
         backendTex.height() > caps->maxTextureSize()) {
         return nullptr;
     }
-
-    SkASSERT(GrCaps::AreConfigsCompatible(backendTex.config(),
-                                          caps->getConfigFromBackendFormat(
-                                                                     backendTex.getBackendFormat(),
-                                                                     colorType)));
 
     return this->onWrapBackendTexture(backendTex, colorType, ownership, cacheable, ioType);
 }
@@ -262,13 +278,8 @@ sk_sp<GrTexture> GrGpu::wrapRenderableBackendTexture(const GrBackendTexture& bac
 
     const GrCaps* caps = this->caps();
 
-    SkASSERT(GrCaps::AreConfigsCompatible(backendTex.config(),
-                                          caps->getConfigFromBackendFormat(
-                                                                     backendTex.getBackendFormat(),
-                                                                     colorType)));
-
-    if (!caps->isFormatTexturable(colorType, backendTex.getBackendFormat()) ||
-        !caps->getRenderTargetSampleCount(sampleCnt, colorType, backendTex.getBackendFormat())) {
+    if (!caps->isFormatTexturable(backendTex.getBackendFormat()) ||
+        !caps->isFormatRenderable(backendTex.getBackendFormat(), sampleCnt)) {
         return nullptr;
     }
 
@@ -279,6 +290,9 @@ sk_sp<GrTexture> GrGpu::wrapRenderableBackendTexture(const GrBackendTexture& bac
     sk_sp<GrTexture> tex = this->onWrapRenderableBackendTexture(backendTex, sampleCnt, colorType,
                                                                 ownership, cacheable);
     SkASSERT(!tex || tex->asRenderTarget());
+    if (tex && sampleCnt > 1 && !caps->msaaResolvesAutomatically()) {
+        tex->asRenderTarget()->setRequiresManualMSAAResolve();
+    }
     return tex;
 }
 
@@ -288,13 +302,7 @@ sk_sp<GrRenderTarget> GrGpu::wrapBackendRenderTarget(const GrBackendRenderTarget
 
     const GrCaps* caps = this->caps();
 
-    SkASSERT(GrCaps::AreConfigsCompatible(backendRT.config(),
-                                          caps->getConfigFromBackendFormat(
-                                                                     backendRT.getBackendFormat(),
-                                                                     colorType)));
-
-    if (0 == caps->getRenderTargetSampleCount(backendRT.sampleCnt(), colorType,
-                                              backendRT.getBackendFormat())) {
+    if (!caps->isFormatRenderable(backendRT.getBackendFormat(), backendRT.sampleCnt())) {
         return nullptr;
     }
 
@@ -313,17 +321,15 @@ sk_sp<GrRenderTarget> GrGpu::wrapBackendTextureAsRenderTarget(const GrBackendTex
         return nullptr;
     }
 
-    SkASSERT(GrCaps::AreConfigsCompatible(backendTex.config(),
-                                          caps->getConfigFromBackendFormat(
-                                                                     backendTex.getBackendFormat(),
-                                                                     colorType)));
-
-    if (0 == caps->getRenderTargetSampleCount(sampleCnt, colorType,
-                                              backendTex.getBackendFormat())) {
+    if (!caps->isFormatRenderable(backendTex.getBackendFormat(), sampleCnt)) {
         return nullptr;
     }
 
-    return this->onWrapBackendTextureAsRenderTarget(backendTex, sampleCnt, colorType);
+    auto rt = this->onWrapBackendTextureAsRenderTarget(backendTex, sampleCnt, colorType);
+    if (rt && sampleCnt > 1 && !this->caps()->msaaResolvesAutomatically()) {
+        rt->setRequiresManualMSAAResolve();
+    }
+    return rt;
 }
 
 sk_sp<GrRenderTarget> GrGpu::wrapVulkanSecondaryCBAsRenderTarget(const SkImageInfo& imageInfo,
@@ -349,7 +355,7 @@ sk_sp<GrGpuBuffer> GrGpu::createBuffer(size_t size, GrGpuBufferType intendedType
 }
 
 bool GrGpu::copySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
-                        const SkIPoint& dstPoint, bool canDiscardOutsideDstRect) {
+                        const SkIPoint& dstPoint) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(dst && src);
 
@@ -359,13 +365,15 @@ bool GrGpu::copySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
 
     this->handleDirtyContext();
 
-    return this->onCopySurface(dst, src, srcRect, dstPoint, canDiscardOutsideDstRect);
+    return this->onCopySurface(dst, src, srcRect, dstPoint);
 }
 
 bool GrGpu::readPixels(GrSurface* surface, int left, int top, int width, int height,
-                       GrColorType dstColorType, void* buffer, size_t rowBytes) {
+                       GrColorType surfaceColorType, GrColorType dstColorType, void* buffer,
+                       size_t rowBytes) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(surface);
+    SkASSERT(this->caps()->isFormatTexturable(surface->backendFormat()));
 
     auto subRect = SkIRect::MakeXYWH(left, top, width, height);
     auto bounds  = SkIRect::MakeWH(surface->width(), surface->height());
@@ -387,19 +395,23 @@ bool GrGpu::readPixels(GrSurface* surface, int left, int top, int width, int hei
         }
     }
 
-    if (GrPixelConfigIsCompressed(surface->config())) {
+    if (this->caps()->isFormatCompressed(surface->backendFormat())) {
         return false;
     }
 
     this->handleDirtyContext();
 
-    return this->onReadPixels(surface, left, top, width, height, dstColorType, buffer, rowBytes);
+    return this->onReadPixels(surface, left, top, width, height, surfaceColorType, dstColorType,
+                              buffer, rowBytes);
 }
 
 bool GrGpu::writePixels(GrSurface* surface, int left, int top, int width, int height,
-                        GrColorType srcColorType, const GrMipLevel texels[], int mipLevelCount) {
+                        GrColorType surfaceColorType, GrColorType srcColorType,
+                        const GrMipLevel texels[], int mipLevelCount, bool prepForTexSampling) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(surface);
+    SkASSERT(this->caps()->isFormatTexturableAndUploadable(surfaceColorType,
+                                                           surface->backendFormat()));
 
     if (surface->readOnly()) {
         return false;
@@ -419,14 +431,14 @@ bool GrGpu::writePixels(GrSurface* surface, int left, int top, int width, int he
         return false;
     }
 
-    int bpp = GrColorTypeBytesPerPixel(srcColorType);
+    size_t bpp = GrColorTypeBytesPerPixel(srcColorType);
     if (!validate_levels(width, height, texels, mipLevelCount, bpp, this->caps())) {
         return false;
     }
 
     this->handleDirtyContext();
-    if (this->onWritePixels(surface, left, top, width, height, srcColorType, texels,
-                            mipLevelCount)) {
+    if (this->onWritePixels(surface, left, top, width, height, surfaceColorType, srcColorType,
+                            texels, mipLevelCount, prepForTexSampling)) {
         SkIRect rect = SkIRect::MakeXYWH(left, top, width, height);
         this->didWriteToSurface(surface, kTopLeft_GrSurfaceOrigin, &rect, mipLevelCount);
         fStats.incTextureUploads();
@@ -436,11 +448,13 @@ bool GrGpu::writePixels(GrSurface* surface, int left, int top, int width, int he
 }
 
 bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, int height,
-                             GrColorType bufferColorType, GrGpuBuffer* transferBuffer,
-                             size_t offset, size_t rowBytes) {
+                             GrColorType textureColorType, GrColorType bufferColorType,
+                             GrGpuBuffer* transferBuffer, size_t offset, size_t rowBytes) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(texture);
     SkASSERT(transferBuffer);
+    SkASSERT(this->caps()->isFormatTexturableAndUploadable(textureColorType,
+                                                           texture->backendFormat()));
 
     if (texture->readOnly()) {
         return false;
@@ -453,7 +467,7 @@ bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, i
         return false;
     }
 
-    int bpp = GrColorTypeBytesPerPixel(bufferColorType);
+    size_t bpp = GrColorTypeBytesPerPixel(bufferColorType);
     if (this->caps()->writePixelsRowBytesSupport()) {
         if (rowBytes < SkToSizeT(bpp * width)) {
             return false;
@@ -468,8 +482,8 @@ bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, i
     }
 
     this->handleDirtyContext();
-    if (this->onTransferPixelsTo(texture, left, top, width, height, bufferColorType, transferBuffer,
-                                 offset, rowBytes)) {
+    if (this->onTransferPixelsTo(texture, left, top, width, height, textureColorType,
+                                 bufferColorType, transferBuffer, offset, rowBytes)) {
         SkIRect rect = SkIRect::MakeXYWH(left, top, width, height);
         this->didWriteToSurface(texture, kTopLeft_GrSurfaceOrigin, &rect);
         fStats.incTransfersToTexture();
@@ -480,13 +494,19 @@ bool GrGpu::transferPixelsTo(GrTexture* texture, int left, int top, int width, i
 }
 
 bool GrGpu::transferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
-                               GrColorType bufferColorType, GrGpuBuffer* transferBuffer,
-                               size_t offset) {
+                               GrColorType surfaceColorType, GrColorType bufferColorType,
+                               GrGpuBuffer* transferBuffer, size_t offset) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(surface);
     SkASSERT(transferBuffer);
-    SkASSERT(this->caps()->transferFromOffsetAlignment(bufferColorType));
-    SkASSERT(offset % this->caps()->transferFromOffsetAlignment(bufferColorType) == 0);
+    SkASSERT(this->caps()->isFormatTexturable(surface->backendFormat()));
+
+#ifdef SK_DEBUG
+    auto supportedRead = this->caps()->supportedReadPixelsColorType(
+            surfaceColorType, surface->backendFormat(), bufferColorType);
+    SkASSERT(supportedRead.fOffsetAlignmentForTransferBuffer);
+    SkASSERT(offset % supportedRead.fOffsetAlignmentForTransferBuffer == 0);
+#endif
 
     // We require that the write region is contained in the texture
     SkIRect subRect = SkIRect::MakeXYWH(left, top, width, height);
@@ -496,8 +516,8 @@ bool GrGpu::transferPixelsFrom(GrSurface* surface, int left, int top, int width,
     }
 
     this->handleDirtyContext();
-    if (this->onTransferPixelsFrom(surface, left, top, width, height, bufferColorType,
-                                   transferBuffer, offset)) {
+    if (this->onTransferPixelsFrom(surface, left, top, width, height, surfaceColorType,
+                                   bufferColorType, transferBuffer, offset)) {
         fStats.incTransfersFromSurface();
         return true;
     }

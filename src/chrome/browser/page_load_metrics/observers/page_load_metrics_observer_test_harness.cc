@@ -145,6 +145,15 @@ void PageLoadMetricsObserverTestHarness::SimulateCookieChange(
                                 blocked_by_policy);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateDomStorageAccess(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool local,
+    bool blocked_by_policy) {
+  tester_->SimulateDomStorageAccess(url, first_party_url, local,
+                                    blocked_by_policy);
+}
+
 const base::HistogramTester&
 PageLoadMetricsObserverTestHarness::histogram_tester() const {
   return histogram_tester_;
@@ -155,9 +164,9 @@ MetricsWebContentsObserver* PageLoadMetricsObserverTestHarness::observer()
   return tester_->observer();
 }
 
-const PageLoadExtraInfo
-PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
-  return tester_->GetPageLoadExtraInfoForCommittedLoad();
+const PageLoadMetricsObserverDelegate&
+PageLoadMetricsObserverTestHarness::GetDelegateForCommittedLoad() const {
+  return tester_->GetDelegateForCommittedLoad();
 }
 
 void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(

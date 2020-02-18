@@ -112,6 +112,13 @@ class GSUtilApi(recipe_api.RecipeApi):
     name = kwargs.pop('name', 'cat')
     return self(cmd, name, **kwargs)
 
+  def stat(self, url, args=None, **kwargs):
+    args = args or []
+    url = self._normalize_url(url)
+    cmd = ['stat'] + args + [url]
+    name = kwargs.pop('name', 'stat')
+    return self(cmd, name, **kwargs)
+
   def copy(self, source_bucket, source, dest_bucket, dest, args=None,
            link_name='gsutil.copy', metadata=None, unauthenticated_url=False,
            **kwargs):

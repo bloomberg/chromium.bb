@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -22,9 +24,10 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +143,7 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   GURL google_base_url() const {
-    return GURL(UIThreadSearchTermsData(profile_.get()).GoogleBaseURLValue());
+    return GURL(UIThreadSearchTermsData().GoogleBaseURLValue());
   }
 
   bool callback_called() const {
@@ -296,6 +299,32 @@ TEST_F(PermissionManagerTest, SubscriptionDestroyedCleanlyWithoutUnsubscribe) {
       PermissionType::GEOLOCATION, main_rfh(), url(),
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
+}
+
+TEST_F(PermissionManagerTest, SubscribeUnsubscribeAfterShutdown) {
+  int subscription_id =
+      GetPermissionControllerDelegate()->SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, main_rfh(), url(),
+          base::Bind(&PermissionManagerTest::OnPermissionChange,
+                     base::Unretained(this)));
+
+  // Simulate Keyed Services shutdown pass. Note: Shutdown will be called second
+  // time during profile destruction. This is ok for now: Shutdown is
+  // reenterant.
+  GetPermissionControllerDelegate()->Shutdown();
+
+  GetPermissionControllerDelegate()->UnsubscribePermissionStatusChange(
+      subscription_id);
+
+  // Check that subscribe/unsubscribe after shutdown don't crash.
+  int subscription2_id =
+      GetPermissionControllerDelegate()->SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, main_rfh(), url(),
+          base::Bind(&PermissionManagerTest::OnPermissionChange,
+                     base::Unretained(this)));
+
+  GetPermissionControllerDelegate()->UnsubscribePermissionStatusChange(
+      subscription2_id);
 }
 
 TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
@@ -588,6 +617,61 @@ TEST_F(PermissionManagerTest, InsecureOrigin) {
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 }
 
+TEST_F(PermissionManagerTest, InsecureOriginIsNotOverridable) {
+  const url::Origin kInsecureOrigin =
+      url::Origin::Create(GURL("http://example.com/geolocation"));
+  const url::Origin kSecureOrigin =
+      url::Origin::Create(GURL("https://example.com/geolocation"));
+  EXPECT_FALSE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, kInsecureOrigin));
+  EXPECT_TRUE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, kSecureOrigin));
+}
+
+TEST_F(PermissionManagerTest, MissingContextIsNotOverridable) {
+  // Permissions that are not implemented should be denied overridability.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  EXPECT_FALSE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::PROTECTED_MEDIA_IDENTIFIER,
+          url::Origin::Create(GURL("http://localhost"))));
+#endif
+  EXPECT_TRUE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::MIDI_SYSEX,
+          url::Origin::Create(GURL("http://localhost"))));
+}
+
+TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
+  const url::Origin kLocalHost = url::Origin::Create(GURL("http://localhost"));
+  EXPECT_TRUE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, kLocalHost));
+
+  // Turn on kill switch for GEOLOCATION.
+  base::FieldTrialList field_trial_list(
+      std::make_unique<base::MockEntropyProvider>());
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> params;
+  params[PermissionUtil::GetPermissionString(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION)] =
+      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+  variations::AssociateVariationParams(
+      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup",
+      params);
+  base::FieldTrialList::CreateFieldTrial(
+      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup");
+
+  EXPECT_FALSE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, kLocalHost));
+
+  // Clean-up.
+  variations::testing::ClearAllVariationParams();
+}
+
 TEST_F(PermissionManagerTest, GetCanonicalOriginSearch) {
   const GURL google_com("https://www.google.com");
   const GURL google_de("https://www.google.de");
@@ -600,27 +684,35 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginSearch) {
   const GURL top_level_ntp(chrome::kChromeUINewTabURL);
 
   // "Normal" URLs are not affected by GetCanonicalOrigin.
-  EXPECT_EQ(google_com, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                            google_com, google_com));
-  EXPECT_EQ(google_de, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                           google_de, google_de));
-  EXPECT_EQ(other_url, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                           other_url, other_url));
-  EXPECT_EQ(google_base, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                             google_base, google_base));
+  EXPECT_EQ(google_com,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_com, google_com));
+  EXPECT_EQ(google_de,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_de, google_de));
+  EXPECT_EQ(other_url,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, other_url, other_url));
+  EXPECT_EQ(google_base,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_base, google_base));
 
   // The local NTP URL gets mapped to the Google base URL.
-  EXPECT_EQ(google_base, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                             local_ntp, top_level_ntp));
+  EXPECT_EQ(google_base,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, local_ntp, top_level_ntp));
   // However, other chrome-search:// URLs, including the remote NTP URL, are
   // not affected.
-  EXPECT_EQ(remote_ntp, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                            remote_ntp, top_level_ntp));
-  EXPECT_EQ(google_com, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                            google_com, top_level_ntp));
+  EXPECT_EQ(remote_ntp,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, remote_ntp, top_level_ntp));
+  EXPECT_EQ(google_com,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_com, top_level_ntp));
   EXPECT_EQ(other_chrome_search,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                other_chrome_search, top_level_ntp));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, other_chrome_search,
+                top_level_ntp));
 }
 
 TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
@@ -636,9 +728,11 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
     // be returned.
     EXPECT_EQ(requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  requesting_origin, embedding_origin));
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION, requesting_origin,
+                  embedding_origin));
     EXPECT_EQ(extensions_requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
                   extensions_requesting_origin, embedding_origin));
   }
 
@@ -646,13 +740,20 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
     // With permission delegation, the embedding origin should be returned
-    // except in the case of extensions.
+    // except in the case of extensions; and except for notifications, for which
+    // permission delegation is always off.
     EXPECT_EQ(embedding_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  requesting_origin, embedding_origin));
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION, requesting_origin,
+                  embedding_origin));
     EXPECT_EQ(extensions_requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
                   extensions_requesting_origin, embedding_origin));
+    EXPECT_EQ(requesting_origin,
+              GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS, requesting_origin,
+                  embedding_origin));
   }
 }
 

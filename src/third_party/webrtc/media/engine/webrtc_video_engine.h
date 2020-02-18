@@ -29,12 +29,15 @@
 #include "call/video_receive_stream.h"
 #include "call/video_send_stream.h"
 #include "media/base/media_engine.h"
+#include "media/engine/constants.h"
 #include "media/engine/unhandled_packets_buffer.h"
 #include "rtc_base/async_invoker.h"
 #include "rtc_base/critical_section.h"
+#include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/network_route.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/thread_checker.h"
+#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 class VideoDecoderFactory;
@@ -47,6 +50,17 @@ class Thread;
 }  // namespace rtc
 
 namespace cricket {
+
+struct MinVideoBitrateConfig {
+  webrtc::FieldTrialParameter<webrtc::DataRate> min_video_bitrate;
+
+  MinVideoBitrateConfig()
+      : min_video_bitrate("br", webrtc::DataRate::bps(kMinVideoBitrateBps)) {
+    webrtc::ParseFieldTrial(
+        {&min_video_bitrate},
+        webrtc::field_trial::FindFullName(kMinVideoBitrateExperiment));
+  }
+};
 
 class WebRtcVideoChannel;
 
@@ -227,8 +241,8 @@ class WebRtcVideoChannel : public VideoMediaChannel,
 
     VideoCodec codec;
     webrtc::UlpfecConfig ulpfec;
-    int flexfec_payload_type;
-    int rtx_payload_type;
+    int flexfec_payload_type;  // -1 if absent.
+    int rtx_payload_type;      // -1 if absent.
   };
 
   struct ChangedSendParameters {
@@ -378,6 +392,8 @@ class WebRtcVideoChannel : public VideoMediaChannel,
 
     bool sending_ RTC_GUARDED_BY(&thread_checker_);
 
+    const bool use_standard_bytes_stats_;
+
     // In order for the |invoker_| to protect other members from being
     // destructed as they are used in asynchronous tasks it has to be destructed
     // first.
@@ -468,6 +484,8 @@ class WebRtcVideoChannel : public VideoMediaChannel,
     // Start NTP time is estimated as current remote NTP time (estimated from
     // RTCP) minus the elapsed time, as soon as remote NTP time is available.
     int64_t estimated_remote_start_ntp_time_ms_ RTC_GUARDED_BY(sink_lock_);
+
+    const bool use_standard_bytes_stats_;
   };
 
   void Construct(webrtc::Call* call, WebRtcVideoEngine* engine);
@@ -477,6 +495,10 @@ class WebRtcVideoChannel : public VideoMediaChannel,
                const webrtc::PacketOptions& options) override;
   bool SendRtcp(const uint8_t* data, size_t len) override;
 
+  // Generate the list of codec parameters to pass down based on the negotiated
+  // "codecs". Note that VideoCodecSettings correspond to concrete codecs like
+  // VP8, VP9, H264 while VideoCodecs correspond also to "virtual" codecs like
+  // RTX, ULPFEC, FLEXFEC.
   static std::vector<VideoCodecSettings> MapCodecs(
       const std::vector<VideoCodec>& codecs);
   // Get all codecs that are compatible with the receiver.

@@ -9,27 +9,9 @@
 
 #include "modules/skottie/src/SkottieJson.h"
 #include "modules/skottie/src/SkottiePriv.h"
+#include "modules/skottie/src/SkottieValue.h"
 
 namespace skottie {
-
-bool TextValue::operator==(const TextValue &other) const {
-    return fTypeface == other.fTypeface
-        && fText == other.fText
-        && fTextSize == other.fTextSize
-        && fStrokeWidth == other.fStrokeWidth
-        && fLineHeight == other.fLineHeight
-        && fHAlign == other.fHAlign
-        && fVAlign == other.fVAlign
-        && fBox == other.fBox
-        && fFillColor == other.fFillColor
-        && fStrokeColor == other.fStrokeColor
-        && fHasFill == other.fHasFill
-        && fHasStroke == other.fHasStroke;
-}
-
-bool TextValue::operator!=(const TextValue &other) const {
-    return !(*this== other);
-}
 
 template <>
 bool ValueTraits<TextValue>::FromJSON(const skjson::Value& jv,
@@ -90,14 +72,20 @@ bool ValueTraits<TextValue>::FromJSON(const skjson::Value& jv,
 
     // Skia vertical alignment extension "sk_vj":
     static constexpr Shaper::VAlign gVAlignMap[] = {
-        Shaper::VAlign::kVisualTop,         // 'sk_vj': 0
-        Shaper::VAlign::kVisualCenter,      // 'sk_vj': 1
-        Shaper::VAlign::kVisualBottom,      // 'sk_vj': 2
-        Shaper::VAlign::kVisualResizeToFit, // 'sk_vj': 3
+        Shaper::VAlign::kVisualTop,            // 'sk_vj': 0
+        Shaper::VAlign::kVisualCenter,         // 'sk_vj': 1
+        Shaper::VAlign::kVisualBottom,         // 'sk_vj': 2
+        Shaper::VAlign::kVisualResizeToFit,    // 'sk_vj': 3
+        Shaper::VAlign::kVisualDownscaleToFit, // 'sk_vj': 4
     };
     size_t sk_vj;
-    if (Parse((*jtxt)["sk_vj"], &sk_vj) && sk_vj < SK_ARRAY_COUNT(gVAlignMap)) {
-        v->fVAlign = gVAlignMap[sk_vj];
+    if (Parse((*jtxt)["sk_vj"], &sk_vj)) {
+        if (sk_vj < SK_ARRAY_COUNT(gVAlignMap)) {
+            v->fVAlign = gVAlignMap[sk_vj];
+        } else {
+            abuilder->log(Logger::Level::kWarning, nullptr,
+                          "Ignoring unknown 'sk_vj' value: %zu", sk_vj);
+        }
     }
 
     const auto& parse_color = [] (const skjson::ArrayValue* jcolor,

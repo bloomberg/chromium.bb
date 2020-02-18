@@ -127,7 +127,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
         'taking a %s lock' % ('shared' if shared else 'exclusive'))
     return self
 
-  def read_lock(self, message="taking read lock"):
+  def read_lock(self, message='taking read lock'):
     """Take a read lock (shared), downgrading from write if required.
 
     Args:
@@ -142,7 +142,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     self._enforce_lock(fcntl.LOCK_SH, message)
     return self
 
-  def write_lock(self, message="taking write lock"):
+  def write_lock(self, message='taking write lock'):
     """Take a write lock (exclusive), upgrading from read if required.
 
     Note that if the lock state is being upgraded from read to write,
@@ -220,7 +220,7 @@ class FileLock(_Lock):
       blocking: If True, use a blocking lock.
     """
     if description is None:
-      description = "lock %s" % (path,)
+      description = 'lock %s' % (path,)
     _Lock.__init__(self, description=description, verbose=verbose,
                    locktype=locktype, blocking=blocking)
     self.path = os.path.abspath(path)

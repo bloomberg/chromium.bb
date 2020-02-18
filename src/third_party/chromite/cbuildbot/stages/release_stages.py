@@ -298,8 +298,8 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
     board = self._current_board.replace('_', '-')
     version = self._run.attrs.release_tag
 
-    logging.info("Waiting for image signing for: %s, %s", board, version)
-    logging.info("GS errors are a normal part of the polling for results.")
+    logging.info('Waiting for image signing for: %s, %s', board, version)
+    logging.info('GS errors are a normal part of the polling for results.')
     self._WaitForSigningResults(self.instruction_urls_per_channel)
 
     # Notify stages blocked on us that images are for the given channel list.
@@ -374,7 +374,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     version = self._run.attrs.release_tag
 
     assert version, "We can't generate payloads without a release_tag."
-    logging.info("Generating payloads for: %s, %s", board, version)
+    logging.info('Generating payloads for: %s, %s', board, version)
 
     # Test to see if the current board has a Paygen configuration. We do
     # this here, not in the sub-process so we don't have to pass back a
@@ -392,7 +392,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
       skip_duts_check = True
 
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
-      logging.info("Using channels: %s", self.channels)
+      logging.info('Using channels: %s', self.channels)
 
       # If we have an explicit list of channels, use it.
       for channel in self.channels:

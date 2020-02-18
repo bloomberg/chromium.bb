@@ -18,7 +18,7 @@
       "src@2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--disable-syntax-validation"
     ],
-    "env_prefixes": {
+    "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
       ]

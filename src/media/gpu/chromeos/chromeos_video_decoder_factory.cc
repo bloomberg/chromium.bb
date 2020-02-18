@@ -9,8 +9,12 @@
 #include "base/sequenced_task_runner.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/linux/mailbox_video_frame_converter.h"
 #include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/linux/video_decoder_pipeline.h"
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_decoder.h"
@@ -20,11 +24,34 @@
 #include "media/gpu/v4l2/v4l2_slice_video_decoder.h"
 #endif
 
-#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
-#include "media/gpu/linux/video_decoder_pipeline.h"
-#endif
-
 namespace media {
+
+namespace {
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Get a list of the available functions for creating VideoDeocoder.
+base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
+    VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
+  static constexpr VideoDecoderPipeline::CreateVDFunc kCreateVDFuncs[] = {
+#if BUILDFLAG(USE_V4L2_CODEC)
+    &V4L2SliceVideoDecoder::Create,
+#endif  // BUILDFLAG(USE_V4L2_CODEC)
+
+#if BUILDFLAG(USE_VAAPI)
+    &VaapiVideoDecoder::Create,
+#endif  // BUILDFLAG(USE_VAAPI)
+  };
+
+  base::queue<VideoDecoderPipeline::CreateVDFunc> ret;
+  for (const auto& func : kCreateVDFuncs) {
+    if (func != cur_create_vd_func)
+      ret.push(func);
+  }
+  return ret;
+}
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
+}  // namespace
 
 // static
 SupportedVideoDecoderConfigs
@@ -52,29 +79,13 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter) {
-  if (!client_task_runner || !frame_pool || !frame_converter)
-    return nullptr;
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  return VideoDecoderPipeline::Create(
+      std::move(client_task_runner), std::move(frame_pool),
+      std::move(frame_converter), base::BindRepeating(&GetCreateVDFunctions));
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-  std::unique_ptr<VideoDecoder> decoder;
-
-  // TODO(dstaessens@): We first try VAAPI as USE_V4L2_CODEC might also be
-  // set, even though initialization of V4L2SliceVideoDecoder would fail. We
-  // need to implement a better way to select the correct decoder.
-#if BUILDFLAG(USE_VAAPI)
-  decoder =
-      VaapiVideoDecoder::Create(client_task_runner, std::move(frame_pool));
-#elif BUILDFLAG(USE_V4L2_CODEC)
-  decoder =
-      V4L2SliceVideoDecoder::Create(client_task_runner, std::move(frame_pool));
-#endif
-
-#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
-  return std::make_unique<VideoDecoderPipeline>(std::move(client_task_runner),
-                                                std::move(decoder),
-                                                std::move(frame_converter));
-#else
   return nullptr;
-#endif
 }
 
 }  // namespace media

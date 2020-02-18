@@ -62,7 +62,9 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGooglePhotosAppId,
     arc::kGoogleDuo,
     app_list::kDefaultPageBreak1,  // First default page break
+    // TODO(crbug.com/976578): Remove after M78.
     extension_misc::kGoogleMapsAppId,
+    default_web_apps::kGoogleMapsAppId,
     app_list::kInternalAppIdSettings,
     default_web_apps::kSettingsAppId,
     default_web_apps::kOsSettingsAppId,
@@ -150,8 +152,10 @@ ExternalLoader::ExternalLoader(bool async)
   loader_instance = this;
 
   if (async) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ExternalLoader::Load, base::Unretained(this)));
   } else {
     Load();

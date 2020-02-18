@@ -42,7 +42,7 @@ enum Pan {
 }
 function keyToPan(e: KeyboardEvent): Pan {
   if (['a'].includes(e.key)) return Pan.Left;
-  if (['d'].includes(e.key)) return Pan.Right;
+  if (['d', 'e'].includes(e.key)) return Pan.Right;
   return Pan.None;
 }
 
@@ -52,8 +52,8 @@ enum Zoom {
   Out = -1
 }
 function keyToZoom(e: KeyboardEvent): Zoom {
-  if (['w'].includes(e.key)) return Zoom.In;
-  if (['s'].includes(e.key)) return Zoom.Out;
+  if (['w', ','].includes(e.key)) return Zoom.In;
+  if (['s', 'o'].includes(e.key)) return Zoom.Out;
   return Zoom.None;
 }
 
@@ -139,8 +139,10 @@ export class PanAndZoomHandler {
   }
 
   private onMouseMove(e: MouseEvent) {
-    // TODO(taylori): Content offset is 6px off, why?
-    this.mousePositionX = e.clientX - this.contentOffsetX - 6;
+    const pageOffset =
+        globals.frontendLocalState.sidebarVisible ? this.contentOffsetX : 0;
+    // We can't use layerX here because there are many layers in this element.
+    this.mousePositionX = e.clientX - pageOffset;
     if (this.shiftDown) {
       const pos = this.mousePositionX - TRACK_SHELL_WIDTH;
       const ts =

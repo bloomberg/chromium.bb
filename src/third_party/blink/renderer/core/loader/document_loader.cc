@@ -63,7 +63,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
@@ -169,6 +169,7 @@ DocumentLoader::DocumentLoader(
   error_code_ = params_->error_code;
   previews_state_ = params_->previews_state;
   appcache_host_id_ = params_->appcache_host_id;
+  ip_address_space_ = params_->ip_address_space;
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -211,7 +212,16 @@ DocumentLoader::DocumentLoader(
       !params_->is_static_data && WillLoadUrlAsEmpty(url_);
   loading_srcdoc_ = url_.IsAboutSrcdocURL();
 
-  if (!loading_url_as_empty_document_) {
+  if (loading_srcdoc_) {
+    // about:srcdoc always inherits CSP from its parent.
+    ContentSecurityPolicy* parent_csp = frame_->Tree()
+                                            .Parent()
+                                            ->GetSecurityContext()
+                                            ->GetContentSecurityPolicy();
+    content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
+    content_security_policy_->CopyStateFrom(parent_csp);
+    content_security_policy_->CopyPluginTypesFrom(parent_csp);
+  } else if (!loading_url_as_empty_document_) {
     content_security_policy_ =
         CreateCSP(params_->response.ToResourceResponse(), origin_policy_);
     if (!content_security_policy_) {
@@ -530,11 +540,9 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   }
 }
 
-void DocumentLoader::BodyCodeCacheReceived(
-    base::span<const uint8_t> code_cache) {
+void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {
   if (cached_metadata_handler_) {
-    cached_metadata_handler_->SetSerializedCachedMetadata(code_cache.data(),
-                                                          code_cache.size());
+    cached_metadata_handler_->SetSerializedCachedMetadata(std::move(data));
   }
 }
 
@@ -614,7 +622,8 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     frame_->GetDocument()->Parser()->StopParsing();
   state_ = kSentDidFinishLoad;
   GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
-  GetFrameLoader().DidFinishNavigation();
+  GetFrameLoader().DidFinishNavigation(
+      FrameLoader::NavigationFinishState::kFailure);
   DCHECK_EQ(kSentDidFinishLoad, state_);
   params_ = nullptr;
 }
@@ -966,7 +975,8 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // scroll should cancel it.
   GetFrameLoader().DetachProvisionalDocumentLoader();
   GetFrameLoader().CancelClientNavigation();
-  GetFrameLoader().DidFinishNavigation();
+  GetFrameLoader().DidFinishNavigation(
+      FrameLoader::NavigationFinishState::kSuccess);
 
   if (!frame_->GetPage())
     return;
@@ -1081,7 +1091,7 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
     return;
 
   if (application_cache_host_) {
-    application_cache_host_->DetachFromDocumentLoader();
+    application_cache_host_->Detach();
     application_cache_host_.Clear();
   }
   service_worker_network_provider_ = nullptr;
@@ -1123,7 +1133,9 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK_EQ(state_, kNotStarted);
   DCHECK(params_);
   state_ = kProvisional;
-  application_cache_host_ = ApplicationCacheHost::Create(this);
+  application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
+      this, GetFrame()->Client()->GetBrowserInterfaceBroker(),
+      GetFrame()->GetTaskRunner(TaskType::kNetworking));
 
   if (url_.IsEmpty() &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
@@ -1511,6 +1523,7 @@ void DocumentLoader::InstallNewDocument(
           .WithOwnerDocument(owner_document)
           .WithInitiatorOrigin(initiator_origin)
           .WithOriginToCommit(origin_to_commit_)
+          .WithIPAddressSpace(ip_address_space_)
           .WithSrcdocDocument(loading_srcdoc_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())

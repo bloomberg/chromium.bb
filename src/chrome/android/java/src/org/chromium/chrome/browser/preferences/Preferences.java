@@ -13,6 +13,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.nfc.NfcAdapter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -24,28 +25,30 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.ui.UiUtils;
 
 /**
  * The Chrome settings activity.
  *
- * This activity displays a single Fragment, typically a PreferenceFragment. As the user navigates
- * through settings, a separate Preferences activity is created for each screen. Thus each fragment
- * may freely modify its activity's action bar or title. This mimics the behavior of
- * android.preference.PreferenceActivity.
+ * This activity displays a single {@link Fragment}, typically a {@link PreferenceFragmentCompat}.
+ * As the user navigates through settings, a separate Preferences activity is created for each
+ * screen. Thus each fragment may freely modify its activity's action bar or title. This mimics the
+ * behavior of {@link android.preference.PreferenceActivity}.
  *
- * If the preference overrides the root layout (e.g. {@link HomepageEditor}), add the following:
+ * If the main fragment is not an instance of {@link PreferenceFragmentCompat} (e.g. {@link
+ * HomepageEditor}) or overrides {@link PreferenceFragmentCompat}'s layout, add the following:
  * 1) preferences_action_bar_shadow.xml to the custom XML hierarchy and
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
@@ -134,6 +137,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
         ApiCompatibilityUtils.setTaskDescription(this, res.getString(R.string.app_name),
                 BitmapFactory.decodeResource(res, R.mipmap.app_icon),
                 ApiCompatibilityUtils.getColor(res, R.color.default_primary_color));
+
+        setStatusBarColor();
     }
 
     // OnPreferenceStartFragmentCallback:
@@ -162,18 +167,22 @@ public class Preferences extends ChromeBaseAppCompatActivity
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Fragment fragment = getMainFragmentCompat();
-        if (fragment == null || fragment.getView() == null
-                || fragment.getView().findViewById(R.id.list) == null) {
+
+        Fragment fragment = getMainFragment();
+        if (!(fragment instanceof PreferenceFragmentCompat)) {
             return;
         }
-        View contentView = fragment.getActivity().findViewById(android.R.id.content);
-        if (contentView == null || !(contentView instanceof FrameLayout)) {
+
+        RecyclerView recyclerView = ((PreferenceFragmentCompat) fragment).getListView();
+        if (recyclerView == null) {
             return;
         }
-        View inflatedView = View.inflate(getApplicationContext(),
-                R.layout.preferences_action_bar_shadow, (ViewGroup) contentView);
-        RecyclerView recyclerView = fragment.getView().findViewById(R.id.list);
+
+        // Append action bar shadow to layout.
+        View inflatedView = getLayoutInflater().inflate(
+                R.layout.preferences_action_bar_shadow, findViewById(android.R.id.content));
+
+        // Display shadow on scroll.
         recyclerView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         recyclerView, inflatedView.findViewById(R.id.shadow)));
@@ -219,7 +228,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
      * top of the main content.
      */
     @VisibleForTesting
-    public Fragment getMainFragmentCompat() {
+    public Fragment getMainFragment() {
         return getSupportFragmentManager().findFragmentById(android.R.id.content);
     }
 
@@ -245,8 +254,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Fragment mainFragmentCompat = getMainFragmentCompat();
-        if (mainFragmentCompat != null && mainFragmentCompat.onOptionsItemSelected(item)) {
+        Fragment mainFragment = getMainFragment();
+        if (mainFragment != null && mainFragment.onOptionsItemSelected(item)) {
             return true;
         }
 
@@ -263,7 +272,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public void onBackPressed() {
-        Fragment activeFragment = getMainFragmentCompat();
+        Fragment activeFragment = getMainFragment();
         if (!(activeFragment instanceof OnBackPressedListener)) {
             super.onBackPressed();
             return;
@@ -289,5 +298,34 @@ public class Preferences extends ChromeBaseAppCompatActivity
             // Something terribly wrong has happened.
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Set device status bar to match the activity background color, if supported.
+     */
+    private void setStatusBarColor() {
+        // On O+, the status bar color is already set via the XML theme. We avoid setting status bar
+        // color via XML pre-O due to: https://crbug.com/884144.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
+
+        // Kill switch included due to past crashes when programmatically setting status bar color:
+        // https://crbug.com/880694.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SETTINGS_MODERN_STATUS_BAR)) return;
+
+        if (UiUtils.isSystemUiThemingDisabled()) return;
+
+        // Dark status icons only supported on M+.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+
+        // Use background color as status bar color.
+        int statusBarColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
+
+        // Set status bar icon color according to background color.
+        boolean needsDarkStatusBarIcons =
+                !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
+        ApiCompatibilityUtils.setStatusBarIconColor(
+                getWindow().getDecorView().getRootView(), needsDarkStatusBarIcons);
     }
 }

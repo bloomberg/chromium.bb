@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -49,7 +50,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
                                   const std::vector<int>& line_breaks,
                                   AXTextBoundary boundary,
                                   size_t start_offset,
-                                  TextBoundaryDirection direction,
+                                  AXTextBoundaryDirection direction,
                                   ax::mojom::TextAffinity affinity) {
   size_t text_size = text.size();
   DCHECK_LE(start_offset, text_size);
@@ -66,7 +67,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   }
 
   if (boundary == AXTextBoundary::kLineStart) {
-    if (direction == FORWARDS_DIRECTION) {
+    if (direction == AXTextBoundaryDirection::kForwards) {
       for (size_t j = 0; j < line_breaks.size(); ++j) {
           size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
           if ((affinity == ax::mojom::TextAffinity::kDownstream &&
@@ -94,7 +95,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   size_t result = start_offset;
   for (;;) {
     size_t pos;
-    if (direction == FORWARDS_DIRECTION) {
+    if (direction == AXTextBoundaryDirection::kForwards) {
       if (result >= text_size)
         return text_size;
       pos = result;
@@ -112,7 +113,8 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         if (break_iter.IsGraphemeBoundary(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next character.
-          if (direction == BACKWARDS_DIRECTION || result != start_offset)
+          if (direction == AXTextBoundaryDirection::kBackwards ||
+              result != start_offset)
             return result;
         }
         break;
@@ -120,7 +122,8 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         if (break_iter.IsStartOfWord(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next word.
-          if (direction == BACKWARDS_DIRECTION || result != start_offset)
+          if (direction == AXTextBoundaryDirection::kBackwards ||
+              result != start_offset)
             return result;
         }
         break;
@@ -128,12 +131,14 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         if (break_iter.IsStartOfWord(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next word.
-          if (direction == BACKWARDS_DIRECTION || result != start_offset)
+          if (direction == AXTextBoundaryDirection::kBackwards ||
+              result != start_offset)
             return result;
         } else if (break_iter.IsEndOfWord(result)) {
           // If we are searching backward and we are still at the end offset, we
           // need to find the previous word.
-          if (direction == FORWARDS_DIRECTION || result != start_offset)
+          if (direction == AXTextBoundaryDirection::kForwards ||
+              result != start_offset)
             return result;
         }
         break;
@@ -141,7 +146,8 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         if (break_iter.IsSentenceBoundary(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next sentence.
-          if (direction == BACKWARDS_DIRECTION || result != start_offset) {
+          if (direction == AXTextBoundaryDirection::kBackwards ||
+              result != start_offset) {
             // ICU sometimes returns sentence boundaries in the whitespace
             // between sentences. For the purposes of accessibility, we want to
             // include all whitespace at the end of a sentence. We move the
@@ -162,7 +168,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         break;
     }
 
-    if (direction == FORWARDS_DIRECTION) {
+    if (direction == AXTextBoundaryDirection::kForwards) {
       result++;
     } else {
       result--;

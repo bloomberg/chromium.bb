@@ -8,6 +8,19 @@ namespace chromeos {
 
 namespace device_sync {
 
+// static
+CryptAuthDeviceSyncResult::ResultType CryptAuthDeviceSyncResult::GetResultType(
+    ResultCode result_code) {
+  switch (result_code) {
+    case CryptAuthDeviceSyncResult::ResultCode::kSuccess:
+      return CryptAuthDeviceSyncResult::ResultType::kSuccess;
+    case CryptAuthDeviceSyncResult::ResultCode::kFinishedWithNonFatalErrors:
+      return CryptAuthDeviceSyncResult::ResultType::kNonFatalError;
+    default:
+      return CryptAuthDeviceSyncResult::ResultType::kFatalError;
+  }
+}
+
 CryptAuthDeviceSyncResult::CryptAuthDeviceSyncResult(
     ResultCode result_code,
     bool did_device_registry_change,
@@ -21,17 +34,25 @@ CryptAuthDeviceSyncResult::CryptAuthDeviceSyncResult(
 
 CryptAuthDeviceSyncResult::~CryptAuthDeviceSyncResult() = default;
 
+CryptAuthDeviceSyncResult::ResultType CryptAuthDeviceSyncResult::GetResultType()
+    const {
+  return GetResultType(result_code_);
+}
+
 bool CryptAuthDeviceSyncResult::IsSuccess() const {
-  return result_code_ == ResultCode::kSuccess;
+  return GetResultType(result_code_) == ResultType::kSuccess;
 }
 
 bool CryptAuthDeviceSyncResult::operator==(
     const CryptAuthDeviceSyncResult& other) const {
-  return result_code_ == other.result_code_ &&
-         client_directive_.has_value() == other.client_directive_.has_value() &&
-         (!client_directive_ ||
-          client_directive_->SerializeAsString() ==
-              other.client_directive_->SerializeAsString());
+  bool client_directives_agree =
+      (!client_directive_.has_value() &&
+       !other.client_directive_.has_value()) ||
+      (client_directive_.has_value() && other.client_directive_.has_value() &&
+       client_directive_->SerializeAsString() ==
+           other.client_directive_->SerializeAsString());
+  return client_directives_agree && result_code_ == other.result_code_ &&
+         did_device_registry_change_ == other.did_device_registry_change_;
 }
 
 bool CryptAuthDeviceSyncResult::operator!=(
@@ -50,6 +71,10 @@ std::ostream& operator<<(
       break;
     case ResultCode::kFinishedWithNonFatalErrors:
       stream << "[Finished with non-fatal errors]";
+      break;
+    case ResultCode::kErrorClientAppMetadataFetchFailed:
+      stream << "[Error: Could not retrieve ClientAppMetadata from "
+             << "ClientAppMetadataProvider]";
       break;
     case ResultCode::kErrorMissingUserKeyPair:
       stream << "[Error: No user key pair in registry]";
@@ -70,28 +95,14 @@ std::ostream& operator<<(
     case ResultCode::kErrorNoLocalDeviceMetadataInResponse:
       stream << "[Error: No local device metadata in SyncMetadata response]";
       break;
-    case ResultCode::kErrorMissingFeatureStatuses:
-      stream << "[Error: Feature statuses not received for device(s)]";
+    case ResultCode::kErrorMissingLocalDeviceFeatureStatuses:
+      stream << "[Error: No local device feature statuses]";
       break;
     case ResultCode::kErrorMissingLocalDeviceSyncBetterTogetherKey:
       stream << "[Error: No DeviceSync:BetterTogether key in registry]";
       break;
     case ResultCode::kErrorDecryptingGroupPrivateKey:
       stream << "[Error: Could not decrypt group private key]";
-      break;
-    case ResultCode::kErrorInconsistentGroupPrivateKeys:
-      stream << "[Error: Group private key from SyncMetadata response "
-             << "unexpectedly disagrees with the one in local storage]";
-      break;
-    case ResultCode::kErrorDecryptingMetadata:
-      stream << "[Error: Could not decrypt device metadata]";
-      break;
-    case ResultCode::kErrorParsingMetadata:
-      stream << "[Error: Could not parse device metadata]";
-      break;
-    case ResultCode::kErrorInconsistentLocalDeviceMetadata:
-      stream << "[Error: Local device metadata disagrees with that in "
-             << "SyncMetadata response]";
       break;
     case ResultCode::kErrorEncryptingGroupPrivateKey:
       stream << "[Error: Could not encrypt group private key]";
@@ -160,6 +171,9 @@ std::ostream& operator<<(
       break;
     case ResultCode::kErrorShareGroupPrivateKeyApiCallUnknownError:
       stream << "[ShareGroupPrivateKey API call failed: Unknown error]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForClientAppMetadata:
+      stream << "[Error: Timeout waiting for ClientAppMetadata]";
       break;
     case ResultCode::kErrorTimeoutWaitingForGroupKeyCreation:
       stream << "[Error: Timeout waiting for group key creation]";

@@ -139,7 +139,6 @@ class WebApkInstaller {
   // Called when the package name of the WebAPK is available and the install
   // or update request should be issued.
   virtual void InstallOrUpdateWebApk(const std::string& package_name,
-                                     int version,
                                      const std::string& token);
 
   // Checks if there is enough space to install a WebAPK.
@@ -233,6 +232,9 @@ class WebApkInstaller {
   // WebAPK package name.
   std::string webapk_package_;
 
+  // WebAPK version code.
+  int webapk_version_;
+
   // Whether the server wants the WebAPK to request updates less frequently.
   bool relax_updates_;
 
@@ -243,7 +245,7 @@ class WebApkInstaller {
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // Used to get |weak_ptr_|.
-  base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_;
+  base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstaller);
 };

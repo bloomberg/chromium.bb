@@ -4,12 +4,27 @@
 
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "extensions/common/error_utils.h"
 
 namespace extensions {
 namespace declarative_net_request {
+
+namespace {
+
+// Helper to ensure pointers to string literals can be used with
+// base::JoinString.
+std::string JoinString(base::span<const char* const> parts) {
+  std::vector<base::StringPiece> parts_piece;
+  for (const char* part : parts)
+    parts_piece.push_back(part);
+  return base::JoinString(parts_piece, ", ");
+}
+
+}  // namespace
 
 ParseInfo::ParseInfo(ParseResult result) : result_(result) {}
 ParseInfo::ParseInfo(ParseResult result, int rule_id)
@@ -39,11 +54,6 @@ std::string ParseInfo::GetErrorDescription() const {
     case ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY:
       error = ErrorUtils::FormatErrorMessage(kErrorEmptyUpgradeRulePriority,
                                              base::NumberToString(*rule_id_));
-      break;
-    case ParseResult::ERROR_EMPTY_REDIRECT_URL:
-      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRedirectRuleKey,
-                                             base::NumberToString(*rule_id_),
-                                             kRedirectUrlKey);
       break;
     case ParseResult::ERROR_INVALID_RULE_ID:
       error = ErrorUtils::FormatErrorMessage(
@@ -76,7 +86,7 @@ std::string ParseInfo::GetErrorDescription() const {
     case ParseResult::ERROR_INVALID_REDIRECT_URL:
       error = ErrorUtils::FormatErrorMessage(kErrorInvalidRedirectUrl,
                                              base::NumberToString(*rule_id_),
-                                             kRedirectUrlKey);
+                                             kRedirectUrlPath);
       break;
     case ParseResult::ERROR_DUPLICATE_IDS:
       error = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,
@@ -98,14 +108,53 @@ std::string ParseInfo::GetErrorDescription() const {
           kErrorNonAscii, base::NumberToString(*rule_id_), kExcludedDomainsKey);
       break;
     case ParseResult::ERROR_INVALID_URL_FILTER:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidUrlFilter,
-                                             base::NumberToString(*rule_id_),
-                                             kUrlFilterKey);
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id_), kUrlFilterKey);
       break;
     case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
       error = ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
                                              base::NumberToString(*rule_id_),
                                              kRemoveHeadersListKey);
+      break;
+    case ParseResult::ERROR_INVALID_REDIRECT:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id_), kRedirectPath);
+      break;
+    case ParseResult::ERROR_INVALID_EXTENSION_PATH:
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                             base::NumberToString(*rule_id_),
+                                             kExtensionPathPath);
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_SCHEME:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidTransformScheme, base::NumberToString(*rule_id_),
+          kTransformSchemePath,
+          JoinString(base::span<const char* const>(kAllowedTransformSchemes)));
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_PORT:
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                             base::NumberToString(*rule_id_),
+                                             kTransformPortPath);
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_QUERY:
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                             base::NumberToString(*rule_id_),
+                                             kTransformQueryPath);
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_FRAGMENT:
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                             base::NumberToString(*rule_id_),
+                                             kTransformFragmentPath);
+      break;
+    case ParseResult::ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorQueryAndTransformBothSpecified, base::NumberToString(*rule_id_),
+          kTransformQueryPath, kTransformQueryTransformPath);
+      break;
+    case ParseResult::ERROR_JAVASCRIPT_REDIRECT:
+      error = ErrorUtils::FormatErrorMessage(kErrorJavascriptRedirect,
+                                             base::NumberToString(*rule_id_),
+                                             kRedirectUrlPath);
       break;
   }
   return error;

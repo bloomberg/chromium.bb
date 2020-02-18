@@ -30,7 +30,9 @@ DeviceNativePrintersExternalDataHandler::
               this)) {}
 
 DeviceNativePrintersExternalDataHandler::
-    ~DeviceNativePrintersExternalDataHandler() = default;
+    ~DeviceNativePrintersExternalDataHandler() {
+  chromeos::BulkPrintersCalculatorFactory::Get()->Shutdown();
+}
 
 void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataSet(
     const std::string& policy) {
@@ -50,8 +52,7 @@ void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataFetched(
 }
 
 void DeviceNativePrintersExternalDataHandler::Shutdown() {
-  if (device_native_printers_observer_)
-    device_native_printers_observer_.reset();
+  device_native_printers_observer_.reset();
 }
 
 }  // namespace policy

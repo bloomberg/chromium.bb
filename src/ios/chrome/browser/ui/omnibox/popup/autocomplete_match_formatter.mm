@@ -14,6 +14,9 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_formatter.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,28 +25,24 @@
 
 namespace {
 // The color of the main text of a suggest cell.
-UIColor* SuggestionTextColor() {
-  return [UIColor blackColor];
+UIColor* SuggestionTextColor(bool incognito) {
+  return color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextPrimaryColor], incognito,
+      [UIColor colorNamed:kTextPrimaryDarkColor]);
 }
 // The color of the detail text of a suggest cell.
-UIColor* SuggestionDetailTextColor() {
-  return [UIColor colorWithWhite:0 alpha:0.41];
-}
-// The color of the detail text of a suggest cell.
-UIColor* SuggestionDetailTextColorIncognito() {
-  return [UIColor colorWithWhite:1 alpha:0.5];
+UIColor* SuggestionDetailTextColor(bool incognito) {
+  return color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextSecondaryColor], incognito,
+      [UIColor colorNamed:kTextSecondaryDarkColor]);
 }
 // The color of the text in the portion of a search suggestion that matches the
 // omnibox input text.
 UIColor* DimColor() {
   return [UIColor colorWithWhite:(161 / 255.0) alpha:1.0];
 }
-UIColor* SuggestionTextColorIncognito() {
-  return [UIColor whiteColor];
-}
-
 UIColor* DimColorIncognito() {
-  return [UIColor whiteColor];
+  return UIColor.whiteColor;
 }
 
 // Temporary convenience accessor for this flag.
@@ -56,8 +55,6 @@ bool ShouldUseNewFormatting() {
 @implementation AutocompleteMatchFormatter {
   AutocompleteMatch _match;
 }
-@synthesize incognito = _incognito;
-@synthesize starred = _starred;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match {
   self = [super init];
@@ -127,12 +124,9 @@ bool ShouldUseNewFormatting() {
     // instead.
     UIColor* suggestionDetailTextColor = nil;
     if (_match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
-      suggestionDetailTextColor =
-          _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
+      suggestionDetailTextColor = SuggestionTextColor(self.incognito);
     } else {
-      suggestionDetailTextColor = _incognito
-                                      ? SuggestionDetailTextColorIncognito()
-                                      : SuggestionDetailTextColor();
+      suggestionDetailTextColor = SuggestionDetailTextColor(self.incognito);
     }
     DCHECK(suggestionDetailTextColor);
     detailAttributedText =
@@ -188,9 +182,8 @@ bool ShouldUseNewFormatting() {
   } else {
     const ACMatchClassifications* textClassifications =
         !self.isURL ? &_match.contents_class : &_match.description_class;
-    UIColor* suggestionTextColor =
-        _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
-    UIColor* dimColor = _incognito ? DimColorIncognito() : DimColor();
+    UIColor* suggestionTextColor = SuggestionTextColor(self.incognito);
+    UIColor* dimColor = self.incognito ? DimColorIncognito() : DimColor();
 
     attributedText = [self attributedStringWithString:text
                                       classifications:textClassifications
@@ -315,28 +308,23 @@ bool ShouldUseNewFormatting() {
     (int)type {
   DCHECK(!ShouldUseNewFormatting());
   // Answer types, sizes and colors specified at http://goto.google.com/ais_api.
+  UIColor* detailTextColor = SuggestionDetailTextColor(self.incognito);
   switch (type) {
     case SuggestionAnswer::TOP_ALIGNED:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:12],
         NSBaselineOffsetAttributeName : @10.0f,
-        NSForegroundColorAttributeName : [UIColor grayColor],
+        NSForegroundColorAttributeName : detailTextColor,
       };
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : [UIColor colorWithRed:11 / 255.0
-                                                         green:128 / 255.0
-                                                          blue:67 / 255.0
-                                                         alpha:1.0],
+        NSForegroundColorAttributeName : [UIColor colorNamed:kGreenColor],
       };
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : [UIColor colorWithRed:197 / 255.0
-                                                         green:57 / 255.0
-                                                          blue:41 / 255.0
-                                                         alpha:1.0],
+        NSForegroundColorAttributeName : [UIColor colorNamed:kRedColor],
       };
     case SuggestionAnswer::PERSONALIZED_SUGGESTION:
       return @{
@@ -346,28 +334,29 @@ bool ShouldUseNewFormatting() {
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:20],
 
-        NSForegroundColorAttributeName : [UIColor grayColor],
+        NSForegroundColorAttributeName : detailTextColor,
       };
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:24],
-        NSForegroundColorAttributeName : [UIColor grayColor],
+        NSForegroundColorAttributeName : detailTextColor,
       };
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:12],
-        NSForegroundColorAttributeName : [UIColor grayColor],
+        NSForegroundColorAttributeName : detailTextColor,
       };
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:14],
-        NSForegroundColorAttributeName : [UIColor grayColor],
+        NSForegroundColorAttributeName : detailTextColor,
       };
     case SuggestionAnswer::SUGGESTION:
       // Fall through.
     default:
       return @{
         NSFontAttributeName : [UIFont systemFontOfSize:16],
+        NSForegroundColorAttributeName : SuggestionTextColor(self.incognito),
       };
   }
 }
@@ -388,8 +377,9 @@ bool ShouldUseNewFormatting() {
                     UIFontDescriptorTraitTightLeading]
           : [UIFontDescriptor
                 preferredFontDescriptorWithTextStyle:UIFontTextStyleBody];
-  UIColor* defaultColor =
-      useDeemphasizedStyling ? UIColor.grayColor : UIColor.blackColor;
+  UIColor* defaultColor = useDeemphasizedStyling
+                              ? SuggestionDetailTextColor(self.incognito)
+                              : SuggestionTextColor(self.incognito);
 
   switch (style) {
     case SuggestionAnswer::TextStyle::NORMAL:
@@ -415,7 +405,7 @@ bool ShouldUseNewFormatting() {
           fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
       return @{
         NSFontAttributeName : [UIFont fontWithDescriptor:boldFontDescriptor
-                                                    size:0.0],
+                                                    size:0],
         NSForegroundColorAttributeName : defaultColor,
       };
     }
@@ -423,19 +413,13 @@ bool ShouldUseNewFormatting() {
       return @{
         NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
                                                     size:0],
-        NSForegroundColorAttributeName : [UIColor colorWithRed:11 / 255.0
-                                                         green:128 / 255.0
-                                                          blue:67 / 255.0
-                                                         alpha:1.0],
+        NSForegroundColorAttributeName : [UIColor colorNamed:kGreenColor],
       };
     case SuggestionAnswer::TextStyle::NEGATIVE:
       return @{
         NSFontAttributeName : [UIFont fontWithDescriptor:defaultFontDescriptor
                                                     size:0],
-        NSForegroundColorAttributeName : [UIColor colorWithRed:197 / 255.0
-                                                         green:57 / 255.0
-                                                          blue:41 / 255.0
-                                                         alpha:1.0],
+        NSForegroundColorAttributeName : [UIColor colorNamed:kRedColor],
       };
     case SuggestionAnswer::TextStyle::SUPERIOR: {
       // Calculate a slightly smaller font. The ratio here is somewhat

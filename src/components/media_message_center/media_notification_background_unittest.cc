@@ -13,6 +13,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/test_native_theme.h"
 #include "ui/views/test/test_views.h"
 
 namespace media_message_center {
@@ -27,6 +28,22 @@ constexpr double kMutedSaturation = 0.2;
 constexpr double kVibrantSaturation = 0.8;
 
 constexpr int kDefaultForegroundArtworkHeight = 100;
+
+constexpr SkColor kDarkBackgroundColor = SK_ColorBLACK;
+
+class TestDarkTheme : public ui::TestNativeTheme {
+ public:
+  TestDarkTheme() = default;
+  ~TestDarkTheme() override = default;
+
+  // ui::NativeTheme implementation.
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override {
+    if (color_id == kColorId_BubbleBackground)
+      return kDarkBackgroundColor;
+    return ui::TestNativeTheme::GetSystemColor(color_id, color_scheme);
+  }
+};
 
 SkColor GetColorFromSL(double s, double l) {
   return color_utils::HSLToSkColor({0.2, s, l}, SK_AlphaOPAQUE);
@@ -73,16 +90,13 @@ class MediaNotificationBackgroundTest : public testing::Test {
   ~MediaNotificationBackgroundTest() override = default;
 
   void SetUp() override {
-    owner_ = std::make_unique<views::StaticSizedView>();
-    background_ = std::make_unique<MediaNotificationBackground>(owner_.get(),
-                                                                10, 10, 0.1);
+    background_ = std::make_unique<MediaNotificationBackground>(10, 10, 0.1);
 
     EXPECT_FALSE(GetBackgroundColor().has_value());
   }
 
   void TearDown() override {
     background_.reset();
-    owner_.reset();
   }
 
   MediaNotificationBackground* background() const { return background_.get(); }
@@ -96,7 +110,6 @@ class MediaNotificationBackgroundTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<views::StaticSizedView> owner_;
   std::unique_ptr<MediaNotificationBackground> background_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationBackgroundTest);
@@ -122,6 +135,13 @@ TEST_F(MediaNotificationBackgroundTest,
   constexpr SkColor kTestColor = SK_ColorYELLOW;
   background()->UpdateArtwork(CreateTestBackgroundImage(kTestColor));
   EXPECT_EQ(kTestColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest, GetBackgroundColorRespectsTheme) {
+  TestDarkTheme dark_theme;
+  views::View owner;
+  owner.SetNativeTheme(&dark_theme);
+  EXPECT_EQ(kDarkBackgroundColor, background()->GetBackgroundColor(owner));
 }
 
 // MediaNotificationBackgroundBlackWhiteTest will repeat these tests with a
@@ -322,6 +342,8 @@ class MediaNotificationBackgroundRTLTest
                                                 : switches::kForceDirectionLTR);
 
     MediaNotificationBackgroundTest::SetUp();
+
+    ASSERT_EQ(IsRTL(), base::i18n::IsRTL());
   }
 
   bool IsRTL() const { return GetParam(); }
@@ -336,15 +358,19 @@ INSTANTIATE_TEST_SUITE_P(, MediaNotificationBackgroundRTLTest, testing::Bool());
 TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   // The test notification will have a width of 200 and a height of 50.
   gfx::Rect bounds(0, 0, 200, 50);
+  auto owner = std::make_unique<views::StaticSizedView>();
+  owner->SetBoundsRect(bounds);
+  ASSERT_EQ(bounds, owner->GetContentsBounds());
 
   // Check the artwork is not visible by default.
   EXPECT_EQ(0, background()->GetArtworkWidth(bounds.size()));
   EXPECT_EQ(0, background()->GetArtworkVisibleWidth(bounds.size()));
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -200 : 200, 0, 0, 50),
-            background()->GetArtworkBounds(bounds));
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -200 : 0, 0, 200, 50),
-            background()->GetFilledBackgroundBounds(bounds));
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), background()->GetGradientBounds(bounds));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 0 : 200, 0, 0, 50),
+            background()->GetArtworkBounds(*owner.get()));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 0 : 0, 0, 200, 50),
+            background()->GetFilledBackgroundBounds(*owner.get()));
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
+            background()->GetGradientBounds(*owner.get()));
 
   // The background artwork image will have an aspect ratio of 2:1.
   SkBitmap bitmap;
@@ -362,22 +388,22 @@ TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   EXPECT_EQ(100, background()->GetArtworkVisibleWidth(bounds.size()));
 
   // Check the artwork is positioned to the right.
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -200 : 100, 0, 100, 50),
-            background()->GetArtworkBounds(bounds));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 0 : 100, 0, 100, 50),
+            background()->GetArtworkBounds(*owner.get()));
 
   // Check the filled background is to the left of the image.
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -100 : 0, 0, 100, 50),
-            background()->GetFilledBackgroundBounds(bounds));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 100 : 0, 0, 100, 50),
+            background()->GetFilledBackgroundBounds(*owner.get()));
 
   // Check the gradient is positioned above the artwork.
-  const gfx::Rect gradient_bounds = background()->GetGradientBounds(bounds);
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -140 : 100, 0, 40, 50), gradient_bounds);
+  const gfx::Rect gradient_bounds =
+      background()->GetGradientBounds(*owner.get());
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 60 : 100, 0, 40, 50), gradient_bounds);
 
   // Check the gradient point X-values are the start and end of
   // |gradient_bounds|.
-  EXPECT_EQ(IsRTL() ? -100 : 100,
-            background()->GetGradientStartPoint(gradient_bounds).x());
-  EXPECT_EQ(IsRTL() ? -140 : 140,
+  EXPECT_EQ(100, background()->GetGradientStartPoint(gradient_bounds).x());
+  EXPECT_EQ(IsRTL() ? 60 : 140,
             background()->GetGradientEndPoint(gradient_bounds).x());
 
   // Check both of the gradient point Y-values are half the height.

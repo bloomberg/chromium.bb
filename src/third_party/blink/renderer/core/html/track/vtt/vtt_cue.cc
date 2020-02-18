@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_cue_list.h"
@@ -131,15 +132,6 @@ static bool IsInvalidPercentage(double value, ExceptionState& exception_state) {
     return true;
   }
   return false;
-}
-
-// Sets inline CSS properties on passed in element if value is not an empty
-// string.
-static void SetInlineStylePropertyIfNotEmpty(Element& element,
-                                             CSSPropertyID property_id,
-                                             const String& value) {
-  if (!value.IsEmpty())
-    element.SetInlineStyleProperty(property_id, value);
 }
 
 VTTCueBox::VTTCueBox(Document& document)
@@ -801,14 +793,8 @@ VTTCueBox* VTTCue::GetDisplayTree() {
 
   DCHECK_EQ(display_tree_->firstChild(), cue_background_box_);
 
-  if (!display_tree_should_change_) {
-    // Apply updated user style overrides for text tracks when display tree
-    // doesn't change.  This ensures that the track settings are refreshed when
-    // the video is replayed or when the user slides back to an already rendered
-    // track.
-    ApplyUserOverrideCSSProperties();
+  if (!display_tree_should_change_)
     return display_tree_;
-  }
 
   CreateVTTNodeTree();
 
@@ -822,9 +808,6 @@ VTTCueBox* VTTCue::GetDisplayTree() {
     display_tree_->SetInlineStyleProperty(CSSPropertyID::kPosition,
                                           CSSValueID::kRelative);
   }
-
-  // Apply user override settings for text tracks
-  ApplyUserOverrideCSSProperties();
 
   display_tree_should_change_ = false;
 
@@ -1102,40 +1085,6 @@ void VTTCue::ParseSettings(const VTTRegionMap* region_map,
     // Make sure the entire run is consumed.
     input.SkipRun(value_run);
   }
-}
-
-void VTTCue::ApplyUserOverrideCSSProperties() {
-  Settings* settings = GetDocument().GetSettings();
-  if (!settings)
-    return;
-
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kBackgroundColor,
-                                   settings->GetTextTrackBackgroundColor());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontFamily,
-                                   settings->GetTextTrackFontFamily());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontStyle,
-                                   settings->GetTextTrackFontStyle());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontVariant,
-                                   settings->GetTextTrackFontVariant());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_, CSSPropertyID::kColor,
-                                   settings->GetTextTrackTextColor());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kTextShadow,
-                                   settings->GetTextTrackTextShadow());
-  SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
-                                   CSSPropertyID::kFontSize,
-                                   settings->GetTextTrackTextSize());
-  SetInlineStylePropertyIfNotEmpty(*display_tree_,
-                                   CSSPropertyID::kBackgroundColor,
-                                   settings->GetTextTrackWindowColor());
-  SetInlineStylePropertyIfNotEmpty(*display_tree_, CSSPropertyID::kPadding,
-                                   settings->GetTextTrackWindowPadding());
-  SetInlineStylePropertyIfNotEmpty(*display_tree_, CSSPropertyID::kBorderRadius,
-                                   settings->GetTextTrackWindowRadius());
 }
 
 ExecutionContext* VTTCue::GetExecutionContext() const {

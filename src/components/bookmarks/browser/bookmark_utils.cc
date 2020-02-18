@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
@@ -94,18 +95,6 @@ bool DoesBookmarkTextContainWords(const base::string16& text,
   return true;
 }
 
-// Returns true if |node|s title or url contains the strings in |words|.
-bool DoesBookmarkContainWords(const BookmarkNode* node,
-                              const std::vector<base::string16>& words) {
-  return DoesBookmarkTextContainWords(node->GetTitle(), words) ||
-         DoesBookmarkTextContainWords(base::UTF8ToUTF16(node->url().spec()),
-                                      words) ||
-         DoesBookmarkTextContainWords(
-             url_formatter::FormatUrl(
-                 node->url(), url_formatter::kFormatUrlOmitNothing,
-                 net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr),
-             words);
-}
 
 // This is used with a tree iterator to skip subtrees which are not visible.
 bool PruneInvisibleFolders(const BookmarkNode* node) {
@@ -160,8 +149,8 @@ std::string TruncateUrl(const std::string& url) {
 GURL GetUrlFromClipboard() {
   base::string16 url_text;
 #if !defined(OS_IOS)
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &url_text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, &url_text);
 #endif
   return GURL(url_text);
 }
@@ -195,7 +184,8 @@ void GetBookmarksMatchingPropertiesImpl(
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if ((!query_words.empty() &&
-         !DoesBookmarkContainWords(node, query_words)) ||
+         !DoesBookmarkContainWords(node->GetTitle(), node->url(),
+                                   query_words)) ||
         model->is_permanent_node(node)) {
       continue;
     }
@@ -303,11 +293,11 @@ void PasteFromClipboard(BookmarkModel* model,
     return;
 
   BookmarkNodeData bookmark_data;
-  if (!bookmark_data.ReadFromClipboard(ui::ClipboardType::kCopyPaste)) {
+  if (!bookmark_data.ReadFromClipboard(ui::ClipboardBuffer::kCopyPaste)) {
     GURL url = GetUrlFromClipboard();
     if (!url.is_valid())
       return;
-    BookmarkNode node(url);
+    BookmarkNode node(/*id=*/0, base::GenerateGUID(), url);
     node.SetTitle(base::ASCIIToUTF16(url.spec()));
     bookmark_data = BookmarkNodeData(&node);
   }
@@ -403,15 +393,9 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
                                     const QueryFields& query,
                                     size_t max_count,
                                     std::vector<const BookmarkNode*>* nodes) {
-  std::vector<base::string16> query_words;
-  query_parser::QueryParser parser;
-  if (query.word_phrase_query) {
-    parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
-                           query_parser::MatchingAlgorithm::DEFAULT,
-                           &query_words);
-    if (query_words.empty())
-      return;
-  }
+  std::vector<base::string16> query_words = ParseBookmarkQuery(query);
+  if (query.word_phrase_query && query_words.empty())
+    return;
 
   if (query.url) {
     // Shortcut into the BookmarkModel if searching for URL.
@@ -428,6 +412,32 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
         ui::TreeNodeIterator<const BookmarkNode>>(
         iterator, model, query, query_words, max_count, nodes);
   }
+}
+
+// Parses the provided query and returns a vector of query words.
+std::vector<base::string16> ParseBookmarkQuery(
+    const bookmarks::QueryFields& query) {
+  std::vector<base::string16> query_words;
+  query_parser::QueryParser parser;
+  if (query.word_phrase_query) {
+    parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
+                           query_parser::MatchingAlgorithm::DEFAULT,
+                           &query_words);
+  }
+  return query_words;
+}
+
+// Returns true if |node|s title or url contains the strings in |words|.
+bool DoesBookmarkContainWords(const base::string16& title,
+                              const GURL& url,
+                              const std::vector<base::string16>& words) {
+  return DoesBookmarkTextContainWords(title, words) ||
+         DoesBookmarkTextContainWords(base::UTF8ToUTF16(url.spec()), words) ||
+         DoesBookmarkTextContainWords(
+             url_formatter::FormatUrl(url, url_formatter::kFormatUrlOmitNothing,
+                                      net::UnescapeRule::NORMAL, nullptr,
+                                      nullptr, nullptr),
+             words);
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {

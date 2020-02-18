@@ -27,11 +27,10 @@ class ImageSource : public content::URLDataSource {
 
   // content::URLDataSource implementation.
   std::string GetSource() override;
-  void StartDataRequest(
-      const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const content::URLDataSource::GotDataCallback& got_data_callback)
-      override;
+  void StartDataRequest(const std::string& path,
+                        const content::WebContents::Getter& wc_getter,
+                        const content::URLDataSource::GotDataCallback&
+                            got_data_callback) override;
 
   std::string GetMimeType(const std::string& path) override;
 
@@ -48,7 +47,7 @@ class ImageSource : public content::URLDataSource {
   // The background task runner on which file I/O and image decoding are done.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<ImageSource> weak_factory_;
+  base::WeakPtrFactory<ImageSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageSource);
 };

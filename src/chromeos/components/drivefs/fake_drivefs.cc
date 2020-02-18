@@ -95,9 +95,7 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
  public:
   SearchQuery(base::WeakPtr<FakeDriveFs> drive_fs,
               drivefs::mojom::QueryParametersPtr params)
-      : drive_fs_(std::move(drive_fs)),
-        params_(std::move(params)),
-        weak_ptr_factory_(this) {}
+      : drive_fs_(std::move(drive_fs)), params_(std::move(params)) {}
 
  private:
   void GetNextPage(GetNextPageCallback callback) override {
@@ -106,8 +104,10 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
     } else {
       // Default implementation: just search for a file name.
       callback_ = std::move(callback);
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT},
           base::BindOnce(&SearchQuery::SearchFiles, drive_fs_->mount_path()),
           base::BindOnce(&SearchQuery::GetMetadata,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -221,16 +221,13 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
   std::vector<drivefs::mojom::QueryItemPtr> results_;
   size_t pending_callbacks_ = 0;
 
-  base::WeakPtrFactory<SearchQuery> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchQuery> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchQuery);
 };
 
 FakeDriveFs::FakeDriveFs(const base::FilePath& mount_path)
-    : mount_path_(mount_path),
-      binding_(this),
-      bootstrap_binding_(this),
-      weak_factory_(this) {
+    : mount_path_(mount_path), binding_(this), bootstrap_binding_(this) {
   CHECK(mount_path.IsAbsolute());
   CHECK(!mount_path.ReferencesParent());
 }

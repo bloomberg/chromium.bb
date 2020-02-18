@@ -23,7 +23,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,7 +103,8 @@ class TemplateURLFetcherTest : public testing::Test {
   int requests_completed() const { return requests_completed_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
+  content::BrowserTaskEnvironment
+      task_environment_;  // To set up BrowserThreads.
   TemplateURLServiceTestUtil test_util_;
   std::unique_ptr<TemplateURLFetcher> template_url_fetcher_;
   content::URLLoaderInterceptor url_loader_interceptor_;
@@ -120,7 +121,7 @@ class TemplateURLFetcherTest : public testing::Test {
 };
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
       url_loader_interceptor_(
           base::BindRepeating(&TemplateURLFetcherTest::HandleRequest,
                               base::Unretained(this))),

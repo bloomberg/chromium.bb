@@ -57,28 +57,11 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  if (!webgl_context->IsXRCompatible()) {
+  if (session->immersive() && !webgl_context->IsXRCompatible()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        "This context is not marked as XR compatible.");
-    return nullptr;
-  }
-
-  bool composition_disabled = initializer->compositionDisabled();
-
-  if (composition_disabled && session->immersive()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot create an XRWebGLLayer with "
-                                      "compositionDisabled for an immersive "
-                                      "XRSession.");
-    return nullptr;
-  }
-
-  if (!composition_disabled && !session->immersive()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "compositionDisabled is required when "
-                                      "creating an XRWebGLLayer for an inline "
-                                      "XRSession.");
+        "WebGL context must be marked as XR compatible in order to "
+        "use with an immersive XRSession");
     return nullptr;
   }
 
@@ -101,7 +84,9 @@ XRWebGLLayer* XRWebGLLayer::Create(
 
   double framebuffer_scale = 1.0;
 
-  if (composition_disabled) {
+  // Inline sessions don't go through the XR compositor, so they don't need to
+  // allocate a separate drawing buffer or expose a framebuffer.
+  if (!session->immersive()) {
     return MakeGarbageCollected<XRWebGLLayer>(session, webgl_context, nullptr,
                                               nullptr, framebuffer_scale,
                                               ignore_depth_values);
@@ -161,7 +146,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
                            WebGLFramebuffer* framebuffer,
                            double framebuffer_scale,
                            bool ignore_depth_values)
-    : XRLayer(session, kXRWebGLLayerType),
+    : session_(session),
       webgl_context_(webgl_context),
       framebuffer_(framebuffer),
       framebuffer_scale_(framebuffer_scale),
@@ -203,17 +188,6 @@ bool XRWebGLLayer::antialias() const {
     return drawing_buffer_->antialias();
   }
   return webgl_context_->GetDrawingBuffer()->Multisample();
-}
-
-void XRWebGLLayer::getXRWebGLRenderingContext(
-    WebGLRenderingContextOrWebGL2RenderingContext& result) const {
-  if (webgl_context_->ContextType() == Platform::kWebGL2ContextType) {
-    result.SetWebGL2RenderingContext(
-        static_cast<WebGL2RenderingContext*>(webgl_context_.Get()));
-  } else {
-    result.SetWebGLRenderingContext(
-        static_cast<WebGLRenderingContext*>(webgl_context_.Get()));
-  }
 }
 
 XRViewport* XRWebGLLayer::getViewport(XRView* view) {
@@ -331,11 +305,12 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
 }
 
 void XRWebGLLayer::Trace(blink::Visitor* visitor) {
+  visitor->Trace(session_);
   visitor->Trace(left_viewport_);
   visitor->Trace(right_viewport_);
   visitor->Trace(webgl_context_);
   visitor->Trace(framebuffer_);
-  XRLayer::Trace(visitor);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

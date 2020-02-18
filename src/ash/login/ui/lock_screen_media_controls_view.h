@@ -9,9 +9,10 @@
 
 #include "ash/ash_export.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 
 namespace service_manager {
@@ -19,12 +20,19 @@ class Connector;
 }
 
 namespace views {
+class Label;
 class ImageView;
-class ToggleImageButton;
-class ImageButton;
 }  // namespace views
 
+namespace media_message_center {
+class MediaControlsProgressView;
+}
+
 namespace ash {
+
+namespace {
+class MediaActionButton;
+}  // namespace
 
 class MediaControlsHeaderView;
 class NonAccessibleView;
@@ -33,9 +41,42 @@ class ASH_EXPORT LockScreenMediaControlsView
     : public views::View,
       public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public ui::ImplicitAnimationObserver {
  public:
+  // The name of the histogram that records the reason why the controls were
+  // hidden.
+  static const char kMediaControlsHideHistogramName[];
+
+  // The name of the histogram that records whether the media controls were
+  // shown and the reason why.
+  static const char kMediaControlsShownHistogramName[];
+
+  // The name of the histogram that records when a user interacts with the
+  // media controls.
+  static const char kMediaControlsUserActionHistogramName[];
+
   using MediaControlsEnabled = base::RepeatingCallback<bool()>;
+
+  // The reason why the media controls were hidden. This is recorded in
+  // metrics and new values should only be added to the end.
+  enum class HideReason {
+    kSessionChanged,
+    kDismissedByUser,
+    kUnlocked,
+    kMaxValue = kUnlocked
+  };
+
+  // Whether the controls were shown or not shown and the reason why. This is
+  // recorded in metrics and new values should only be added to the end.
+  enum class Shown {
+    kNotShownControlsDisabled,
+    kNotShownNoSession,
+    kNotShownSessionPaused,
+    kShown,
+    kNotShownSessionSensitive,
+    kMaxValue = kNotShownSessionSensitive
+  };
 
   struct Callbacks {
     Callbacks();
@@ -61,6 +102,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
@@ -78,21 +120,27 @@ class ASH_EXPORT LockScreenMediaControlsView
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override;
   void MediaSessionPositionChanged(
-      const base::Optional<media_session::MediaPosition>& position) override {}
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   // media_session::mojom::MediaControllerImageObserver:
   void MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType type,
       const SkBitmap& bitmap) override;
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   void FlushForTesting();
 
   void set_media_controller_for_testing(
-      media_session::mojom::MediaControllerPtr controller) {
-    media_controller_ptr_ = std::move(controller);
+      mojo::Remote<media_session::mojom::MediaController> controller) {
+    media_controller_remote_ = std::move(controller);
   }
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> test_timer) {
@@ -102,15 +150,25 @@ class ASH_EXPORT LockScreenMediaControlsView
  private:
   friend class LockScreenMediaControlsViewTest;
 
+  // Hide the controls because of |reason|.
+  void Hide(HideReason reason);
+
+  // Set whether the controls should be shown and record the reason why.
+  void SetShown(Shown shown);
+
+  // Performs "SeekTo" through |media_controller_ptr_|. The seek time is
+  // calculated using |seek_progress| and the total duration of the media.
+  void SeekTo(double seek_progress);
+
+  // Hides the controls and stops media playback.
+  void Dismiss();
+
   // Sets the media artwork to |img|. If |img| is nullopt, the default artwork
   // is set instead.
   void SetArtwork(base::Optional<gfx::ImageSkia> img);
 
-  // Creates and adds a new media button to |button_row_|. This should not be
-  // used to create toggle buttons such as play/pause.
-  void CreateMediaButton(int size,
-                         media_session::mojom::MediaSessionAction action,
-                         const base::string16& accessible_name);
+  // Returns the rounded rectangle clip path for the current artwork.
+  SkPath GetArtworkClipPath() const;
 
   // Updates the visibility of buttons on |button_row_| depending on what is
   // available in the current media session.
@@ -120,11 +178,28 @@ class ASH_EXPORT LockScreenMediaControlsView
   // necessary.
   void SetIsPlaying(bool playing);
 
+  // Updates the y position and opacity of |contents_view_| during dragging.
+  void UpdateDrag(const gfx::Point& location_in_screen);
+
+  // If the drag velocity is past the threshold or the drag position is past
+  // the height threshold, this calls |HideControlsAnimation()|. Otherwise, this
+  // will call |ResetControlsAnimation()|.
+  void EndDrag();
+
+  // Updates the opacity of |contents_view_| based on its current position.
+  void UpdateOpacity();
+
+  // Animates |contents_view_| up and off the screen.
+  void RunHideControlsAnimation();
+
+  // Animates |contents_view_| to its original position.
+  void RunResetControlsAnimation();
+
   // Used to connect to the Media Session service.
   service_manager::Connector* const connector_;
 
   // Used to control the active session.
-  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;
 
   // Used to receive updates to the active media controller.
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
@@ -142,6 +217,9 @@ class ASH_EXPORT LockScreenMediaControlsView
   // a current session.
   base::Optional<base::UnguessableToken> media_session_id_;
 
+  // The MediaPosition associated with the current media session.
+  base::Optional<media_session::MediaPosition> position_;
+
   // Spacing between controls and user.
   std::unique_ptr<views::View> middle_spacing_;
 
@@ -155,17 +233,37 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Set of enabled actions.
   std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
-  // Container views directly attached to this view.
+  // Contains the visible and draggable UI of the media controls.
+  views::View* contents_view_ = nullptr;
+
+  // The reason we hid the media controls.
+  base::Optional<HideReason> hide_reason_;
+
+  // Whether the controls were shown or not and the reason why.
+  base::Optional<Shown> shown_;
+
+  // Container views attached to |contents_view_|.
   MediaControlsHeaderView* header_row_ = nullptr;
   views::ImageView* session_artwork_ = nullptr;
+  views::Label* title_label_ = nullptr;
+  views::Label* artist_label_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
-  views::ToggleImageButton* play_pause_button_ = nullptr;
-  views::ImageButton* close_button_ = nullptr;
+  MediaActionButton* play_pause_button_ = nullptr;
+  media_message_center::MediaControlsProgressView* progress_ = nullptr;
 
   // Callbacks.
   const MediaControlsEnabled media_controls_enabled_;
   const base::RepeatingClosure hide_media_controls_;
   const base::RepeatingClosure show_media_controls_;
+
+  // The location of the initial gesture event in screen coordinates.
+  gfx::Point initial_drag_point_;
+
+  // The velocity of the gesture event.
+  float last_fling_velocity_ = 0;
+
+  // True if the user is in the process of gesture-dragging |contents_view_|.
+  bool is_in_drag_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

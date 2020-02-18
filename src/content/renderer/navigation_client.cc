@@ -16,9 +16,9 @@ NavigationClient::NavigationClient(RenderFrameImpl* render_frame)
 NavigationClient::~NavigationClient() {}
 
 void NavigationClient::CommitNavigation(
-    const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
-    const network::ResourceResponseHead& response_head,
+    mojom::CommonNavigationParamsPtr common_params,
+    mojom::CommitNavigationParamsPtr commit_params,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
@@ -36,17 +36,17 @@ void NavigationClient::CommitNavigation(
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
   render_frame_->CommitPerNavigationMojoInterfaceNavigation(
-      common_params, commit_params, response_head, std::move(response_body),
-      std::move(url_loader_client_endpoints), std::move(subresource_loaders),
-      std::move(subresource_overrides),
+      std::move(common_params), std::move(commit_params), response_head,
+      std::move(response_body), std::move(url_loader_client_endpoints),
+      std::move(subresource_loaders), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       std::move(callback));
 }
 
 void NavigationClient::CommitFailedNavigation(
-    const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
+    mojom::CommonNavigationParamsPtr common_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
@@ -54,8 +54,9 @@ void NavigationClient::CommitFailedNavigation(
     CommitFailedNavigationCallback callback) {
   ResetDisconnectionHandler();
   render_frame_->CommitFailedPerNavigationMojoInterfaceNavigation(
-      common_params, commit_params, has_stale_copy_in_cache, error_code,
-      error_page_content, std::move(subresource_loaders), std::move(callback));
+      std::move(common_params), std::move(commit_params),
+      has_stale_copy_in_cache, error_code, error_page_content,
+      std::move(subresource_loaders), std::move(callback));
 }
 
 void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {

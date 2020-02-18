@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -81,7 +82,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       LoginReputationClientResponse* out_response);
 
   // Stores |verdict| in |settings| based on its |trigger_type|, |url|,
@@ -89,7 +90,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void CacheVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
+      ReusedPasswordAccountType password_type,
       const LoginReputationClientResponse& verdict,
       const base::Time& receive_time);
 
@@ -106,13 +107,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     LoginReputationClientRequest::TriggerType trigger_type,
                     bool password_field_exists);
 
+#if defined(ON_FOCUS_PING_ENABLED)
   virtual void MaybeStartPasswordFieldOnFocusRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
       const GURL& password_form_action,
       const GURL& password_form_frame_url,
       const std::string& hosted_domain);
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   virtual void MaybeStartProtectedPasswordEntryRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
@@ -124,6 +128,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Records a Chrome Sync event that sync password reuse was detected.
   virtual void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) = 0;
+#endif
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
@@ -136,25 +141,29 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // (6) Its hostname is a dotless domain.
   static bool CanGetReputationOfURL(const GURL& url);
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
-      const std::string& username,
+      ReusedPasswordAccountType password_type,
       LoginReputationClientResponse::VerdictType verdict_type);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
-  virtual void ShowModalWarning(content::WebContents* web_contents,
-                                const std::string& verdict_token,
-                                PasswordType password_type) = 0;
+  virtual void ShowModalWarning(
+      content::WebContents* web_contents,
+      RequestOutcome outcome,
+      LoginReputationClientResponse::VerdictType verdict_type,
+      const std::string& verdict_token,
+      ReusedPasswordAccountType password_type) = 0;
 
   // Shows chrome://reset-password interstitial.
   virtual void ShowInterstitial(content::WebContents* web_contens,
-                                PasswordType password_type) = 0;
+                                ReusedPasswordAccountType password_type) = 0;
+#endif
 
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
-                                   PasswordType password_type,
+                                   ReusedPasswordAccountType password_type,
                                    content::WebContents* web_contents) = 0;
 
   // If user has clicked through any Safe Browsing interstitial on this given
@@ -169,14 +178,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
   // Returns if the warning UI is enabled.
-  bool IsWarningEnabled();
-
-  // Returns if the event logging is enabled.
-  bool IsEventLoggingEnabled();
+  bool IsWarningEnabled(ReusedPasswordAccountType password_type);
 
   // Returns the pref value of password protection warning trigger.
-  virtual PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref()
-      const = 0;
+  virtual PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
+      ReusedPasswordAccountType password_type) const = 0;
 
   // If |url| matches Safe Browsing whitelist domains, password protection
   // change password URL, or password protection login URLs in the enterprise
@@ -185,6 +191,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
   virtual void MaybeReportPasswordReuseDetected(
       content::WebContents* web_contents,
@@ -195,23 +202,53 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Called when a protected password change is detected. Must be called on
   // UI thread.
   virtual void ReportPasswordChanged() = 0;
-
+#endif
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   static ReusedPasswordType GetPasswordProtectionReusedPasswordType(
-      password_manager::metrics_util::PasswordType password_type);
+      PasswordType password_type);
 
-  // Converts from
-  // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType
-  // to LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
+  // Converts from password_manager::metrics_util::PasswordType
+  // to PasswordReuseEvent::ReusedPasswordAccountType. |username| is only
+  // used if |password_type| is OTHER_GAIA_PASSWORD because it needs to be
+  // compared to the list of signed in accounts.
   ReusedPasswordAccountType GetPasswordProtectionReusedPasswordAccountType(
-      PasswordType password_type) const;
+      PasswordType password_type,
+      const std::string& username) const;
+
+  // Converts from ReusedPasswordAccountType to
+  // password_manager::metrics_util::PasswordType.
+  static PasswordType ConvertReusedPasswordAccountTypeToPasswordType(
+      ReusedPasswordAccountType password_type);
 
   // If we can send ping for this type of reused password.
   bool IsSupportedPasswordTypeForPinging(PasswordType password_type) const;
 
   // If we can show modal warning for this type of reused password.
-  bool IsSupportedPasswordTypeForModalWarning(PasswordType password_type) const;
+  bool IsSupportedPasswordTypeForModalWarning(
+      ReusedPasswordAccountType password_type) const;
+
+  const ReusedPasswordAccountType&
+  reused_password_account_type_for_last_shown_warning() const {
+    return reused_password_account_type_for_last_shown_warning_;
+  }
+#if defined(UNIT_TEST)
+  void set_reused_password_account_type_for_last_shown_warning(
+      ReusedPasswordAccountType
+          reused_password_account_type_for_last_shown_warning) {
+    reused_password_account_type_for_last_shown_warning_ =
+        reused_password_account_type_for_last_shown_warning;
+  }
+#endif
+
+  const std::string& username_for_last_shown_warning() const {
+    return username_for_last_shown_warning_;
+  }
+#if defined(UNIT_TEST)
+  void set_username_for_last_shown_warning(const std::string& username) {
+    username_for_last_shown_warning_ = username;
+  }
+#endif
 
   virtual AccountInfo GetAccountInfo() const = 0;
 
@@ -225,8 +262,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // allowed. |password_type| is used for UMA metric recording.
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
-                   PasswordType password_type,
-                   const std::string& username,
+                   ReusedPasswordAccountType password_type,
                    RequestOutcome* reason);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
@@ -277,44 +313,63 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsPingingEnabled(
       LoginReputationClientRequest::TriggerType trigger_type,
-      PasswordType password_type,
-      const std::string& username,
+      ReusedPasswordAccountType password_type,
       RequestOutcome* reason) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
 
+  // If primary account is syncing.
   virtual bool IsPrimaryAccountSyncing() const = 0;
 
+  // If primary account is signed in.
   virtual bool IsPrimaryAccountSignedIn() const = 0;
 
+  // If a domain is not defined for the primary account. This means the primary
+  // account is a Gmail account.
   virtual bool IsPrimaryAccountGmail() const = 0;
 
-  virtual bool IsOtherGaiaAccountSignedIn(
+  // If the domain for the non sync account is equal to |kNoHostedDomainFound|,
+  // this means that the account is a Gmail account.
+  virtual bool IsOtherGaiaAccountGmail(const std::string& username) const = 0;
+
+  // Gets the account based off of the username from a list of signed in
+  // accounts.
+  virtual AccountInfo GetSignedInNonSyncAccount(
       const std::string& username) const = 0;
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   virtual bool IsUnderAdvancedProtection() = 0;
+#endif
 
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
   virtual void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
       RequestOutcome,
+      PasswordType password_type,
       const LoginReputationClientResponse*) = 0;
+#endif
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
 
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
 
+  // Determines if we should show chrome://reset-password interstitial based on
+  // previous request outcome, the reused |password_type| and the
+  // |main_frame_url|.
   virtual bool CanShowInterstitial(RequestOutcome reason,
-                                   PasswordType password_type,
+                                   ReusedPasswordAccountType password_type,
                                    const GURL& main_frame_url) = 0;
+#endif
 
  private:
   friend class PasswordProtectionServiceTest;
@@ -354,6 +409,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome reason,
       PasswordType password_type);
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Get the content area size of current browsing window.
   virtual gfx::Size GetCurrentContentAreaSize() const = 0;
 
@@ -362,6 +418,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
       mojom::PhishingDetectorPtr* phishing_detector);
+#endif
+
+  // The username of the account which password has been reused on. It is only
+  // set once a modal warning or interstitial is verified to be shown.
+  std::string username_for_last_shown_warning_ = "";
+
+  // The last ReusedPasswordAccountType that was shown a warning or
+  // interstitial.
+  ReusedPasswordAccountType
+      reused_password_account_type_for_last_shown_warning_;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 

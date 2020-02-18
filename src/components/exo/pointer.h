@@ -38,6 +38,7 @@ namespace exo {
 class PointerDelegate;
 class PointerGesturePinchDelegate;
 class RelativePointerDelegate;
+class Seat;
 class Surface;
 class SurfaceTreeHost;
 
@@ -50,7 +51,7 @@ class Pointer : public SurfaceTreeHost,
                 public aura::client::CursorClientObserver,
                 public aura::client::FocusChangeObserver {
  public:
-  explicit Pointer(PointerDelegate* delegate);
+  Pointer(PointerDelegate* delegate, Seat* seat);
   ~Pointer() override;
 
   PointerDelegate* delegate() const { return delegate_; }
@@ -142,6 +143,8 @@ class Pointer : public SurfaceTreeHost,
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
 
+  Seat* const seat_;
+
   // The delegate instance that all pinch related events are dispatched to.
   PointerGesturePinchDelegate* pinch_delegate_ = nullptr;
 
@@ -191,7 +194,7 @@ class Pointer : public SurfaceTreeHost,
   ui::EventType last_event_type_ = ui::ET_UNKNOWN;
 
   // Weak pointer factory used for cursor capture callbacks.
-  base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_;
+  base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };

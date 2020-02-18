@@ -15,8 +15,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -131,8 +131,7 @@ class MockHostResolverProc : public net::HostResolverProc {
 class StaleHostResolverTest : public testing::Test {
  protected:
   StaleHostResolverTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         mock_network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()),
         mock_proc_(new MockHostResolverProc(net::OK)),
@@ -185,8 +184,10 @@ class StaleHostResolverTest : public testing::Test {
     if (dns_client) {
       inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
           std::move(dns_client));
+      inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
     } else {
-      inner_resolver->GetManagerForTesting()->SetDnsClientEnabled(false);
+      inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(
+          false);
     }
     return inner_resolver;
   }
@@ -337,7 +338,7 @@ class StaleHostResolverTest : public testing::Test {
 
  private:
   // Needed for HostResolver to run HostResolverProc callbacks.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::SimpleTestTickClock tick_clock_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       mock_network_change_notifier_;

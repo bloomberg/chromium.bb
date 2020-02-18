@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -189,7 +189,7 @@ class ImageSanitizerTest : public testing::Test {
     decoded_image_callback_called_ = true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<service_manager::Service> test_data_decoder_service_;

@@ -42,9 +42,7 @@ UINT ReservedIconId(StatusTray::StatusIconType type) {
 class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy {
  public:
   StatusTrayStateChangerProxyImpl()
-      : pending_requests_(0),
-        worker_thread_("StatusIconCOMWorkerThread"),
-        weak_factory_(this) {
+      : pending_requests_(0), worker_thread_("StatusIconCOMWorkerThread") {
     worker_thread_.init_com_with_mta(false);
   }
 
@@ -95,7 +93,7 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<StatusTrayStateChangerProxyImpl> weak_factory_;
+  base::WeakPtrFactory<StatusTrayStateChangerProxyImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayStateChangerProxyImpl);
 };
@@ -141,7 +139,7 @@ StatusTrayWin::~StatusTrayWin() {
 void StatusTrayWin::UpdateIconVisibilityInBackground(
     StatusIconWin* status_icon) {
   if (!state_changer_proxy_.get())
-    state_changer_proxy_.reset(new StatusTrayStateChangerProxyImpl);
+    state_changer_proxy_ = std::make_unique<StatusTrayStateChangerProxyImpl>();
 
   state_changer_proxy_->EnqueueChange(status_icon->icon_id(),
                                       status_icon->window());

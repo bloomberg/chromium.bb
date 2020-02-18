@@ -25,10 +25,12 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
 
   // AppRegistrar:
   void Init(base::OnceClosure callback) override;
-  bool IsInstalled(const GURL& start_url) const override;
+  BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
   bool IsInstalled(const web_app::AppId& app_id) const override;
+  bool IsLocallyInstalled(const web_app::AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
+  bool WasInstalledByUser(const web_app::AppId& app_id) const override;
   base::Optional<web_app::AppId> FindAppWithUrlInScope(
       const GURL& url) const override;
   int CountUserInstalledApps() const override;
@@ -38,11 +40,14 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
+  web_app::LaunchContainer GetAppLaunchContainer(
+      const web_app::AppId& app_id) const override;
+  void SetAppLaunchContainer(
+      const web_app::AppId& app_id,
+      web_app::LaunchContainer launch_container) override;
+  std::vector<web_app::AppId> GetAppIds() const override;
 
   // ExtensionRegistryObserver:
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const Extension* extension,
-                            bool is_update) override;
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;

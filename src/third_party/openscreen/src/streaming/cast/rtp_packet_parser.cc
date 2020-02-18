@@ -55,6 +55,9 @@ absl::optional<RtpPacketParser::ParseResult> RtpPacketParser::Parse(
       highest_rtp_frame_id_.Expand(ConsumeField<uint8_t>(&buffer));
   result.packet_id = ConsumeField<uint16_t>(&buffer);
   result.max_packet_id = ConsumeField<uint16_t>(&buffer);
+  if (result.max_packet_id == kAllPacketsLost) {
+    return absl::nullopt;  // Packet ID cannot be the special value.
+  }
   if (result.packet_id > result.max_packet_id) {
     return absl::nullopt;
   }

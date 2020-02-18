@@ -89,8 +89,7 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 class EasyUnlockService::BluetoothDetector
     : public device::BluetoothAdapter::Observer {
  public:
-  explicit BluetoothDetector(EasyUnlockService* service)
-      : service_(service), weak_ptr_factory_(this) {}
+  explicit BluetoothDetector(EasyUnlockService* service) : service_(service) {}
 
   ~BluetoothDetector() override {
     if (adapter_.get())
@@ -124,7 +123,7 @@ class EasyUnlockService::BluetoothDetector
   // Owner of this class and should out-live this class.
   EasyUnlockService* service_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  base::WeakPtrFactory<BluetoothDetector> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothDetector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetector);
 };
@@ -132,7 +131,7 @@ class EasyUnlockService::BluetoothDetector
 class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
  public:
   explicit PowerMonitor(EasyUnlockService* service)
-      : service_(service), waking_up_(false), weak_ptr_factory_(this) {
+      : service_(service), waking_up_(false) {
     PowerManagerClient::Get()->AddObserver(this);
   }
 
@@ -178,7 +177,7 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   EasyUnlockService* service_;
   bool waking_up_;
   base::Time wake_up_time_;
-  base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_;
+  base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
 };
@@ -191,17 +190,9 @@ EasyUnlockService::EasyUnlockService(
       proximity_auth_client_(profile),
       bluetooth_detector_(new BluetoothDetector(this)),
       shut_down_(false),
-      tpm_key_checked_(false),
-      weak_ptr_factory_(this) {}
+      tpm_key_checked_(false) {}
 
-EasyUnlockService::~EasyUnlockService() {
-  // TODO(crbug.com/969135): Remove this once crbug.com/969135 is resolved.
-  // This CHECK ensures that EasyUnlockService is shutdown before it's deleted.
-  // This is added because the stack trace of the crash in question implies
-  // that a deleted member variable of EasyUnlockService is being touched during
-  // EasyUnlockService::Shutdown().
-  CHECK(shut_down_);
-}
+EasyUnlockService::~EasyUnlockService() = default;
 
 // static
 void EasyUnlockService::RegisterProfilePrefs(
@@ -351,6 +342,8 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
   const EasyUnlockAuthAttempt::Type auth_attempt_type =
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
+  PA_LOG(VERBOSE) << "User began auth attempt (unlock or sign in attempt).";
+
   if (auth_attempt_) {
     PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
     return;
@@ -383,6 +376,7 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kAuthAttemptCannotStart);
     auth_attempt_.reset();
+    return;
   }
 
   // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are

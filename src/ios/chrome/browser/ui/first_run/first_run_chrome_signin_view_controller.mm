@@ -17,13 +17,12 @@
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/web/public/web_state/web_state.h"
-
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -121,6 +120,12 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
                                                       if (completion)
                                                         completion();
                                                     }];
+}
+
+#pragma mark Superclass overrides
+
+- (UIColor*)backgroundColor {
+  return [UIColor colorNamed:kBackgroundColor];
 }
 
 #pragma mark ChromeSigninViewControllerDelegate

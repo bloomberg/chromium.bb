@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Rezoluția imaginii</translation>
 <translation id="1943097386230153518">Instalează un serviciu nou</translation>
 <translation id="1947424002851288782">Tastatură germană</translation>
+<translation id="1972984168337863910">Extinde panourile cu feedback privind fișierele</translation>
 <translation id="197560921582345123">Poate edita</translation>
 <translation id="1984603991036629094">Tastatură fonetică armeană</translation>
 <translation id="2001796770603320721">Gestionează în Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Trebuie să fiți online pentru a accesa acest fișier.</translation>
 <translation id="4212740939091998969">Dosarul cu numele „<ph name="FOLDER_NAME" />” există deja. Alege un alt nume.</translation>
 <translation id="4215448920900139318">Se face backup pentru <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Deschide setările</translation>
 <translation id="426015154560005552">Tastatură arabă</translation>
 <translation id="4261901459838235729">Prezentare Google</translation>
 <translation id="4290535918735525311">Un dosar cu accesul permis pentru Linux</translation>
-<translation id="42981349822642051">Extinde</translation>
 <translation id="4298972503445160211">Tastatură daneză</translation>
 <translation id="4299729908419173967">Braziliană</translation>
 <translation id="4309915981827077375">Informații generale</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Remediere automată</translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="4886021172213954916">Tastatură tamilă (Mașină de scris)</translation>
-<translation id="4892969127351273348">Nu se poate deschide cu <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Gata de backup pentru <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Remediată</translation>
 <translation id="4935975195727477204">Floare</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Franceză elvețiană</translation>
 <translation id="5234764350956374838">Închide</translation>
 <translation id="5241298539944515331">Tastatură vietnameză (VIQR)</translation>
-<translation id="52446585071384036">Pentru a deschide fișierele cu <ph name="APP_NAME" />, copiază-le mai întâi în dosarul Fișiere Linux.</translation>
 <translation id="5253070652067921974">Creat de</translation>
 <translation id="5257456363153333584">Libelulă</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accesează fișierele de oriunde, chiar și offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Coreeană</translation>
 <translation id="5819442873484330149">Hangul setul 3 (Final)</translation>
 <translation id="5833610766403489739">Fișierul nu poate fi găsit. Verificați setarea locației de descărcare și încercați din nou.</translation>
-<translation id="5838051104334203064">Aplicațiile Play Store nu pot accesa acest dispozitiv</translation>
 <translation id="5838451609423551646">S-au eliminat toate intrările din selecție.</translation>
 <translation id="5838825566232597749">Tastatură S.U.A. Workman internațională</translation>
 <translation id="5850516540536751549">Acest tip de fișier nu este acceptat. Accesați <ph name="BEGIN_LINK" />Magazinul web Chrome<ph name="END_LINK" /> pentru a găsi o aplicație care poate deschide acest tip de fișier.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Pentru a salva aceste fișiere pentru utilizare offline, revino online, dă clic dreapta pe fișiere și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Abandonați</translation>
 <translation id="8261506727792406068">Șterge</translation>
+<translation id="8269755669432358899">Restrânge panourile cu feedback privind fișierele</translation>
 <translation id="8279388322240498158">Tastatură kurdă sorani bazată pe engleză</translation>
 <translation id="8280151743281770066">Armeană fonetică</translation>
 <translation id="8294431847097064396">Sursă</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Selectează un fișier pentru a-l deschide</translation>
 <translation id="8579285237314169903">Se sincronizează <ph name="NUMBER_OF_FILES" /> elemente...</translation>
 <translation id="8600173386174225982">Lista de fișiere s-a modificat la vizualizare cu miniaturi.</translation>
+<translation id="8601932370724196034">Fișier imagine Crostini</translation>
 <translation id="8669949407341943408">Se mută...</translation>
 <translation id="8671210955687109937">Poate face comentarii</translation>
 <translation id="8686213429977032554">La acest fișier din Drive nu s-a permis încă accesul</translation>

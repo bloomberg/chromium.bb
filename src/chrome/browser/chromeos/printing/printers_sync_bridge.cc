@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
@@ -41,6 +42,31 @@ std::unique_ptr<EntityData> CopyToEntityData(
   return entity_data;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MakeAndModelMigrationState {
+  kNotMigrated = 0,
+  kMigrated = 1,
+  kMaxValue = kMigrated,
+};
+
+// Computes the make_and_model field for old |specifics| where it is missing.
+// Returns true if an update was made.  make_and_model is computed from the
+// manufacturer and model strings.
+bool MigrateMakeAndModel(sync_pb::PrinterSpecifics* specifics) {
+  if (specifics->has_make_and_model()) {
+    base::UmaHistogramEnumeration("Printing.CUPS.MigratedMakeAndModel",
+                                  MakeAndModelMigrationState::kNotMigrated);
+    return false;
+  }
+
+  specifics->set_make_and_model(
+      chromeos::MakeAndModel(specifics->manufacturer(), specifics->model()));
+  base::UmaHistogramEnumeration("Printing.CUPS.MigratedMakeAndModel",
+                                MakeAndModelMigrationState::kMigrated);
+  return true;
+}
+
 }  // namespace
 
 // Delegate class which helps to manage the ModelTypeStore.
@@ -48,7 +74,7 @@ class PrintersSyncBridge::StoreProxy {
  public:
   StoreProxy(PrintersSyncBridge* owner,
              syncer::OnceModelTypeStoreFactory callback)
-      : owner_(owner), weak_ptr_factory_(this) {
+      : owner_(owner) {
     std::move(callback).Run(syncer::PRINTERS,
                             base::BindOnce(&StoreProxy::OnStoreCreated,
                                            weak_ptr_factory_.GetWeakPtr()));
@@ -142,7 +168,7 @@ class PrintersSyncBridge::StoreProxy {
   PrintersSyncBridge* owner_;
 
   std::unique_ptr<ModelTypeStore> store_;
-  base::WeakPtrFactory<StoreProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<StoreProxy> weak_ptr_factory_{this};
 };
 
 PrintersSyncBridge::PrintersSyncBridge(
@@ -188,7 +214,11 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     // appropriate metadata.
     for (const auto& entry : all_data_) {
       const std::string& local_entity_id = entry.first;
-      if (!base::Contains(sync_entity_ids, local_entity_id)) {
+
+      // TODO(crbug.com/737809): Remove when all data is expected to have been
+      // migrated.
+      bool migrated = MigrateMakeAndModel(entry.second.get());
+      if (!base::Contains(sync_entity_ids, local_entity_id) || migrated) {
         // Only local objects which were not updated are uploaded.  Objects for
         // which there was a remote copy are overwritten.
         change_processor()->Put(local_entity_id,

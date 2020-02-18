@@ -28,7 +28,6 @@
 <translation id="2008474315282236005">ఇది ఈ పరికరం నుండి 1 అంశాన్ని తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromiumకు <ph name="USER_EMAIL" /> లాగా సైన్ ఇన్ చేయండి.</translation>
 <translation id="2117378023188580026">ఈ అప్‌డేట్‌ను వర్తింపజేయడం కోసం మీరు Chromiumను పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు</translation>
 <translation id="2119636228670142020">&amp;Chromium OS గురించి</translation>
-<translation id="2178765360243863853">మీరు ఇప్పుడే Chromiumని పునఃప్రారంభించాలి</translation>
 <translation id="2241627712206172106">మీరు కంప్యూటర్‌ను షేర్‌ చేస్తే, స్నేహితులు, కుటుంబ సభ్యులు విడివిడిగా బ్రౌజ్ చేయవచ్చు. Chromiumను వారికి నచ్చిన రీతిలో సెటప్ చేసుకోవచ్చు.</translation>
 <translation id="2265088490657775772">మీ iPhoneలో Chromiumని పొందండి</translation>
 <translation id="2347108572062610441">ఈ పొడిగింపు మీరు Chromiumని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
@@ -121,11 +120,9 @@
 <translation id="5623402015214259806">{0,plural, =0{ఒక Chromium అప్‌డేట్ అందుబాటులో ఉంది}=1{ఒక Chromium అప్‌డేట్ అందుబాటులో ఉంది}other{ఒక Chromium అప్‌డేట్ # రోజులుగా అందుబాటులో ఉంది}}</translation>
 <translation id="5631814766731275228">Chromium పేరు మరియు చిత్రం</translation>
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
+<translation id="5653831366781983928">దయచేసి ఇప్పుడు Chromiumను మళ్ళీ ప్రారంభించండి</translation>
 <translation id="5680901439334282664">Chromiumకు సైన్ ఇన్ చేయండి</translation>
 <translation id="5698481217667032250">Chromiumను ఈ భాషలో ప్రదర్శించు</translation>
-<translation id="5756484659843248772">Chromium OS UI చూపడానికి ఈ భాష ఉపయోగించబడింది</translation>
-<translation id="5768914737813585044">Chromium OSను ఈ భాషలో ప్రదర్శించు</translation>
-<translation id="5796460469508169315">Chromium దాదాపు సిద్ధంగా ఉంది.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
@@ -166,6 +163,7 @@
 <translation id="6734080038664603509">&amp;Chromiumను అప్‌డేట్ చేయండి</translation>
 <translation id="6734291798041940871">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Chromium ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6810143991807788455">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromiumను మెరుగుపరచడంలో సహాయపడండి</translation>
+<translation id="6847869444787758381">మీ పాస్‌వర్డ్‌లు ఎప్పుడైనా హ్యాక్ అయితే, Chromium మీకు తెలియచేస్తుంది</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumకి కాపీ చేయబడింది)</translation>
 <translation id="6868056391275687737">Chromium యొక్క ఇతర కాపీలు అమలు అవుతున్నాయి. అప్‌డేట్ చేయడానికి, వాటిని మూసివేయండి.</translation>
@@ -186,12 +184,6 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">కొత్త విండో</translation>
 <translation id="734373864078049451">మీ వెబ్, బుక్‌మార్క్‌లు మరియు ఇతర Chromium అంశాలు ఇక్కడ చూపబడతాయి.</translation>
-<translation id="7344413941077984497"><ph name="NEW_PROFILE_NAME" /> వీక్షించగల వెబ్‌సైట్‌లను సెట్ చేయడానికి, మీరు <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />ను సందర్శించడం ద్వారా పరిమితులు మరియు సెట్టింగ్‌లను కాన్ఫిగర్ చేయవచ్చు. మీరు డిఫాల్ట్ సెట్టింగ్‌లను మార్చకపోతే, <ph name="NEW_PROFILE_NAME" /> వెబ్‌లో అన్నీ బ్రౌజ్ చేయగలరు.
-
-<ph name="NEW_PROFILE_NAME" />ను మీ ఖాతా యాక్సెస్‌ చేయనీయకుండా నిరోధించడానికి, మీరు Chromiumను ఉపయోగించనప్పుడు మీ ప్రొపైల్‌ను లాక్ చేసి ఉంచేట్లు చూసుకోండి. దీన్ని చేయడానికి, బ్రౌజర్ ఎగువ కుడి మూలన ఉన్న మీ ప్రొఫైల్ పేరును క్లిక్ చేసి, ఆపై "నిష్క్రమించి, చైల్డ్ లాక్ చేయి" ఎంపికను ఎంచుకోండి.
-<ph name="BEGIN_LINK_2" />మరింత తెలుసుకోండి<ph name="END_LINK_2" />
-
-దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" />లో మీ ఇమెయిల్‌ను చూడండి.</translation>
 <translation id="7349591376906416160"><ph name="TARGET_URL_HOSTNAME" />ను యాక్సెస్ చేయడం కోసం <ph name="ALTERNATIVE_BROWSER_NAME" />ను తెరిచే విధంగా Chromiumను మీ సిస్టమ్ నిర్వాహకుడు కాన్ఫిగర్ చేసారు.</translation>
 <translation id="7448255348454382571">Chromium OSని మళ్లీ ప్రారంభించండి</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
@@ -200,6 +192,8 @@
 <translation id="753534427205733210">{0,plural, =1{1 నిమిషంలో Chromium తిరిగి ప్రారంభించబడుతుంది}other{# నిమిషాల్లో Chromium తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="7549178288319965365">Chromium OS గురించి</translation>
 <translation id="7561906087460245826">అలాగే (<ph name="URL" />)లో ఉన్న Chromiumకి సంబంధించిన డేటాని తీసివేయి</translation>
+<translation id="7585853947355360626">ఏదైనా సెట్టింగ్ ఈ పేజీలో కనపడకపోతే, మీ <ph name="LINK_BEGIN" />
+      Chromium OS సెట్టింగ్‌లు<ph name="LINK_END" />లో చూడండి</translation>
 <translation id="761356813943268536">Chromium మీ కెమెరా మరియు మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="7617377681829253106">Chromium ఇప్పుడు మెరుగైంది</translation>
 <translation id="7686590090926151193">Chromium మీ డిఫాల్ట్ బ్రౌజర్ కాదు</translation>
@@ -211,6 +205,7 @@
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7827169012280634081">మీరు Chromium నుండి నిష్క్రమించినప్పుడు, కుక్కీలు, సైట్ డేటాను క్లియర్ చేయండి</translation>
 <translation id="7867198900892795913">Chromiumను తాజా వెర్షన్‌కు అప్‌డేట్ చేయడం సాధ్యం కాలేదు, కాబట్టి మీరు కొత్త ఫీచర్‌లు మరియు భద్రతా పరిష్కారాలను పొందడం లేదు.</translation>
+<translation id="7898472181347242998">మీ పరికరం అప్‌డేట్ చేయబడి ఉందని చూడటానికి <ph name="LINK_BEGIN" />Chromium OS సెట్టింగ్‌లు<ph name="LINK_END" />కు వెళ్లండి</translation>
 <translation id="7901117350626490574">Chromiumకు కొత్త అప్‌డేట్ అందుబాటులో ఉంది మరియు మీరు పునఃప్రారంభించిన వెంటనే వర్తింపజేయబడుతుంది.</translation>
 <translation id="7937630085815544518">మీరు <ph name="USER_EMAIL_ADDRESS" />గా Chromiumకు సైన్ ఇన్ చేశారు. దయచేసి మళ్లీ సైన్ ఇన్ చేయడానికి ఇదే ఖాతాను ఉపయోగించండి.</translation>
 <translation id="7962572577636132072">Chromium ఆటోమేటిక్‌గా అప్‌డేట్ అవుతుంది కాబట్టి మీ వద్ద ఎప్పుడూ తాజా వెర్షన్ ఉంటుంది.</translation>
@@ -225,7 +220,6 @@
 <translation id="8290862415967981663">ఈ ఫైల్ అపాయకరం కావచ్చు, కాబట్టి Chromium దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="8330519371938183845">మీ పరికరాల అంతటా Chromiumను సింక్ చేయడానికి, వ్యక్తిగతీకరించడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> మునుపు Chromiumని ఉపయోగించింది</translation>
-<translation id="8375950122744241554">Chromium 70తో మొదలు పెట్టి, తర్వాతి వెర్షన్‌లలో పర్యవేక్షించబడే వినియోగదారు ప్రొఫైల్‌లు ఇకపై అందుబాటులో ఉండవు.</translation>
 <translation id="8417404458978023919">{0,plural, =1{ఒక రోజులోపు Chromiumను తిరిగి ప్రారంభించండి}other{# రోజులలోపు Chromiumను తిరిగి ప్రారంభించండి}}</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8493179195440786826">Chromium కాలం చెల్లినది</translation>
@@ -234,6 +228,8 @@
 <translation id="8619360774459241877">Chromiumని ప్రారంభిస్తోంది...</translation>
 <translation id="8621669128220841554">తెలియ‌ని ఎర్ర‌ర్‌ కారణంగా ఇన‌స్ట‌లేష‌న్‌ విఫలమైంది. దయచేసి Chromiumను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8667808506758191620">మీ <ph name="DEVICE_TYPE" /> ఆధునికంగా ఉంది.</translation>
+<translation id="8682540261359803721">ఏదైనా సెట్టింగ్ ఈ పేజీలో కనపడకపోతే, మీ <ph name="LINK_BEGIN" />
+    Chromium బ్రౌజర్ సెట్టింగ్‌లు<ph name="LINK_END" />లో చూడండి</translation>
 <translation id="8697124171261953979">ఇది మీరు Chromiumను ప్రారంభించేటప్పుడు లేదా ఓమ్నిబాక్స్ నుండి వెతికేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="8704119203788522458">ఇది మీ Chromium</translation>
 <translation id="8739167630197873875">మీరు Chromium నుండి నిష్క్రమించినప్పుడు, కుక్కీలను క్లియర్ చేయండి. సింక్ చేయడం కొనసాగించడానికి, ఈ <ph name="COOKIE_SETTINGS_LINK" />ను మార్చండి.</translation>

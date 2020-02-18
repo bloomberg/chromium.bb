@@ -26,7 +26,6 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
-#include "components/services/unzip/public/cpp/unzip.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -218,8 +217,7 @@ base::Optional<crx_file::VerifierFormat> g_verifier_format_override_for_test;
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnSequence<SandboxedUnpackerClient>(
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::UI})) {
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

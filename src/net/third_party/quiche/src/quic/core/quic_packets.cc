@@ -21,8 +21,7 @@ namespace quic {
 QuicConnectionId GetServerConnectionIdAsRecipient(
     const QuicPacketHeader& header,
     Perspective perspective) {
-  if (perspective == Perspective::IS_SERVER ||
-      !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective == Perspective::IS_SERVER) {
     return header.destination_connection_id;
   }
   return header.source_connection_id;
@@ -31,7 +30,6 @@ QuicConnectionId GetServerConnectionIdAsRecipient(
 QuicConnectionId GetClientConnectionIdAsRecipient(
     const QuicPacketHeader& header,
     Perspective perspective) {
-  DCHECK(GetQuicRestartFlag(quic_do_not_override_connection_id));
   if (perspective == Perspective::IS_CLIENT) {
     return header.destination_connection_id;
   }
@@ -40,40 +38,33 @@ QuicConnectionId GetClientConnectionIdAsRecipient(
 
 QuicConnectionId GetServerConnectionIdAsSender(const QuicPacketHeader& header,
                                                Perspective perspective) {
-  if (perspective == Perspective::IS_CLIENT ||
-      !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective == Perspective::IS_CLIENT) {
     return header.destination_connection_id;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 3, 7);
   return header.source_connection_id;
 }
 
 QuicConnectionIdIncluded GetServerConnectionIdIncludedAsSender(
     const QuicPacketHeader& header,
     Perspective perspective) {
-  if (perspective == Perspective::IS_CLIENT ||
-      !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective == Perspective::IS_CLIENT) {
     return header.destination_connection_id_included;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 4, 7);
   return header.source_connection_id_included;
 }
 
 QuicConnectionId GetClientConnectionIdAsSender(const QuicPacketHeader& header,
                                                Perspective perspective) {
-  if (perspective == Perspective::IS_CLIENT ||
-      !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective == Perspective::IS_CLIENT) {
     return header.source_connection_id;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 7, 7);
   return header.destination_connection_id;
 }
 
 QuicConnectionIdIncluded GetClientConnectionIdIncludedAsSender(
     const QuicPacketHeader& header,
     Perspective perspective) {
-  if (perspective == Perspective::IS_CLIENT ||
-      !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective == Perspective::IS_CLIENT) {
     return header.source_connection_id_included;
   }
   return header.destination_connection_id_included;
@@ -127,12 +118,13 @@ size_t GetPacketHeaderSize(
       // Long header.
       size_t size = kPacketHeaderTypeSize + kConnectionIdLengthSize +
                     destination_connection_id_length +
-                    source_connection_id_length +
-                    (version > QUIC_VERSION_44 ? packet_number_length
-                                               : PACKET_4BYTE_PACKET_NUMBER) +
+                    source_connection_id_length + packet_number_length +
                     kQuicVersionSize;
       if (include_diversification_nonce) {
         size += kDiversificationNonceSize;
+      }
+      if (VersionHasLengthPrefixedConnectionIds(version)) {
+        size += kConnectionIdLengthSize;
       }
       DCHECK(QuicVersionHasLongHeaderLengths(version) ||
              !GetQuicReloadableFlag(quic_fix_get_packet_header_size) ||
@@ -152,8 +144,6 @@ size_t GetPacketHeaderSize(
   // Google QUIC versions <= 43 can only carry one connection ID.
   DCHECK(destination_connection_id_length == 0 ||
          source_connection_id_length == 0);
-  DCHECK(source_connection_id_length == 0 ||
-         GetQuicRestartFlag(quic_do_not_override_connection_id));
   return kPublicFlagsSize + destination_connection_id_length +
          source_connection_id_length +
          (include_version ? kQuicVersionSize : 0) + packet_number_length +
@@ -284,6 +274,11 @@ QuicData::QuicData(const char* buffer, size_t length)
 QuicData::QuicData(const char* buffer, size_t length, bool owns_buffer)
     : buffer_(buffer), length_(length), owns_buffer_(owns_buffer) {}
 
+QuicData::QuicData(QuicStringPiece packet_data)
+    : buffer_(packet_data.data()),
+      length_(packet_data.length()),
+      owns_buffer_(false) {}
+
 QuicData::~QuicData() {
   if (owns_buffer_) {
     delete[] const_cast<char*>(buffer_);
@@ -337,6 +332,9 @@ QuicEncryptedPacket::QuicEncryptedPacket(const char* buffer,
                                          size_t length,
                                          bool owns_buffer)
     : QuicData(buffer, length, owns_buffer) {}
+
+QuicEncryptedPacket::QuicEncryptedPacket(QuicStringPiece data)
+    : QuicData(data) {}
 
 std::unique_ptr<QuicEncryptedPacket> QuicEncryptedPacket::Clone() const {
   char* buffer = new char[this->length()];
@@ -508,6 +506,7 @@ ReceivedPacketInfo::ReceivedPacketInfo(const QuicSocketAddress& self_address,
       packet(packet),
       form(GOOGLE_QUIC_PACKET),
       version_flag(false),
+      use_length_prefix(false),
       version_label(0),
       version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
       destination_connection_id(EmptyQuicConnectionId()),

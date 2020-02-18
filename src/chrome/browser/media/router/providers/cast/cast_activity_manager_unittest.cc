@@ -28,7 +28,7 @@
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -92,8 +92,8 @@ class CastActivityManagerTest : public testing::Test,
                                 public CastActivityRecordFactoryForTest {
  public:
   CastActivityManagerTest()
-      : socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI})),
+      : socket_service_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_) {
     media_sink_service_.AddOrUpdateSink(sink_);
     socket_.set_id(kChannelId);
@@ -155,7 +155,7 @@ class CastActivityManagerTest : public testing::Test,
   // method is sometimes called when there are clearly no pending events simply
   // to check expectations for code executed synchronously.
   void RunUntilIdle() {
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(&message_handler_);
     testing::Mock::VerifyAndClearExpectations(&mock_router_);
   }
@@ -302,7 +302,7 @@ class CastActivityManagerTest : public testing::Test,
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
   MockMojoMediaRouter mock_router_;

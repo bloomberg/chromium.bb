@@ -24,12 +24,10 @@ public class SingleTabModel implements TabModel {
 
     private Tab mTab;
     private boolean mIsIncognito;
-    private boolean mBlockNewWindows;
 
-    SingleTabModel(Activity activity, boolean incognito, boolean blockNewWindows) {
+    SingleTabModel(Activity activity, boolean incognito) {
         mActivity = activity;
         mIsIncognito = incognito;
-        mBlockNewWindows = blockNewWindows;
     }
 
     /**
@@ -37,20 +35,27 @@ public class SingleTabModel implements TabModel {
      * @param tab Tab to manage.
      */
     void setTab(Tab tab) {
+        if (mTab == tab) return;
         Tab oldTab = mTab;
         mTab = tab;
-        assert mTab.isIncognito() == mIsIncognito;
-        if (mBlockNewWindows) nativePermanentlyBlockAllNewWindows(mTab);
-
-        for (TabModelObserver observer : mObservers) {
-            observer.didAddTab(tab, TabLaunchType.FROM_LINK);
-            observer.didSelectTab(tab, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
+        if (oldTab != null) {
+            for (TabModelObserver observer : mObservers) {
+                observer.willCloseTab(oldTab, false);
+            }
         }
+        if (tab != null) {
+            assert mTab.isIncognito() == mIsIncognito;
 
-        int state = ApplicationStatus.getStateForActivity(mActivity);
-        if (state == ActivityState.CREATED || state == ActivityState.STARTED
-                || state == ActivityState.RESUMED) {
-            mTab.show(TabSelectionType.FROM_USER);
+            for (TabModelObserver observer : mObservers) {
+                observer.didAddTab(tab, TabLaunchType.FROM_LINK);
+                observer.didSelectTab(tab, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
+            }
+
+            int state = ApplicationStatus.getStateForActivity(mActivity);
+            if (state == ActivityState.CREATED || state == ActivityState.STARTED
+                    || state == ActivityState.RESUMED) {
+                mTab.show(TabSelectionType.FROM_USER);
+            }
         }
         if (oldTab != null && oldTab.isInitialized()) {
             for (TabModelObserver observer : mObservers) {
@@ -93,11 +98,9 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo) {
-        if (mTab != null && mTab.getId() == tab.getId()) {
-            completeActivity();
-            return true;
-        }
-        return false;
+        if (mTab == null || mTab.getId() != tab.getId()) return false;
+        closeTabAndFinish();
+        return true;
     }
 
     @Override
@@ -106,22 +109,20 @@ public class SingleTabModel implements TabModel {
         return closeTab(tab, animate, uponExit, canUndo);
     }
 
-    /**
-     * In webapps, calls finish on the activity, but keeps it in recents. In Document mode,
-     * finishes and removes from recents. We use mBlockNewWindows flag to distinguish the user
-     * of this model.
-     */
-    private void completeActivity() {
-        if (mBlockNewWindows) {
-            mActivity.finish();
-        } else {
-            ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
-        }
+    private void closeTabAndFinish() {
+        setTab(null);
+        ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
     }
 
     @Override
     public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {
-        completeActivity();
+        if (mTab == null) return;
+        for (Tab tab : tabs) {
+            if (tab.getId() == mTab.getId()) {
+                closeTabAndFinish();
+                return;
+            }
+        }
     }
 
     @Override
@@ -131,7 +132,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
-        completeActivity();
+        closeTabAndFinish();
     }
 
     // Tab retrieval functions.
@@ -210,8 +211,6 @@ public class SingleTabModel implements TabModel {
     public void removeObserver(TabModelObserver observer) {
         mObservers.removeObserver(observer);
     }
-
-    private static native void nativePermanentlyBlockAllNewWindows(Tab nativeTabAndroid);
 
     @Override
     public void openMostRecentlyClosedTab() {}

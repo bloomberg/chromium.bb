@@ -131,6 +131,16 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
           });
     });
 
+    test('Revert invalid date on blur', () => {
+      const dateInput = setTimeElement.$$('#dateInput');
+      dateInput.focus();
+      dateInput.value = '9999-99-99';
+      dateInput.blur();
+      // The exact value isn't important (it depends on the current date, and
+      // the date could change in the middle of the test).
+      assertNotEquals('9999-99-99', dateInput.value);
+    });
+
     test('SystemTimezoneChanged', () => {
       const timezoneSelect = setTimeElement.$$('#timezoneSelect');
       assertTrue(!!timezoneSelect);

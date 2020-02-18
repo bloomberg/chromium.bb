@@ -174,6 +174,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->description_class =
         mojo::ConvertTo<std::vector<mojom::ACMatchClassificationPtr>>(
             input.description_class);
+    result->swap_contents_and_description = input.swap_contents_and_description;
     if (input.answer) {
       result->answer =
           SuggestionAnswerImageLineToString(input.answer->first_line()) +
@@ -254,6 +255,7 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
   if (!LookupIsTypedHost(host, &is_typed_host))
     is_typed_host = false;
   response->is_typed_host = is_typed_host;
+  response->input_text = base::UTF16ToUTF8(input_.text());
 
   {
     // Copy to an ACMatches to make conversion easier. Since this isn't
@@ -295,7 +297,7 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
       image_urls.push_back(result_by_provider.results[j]->image);
   }
 
-  page_->handleNewAutocompleteResponse(std::move(response),
+  page_->HandleNewAutocompleteResponse(std::move(response),
                                        controller == controller_.get());
 
   // Fill in image data
@@ -417,7 +419,7 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
 }
 
 void OmniboxPageHandler::ResetController() {
-  controller_.reset(new AutocompleteController(
+  controller_ = std::make_unique<AutocompleteController>(
       std::make_unique<ChromeAutocompleteProviderClient>(profile_), this,
-      AutocompleteClassifier::DefaultOmniboxProviders()));
+      AutocompleteClassifier::DefaultOmniboxProviders());
 }

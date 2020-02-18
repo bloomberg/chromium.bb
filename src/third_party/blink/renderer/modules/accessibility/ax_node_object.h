@@ -110,6 +110,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsNativeImage() const;
   bool IsNativeTextControl() const final;
   bool IsNonNativeTextControl() const final;
+  bool IsOffScreen() const override;
   bool IsPasswordField() const final;
   bool IsProgressIndicator() const override;
   bool IsRichlyEditable() const override;
@@ -231,6 +232,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Aria-owns.
   void ComputeAriaOwnsChildren(
       HeapVector<Member<AXObject>>& owned_children) const;
+
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, SetNeedsToUpdateChildren);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, UpdateChildrenIfNecessary);
 
  private:
   Member<Node> node_;

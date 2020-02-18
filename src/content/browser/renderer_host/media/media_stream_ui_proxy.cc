@@ -157,8 +157,7 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   blink::MediaStreamDevices filtered_devices;
-  RenderFrameHost* host =
-      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  auto* host = RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   for (const blink::MediaStreamDevice& device : devices) {
     if (device.type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
@@ -181,7 +180,10 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   if (stream_ui)
     ui_ = std::move(stream_ui);
 
-  base::PostTaskWithTraits(
+  if (host && result == blink::mojom::MediaStreamRequestResult::OK)
+    host->OnGrantedMediaStreamAccess();
+
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse, proxy_,
                      filtered_devices, result));
@@ -190,7 +192,7 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
 void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MediaStreamUIProxy::ProcessStopRequestFromUI, proxy_));
 }
@@ -199,7 +201,7 @@ void MediaStreamUIProxy::Core::ProcessChangeSourceRequestFromUI(
     const DesktopMediaID& media_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MediaStreamUIProxy::ProcessChangeSourceRequestFromUI,
                      proxy_, media_id));
@@ -243,7 +245,7 @@ void MediaStreamUIProxy::RequestAccess(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   response_callback_ = std::move(response_callback);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&Core::RequestAccess, base::Unretained(core_.get()),
                      std::move(request)));
@@ -261,7 +263,7 @@ void MediaStreamUIProxy::OnStarted(
   // Owned by the PostTaskAndReply callback.
   gfx::NativeViewId* window_id = new gfx::NativeViewId(0);
 
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&Core::OnStarted, base::Unretained(core_.get()), window_id,
                      !!source_callback_),
@@ -332,7 +334,7 @@ void FakeMediaStreamUIProxy::RequestAccess(
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseFakeUIForMediaStream) == "deny") {
     // Immediately deny the request.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
@@ -375,7 +377,7 @@ void FakeMediaStreamUIProxy::RequestAccess(
     devices_to_use.clear();
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
                      base::Unretained(core_.get()), request->render_process_id,

@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
@@ -141,8 +141,8 @@ class RTCRtpSenderTest : public ::testing::Test {
 
   // Code under test expects to be run in a process with an initialized
   // ChildProcess, which requires ThreadPool, and a main-thread MessageLoop,
-  // which the ScopedTaskEnvironment also provides.
-  base::test::ScopedTaskEnvironment task_environment_;
+  // which the TaskEnvironment also provides.
+  base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;

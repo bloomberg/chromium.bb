@@ -56,7 +56,7 @@ def DepotToolsPylint(input_api, output_api):
       disabled_warnings=disabled_warnings)
 
 
-def CommonChecks(input_api, output_api, tests_to_black_list):
+def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
   results = []
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   results.extend(input_api.canned_checks.CheckOwnersFormat(
@@ -78,7 +78,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       output_api,
       'tests',
       whitelist=tests_to_white_list,
-      blacklist=tests_to_black_list))
+      blacklist=tests_to_black_list,
+      run_on_python3=run_on_python3))
 
   # Validate CIPD manifests.
   root = input_api.os_path.normpath(
@@ -120,15 +121,15 @@ def CheckChangeOnUpload(input_api, output_api):
       r'^checkout_test\.py$',
       r'^cipd_bootstrap_test\.py$',
       r'^gclient_smoketest\.py$',
-      r'^scm_unittest\.py$',
-      r'^subprocess2_test\.py$',
   ]
-  return CommonChecks(input_api, output_api, tests_to_black_list)
+  # TODO(ehmaldonado): Run Python 3 tests on upload once Python 3 is
+  # bootstrapped on Linux and Mac.
+  return CommonChecks(input_api, output_api, tests_to_black_list, False)
 
 
 def CheckChangeOnCommit(input_api, output_api):
   output = []
-  output.extend(CommonChecks(input_api, output_api, []))
+  output.extend(CommonChecks(input_api, output_api, [], True))
   output.extend(input_api.canned_checks.CheckDoNotSubmit(
       input_api,
       output_api))

@@ -134,6 +134,7 @@ class ClientSession : public protocol::HostStub,
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
+  void OnLocalKeyPressed(uint32_t usb_keycode) override;
   void OnLocalPointerMoved(const webrtc::DesktopVector& position,
                            ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
@@ -299,7 +300,7 @@ class ClientSession : public protocol::HostStub,
 
   // Used to disable callbacks to |this| once DisconnectSession() has been
   // called.
-  base::WeakPtrFactory<ClientSessionControl> weak_factory_;
+  base::WeakPtrFactory<ClientSessionControl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

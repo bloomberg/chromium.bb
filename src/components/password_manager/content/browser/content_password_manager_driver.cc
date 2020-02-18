@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -114,6 +115,8 @@ void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
 
 void ContentPasswordManagerDriver::AutofillDataReceived(
     const autofill::FormsPredictionsMap& predictions) {
+  // TODO(https://crbug.com/949519): Remove this method, MOJO calls and
+  // processing server predictions in the renderer.
   GetPasswordAutofillAgent()->AutofillUsernameAndPasswordDataReceived(
       predictions);
 }
@@ -276,16 +279,6 @@ void ContentPasswordManagerDriver::SameDocumentNavigation(
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 
-void ContentPasswordManagerDriver::ShowPasswordSuggestions(
-    base::i18n::TextDirection text_direction,
-    const base::string16& typed_username,
-    int options,
-    const gfx::RectF& bounds) {
-  GetPasswordAutofillManager()->OnShowPasswordSuggestions(
-      text_direction, typed_username, options,
-      TransformToRootCoordinates(render_frame_host_, bounds));
-}
-
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   client_->GetLogManager()->LogTextMessage(log);
@@ -303,10 +296,24 @@ void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
                                                        value);
 }
 
+void ContentPasswordManagerDriver::ShowPasswordSuggestions(
+    base::i18n::TextDirection text_direction,
+    const base::string16& typed_username,
+    int options,
+    const gfx::RectF& bounds) {
+  GetPasswordAutofillManager()->OnShowPasswordSuggestions(
+      text_direction, typed_username, options,
+      TransformToRootCoordinates(render_frame_host_, bounds));
+}
+
+void ContentPasswordManagerDriver::ShowTouchToFill() {
+  client_->ShowTouchToFill(this);
+}
+
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
-#if defined(FULL_SAFE_BROWSING)
+#if defined(ON_FOCUS_PING_ENABLED)
   client_->CheckSafeBrowsingReputation(form_action, frame_url);
 #endif
 }

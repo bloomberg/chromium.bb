@@ -481,15 +481,6 @@ bool CFX_RenderDevice::SetClip_PathStroke(
   return true;
 }
 
-#ifdef PDF_ENABLE_XFA
-bool CFX_RenderDevice::SetClip_Rect(const CFX_RectF& rtClip) {
-  return SetClip_Rect(FX_RECT(static_cast<int32_t>(floor(rtClip.left)),
-                              static_cast<int32_t>(floor(rtClip.top)),
-                              static_cast<int32_t>(ceil(rtClip.right())),
-                              static_cast<int32_t>(ceil(rtClip.bottom()))));
-}
-#endif
-
 bool CFX_RenderDevice::SetClip_Rect(const FX_RECT& rect) {
   CFX_PathData path;
   path.AppendRect(rect.left, rect.bottom, rect.right, rect.top);
@@ -840,7 +831,7 @@ bool CFX_RenderDevice::ContinueDIBits(CFX_ImageRenderer* handle,
 
 #ifdef _SKIA_SUPPORT_
 void CFX_RenderDevice::DebugVerifyBitmapIsPreMultiplied() const {
-  SkASSERT(0);
+  NOTREACHED();
 }
 
 bool CFX_RenderDevice::SetBitsWithMask(const RetainPtr<CFX_DIBBase>& pBitmap,

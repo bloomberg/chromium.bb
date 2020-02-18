@@ -578,9 +578,9 @@ class ChrootUpdater(object):
           '    cros_sdk --replace' %  self.GetVersion())
 
     for hook, version in self.GetChrootUpdates():
-      result = cros_build_lib.RunCommand('source %s' % hook,
-                                         enter_chroot=True, error_code_ok=True,
-                                         shell=True)
+      result = cros_build_lib.RunCommand(['bash', hook],
+                                         enter_chroot=True,
+                                         error_code_ok=True)
       if not result.returncode:
         self.SetVersion(version)
       else:

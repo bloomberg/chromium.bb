@@ -203,10 +203,10 @@ class Cgroup(object):
     else:
       namespace = os.path.normpath(namespace)
       if parent is None:
-        raise ValueError("Either _is_root must be set to True, or parent must "
-                         "be non null")
+        raise ValueError('Either _is_root must be set to True, or parent must '
+                         'be non null')
       if namespace in ('.', ''):
-        raise ValueError("Invalid namespace %r was given" % (namespace,))
+        raise ValueError('Invalid namespace %r was given' % (namespace,))
 
     self.namespace = namespace
     self.autoclean = autoclean
@@ -232,12 +232,12 @@ class Cgroup(object):
     # Ensure that the requested pathway isn't trying to sidestep what we
     # expect, and in the process it does internal validation checks.
     if not path.startswith(fake_path + '/'):
-      raise ValueError("Name %s tried descending through this namespace into"
+      raise ValueError('Name %s tried descending through this namespace into'
                        " another; this isn't allowed." % (name,))
     elif path == self.namespace:
-      raise ValueError("Empty name %s" % (name,))
+      raise ValueError('Empty name %s' % (name,))
     elif os.path.dirname(path) != fake_path and not multilevel:
-      raise ValueError("Name %s is multilevel, but disallowed." % (name,))
+      raise ValueError('Name %s is multilevel, but disallowed.' % (name,))
 
     # Get the validated/normalized name.
     name = path[len(fake_path):].strip('/')
@@ -302,7 +302,7 @@ class Cgroup(object):
     if not self.GroupIsAParent(_cros_node):
       return None
     # See documentation at the top of the file for the naming scheme.
-    # It's basically "%(program_name)s:%(owning_pid)i" if the group
+    # It's basically '%(program_name)s:%(owning_pid)i' if the group
     # is nested.
     return os.path.basename(self.namespace).rsplit(':', 1)[-1]
 
@@ -462,8 +462,8 @@ class Cgroup(object):
     # Do a sanity check to ensure that we're not touching anything we
     # shouldn't.
     if not path.startswith(cls.CGROUP_ROOT):
-      raise RuntimeError("cgroups.py: Was asked to wipe path %s, refusing. "
-                         "strict was %r, sudo_strict was %r"
+      raise RuntimeError('cgroups.py: Was asked to wipe path %s, refusing. '
+                         'strict was %r, sudo_strict was %r'
                          % (path, strict, sudo_strict))
 
     result = cros_build_lib.SudoRunCommand(
@@ -560,9 +560,9 @@ class Cgroup(object):
 
       self_kill = my_pids.intersection(pids)
       if self_kill:
-        raise Exception("Bad API usage: asked to kill cgroup %s, but "
-                        "current pid %s is in that group.  Effectively "
-                        "asked to kill ourselves."
+        raise Exception('Bad API usage: asked to kill cgroup %s, but '
+                        'current pid %s is in that group.  Effectively '
+                        'asked to kill ourselves.'
                         % (self.namespace, self_kill))
 
       if not pids:
@@ -593,9 +593,9 @@ class Cgroup(object):
       if pids:
         self_kill = my_pids.intersection(pids)
         if self_kill:
-          raise Exception("Bad API usage: asked to kill cgroup %s, but "
-                          "current pid %i is in that group.  Effectively "
-                          "asked to kill ourselves."
+          raise Exception('Bad API usage: asked to kill cgroup %s, but '
+                          'current pid %i is in that group.  Effectively '
+                          'asked to kill ourselves.'
                           % (self.namespace, self_kill))
 
         _SignalPids(pids, signal.SIGKILL)
@@ -638,7 +638,7 @@ class Cgroup(object):
     if pid is None:
       pid = 'self'
     elif not isinstance(pid, numbers.Integral):
-      raise ValueError("pid must be None, or an integer/long.  Got %r" % (pid,))
+      raise ValueError('pid must be None, or an integer/long.  Got %r' % (pid,))
 
     cpuset = None
     try:
@@ -663,9 +663,9 @@ class Cgroup(object):
             cpuset = line[2]
             break
 
-    if not cpuset or not cpuset.startswith("/cros/"):
+    if not cpuset or not cpuset.startswith('/cros/'):
       return None
-    return cpuset[len("/cros/"):].strip("/")
+    return cpuset[len('/cros/'):].strip('/')
 
   @classmethod
   def FindStartingGroup(cls, process_name, nesting=True):
@@ -739,7 +739,7 @@ class ContainChildren(cros_build_lib.MasterPidContextManager):
       self.child.TransferCurrentProcess()
     except _GroupWasRemoved:
       raise SystemExit(
-          "Group %s was removed under our feet; pool shutdown is underway"
+          'Group %s was removed under our feet; pool shutdown is underway'
           % self.child.namespace)
     self.run_kill = True
 

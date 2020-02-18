@@ -6,9 +6,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
@@ -32,8 +31,8 @@ const media::VideoPixelFormat kTestPixelFormat =
 
 class VirtualDeviceTest : public ::testing::Test {
  public:
-  VirtualDeviceTest() : keepalive_(nullptr, base::nullopt) {}
-  ~VirtualDeviceTest() override {}
+  VirtualDeviceTest() = default;
+  ~VirtualDeviceTest() override = default;
 
   void SetUp() override {
     device_info_.descriptor.device_id = kTestDeviceId;
@@ -42,7 +41,7 @@ class VirtualDeviceTest : public ::testing::Test {
     producer_ =
         std::make_unique<MockProducer>(mojo::MakeRequest(&producer_proxy));
     device_adapter_ = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
-        keepalive_.CreateRef(), std::move(producer_proxy));
+        std::move(producer_proxy));
   }
 
   void OnFrameBufferReceived(bool valid_buffer_expected, int32_t buffer_id) {
@@ -96,8 +95,7 @@ class VirtualDeviceTest : public ::testing::Test {
   std::unique_ptr<MockProducer> producer_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  service_manager::ServiceKeepalive keepalive_;
+  base::test::TaskEnvironment task_environment_;
   media::VideoCaptureDeviceInfo device_info_;
 };
 

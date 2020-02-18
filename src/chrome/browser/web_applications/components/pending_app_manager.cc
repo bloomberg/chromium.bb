@@ -32,7 +32,9 @@ PendingAppManager::SynchronizeRequest::SynchronizeRequest(
 
 PendingAppManager::PendingAppManager() = default;
 
-PendingAppManager::~PendingAppManager() = default;
+PendingAppManager::~PendingAppManager() {
+  DCHECK(!registration_callback_);
+}
 
 void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
                                       WebAppUiManager* ui_manager,
@@ -96,19 +98,28 @@ void PendingAppManager::SynchronizeInstalledApps(
                           weak_ptr_factory_.GetWeakPtr(), install_source));
 }
 
+void PendingAppManager::SetRegistrationCallbackForTesting(
+    RegistrationCallback callback) {
+  registration_callback_ = callback;
+}
+
+void PendingAppManager::ClearRegistrationCallbackForTesting() {
+  registration_callback_ = RegistrationCallback();
+}
+
+void PendingAppManager::OnRegistrationFinished(const GURL& launch_url,
+                                               RegistrationResultCode result) {
+  if (registration_callback_)
+    registration_callback_.Run(launch_url, result);
+}
+
 void PendingAppManager::InstallForSynchronizeCallback(
     ExternalInstallSource source,
     const GURL& app_url,
     InstallResultCode code) {
-  switch (code) {
-    case InstallResultCode::kSuccess:
-    case InstallResultCode::kAlreadyInstalled:
-      break;
-    default:
-      LOG(ERROR) << app_url << " from install source "
-                 << static_cast<int>(source)
-                 << " failed to install with reason " << static_cast<int>(code);
-      break;
+  if (!IsSuccess(code)) {
+    LOG(ERROR) << app_url << " from install source " << static_cast<int>(source)
+               << " failed to install with reason " << static_cast<int>(code);
   }
 
   auto source_and_request = synchronize_requests_.find(source);

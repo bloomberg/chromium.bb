@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -96,8 +96,8 @@ class SyncSchedulerImplTest : public testing::Test {
  public:
   SyncSchedulerImplTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         syncer_(nullptr),
         delay_(nullptr) {}
 
@@ -118,7 +118,6 @@ class SyncSchedulerImplTest : public testing::Test {
 
     workers_.clear();
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_UI));
-    workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_DB));
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
     connection_ = std::make_unique<MockConnectionManager>(directory(),
@@ -133,7 +132,7 @@ class SyncSchedulerImplTest : public testing::Test {
                                                 GROUP_UI);
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
     model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
-    model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_DB);
+    model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_UI);
 
     context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
@@ -304,7 +303,7 @@ class SyncSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   static const base::TickClock* tick_clock_;

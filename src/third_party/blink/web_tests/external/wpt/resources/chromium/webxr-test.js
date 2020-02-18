@@ -45,6 +45,15 @@ function getMatrixFromTransform(transform) {
           m14, m24, m34, 1];
 }
 
+function getGFXTransformFromPosition(x, y, z) {
+  let transform = new gfx.mojom.Transform();
+  transform.matrix = getMatrixFromTransform({
+    position: [x, y, z],
+    orientation: [0, 0, 0, 1]
+  });
+  return transform;
+}
+
 class ChromeXRTest {
   constructor() {
     this.mockVRService_ = new MockVRService(mojo.frameInterfaces);
@@ -60,25 +69,23 @@ class ChromeXRTest {
   }
 
   simulateUserActivation(callback) {
-    return new Promise(resolve => {
-      let button = document.createElement('button');
-      button.textContent = 'click to continue test';
-      button.style.display = 'block';
-      button.style.fontSize = '20px';
-      button.style.padding = '10px';
-      button.onclick = () => {
-        resolve(callback());
-        document.body.removeChild(button);
-      };
-      document.body.appendChild(button);
-      test_driver.click(button);
-    });
+    let button = document.createElement('button');
+    button.textContent = 'click to continue test';
+    button.style.display = 'block';
+    button.style.fontSize = '20px';
+    button.style.padding = '10px';
+    button.onclick = () => {
+      callback();
+      document.body.removeChild(button);
+    };
+    document.body.appendChild(button);
+    test_driver.click(button);
   }
 }
 
 // Mocking class definitions
 
-// Mock service implements both the VRService and XRDevice mojo interfaces.
+// Mock service implements the VRService mojo interface.
 class MockVRService {
   constructor() {
     this.bindingSet_ = new mojo.BindingSet(device.mojom.VRService);
@@ -116,30 +123,19 @@ class MockVRService {
     if (index >= 0) {
       this.runtimes_.splice(index, 1);
       if (this.client_) {
-        console.error("Notifying client");
         this.client_.onDeviceChanged();
       }
     }
   }
 
-  // VRService implementation.
-  requestDevice() {
-    if (this.runtimes_.length > 0) {
-      let devicePtr = new device.mojom.XRDevicePtr();
-      new mojo.Binding(
-          device.mojom.XRDevice, this, mojo.makeRequest(devicePtr));
-
-      return Promise.resolve({device: devicePtr});
-    } else {
-      return Promise.resolve({device: null});
-    }
-  }
-
   setClient(client) {
+    if (this.client_) {
+      throw new Error("setClient should only be called once");
+    }
+
     this.client_ = client;
   }
 
-  // XRDevice implementation.
   requestSession(sessionOptions, was_activation) {
     let requests = [];
     // Request a session from all the runtimes.
@@ -163,7 +159,7 @@ class MockVRService {
       // If there were no successful results, returns a null session.
       return {
         result: {
-          failureReason : device.mojom.RequestSessionResult.NO_RUNTIME_FOUND,
+          failureReason : device.mojom.RequestSessionError.NO_RUNTIME_FOUND,
           $tag :  1
         }
       };
@@ -234,6 +230,9 @@ class MockRuntime {
     this.setBoundsGeometry(fakeDeviceInit.boundsCoordinates);
 
     this.setViews(fakeDeviceInit.views);
+
+    // Need to support webVR which doesn't have a notion of features
+    this.setFeatures(fakeDeviceInit.supportedFeatures || []);
   }
 
   // Test API methods.
@@ -379,7 +378,7 @@ class MockRuntime {
           leftDegrees: 50.899,
           rightDegrees: 35.197
         },
-        offset: { x: -0.032, y: 0, z: 0 },
+        headFromEye: getGFXTransformFromPosition(-0.032, 0, 0),
         renderWidth: 20,
         renderHeight: 20
       },
@@ -390,7 +389,7 @@ class MockRuntime {
           leftDegrees: 50.899,
           rightDegrees: 35.197
         },
-        offset: { x: 0.032, y: 0, z: 0 },
+        headFromEye: getGFXTransformFromPosition(0.032, 0, 0),
         renderWidth: 20,
         renderHeight: 20
       },
@@ -425,10 +424,38 @@ class MockRuntime {
         leftDegrees: toDegrees(leftTan),
         rightDegrees: toDegrees(rightTan)
       },
-      offset: { x: offset[0], y: offset[1], z: offset[2] },
+      headFromEye: getGFXTransformFromPosition(offset[0], offset[1], offset[2]),
       renderWidth: fakeXRViewInit.resolution.width,
       renderHeight: fakeXRViewInit.resolution.height
     };
+  }
+
+  setFeatures(supportedFeatures) {
+    function convertFeatureToMojom(feature) {
+      switch (feature) {
+        case "viewer":
+          return device.mojom.XRSessionFeature.REF_SPACE_VIEWER;
+        case "local":
+          return device.mojom.XRSessionFeature.REF_SPACE_LOCAL;
+        case "local-floor":
+          return device.mojom.XRSessionFeature.REF_SPACE_LOCAL_FLOOR;
+        case "bounded-floor":
+          return device.mojom.XRSessionFeature.REF_SPACE_BOUNDED_FLOOR;
+        case "unbounded":
+          return device.mojom.XRSessionFeature.REF_SPACE_UNBOUNDED;
+        default:
+          return device.mojom.XRSessionFeature.INVALID;
+      }
+    }
+
+    this.supportedFeatures_ = [];
+
+    for (let i = 0; i < supportedFeatures.length; i++) {
+      let feature = convertFeatureToMojom(supportedFeatures[i]);
+      if (feature !== device.mojom.XRSessionFeature.INVALID) {
+        this.supportedFeatures_.push(feature);
+      }
+    }
   }
 
   // These methods are intended to be used by MockXRInputSource only.
@@ -535,12 +562,28 @@ class MockRuntime {
 
         let clientRequest = mojo.makeRequest(this.sessionClient_);
 
+        let enabled_features = [];
+        for(let i = 0; i < sessionOptions.requiredFeatures.length; i++) {
+          if (this.supportedFeatures_.indexOf(sessionOptions.requiredFeatures[i]) !== -1) {
+            enabled_features.push(sessionOptions.requiredFeatures[i]);
+          } else {
+            return Promise.resolve({session: null});
+          }
+        }
+
+        for (let i =0; i < sessionOptions.optionalFeatures.length; i++) {
+          if (this.supportedFeatures_.indexOf(sessionOptions.optionalFeatures[i]) !== -1) {
+            enabled_features.push(sessionOptions.optionalFeatures[i]);
+          }
+        }
+
         return Promise.resolve({
           session: {
             submitFrameSink: submit_frame_sink,
             dataProvider: dataProviderPtr,
             clientRequest: clientRequest,
-            displayInfo: this.displayInfo_
+            displayInfo: this.displayInfo_,
+            enabledFeatures: enabled_features,
           }
         });
       } else {
@@ -564,6 +607,7 @@ class MockXRInputSource {
     this.handedness_ = fakeInputSourceInit.handedness;
     this.target_ray_mode_ = fakeInputSourceInit.targetRayMode;
     this.setPointerOrigin(fakeInputSourceInit.pointerOrigin);
+    this.setProfiles(fakeInputSourceInit.profiles);
 
     this.primary_input_pressed_ = false;
     if (fakeInputSourceInit.selectionStarted != null) {
@@ -603,7 +647,8 @@ class MockXRInputSource {
   }
 
   setProfiles(profiles) {
-    // Profiles are not yet implemented by chromium
+    this.desc_dirty_ = true;
+    this.profiles_ = profiles;
   }
 
   setGripOrigin(transform, emulatedPosition = false) {
@@ -771,6 +816,8 @@ class MockXRInputSource {
       }
 
       input_desc.pointerOffset = this.pointer_offset_;
+
+      input_desc.profiles = this.profiles_;
 
       input_state.description = input_desc;
 

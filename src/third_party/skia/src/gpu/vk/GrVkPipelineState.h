@@ -23,7 +23,6 @@ class GrVkDescriptorSet;
 class GrVkGpu;
 class GrVkImageView;
 class GrVkPipeline;
-class GrVkPipelineLayout;
 class GrVkSampler;
 class GrVkTexture;
 class GrVkUniformBuffer;
@@ -42,12 +41,10 @@ public:
     GrVkPipelineState(
             GrVkGpu* gpu,
             GrVkPipeline* pipeline,
-            VkPipelineLayout layout,
             const GrVkDescriptorSetManager::Handle& samplerDSHandle,
             const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
             const UniformInfoArray& uniforms,
-            uint32_t geometryUniformSize,
-            uint32_t fragmentUniformSize,
+            uint32_t uniformSize,
             const UniformInfoArray& samplers,
             std::unique_ptr<GrGLSLPrimitiveProcessor> geometryProcessor,
             std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
@@ -119,10 +116,6 @@ private:
     // GrVkResources
     GrVkPipeline* fPipeline;
 
-    // Used for binding DescriptorSets to the command buffer but does not need to survive during
-    // command buffer execution. Thus this is not need to be a GrVkResource.
-    GrVkPipelineLayout* fPipelineLayout;
-
     // The DescriptorSets need to survive until the gpu has finished all draws that use them.
     // However, they will only be freed by the descriptor pool. Thus by simply keeping the
     // descriptor pool alive through the draw, the descritor sets will also stay alive. Thus we do
@@ -137,8 +130,7 @@ private:
 
     SkSTArray<4, const GrVkSampler*>   fImmutableSamplers;
 
-    std::unique_ptr<GrVkUniformBuffer> fGeometryUniformBuffer;
-    std::unique_ptr<GrVkUniformBuffer> fFragmentUniformBuffer;
+    std::unique_ptr<GrVkUniformBuffer> fUniformBuffer;
 
     // Tracks the current render target uniforms stored in the vertex buffer.
     RenderTargetState fRenderTargetState;

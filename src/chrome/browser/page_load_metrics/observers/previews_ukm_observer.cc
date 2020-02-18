@@ -18,10 +18,10 @@
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -87,11 +87,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   // though, this will only set |previews_likely_| if it wasn't before for an
   // Optimization Hints preview.
   previews_likely_ |= HasEnabledPreviews(previews_state);
-
-  coin_flip_result_ = previews_user_data->coin_flip_holdback_result();
-
-  DCHECK(coin_flip_result_ == CoinFlipHoldbackResult::kNotSet ||
-         previews_likely_);
 
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {
@@ -177,48 +172,43 @@ PreviewsUKMObserver::OnStart(content::NavigationHandle* navigation_handle,
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsUKMObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics(info);
+  RecordMetrics();
   return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsUKMObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics(info);
+  RecordMetrics();
   return STOP_OBSERVING;
 }
 
 void PreviewsUKMObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics(info);
+  RecordMetrics();
 }
 
-void PreviewsUKMObserver::RecordMetrics(
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPreviewsTypes(info);
-  RecordOptimizationGuideInfo(info);
+void PreviewsUKMObserver::RecordMetrics() {
+  RecordPreviewsTypes();
+  RecordOptimizationGuideInfo();
 }
 
-void PreviewsUKMObserver::RecordPreviewsTypes(
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void PreviewsUKMObserver::RecordPreviewsTypes() {
   // Record the page end reason in UMA.
   if (committed_preview_ != PreviewsType::NONE) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Previews.PageEndReason", info.page_end_reason,
+        "Previews.PageEndReason", GetDelegate().GetPageEndReason(),
         page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
   }
   base::UmaHistogramExactLinear(
       base::StringPrintf(
           "Previews.PageEndReason.%s",
           previews::GetStringNameForType(committed_preview_).c_str()),
-      info.page_end_reason,
+      GetDelegate().GetPageEndReason(),
       page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
 
   // Only record previews types when they are active.
@@ -232,8 +222,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     return;
   }
 
-  ukm::builders::Previews builder(info.source_id);
-  builder.Setcoin_flip_result(static_cast<int>(coin_flip_result_));
+  ukm::builders::Previews builder(GetDelegate().GetSourceId());
   if (lite_page_seen_)
     builder.Setlite_page(1);
   if (lite_page_redirect_seen_)
@@ -292,8 +281,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   builder.Record(ukm::UkmRecorder::Get());
 }
 
-void PreviewsUKMObserver::RecordOptimizationGuideInfo(
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void PreviewsUKMObserver::RecordOptimizationGuideInfo() {
   if (!serialized_hint_version_string_.has_value()) {
     return;
   }
@@ -308,7 +296,7 @@ void PreviewsUKMObserver::RecordOptimizationGuideInfo(
   if (!hint_version.ParseFromString(binary_version_pb))
     return;
 
-  ukm::builders::OptimizationGuide builder(info.source_id);
+  ukm::builders::OptimizationGuide builder(GetDelegate().GetSourceId());
   if (hint_version.has_generation_timestamp() &&
       hint_version.generation_timestamp().seconds() > 0) {
     builder.SetHintGenerationTimestamp(

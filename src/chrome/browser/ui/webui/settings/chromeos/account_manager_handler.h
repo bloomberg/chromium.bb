@@ -64,7 +64,6 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // |AccountManager::GetAccounts| callback.
   void OnGetAccounts(
       base::Value callback_id,
-      bool include_images,
       const std::vector<AccountManager::Account>& stored_accounts);
 
   // Refreshes the UI.
@@ -86,7 +85,7 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
 
-  base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_;
+  base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountManagerUIHandler);
 };
 

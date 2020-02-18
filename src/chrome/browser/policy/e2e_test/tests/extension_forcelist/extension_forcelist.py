@@ -3,15 +3,15 @@
 # found in the LICENSE file.
 
 import os
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 
 @environment(file="../policy_test.asset.textpb")
 class ExtensionInstallForcelistTest(ChromeEnterpriseTestCase):
   """Test the ExtensionInstallForcelist policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#ExtensionInstallForcelist"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ExtensionInstallForcelist"""
 
   # This is the extension id of the Google Keep extension.
   ExtensionId = 'lpcaedmchfhocbbapmcbpinfpgnhiddi'

@@ -8,12 +8,16 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/profiles/incognito_menu_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,9 +29,10 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #endif
 
@@ -37,9 +42,9 @@ ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 
 // Helpers --------------------------------------------------------------------
 
-constexpr int kFixedMenuWidthPreDice = 240;
-constexpr int kFixedMenuWidthDice = 288;
+constexpr int kMenuWidth = 288;
 constexpr int kIconSize = 16;
+constexpr int kIdentityImageSize = 64;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
 // least this tall to show one row.
@@ -48,6 +53,14 @@ constexpr int kMinimumScrollableContentHeight = 40;
 // Spacing between the edge of the user menu and the top/bottom or left/right of
 // the menu items.
 constexpr int kMenuEdgeMargin = 16;
+
+std::unique_ptr<views::BoxLayout> CreateBoxLayout(
+    views::BoxLayout::Orientation orientation,
+    views::BoxLayout::CrossAxisAlignment cross_axis_alignment) {
+  auto layout = std::make_unique<views::BoxLayout>(orientation);
+  layout->set_cross_axis_alignment(cross_axis_alignment);
+  return layout;
+}
 
 }  // namespace
 
@@ -66,7 +79,6 @@ ProfileMenuViewBase::MenuItems::~MenuItems() = default;
 // static
 void ProfileMenuViewBase::ShowBubble(
     profiles::BubbleViewMode view_mode,
-    const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::Button* anchor_button,
     Browser* browser,
@@ -74,17 +86,16 @@ void ProfileMenuViewBase::ShowBubble(
   if (IsShowing())
     return;
 
-  DCHECK_EQ(browser->profile()->IsIncognitoProfile(),
-            view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
+  base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
 
   ProfileMenuViewBase* bubble;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
+    DCHECK(browser->profile()->IsIncognitoProfile());
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
+    DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
 #if !defined(OS_CHROMEOS)
-    bubble = new ProfileChooserView(anchor_button, browser, view_mode,
-                                    manage_accounts_params.service_type,
-                                    access_point);
+    bubble = new ProfileMenuView(anchor_button, browser, access_point);
 #else
     NOTREACHED();
     return;
@@ -116,7 +127,6 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
                                          Browser* browser)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
-      menu_width_(0),
       anchor_button_(anchor_button),
       close_bubble_helper_(this, browser) {
   DCHECK(!g_profile_bubble_);
@@ -130,10 +140,6 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
 
   EnableUpDownKeyboardAccelerators();
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
-
-  bool dice_enabled = AccountConsistencyModeManager::IsDiceEnabledForProfile(
-      browser->profile());
-  menu_width_ = dice_enabled ? kFixedMenuWidthDice : kFixedMenuWidthPreDice;
 }
 
 ProfileMenuViewBase::~ProfileMenuViewBase() {
@@ -141,6 +147,35 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   // it's not expected to have while destroying the object.
   DCHECK(g_profile_bubble_ != this);
   DCHECK(menu_item_groups_.empty());
+}
+
+void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
+                                          const base::string16& title,
+                                          const base::string16& subtitle) {
+  constexpr int kImageToLabelSpacing = 4;
+
+  identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
+  identity_info_container_->SetLayoutManager(
+      CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
+                      views::BoxLayout::CrossAxisAlignment::kCenter));
+
+  views::ImageView* image_view = identity_info_container_->AddChildView(
+      std::make_unique<views::ImageView>());
+  image_view->SetImage(profiles::GetSizedAvatarIcon(
+                           image, /*is_rectangle=*/true, kIdentityImageSize,
+                           kIdentityImageSize, profiles::SHAPE_CIRCLE)
+                           .AsImageSkia());
+
+  views::View* title_label =
+      identity_info_container_->AddChildView(std::make_unique<views::Label>(
+          title, views::style::CONTEXT_DIALOG_TITLE));
+  title_label->SetBorder(
+      views::CreateEmptyBorder(kImageToLabelSpacing, 0, 0, 0));
+
+  if (!subtitle.empty()) {
+    identity_info_container_->AddChildView(std::make_unique<views::Label>(
+        subtitle, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+  }
 }
 
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
@@ -169,6 +204,13 @@ bool ProfileMenuViewBase::HandleContextMenu(
   return true;
 }
 
+void ProfileMenuViewBase::Init() {
+  Reset();
+  BuildMenu();
+  if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp))
+    RepopulateViewFromMenuItems();
+}
+
 void ProfileMenuViewBase::WindowClosing() {
   DCHECK_EQ(g_profile_bubble_, this);
   if (anchor_button())
@@ -176,10 +218,22 @@ void ProfileMenuViewBase::WindowClosing() {
   g_profile_bubble_ = nullptr;
 }
 
-void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* label,
+void ProfileMenuViewBase::ButtonPressed(views::Button* button,
+                                        const ui::Event& event) {
+  OnClick(button);
+}
+
+void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* link,
                                                  const gfx::Range& range,
                                                  int event_flags) {
-  chrome::ShowSettings(browser_);
+  OnClick(link);
+}
+
+void ProfileMenuViewBase::OnClick(views::View* clickable_view) {
+  DCHECK(!click_actions_[clickable_view].is_null());
+  base::RecordAction(
+      base::UserMetricsAction("ProfileMenu_ActionableItemClicked"));
+  click_actions_[clickable_view].Run();
 }
 
 int ProfileMenuViewBase::GetMaxHeight() const {
@@ -198,7 +252,38 @@ int ProfileMenuViewBase::GetMaxHeight() const {
 }
 
 void ProfileMenuViewBase::Reset() {
-  menu_item_groups_.clear();
+  if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
+    menu_item_groups_.clear();
+    return;
+  }
+  click_actions_.clear();
+  RemoveAllChildViews(/*delete_childen=*/true);
+
+  auto components = std::make_unique<views::View>();
+  components->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  // Create and add new component containers in the correct order.
+  identity_info_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+
+  // Create a scroll view to hold the components.
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->SetHideHorizontalScrollBar(true);
+  // TODO(https://crbug.com/871762): it's a workaround for the crash.
+  scroll_view->SetDrawOverflowIndicator(false);
+  scroll_view->ClipHeightTo(0, GetMaxHeight());
+  scroll_view->SetContents(std::move(components));
+
+  // Create a grid layout to set the menu width.
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     kMenuWidth, kMenuWidth);
+  layout->StartRow(1.0, 0);
+  layout->AddView(std::move(scroll_view));
 }
 
 int ProfileMenuViewBase::GetMarginSize(GroupMarginSize margin_size) const {
@@ -246,32 +331,38 @@ views::Button* ProfileMenuViewBase::CreateAndAddTitleCard(
     std::unique_ptr<views::View> icon_view,
     const base::string16& title,
     const base::string16& subtitle,
-    bool enabled) {
+    base::RepeatingClosure action) {
   std::unique_ptr<HoverButton> title_card = std::make_unique<HoverButton>(
-      enabled ? this : nullptr, std::move(icon_view), title, subtitle);
-  title_card->SetEnabled(enabled);
+      this, std::move(icon_view), title, subtitle);
+  if (action.is_null())
+    title_card->SetEnabled(false);
   views::Button* button_ptr = title_card.get();
+  RegisterClickAction(button_ptr, std::move(action));
   AddMenuItemInternal(std::move(title_card), MenuItems::kTitleCard);
   return button_ptr;
 }
 
 views::Button* ProfileMenuViewBase::CreateAndAddButton(
     const gfx::ImageSkia& icon,
-    const base::string16& title) {
+    const base::string16& title,
+    base::RepeatingClosure action) {
   std::unique_ptr<HoverButton> button =
       std::make_unique<HoverButton>(this, icon, title);
   views::Button* pointer = button.get();
+  RegisterClickAction(pointer, std::move(action));
   AddMenuItemInternal(std::move(button), MenuItems::kButton);
   return pointer;
 }
 
 views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
     const base::string16& text,
-    bool md_style) {
+    bool md_style,
+    base::RepeatingClosure action) {
   std::unique_ptr<views::LabelButton> button =
       md_style ? views::MdTextButton::CreateSecondaryUiBlueButton(this, text)
                : views::MdTextButton::Create(this, text);
   views::Button* pointer = button.get();
+  RegisterClickAction(pointer, std::move(action));
 
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -287,13 +378,14 @@ views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
 #if !defined(OS_CHROMEOS)
 DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
     AccountInfo* account_info,
-    gfx::Image* account_icon) {
+    gfx::Image* account_icon,
+    base::RepeatingClosure action) {
   std::unique_ptr<DiceSigninButtonView> button =
-      account_info ? std::make_unique<DiceSigninButtonView>(
-                         *account_info, *account_icon, this,
-                         false /* show_drop_down_arrow */)
+      account_info ? std::make_unique<DiceSigninButtonView>(*account_info,
+                                                            *account_icon, this)
                    : std::make_unique<DiceSigninButtonView>(this);
   DiceSigninButtonView* pointer = button.get();
+  RegisterClickAction(pointer->signin_button(), std::move(action));
 
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -313,7 +405,7 @@ views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
       std::make_unique<views::Label>(text, text_context);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
+  label->SetMaximumWidth(kMenuWidth - 2 * kMenuEdgeMargin);
   views::Label* pointer = label.get();
 
   // Add margins.
@@ -327,6 +419,21 @@ views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
   return pointer;
 }
 
+views::StyledLabel* ProfileMenuViewBase::CreateAndAddLabelWithLink(
+    const base::string16& text,
+    gfx::Range link_range,
+    base::RepeatingClosure action) {
+  auto label_with_link = std::make_unique<views::StyledLabel>(text, this);
+  label_with_link->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
+  label_with_link->AddStyleRange(
+      link_range, views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+  views::StyledLabel* pointer = label_with_link.get();
+  RegisterClickAction(pointer, std::move(action));
+  AddViewItem(std::move(label_with_link));
+  return pointer;
+}
+
 void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
@@ -335,6 +442,12 @@ void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
       gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(view));
   AddMenuItemInternal(std::move(margined_view), MenuItems::kGeneral);
+}
+
+void ProfileMenuViewBase::RegisterClickAction(views::View* clickable_view,
+                                              base::RepeatingClosure action) {
+  DCHECK(click_actions_.count(clickable_view) == 0);
+  click_actions_[clickable_view] = std::move(action);
 }
 
 void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
@@ -421,7 +534,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     menu_width_, menu_width_);
+                     kMenuWidth, kMenuWidth);
   layout->StartRow(1.0, 0);
   layout->AddView(std::move(scroll_view));
   if (GetBubbleFrameView()) {
@@ -435,23 +548,10 @@ gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
     const gfx::VectorIcon& icon) {
   return gfx::CreateVectorIcon(
       icon, kIconSize,
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey);
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
 }
 
 int ProfileMenuViewBase::GetDefaultIconSize() {
   return kIconSize;
-}
-
-bool ProfileMenuViewBase::ShouldProvideInitiallyFocusedView() const {
-#if defined(OS_MACOSX)
-  // On Mac, buttons are not focusable when full keyboard access is turned off,
-  // causing views::Widget to fall back to focusing the first focusable View.
-  // This behavior is not desired in profile menus because of the menu-like
-  // design using |HoverButtons|.
-  if (!GetFocusManager() || !GetFocusManager()->keyboard_accessible())
-    return false;
-#endif
-  return true;
 }

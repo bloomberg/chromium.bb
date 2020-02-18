@@ -6,7 +6,7 @@
 
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
@@ -86,7 +86,8 @@
   self.bannerIsPresenting = YES;
   [self.infobarCoordinator presentInfobarBannerAnimated:NO completion:nil];
 }
-
+- (void)infobarManagerWillChange {
+}
 - (void)setUserInteractionEnabled:(BOOL)enabled {
 }
 - (void)updateLayoutAnimated:(BOOL)animated {
@@ -194,7 +195,7 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
     return InfoBarManagerImpl::FromWebState(&web_state_);
   }
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   InfobarBadgeTabHelperTestDelegate* infobar_badge_tab_delegate_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   FakeInfobarContainerCoordinator* infobar_container_coordinator_;

@@ -10,32 +10,30 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
-#include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/content/previews_ui_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -86,16 +84,20 @@ enum class HintsFetcherRemoteResponseType {
 
 }  // namespace
 
-// This test class sets up everything but does not enable any features.
-class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
+// This test class sets up everything but does not enable any
+// HintsFetcher-related features. The parameter selects whether the
+// OptimizationGuideKeyedService is enabled (tests should pass in the same way
+// for both cases).
+class HintsFetcherDisabledBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
   HintsFetcherDisabledBrowserTest() = default;
   ~HintsFetcherDisabledBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_2G);
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -122,6 +124,14 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(hints_server_->Start());
 
+    if (GetParam()) {
+      param_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      param_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
+    }
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -141,6 +151,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
         hints_server_->base_url().spec());
     cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
+    if (GetParam())
+      cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
   }
 
   // Creates hint data for the |hint_setup_url|'s so that OnHintsUpdated in
@@ -151,27 +163,23 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
             optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, "*",
             {});
 
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    base::HistogramTester histogram_tester;
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
 
-    run_loop.Run();
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
   }
 
   void SetNetworkConnectionOffline() {
     content::NetworkConnectionChangeSimulator().SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_NONE);
+  }
+
+  void SetResponseType(HintsFetcherRemoteResponseType response_type) {
+    response_type_ = response_type;
   }
 
   // Seeds the Site Engagement Service with two HTTP and two HTTPS sites for the
@@ -203,9 +211,9 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
                                     ->GetActiveWebContents()
                                     ->GetBrowserContext())
         ->GetPrefs()
-        ->SetInteger(
-            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
-            static_cast<int>(blacklist_state));
+        ->SetInteger(optimization_guide::prefs::
+                         kHintsFetcherDataSaverTopHostBlacklistState,
+                     static_cast<int>(blacklist_state));
   }
 
   void LoadHintsForUrl(const GURL& url) {
@@ -217,8 +225,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
+        &histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         1);
   }
 
@@ -291,6 +298,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
+  base::test::ScopedFeatureList param_feature_list_;
+
   GURL https_url_;
 
   base::HistogramTester histogram_tester_;
@@ -300,6 +309,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherDisabledBrowserTest);
 };
+
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         HintsFetcherDisabledBrowserTest,
+                         testing::Bool());
 
 // This test class enables OnePlatform Hints.
 class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
@@ -326,28 +339,12 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
 };
 
-// This test class enables OnePlatform Hints and configures the test remote
-// Optimization Guide Service to return a malformed GetHintsResponse. This
-// is for fault testing.
-class HintsFetcherWithResponseBrowserTest
-    : public ::testing::WithParamInterface<HintsFetcherRemoteResponseType>,
-      public HintsFetcherBrowserTest {
- public:
-  HintsFetcherWithResponseBrowserTest() = default;
+// True if testing using the OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         HintsFetcherBrowserTest,
+                         testing::Bool());
 
-  ~HintsFetcherWithResponseBrowserTest() override = default;
-
-  void SetUp() override {
-    response_type_ = GetParam();
-    // Call to inherited class to match same set up with feature flags added.
-    HintsFetcherBrowserTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HintsFetcherWithResponseBrowserTest);
-};
-
-// Issues with multiple profiles likely cause the site enagement service-based
+// Issues with multiple profiles likely cause the site engagement service-based
 // tests to flake.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
@@ -361,7 +358,7 @@ class HintsFetcherWithResponseBrowserTest
 // histograms for the total number of TopEngagementSites and
 // the total number of sites returned controlled by the experiments flag
 // |max_oneplatform_update_hosts|.
-IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
+IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherEnabled)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -369,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the follow histograms as One Platform Hints are enabled.
+  // in each of the following histograms as One Platform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -380,14 +377,16 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
             1);
 
-  histogram_tester->ExpectBucketCount(
+  histogram_tester->ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
-  histogram_tester->ExpectBucketCount(
+  histogram_tester->ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
       1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
+IN_PROC_BROWSER_TEST_P(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Expect that the histogram for HintsFetcher to be 0 because the OnePlatform
@@ -402,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
 // only returns HTTPS-schemed hosts. We verify this with the UMA histogram
 // logged when the GetHintsRequest is made to the remote Optimization Guide
 // Service.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsTopHostProviderHTTPSOnly)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -428,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherFetchedHintsLoaded)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -438,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the follow histograms as One Platform Hints are enabled.
+  // in each of the following histograms as One Platform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -447,6 +446,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1),
             1);
 
   LoadHintsForUrl(https_url());
@@ -470,16 +473,17 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    HintsFetcherWithResponseBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherWithResponses)) {
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherWithResponsesSuccessful)) {
+  SetResponseType(HintsFetcherRemoteResponseType::kSuccessful);
+
   const base::HistogramTester* histogram_tester = GetHistogramTester();
-  const HintsFetcherRemoteResponseType response_type = GetParam();
 
   // Whitelist NoScript for https_url()'s' host.
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the follow histograms as One Platform Hints are enabled.
+  // in each of the following histograms as One Platform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -491,57 +495,97 @@ IN_PROC_BROWSER_TEST_P(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
             1);
-  if (response_type == HintsFetcherRemoteResponseType::kSuccessful) {
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK,
-        1);
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
-        1);
-  } else if (response_type == HintsFetcherRemoteResponseType::kUnsuccessful) {
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
-        net::HTTP_NOT_FOUND, 1);
-  } else if (response_type == HintsFetcherRemoteResponseType::kMalformed) {
-    // A malformed GetHintsResponse will still register as successful fetch with
-    // respect to the network.
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK,
-        1);
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
-        1);
-
-    LoadHintsForUrl(https_url());
-
-    ui_test_utils::NavigateToURL(browser(), https_url());
-
-    // Verifies that no Fetched Hint was added to the store, only the
-    // Component hint is loaded.
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintCache.HintType.Loaded",
-        static_cast<int>(
-            optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
-        1);
-    histogram_tester->ExpectBucketCount(
-        "OptimizationGuide.HintCache.HintType.Loaded",
-        static_cast<int>(
-            optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
-        0);
-
-  } else {
-    NOTREACHED();
-  }
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    HintsFetcherWithResponses,
-    HintsFetcherWithResponseBrowserTest,
-    ::testing::Values(HintsFetcherRemoteResponseType::kSuccessful,
-                      HintsFetcherRemoteResponseType::kUnsuccessful,
-                      HintsFetcherRemoteResponseType::kMalformed));
+IN_PROC_BROWSER_TEST_P(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherWithResponsesUnsuccessful)) {
+  SetResponseType(HintsFetcherRemoteResponseType::kUnsuccessful);
 
-IN_PROC_BROWSER_TEST_F(
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the following histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  // Wait until histograms have been updated before performing checks for
+  // correct behavior based on the response.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
+      net::HTTP_NOT_FOUND, 1);
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 0);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherWithResponsesMalformed)) {
+  SetResponseType(HintsFetcherRemoteResponseType::kMalformed);
+
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the following histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  // Wait until histograms have been updated before performing checks for
+  // correct behavior based on the response.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 0);
+
+  LoadHintsForUrl(https_url());
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Verifies that no Fetched Hint was added to the store, only the
+  // Component hint is loaded.
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(
+          optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
+      1);
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(
+          optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
+      0);
+}
+
+IN_PROC_BROWSER_TEST_P(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherClearFetchedHints)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -551,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the follow histograms as OnePlatform Hints are enabled.
+  // in each of the following histograms as OnePlatform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -560,6 +604,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1),
             1);
 
   LoadHintsForUrl(https_url());
@@ -604,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(
       1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherOverrideTimer)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -625,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(
   SetUpComponentUpdateHints(https_url());
 
   // Expect that the browser initialization will record at least one sample
-  // in each of the follow histograms as OnePlatform Hints are enabled.
+  // in each of the following histograms as OnePlatform Hints are enabled.
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -639,6 +687,9 @@ IN_PROC_BROWSER_TEST_F(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
             1);
+  // There should have been 1 hint returned in the response.
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 
   LoadHintsForUrl(https_url());
 
@@ -659,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(
       0);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherNetworkOffline)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -688,4 +739,120 @@ IN_PROC_BROWSER_TEST_F(
   // No HintsFetch should occur because the connection is offline.
   histogram_tester->ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherHostCovered)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the following histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
+
+  // Navigation to a host in the seeded site engagement service; it should
+  // be recorded as covered by the hints fetcher.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://example1.com"));
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester, "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
+      1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherHostNotCovered)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the following histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
+
+  // Navigate to a host not in the seeded site engagement service; it
+  // should be recorded as not covered by the hints fetcher.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://unSeenHost.com"));
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester, "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
+      1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherHostCoveredNotHTTPS)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the following histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
+
+  // Navigate to a HTTP host; the navigation should not be recorded.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://example1.com"));
+
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", 0);
 }

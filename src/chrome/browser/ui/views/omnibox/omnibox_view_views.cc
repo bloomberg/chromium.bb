@@ -289,7 +289,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
       SelectAll(true);
       saved_selection_for_focus_change_ = gfx::Range();
     } else {
-      SelectRange(state->selection);
+      SetSelectedRange(state->selection);
       saved_selection_for_focus_change_ =
           state->saved_selection_for_focus_change;
     }
@@ -310,10 +310,10 @@ void OmniboxViewViews::InstallPlaceholderText() {
   const TemplateURL* const default_provider =
       model()->client()->GetTemplateURLService()->GetDefaultSearchProvider();
   if (default_provider) {
-    set_placeholder_text(l10n_util::GetStringFUTF16(
+    SetPlaceholderText(l10n_util::GetStringFUTF16(
         IDS_OMNIBOX_PLACEHOLDER_TEXT, default_provider->short_name()));
   } else {
-    set_placeholder_text(base::string16());
+    SetPlaceholderText(base::string16());
   }
 }
 
@@ -324,7 +324,7 @@ bool OmniboxViewViews::SelectionAtBeginning() const {
 
 bool OmniboxViewViews::SelectionAtEnd() const {
   const gfx::Range sel = GetSelectedRange();
-  return sel.GetMin() == text().size();
+  return sel.GetMin() == GetText().size();
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -382,7 +382,7 @@ void OmniboxViewViews::Update() {
 
 base::string16 OmniboxViewViews::GetText() const {
   // TODO(oshima): IME support
-  return text();
+  return Textfield::GetText();
 }
 
 void OmniboxViewViews::SetUserText(const base::string16& text,
@@ -574,8 +574,26 @@ bool OmniboxViewViews::IsDropCursorForInsertion() const {
 
 void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
                                                const gfx::Range& range) {
+  // Will try to fit as much of unselected text as possible. If possible,
+  // guarantees at least |pad_left| chars of the unselected text are visible. If
+  // possible given the prior guarantee, also guarantees |pad_right| chars of
+  // the selected text are visible.
+  static const uint32_t kPadRight = 30;
+  static const uint32_t kPadLeft = 10;
+
   SetText(text);
-  SelectRange(range);
+  // Select all the text to prioritize showing unselected text.
+  SetSelectedRange(gfx::Range(range.start(), 0));
+  // Scroll selection right, to ensure |kPadRight| chars of selected text are
+  // shown.
+  SetSelectedRange(gfx::Range(
+      range.start(), std::min(range.end() + kPadRight, range.start())));
+  // Scroll selection left, to ensure |kPadLeft| chars of unselected text are
+  // shown.
+  SetSelectedRange(
+      gfx::Range(range.start(), range.end() - std::min(kPadLeft, range.end())));
+  // Select the specified selection.
+  SetSelectedRange(range);
 }
 
 base::string16 OmniboxViewViews::GetSelectedText() const {
@@ -722,12 +740,12 @@ void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
 }
 
 void OmniboxViewViews::SetCaretPos(size_t caret_pos) {
-  SelectRange(gfx::Range(caret_pos, caret_pos));
+  SetSelectedRange(gfx::Range(caret_pos, caret_pos));
 }
 
 bool OmniboxViewViews::IsSelectAll() const {
   // TODO(oshima): IME support.
-  return !text().empty() && text() == GetSelectedText();
+  return !GetText().empty() && GetText() == GetSelectedText();
 }
 
 void OmniboxViewViews::UpdatePopup() {
@@ -762,7 +780,7 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
     const base::string16& display_text,
     size_t user_text_length) {
-  if (display_text == text())
+  if (display_text == GetText())
     return false;
 
   if (!IsIMEComposing()) {
@@ -785,7 +803,7 @@ void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
 void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
   SetAccessibilityLabel(display_text, match);
-  SelectRange(saved_temporary_selection_);
+  SetSelectedRange(saved_temporary_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
   // been called by now, and it would've called TextChanged() if it was
@@ -846,6 +864,18 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // This simple logic only works because we elide only prefixes from the full
   // URL. Otherwise, we would have to use the FormatURL offset adjustments.
   size_t offset = GetText().find(original_text);
+
+  // Some intranet URLs have an elided form that's not a substring of the full
+  // URL string. e.g. "https://foobar" has the elided form "foobar/". This is
+  // to prevent elided URLs from looking like search terms. See
+  // AutocompleteInput::FormattedStringWithEquivalentMeaning for details.
+  //
+  // In this special case, chop off the trailing slash and search again.
+  if (offset == base::string16::npos && !original_text.empty() &&
+      original_text.back() == base::char16('/')) {
+    offset = GetText().find(original_text.substr(0, original_text.size() - 1));
+  }
+
   if (offset != base::string16::npos) {
     AutocompleteMatch match;
     model()->ClassifyString(original_selected_text, &match, nullptr);
@@ -873,7 +903,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  SelectRange(gfx::Range(start, end));
+  SetSelectedRange(gfx::Range(start, end));
   return true;
 }
 
@@ -958,7 +988,7 @@ void OmniboxViewViews::HideImeIfNeeded() {
 
 int OmniboxViewViews::GetOmniboxTextLength() const {
   // TODO(oshima): Support IME.
-  return static_cast<int>(text().length());
+  return static_cast<int>(GetText().length());
 }
 
 void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
@@ -1222,7 +1252,7 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 bool OmniboxViewViews::HandleAccessibleAction(
     const ui::AXActionData& action_data) {
-  if (read_only())
+  if (GetReadOnly())
     return Textfield::HandleAccessibleAction(action_data);
 
   if (action_data.action == ax::mojom::Action::kSetValue) {
@@ -1231,7 +1261,7 @@ bool OmniboxViewViews::HandleAccessibleAction(
   } else if (action_data.action == ax::mojom::Action::kReplaceSelectedText) {
     model()->SetInputInProgress(true);
     if (saved_selection_for_focus_change_.IsValid()) {
-      SelectRange(saved_selection_for_focus_change_);
+      SetSelectedRange(saved_selection_for_focus_change_);
       saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
     }
     InsertOrReplaceText(base::UTF8ToUTF16(action_data.value));
@@ -1263,7 +1293,7 @@ void OmniboxViewViews::OnFocus() {
 
   // Restore the selection we saved in OnBlur() if it's still valid.
   if (saved_selection_for_focus_change_.IsValid()) {
-    SelectRange(saved_selection_for_focus_change_);
+    SetSelectedRange(saved_selection_for_focus_change_);
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
@@ -1318,9 +1348,9 @@ void OmniboxViewViews::OnBlur() {
   if (GetWidget() && GetWidget()->IsActive() && popup_closes_on_blur &&
       !model()->is_keyword_selected() &&
       ((!model()->user_input_in_progress() &&
-        text() != model()->GetPermanentDisplayText()) ||
+        GetText() != model()->GetPermanentDisplayText()) ||
        (model()->user_input_in_progress() &&
-        text() == model()->GetPermanentDisplayText()))) {
+        GetText() == model()->GetPermanentDisplayText()))) {
     RevertAll();
   }
 
@@ -1334,7 +1364,8 @@ void OmniboxViewViews::OnBlur() {
   // If we fully reverted in this case, we'd lose the cursor/highlight
   // information saved above.
   if (!model()->user_input_in_progress() && popup_model &&
-      popup_model->IsOpen() && text() != model()->GetPermanentDisplayText()) {
+      popup_model->IsOpen() &&
+      GetText() != model()->GetPermanentDisplayText()) {
     RevertAll();
   } else if (popup_closes_on_blur) {
     CloseOmniboxPopup();
@@ -1344,7 +1375,7 @@ void OmniboxViewViews::OnBlur() {
   model()->OnKillFocus();
 
   // Deselect the text. Ensures the cursor is an I-beam.
-  SelectRange(gfx::Range(0));
+  SetSelectedRange(gfx::Range(0));
 
   // When deselected, elide and reset scroll position. After eliding, the old
   // scroll offset is meaningless (since the string is guaranteed to fit within
@@ -1380,9 +1411,9 @@ void OmniboxViewViews::OnBlur() {
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_APP_PASTE)
-    return !read_only() && !GetClipboardText().empty();
+    return !GetReadOnly() && !GetClipboardText().empty();
   if (command_id == IDC_PASTE_AND_GO)
-    return !read_only() && model()->CanPasteAndGo(GetClipboardText());
+    return !GetReadOnly() && model()->CanPasteAndGo(GetClipboardText());
 
   // Menu item is only shown when it is valid.
   if (command_id == IDS_SHOW_URL)
@@ -1420,9 +1451,9 @@ bool OmniboxViewViews::IsTextEditCommandEnabled(
   switch (command) {
     case ui::TextEditCommand::MOVE_UP:
     case ui::TextEditCommand::MOVE_DOWN:
-      return !read_only();
+      return !GetReadOnly();
     case ui::TextEditCommand::PASTE:
-      return !read_only() && !GetClipboardText().empty();
+      return !GetReadOnly() && !GetClipboardText().empty();
     default:
       return Textfield::IsTextEditCommandEnabled(command);
   }
@@ -1519,12 +1550,13 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
           model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW,
                                event.time_stamp());
         } else {
-          if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-                model()->popup_model()->SelectedLineHasTabMatch())) {
-            model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
+          if ((OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
+               model()->popup_model()->SelectedLineHasTabMatch()) ||
+              model()->popup_model()->SelectedLineIsTabSwitchSuggestion()) {
+            model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
                                  event.time_stamp());
           } else {
-            model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
+            model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
                                  event.time_stamp());
           }
         }
@@ -1568,14 +1600,14 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_PRIOR:
-      if (control || alt || shift || read_only())
+      if (control || alt || shift || GetReadOnly())
         return false;
       model()->OnUpOrDownKeyPressed(
           -static_cast<int>(model()->popup_model()->selected_line()));
       return true;
 
     case ui::VKEY_NEXT:
-      if (control || alt || shift || read_only())
+      if (control || alt || shift || GetReadOnly())
         return false;
       model()->OnUpOrDownKeyPressed(model()->result().size() -
                                     model()->popup_model()->selected_line() -
@@ -1640,7 +1672,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
           // to the beginning of the full unelided URL.
           size_t start, end;
           GetSelectionBounds(&start, &end);
-          SelectRange(gfx::Range(start, 0));
+          SetSelectedRange(gfx::Range(start, 0));
         } else {
           // After uneliding, move the caret to the beginning of the full
           // unelided URL.
@@ -1679,10 +1711,10 @@ void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
   OnAfterPossibleChange(true);
 }
 
-void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
+void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
   ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
   base::string16 selected_text;
-  cb->ReadText(clipboard_type, &selected_text);
+  cb->ReadText(clipboard_buffer, &selected_text);
   GURL url;
   bool write_url = false;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
@@ -1690,7 +1722,7 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
   if (IsSelectAll())
     UMA_HISTOGRAM_COUNTS_1M(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
-  ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_type);
+  ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_buffer);
   scoped_clipboard_writer.WriteText(selected_text);
 
   if (write_url &&
@@ -1807,8 +1839,9 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox)) {
     // If the user has not started editing the text, and we are not showing the
     // full URL, then provide a way to unelide via the context menu.
-    if (!read_only() && !model()->user_input_in_progress() &&
-        text() != controller()->GetLocationBarModel()->GetFormattedFullURL()) {
+    if (!GetReadOnly() && !model()->user_input_in_progress() &&
+        GetText() !=
+            controller()->GetLocationBarModel()->GetFormattedFullURL()) {
       menu_contents->AddItemWithStringId(IDS_SHOW_URL, IDS_SHOW_URL);
     }
   }

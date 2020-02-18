@@ -109,6 +109,15 @@ class WebContents;
 WARN_UNUSED_RESULT bool NavigateToURL(WebContents* web_contents,
                                       const GURL& url);
 
+// Same as above, but takes in an additional URL, |expected_commit_url|, to
+// which the navigation should eventually commit.  This is useful for cases
+// like redirects, where navigation starts on one URL but ends up committing a
+// different URL.  This function will return true if navigating to |url|
+// results in a successful commit to |expected_commit_url|.
+WARN_UNUSED_RESULT bool NavigateToURL(WebContents* web_contents,
+                                      const GURL& url,
+                                      const GURL& expected_commit_url);
+
 // Navigates |web_contents| to |url|, blocking until the given number of
 // navigations finishes.
 void NavigateToURLBlockUntilNavigationsComplete(WebContents* web_contents,
@@ -755,7 +764,8 @@ enum EvalJsOptions {
 EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                    int world_id = ISOLATED_WORLD_ID_GLOBAL) WARN_UNUSED_RESULT;
+                    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
+    WARN_UNUSED_RESULT;
 
 // Like EvalJs(), except that |script| must call domAutomationController.send()
 // itself. This is the same as specifying the EXECUTE_SCRIPT_USE_MANUAL_REPLY
@@ -763,7 +773,7 @@ EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
 EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
                                    const std::string& script,
                                    int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                   int world_id = ISOLATED_WORLD_ID_GLOBAL)
+                                   int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
 // Run a script exactly the same as EvalJs(), but ignore the resulting value.
@@ -778,7 +788,7 @@ EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
 ::testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
                                   const std::string& script,
                                   int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                  int world_id = ISOLATED_WORLD_ID_GLOBAL)
+                                  int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
 // Walks the frame tree of the specified WebContents and returns the sole
@@ -1540,11 +1550,6 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
 // came from |process|. Used to simulate a compromised renderer.
 class PwnMessageHelper {
  public:
-  // Sends BlobHostMsg_RegisterPublicURL
-  static void RegisterBlobURL(RenderProcessHost* process,
-                              GURL url,
-                              std::string uuid);
-
   // Sends FileSystemHostMsg_Create
   static void FileSystemCreate(RenderProcessHost* process,
                                int request_id,
@@ -1564,7 +1569,8 @@ class PwnMessageHelper {
   static void LockMouse(RenderProcessHost* process,
                         int routing_id,
                         bool user_gesture,
-                        bool privileged);
+                        bool privileged,
+                        bool request_unadjusted_movement);
 
  private:
   PwnMessageHelper();  // Not instantiable.

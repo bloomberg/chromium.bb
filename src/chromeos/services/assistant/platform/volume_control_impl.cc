@@ -6,19 +6,20 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 
 namespace chromeos {
 namespace assistant {
 
-VolumeControlImpl::VolumeControlImpl(service_manager::Connector* connector,
+VolumeControlImpl::VolumeControlImpl(mojom::Client* client,
                                      AssistantMediaSession* media_session)
     : media_session_(media_session),
       binding_(this),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
-  connector->BindInterface(ash::mojom::kServiceName, &volume_control_ptr_);
+  client->RequestAssistantVolumeControl(
+      mojo::MakeRequest(&volume_control_ptr_));
   ash::mojom::VolumeObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   volume_control_ptr_->AddVolumeObserver(std::move(observer));

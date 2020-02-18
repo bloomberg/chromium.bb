@@ -12,6 +12,7 @@
 #include "components/variations/variations_http_header_provider.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
@@ -22,7 +23,7 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#import "ios/web/public/test/test_web_thread_bundle.h"
+#import "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -75,8 +76,10 @@ class LocationBarCoordinatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         UrlLoadingServiceFactory::GetInstance(),
         UrlLoadingServiceFactory::GetDefaultFactory());
-
     browser_state_ = test_cbs_builder.Build();
+
+    browser_ =
+        std::make_unique<TestBrowser>(browser_state_.get(), &web_state_list_);
 
     auto web_state = std::make_unique<web::TestWebState>();
     web_state->SetBrowserState(browser_state_.get());
@@ -88,8 +91,7 @@ class LocationBarCoordinatorTest : public PlatformTest {
     delegate_ = [[TestToolbarCoordinatorDelegate alloc] init];
 
     coordinator_ = [[LocationBarCoordinator alloc] init];
-    coordinator_.browserState = browser_state_.get();
-    coordinator_.webStateList = &web_state_list_;
+    coordinator_.browser = browser_.get();
     coordinator_.delegate = delegate_;
     coordinator_.commandDispatcher = [[CommandDispatcher alloc] init];
   }
@@ -103,11 +105,12 @@ class LocationBarCoordinatorTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   LocationBarCoordinator* coordinator_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
+  std::unique_ptr<Browser> browser_;
   TestToolbarCoordinatorDelegate* delegate_;
 };
 
@@ -117,6 +120,12 @@ TEST_F(LocationBarCoordinatorTest, Stops) {
   EXPECT_TRUE(coordinator_.locationBarViewController != nil);
   [coordinator_ stop];
   EXPECT_TRUE(coordinator_.locationBarViewController == nil);
+}
+
+// Removes the existing WebState to ensure that nothing breaks when there is no
+// active WebState.
+TEST_F(LocationBarCoordinatorTest, RemoveLastWebState) {
+  web_state_list_.CloseWebStateAt(0, 0);
 }
 
 // Calls -loadGURLFromLocationBar:transition: with https://www.google.com/ URL.

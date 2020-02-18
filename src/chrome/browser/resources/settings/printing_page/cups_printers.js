@@ -14,6 +14,7 @@ Polymer({
 
   behaviors: [
       CrNetworkListenerBehavior,
+      settings.RouteObserverBehavior,
       WebUIListenerBehavior,
   ],
 
@@ -36,8 +37,20 @@ Polymer({
       type: String,
     },
 
-    /** @private */
-    canAddPrinter_: Boolean,
+    /** This is also used as an attribute for css styling. */
+    canAddPrinter: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
+    /**
+     * @type {!Array<!PrinterListEntry>}
+     * @private
+     */
+    savedPrinters_: {
+      type: Array,
+      value: () => [],
+    },
 
     /** @private */
     showCupsEditPrinterDialog_: Boolean,
@@ -65,19 +78,19 @@ Polymer({
         'openManufacturerModelDialogForSpecifiedPrinter_',
   },
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
+    this.networkConfig_ =
         network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+            .getMojoServiceRemote();
   },
 
   /** @override */
   attached: function() {
-    this.networkConfigProxy_
+    this.networkConfig_
         .getNetworkStateList({
           filter: chromeos.networkConfig.mojom.FilterType.kActive,
           networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
@@ -90,14 +103,26 @@ Polymer({
     if (this.enableUpdatedUi_) {
       return;
     }
-
-    this.addWebUIListener(
-        'on-printers-changed', this.printersChanged_.bind(this));
   },
 
   /** @override */
   ready: function() {
     this.updateCupsPrintersList_();
+  },
+
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @protected
+   */
+  currentRouteChanged: function(route) {
+    if (route != settings.routes.CUPS_PRINTERS) {
+      cr.removeWebUIListener('on-printers-changed');
+      return;
+    }
+    cr.addWebUIListener(
+        'on-printers-changed', this.onPrintersChanged_.bind(this));
   },
 
   /**
@@ -107,8 +132,12 @@ Polymer({
    * @private
    */
   onActiveNetworksChanged: function(networks) {
-    this.canAddPrinter_ = networks.some(function(network) {
-      return OncMojo.connectionStateIsConnected(network.connectionState);
+    this.canAddPrinter = networks.some(function(network) {
+      // Note: Check for kOnline rather than using
+      // OncMojo.connectionStateIsConnected() since the latter could return true
+      // for networks without connectivity (e.g., captive portals).
+      return network.connectionState ==
+          chromeos.networkConfig.mojom.ConnectionStateType.kOnline;
     });
   },
 
@@ -123,25 +152,23 @@ Polymer({
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
-        if (this.enableUpdatedUi_) {
-          this.$$('#savedPrinters').updateSavedPrintersList();
-        } else {
-          this.updateCupsPrintersList_();
-        }
+        this.updateCupsPrintersList_();
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerAddedSuccessfulMessage',
                                     printerName);
         break;
       case PrinterSetupResult.EDIT_SUCCESS:
-        if (this.enableUpdatedUi_) {
-          this.$$('#savedPrinters').updateSavedPrintersList();
-        } else {
-          this.updateCupsPrintersList_();
-        }
+        this.updateCupsPrintersList_();
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);
         break;
+      case PrinterSetupResult.PRINTER_UNREACHABLE:
+        if (this.enableUpdatedUi_) {
+          this.addPrinterResultText_ =
+              loadTimeData.getStringF('printerUnavailableMessage', printerName);
+          break;
+        }
       default:
         assertNotReached();
       }
@@ -163,15 +190,22 @@ Polymer({
   updateCupsPrintersList_: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getCupsPrintersList()
-        .then(this.printersChanged_.bind(this));
+        .then(this.onPrintersChanged_.bind(this));
   },
 
   /**
    * @param {!CupsPrintersList} cupsPrintersList
    * @private
    */
-  printersChanged_: function(cupsPrintersList) {
-    this.printers = cupsPrintersList.printerList;
+  onPrintersChanged_: function(cupsPrintersList) {
+    if (this.enableUpdatedUi_) {
+      this.savedPrinters_ = cupsPrintersList.printerList.map(
+          printer => /** @type {!PrinterListEntry} */({
+              printerInfo: printer,
+              printerType: PrinterType.SAVED}));
+    } else {
+      this.printers = cupsPrintersList.printerList;
+    }
   },
 
   /** @private */
@@ -181,7 +215,9 @@ Polymer({
 
   /** @private */
   onAddPrinterDialogClose_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#addPrinter')));
+      cr.ui.focusWithoutInk(assert(
+          this.enableUpdatedUi_ ? this.$$('#addManualPrinterIcon')
+                                : this.$$('#addPrinter')));
   },
 
   /** @private */
@@ -220,5 +256,13 @@ Polymer({
   addPrinterButtonActive_: function(
       connectedToNetwork, userNativePrintersAllowed) {
     return connectedToNetwork && userNativePrintersAllowed;
+  },
+
+  /**
+   * @return {boolean} Whether |savedPrinters_| is empty.
+   * @private
+   */
+  doesAccountHaveSavedPrinters_: function() {
+    return !!this.savedPrinters_.length;
   }
 });

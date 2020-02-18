@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_context.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -52,7 +53,7 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
     // ServiceWorkerContextCoreObserver:
     void OnRunningStateChanged(int64_t version_id,
                                EmbeddedWorkerStatus status) override {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
       if (version_id != version_id_ || status != EmbeddedWorkerStatus::STOPPED)
         return;
       std::move(stopped_callback_).Run();
@@ -67,9 +68,8 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
 
   void OnStopped() {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&StoppedObserver::OnStopped, this));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&StoppedObserver::OnStopped, this));
       return;
     }
     std::move(completion_callback_ui_).Run();
@@ -99,11 +99,10 @@ void FoundReadyRegistration(
 void StopServiceWorkerForScope(ServiceWorkerContext* context,
                                const GURL& scope,
                                base::OnceClosure completion_callback_ui) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&StopServiceWorkerForScope, context, scope,
-                       std::move(completion_callback_ui)));
+  if (!BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId())) {
+    base::PostTask(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                   base::BindOnce(&StopServiceWorkerForScope, context, scope,
+                                  std::move(completion_callback_ui)));
     return;
   }
   auto* context_wrapper = static_cast<ServiceWorkerContextWrapper*>(context);

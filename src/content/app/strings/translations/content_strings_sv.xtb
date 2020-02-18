@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Värdet måste vara <ph name="MINIMUM_DATE_OR_TIME" /> eller senare.</translation>
 <translation id="2759744352195237655">popup-knapp</translation>
 <translation id="2761667185364618470">Markera den här kryssrutan om du vill fortsätta.</translation>
+<translation id="2844350028562914727">detaljer</translation>
 <translation id="2896972712917208084">alternativknappsgrupp</translation>
 <translation id="2908441821576996758">Ange en kommaavgränsad lista med e-postadresser.</translation>
 <translation id="2940813599313844715">objekt</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Värdet måste vara mindre än eller lika med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">rubrik <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">veckoväljare</translation>
 <translation id="3685101356851116974">Bild utan etikett</translation>
 <translation id="3706100364254443312">växel</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">rullningslist</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
 <translation id="4151657705144244502">bild</translation>
+<translation id="4160057747563657758">telefon</translation>
 <translation id="4193965531860883258">förord</translation>
 <translation id="4201051445878709314">Visa föregående månad</translation>
 <translation id="421884353938374759">färgval</translation>
 <translation id="4248100235867064564">menyfält</translation>
-<translation id="4254339807215791271">innehållsinformation</translation>
 <translation id="4360991593054037559">Ange ett giltigt värde. De två närmaste giltiga värdena är <ph name="VALID_VALUE_LOW" /> och <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Frågor och svar</translation>
 <translation id="4413860115965805769">menyknapp</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Av</translation>
 <translation id="588258955323874662">Helskärm</translation>
 <translation id="5888666972993069672">Castar till <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">sökruta</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5966707198760109579">Vecka</translation>
 <translation id="5987525920412732405">snurrknapp</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6209276755895393898">Det verkar vara: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordlista</translation>
+<translation id="6281763101136022427">webbadress</translation>
 <translation id="6310801910862476708">Avsluta bild-i-bild-läge</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Matcha det format som anges.</translation>
 <translation id="7118469954320184356">Det finns ingen tillgänglig beskrivning.</translation>
 <translation id="7139483182332611405">företal</translation>
+<translation id="7214187073215825913">innehållsinformation</translation>
 <translation id="7263440858009898357">Välj ett alternativ i listan.</translation>
 <translation id="727747134524199931">kolumnrubrik</translation>
 <translation id="7320576522385648310">buffrar</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Beskrivningen hämtas …</translation>
 <translation id="8117451130807776954">Den här veckan</translation>
 <translation id="8199524924445686405">åååå</translation>
+<translation id="8208673686607688524">datum- och tidsväljare för lokal tid</translation>
 <translation id="8261464734335370856">Stavfel</translation>
 <translation id="8284326494547611709">Textning</translation>
 <translation id="835897206747267392">Ogiltigt värde.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">innehållsförteckning</translation>
 <translation id="8613126697340063924">styra fjärruppspelning</translation>
 <translation id="862370744433916922">undertext</translation>
+<translation id="8711688047404765493">utdata</translation>
 <translation id="8750798805984357768">Välj ett av följande alternativ.</translation>
 <translation id="8808573423886751634">kapitel</translation>
 <translation id="8845239796550121995">Castar nu till TV:n</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">Månad</translation>
 <translation id="901493112792887934">aktuell tid i sekunder</translation>
+<translation id="901834265349196618">e-post</translation>
 <translation id="9048119486235211610">navigering</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9062307380734144336">välj för att spela upp och pausa</translation>

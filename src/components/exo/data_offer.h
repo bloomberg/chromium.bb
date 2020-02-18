@@ -42,7 +42,7 @@ class DataOffer final : public ui::PropertyHandler {
   };
 
   DataOffer(DataOfferDelegate* delegate, Purpose purpose);
-  ~DataOffer();
+  ~DataOffer() override;
 
   void AddObserver(DataOfferObserver* observer);
   void RemoveObserver(DataOfferObserver* observer);
@@ -105,9 +105,22 @@ class DataOffer final : public ui::PropertyHandler {
   base::ObserverList<DataOfferObserver>::Unchecked observers_;
   Purpose purpose_;
 
-  base::WeakPtrFactory<DataOffer> weak_ptr_factory_;
+  base::WeakPtrFactory<DataOffer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataOffer);
+};
+
+class ScopedDataOffer {
+ public:
+  ScopedDataOffer(DataOffer* data_offer, DataOfferObserver* observer);
+  ~ScopedDataOffer();
+  DataOffer* get() { return data_offer_; }
+
+ private:
+  DataOffer* const data_offer_;
+  DataOfferObserver* const observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDataOffer);
 };
 
 }  // namespace exo

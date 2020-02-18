@@ -20,6 +20,10 @@ message DlcModuleInfo {
   // Omaha responds with error if the provided App ID does not exist on
   // Omaha.
   string dlc_id = 1;
+  // Path to the DLC module content. This parameter should not be used as input.
+  // If passed in with a value set, there will be no effect. Only an output use
+  // parameter.
+  string dlc_root = 2;
 }
 
 // This is the message used in:
@@ -43,17 +47,20 @@ message DlcModuleList {
   string omaha_url = 2;
 }
 
-// This message is sent from DLC Service via OnInstalled signal.
+// This is the message that indicates how the install progress is running and
+// dlcservice will always end with |COMPLETE| or |FAILED| when finished.
+enum Status {
+  COMPLETED = 0;
+  RUNNING = 1;
+  FAILED = 2;
+}
+
+// This message is sent from DLC Service via OnStatusInstall signal.
 //
-// When an install operation finishes, DLC Service sends OnInstalled signal
-// with following message.
-message InstallResult {
-  // Whether install is successful.
-  bool success = 1;
-  // Error code of the install. See dbus-constants.h for definitions.
-  int32 error_code = 2;
-  // ID of the installed DLC module.
-  string dlc_id = 3;
-  // Path to the DLC module content.
-  string dlc_root = 4;
+// Throughout the install progress, dlcservice will signal out this message.
+message InstallStatus {
+  DlcModuleList dlc_module_list = 1;
+  string error_code = 2;
+  Status status = 3;
+  double progress = 4;
 }

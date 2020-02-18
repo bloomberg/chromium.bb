@@ -251,13 +251,22 @@ void PageLoadMetricsObserverTester::SimulateCookieChange(
   observer_->OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
 }
 
+void PageLoadMetricsObserverTester::SimulateDomStorageAccess(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool local,
+    bool blocked_by_policy) {
+  observer_->OnDomStorageAccessed(url, first_party_url, local,
+                                  blocked_by_policy);
+}
+
 MetricsWebContentsObserver* PageLoadMetricsObserverTester::observer() const {
   return observer_;
 }
 
-const PageLoadExtraInfo
-PageLoadMetricsObserverTester::GetPageLoadExtraInfoForCommittedLoad() {
-  return observer_->GetPageLoadExtraInfoForCommittedLoad();
+const PageLoadMetricsObserverDelegate&
+PageLoadMetricsObserverTester::GetDelegateForCommittedLoad() const {
+  return observer_->GetDelegateForCommittedLoad();
 }
 
 void PageLoadMetricsObserverTester::RegisterObservers(

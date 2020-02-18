@@ -27,7 +27,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
@@ -35,6 +34,7 @@
 
 namespace blink {
 
+class CustomLayoutChild;
 class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
@@ -69,18 +69,7 @@ struct LayoutBoxRareData {
   USING_FAST_MALLOC(LayoutBoxRareData);
 
  public:
-  LayoutBoxRareData()
-      : spanner_placeholder_(nullptr),
-        override_logical_width_(-1),
-        override_logical_height_(-1),
-        // TODO(rego): We should store these based on physical direction.
-        has_override_containing_block_content_logical_width_(false),
-        has_override_containing_block_content_logical_height_(false),
-        has_override_percentage_resolution_block_size_(false),
-        has_previous_content_box_rect_and_layout_overflow_rect_(false),
-        percent_height_container_(nullptr),
-        snap_container_(nullptr),
-        snap_areas_(nullptr) {}
+  LayoutBoxRareData();
 
   // For spanners, the spanner placeholder that lays us out within the multicol
   // container.
@@ -616,6 +605,43 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                                 : ContentWidth();
   }
 
+  // CSS content-size getters. This property only applies if size containment is
+  // specified, hence the names have ForSizeContainment suffix to distinguish
+  // them from above.
+  bool HasSpecifiedContentSizeForSizeContainment() const {
+    return !StyleRef().GetContentSize().IsNone();
+  }
+  LayoutSize ContentLogicalSizeForSizeContainment() const {
+    return LayoutSize(ContentLogicalWidthForSizeContainment(),
+                      ContentLogicalHeightForSizeContainment());
+  }
+  LayoutUnit ContentLogicalWidthForSizeContainment() const {
+    DCHECK(ShouldApplySizeContainment());
+    const auto& style = StyleRef();
+    const auto& content_size = style.GetContentSize();
+    if (content_size.IsNone())
+      return LayoutUnit();
+    const auto& logical_width = style.IsHorizontalWritingMode()
+                                    ? content_size.GetWidth()
+                                    : content_size.GetHeight();
+    DCHECK(logical_width.IsFixed());
+    DCHECK_GE(logical_width.Value(), 0.f);
+    return LayoutUnit(logical_width.Value());
+  }
+  LayoutUnit ContentLogicalHeightForSizeContainment() const {
+    DCHECK(ShouldApplySizeContainment());
+    const auto& style = StyleRef();
+    const auto& content_size = style.GetContentSize();
+    if (content_size.IsNone())
+      return LayoutUnit();
+    const auto& logical_height = style.IsHorizontalWritingMode()
+                                     ? content_size.GetHeight()
+                                     : content_size.GetWidth();
+    DCHECK(logical_height.IsFixed());
+    DCHECK_GE(logical_height.Value(), 0.f);
+    return LayoutUnit(logical_height.Value());
+  }
+
   // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
   // (LayoutFlow) to return the remaining width on a given line (and the height
   // of a single line).
@@ -681,21 +707,19 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // scrollWidth/scrollHeight will be the same as clientWidth/clientHeight
   // unless the object has overflow:hidden/scroll/auto specified and also has
-  // overflow. scrollLeft/Top return the current scroll position. These methods
-  // are virtual so that objects like textareas can scroll shadow content (but
-  // pretend that they are the objects that are scrolling).
-  virtual LayoutUnit ScrollLeft() const;
-  virtual LayoutUnit ScrollTop() const;
+  // overflow. These methods are virtual so that objects like textareas can
+  // scroll shadow content (but pretend that they are the objects that are
+  // scrolling).
+
+  // Replaced ScrollLeft/Top by using Element::GetScrollableArea to return the
+  // correct ScrollableArea.
+  // TODO(cathiechen): We should do the same with ScrollWidth|Height .
   virtual LayoutUnit ScrollWidth() const;
   virtual LayoutUnit ScrollHeight() const;
   // TODO(crbug.com/962299): This is incorrect in some cases.
   int PixelSnappedScrollWidth() const;
   int PixelSnappedScrollHeight() const;
-  virtual void SetScrollLeft(LayoutUnit);
-  virtual void SetScrollTop(LayoutUnit);
 
-  void ScrollToPosition(const FloatPoint&,
-                        ScrollBehavior = kScrollBehaviorInstant);
   void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
@@ -1138,7 +1162,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool CanAutoscroll() const;
   PhysicalOffset CalculateAutoscrollDirection(
       const FloatPoint& point_in_root_frame) const;
-  static LayoutBox* FindAutoscrollable(LayoutObject*);
+  static LayoutBox* FindAutoscrollable(LayoutObject*,
+                                       bool is_middle_click_autoscroll);
   virtual void StopAutoscroll() {}
   virtual void MayUpdateHoverWhenContentUnderMouseChanged(EventHandler&);
 
@@ -1605,7 +1630,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const Length& logical_width_length,
       LayoutUnit available_logical_width,
       LayoutUnit border_and_padding) const;
-  virtual LayoutUnit ComputeIntrinsicLogicalContentHeightUsing(
+  LayoutUnit ComputeIntrinsicLogicalContentHeightUsing(
       const Length& logical_height_length,
       LayoutUnit intrinsic_content_height,
       LayoutUnit border_and_padding) const;

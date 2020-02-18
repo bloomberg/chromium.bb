@@ -151,6 +151,14 @@
                  file="appearance_page/appearance_browser_proxy.js"
                  type="chrome_html"
                  preprocess="true" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_WALLPAPER_BROWSER_PROXY_HTML"
+                   file="appearance_page/wallpaper_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_WALLPAPER_BROWSER_PROXY_JS"
+                   file="appearance_page/wallpaper_browser_proxy.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_APPEARANCE_FONTS_PAGE_HTML"
                  file="appearance_page/appearance_fonts_page.html"
                  type="chrome_html"
@@ -416,6 +424,12 @@
       <structure name="IDR_SETTINGS_SECURITY_KEYS_RESET_DIALOG_JS"
                  file="privacy_page/security_keys_reset_dialog.js"
                  type="chrome_html"/>
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_BIO_ENROLL_DIALOG_HTML"
+                 file="privacy_page/security_keys_bio_enroll_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_BIO_ENROLL_DIALOG_JS"
+                 file="privacy_page/security_keys_bio_enroll_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SECURITY_KEYS_DIALOG_BROWSER_PROXY_HTML"
                  file="privacy_page/security_keys_browser_proxy.html"
                  type="chrome_html" />
@@ -573,6 +587,12 @@
         <structure name="IDR_SETTINGS_DEVICE_STORAGE_JS"
                    file="device_page/storage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_ENTRY_HTML"
+                   file="device_page/storage_external_entry.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_ENTRY_JS"
+                   file="device_page/storage_external_entry.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_HTML"
                    file="device_page/storage_external.html"
                    type="chrome_html" />
@@ -647,6 +667,14 @@
                  file="icons.html"
                  type="chrome_html"
                  preprocess="true" />
+      <if expr="chromeos">
+       <!-- TODO(crbug.com/986596): Remove OS icons when SplitSettings
+            is complete. -->
+        <structure name="IDR_SETTINGS_CHROMEOS_OS_ICONS"
+                  file="chromeos/os_icons.html"
+                  type="chrome_html"
+                  preprocess="true" />
+      </if>
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="reset_page/powerwash_dialog.html"
                  type="chrome_html" />
@@ -1300,12 +1328,6 @@
                  file="site_settings/zoom_levels.js"
                  type="chrome_html" />
       <if expr="chromeos">
-        <structure name="IDR_SETTINGS_APP_MANAGEMENT_PAGE_HTML"
-                   file="app_management_page/app_management_page.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_APP_MANAGEMENT_PAGE_JS"
-                   file="app_management_page/app_management_page.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_ANDROID_APPS_PAGE_HTML"
                    file="android_apps_page/android_apps_page.html"
                    type="chrome_html" />

@@ -11,17 +11,20 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/graph/worker_node.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
-#include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+class GURL;
 
 namespace ukm {
 class MojoUkmRecorder;
@@ -29,6 +32,7 @@ class MojoUkmRecorder;
 
 namespace performance_manager {
 
+class GraphOwned;
 class PageNodeImpl;
 
 // The performance manager is a rendezvous point for binding to performance
@@ -40,6 +44,36 @@ class PerformanceManager {
   using FrameNodeCreationCallback = base::OnceCallback<void(FrameNodeImpl*)>;
 
   ~PerformanceManager();
+
+  // Returns true if the performance manager is initialized. This is valid to
+  // call anywhere, but is only really meaningful on the main thread (where it
+  // will not change values within the scope of a task).
+  // TODO(chrisha): Move this to the public interface.
+  static bool IsAvailable();
+
+  // Posts a callback that will run on the PM sequence, and be provided a
+  // pointer to the Graph. Valid to be called from the main thread only, and
+  // only if "IsAvailable" returns true.
+  // TODO(chrisha): Move this to the public interface.
+  using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
+  static void CallOnGraph(const base::Location& from_here,
+                          GraphCallback graph_callback);
+
+  // Posts a callback that will run on the PM sequence, and be provided a
+  // pointer to the Graph. Valid to be called from the main thread only, and
+  // only if "IsAvailable" returns true. The return value is returned as an
+  // argument to the reply callback.
+  template <typename TaskReturnType>
+  void CallOnGraphAndReplyWithResult(
+      const base::Location& from_here,
+      base::OnceCallback<TaskReturnType(GraphImpl*)> task,
+      base::OnceCallback<void(TaskReturnType)> reply);
+
+  // Passes a GraphOwned object into the Graph on the PM sequence. Should only
+  // be called from the main thread and only if "IsAvailable" returns true.
+  // TODO(chrisha): Move this to the public interface.
+  static void PassToGraph(const base::Location& from_here,
+                          std::unique_ptr<GraphOwned> graph_owned);
 
   // Retrieves the currently registered instance.
   // The caller needs to ensure that the lifetime of the registered instance
@@ -53,16 +87,6 @@ class PerformanceManager {
   // Unregisters |instance| if it's currently registered and arranges for its
   // deletion on its sequence.
   static void Destroy(std::unique_ptr<PerformanceManager> instance);
-
-  // Invokes |graph_callback| on the performance manager's sequence, with the
-  // graph as a parameter.
-  using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
-  void CallOnGraph(const base::Location& from_here,
-                   GraphCallback graph_callback);
-
-  // Forwards the binding request to the implementation class.
-  template <typename Interface>
-  void BindInterface(mojo::InterfaceRequest<Interface> request);
 
   // Creates a new node of the requested type and adds it to the graph.
   // May be called from any sequence. If a |creation_callback| is provided it
@@ -87,9 +111,17 @@ class PerformanceManager {
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
       const WebContentsProxy& contents_proxy,
+      const std::string& browser_context_id,
       bool is_visible,
       bool is_audible);
-  std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
+  std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
+      RenderProcessHostProxy proxy);
+  std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
+      const std::string& browser_context_id,
+      WorkerNode::WorkerType worker_type,
+      ProcessNodeImpl* process_node,
+      const GURL& url,
+      const base::UnguessableToken& dev_tools_token);
 
   // Destroys a node returned from the creation functions above.
   // May be called from any sequence.
@@ -101,22 +133,18 @@ class PerformanceManager {
   // in topological order and destroying them.
   void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
 
-  // TODO(siggi): Can this be hidden away?
+  // TODO(chrisha): Hide this after the last consumer stops using it!
   scoped_refptr<base::SequencedTaskRunner> task_runner() const {
     return task_runner_;
   }
 
-  // This allows an observer to be passed to this class, and bound to the
-  // lifetime of the performance manager. This will disappear post
-  // resource_coordinator migration, so do not use this unless you know what
-  // you're doing! Must be called from the performance manager sequence.
-  // TODO(chrisha): Kill this dead.
-  void RegisterObserver(std::unique_ptr<GraphImplObserver> observer);
+  // Indicates whether or not the caller is currently running on the PM task
+  // runner.
+  bool OnPMTaskRunnerForTesting() const {
+    return task_runner_->RunsTasksInCurrentSequence();
+  }
 
  private:
-  using InterfaceRegistry = service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>;
-
   PerformanceManager();
   void PostBindInterface(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
@@ -133,43 +161,47 @@ class PerformanceManager {
   void OnStart();
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
   void CallOnGraphImpl(GraphCallback graph_callback);
-  void BindInterfaceImpl(const std::string& interface_name,
-                         mojo::ScopedMessagePipeHandle message_pipe);
 
-  void BindWebUIGraphDump(mojom::WebUIGraphDumpRequest request,
-                          const service_manager::BindSourceInfo& source_info);
-  void OnGraphDumpConnectionError(WebUIGraphDumpImpl* graph_dump);
-
-  InterfaceRegistry interface_registry_;
+  template <typename TaskReturnType>
+  TaskReturnType CallOnGraphAndReplyWithResultImpl(
+      base::OnceCallback<TaskReturnType(GraphImpl*)> task);
 
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   GraphImpl graph_;
 
-  // The registered graph observers.
-  std::vector<std::unique_ptr<GraphImplObserver>> observers_;
-
   // Provided to |graph_|.
   // TODO(siggi): This no longer needs to go through mojo.
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
-
-  // Current graph dump instances.
-  std::vector<std::unique_ptr<WebUIGraphDumpImpl>> graph_dumps_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManager);
 };
 
-template <typename Interface>
-void PerformanceManager::BindInterface(
-    mojo::InterfaceRequest<Interface> request) {
-  PostBindInterface(Interface::Name_, request.PassMessagePipe());
-}
-
 template <typename NodeType>
 void PerformanceManager::DeleteNode(std::unique_ptr<NodeType> node) {
   PostDeleteNode(std::move(node));
+}
+
+template <typename TaskReturnType>
+void PerformanceManager::CallOnGraphAndReplyWithResult(
+    const base::Location& from_here,
+    base::OnceCallback<TaskReturnType(GraphImpl*)> task,
+    base::OnceCallback<void(TaskReturnType)> reply) {
+  auto* pm = GetInstance();
+  base::PostTaskAndReplyWithResult(
+      pm->task_runner_.get(), from_here,
+      base::BindOnce(&PerformanceManager::CallOnGraphAndReplyWithResultImpl<
+                         TaskReturnType>,
+                     base::Unretained(pm), std::move(task)),
+      std::move(reply));
+}
+
+template <typename TaskReturnType>
+TaskReturnType PerformanceManager::CallOnGraphAndReplyWithResultImpl(
+    base::OnceCallback<TaskReturnType(GraphImpl*)> task) {
+  return std::move(task).Run(&graph_);
 }
 
 }  // namespace performance_manager

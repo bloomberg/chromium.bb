@@ -60,14 +60,13 @@ class Point;
 
 namespace blink {
 class WebCoalescedInputEvent;
-class WebLayerTreeView;
 
 class WebWidget {
  public:
-  // Called during set up of the WebWidget to declare the WebLayerTreeView for
+  // Called during set up of the WebWidget to declare the AnimationHost for
   // the widget to use. This does not pass ownership, but the caller must keep
   // the pointer valid until Close() is called.
-  virtual void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) = 0;
+  virtual void SetAnimationHost(cc::AnimationHost*) = 0;
 
   // This method closes and deletes the WebWidget.
   virtual void Close() {}
@@ -207,9 +206,6 @@ class WebWidget {
 
   // Returns true if the WebWidget created is of type PepperWidget.
   virtual bool IsPepperWidget() const { return false; }
-
-  // Returns true if the WebWidget created is of type WebFrameWidget.
-  virtual bool IsWebFrameWidget() const { return false; }
 
   // Calling WebWidgetClient::requestPointerLock() will result in one
   // return call to didAcquirePointerLock() or didNotAcquirePointerLock().

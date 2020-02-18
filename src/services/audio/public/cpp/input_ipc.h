@@ -14,13 +14,12 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "media/audio/audio_input_ipc.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
@@ -30,7 +29,7 @@ namespace audio {
 class InputIPC : public media::AudioInputIPC,
                  public media::mojom::AudioInputStreamClient {
  public:
-  InputIPC(std::unique_ptr<service_manager::Connector> connector,
+  InputIPC(mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
            const std::string& device_id,
            mojo::PendingRemote<media::mojom::AudioLog> log);
   ~InputIPC() override;

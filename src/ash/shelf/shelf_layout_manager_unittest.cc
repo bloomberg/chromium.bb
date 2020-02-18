@@ -35,6 +35,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -55,6 +56,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -375,7 +377,7 @@ class ShelfLayoutManagerTest : public AshTestBase {
     params.bounds = gfx::Rect(0, 0, 200, 200);
     params.context = CurrentContext();
     views::Widget* widget = new views::Widget;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }
@@ -1060,8 +1062,16 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
   ASSERT_TRUE(shelf_widget);
   ASSERT_TRUE(shelf_widget->status_area_widget());
   shelf_widget->status_area_widget()->SetBounds(gfx::Rect(0, 0, 200, 200));
-  EXPECT_EQ(200, shelf_widget->GetContentsView()->width() -
-                     shelf->GetShelfViewForTesting()->width());
+  const int total_width =
+      screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
+          .width();
+  const int nav_width =
+      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+  const int hotseat_width =
+      GetPrimaryShelf()->GetShelfViewForTesting()->width();
+  const int margins =
+      ShelfConstants::home_button_edge_spacing() + kAppIconGroupMargin;
+  EXPECT_EQ(200, total_width - nav_width - hotseat_width - margins);
 }
 
 // Various assertions around auto-hide.
@@ -2223,7 +2233,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesToVisibleWhenGestureInComplete) {
 
 // Tests that the shelf animates to the auto hidden bounds after a swipe down
 // on the visible shelf.
-TEST_F(ShelfLayoutManagerTest, ShelfAnimatesToHiddenWhenGestureOutComplete) {
+// TODO(https://crbug.com/1000463): Flaky.
+TEST_F(ShelfLayoutManagerTest,
+       DISABLED_ShelfAnimatesToHiddenWhenGestureOutComplete) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -2605,10 +2617,39 @@ TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
   TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
 }
 
+TEST_F(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Create a widget to hide the shelf in auto-hide mode.
+  views::Widget* widget = CreateTestWidget();
+  Shelf* shelf = GetPrimaryShelf();
+  const display::Display display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  SwipeUpToShowShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Press the home button with touch.
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+
+  // The app list should now be visible, and the window we created should hide.
+  GetAppListTestHelper()->CheckVisibility(true);
+  aura::Window* window = widget->GetNativeWindow();
+  EXPECT_FALSE(window->IsVisible());
+}
+
 // Tests that the auto-hide shelf has expected behavior when pressing the
 // AppList button while the shelf is being dragged by gesture (see
 // https://crbug.com/953877).
-TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
+TEST_F(ShelfLayoutManagerTest, PressHomeBtnWhenAutoHideShelfBeingDragged) {
   // Create a widget to hide the shelf in auto-hide mode.
   CreateTestWidget();
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -2662,14 +2703,12 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
   // Press the AppList button to hide the AppList and Shelf. Check the following
   // things:
   // (1) Shelf is hidden
-  // (2) Shelf has correct bounds in screen coordinate.
+  // (2) Shelf has correct bounds in screen coordinates.
   PressHomeButton();
-  EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
-                gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
-            GetPrimaryShelf()
-                ->GetShelfViewForTesting()
-                ->GetBoundsInScreen()
-                .origin());
+  EXPECT_EQ(
+      GetScreenAvailableBounds().bottom_left() +
+          gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().origin());
   EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
 }
 
@@ -2697,8 +2736,7 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
   GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&update_event);
 
   // Press the AppList button by mouse.
-  views::View* home_button =
-      GetPrimaryShelf()->GetShelfViewForTesting()->GetHomeButton();
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
   GetEventGenerator()->MoveMouseTo(
       home_button->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickLeftButton();
@@ -2713,12 +2751,10 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
   GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&scroll_end_event);
 
   // Verify that the shelf has expected bounds.
-  EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
-                gfx::Point(0, -ShelfConstants::shelf_size()).OffsetFromOrigin(),
-            GetPrimaryShelf()
-                ->GetShelfViewForTesting()
-                ->GetBoundsInScreen()
-                .origin());
+  EXPECT_EQ(
+      GetScreenAvailableBounds().bottom_left() +
+          gfx::Point(0, -ShelfConstants::shelf_size()).OffsetFromOrigin(),
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().origin());
 }
 
 // Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.
@@ -2735,14 +2771,7 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect window_bounds = window->GetBoundsInScreen();
-  gfx::Rect display_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Point start(display_bounds.bottom_center());
-  const gfx::Point end(start + gfx::Vector2d(0, -80));
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
-  const int kNumScrollSteps = 4;
-  // Swipe up to show the auto-hide shelf.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Tap outside the window and AUTO_HIDE_SHOWN shelf should hide the shelf.
@@ -2751,9 +2780,7 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   generator->GestureTapAt(tap_location);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the auto-hide shelf again.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  SwipeUpToShowShelf();
 
   // Tap inside the AUTO_HIDE_SHOWN shelf should not hide the shelf.
   gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
@@ -2766,9 +2793,7 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   generator->GestureTapAt(tap_location);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the auto-hide shelf again.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  SwipeUpToShowShelf();
 
   // Tap the system tray that inside the status area should not hide the shelf
   // but open the systrem tray bubble.
@@ -2838,7 +2863,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseMove) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the shelf.
   SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
@@ -2884,7 +2908,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
   ShelfItem item;
   item.type = TYPE_APP;
   item.id = ShelfID(app_id);
-  const int index = controller->model()->Add(item);
+  controller->model()->Add(item);
 
   // Turn on the auto-hide mode for shelf. Check the initial states.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -2903,10 +2927,10 @@ TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
   // events.
   base::UserActionTester user_action_tester;
   user_action_tester.ResetCounts();
-  auto shelf_test_api = std::make_unique<ShelfViewTestAPI>(
-      GetPrimaryShelf()->GetShelfViewForTesting());
-  views::View* shelf_view = shelf_test_api->GetViewAt(index);
-  gfx::Point shelf_btn_center = shelf_view->GetBoundsInScreen().CenterPoint();
+  views::View* button = GetPrimaryShelf()
+                            ->GetShelfViewForTesting()
+                            ->first_visible_button_for_testing();
+  gfx::Point shelf_btn_center = button->GetBoundsInScreen().CenterPoint();
   generator->GestureTapAt(shelf_btn_center);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_ClickOnApp"));
 }
@@ -2925,7 +2949,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the auto-hide shelf.
   SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
@@ -2977,7 +3000,7 @@ TEST_F(ShelfLayoutManagerTest, TapShelfItemInAutoHideShelf) {
   // Tap home button should not open the app list and shelf should keep
   // hidden.
   gfx::Rect home_button_bounds =
-      shelf->GetShelfViewForTesting()->GetHomeButton()->GetBoundsInScreen();
+      shelf->shelf_widget()->GetHomeButton()->GetBoundsInScreen();
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   home_button_bounds.Intersect(display_bounds);
@@ -3052,6 +3075,34 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   // Expect the shelf to be hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
+// Verifies that shelf components are placed properly in right-to-left UI.
+TEST_F(ShelfLayoutManagerTest, RtlPlacement) {
+  // Helper function to check that the given widget is placed symmetrically
+  // between LTR and RTL.
+  auto check_mirrored_placement = [](views::Widget* widget) {
+    base::i18n::SetICUDefaultLocale("en");
+    EXPECT_FALSE(base::i18n::IsRTL());
+    GetShelfLayoutManager()->LayoutShelf();
+    const int ltr_left_position =
+        widget->GetNativeWindow()->GetBoundsInScreen().x();
+
+    base::i18n::SetICUDefaultLocale("ar");
+    EXPECT_TRUE(base::i18n::IsRTL());
+    GetShelfLayoutManager()->LayoutShelf();
+    const int rtl_right_position =
+        widget->GetNativeWindow()->GetBoundsInScreen().right();
+
+    EXPECT_EQ(
+        GetShelfWidget()->GetWindowBoundsInScreen().width() - ltr_left_position,
+        rtl_right_position);
+  };
+
+  ShelfWidget* shelf_widget = GetPrimaryShelf()->shelf_widget();
+  check_mirrored_placement(shelf_widget->navigation_widget());
+  check_mirrored_placement(shelf_widget->status_area_widget());
+  check_mirrored_placement(shelf_widget);
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
@@ -3233,7 +3284,7 @@ TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
   EXPECT_EQ(0, observer.metrics_change_count());
 }
 
-// Tests that shelf bounds is updated properly after overview animation.
+// Tests that shelf bounds are updated properly after overview animation.
 TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   // Run overview animations.
   ui::ScopedAnimationDurationScaleMode regular_animations(
@@ -3244,6 +3295,13 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   const gfx::Rect bottom_shelf_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
 
+  const int shelf_size = bottom_shelf_bounds.height();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Rect left_shelf_bounds =
+      gfx::Rect(display_bounds.x(), display_bounds.y(), shelf_size,
+                display_bounds.height());
+
   // Change alignment during overview enter animation.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   {
@@ -3252,7 +3310,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
     waiter.Wait();
   }
-  EXPECT_NE(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+  ShelfAnimationWaiter(left_shelf_bounds).WaitTillDoneAnimating();
+  EXPECT_EQ(left_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 
   // Change alignment during overview exit animation.
   {
@@ -3261,7 +3320,54 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
     waiter.Wait();
   }
+  ShelfAnimationWaiter(bottom_shelf_bounds).WaitTillDoneAnimating();
   EXPECT_EQ(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+}
+
+// Tests that the shelf on a second display is properly centered.
+TEST_F(ShelfLayoutManagerTest, ShelfRemainsCenteredOnSecondDisplay) {
+  // Create two displays.
+  UpdateDisplay("600x400,1000x700");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(2U, root_windows.size());
+
+  Shelf* shelf_1 = Shelf::ForWindow(root_windows[0]);
+  Shelf* shelf_2 = Shelf::ForWindow(root_windows[1]);
+  EXPECT_NE(shelf_1, shelf_2);
+  EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
+            shelf_2->GetWindow()->GetRootWindow());
+
+  ShelfView* shelf_view_1 = shelf_1->GetShelfViewForTesting();
+  ShelfView* shelf_view_2 = shelf_2->GetShelfViewForTesting();
+
+  const display::Display display_1 =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display display_2 =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+  EXPECT_NE(display_1, display_2);
+
+  // Add an app shortcut.
+  ShelfController* controller = Shell::Get()->shelf_controller();
+  const std::string app_id("app_id");
+  ShelfItem item;
+  item.type = TYPE_PINNED_APP;
+  item.id = ShelfID(app_id);
+  controller->model()->Add(item);
+  gfx::Point app_center_1 = shelf_1->GetShelfViewForTesting()
+                                ->first_visible_button_for_testing()
+                                ->bounds()
+                                .CenterPoint();
+  views::View::ConvertPointToScreen(shelf_view_1, &app_center_1);
+
+  gfx::Point app_center_2 = shelf_2->GetShelfViewForTesting()
+                                ->first_visible_button_for_testing()
+                                ->bounds()
+                                .CenterPoint();
+  views::View::ConvertPointToScreen(shelf_view_2, &app_center_2);
+
+  // The app icon should be at the horizontal center of each display.
+  EXPECT_EQ(display_1.bounds().CenterPoint().x(), app_center_1.x());
+  EXPECT_EQ(display_2.bounds().CenterPoint().x(), app_center_2.x());
 }
 
 }  // namespace ash

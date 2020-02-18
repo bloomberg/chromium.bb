@@ -80,7 +80,8 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   // in this part of code.
   DCHECK((style.HasOpacity() || layout_object.HasMask() ||
           layout_object.HasClipPath() ||
-          layout_object.HasFilterInducingProperty() || style.HasBlendMode()) ==
+          layout_object.HasFilterInducingProperty() ||
+          layout_object.HasBackdropFilter() || style.HasBlendMode()) ==
          layout_object.CreatesGroup());
 
   if (style.HasMask() || style.ClipPath())
@@ -91,10 +92,6 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
 
   if (style.HasBackdropFilter())
     reasons |= CompositingReason::kBackdropFilter;
-
-  // See Layer::updateTransform for an explanation of why we check both.
-  if (layout_object.HasTransformRelatedProperty() && style.HasTransform())
-    reasons |= CompositingReason::kTransformWithCompositedDescendants;
 
   if (style.HasOpacity())
     reasons |= CompositingReason::kOpacityWithCompositedDescendants;

@@ -1,0 +1,3 @@
+dEQP-VK.spirv_assembly.instruction.compute.unused_variables.function_set_5_binding_5
+dEQP-VK.spirv_assembly.instruction.graphics.unused_variables.set_5_binding_5_vertex_normal_frag_unused_func
+dEQP-VK.spirv_assembly.instruction.graphics.unused_variables.set_5_binding_5_vertex_unused_func_frag_normal

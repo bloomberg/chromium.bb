@@ -17,6 +17,7 @@ namespace openscreen {
 // code and an optional message.
 class Error {
  public:
+  // TODO(issue/65): Group/rename OSP-specific errors
   enum class Code : int8_t {
     // No error occurred.
     kNone = 0,
@@ -42,11 +43,8 @@ class Error {
     kUnknownRequestId,
 
     kAddressInUse,
-    kAlreadyListening,
     kDomainNameTooLong,
     kDomainNameLabelTooLong,
-
-    kGenericPlatformError,
 
     kIOFailure,
     kInitializationFailure,
@@ -62,10 +60,6 @@ class Error {
 
     kMdnsRegisterFailure,
 
-    kNoItemFound,
-    kNotImplemented,
-    kNotRunning,
-
     kParseError,
     kUnknownMessageType,
 
@@ -78,10 +72,48 @@ class Error {
     kJsonParseError,
     kJsonWriteError,
 
-    // OpenSSL errors
+    // OpenSSL errors.
     kFileLoadFailure,
 
+    // Cast certificate errors.
+
+    // Certificates were not provided for verification.
+    kErrCertsMissing,
+
+    // The certificates provided could not be parsed.
+    kErrCertsParse,
+
+    // Key usage is missing or is not set to Digital Signature.
+    // This error could also be thrown if the CN is missing.
+    kErrCertsRestrictions,
+
+    // The current date is before the notBefore date or after the notAfter date.
+    kErrCertsDateInvalid,
+
+    // The certificate failed to chain to a trusted root.
+    kErrCertsVerifyGeneric,
+
+    // The CRL is missing or failed to verify.
+    kErrCrlInvalid,
+
+    // One of the certificates in the chain is revoked.
+    kErrCertsRevoked,
+
+    // The pathlen constraint of the root certificate was exceeded.
+    kErrCertsPathlen,
+
+    // Generic errors.
+    kUnknownError,
+    kNotImplemented,
     kInsufficientBuffer,
+    kParameterInvalid,
+    kParameterOutOfRange,
+    kParameterNullPointer,
+    kIndexOutOfBounds,
+    kItemAlreadyExists,
+    kItemNotFound,
+    kOperationInvalid,
+    kOperationCancelled,
   };
 
   Error();

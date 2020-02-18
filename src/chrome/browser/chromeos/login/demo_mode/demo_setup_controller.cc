@@ -471,7 +471,7 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
   return std::string();
 }
 
-DemoSetupController::DemoSetupController() : weak_ptr_factory_(this) {}
+DemoSetupController::DemoSetupController() {}
 
 DemoSetupController::~DemoSetupController() {
   if (device_local_account_policy_store_)
@@ -637,9 +637,10 @@ void DemoSetupController::OnDeviceEnrolled() {
         preinstalled_demo_resources_->GetAbsolutePath(
             base::FilePath(kOfflinePolicyDirectoryName)
                 .AppendASCII(kOfflineDeviceLocalAccountPolicyFileName));
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&ReadFileToOptionalString, file_path),
         base::BindOnce(&DemoSetupController::OnDeviceLocalAccountPolicyLoaded,
                        weak_ptr_factory_.GetWeakPtr()));

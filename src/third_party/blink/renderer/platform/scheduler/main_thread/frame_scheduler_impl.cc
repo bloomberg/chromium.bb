@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/web_scheduling_task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 
 namespace blink {
@@ -400,18 +401,20 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
 base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
+  // TODO(sreejakshetty): Clean up the PrioritisationType QueueTrait and
+  // QueueType for kInternalContinueScriptLoading and kInternalContentCapture.
   switch (type) {
-    // kInternalContentCapture uses BestEffortTaskQueue and is handled
-    // separately.
     case TaskType::kInternalContentCapture:
+      return ThrottleableTaskQueueTraits().SetPrioritisationType(
+            QueueTraits::PrioritisationType::kBestEffort);
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits();
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:
+      return LoadingTaskQueueTraits();
     case TaskType::kNetworkingControl:
-      // Loading task queues are handled separately.
-      return base::nullopt;
+      return LoadingControlTaskQueueTraits();
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -454,13 +457,17 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
-    case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits();
+    case TaskType::kInternalContinueScriptLoading:
+      return PausableTaskQueueTraits().SetPrioritisationType(
+            QueueTraits::PrioritisationType::kVeryHigh);
     case TaskType::kDatabaseAccess:
-      if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType))
-        return PausableTaskQueueTraits().SetIsHighPriority(true);
-      else
+      if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType)) {
+        return PausableTaskQueueTraits().SetPrioritisationType(
+            QueueTraits::PrioritisationType::kHigh);
+      } else {
         return PausableTaskQueueTraits();
+      }
     case TaskType::kInternalFreezableIPC:
       return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:
@@ -473,8 +480,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
-    // The TaskType of Inspector tasks need to be unpausable and should not use virtual time
-    // because they need to run on a paused page or when virtual time is paused.
+    // The TaskType of Inspector tasks need to be unpausable and should not use
+    // virtual time because they need to run on a paused page or when virtual
+    // time is paused.
     case TaskType::kInternalInspector:
     // Navigation IPCs do not run using virtual time to avoid hanging.
     case TaskType::kInternalNavigationAssociated:
@@ -494,6 +502,10 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kWorkerThreadTaskQueueDefault:
     case TaskType::kWorkerThreadTaskQueueV8:
     case TaskType::kWorkerThreadTaskQueueCompositor:
+    // The web scheduling API task types are used by WebSchedulingTaskQueues.
+    // The associated TaskRunner should be obtained by creating a
+    // WebSchedulingTaskQueue with CreateWebSchedulingTaskQueue().
+    case TaskType::kExperimentalWebScheduling:
     case TaskType::kCount:
       // Not a valid frame-level TaskType.
       return base::nullopt;
@@ -514,31 +526,17 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
 
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
     TaskType type) {
-  switch (type) {
-    case TaskType::kInternalContinueScriptLoading:
-      return frame_task_queue_controller_->VeryHighPriorityTaskQueue();
-    case TaskType::kInternalLoading:
-    case TaskType::kNetworking:
-    case TaskType::kNetworkingWithURLLoaderAnnotation:
-      return frame_task_queue_controller_->LoadingTaskQueue();
-    case TaskType::kNetworkingControl:
-      return frame_task_queue_controller_->LoadingControlTaskQueue();
-    case TaskType::kInternalContentCapture:
-      return frame_task_queue_controller_->BestEffortTaskQueue();
-    default:
-      // Non-loading task queue.
-      DCHECK_LT(static_cast<size_t>(type),
-                main_thread_scheduler_->scheduling_settings()
-                    .frame_task_types_to_queue_traits.size());
-      base::Optional<QueueTraits> queue_traits =
-          main_thread_scheduler_->scheduling_settings()
-              .frame_task_types_to_queue_traits[static_cast<size_t>(type)];
-      // We don't have a QueueTraits mapping for |task_type| if it is not a
-      // frame-level task type.
-      DCHECK(queue_traits);
-      return frame_task_queue_controller_->NonLoadingTaskQueue(
-          queue_traits.value());
-  }
+  DCHECK_LT(static_cast<size_t>(type),
+            main_thread_scheduler_->scheduling_settings()
+                .frame_task_types_to_queue_traits.size());
+  base::Optional<QueueTraits> queue_traits =
+      main_thread_scheduler_->scheduling_settings()
+          .frame_task_types_to_queue_traits[static_cast<size_t>(type)];
+  // We don't have a QueueTraits mapping for |task_type| if it is not a
+  // frame-level task type.
+  DCHECK(queue_traits);
+  return frame_task_queue_controller_->GetTaskQueue(
+      queue_traits.value());
 }
 
 std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
@@ -560,8 +558,8 @@ FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
     return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(task_queue);
   }
 
-  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
-      frame_task_queue_controller_->LoadingTaskQueue());
+  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(GetTaskQueue
+      (TaskType::kNetworkingWithURLLoaderAnnotation));
 }
 
 void FrameSchedulerImpl::DidChangeResourceLoadingPriority(
@@ -871,6 +869,10 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   return SchedulingLifecycleState::kNotThrottled;
 }
 
+void FrameSchedulerImpl::OnFirstContentfulPaint() {
+  main_thread_scheduler_->OnFirstContentfulPaint();
+}
+
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   main_thread_scheduler_->OnFirstMeaningfulPaint();
 }
@@ -915,15 +917,32 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
   auto queue_priority_pair = resource_loading_task_queue_priorities_.find(
       base::WrapRefCounted(task_queue));
-  if (queue_priority_pair != resource_loading_task_queue_priorities_.end()) {
+  if (queue_priority_pair != resource_loading_task_queue_priorities_.end())
     return queue_priority_pair->value;
-  }
 
   base::Optional<TaskQueue::QueuePriority> fixed_priority =
       task_queue->FixedPriority();
 
   if (fixed_priority)
     return fixed_priority.value();
+
+  // TODO(shaseley): This should use lower priorities if the frame is
+  // deprioritized. Change this once we refactor and add frame policy/priorities
+  // and add a range of new priorities less than low.
+  if (task_queue->web_scheduling_priority()) {
+    switch (task_queue->web_scheduling_priority().value()) {
+      case WebSchedulingPriority::kImmediatePriority:
+        return TaskQueue::QueuePriority::kHighestPriority;
+      case WebSchedulingPriority::kHighPriority:
+        return TaskQueue::QueuePriority::kHighPriority;
+      case WebSchedulingPriority::kDefaultPriority:
+        return TaskQueue::QueuePriority::kNormalPriority;
+      case WebSchedulingPriority::kLowPriority:
+        return TaskQueue::QueuePriority::kLowPriority;
+      case WebSchedulingPriority::kIdlePriority:
+        return TaskQueue::QueuePriority::kBestEffortPriority;
+    }
+  }
 
   if (!parent_page_scheduler_) {
     // Frame might be detached during its shutdown. Return a default priority
@@ -934,12 +953,14 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   // A hidden page with no audio.
   if (parent_page_scheduler_->IsBackgrounded()) {
     if (main_thread_scheduler_->scheduling_settings()
-            .low_priority_background_page)
+            .low_priority_background_page) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     if (main_thread_scheduler_->scheduling_settings()
-            .best_effort_background_page)
+            .best_effort_background_page) {
       return TaskQueue::QueuePriority::kBestEffortPriority;
+    }
   }
 
   // If the page is loading or if the priority experiments should take place at
@@ -950,8 +971,9 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     // Low priority feature enabled for hidden frame.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_hidden_frame &&
-        !IsFrameVisible())
+        !IsFrameVisible()) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     bool is_subframe = GetFrameType() == FrameScheduler::FrameType::kSubframe;
     bool is_throttleable_task_queue =
@@ -960,20 +982,23 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
     // Low priority feature enabled for sub-frame.
     if (main_thread_scheduler_->scheduling_settings().low_priority_subframe &&
-        is_subframe)
+        is_subframe) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     // Low priority feature enabled for sub-frame throttleable task queues.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_subframe_throttleable &&
-        is_subframe && is_throttleable_task_queue)
+        is_subframe && is_throttleable_task_queue) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
 
     // Low priority feature enabled for throttleable task queues.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_throttleable &&
-        is_throttleable_task_queue)
+        is_throttleable_task_queue) {
       return TaskQueue::QueuePriority::kLowPriority;
+    }
   }
 
   // Ad frame experiment.
@@ -1000,10 +1025,21 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     }
   }
 
-  return task_queue->queue_type() ==
-                 MainThreadTaskQueue::QueueType::kFrameLoadingControl
-             ? TaskQueue::QueuePriority::kHighPriority
-             : TaskQueue::QueuePriority::kNormalPriority;
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoadingControl) {
+    return main_thread_scheduler_
+                   ->should_prioritize_loading_with_compositing()
+               ? TaskQueue::QueuePriority::kVeryHighPriority
+               : TaskQueue::QueuePriority::kHighPriority;
+  }
+
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoading &&
+      main_thread_scheduler_->should_prioritize_loading_with_compositing()) {
+    return main_thread_scheduler_->compositor_priority();
+  }
+
+  return TaskQueue::QueuePriority::kNormalPriority;
 }
 
 std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
@@ -1091,6 +1127,18 @@ FrameSchedulerImpl::GetDocumentBoundWeakPtr() {
   return document_bound_weak_factory_.GetWeakPtr();
 }
 
+std::unique_ptr<WebSchedulingTaskQueue>
+FrameSchedulerImpl::CreateWebSchedulingTaskQueue(
+    WebSchedulingPriority priority) {
+  // Use QueueTraits here that are the same as postMessage, which is one current
+  // method for scheduling script.
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      frame_task_queue_controller_->NewWebSchedulingTaskQueue(
+          PausableTaskQueueTraits(), priority);
+  return std::make_unique<WebSchedulingTaskQueueImpl>(priority,
+                                                      task_queue.get());
+}
+
 // static
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ThrottleableTaskQueueTraits() {
@@ -1147,6 +1195,30 @@ FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
   return QueueTraits().SetShouldUseVirtualTime(false);
+}
+
+void FrameSchedulerImpl::SetPausedForCooperativeScheduling(Paused paused) {
+  // TODO(keishi): Stop all task queues
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::LoadingTaskQueueTraits() {
+  return QueueTraits()
+      .SetCanBePaused(true)
+      .SetCanBeFrozen(true)
+      .SetCanBeDeferred(true)
+      .SetPrioritisationType(
+          QueueTraits::PrioritisationType::kLoading);
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::LoadingControlTaskQueueTraits() {
+  return QueueTraits()
+      .SetCanBePaused(true)
+      .SetCanBeFrozen(true)
+      .SetCanBeDeferred(true)
+      .SetPrioritisationType(
+          QueueTraits::PrioritisationType::kLoadingControl);
 }
 
 }  // namespace scheduler

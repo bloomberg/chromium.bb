@@ -22,7 +22,7 @@ disable_d3d11
 disable_delayed_copy_nv12
 disable_depth_texture
 disable_direct_composition
-disable_direct_composition_layers
+disable_direct_composition_video_overlays
 disable_discard_framebuffer
 disable_dxgi_zero_copy_video
 disable_es3_gl_context
@@ -43,6 +43,7 @@ disable_texture_cube_map_seamless
 disable_texture_storage
 disable_timestamp_queries
 disable_multisampling_color_mask_usage
+disable_vp_scaling
 disable_webgl_rgb_multisampling_usage
 disallow_large_instanced_draw
 dont_disable_webgl_when_compositor_context_lost
@@ -113,3 +114,4 @@ wake_up_gpu_before_drawing
 use_copyteximage2d_instead_of_readpixels_on_multisampled_textures
 use_eqaa_storage_samples_2
 max_3d_array_texture_size_1024
+prefer_draw_to_copy

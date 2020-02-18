@@ -21,9 +21,11 @@ Polymer({
   is: 'os-settings-ui',
 
   behaviors: [
-    settings.RouteObserverBehavior,
     CrContainerShadowBehavior,
     FindShortcutBehavior,
+    // Calls currentRouteChanged() in attached(), so ensure other behaviors run
+    // their attached() first.
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -56,7 +58,7 @@ Polymer({
 
     /**
      * Whether settings is in the narrow state (side nav hidden). Controlled by
-     * a binding in the cr-toolbar element.
+     * a binding in the os-toolbar element.
      */
     isNarrow: {
       type: Boolean,
@@ -79,6 +81,9 @@ Polymer({
 
     /** @private */
     showPluginVm_: Boolean,
+
+    /** @private */
+    showReset_: Boolean,
 
     /** @private */
     havePlayStoreApp_: Boolean,
@@ -144,7 +149,6 @@ Polymer({
       OncTypeTether: loadTimeData.getString('OncTypeTether'),
       OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
       OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
       networkListItemConnected:
           loadTimeData.getString('networkListItemConnected'),
       networkListItemConnecting:
@@ -167,6 +171,7 @@ Polymer({
 
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
+    this.showReset_ = loadTimeData.getBoolean('allowPowerwash');
     this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {
@@ -223,6 +228,15 @@ Polymer({
 
   /** @param {!settings.Route} route */
   currentRouteChanged: function(route) {
+    if (route.depth <= 1) {
+      // Main page uses scroll visibility to determine shadow.
+      this.enableShadowBehavior(true);
+    } else {
+      // Sub-pages always show the top-container shadow.
+      this.enableShadowBehavior(false);
+      this.showDropShadows();
+    }
+
     const urlSearchQuery = settings.getQueryParameters().get('search') || '';
     if (urlSearchQuery == this.lastSearchQuery_) {
       return;
@@ -230,7 +244,7 @@ Polymer({
 
     this.lastSearchQuery_ = urlSearchQuery;
 
-    const toolbar = /** @type {!CrToolbarElement} */ (this.$$('cr-toolbar'));
+    const toolbar = /** @type {!OsToolbarElement} */ (this.$$('os-toolbar'));
     const searchField =
         /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
@@ -250,13 +264,13 @@ Polymer({
     if (modalContextOpen) {
       return false;
     }
-    this.$$('cr-toolbar').getSearchField().showAndFocus();
+    this.$$('os-toolbar').getSearchField().showAndFocus();
     return true;
   },
 
   // Override FindShortcutBehavior methods.
   searchInputHasFocus: function() {
-    return this.$$('cr-toolbar').getSearchField().isSearchFocused();
+    return this.$$('os-toolbar').getSearchField().isSearchFocused();
   },
 
   /**

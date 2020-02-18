@@ -30,12 +30,16 @@ namespace dawn_native { namespace d3d12 {
         uint32_t GetCbvUavSrvRootParameterIndex(uint32_t group) const;
         uint32_t GetSamplerRootParameterIndex(uint32_t group) const;
 
-        ComPtr<ID3D12RootSignature> GetRootSignature();
+        // Returns the index of the root parameter reserved for a dynamic buffer binding
+        uint32_t GetDynamicRootParameterIndex(uint32_t group, uint32_t binding) const;
+
+        ComPtr<ID3D12RootSignature> GetRootSignature() const;
 
       private:
         std::array<uint32_t, kMaxBindGroups> mCbvUavSrvRootParameterInfo;
         std::array<uint32_t, kMaxBindGroups> mSamplerRootParameterInfo;
-
+        std::array<std::array<uint32_t, kMaxBindingsPerGroup>, kMaxBindGroups>
+            mDynamicRootParameterIndices;
         ComPtr<ID3D12RootSignature> mRootSignature;
     };
 

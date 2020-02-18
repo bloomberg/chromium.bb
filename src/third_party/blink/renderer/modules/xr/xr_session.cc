@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
-#include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
@@ -53,7 +52,7 @@ const char kReferenceSpaceNotSupported[] =
     "This device does not support the requested reference space type.";
 
 const char kIncompatibleLayer[] =
-    "XRLayer was created with a different session.";
+    "XRWebGLLayer was created with a different session.";
 
 const char kInlineVerticalFOVNotSupported[] =
     "This session does not support inlineVerticalFieldOfView";
@@ -61,6 +60,8 @@ const char kInlineVerticalFOVNotSupported[] =
 const char kNoSpaceSpecified[] = "No XRSpace specified.";
 
 const char kHitTestNotSupported[] = "Device does not support hit-test!";
+
+const char kAnchorsNotSupported[] = "Device does not support anchors!";
 
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
@@ -82,7 +83,28 @@ void UpdateViewFromEyeParameters(
       fov->left_degrees * kDegToRad, fov->right_degrees * kDegToRad, depth_near,
       depth_far);
 
-  view.UpdateOffset(eye->offset.x(), eye->offset.y(), eye->offset.z());
+  const TransformationMatrix matrix(eye->head_from_eye.matrix());
+  view.SetHeadFromEyeTransform(matrix);
+}
+
+// Returns the session feature corresponding to the given reference space type.
+base::Optional<device::mojom::XRSessionFeature> MapReferenceSpaceTypeToFeature(
+    XRReferenceSpace::Type type) {
+  switch (type) {
+    case XRReferenceSpace::Type::kTypeViewer:
+      return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
+    case XRReferenceSpace::Type::kTypeLocal:
+      return device::mojom::XRSessionFeature::REF_SPACE_LOCAL;
+    case XRReferenceSpace::Type::kTypeLocalFloor:
+      return device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR;
+    case XRReferenceSpace::Type::kTypeBoundedFloor:
+      return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
+    case XRReferenceSpace::Type::kTypeUnbounded:
+      return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
+  }
+
+  NOTREACHED();
+  return base::nullopt;
 }
 
 }  // namespace
@@ -117,12 +139,14 @@ XRSession::XRSession(
     XRSession::SessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
     bool uses_input_eventing,
-    bool sensorless_session)
+    bool sensorless_session,
+    XRSessionFeatureSet enabled_features)
     : xr_(xr),
       mode_(mode),
       environment_integration_(mode == kModeImmersiveAR),
       world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
+      enabled_features_(std::move(enabled_features)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_binding_(this, std::move(client_request)),
       input_binding_(this),
@@ -133,6 +157,7 @@ XRSession::XRSession(
       sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   blurred_ = !HasAppropriateFocus();
+  visibility_state_string_ = HasAppropriateFocus() ? "visible" : "hidden";
 
   switch (environment_blend_mode) {
     case kBlendModeOpaque:
@@ -270,6 +295,17 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
                                            kReferenceSpaceNotSupported));
   }
 
+  // If the session feature required by this reference space type is not
+  // enabled, reject the session.
+  auto type_as_feature = MapReferenceSpaceTypeToFeature(requested_type);
+  if (!type_as_feature ||
+      !enabled_features_.Contains(type_as_feature.value())) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           kReferenceSpaceNotSupported));
+  }
+
   XRReferenceSpace* reference_space = nullptr;
   switch (requested_type) {
     case XRReferenceSpace::Type::kTypeViewer:
@@ -291,11 +327,6 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
 
       if (supports_bounded) {
         reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
-      } else {
-        return ScriptPromise::RejectWithDOMException(
-            script_state, MakeGarbageCollected<DOMException>(
-                              DOMExceptionCode::kNotSupportedError,
-                              kReferenceSpaceNotSupported));
       }
       break;
     }
@@ -303,13 +334,17 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
       if (immersive() && environment_integration_) {
         reference_space = MakeGarbageCollected<XRReferenceSpace>(
             this, XRReferenceSpace::Type::kTypeUnbounded);
-      } else {
-        return ScriptPromise::RejectWithDOMException(
-            script_state, MakeGarbageCollected<DOMException>(
-                              DOMExceptionCode::kNotSupportedError,
-                              kReferenceSpaceNotSupported));
       }
       break;
+  }
+
+  // If the above switch statement failed to assign to reference_space,
+  // it's because the reference space wasn't supported by the device.
+  if (!reference_space) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           kReferenceSpaceNotSupported));
   }
 
   DCHECK(reference_space);
@@ -323,6 +358,17 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
                             requested_type);
 
   return promise;
+}
+
+ScriptPromise XRSession::createAnchor(ScriptState* script_state,
+                                      XRRigidTransform* initial_pose,
+                                      XRSpace* space) {
+  // TODO(https://crbug.com/992033): Implement anchor creation from a session
+  // instead of rejecting the promise.
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                         kAnchorsNotSupported));
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
@@ -372,9 +418,6 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   }
 
   // Reject the promise if device doesn't support the hit-test API.
-  // TODO(https://crbug.com/878936): Get the environment provider without going
-  // up to xr_, since it doesn't know which runtime's environment provider
-  // we want.
   if (!xr_->xrEnvironmentProviderPtr()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -401,6 +444,13 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   hit_test_promises_.insert(resolver);
 
   return promise;
+}
+
+ScriptPromise XRSession::requestHitTestSource(ScriptState* script_state,
+                                              XRHitTestOptionsInit* options) {
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError));
 }
 
 void XRSession::OnHitTestResults(
@@ -536,7 +586,9 @@ void XRSession::OnFocus() {
     return;
 
   blurred_ = false;
-  DispatchEvent(*XRSessionEvent::Create(event_type_names::kFocus, this));
+  visibility_state_string_ = "visible";
+  DispatchEvent(
+      *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
 }
 
 void XRSession::OnBlur() {
@@ -544,7 +596,9 @@ void XRSession::OnBlur() {
     return;
 
   blurred_ = true;
-  DispatchEvent(*XRSessionEvent::Create(event_type_names::kBlur, this));
+  visibility_state_string_ = "hidden";
+  DispatchEvent(
+      *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
 }
 
 // Immersive sessions may still not be blurred in headset even if the page isn't
@@ -579,7 +633,7 @@ void XRSession::DetachOutputCanvas(HTMLCanvasElement* canvas) {
 
 void XRSession::ApplyPendingRenderState() {
   if (pending_render_state_.size() > 0) {
-    XRLayer* prev_base_layer = render_state_->baseLayer();
+    XRWebGLLayer* prev_base_layer = render_state_->baseLayer();
     HTMLCanvasElement* prev_ouput_canvas = render_state_->output_canvas();
     update_views_next_frame_ = true;
 
@@ -650,7 +704,7 @@ void XRSession::OnFrame(
 
     // Don't allow frames to be processed if there's no layers attached to the
     // session. That would allow tracking with no associated visuals.
-    XRLayer* frame_base_layer = render_state_->baseLayer();
+    XRWebGLLayer* frame_base_layer = render_state_->baseLayer();
     if (!frame_base_layer)
       return;
 
@@ -927,7 +981,6 @@ WTF::Vector<XRViewData>& XRSession::views() {
     } else {
       if (views_.IsEmpty()) {
         views_.emplace_back(XRView::kEyeNone);
-        views_[kMonoOrStereoLeftView].UpdateOffset(0, 0, 0);
       }
 
       float aspect = 1.0f;

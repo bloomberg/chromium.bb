@@ -516,15 +516,12 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
 
   // Sanity check the event. Be super careful we're not getting infected with
   // NaN or Inf. These should have been handled by the caller.
-  bool is_valid = event->GetType() < ParamEvent::kLastType &&
-                  std::isfinite(event->Value()) &&
-                  std::isfinite(event->Time()) &&
-                  std::isfinite(event->TimeConstant()) &&
-                  std::isfinite(event->Duration()) && event->Duration() >= 0;
-
-  DCHECK(is_valid);
-  if (!is_valid)
-    return;
+  DCHECK_LT(event->GetType(), ParamEvent::kLastType);
+  DCHECK(std::isfinite(event->Value()));
+  DCHECK(std::isfinite(event->Time()));
+  DCHECK(std::isfinite(event->TimeConstant()));
+  DCHECK(std::isfinite(event->Duration()));
+  DCHECK_GE(event->Duration(), 0);
 
   unsigned i = 0;
   double insert_time = event->Time();
@@ -883,8 +880,6 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
                                                   double control_rate) {
   DCHECK(values);
   DCHECK_GE(number_of_values, 1u);
-  if (!values || !(number_of_values >= 1))
-    return default_value;
 
   // Return default value if there are no events matching the desired time
   // range.
@@ -1036,16 +1031,10 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
         case ParamEvent::kExponentialRampToValue: {
           current_frame = fill_to_end_frame;
 
-          // If we're here, we've reached the end of the ramp.  If we can
-          // (because the start and end values have the same sign, and neither
-          // is 0), use the actual end value.  If not, we have to propagate
-          // whatever we have.
-          if (i >= 1 && ((events_[i - 1]->Value() * event->Value()) > 0))
-            value = event->Value();
-
-          // Simply stay at a constant value from the last time.  We don't want
-          // to use the value of the event in case value1 * value2 < 0.  In this
-          // case we should propagate the previous value, which is in |value|.
+          // If we're here, we've reached the end of the ramp.  For
+          // the values after the end of the ramp, we just want to
+          // continue with the ramp end value.
+          value = event->Value();
           write_index =
               FillWithDefault(values, value, fill_to_frame, write_index);
 
@@ -1611,6 +1600,7 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetTarget(
   // with the target value.
   if (HasSetTargetConverged(value, target, current_frame / sample_rate, time1,
                             time_constant)) {
+    current_frame += fill_to_frame - write_index;
     for (; write_index < fill_to_frame; ++write_index)
       values[write_index] = target;
   } else {

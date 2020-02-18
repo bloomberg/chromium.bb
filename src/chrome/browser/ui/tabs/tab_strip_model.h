@@ -18,11 +18,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
@@ -106,20 +107,22 @@ class TabStripModel {
 
   // Enumerates different ways to open a new tab. Does not apply to opening
   // existing links or searches in a new tab, only to brand new empty tabs.
+  // KEEP IN SYNC WITH THE NewTabType ENUM IN enums.xml.
+  // NEW VALUES MUST BE APPENDED AND AVOID CHANGING ANY PRE-EXISTING VALUES.
   enum NewTab {
     // New tab was opened using the new tab button on the tab strip.
-    NEW_TAB_BUTTON,
+    NEW_TAB_BUTTON = 0,
 
     // New tab was opened using the menu command - either through the keyboard
     // shortcut, or by opening the menu and selecting the command. Applies to
     // both app menu and the menu bar's File menu (on platforms that have one).
-    NEW_TAB_COMMAND,
+    NEW_TAB_COMMAND = 1,
 
     // New tab was opened through the context menu on the tab strip.
-    NEW_TAB_CONTEXT_MENU,
+    NEW_TAB_CONTEXT_MENU = 2,
 
     // Number of enum entries, used for UMA histogram reporting macros.
-    NEW_TAB_ENUM_COUNT,
+    NEW_TAB_ENUM_COUNT = 3,
   };
 
   static const int kNoTab = -1;
@@ -206,7 +209,15 @@ class TabStripModel {
 
   // User gesture type that triggers ActivateTabAt. kNone indicates that it was
   // not triggered by a user gesture, but by a by-product of some other action.
-  enum class GestureType { kMouse, kTouch, kWheel, kKeyboard, kOther, kNone };
+  enum class GestureType {
+    kMouse,
+    kTouch,
+    kWheel,
+    kKeyboard,
+    kOther,
+    kTabMenu,
+    kNone
+  };
 
   // Encapsulates user gesture information for tab activation
   struct UserGestureDetails {
@@ -324,9 +335,17 @@ class TabStripModel {
   // https://crbug.com/915956).
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
-  // Returns the TabGroupData instance for the given |group|. The returned
-  // pointer is valid until all tabs in |group| are destroyed.
-  const TabGroupData* GetDataForGroup(TabGroupId group) const;
+  // Returns the TabGroupVisualData instance for the given |group|. The returned
+  // pointer is valid until all tabs in |group| are destroyed or until
+  // SetVisualDataForGroup is called for |group|.
+  const TabGroupVisualData* GetVisualDataForGroup(TabGroupId group) const;
+
+  // Returns a title for |group| that can be shown in the UI, generating a
+  // descriptive placeholder if the user has not named the group.
+  base::string16 GetUserVisibleGroupTitle(TabGroupId group) const;
+
+  // Sets the visual data for |group|. Notifies observers of the change.
+  void SetVisualDataForGroup(TabGroupId group, TabGroupVisualData data);
 
   // Returns a list of tab groups that contain at least one tab in this strip.
   std::vector<TabGroupId> ListTabGroups() const;
@@ -405,6 +424,13 @@ class TabStripModel {
   // behind a feature flag (see https://crbug.com/915956).
   void AddToExistingGroup(const std::vector<int>& indices, TabGroupId group);
 
+  // Moves the set of tabs indicated by |indices| to precede the tab at index
+  // |destination_index|, maintaining their order and the order of tabs not
+  // being moved, and adds them to the tab group |group|.
+  void MoveTabsIntoGroup(const std::vector<int>& indices,
+                         int destination_index,
+                         TabGroupId group);
+
   // Similar to AddToExistingGroup(), but creates a group with id |group| if it
   // doesn't exist. This is only intended to be called from session restore
   // code.
@@ -422,19 +448,16 @@ class TabStripModel {
   // for entries in the 'Add to existing group' submenu.
   enum ContextMenuCommand {
     CommandFirst,
-    CommandNewTab,
+    CommandNewTabToRight,
     CommandReload,
     CommandDuplicate,
     CommandCloseTab,
-    CommandCloseOtherTabs,
     CommandCloseTabsToRight,
-    CommandRestoreTab,
     CommandTogglePinned,
     CommandFocusMode,
     CommandToggleSiteMuted,
     CommandSendTabToSelf,
     CommandSendTabToSelfSingleTarget,
-    CommandBookmarkAllTabs,
     CommandAddToNewGroup,
     CommandAddToExistingGroup,
     CommandRemoveFromGroup,
@@ -624,12 +647,11 @@ class TabStripModel {
   void AddToExistingGroupImpl(const std::vector<int>& indices,
                               TabGroupId group);
 
-  // Moves the set of tabs indicated by |indices| to precede the tab at index
-  // |destination_index|, maintaining their order and the order of tabs not
-  // being moved, and adds them to the tab group |group|.
-  void MoveTabsIntoGroup(const std::vector<int>& indices,
-                         int destination_index,
-                         TabGroupId group);
+  // Implementation of MoveTabsIntoGroup. Moves the set of tabs in |indices| to
+  // the |destination_index| and updates the tabs to the appropriate |group|.
+  void MoveTabsIntoGroupImpl(const std::vector<int>& indices,
+                             int destination_index,
+                             TabGroupId group);
 
   // Moves the tab at |index| to |new_index| and sets its group to |new_group|.
   // Notifies any observers that group affiliation has changed for the tab.
@@ -668,7 +690,8 @@ class TabStripModel {
 
   // The data for tab groups hosted within this TabStripModel, indexed by the
   // group ID.
-  std::map<TabGroupId, TabGroupData> group_data_;
+  class GroupData;
+  std::map<TabGroupId, GroupData> group_data_;
 
   TabStripModelDelegate* delegate_;
 

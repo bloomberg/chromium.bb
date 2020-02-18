@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1385214448885562192">Нажмите ВВОД, чтобы принять, или ОТМЕНА, чтобы отменить изменения. Для перехода к следующему или предыдущему элементу используйте стрелки вниз и вверх.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Озвучивать атрибуты форматированного текста</translation>
 <translation id="1405567553485452995">Светло-зеленый</translation>
 <translation id="1417889266572670458">Военно-морской синий</translation>
 <translation id="1431911867058218151">Сливовый</translation>
@@ -170,6 +169,7 @@
 <translation id="2220529011494928058">Сообщить о проблеме</translation>
 <translation id="2223693656926968778">Выполнить действие с текущим элементом</translation>
 <translation id="225732394367814946">Ускорить речь</translation>
+<translation id="2267538686624070261">Выделение орфографической ошибки снято</translation>
 <translation id="2267945578749931355">Перейти к следующему символу</translation>
 <translation id="2278490101488436824">Проведите тремя пальцами влево</translation>
 <translation id="2281234842553884450">Перейти к предыдущему ползунку</translation>
@@ -208,6 +208,7 @@
 <translation id="257674075312929031">Группа.</translation>
 <translation id="2582407057977008361">Боковой блок.</translation>
 <translation id="2592212930811759050">Нажмите дважды, чтобы начать редактировать</translation>
+<translation id="2598495320872286378">Грамматическая ошибка</translation>
 <translation id="2606210917827248971">из {COUNT,plural, =1{# пункта}one{# пункта}few{# пунктов}many{# пунктов}other{# пункта}}</translation>
 <translation id="2614981083756825552">Схема MathML.</translation>
 <translation id="2624431853467395961">Перейти в режим обучения</translation>
@@ -423,7 +424,6 @@
 <translation id="4039983576244166038">Нет заголовка для строки</translation>
 <translation id="4042843249978639960">Следующего заголовка второго уровня нет.</translation>
 <translation id="4043348641337972076">Предыдущего ориентира ARIA нет.</translation>
-<translation id="4045764028670444336">Начало неправильного слова</translation>
 <translation id="4047216625641135770">Пометка.</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">Зеленый лайм</translation>
@@ -485,6 +485,7 @@
 <translation id="4372705107434148843">Отключить озвучивание</translation>
 <translation id="4373197658375206385">Предыдущего элемента, не являющегося ссылкой, нет.</translation>
 <translation id="4376316291247992553">Преобразовать графические элементы в шрифт Брайля</translation>
+<translation id="437809255587011096">Озвучивать стиль текста</translation>
 <translation id="4378308539633073595">Прокрутить вперед.</translation>
 <translation id="4384583879834880242">Вопросы и ответы</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -505,7 +506,6 @@
 <translation id="4547556996012970016">Перейти к следующему заголовку пятого уровня</translation>
 <translation id="4562381607973973258">Заголовок.</translation>
 <translation id="4569941707103739422">Перемещайтесь по меню с помощью стрелок вверх и вниз. Чтобы выбрать команду, нажмите Ввод.</translation>
-<translation id="4570424871453628777">Конец неправильного слова</translation>
 <translation id="4591507479202817876">, выбрано.</translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4597896406374528575">апрель</translation>
@@ -728,7 +728,6 @@
 <translation id="6037602951055904232">Перейти вперед</translation>
 <translation id="6042826534790431634">Чтобы активировать элемент, нажмите Поиск + Пробел.</translation>
 <translation id="6044160928851315051">Затемнить экран</translation>
-<translation id="6065293622157674001">Начало грамматической ошибки</translation>
 <translation id="6082768461603900813">Навигация</translation>
 <translation id="6118126368611144850">Теперь ChromeVox поддерживается в приложениях Android. Если на вашем устройстве установлен Play Маркет, скачайте Google Chrome Canary и убедитесь сами.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">Тусклый серый</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списка}one{# маркер списка}few{# маркера списка}many{# маркеров списка}other{# маркера списка}}</translation>
 <translation id="6355910664415701303">Предыдущего пункта списка нет.</translation>
-<translation id="6360318852623800555">Атрибуты форматированного текста</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Перейти к предыдущему заголовку</translation>
 <translation id="6376999910001533545">Красно-коричневый</translation>
@@ -825,6 +823,7 @@
 <translation id="6833103209700200188">Нижний колонтитул.</translation>
 <translation id="6858047746862060282">Пролог</translation>
 <translation id="6859876496651143278">Проведите одним пальцем влево</translation>
+<translation id="6865519907510167493">Орфографическая ошибка</translation>
 <translation id="6871161210040114857">Без учета регистра.</translation>
 <translation id="6877435256196695200">Следующей диаграммы нет.</translation>
 <translation id="6897341342232909480">Переместить влево</translation>
@@ -870,7 +869,6 @@
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7153618581592392745">Бледно-лиловый</translation>
 <translation id="7157306005867877619">Аннотация</translation>
-<translation id="7161425887892204659">Конец совпадающего отрывка</translation>
 <translation id="7161771961008409533">Кнопка-переключатель</translation>
 <translation id="7165714724802225287">Текущий стиль дисплея: чередующийся.</translation>
 <translation id="7167657087543110">Озвучивание символов.</translation>
@@ -908,7 +906,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Выход из таблицы.</translation>
 <translation id="738899727977260036">Аспидно-синий</translation>
-<translation id="7392145451309930991">Начало совпадающего отрывка</translation>
 <translation id="739763518212184081">Перейти к предыдущей строке</translation>
 <translation id="7400575256015741911">Найдена орфографическая ошибка</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@
 <translation id="8153880621934657047">Ошибка. Перейдите в таблицу.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{символ подчеркивания}one{# символ подчеркивания}few{# символа подчеркивания}many{# символов подчеркивания}other{# underscores}}</translation>
 <translation id="8179976553408161302">ВВОД</translation>
-<translation id="8183813379996435469">Автоматически определять и переключать язык ChromeVox</translation>
 <translation id="8184828902145951186">стрк</translation>
 <translation id="8186185314313222077">включить полноэкранный режим</translation>
 <translation id="8199231515320852133">Назвать заголовки текущей ячейки</translation>
@@ -1118,12 +1114,13 @@
 <translation id="8446884382197647889">Подробнее...</translation>
 <translation id="8455868257606149352">Максимум <ph name="X" />.</translation>
 <translation id="84575901236241018">имеет ключ доступа <ph name="KEY" />.</translation>
+<translation id="8463645336674919227">Выделение грамматической ошибки снято</translation>
 <translation id="847154984256717791">занято</translation>
 <translation id="8476408756881832830">Останавливать его во время чтения ChromeVox</translation>
 <translation id="8476508772960940536">режим обзора</translation>
 <translation id="8503360654911991865">Уменьшить точность навигации</translation>
-<translation id="8504695234784218301">Конец грамматической ошибки</translation>
 <translation id="8520472399088452386">Счетчик</translation>
+<translation id="8534394844575788431">Форматирование</translation>
 <translation id="8538744478902126321">Определить тип данных в заголовке строки текущей ячейки</translation>
 <translation id="8540054775867439484">Смещение вверх</translation>
 <translation id="8542271685829952264">Чтобы открыть список всех команд и быстрых клавиш ChromeVox, нажмите SEARCH + Ю. Перемещайтесь по меню с помощью клавиш со стрелками. Чтобы выбрать команду, нажмите ВВОД. Чтобы вернуться сюда, нажмите SEARCH + Щ, затем Е.</translation>
@@ -1203,6 +1200,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Вкладка</translation>
 <translation id="9151211641321628915">Озвучить краткое описание текущего элемента</translation>
+<translation id="9151249085738989067">Автоматически переключать язык ChromeVox в зависимости от языковых настроек</translation>
 <translation id="9153606228985488238">Высота звука: <ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">Перейти к концу текущего столбца</translation>
 <translation id="9173115498289768110">Громкость: <ph name="PERCENT" />%</translation>

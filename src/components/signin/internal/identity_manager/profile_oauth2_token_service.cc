@@ -62,6 +62,9 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "MachineLogon::CredentialProvider";
     case SourceForRefreshTokenOperation::kTokenService_ExtractCredentials:
       return "TokenService::ExtractCredentials";
+    case SourceForRefreshTokenOperation::
+        kAccountReconcilor_RevokeTokensNotInCookies:
+      return "AccountReconcilor::RevokeTokensNotInCookies";
   }
 }
 }  // namespace
@@ -104,7 +107,7 @@ ProfileOAuth2TokenService::GetURLLoaderFactory() const {
 void ProfileOAuth2TokenService::OnAccessTokenInvalidated(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const std::set<std::string>& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
                                       access_token);
@@ -145,12 +148,12 @@ ProfileOAuth2TokenService::GetDelegate() const {
 }
 
 void ProfileOAuth2TokenService::AddObserver(
-    OAuth2TokenServiceObserver* observer) {
+    ProfileOAuth2TokenServiceObserver* observer) {
   delegate_->AddObserver(observer);
 }
 
 void ProfileOAuth2TokenService::RemoveObserver(
-    OAuth2TokenServiceObserver* observer) {
+    ProfileOAuth2TokenServiceObserver* observer) {
   delegate_->RemoveObserver(observer);
 }
 
@@ -253,7 +256,7 @@ void ProfileOAuth2TokenService::SetRefreshTokenRevokedFromSourceCallback(
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
-  CancelAllRequests();
+  token_manager_->CancelAllRequests();
   GetDelegate()->Shutdown();
 }
 
@@ -287,8 +290,8 @@ void ProfileOAuth2TokenService::RevokeAllCredentials(
     SourceForRefreshTokenOperation source) {
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
       &update_refresh_token_source_, source);
-  CancelAllRequests();
-  ClearCache();
+  token_manager_->CancelAllRequests();
+  token_manager_->ClearCache();
   GetDelegate()->RevokeAllCredentials();
 }
 
@@ -341,22 +344,10 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
   GetDelegate()->UpdateAuthError(account_id, error);
 }
 
-int ProfileOAuth2TokenService::GetTokenCacheCountForTesting() {
-  return token_manager_->token_cache().size();
-}
-
 void ProfileOAuth2TokenService::
     set_max_authorization_token_fetch_retries_for_testing(int max_retries) {
   token_manager_->set_max_authorization_token_fetch_retries_for_testing(
       max_retries);
-}
-
-size_t ProfileOAuth2TokenService::GetNumPendingRequestsForTesting(
-    const std::string& client_id,
-    const CoreAccountId& account_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes) const {
-  return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
-                                                         scopes);
 }
 
 void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
@@ -380,8 +371,8 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     is_valid = false;
   }
 
-  CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
+  token_manager_->CancelRequestsForAccount(account_id);
+  token_manager_->ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenUpdatedFromSource(
       is_valid, update_refresh_token_source_);
@@ -397,8 +388,8 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
-  CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
+  token_manager_->CancelRequestsForAccount(account_id);
+  token_manager_->ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenRevokedFromSource(
       update_refresh_token_source_);
@@ -422,24 +413,6 @@ void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   // Ensure the device ID is not empty, and recreate it if all tokens were
   // cleared during the loading process.
   RecreateDeviceIdIfNeeded();
-}
-
-void ProfileOAuth2TokenService::ClearCache() {
-  token_manager_->ClearCache();
-}
-
-void ProfileOAuth2TokenService::ClearCacheForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->ClearCacheForAccount(account_id);
-}
-
-void ProfileOAuth2TokenService::CancelAllRequests() {
-  token_manager_->CancelAllRequests();
-}
-
-void ProfileOAuth2TokenService::CancelRequestsForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->CancelRequestsForAccount(account_id);
 }
 
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {

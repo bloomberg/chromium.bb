@@ -39,12 +39,22 @@ class CORE_EXPORT DisplayLockUtilities {
   static bool ActivateFindInPageMatchRangeIfNeeded(
       const EphemeralRangeInFlatTree& range);
 
-  // Returns activatable-locked inclusive ancestors of |element|.
-  // Note that this function will have failing DCHECKs if |element| is inside a
+  // Activates all locked nodes in |range| that are activatable and doesn't
+  // have user-select:none. Returns true if we activated at least one node.
+  static bool ActivateSelectionRangeIfNeeded(
+      const EphemeralRangeInFlatTree& range);
+
+  // Updates style for all locked nodes in |range|. Returns true if there's at
+  // least one locked node encountered.
+  static bool UpdateStyleAndLayoutForRangeIfNeeded(
+      const EphemeralRangeInFlatTree& range);
+
+  // Returns activatable-locked inclusive ancestors of |node|.
+  // Note that this function will return an empty list if |node| is inside a
   // non-activatable locked subtree (e.g. at least one ancestor is not
   // activatable-locked).
   static const HeapVector<Member<Element>> ActivatableLockedInclusiveAncestors(
-      Element& element);
+      const Node& node);
 
   // Returns the nearest inclusive ancestor of |node| that is display locked.
   static const Element* NearestLockedInclusiveAncestor(const Node& node);
@@ -59,6 +69,13 @@ class CORE_EXPORT DisplayLockUtilities {
 
   // Returns the highest exclusive ancestor of |node| that is display locked.
   static Element* HighestLockedExclusiveAncestor(const Node& node);
+
+  // LayoutObject versions of the NearestLocked* ancestor functions.
+  static Element* NearestLockedInclusiveAncestor(const LayoutObject& object);
+  static Element* NearestLockedExclusiveAncestor(const LayoutObject& object);
+
+  // Whether this node has non-activatable locked exclusive ancestors or not.
+  static bool IsInNonActivatableLockedSubtree(const Node& node);
 
   // Returns true if the element is in a locked subtree (or is self-locked with
   // no self-updates). This crosses frames while navigating the ancestor chain.

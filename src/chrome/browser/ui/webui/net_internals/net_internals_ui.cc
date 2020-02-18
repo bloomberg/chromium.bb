@@ -62,7 +62,7 @@ content::WebUIDataSource* CreateNetInternalsHTMLSource() {
 
   source->SetDefaultResource(IDR_NET_INTERNALS_INDEX_HTML);
   source->AddResourcePath("index.js", IDR_NET_INTERNALS_INDEX_JS);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   return source;
 }
 
@@ -381,7 +381,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     error += network_error;
 
   chromeos::onc::CertificateImporterImpl cert_importer(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}), nssdb);
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}), nssdb);
   auto certs =
       std::make_unique<chromeos::onc::OncParsedCertificates>(certificates);
   if (certs->has_error())
@@ -435,13 +435,13 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
   if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
     path = prefs->GetDefaultDownloadDirectoryForProfile();
   base::FilePath policies_path = path.Append("policies.json");
-  std::string json_policies = policy::GetAllPolicyValuesAsJSON(
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* with_device_data */,
-      true /* is_pretty_print */);
-  base::PostTaskWithTraitsAndReply(
+  std::string json_policies =
+      policy::DictionaryPolicyConversions()
+          .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+          .ToJSON();
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(DumpPolicyLogs, policies_path, json_policies),
       base::BindOnce(&NetInternalsMessageHandler::OnDumpPolicyLogsCompleted,

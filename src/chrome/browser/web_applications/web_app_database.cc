@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -36,26 +37,32 @@ void WebAppDatabase::OpenDatabase(OnceRegistryOpenedCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebAppDatabase::WriteWebApp(const WebApp& web_app) {
+void WebAppDatabase::WriteWebApps(AppsToWrite apps,
+                                  CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
   BeginTransaction();
 
-  auto proto = CreateWebAppProto(web_app);
-  write_batch_->WriteData(proto->app_id(), proto->SerializeAsString());
+  for (auto* web_app : apps) {
+    auto proto = CreateWebAppProto(*web_app);
+    write_batch_->WriteData(proto->app_id(), proto->SerializeAsString());
+  }
 
-  CommitTransaction();
+  CommitTransaction(std::move(callback));
 }
 
-void WebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids) {
+void WebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids,
+                                   CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
   BeginTransaction();
+
   for (auto& app_id : app_ids)
     write_batch_->DeleteData(app_id);
-  CommitTransaction();
+
+  CommitTransaction(std::move(callback));
 }
 
 // static
@@ -71,6 +78,14 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   proto->set_launch_url(web_app.launch_url().spec());
 
   proto->set_name(web_app.name());
+
+  DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
+  proto->set_launch_container(web_app.launch_container() ==
+                                      LaunchContainer::kWindow
+                                  ? LaunchContainerProto::WINDOW
+                                  : LaunchContainerProto::TAB);
+
+  proto->set_is_locally_installed(web_app.is_locally_installed());
 
   // Optional fields:
   proto->set_description(web_app.description());
@@ -106,6 +121,21 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     return nullptr;
   }
   web_app->SetName(proto.name());
+
+  if (!proto.has_launch_container()) {
+    DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
+    return nullptr;
+  }
+  web_app->SetLaunchContainer(proto.launch_container() ==
+                                      LaunchContainerProto::WINDOW
+                                  ? LaunchContainer::kWindow
+                                  : LaunchContainer::kTab);
+
+  if (!proto.has_is_locally_installed()) {
+    DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
+    return nullptr;
+  }
+  web_app->SetIsLocallyInstalled(proto.is_locally_installed());
 
   // Optional fields:
   if (proto.has_description())
@@ -198,10 +228,13 @@ void WebAppDatabase::OnAllDataRead(
 }
 
 void WebAppDatabase::OnDataWritten(
+    CompletionCallback callback,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error)
     DLOG(ERROR) << "WebApps LevelDB write error: " << error->ToString();
+
+  std::move(callback).Run(!error);
 }
 
 // static
@@ -223,13 +256,14 @@ void WebAppDatabase::BeginTransaction() {
   write_batch_ = store_->CreateWriteBatch();
 }
 
-void WebAppDatabase::CommitTransaction() {
+void WebAppDatabase::CommitTransaction(CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(write_batch_);
 
-  store_->CommitWriteBatch(std::move(write_batch_),
-                           base::BindOnce(&WebAppDatabase::OnDataWritten,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  store_->CommitWriteBatch(
+      std::move(write_batch_),
+      base::BindOnce(&WebAppDatabase::OnDataWritten,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   write_batch_.reset();
 }
 

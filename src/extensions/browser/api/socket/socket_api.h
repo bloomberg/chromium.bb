@@ -196,7 +196,7 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
 
   // These two fields are only applicable if |socket_type_| is UDP.
   network::mojom::UDPSocketPtrInfo socket_;
-  network::mojom::UDPSocketReceiverRequest socket_receiver_request_;
+  network::mojom::UDPSocketListenerRequest socket_listener_request_;
 
   std::unique_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;
@@ -461,14 +461,14 @@ class SocketGetInfoFunction : public SocketAsyncApiFunction {
   std::unique_ptr<api::socket::GetInfo::Params> params_;
 };
 
-class SocketGetNetworkListFunction : public UIThreadExtensionFunction {
+class SocketGetNetworkListFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("socket.getNetworkList", SOCKET_GETNETWORKLIST)
 
  protected:
   ~SocketGetNetworkListFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:

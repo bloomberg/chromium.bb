@@ -13,6 +13,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/renderer/extension_url_loader_throttle.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -36,7 +37,7 @@ ExtensionThrottleManager::~ExtensionThrottleManager() {
   url_entries_.clear();
 }
 
-std::unique_ptr<content::URLLoaderThrottle>
+std::unique_ptr<blink::URLLoaderThrottle>
 ExtensionThrottleManager::MaybeCreateURLLoaderThrottle(
     const blink::WebURLRequest& request) {
   if (!request.SiteForCookies().ProtocolIs(extensions::kExtensionScheme))

@@ -10,7 +10,8 @@
 #include "base/memory/shared_memory.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace device {
 
@@ -29,20 +30,20 @@ void GamepadMonitor::Create(mojom::GamepadMonitorRequest request) {
 
 void GamepadMonitor::OnGamepadConnected(uint32_t index,
                                         const Gamepad& gamepad) {
-  if (gamepad_observer_)
-    gamepad_observer_->GamepadConnected(index, gamepad);
+  if (gamepad_observer_remote_)
+    gamepad_observer_remote_->GamepadConnected(index, gamepad);
 }
 
 void GamepadMonitor::OnGamepadDisconnected(uint32_t index,
                                            const Gamepad& gamepad) {
-  if (gamepad_observer_)
-    gamepad_observer_->GamepadDisconnected(index, gamepad);
+  if (gamepad_observer_remote_)
+    gamepad_observer_remote_->GamepadDisconnected(index, gamepad);
 }
 
 void GamepadMonitor::OnGamepadButtonOrAxisChanged(uint32_t index,
                                                   const Gamepad& gamepad) {
-  if (gamepad_observer_)
-    gamepad_observer_->GamepadButtonOrAxisChanged(index, gamepad);
+  if (gamepad_observer_remote_)
+    gamepad_observer_remote_->GamepadButtonOrAxisChanged(index, gamepad);
 }
 
 void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
@@ -50,7 +51,9 @@ void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
   is_started_ = true;
 
   GamepadService* service = GamepadService::GetInstance();
-  service->ConsumerBecameActive(this);
+  if (!service->ConsumerBecameActive(this)) {
+    mojo::ReportBadMessage("GamepadMonitor::GamepadStartPolling failed");
+  }
   std::move(callback).Run(service->DuplicateSharedMemoryRegion());
 }
 
@@ -58,12 +61,15 @@ void GamepadMonitor::GamepadStopPolling(GamepadStopPollingCallback callback) {
   DCHECK(is_started_);
   is_started_ = false;
 
-  GamepadService::GetInstance()->ConsumerBecameInactive(this);
+  if (!GamepadService::GetInstance()->ConsumerBecameInactive(this)) {
+    mojo::ReportBadMessage("GamepadMonitor::GamepadStopPolling failed");
+  }
   std::move(callback).Run();
 }
 
-void GamepadMonitor::SetObserver(mojom::GamepadObserverPtr gamepad_observer) {
-  gamepad_observer_ = std::move(gamepad_observer);
+void GamepadMonitor::SetObserver(
+    mojo::PendingRemote<mojom::GamepadObserver> gamepad_observer) {
+  gamepad_observer_remote_.Bind(std::move(gamepad_observer));
 }
 
 }  // namespace device

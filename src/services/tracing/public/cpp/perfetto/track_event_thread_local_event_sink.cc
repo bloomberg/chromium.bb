@@ -4,12 +4,17 @@
 
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 
+#include <algorithm>
+
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/log_message.h"
 #include "base/trace_event/trace_buffer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
@@ -18,6 +23,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/log_message.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/source_location.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/task_execution.pbzero.h"
@@ -168,6 +174,7 @@ TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
       interned_event_names_(1000, 100),
       interned_annotation_names_(1000, 100),
       interned_source_locations_(1000),
+      interned_log_message_bodies_(100),
       process_id_(TraceLog::GetInstance()->process_id()),
       thread_id_(static_cast<int>(base::PlatformThread::CurrentId())),
       privacy_filtering_enabled_(proto_writer_filtering_enabled) {
@@ -238,6 +245,12 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   InterningIndexEntry interned_annotation_names[kMaxSize] = {
       InterningIndexEntry{}};
   InterningIndexEntry interned_source_location{};
+  InterningIndexEntry interned_log_message_body{};
+
+  const char* src_file = nullptr;
+  const char* src_func = nullptr;
+  const char* log_message_body = nullptr;
+  int line_number = 0;
 
   if (copy_strings) {
     if (!is_java_event && privacy_filtering_enabled_) {
@@ -256,25 +269,47 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
     // TODO(eseckler): Remove special handling of typed events here once we
     // support them in TRACE_EVENT macros.
-    if (flags & TRACE_EVENT_FLAG_TYPED_PROTO_ARGS) {
-      DCHECK_EQ(strcmp(category_name, kTaskExecutionEventCategory), 0);
-      DCHECK(strcmp(trace_event->name(), kTaskExecutionEventNames[0]) == 0 ||
-             strcmp(trace_event->name(), kTaskExecutionEventNames[1]) == 0 ||
-             strcmp(trace_event->name(), kTaskExecutionEventNames[2]) == 0);
 
+    if (flags & TRACE_EVENT_FLAG_TYPED_PROTO_ARGS) {
       if (trace_event->arg_size() == 2u) {
+        DCHECK_EQ(strcmp(category_name, kTaskExecutionEventCategory), 0);
+        DCHECK(strcmp(trace_event->name(), kTaskExecutionEventNames[0]) == 0 ||
+               strcmp(trace_event->name(), kTaskExecutionEventNames[1]) == 0 ||
+               strcmp(trace_event->name(), kTaskExecutionEventNames[2]) == 0);
+        // Double argument task execution event (src_file, src_func).
         DCHECK_EQ(trace_event->arg_type(0), TRACE_VALUE_TYPE_STRING);
         DCHECK_EQ(trace_event->arg_type(1), TRACE_VALUE_TYPE_STRING);
-        interned_source_location = interned_source_locations_.LookupOrAdd(
-            std::make_pair(trace_event->arg_value(0).as_string,
-                           trace_event->arg_value(1).as_string));
+        src_file = trace_event->arg_value(0).as_string;
+        src_func = trace_event->arg_value(1).as_string;
       } else {
+        // arg_size == 1 enforced by the maximum number of parameter == 2.
         DCHECK_EQ(trace_event->arg_size(), 1u);
-        DCHECK_EQ(trace_event->arg_type(0), TRACE_VALUE_TYPE_STRING);
-        interned_source_location = interned_source_locations_.LookupOrAdd(
-            std::make_pair(trace_event->arg_value(0).as_string,
-                           static_cast<const char*>(nullptr)));
-      }
+
+        if (trace_event->arg_type(0) == TRACE_VALUE_TYPE_STRING) {
+          // Single argument task execution event (src_file).
+          DCHECK_EQ(strcmp(category_name, kTaskExecutionEventCategory), 0);
+          DCHECK(
+              strcmp(trace_event->name(), kTaskExecutionEventNames[0]) == 0 ||
+              strcmp(trace_event->name(), kTaskExecutionEventNames[1]) == 0 ||
+              strcmp(trace_event->name(), kTaskExecutionEventNames[2]) == 0);
+          src_file = trace_event->arg_value(0).as_string;
+        } else {
+          DCHECK(trace_event->arg_type(0) == TRACE_VALUE_TYPE_CONVERTABLE);
+          DCHECK(strcmp(category_name, "log") == 0);
+          DCHECK(strcmp(trace_event->name(), "LogMessage") == 0);
+          const base::trace_event::LogMessage* value =
+              static_cast<base::trace_event::LogMessage*>(
+                  trace_event->arg_value(0).as_convertable);
+          src_file = value->file();
+          line_number = value->line_number();
+          log_message_body = value->message().c_str();
+
+          interned_log_message_body =
+              interned_log_message_bodies_.LookupOrAdd(log_message_body);
+        }  // else
+      }    // else
+      interned_source_location = interned_source_locations_.LookupOrAdd(
+          std::make_tuple(src_file, src_func, line_number));
     } else if (!privacy_filtering_enabled_) {
       for (size_t i = 0;
            i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
@@ -320,10 +355,31 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     }
   }
 
+  if (!trace_event->thread_instruction_count().is_null()) {
+    // Thread instruction counts are never user-provided, but COMPLETE events
+    // may get reordered, so we can still observe counts that are lower. Emit
+    // those as absolute counts, since we don't support negative deltas.
+    if (last_thread_instruction_count_.ToInternalValue() >
+        trace_event->thread_instruction_count().ToInternalValue()) {
+      track_event->set_thread_instruction_count_absolute(
+          trace_event->thread_instruction_count().ToInternalValue());
+    } else {
+      track_event->set_thread_instruction_count_delta(
+          (trace_event->thread_instruction_count() -
+           last_thread_instruction_count_)
+              .ToInternalValue());
+      last_thread_instruction_count_ = trace_event->thread_instruction_count();
+    }
+  }
+
   // TODO(eseckler): Split comma-separated category strings.
   track_event->add_category_iids(interned_category.id);
 
-  if (interned_source_location.id) {
+  if (interned_log_message_body.id) {
+    auto* log_message = track_event->set_log_message();
+    log_message->set_source_location_iid(interned_source_location.id);
+    log_message->set_body_iid(interned_log_message_body.id);
+  } else if (interned_source_location.id) {
     track_event->set_task_execution()->set_posted_from_iid(
         interned_source_location.id);
   } else if (!privacy_filtering_enabled_) {
@@ -448,12 +504,20 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     if (!interned_data) {
       interned_data = trace_packet->set_interned_data();
     }
-    auto* name_entry = interned_data->add_legacy_event_names();
+    auto* name_entry = interned_data->add_event_names();
     name_entry->set_iid(interned_name.id);
     name_entry->set_name(copy_strings && !is_java_event &&
                                  privacy_filtering_enabled_
                              ? kPrivacyFiltered
                              : trace_event->name());
+  }
+  if (interned_log_message_body.id && !interned_log_message_body.was_emitted) {
+    if (!interned_data) {
+      interned_data = trace_packet->set_interned_data();
+    }
+    auto* log_message_entry = interned_data->add_log_message_body();
+    log_message_entry->set_iid(interned_log_message_body.id);
+    log_message_entry->set_body(log_message_body);
   }
 
   if (interned_source_location.id) {
@@ -461,12 +525,17 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
       if (!interned_data) {
         interned_data = trace_packet->set_interned_data();
       }
-      auto* source_location_entry = interned_data->add_source_locations();
+      perfetto::protos::pbzero::SourceLocation* source_location_entry =
+          interned_data->add_source_locations();
       source_location_entry->set_iid(interned_source_location.id);
-      source_location_entry->set_file_name(trace_event->arg_value(0).as_string);
-      if (trace_event->arg_size() > 1) {
-        source_location_entry->set_function_name(
-            trace_event->arg_value(1).as_string);
+      source_location_entry->set_file_name(src_file);
+
+      if (src_func) {
+        source_location_entry->set_function_name(src_func);
+      }
+
+      if (line_number) {
+        source_location_entry->set_line_number(line_number);
       }
     }
   } else if (!privacy_filtering_enabled_) {
@@ -489,6 +558,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     interned_event_names_.Clear();
     interned_annotation_names_.Clear();
     interned_source_locations_.Clear();
+    interned_log_message_bodies_.Clear();
   }
 }
 
@@ -512,7 +582,8 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
     DCHECK(handle.event_index > 0 &&
            handle.event_index < current_stack_depth_ &&
            !base::trace_event::TraceLog::GetInstance()->IsEnabled());
-    current_stack_depth_ = handle.event_index - 1;
+    current_stack_depth_ = std::min(
+        current_stack_depth_, static_cast<uint32_t>(handle.event_index - 1));
     return;
   }
 
@@ -576,13 +647,29 @@ void TrackEventThreadLocalEventSink::EmitThreadDescriptor(
     last_thread_time_ = ThreadNow();
   } else {
     // Thread timestamp is never user-provided.
-    DCHECK(trace_event->thread_timestamp() <= ThreadNow());
+    DCHECK_LE(trace_event->thread_timestamp(), ThreadNow());
     last_thread_time_ = trace_event->thread_timestamp();
   }
   thread_descriptor->set_reference_timestamp_us(
       last_timestamp_.since_origin().InMicroseconds());
   thread_descriptor->set_reference_thread_time_us(
       last_thread_time_.since_origin().InMicroseconds());
+
+  if (base::trace_event::ThreadInstructionCount::IsSupported()) {
+    if (!trace_event || trace_event->thread_instruction_count().is_null()) {
+      last_thread_instruction_count_ =
+          base::trace_event::ThreadInstructionCount::Now();
+    } else {
+      // Thread instruction count is never user-provided.
+      DCHECK_LE(
+          trace_event->thread_instruction_count().ToInternalValue(),
+          base::trace_event::ThreadInstructionCount::Now().ToInternalValue());
+      last_thread_instruction_count_ = trace_event->thread_instruction_count();
+    }
+    thread_descriptor->set_reference_thread_instruction_count(
+        last_thread_instruction_count_.ToInternalValue());
+  }
+
   // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
 }
 
@@ -593,6 +680,7 @@ void TrackEventThreadLocalEventSink::DoResetIncrementalState(
   interned_event_names_.ResetEmittedState();
   interned_annotation_names_.ResetEmittedState();
   interned_source_locations_.ResetEmittedState();
+  interned_log_message_bodies_.ResetEmittedState();
 
   // Emit a new thread descriptor in a separate packet, where we also set
   // the |incremental_state_cleared| flag.

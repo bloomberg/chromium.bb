@@ -40,10 +40,10 @@ const char kTextTracksOffString[] = "Off";
 
 class LocalePlatformSupport : public TestingPlatformSupport {
  public:
-  WebString QueryLocalizedString(WebLocalizedString::Name name) override {
-    if (name == WebLocalizedString::kTextTracksOff)
+  WebString QueryLocalizedString(int resource_id) override {
+    if (resource_id == WebLocalizedString::kTextTracksOff)
       return kTextTracksOffString;
-    return TestingPlatformSupport::QueryLocalizedString(name);
+    return TestingPlatformSupport::QueryLocalizedString(resource_id);
   }
 };
 
@@ -111,7 +111,7 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
     test_media_controls_host_ = std::make_unique<TestMediaControlsMenuHost>();
 
     media_controls_->SetMediaControlsMenuHostForTesting(
-        test_media_controls_host_->CreateMediaControlsMenuHostPtr());
+        test_media_controls_host_->CreateMediaControlsMenuHostRemote());
 
     // Scripts are disabled by default which forces controls to be on.
     GetFrame().GetSettings()->SetScriptEnabled(true);

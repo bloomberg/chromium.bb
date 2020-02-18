@@ -9,7 +9,7 @@
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,7 +92,7 @@ class PostTaskTestWithExecutor : public ::testing::Test {
 
  protected:
   testing::StrictMock<MockTaskExecutor> executor_;
-  test::ScopedTaskEnvironment scoped_task_environment_;
+  test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
@@ -114,7 +114,7 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   auto single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
-  auto comsta_task_runner = CreateCOMSTATaskRunner({});
+  auto comsta_task_runner = CreateCOMSTATaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
 

@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import json
-import mock
 import os
 import sys
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
@@ -23,7 +24,6 @@ from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -524,7 +524,7 @@ class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
     stage._GenerateSysroot()
-    sysroot_tarball = 'sysroot_%s.tar.xz' % ("virtual_target-os")
+    sysroot_tarball = 'sysroot_%s.tar.xz' % ('virtual_target-os')
     stage._upload_queue.put.assert_called_with([sysroot_tarball])
 
 
@@ -692,79 +692,3 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
                      stage._merge_cmd)
     tarball = stage.PROFDATA_TAR
     stage._upload_queue.put.assert_called_with([tarball])
-
-
-class GenerateOrderfileStageTest(generic_stages_unittest.AbstractStageTestCase,
-                                 cbuildbot_unittest.SimpleBuilderTestCase):
-  """Test GenerateOrderfileStage functionality."""
-
-  RELEASE_TAG = ''
-
-  @staticmethod
-  def _fakeGSExists(_, path):
-    return bool('dummy.tar.1' in path)
-
-  # pylint: disable=protected-access
-
-  def setUp(self):
-    self._Prepare()
-    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
-    self.rc_mock.SetDefaultCmdResult()
-    self.buildstore = FakeBuildStore()
-
-  def ConstructStage(self):
-    self._run.GetArchive().SetupArchivePath()
-    return artifact_stages.GenerateOrderfileStage(self._run, self.buildstore,
-                                                  self._current_board)
-
-  def testUploadOrderfile(self):
-    stage = self.ConstructStage()
-    tar_list = ['dummy.tar.1', 'dummy.tar.2', 'dummy.tar.3']
-
-    out_chroot_path = os.path.abspath(
-        os.path.join(self.build_root, 'chroot', stage.archive_path))
-
-    # Test tarball not existing raising exception
-    with self.assertRaises(Exception) as context:
-      stage._UploadOrderfile(out_chroot_path, tar_list)
-    self.assertIn('does not exist for uploading', str(context.exception))
-
-    # Test only uploading files not on cloud
-    self.PatchObject(gs.GSContext, 'Exists', new=self._fakeGSExists)
-    self.PatchObject(os.path, 'exists', return_value=True, autospec=True)
-    mock_copy_into = self.PatchObject(gs.GSContext, 'CopyInto')
-    mock_upload_queue = self.PatchObject(stage._upload_queue, 'put',
-                                         autospec=True)
-    stage._UploadOrderfile(out_chroot_path, tar_list)
-
-    # Make sure to upload all three tarballs to build bucket
-    self.assertEqual(mock_upload_queue.call_count, 3)
-    # Make sure to upload only two tarballs to GS bucket,
-    # because one is already there
-    self.assertEqual(mock_copy_into.call_count, 2)
-    out_dir = os.path.join(self.build_root, 'chroot', stage.archive_path)
-    calls = [
-        mock.call(os.path.join(out_dir, x), stage.GS_URL, acl='public-read')
-        for x in tar_list
-    ]
-    mock_copy_into.assert_has_calls(calls[1:])
-
-  def testGenerateOrderfileSuccess(self):
-    """Check GenerateOrderfileStage._GenerateOrderfile working properly."""
-    stage = self.ConstructStage()
-
-    output_path = os.path.abspath(
-        os.path.join(self.build_root, 'chroot', stage.archive_path))
-    tar_list = ['dummy.tar.1', 'dummy.tar.2', 'dummy.tar.3']
-
-    mock_command = self.PatchObject(
-        commands, 'GenerateChromeOrderfileArtifacts',
-        return_value=[os.path.join(output_path, f) for f in tar_list])
-    mock_upload = self.PatchObject(stage, '_UploadOrderfile')
-
-    stage._GenerateOrderfile()
-    mock_command.assert_called_with(self.build_root,
-                                    self._current_board,
-                                    output_path)
-    mock_upload.assert_called_with(output_path,
-                                   tar_list)

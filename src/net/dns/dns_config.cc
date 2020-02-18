@@ -20,6 +20,8 @@ DnsConfig::DnsConfig(DnsConfig&& other) = default;
 
 DnsConfig::DnsConfig(std::vector<IPEndPoint> nameservers)
     : nameservers(std::move(nameservers)),
+      dns_over_tls_active(false),
+      dns_over_tls_hostname(std::string()),
       unhandled_options(false),
       append_to_multi_label_name(true),
       randomize_ports(false),
@@ -28,7 +30,8 @@ DnsConfig::DnsConfig(std::vector<IPEndPoint> nameservers)
       attempts(2),
       rotate(false),
       use_local_ipv6(false),
-      secure_dns_mode(SecureDnsMode::OFF) {}
+      secure_dns_mode(SecureDnsMode::OFF),
+      allow_dns_over_https_upgrade(false) {}
 
 DnsConfig::~DnsConfig() = default;
 
@@ -44,19 +47,29 @@ bool DnsConfig::operator==(const DnsConfig& d) const {
   return Equals(d);
 }
 
+bool DnsConfig::operator!=(const DnsConfig& d) const {
+  return !Equals(d);
+}
+
 bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
-  return (nameservers == d.nameservers) && (search == d.search) &&
-         (unhandled_options == d.unhandled_options) &&
+  return (nameservers == d.nameservers) &&
+         (dns_over_tls_active == d.dns_over_tls_active) &&
+         (dns_over_tls_hostname == d.dns_over_tls_hostname) &&
+         (search == d.search) && (unhandled_options == d.unhandled_options) &&
          (append_to_multi_label_name == d.append_to_multi_label_name) &&
          (ndots == d.ndots) && (timeout == d.timeout) &&
          (attempts == d.attempts) && (rotate == d.rotate) &&
          (use_local_ipv6 == d.use_local_ipv6) &&
          (dns_over_https_servers == d.dns_over_https_servers) &&
-         (secure_dns_mode == d.secure_dns_mode);
+         (secure_dns_mode == d.secure_dns_mode) &&
+         (allow_dns_over_https_upgrade == d.allow_dns_over_https_upgrade) &&
+         (disabled_upgrade_providers == d.disabled_upgrade_providers);
 }
 
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   nameservers = d.nameservers;
+  dns_over_tls_active = d.dns_over_tls_active;
+  dns_over_tls_hostname = d.dns_over_tls_hostname;
   search = d.search;
   unhandled_options = d.unhandled_options;
   append_to_multi_label_name = d.append_to_multi_label_name;
@@ -67,6 +80,8 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   use_local_ipv6 = d.use_local_ipv6;
   dns_over_https_servers = d.dns_over_https_servers;
   secure_dns_mode = d.secure_dns_mode;
+  allow_dns_over_https_upgrade = d.allow_dns_over_https_upgrade;
+  disabled_upgrade_providers = d.disabled_upgrade_providers;
 }
 
 std::unique_ptr<base::Value> DnsConfig::ToValue() const {
@@ -76,6 +91,9 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   for (size_t i = 0; i < nameservers.size(); ++i)
     list->AppendString(nameservers[i].ToString());
   dict->Set("nameservers", std::move(list));
+
+  dict->SetBoolean("dns_over_tls_active", dns_over_tls_active);
+  dict->SetString("dns_over_tls_hostname", dns_over_tls_hostname);
 
   list = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < search.size(); ++i)
@@ -101,6 +119,13 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   }
   dict->Set("doh_servers", std::move(list));
   dict->SetInteger("secure_dns_mode", static_cast<int>(secure_dns_mode));
+  dict->SetBoolean("allow_dns_over_https_upgrade",
+                   allow_dns_over_https_upgrade);
+
+  list = std::make_unique<base::ListValue>();
+  for (const auto& provider : disabled_upgrade_providers)
+    list->AppendString(provider);
+  dict->Set("disabled_upgrade_providers", std::move(list));
 
   return std::move(dict);
 }

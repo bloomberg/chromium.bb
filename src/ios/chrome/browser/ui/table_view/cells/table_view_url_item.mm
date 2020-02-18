@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "url/gurl.h"
@@ -64,15 +65,6 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   cell.metadataLabel.text = self.metadata;
   cell.cellUniqueIdentifier = self.uniqueIdentifier;
   cell.accessibilityTraits |= UIAccessibilityTraitButton;
-  // If the background color specified by the styler is opaque, use it as the
-  // subview backround colors as well.
-  UIColor* backgroundColor = styler.tableViewBackgroundColor;
-  if (AreCGFloatsEqual(CGColorGetAlpha(backgroundColor.CGColor), 1.0)) {
-    cell.faviconContainerView.backgroundColor = styler.tableViewBackgroundColor;
-    cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
-    cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
-    cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
-  }
 
   if (styler.cellTitleColor)
     cell.titleLabel.textColor = styler.cellTitleColor;
@@ -138,24 +130,19 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 @end
 
 @implementation TableViewURLCell
-@synthesize faviconView = _faviconView;
-@synthesize faviconContainerView = _faviconContainerView;
-@synthesize faviconBadgeView = _faviconBadgeView;
-@synthesize horizontalStack = _horizontalStack;
-@synthesize cellUniqueIdentifier = _cellUniqueIdentifier;
-@synthesize shouldGenerateAccessibilityLabel =
-    _shouldGenerateAccessibilityLabel;
-@synthesize metadataLabel = _metadataLabel;
-@synthesize titleLabel = _titleLabel;
-@synthesize URLLabel = _URLLabel;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
-    _faviconContainerView = [[UIImageView alloc]
-        initWithImage:[UIImage
-                          imageNamed:@"table_view_cell_favicon_background"]];
+    UIImage* containerBackground =
+        [[UIImage imageNamed:@"table_view_cell_favicon_background"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _faviconContainerView =
+        [[UIImageView alloc] initWithImage:containerBackground];
+    _faviconContainerView.tintColor =
+        [UIColor colorNamed:kFaviconBackgroundColor];
+
     _faviconView = [[FaviconView alloc] init];
     _faviconView.contentMode = UIViewContentModeScaleAspectFit;
     _faviconView.clipsToBounds = YES;

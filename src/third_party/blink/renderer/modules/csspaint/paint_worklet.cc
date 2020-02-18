@@ -125,7 +125,6 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
-          layout_object.GetNode(),
           paint_definition->NativeInvalidationProperties(),
           paint_definition->CustomInvalidationProperties());
   sk_sp<PaintRecord> paint_record = paint_definition->Paint(
@@ -191,7 +190,7 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     const String& name,
     Vector<CSSPropertyID> native_properties,
     Vector<String> custom_properties,
-    Vector<CSSSyntaxDescriptor> input_argument_types,
+    Vector<CSSSyntaxDefinition> input_argument_types,
     double alpha) {
   if (document_definition_map_.Contains(name)) {
     DocumentPaintDefinition* document_definition =

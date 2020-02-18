@@ -132,26 +132,16 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   // created on the IO thread, and the request send back to the UI thread.
   // TODO(mmenke):  Is one less thread hop on startup worth the extra complexity
   // of two different pipe creation paths?
-  DCHECK(!pending_network_factory_request_.is_pending());
   network::mojom::URLLoaderFactoryPtr network_factory;
-  pending_network_factory_request_ = MakeRequest(&network_factory);
+  network::mojom::URLLoaderFactoryRequest pending_network_factory_request =
+      MakeRequest(&network_factory);
 
-  // If NetworkService is disabled, HandleFactoryRequests should be called after
-  // NetworkContext in |partition_| is ready.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    HandleFactoryRequests();
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread, this,
-                     network_factory.PassInterface()));
-}
-
-void URLLoaderFactoryGetter::HandleFactoryRequests() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(pending_network_factory_request_.is_pending());
   HandleNetworkFactoryRequestOnUIThread(
-      std::move(pending_network_factory_request_), false);
+      std::move(pending_network_factory_request), false);
+
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
+                                this, network_factory.PassInterface()));
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
@@ -191,7 +181,7 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
       is_corb_enabled ? &network_factory_corb_enabled_ : &network_factory_;
   if (factory->encountered_error() || !factory->is_bound()) {
     network::mojom::URLLoaderFactoryPtr network_factory;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
@@ -242,7 +232,7 @@ void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
 void URLLoaderFactoryGetter::FlushNetworkInterfaceOnIOThreadForTesting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting,
                      this, run_loop.QuitClosure()));
@@ -295,6 +285,8 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
     return;
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
+  // The browser process is considered trusted.
+  params->is_trusted = true;
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = is_corb_enabled;
   params->disable_web_security =

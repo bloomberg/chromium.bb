@@ -20,55 +20,88 @@
 
 namespace sw
 {
-	void PixelProgram::setBuiltins(Int &x, Int &y, Float4(&z)[4], Float4 &w)
+	// Union all cMask and return it as 4 booleans
+	Int4 PixelProgram::maskAny(Int cMask[4]) const
 	{
-		routine.windowSpacePosition[0] = x + SIMD::Int(0,1,0,1);
-		routine.windowSpacePosition[1] = y + SIMD::Int(0,0,1,1);
-
-		auto it = spirvShader->inputBuiltins.find(spv::BuiltInFragCoord);
-		if (it != spirvShader->inputBuiltins.end())
+		// See if at least 1 sample is used
+		Int maskUnion = cMask[0];
+		for(auto i = 1u; i < state.multiSample; i++)
 		{
-			auto &var = routine.getVariable(it->second.Id);
-			var[it->second.FirstComponent] = SIMD::Float(Float(x)) + SIMD::Float(0.5f, 1.5f, 0.5f, 1.5f);
-			var[it->second.FirstComponent+1] = SIMD::Float(Float(y)) + SIMD::Float(0.5f, 0.5f, 1.5f, 1.5f);
-			var[it->second.FirstComponent+2] = z[0];	// sample 0
-			var[it->second.FirstComponent+3] = w;
+			maskUnion |= cMask[i];
 		}
 
-		it = spirvShader->inputBuiltins.find(spv::BuiltInPointCoord);
-		if(it != spirvShader->inputBuiltins.end())
-		{
-			auto &var = routine.getVariable(it->second.Id);
-			var[it->second.FirstComponent] = SIMD::Float(0.5f) +
-				SIMD::Float(Float(x) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordX))));
-			var[it->second.FirstComponent + 1] = SIMD::Float(0.5f) +
-				SIMD::Float(Float(y) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordY))));
-		}
-
-		it = spirvShader->inputBuiltins.find(spv::BuiltInSubgroupSize);
-		if (it != spirvShader->inputBuiltins.end())
-		{
-			ASSERT(it->second.SizeInComponents == 1);
-			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(SIMD::Width));
-		}
-
-		it = spirvShader->inputBuiltins.find(spv::BuiltInSubgroupLocalInvocationId);
-		if (it != spirvShader->inputBuiltins.end())
-		{
-			ASSERT(it->second.SizeInComponents == 1);
-			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 1, 2, 3));
-		}
-
-		it = spirvShader->inputBuiltins.find(spv::BuiltInDeviceIndex);
-		if (it != spirvShader->inputBuiltins.end())
-		{
-			ASSERT(it->second.SizeInComponents == 1);
-			// Only a single physical device is supported.
-			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 0, 0, 0));
-		}
+		// Convert to 4 booleans
+		Int4 laneBits = Int4(1, 2, 4, 8);
+		Int4 laneShiftsToMSB = Int4(31, 30, 29, 28);
+		Int4 mask(maskUnion);
+		mask = ((mask & laneBits) << laneShiftsToMSB) >> Int4(31);
+		return mask;
 	}
 
-	void PixelProgram::applyShader(Int cMask[4])
+	// Union all cMask/sMask/zMask and return it as 4 booleans
+	Int4 PixelProgram::maskAny(Int cMask[4], Int sMask[4], Int zMask[4]) const
+	{
+		// See if at least 1 sample is used
+		Int maskUnion = cMask[0] & sMask[0] & zMask[0];
+		for(auto i = 1u; i < state.multiSample; i++)
+		{
+			maskUnion |= (cMask[i] & sMask[i] & zMask[i]);
+		}
+
+		// Convert to 4 booleans
+		Int4 laneBits = Int4(1, 2, 4, 8);
+		Int4 laneShiftsToMSB = Int4(31, 30, 29, 28);
+		Int4 mask(maskUnion);
+		mask = ((mask & laneBits) << laneShiftsToMSB) >> Int4(31);
+		return mask;
+	}
+
+	void PixelProgram::setBuiltins(Int &x, Int &y, Float4(&z)[4], Float4 &w, Int cMask[4])
+	{
+		routine.setImmutableInputBuiltins(spirvShader);
+
+		routine.setInputBuiltin(spirvShader, spv::BuiltInViewIndex, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			assert(builtin.SizeInComponents == 1);
+			value[builtin.FirstComponent] = As<Float4>(Int4((*Pointer<Int>(data + OFFSET(DrawData, viewID)))));
+		});
+
+		routine.setInputBuiltin(spirvShader, spv::BuiltInFragCoord, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			assert(builtin.SizeInComponents == 4);
+			value[builtin.FirstComponent+0] = SIMD::Float(Float(x)) + SIMD::Float(0.5f, 1.5f, 0.5f, 1.5f);
+			value[builtin.FirstComponent+1] = SIMD::Float(Float(y)) + SIMD::Float(0.5f, 0.5f, 1.5f, 1.5f);
+			value[builtin.FirstComponent+2] = z[0];	// sample 0
+			value[builtin.FirstComponent+3] = w;
+		});
+
+		routine.setInputBuiltin(spirvShader, spv::BuiltInPointCoord, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			assert(builtin.SizeInComponents == 2);
+			value[builtin.FirstComponent+0] = SIMD::Float(0.5f) +
+				SIMD::Float(Float(x) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordX))));
+			value[builtin.FirstComponent+1] = SIMD::Float(0.5f) +
+				SIMD::Float(Float(y) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordY))));
+		});
+
+		routine.setInputBuiltin(spirvShader, spv::BuiltInSubgroupSize, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			assert(builtin.SizeInComponents == 1);
+			value[builtin.FirstComponent] = As<SIMD::Float>(SIMD::Int(SIMD::Width));
+		});
+
+		routine.setInputBuiltin(spirvShader, spv::BuiltInHelperInvocation, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		{
+			assert(builtin.SizeInComponents == 1);
+			value[builtin.FirstComponent] = As<SIMD::Float>(~maskAny(cMask));
+		});
+
+		routine.windowSpacePosition[0] = x + SIMD::Int(0,1,0,1);
+		routine.windowSpacePosition[1] = y + SIMD::Int(0,0,1,1);
+		routine.viewID = *Pointer<Int>(data + OFFSET(DrawData, viewID));
+	}
+
+	void PixelProgram::applyShader(Int cMask[4], Int sMask[4], Int zMask[4])
 	{
 		routine.descriptorSets = data + OFFSET(DrawData, descriptorSets);
 		routine.descriptorDynamicOffsets = data + OFFSET(DrawData, descriptorDynamicOffsets);
@@ -105,9 +138,10 @@ namespace sw
 		// Note: all lanes initially active to facilitate derivatives etc. Actual coverage is
 		// handled separately, through the cMask.
 		auto activeLaneMask = SIMD::Int(0xFFFFFFFF);
+		auto storesAndAtomicsMask = maskAny(cMask, sMask, zMask);
 		routine.killMask = 0;
 
-		spirvShader->emit(&routine, activeLaneMask, descriptorSets);
+		spirvShader->emit(&routine, activeLaneMask, storesAndAtomicsMask, descriptorSets);
 		spirvShader->emitEpilog(&routine);
 
 		for(int i = 0; i < RENDERTARGETS; i++)
@@ -177,6 +211,7 @@ namespace sw
 			auto format = state.targetFormat[index];
 			switch(format)
 			{
+			case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 			case VK_FORMAT_R5G6B5_UNORM_PACK16:
 			case VK_FORMAT_B8G8R8A8_UNORM:
 			case VK_FORMAT_B8G8R8A8_SRGB:
@@ -194,7 +229,14 @@ namespace sw
 					Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
 					Vector4s color;
 
-					if(format == VK_FORMAT_R5G6B5_UNORM_PACK16)
+					if(format == VK_FORMAT_A1R5G5B5_UNORM_PACK16)
+					{
+						color.x = UShort4(c[index].x * Float4(0xFBFF), false);
+						color.y = UShort4(c[index].y * Float4(0xFBFF), false);
+						color.z = UShort4(c[index].z * Float4(0xFBFF), false);
+						color.w = UShort4(c[index].w * Float4(0xFFFF), false);
+					}
+					else if(format == VK_FORMAT_R5G6B5_UNORM_PACK16)
 					{
 						color.x = UShort4(c[index].x * Float4(0xFBFF), false);
 						color.y = UShort4(c[index].y * Float4(0xFDFF), false);
@@ -274,6 +316,7 @@ namespace sw
 			{
 			case VK_FORMAT_UNDEFINED:
 				break;
+			case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 			case VK_FORMAT_R5G6B5_UNORM_PACK16:
 			case VK_FORMAT_B8G8R8A8_UNORM:
 			case VK_FORMAT_B8G8R8A8_SRGB:

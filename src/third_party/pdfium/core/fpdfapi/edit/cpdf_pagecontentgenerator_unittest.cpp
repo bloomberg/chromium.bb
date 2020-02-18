@@ -7,12 +7,12 @@
 #include <memory>
 #include <utility>
 
-#include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_colorspace.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/page/cpdf_page.h"
+#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/page/cpdf_pathobject.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -28,8 +28,8 @@
 
 class CPDF_PageContentGeneratorTest : public testing::Test {
  protected:
-  void SetUp() override { CPDF_ModuleMgr::Create(); }
-  void TearDown() override { CPDF_ModuleMgr::Destroy(); }
+  void SetUp() override { CPDF_PageModule::Create(); }
+  void TearDown() override { CPDF_PageModule::Destroy(); }
 
   void TestProcessPath(CPDF_PageContentGenerator* pGen,
                        std::ostringstream* buf,
@@ -247,9 +247,11 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
   CPDF_PageContentGenerator generator(pTestPage.Get());
   auto pTextObj = pdfium::MakeUnique<CPDF_TextObject>();
-  CPDF_Font* pFont = CPDF_Font::GetStockFont(pDoc.get(), "Times-Roman");
+  RetainPtr<CPDF_Font> pFont =
+      CPDF_Font::GetStockFont(pDoc.get(), "Times-Roman");
   pTextObj->m_TextState.SetFont(pFont);
   pTextObj->m_TextState.SetFontSize(10.0f);
+
   static const std::vector<float> rgb = {0.5f, 0.7f, 0.35f};
   RetainPtr<CPDF_ColorSpace> pCS = CPDF_ColorSpace::GetStockCS(PDFCS_DEVICERGB);
   pTextObj->m_ColorState.SetFillColor(pCS, rgb);
@@ -320,18 +322,19 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
     CPDF_Dictionary* pDict = pDoc->NewIndirect<CPDF_Dictionary>();
     pDict->SetNewFor<CPDF_Name>("Type", "Font");
     pDict->SetNewFor<CPDF_Name>("Subtype", "TrueType");
-    CPDF_Font* pFont = CPDF_Font::GetStockFont(pDoc.get(), "Arial");
-    pDict->SetNewFor<CPDF_Name>("BaseFont", pFont->GetBaseFont());
+
+    RetainPtr<CPDF_Font> pFont = CPDF_Font::GetStockFont(pDoc.get(), "Arial");
+    pDict->SetNewFor<CPDF_Name>("BaseFont", pFont->GetBaseFontName());
 
     CPDF_Dictionary* pDesc = pDoc->NewIndirect<CPDF_Dictionary>();
     pDesc->SetNewFor<CPDF_Name>("Type", "FontDescriptor");
-    pDesc->SetNewFor<CPDF_Name>("FontName", pFont->GetBaseFont());
+    pDesc->SetNewFor<CPDF_Name>("FontName", pFont->GetBaseFontName());
     pDict->SetNewFor<CPDF_Reference>("FontDescriptor", pDoc.get(),
                                      pDesc->GetObjNum());
 
-    CPDF_Font* loadedFont =
+    RetainPtr<CPDF_Font> pLoadedFont =
         CPDF_DocPageData::FromDocument(pDoc.get())->GetFont(pDict);
-    pTextObj->m_TextState.SetFont(loadedFont);
+    pTextObj->m_TextState.SetFont(pLoadedFont);
     pTextObj->m_TextState.SetFontSize(15.5f);
     pTextObj->SetText("I am indirect");
     TestProcessText(&generator, &buf, pTextObj.get());

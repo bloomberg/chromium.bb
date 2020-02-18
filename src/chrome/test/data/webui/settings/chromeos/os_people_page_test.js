@@ -27,6 +27,7 @@ cr.define('settings_people_page', function() {
           isSignedIn: true,
           unmigrated: false,
           fullName: 'Primary Account',
+          pic: 'data:image/png;base64,primaryAccountPicData',
           email: 'primary@gmail.com',
         },
         {
@@ -37,6 +38,7 @@ cr.define('settings_people_page', function() {
           unmigrated: false,
           fullName: 'Secondary Account 1',
           email: 'user1@example.com',
+          pic: '',
         },
         {
           id: '789',
@@ -46,6 +48,7 @@ cr.define('settings_people_page', function() {
           unmigrated: false,
           fullName: 'Secondary Account 2',
           email: 'user2@example.com',
+          pic: '',
         },
       ]);
     }
@@ -71,7 +74,7 @@ cr.define('settings_people_page', function() {
     }
   }
 
-  suite('ProfileInfoTests', function() {
+  suite('PeoplePageTests', function() {
     /** @type {SettingsPeoplePageElement} */
     let peoplePage = null;
     /** @type {settings.ProfileInfoBrowserProxy} */
@@ -93,43 +96,94 @@ cr.define('settings_people_page', function() {
           accountManagerBrowserProxy;
 
       PolymerTest.clearBody();
-      peoplePage = document.createElement('os-settings-people-page');
-      peoplePage.pageVisibility = settings.pageVisibility;
-      document.body.appendChild(peoplePage);
-
-      return Promise
-          .all([
-            browserProxy.whenCalled('getProfileInfo'),
-            syncBrowserProxy.whenCalled('getSyncStatus'),
-            accountManagerBrowserProxy.whenCalled('getAccounts')
-          ])
-          .then(function() {
-            Polymer.dom.flush();
-          });
     });
 
     teardown(function() {
       peoplePage.remove();
     });
 
-    test('GetProfileInfo', async function() {
-      assertEquals(
-          browserProxy.fakeProfileInfo.name,
-          peoplePage.$$('#profile-name').textContent.trim());
+    test('Profile name and picture, account manager disabled', async () => {
+      loadTimeData.overrideValues({
+        isAccountManagerEnabled: false,
+      });
+      peoplePage = document.createElement('os-settings-people-page');
+      peoplePage.pageVisibility = settings.pageVisibility;
+      document.body.appendChild(peoplePage);
 
+      await browserProxy.whenCalled('getProfileInfo');
+      await syncBrowserProxy.whenCalled('getSyncStatus');
+      Polymer.dom.flush();
+
+      // Get page elements.
+      const profileIconEl = assert(peoplePage.$$('#profile-icon'));
+      const profileRowEl = assert(peoplePage.$$('#profile-row'));
+      const profileNameEl = assert(peoplePage.$$('#profile-name'));
+
+      assertEquals(
+          browserProxy.fakeProfileInfo.name, profileNameEl.textContent.trim());
+      const bg = profileIconEl.style.backgroundImage;
+      assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
+      assertEquals(
+          'fakeUsername', peoplePage.$$('#profile-label').textContent.trim());
+
+      const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
+          'LAAAAAABAAEAAAICTAEAOw==';
       cr.webUIListenerCallback(
-          'profile-info-changed', {name: 'pushedName', iconUrl: ''});
+          'profile-info-changed', {name: 'pushedName', iconUrl: iconDataUrl});
 
       Polymer.dom.flush();
-      assertEquals(
-          'pushedName', peoplePage.$$('#profile-name').textContent.trim());
+      assertEquals('pushedName', profileNameEl.textContent.trim());
+      const newBg = profileIconEl.style.backgroundImage;
+      assertTrue(newBg.includes(iconDataUrl));
+
+      // Profile row items aren't actionable.
+      assertFalse(profileIconEl.hasAttribute('actionable'));
+      assertFalse(profileRowEl.hasAttribute('actionable'));
+
+      // Sub-page trigger is hidden.
+      assertTrue(peoplePage.$$('#account-manager-subpage-trigger').hidden);
+    });
+
+    test('GAIA name and picture, account manager enabled', async () => {
+      loadTimeData.overrideValues({
+        isAccountManagerEnabled: true,
+      });
+      peoplePage = document.createElement('os-settings-people-page');
+      peoplePage.pageVisibility = settings.pageVisibility;
+      document.body.appendChild(peoplePage);
+
+      await accountManagerBrowserProxy.whenCalled('getAccounts');
+      await syncBrowserProxy.whenCalled('getSyncStatus');
+      Polymer.dom.flush();
+
+      // Get page elements.
+      const profileIconEl = assert(peoplePage.$$('#profile-icon'));
+      const profileRowEl = assert(peoplePage.$$('#profile-row'));
+      const profileNameEl = assert(peoplePage.$$('#profile-name'));
+
+      chai.assert.include(
+          profileIconEl.style.backgroundImage,
+          'data:image/png;base64,primaryAccountPicData');
+      assertEquals('Primary Account', profileNameEl.textContent.trim());
 
       // Rather than trying to mock cr.sendWithPromise('getPluralString', ...)
       // just force an update.
-      await peoplePage.updateProfileLabel_();
+      await peoplePage.updateAccounts_();
       assertEquals(
           'primary@gmail.com, +2 more accounts',
           peoplePage.$$('#profile-label').textContent.trim());
+
+      // Profile row items are actionable.
+      assertTrue(profileIconEl.hasAttribute('actionable'));
+      assertTrue(profileRowEl.hasAttribute('actionable'));
+
+      // Sub-page trigger is shown.
+      const subpageTrigger = peoplePage.$$('#account-manager-subpage-trigger');
+      assertFalse(subpageTrigger.hidden);
+
+      // Sub-page trigger navigates to Google account manager.
+      subpageTrigger.click();
+      assertEquals(settings.getCurrentRoute(), settings.routes.ACCOUNT_MANAGER);
     });
   });
 });

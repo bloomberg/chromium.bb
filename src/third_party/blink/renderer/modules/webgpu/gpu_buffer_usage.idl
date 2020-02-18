@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+// https://gpuweb.github.io/gpuweb/
 
 typedef unsigned long GPUBufferUsageFlags;
 [
@@ -17,4 +17,5 @@ typedef unsigned long GPUBufferUsageFlags;
     const unsigned long VERTEX = 32;
     const unsigned long UNIFORM = 64;
     const unsigned long STORAGE = 128;
+    const unsigned long INDIRECT = 256;
 };

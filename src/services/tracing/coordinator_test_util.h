@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 
@@ -57,7 +57,7 @@ class CoordinatorTestUtil : public mojo::DataPipeDrainer::Client {
   std::unique_ptr<Coordinator> coordinator_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<AgentRegistry> agent_registry_;
   std::vector<std::unique_ptr<MockAgent>> agents_;

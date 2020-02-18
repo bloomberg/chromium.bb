@@ -20,7 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -169,18 +169,18 @@ class MemoryDumpManagerTest : public testing::Test {
 
   void SetUp() override {
     // Bring up and initialize MemoryDumpManager while single-threaded (before
-    // instantiating ScopedTaskEnvironment) to avoid data races if worker
+    // instantiating TaskEnvironment) to avoid data races if worker
     // threads use tracing globals early.
     mdm_ = MemoryDumpManager::CreateInstanceForTesting();
     ASSERT_EQ(mdm_.get(), MemoryDumpManager::GetInstance());
 
     InitializeMemoryDumpManagerForInProcessTesting(is_coordinator_);
 
-    scoped_task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<test::TaskEnvironment>();
   }
 
   void TearDown() override {
-    scoped_task_environment_.reset();
+    task_environment_.reset();
 
     // Tear down the MemoryDumpManager while single-threaded to mirror logic in
     // SetUp().
@@ -247,7 +247,7 @@ class MemoryDumpManagerTest : public testing::Test {
   // To tear down the singleton instance after each test.
   ShadowingAtExitManager at_exit_manager_;
 
-  std::unique_ptr<test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<test::TaskEnvironment> task_environment_;
 
   // Whether the test MemoryDumpManager should be initialized as the
   // coordinator.

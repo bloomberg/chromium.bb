@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,8 +42,7 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 
 }  // namespace
 
-OobeDisplayChooser::OobeDisplayChooser()
-    : scoped_observer_(this), weak_ptr_factory_(this) {
+OobeDisplayChooser::OobeDisplayChooser() : scoped_observer_(this) {
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
   if (connector) {
@@ -66,10 +65,9 @@ void OobeDisplayChooser::TryToPlaceUiOnTouchDisplay() {
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
   if (primary_display.is_valid() && !TouchSupportAvailable(primary_display)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&OobeDisplayChooser::MaybeMoveToTouchDisplay,
-                       weak_ptr_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&OobeDisplayChooser::MaybeMoveToTouchDisplay,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

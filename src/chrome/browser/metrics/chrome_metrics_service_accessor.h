@@ -40,6 +40,10 @@ class ChromeMetricsPrivateDelegate;
 class FileManagerPrivateIsUMAEnabledFunction;
 }
 
+namespace first_run {
+class FirstRunMasterPrefsVariationsSeedTest;
+}
+
 namespace metrics {
 class UkmConsentParamBrowserTest;
 }
@@ -48,7 +52,7 @@ namespace heap_profiling {
 class BackgroundProfilingTriggers;
 }
 
-namespace nux {
+namespace welcome {
 void JoinOnboardingGroup(Profile* profile);
 }
 
@@ -108,10 +112,11 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SafeBrowsingUIManager;
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
-  friend void nux::JoinOnboardingGroup(Profile* profile);
+  friend void welcome::JoinOnboardingGroup(Profile* profile);
   friend class NavigationMetricsRecorder;
 
   // Testing related friends.
+  friend class first_run::FirstRunMasterPrefsVariationsSeedTest;
   friend class ForceFieldTrialsBrowserTest;
   friend class MetricsReportingStateTest;
   friend class metrics::UkmConsentParamBrowserTest;

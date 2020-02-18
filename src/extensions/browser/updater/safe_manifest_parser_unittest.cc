@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +43,7 @@ class ExtensionUpdateManifestTest : public testing::Test {
     std::move(quit_loop).Run();
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<UpdateManifestResults> results_;
   base::Optional<std::string> error_;
   data_decoder::TestDataDecoderService test_data_decoder_service_;

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/supports_user_data.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -104,9 +105,11 @@ class NET_EXPORT CertPathBuilder {
  public:
   // Provides the overall result of path building. This includes the paths that
   // were attempted.
-  struct NET_EXPORT Result {
+  struct NET_EXPORT Result : public base::SupportsUserData {
     Result();
-    ~Result();
+    Result(Result&&);
+    ~Result() override;
+    Result& operator=(Result&&);
 
     // Returns true if there was a valid path.
     bool HasValidPath() const;
@@ -117,9 +120,6 @@ class NET_EXPORT CertPathBuilder {
 
     // Returns the best CertPathBuilderResultPath or nullptr if there was none.
     const CertPathBuilderResultPath* GetBestPathPossiblyInvalid() const;
-
-    // Resets to the initial value.
-    void Clear();
 
     // List of paths that were attempted and the result for each.
     std::vector<std::unique_ptr<CertPathBuilderResultPath>> paths;
@@ -142,16 +142,14 @@ class NET_EXPORT CertPathBuilder {
   };
 
   // Creates a CertPathBuilder that attempts to find a path from |cert| to a
-  // trust anchor in |trust_store| and is valid at |time|. Details of attempted
-  // path(s) are stored in |*result|.
+  // trust anchor in |trust_store| and is valid at |time|.
   //
-  // The caller must keep |trust_store|, |delegate| and |*result| valid for the
-  // lifetime of the CertPathBuilder.
+  // The caller must keep |trust_store| and |delegate| valid for the lifetime
+  // of the CertPathBuilder.
   //
   // See VerifyCertificateChain() for a more detailed explanation of the
   // same-named parameters not defined below.
   //
-  // * |result|: Storage for the result of path building.
   // * |delegate|: Must be non-null. The delegate is called at various points in
   //               path building to verify specific parts of certificates or the
   //               final chain. See CertPathBuilderDelegate and
@@ -164,8 +162,7 @@ class NET_EXPORT CertPathBuilder {
                   InitialExplicitPolicy initial_explicit_policy,
                   const std::set<der::Input>& user_initial_policy_set,
                   InitialPolicyMappingInhibit initial_policy_mapping_inhibit,
-                  InitialAnyPolicyInhibit initial_any_policy_inhibit,
-                  Result* result);
+                  InitialAnyPolicyInhibit initial_any_policy_inhibit);
   ~CertPathBuilder();
 
   // Adds a CertIssuerSource to provide intermediates for use in path building.
@@ -189,13 +186,15 @@ class NET_EXPORT CertPathBuilder {
 
   // Executes verification of the target certificate.
   //
-  // Upon return results are written to the |result| object passed into the
-  // constructor. Run must not be called more than once on each CertPathBuilder
-  // instance.
-  void Run();
+  // Run must not be called more than once on each CertPathBuilder instance.
+  Result Run();
 
  private:
   void AddResultPath(std::unique_ptr<CertPathBuilderResultPath> result_path);
+
+  // |out_result_| may be referenced by other members, so should be initialized
+  // first.
+  Result out_result_;
 
   std::unique_ptr<CertPathIter> cert_path_iter_;
   CertPathBuilderDelegate* delegate_;
@@ -207,8 +206,6 @@ class NET_EXPORT CertPathBuilder {
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_;
   uint32_t max_iteration_count_ = 0;
   base::TimeTicks deadline_;
-
-  Result* out_result_;
 
   DISALLOW_COPY_AND_ASSIGN(CertPathBuilder);
 };

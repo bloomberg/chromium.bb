@@ -30,10 +30,13 @@ namespace dawn_native {
         }
 
         std::bitset<kMaxBindingsPerGroup> bindingsSet;
+        uint32_t dynamicUniformBufferCount = 0;
+        uint32_t dynamicStorageBufferCount = 0;
         for (uint32_t i = 0; i < descriptor->bindingCount; ++i) {
             const BindGroupLayoutBinding& binding = descriptor->bindings[i];
-            DAWN_TRY(ValidateShaderStageBit(binding.visibility));
+            DAWN_TRY(ValidateShaderStage(binding.visibility));
             DAWN_TRY(ValidateBindingType(binding.type));
+            DAWN_TRY(ValidateTextureComponentType(binding.textureComponentType));
 
             if (binding.binding >= kMaxBindingsPerGroup) {
                 return DAWN_VALIDATION_ERROR("some binding index exceeds the maximum value");
@@ -42,9 +45,20 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("some binding index was specified more than once");
             }
 
+            if (binding.visibility == dawn::ShaderStage::None) {
+                return DAWN_VALIDATION_ERROR("Visibility of bindings can't be None");
+            }
+
             switch (binding.type) {
                 case dawn::BindingType::UniformBuffer:
+                    if (binding.dynamic) {
+                        ++dynamicUniformBufferCount;
+                    }
+                    break;
                 case dawn::BindingType::StorageBuffer:
+                    if (binding.dynamic) {
+                        ++dynamicStorageBufferCount;
+                    }
                     break;
                 case dawn::BindingType::SampledTexture:
                 case dawn::BindingType::Sampler:
@@ -65,6 +79,17 @@ namespace dawn_native {
 
             bindingsSet.set(binding.binding);
         }
+
+        if (dynamicUniformBufferCount > kMaxDynamicUniformBufferCount) {
+            return DAWN_VALIDATION_ERROR(
+                "The number of dynamic uniform buffer exceeds the maximum value");
+        }
+
+        if (dynamicStorageBufferCount > kMaxDynamicStorageBufferCount) {
+            return DAWN_VALIDATION_ERROR(
+                "The number of dynamic storage buffer exceeds the maximum value");
+        }
+
         return {};
     }
 
@@ -74,7 +99,8 @@ namespace dawn_native {
             HashCombine(&hash, info.dynamic, info.multisampled);
 
             for (uint32_t binding : IterateBitSet(info.mask)) {
-                HashCombine(&hash, info.visibilities[binding], info.types[binding]);
+                HashCombine(&hash, info.visibilities[binding], info.types[binding],
+                            info.textureComponentTypes[binding]);
             }
 
             return hash;
@@ -88,7 +114,8 @@ namespace dawn_native {
 
             for (uint32_t binding : IterateBitSet(a.mask)) {
                 if ((a.visibilities[binding] != b.visibilities[binding]) ||
-                    (a.types[binding] != b.types[binding])) {
+                    (a.types[binding] != b.types[binding]) ||
+                    (a.textureComponentTypes[binding] != b.textureComponentTypes[binding])) {
                     return false;
                 }
             }
@@ -109,10 +136,24 @@ namespace dawn_native {
             uint32_t index = binding.binding;
             mBindingInfo.visibilities[index] = binding.visibility;
             mBindingInfo.types[index] = binding.type;
+            mBindingInfo.textureComponentTypes[index] = binding.textureComponentType;
 
             if (binding.dynamic) {
                 mBindingInfo.dynamic.set(index);
-                mDynamicBufferCount++;
+                switch (binding.type) {
+                    case dawn::BindingType::UniformBuffer:
+                        ++mDynamicUniformBufferCount;
+                        break;
+                    case dawn::BindingType::StorageBuffer:
+                        ++mDynamicStorageBufferCount;
+                        break;
+                    case dawn::BindingType::SampledTexture:
+                    case dawn::BindingType::Sampler:
+                    case dawn::BindingType::ReadonlyStorageBuffer:
+                    case dawn::BindingType::StorageTexture:
+                        UNREACHABLE();
+                        break;
+                }
             }
 
             mBindingInfo.multisampled.set(index, binding.multisampled);
@@ -153,7 +194,15 @@ namespace dawn_native {
     }
 
     uint32_t BindGroupLayoutBase::GetDynamicBufferCount() const {
-        return mDynamicBufferCount;
+        return mDynamicStorageBufferCount + mDynamicUniformBufferCount;
+    }
+
+    uint32_t BindGroupLayoutBase::GetDynamicUniformBufferCount() const {
+        return mDynamicUniformBufferCount;
+    }
+
+    uint32_t BindGroupLayoutBase::GetDynamicStorageBufferCount() const {
+        return mDynamicStorageBufferCount;
     }
 
 }  // namespace dawn_native

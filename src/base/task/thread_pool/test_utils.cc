@@ -55,9 +55,9 @@ bool MockJobTaskRunner::PostDelayedTask(const Location& from_here,
   if (!PooledTaskRunnerDelegate::Exists())
     return false;
 
-  scoped_refptr<MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(from_here, std::move(closure),
-                                              traits_);
+  auto job_task = base::MakeRefCounted<MockJobTask>(std::move(closure));
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      from_here, traits_, pooled_task_runner_delegate_);
   return pooled_task_runner_delegate_->EnqueueJobTaskSource(
       std::move(task_source));
 }
@@ -205,7 +205,7 @@ void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
   const bool sequence_should_be_queued = transaction.WillPushTask();
   RegisteredTaskSource task_source;
   if (sequence_should_be_queued) {
-    task_source = task_tracker_->WillQueueTaskSource(sequence);
+    task_source = task_tracker_->RegisterTaskSource(std::move(sequence));
     // We shouldn't push |task| if we're not allowed to queue |task_source|.
     if (!task_source)
       return;
@@ -217,6 +217,11 @@ void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
   }
 }
 
+bool MockPooledTaskRunnerDelegate::ShouldYield(
+    const TaskSource* task_source) const {
+  return thread_group_->ShouldYield(task_source->priority_racy());
+}
+
 bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
   // |thread_group_| must be initialized with SetThreadGroup() before
@@ -225,7 +230,7 @@ bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
   DCHECK(task_source);
 
   auto registered_task_source =
-      task_tracker_->WillQueueTaskSource(std::move(task_source));
+      task_tracker_->RegisterTaskSource(std::move(task_source));
   if (!registered_task_source)
     return false;
   auto transaction = registered_task_source->BeginTransaction();
@@ -248,62 +253,59 @@ void MockPooledTaskRunnerDelegate::UpdatePriority(
     TaskPriority priority) {
   auto transaction = task_source->BeginTransaction();
   transaction.UpdatePriority(priority);
-  thread_group_->UpdateSortKey(
-      {std::move(task_source), std::move(transaction)});
+  thread_group_->UpdateSortKey(std::move(transaction));
 }
 
 void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
   thread_group_ = thread_group;
 }
 
-MockJobTaskSource::~MockJobTaskSource() = default;
+MockJobTask::~MockJobTask() = default;
 
-MockJobTaskSource::MockJobTaskSource(const Location& from_here,
-                                     base::RepeatingClosure worker_task,
-                                     const TaskTraits& traits,
-                                     size_t num_tasks_to_run,
-                                     size_t max_concurrency)
-    : JobTaskSource(FROM_HERE,
-                    BindLambdaForTesting([this, worker_task]() {
-                      worker_task.Run();
-                      size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
-                      DCHECK_GT(before, 0U);
-                    }),
-                    traits),
-      remaining_num_tasks_to_run_(num_tasks_to_run),
-      max_concurrency_(max_concurrency) {}
+MockJobTask::MockJobTask(
+    base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+    size_t num_tasks_to_run)
+    : worker_task_(std::move(worker_task)),
+      remaining_num_tasks_to_run_(num_tasks_to_run) {}
 
-MockJobTaskSource::MockJobTaskSource(const Location& from_here,
-                                     base::OnceClosure worker_task,
-                                     const TaskTraits& traits)
-    : JobTaskSource(FROM_HERE,
-                    base::BindRepeating(
-                        [](MockJobTaskSource* self,
-                           base::OnceClosure&& worker_task) mutable {
-                          std::move(worker_task).Run();
-                          size_t before =
-                              self->remaining_num_tasks_to_run_.fetch_sub(1);
-                          DCHECK_EQ(before, 1U);
-                        },
-                        Unretained(this),
-                        base::Passed(std::move(worker_task))),
-                    traits),
-      remaining_num_tasks_to_run_(1),
-      max_concurrency_(1) {}
+MockJobTask::MockJobTask(base::OnceClosure worker_task)
+    : worker_task_(base::BindRepeating(
+          [](base::OnceClosure&& worker_task,
+             experimental::JobDelegate*) mutable {
+            std::move(worker_task).Run();
+          },
+          base::Passed(std::move(worker_task)))),
+      remaining_num_tasks_to_run_(1) {}
 
-size_t MockJobTaskSource::GetMaxConcurrency() const {
-  return std::min(remaining_num_tasks_to_run_.load(), max_concurrency_);
+size_t MockJobTask::GetMaxConcurrency() const {
+  return remaining_num_tasks_to_run_.load();
+}
+
+void MockJobTask::Run(experimental::JobDelegate* delegate) {
+  worker_task_.Run(delegate);
+  size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
+  DCHECK_GT(before, 0U);
+}
+
+scoped_refptr<JobTaskSource> MockJobTask::GetJobTaskSource(
+    const Location& from_here,
+    const TaskTraits& traits,
+    PooledTaskRunnerDelegate* delegate) {
+  return MakeRefCounted<JobTaskSource>(
+      from_here, traits, base::BindRepeating(&test::MockJobTask::Run, this),
+      base::BindRepeating(&test::MockJobTask::GetMaxConcurrency, this),
+      delegate);
 }
 
 RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source) {
   auto registered_task_source =
-      task_tracker->WillQueueTaskSource(std::move(task_source));
+      task_tracker->RegisterTaskSource(std::move(task_source));
   EXPECT_TRUE(registered_task_source);
-  auto run_intent = registered_task_source->WillRunTask();
-  return task_tracker->RunAndPopNextTask(
-      {std::move(registered_task_source), std::move(run_intent)});
+  EXPECT_NE(registered_task_source.WillRunTask(),
+            TaskSource::RunStatus::kDisallowed);
+  return task_tracker->RunAndPopNextTask(std::move(registered_task_source));
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

@@ -23,23 +23,23 @@
     overflow: visible;
     background-color: hsl(215, 1%, 95%);
     box-shadow: 0px -3px 14px 2px #bbb;
-    line-height: var(--topbar-height);
+    min-height: var(--topbar-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     .omnibox {
         @include omnibox-width();
         @include transition(0.25s);
         display: grid;
-        grid-template-areas: "icon input";
-        grid-template-columns: 34px auto;
+        grid-template-areas: "icon input stepthrough";
+        grid-template-columns: 34px auto max-content;
         border-radius: 20px;
         background-color: #fcfcfc;
         border: 0;
-        margin: 6px auto 0 auto;
-        height: 36px;
         line-height: 36px;
         &:before {
             @include material-icon('search');
             vertical-align: middle;
-            font-size: 32px;
             margin: 5px;
             color: #aaa;
             grid-area: icon;
@@ -94,6 +94,23 @@
                 content: 'bubble_chart';
             }
         }
+        .stepthrough {
+          grid-area: stepthrough;
+          display: flex;
+          font: inherit;
+          font-size: 14px;
+          font-family: 'Google Sans';
+          color: #aaa;
+          .current {
+            padding-right: 10px;
+          }
+          .material-icons {
+            vertical-align: middle;
+            &.left {
+              border-right: rgb(218, 217, 217) solid 1px;
+            }
+          }
+        }
     }
     .omnibox-results {
         @include transition(0.25s);
@@ -130,6 +147,8 @@
         bottom: 0;
         height: 1px;
         width: 100%;
+      }
+      .progress-anim {
         &:before {
             content: '';
             position: absolute;

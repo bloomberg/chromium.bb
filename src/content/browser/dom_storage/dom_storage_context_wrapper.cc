@@ -111,15 +111,17 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
     data_path = profile_path.Append(local_partition_path);
 
   scoped_refptr<base::SequencedTaskRunner> primary_sequence =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   scoped_refptr<base::SequencedTaskRunner> commit_sequence =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   auto mojo_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   base::FilePath legacy_localstorage_path =
       data_path.empty() ? data_path
@@ -390,7 +392,7 @@ void DOMStorageContextWrapper::Flush() {
 
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(mojo_state_);
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
@@ -399,14 +401,14 @@ void DOMStorageContextWrapper::OpenLocalStorage(
   mojo_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&LocalStorageContextMojo::OpenLocalStorage,
                                 base::Unretained(mojo_state_), origin,
-                                std::move(request)));
+                                std::move(receiver)));
 }
 
 void DOMStorageContextWrapper::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
-    blink::mojom::SessionStorageNamespaceRequest request) {
+    mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(mojo_session_state_);
   // The bad message callback must be called on the same sequenced task runner
   // as the binding set. It cannot be called from our own mojo task runner.
@@ -427,11 +429,11 @@ void DOMStorageContextWrapper::OpenSessionStorage(
       base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
                      base::Unretained(mojo_session_state_), process_id,
                      namespace_id, std::move(wrapped_bad_message_callback),
-                     std::move(request)));
+                     std::move(receiver)));
 }
 
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
-    leveldb::mojom::LevelDBDatabaseAssociatedPtr database) {
+    mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
   // as soon as that task is posted, mojo_state_ is set to null, preventing

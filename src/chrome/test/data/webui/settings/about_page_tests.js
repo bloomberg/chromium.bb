@@ -416,7 +416,7 @@ cr.define('settings_about_page', function() {
           aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
           assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
           page.$.aboutTPMFirmwareUpdate.click();
-          await PolymerTest.flushTasks();
+          await test_util.flushTasks();
           const dialog = page.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
           assertTrue(dialog.$.dialog.open);
@@ -448,7 +448,7 @@ cr.define('settings_about_page', function() {
               const icon = page.$$('iron-icon');
               assertTrue(!!icon);
               assertEquals(null, icon.src);
-              assertEquals('settings:end-of-life', icon.icon);
+              assertEquals('os-settings:end-of-life', icon.icon);
 
               const checkForUpdates = page.$.checkForUpdates;
               assertTrue(!!checkForUpdates);
@@ -482,13 +482,6 @@ cr.define('settings_about_page', function() {
           assertTrue(!!page.$['detailed-build-info-trigger'].hidden);
           assertTrue(!!page.$.regulatoryInfo.hidden);
           assertTrue(!!page.$.crostiniLicense.hidden);
-        });
-
-        test('detailed build info page', () => {
-          page.scroller = page.offsetParent;
-          assertTrue(!!page.$['detailed-build-info-trigger']);
-          page.$['detailed-build-info-trigger'].click();
-          assertTrue(!!page.$$('settings-detailed-build-info'));
         });
       }
 

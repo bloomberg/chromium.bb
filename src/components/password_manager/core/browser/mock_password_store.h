@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(GetLogins,
                void(const PasswordStore::FormDigest&, PasswordStoreConsumer*));
+  MOCK_METHOD2(GetLoginsByPassword,
+               void(const base::string16&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(UpdateLoginWithPrimaryKey,
@@ -54,6 +57,9 @@ class MockPasswordStore : public PasswordStore {
       const PasswordStore::FormDigest& form) override {
     return std::vector<std::unique_ptr<autofill::PasswordForm>>();
   }
+  MOCK_METHOD1(FillMatchingLoginsByPassword,
+               std::vector<std::unique_ptr<autofill::PasswordForm>>(
+                   const base::string16&));
   MOCK_METHOD1(FillAutofillableLogins,
                bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(FillBlacklistLogins,
@@ -75,7 +81,7 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD3(SaveGaiaPasswordHash,
                void(const std::string&,
                     const base::string16&,
-                    metrics_util::SyncPasswordHashChange));
+                    metrics_util::GaiaPasswordHashChange));
   MOCK_METHOD2(SaveEnterprisePasswordHash,
                void(const std::string&, const base::string16&));
   MOCK_METHOD1(ClearGaiaPasswordHash, void(const std::string&));
@@ -88,6 +94,8 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(ReadAllLogins, FormRetrievalResult(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
   MOCK_METHOD0(GetMetadataStore, PasswordStoreSync::MetadataStore*());
+  MOCK_CONST_METHOD0(IsAccountStore, bool());
+  MOCK_METHOD0(DeleteAndRecreateDatabaseFile, bool());
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 

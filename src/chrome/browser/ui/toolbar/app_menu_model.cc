@@ -23,7 +23,6 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,7 +43,9 @@
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,7 +54,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -80,7 +81,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
@@ -146,8 +147,7 @@ ZoomMenuModel::ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate)
   Build();
 }
 
-ZoomMenuModel::~ZoomMenuModel() {
-}
+ZoomMenuModel::~ZoomMenuModel() {}
 
 void ZoomMenuModel::Build() {
   AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
@@ -165,8 +165,7 @@ const base::Feature kIncludeBetaForumMenuItem{
 
 class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
  public:
-  HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate,
-                Browser* browser)
+  HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
       : SimpleMenuModel(delegate) {
     Build(browser);
   }
@@ -332,8 +331,9 @@ bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
 }
 
 void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
+  GlobalError* error =
+      GlobalErrorServiceFactory::GetForProfile(browser_->profile())
+          ->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error) {
     error->ExecuteMenuItem(browser_);
     return;
@@ -390,12 +390,12 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_IMPORT_SETTINGS);
       break;
-    case IDC_BOOKMARK_PAGE:
+    case IDC_BOOKMARK_THIS_TAB:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.BookmarkPage",
                                    delta);
       }
-      LogMenuAction(MENU_ACTION_BOOKMARK_PAGE);
+      LogMenuAction(MENU_ACTION_BOOKMARK_THIS_TAB);
       break;
     case IDC_BOOKMARK_ALL_TABS:
       if (!uma_action_recorded_) {
@@ -600,7 +600,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Feedback", delta);
       LogMenuAction(MENU_ACTION_FEEDBACK);
       break;
-  #endif
+#endif
 
     case IDC_TOGGLE_REQUEST_TABLET_SITE:
       if (!uma_action_recorded_) {
@@ -662,8 +662,9 @@ bool AppMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
-  GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
+  GlobalError* error =
+      GlobalErrorServiceFactory::GetForProfile(browser_->profile())
+          ->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error)
     return true;
 
@@ -685,10 +686,10 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
              AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
     }
 #if !defined(OS_LINUX) || defined(USE_AURA)
-    case IDC_BOOKMARK_PAGE:
-      return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
+    case IDC_BOOKMARK_THIS_TAB:
+      return !chrome::ShouldRemoveBookmarkThisTabUI(browser_->profile());
     case IDC_BOOKMARK_ALL_TABS:
-      return !chrome::ShouldRemoveBookmarkOpenPagesUI(browser_->profile());
+      return !chrome::ShouldRemoveBookmarkAllTabsUI(browser_->profile());
 #endif
     default:
       return true;
@@ -743,8 +744,7 @@ void AppMenuModel::Build() {
 
   if (IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
-  if (AddGlobalErrorMenuItems() ||
-      IsCommandIdVisible(IDC_UPGRADE_DIALOG))
+  if (AddGlobalErrorMenuItems() || IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddSeparator(ui::NORMAL_SEPARATOR);
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -761,7 +761,8 @@ void AppMenuModel::Build() {
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   if (!browser_->profile()->IsGuestSession()) {
-    bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
+    bookmark_sub_menu_model_ =
+        std::make_unique<BookmarkSubMenuModel>(this, browser_);
     AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                            bookmark_sub_menu_model_.get());
   }
@@ -776,14 +777,17 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  const extensions::Extension* pwa =
-      extensions::util::GetPwaForSecureActiveTab(browser_);
-  if (pwa) {
+  base::Optional<web_app::AppId> app_id =
+      web_app::GetPwaForSecureActiveTab(browser());
+  if (app_id) {
+    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
     AddItem(IDC_OPEN_IN_PWA_WINDOW,
             l10n_util::GetStringFUTF16(
                 IDS_OPEN_IN_APP_WINDOW,
-                gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
-                                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
+                gfx::TruncateString(
+                    base::UTF8ToUTF16(
+                        provider->registrar().GetAppShortName(*app_id)),
+                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
   } else {
     base::Optional<base::string16> install_pwa_item_name =
         GetInstallPWAAppMenuItemName(browser_);
@@ -791,25 +795,22 @@ void AppMenuModel::Build() {
       AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller)) {
+  if (dom_distiller::IsDomDistillerEnabled())
     AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
-  }
 
 #if defined(OS_CHROMEOS)
   // Always show this option if we're in tablet mode on Chrome OS.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableRequestTabletSite) ||
-      (TabletModeClient::Get() &&
-       TabletModeClient::Get()->tablet_mode_enabled())) {
+      (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())) {
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
   }
 #endif
 
-  tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
-  AddSubMenuWithStringId(
-      IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
+  tools_menu_model_ = std::make_unique<ToolsMenuModel>(this, browser_);
+  AddSubMenuWithStringId(IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU,
+                         tools_menu_model_.get());
   AddSeparator(ui::LOWER_SEPARATOR);
   CreateCutCopyPasteMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
@@ -819,9 +820,8 @@ void AppMenuModel::Build() {
 // 'About' item has been moved to this submenu, it's reinstated here for
 // Chromium builds.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  help_menu_model_.reset(new HelpMenuModel(this, browser_));
-  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
-                         help_menu_model_.get());
+  help_menu_model_ = std::make_unique<HelpMenuModel>(this, browser_);
+  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU, help_menu_model_.get());
 #else
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
@@ -878,7 +878,8 @@ void AppMenuModel::CreateCutCopyPasteMenu() {
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in AppMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
-  edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
+  edit_menu_item_model_ =
+      std::make_unique<ui::ButtonMenuItemModel>(IDS_EDIT, this);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
@@ -889,8 +890,7 @@ void AppMenuModel::CreateZoomMenu() {
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in AppMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
-  zoom_menu_item_model_.reset(
-      new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
+  zoom_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_MINUS,
                                                   IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,

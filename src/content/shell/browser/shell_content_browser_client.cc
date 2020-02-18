@@ -24,8 +24,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -39,7 +37,6 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
-#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/shell_switches.h"
@@ -53,7 +50,6 @@
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -88,7 +84,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/interfaces/constants.mojom.h"      // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
@@ -360,14 +356,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
-  return ShellURLRequestContextGetter::GetAcceptLanguages();
-}
-
-void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_.reset(
-      new ResourceDispatcherHostDelegate());
-  ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
+  return "en-us,en";
 }
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
@@ -424,6 +413,15 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
   } else {
     prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
   }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceHighContrast)) {
+    prefs->forced_colors = blink::ForcedColors::kActive;
+  }
+}
+
+base::FilePath ShellContentBrowserClient::GetFontLookupTableCacheDir() {
+  return browser_context()->GetPath().Append(
+      FILE_PATH_LITERAL("FontLookupTableCache"));
 }
 
 DevToolsManagerDelegate*
@@ -483,8 +481,8 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-bool ShellContentBrowserClient::PreSpawnRenderer(
-    sandbox::TargetPolicy* policy) {
+bool ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                                 RendererSpawnFlags flags) {
   // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
   // addition in |StartSandboxedProcess|.
   std::vector<std::string> font_files = switches::GetSideloadFontFiles();
@@ -504,10 +502,6 @@ ShellContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  DCHECK(context);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
-
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
@@ -532,6 +526,11 @@ ShellContentBrowserClient::CreateNetworkContext(
   GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),
                                             std::move(context_params));
   return network_context;
+}
+
+std::vector<base::FilePath>
+ShellContentBrowserClient::GetNetworkContextsParentDirectory() {
+  return {browser_context()->GetPath()};
 }
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {

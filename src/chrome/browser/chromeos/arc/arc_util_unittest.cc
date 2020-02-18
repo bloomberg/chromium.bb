@@ -30,7 +30,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -46,7 +46,7 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -124,13 +124,9 @@ class ScopedLogIn {
       default:
         NOTREACHED();
     }
-    fake_user_manager_->testing_profile_manager()->SetLoggedIn(true);
   }
 
-  ~ScopedLogIn() {
-    fake_user_manager_->testing_profile_manager()->SetLoggedIn(false);
-    LogOut();
-  }
+  ~ScopedLogIn() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
  private:
   void LogIn() {
@@ -147,8 +143,6 @@ class ScopedLogIn {
     fake_user_manager_->AddArcKioskAppUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
   }
-
-  void LogOut() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
   FakeUserManagerWithLocalState* fake_user_manager_;
   const AccountId account_id_;
@@ -210,7 +204,7 @@ class ChromeArcUtilTest : public testing::Test {
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   base::test::ScopedFeatureList feature_list_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -711,7 +705,7 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
 
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithPlayStore) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(chromeos::switches::kShowPlayInDemoMode,
+  feature_list.InitWithFeatureState(chromeos::features::kShowPlayInDemoMode,
                                     true /* enabled */);
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--arc-availability=installed"});

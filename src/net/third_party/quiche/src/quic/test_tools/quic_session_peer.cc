@@ -161,8 +161,7 @@ void QuicSessionPeer::ActivateStream(QuicSession* session,
 // static
 void QuicSessionPeer::RegisterStaticStream(QuicSession* session,
                                            std::unique_ptr<QuicStream> stream) {
-  return session->RegisterStaticStream(std::move(stream),
-                                       /*stream_already_counted = */ false);
+  return session->RegisterStaticStream(std::move(stream));
 }
 
 // static
@@ -241,6 +240,13 @@ void QuicSessionPeer::SendRstStreamInner(QuicSession* session,
                                          QuicStreamOffset bytes_written,
                                          bool close_write_side_only) {
   session->SendRstStreamInner(id, error, bytes_written, close_write_side_only);
+}
+
+// static
+PendingStream* QuicSessionPeer::GetPendingStream(QuicSession* session,
+                                                 QuicStreamId stream_id) {
+  auto it = session->pending_stream_map_.find(stream_id);
+  return it == session->pending_stream_map_.end() ? nullptr : it->second.get();
 }
 
 }  // namespace test

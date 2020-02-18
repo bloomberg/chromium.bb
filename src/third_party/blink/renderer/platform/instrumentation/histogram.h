@@ -12,7 +12,6 @@
 #include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace base {
 class HistogramBase;
@@ -30,6 +29,7 @@ class PLATFORM_EXPORT CustomCountHistogram {
                        base::HistogramBase::Sample max,
                        int32_t bucket_count);
   void Count(base::HistogramBase::Sample);
+  void CountMany(base::HistogramBase::Sample, int count);
   void CountMicroseconds(base::TimeDelta);
   void CountMilliseconds(base::TimeDelta);
 

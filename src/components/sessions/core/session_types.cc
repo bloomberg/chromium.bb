@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "components/sessions/core/session_command.h"
+#include "ui/gfx/color_palette.h"
 
 namespace sessions {
 
@@ -22,12 +23,19 @@ SessionTab::SessionTab()
 SessionTab::~SessionTab() {
 }
 
+// SessionTab -----------------------------------------------------------------
+
+SessionTabGroup::SessionTabGroup(base::Token group_id)
+    : group_id(group_id), color(gfx::kPlaceholderColor) {}
+
+SessionTabGroup::~SessionTabGroup() {}
+
 // SessionWindow ---------------------------------------------------------------
 
 SessionWindow::SessionWindow()
     : window_id(SessionID::NewUnique()),
       selected_tab_index(-1),
-      type(TYPE_TABBED),
+      type(TYPE_NORMAL),
       is_constrained(true),
       show_state(ui::SHOW_STATE_DEFAULT) {}
 

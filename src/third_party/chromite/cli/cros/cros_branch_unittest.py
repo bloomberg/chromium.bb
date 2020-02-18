@@ -7,8 +7,10 @@
 
 from __future__ import print_function
 
-import mock
 import os
+import unittest
+
+import mock
 
 from chromite.cbuildbot.manifest_version import VersionInfo
 from chromite.cli import command_unittest
@@ -651,7 +653,7 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     checkout.SyncFile('manifest.xml')
     manifest_path = os.path.abspath('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['repo', 'sync', '--manifest-name', manifest_path], cwd="/root")
+        ['repo', 'sync', '--manifest-name', manifest_path], cwd='/root')
 
   def testSyncFileAllOptions(self):
     """Test SyncFile passes all args to repo_sync_manifest."""
@@ -660,7 +662,7 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     checkout.SyncFile('manifest.xml')
     manifest_path = os.path.abspath('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['repo', 'sync', '--manifest-name', manifest_path], cwd="/root")
+        ['repo', 'sync', '--manifest-name', manifest_path], cwd='/root')
 
   def testAbsolutePath(self):
     """Test AbsolutePath joins root to given path."""
@@ -1573,6 +1575,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.AssertNoDiff(self.cros_root, self.cros_snapshot)
     self.AssertNoDiff(self.cros_internal_root, self.cros_internal_snapshot)
 
+  @unittest.skip('Flaking in CQ https://crbug.com/999930')
   def testCreate(self):
     """Test create runs without dying."""
     cros_build_lib.RunCommand([

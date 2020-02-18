@@ -99,8 +99,8 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/common/app.mojom.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/mojom/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -119,6 +119,7 @@
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -277,7 +278,7 @@ bool IsWindowOnDesktopOfUser(aura::Window* window,
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerTest()
-      : BrowserWithTestWindowTest(Browser::TYPE_TABBED) {}
+      : BrowserWithTestWindowTest(Browser::TYPE_NORMAL) {}
 
   ~ChromeLauncherControllerTest() override {}
 
@@ -320,6 +321,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     extension_service_ = extension_system->CreateExtensionService(
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_->Init();
+
+    DCHECK(profile());
+    extension_registry_ = extensions::ExtensionRegistry::Get(profile());
 
     bool flush_app_service_mojo_calls = false;
     if (app_service_proxy_connector_) {
@@ -416,7 +420,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest_web_app.SetString(extensions::manifest_keys::kDescription,
                                "For testing");
     web_app_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                 manifest_web_app, Extension::NO_FLAGS,
+                                 manifest_web_app, Extension::FROM_BOOKMARK,
                                  kWebAppId, &error);
   }
 
@@ -498,7 +502,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       Profile* profile) {
     TestBrowserWindow* browser_window = CreateTestBrowserWindowAura();
     new TestBrowserWindowOwner(browser_window);
-    return CreateBrowser(profile, Browser::TYPE_TABBED, false, browser_window);
+    return CreateBrowser(profile, Browser::TYPE_NORMAL, false, browser_window);
   }
 
   // Create an uninitialized chrome launcher controller instance.
@@ -750,8 +754,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
           } else if (app == extensionYoutubeApp_->id()) {
             result += "youtube";
           } else {
-            const auto* extension = extension_service_->GetExtensionById(
-                app, /*include_disabled=*/true);
+            const auto* extension = extension_registry_->GetExtensionById(
+                app, extensions::ExtensionRegistry::COMPATIBILITY);
             if (extension && !extension->name().empty()) {
               std::string name = extension->name();
               name[0] = std::tolower(name[0]);
@@ -803,8 +807,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
               }
             }
             if (!arc_app_found) {
-              const auto* extension = extension_service_->GetExtensionById(
-                  app, /*include_disabled=*/true);
+              const auto* extension = extension_registry_->GetExtensionById(
+                  app, extensions::ExtensionRegistry::COMPATIBILITY);
               if (extension && !extension->name().empty()) {
                 std::string name = extension->name();
                 name[0] = std::toupper(name[0]);
@@ -876,7 +880,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     params.bounds = gfx::Rect(5, 5, 20, 20);
     params.context = ash_test_helper()->CurrentContext();
     views::Widget* widget = new views::Widget();
-    widget->Init(params);
+    widget->Init(std::move(params));
     // Set ARC id before showing the window to be recognized in
     // ArcAppWindowLauncherController.
     exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
@@ -923,7 +927,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     params.context = GetContext();
     params.bounds = gfx::Rect(5, 5, 20, 20);
     views::Widget* widget = new views::Widget();
-    widget->Init(params);
+    widget->Init(std::move(params));
 
     aura::Window* window = widget->GetNativeWindow();
     const ash::ShelfID shelf_id(app_id);
@@ -963,6 +967,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   // |item_delegate_manager_| owns |test_controller_|.
   ash::ShelfItemDelegate* test_controller_ = nullptr;
+
+  extensions::ExtensionRegistry* extension_registry_ = nullptr;
 
   extensions::ExtensionService* extension_service_ = nullptr;
 
@@ -1035,11 +1041,11 @@ class ChromeLauncherControllerWithArcTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
 
-class ChromeLauncherControllerExtendedSheflTest
+class ChromeLauncherControllerExtendedShelfTest
     : public ChromeLauncherControllerWithArcTest {
  protected:
-  ChromeLauncherControllerExtendedSheflTest() = default;
-  ~ChromeLauncherControllerExtendedSheflTest() override = default;
+  ChromeLauncherControllerExtendedShelfTest() = default;
+  ~ChromeLauncherControllerExtendedShelfTest() override = default;
 
   void SetUp() override {
     ChromeLauncherControllerWithArcTest::SetUp();
@@ -1081,7 +1087,7 @@ class ChromeLauncherControllerExtendedSheflTest
  private:
   std::vector<scoped_refptr<Extension>> extra_extensions_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedSheflTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedShelfTest);
 };
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
@@ -1115,7 +1121,7 @@ class V1App : public TestBrowserWindow {
         kCrxAppPrefix + app_name, true /* trusted_source */, gfx::Rect(),
         profile, true);
     params.window = this;
-    browser_.reset(new Browser(params));
+    browser_ = std::make_unique<Browser>(params);
     chrome::AddTabAt(browser_.get(), GURL(), 0, true);
   }
 
@@ -1197,9 +1203,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
-
-    // AvatarMenu and multiple profiles works after user logged in.
-    profile_manager()->SetLoggedIn(true);
 
     // Ensure there are multiple profiles. User 0 is created during setup.
     CreateMultiUserProfile("user1");
@@ -1352,7 +1355,7 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, App1", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShefDefault) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, ExtendedShefDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kEnableExtendedShelfLayout,
@@ -1362,7 +1365,7 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShefDefault) {
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, Play Store", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef7Apps) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, ExtendedShef7Apps) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kEnableExtendedShelfLayout,
@@ -1373,7 +1376,7 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef7Apps) {
             GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef10Apps) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, ExtendedShef10Apps) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kEnableExtendedShelfLayout,
@@ -1386,7 +1389,7 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef10Apps) {
       GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, UpgradeFromDefault) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, UpgradeFromDefault) {
   InitLauncherController();
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, Play Store", GetPinnedAppStatus());
 
@@ -1405,7 +1408,34 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, UpgradeFromDefault) {
       GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, NoUpgradeFromNonDefault) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, NoDefaultAfterExperemental) {
+  const std::string expectations =
+      "Chrome, Gmail, Calendar, Doc, Sheets, "
+      "Slides, Files, Camera, Photos, Play Store";
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        kEnableExtendedShelfLayout,
+        {std::pair<std::string, std::string>("app_count", "10")});
+
+    InitLauncherController();
+    EXPECT_EQ(expectations, GetPinnedAppStatus());
+
+    // Trigger layout update, app_id does not matter. Experiment is still
+    // forced.
+    extension_service_->AddExtension(extension1_.get());
+
+    // Youtube is included into default but not to expermenetal. Refreshing
+    // should not affect layout.
+    EXPECT_EQ(expectations, GetPinnedAppStatus());
+  }
+
+  // Re-update but experiment is off now. No change to layout.
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_EQ(expectations, GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerExtendedShelfTest, NoUpgradeFromNonDefault) {
   InitLauncherController();
   launcher_controller_->UnpinAppWithID(extension_misc::kYoutubeAppId);
   EXPECT_EQ("Chrome, Gmail, Doc, Play Store", GetPinnedAppStatus());
@@ -2497,7 +2527,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   EXPECT_EQ("Chrome, App1, Fake App 1, App2, Fake App 0", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
+TEST_F(ChromeLauncherControllerWithArcTest, DISABLED_ArcCustomAppIcon) {
   InitLauncherController();
 
   // Wait until other apps are updated to avoid race condition while accessing
@@ -4730,7 +4760,7 @@ TEST_F(ChromeLauncherControllerTest, CrostiniBrowserWindowsRecogniseShelfItem) {
       true /* trusted_srouce */, browser()->window()->GetBounds(), profile(),
       true /* user_gesture */);
   params.window = browser()->window();
-  params.type = Browser::TYPE_TABBED;
+  params.type = Browser::TYPE_NORMAL;
   Browser* b = new Browser(params);
   set_browser(b);
   chrome::NewTab(browser());

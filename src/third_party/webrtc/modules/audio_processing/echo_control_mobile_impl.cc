@@ -56,6 +56,7 @@ AudioProcessing::Error MapError(int err) {
       return AudioProcessing::kUnspecifiedError;
   }
 }
+
 }  // namespace
 
 struct EchoControlMobileImpl::StreamProperties {
@@ -101,7 +102,10 @@ class EchoControlMobileImpl::Canceller {
 };
 
 EchoControlMobileImpl::EchoControlMobileImpl()
-    : routing_mode_(kSpeakerphone), comfort_noise_enabled_(false) {}
+    : routing_mode_(kSpeakerphone), comfort_noise_enabled_(false) {
+  low_pass_reference_[0].fill(0);
+  low_pass_reference_[1].fill(0);
+}
 
 EchoControlMobileImpl::~EchoControlMobileImpl() {}
 
@@ -128,7 +132,8 @@ void EchoControlMobileImpl::PackRenderAudioBuffer(
     size_t num_output_channels,
     size_t num_channels,
     std::vector<int16_t>* packed_buffer) {
-  RTC_DCHECK_GE(160, audio->num_frames_per_band());
+  RTC_DCHECK_GE(AudioBuffer::kMaxSplitFrameLength,
+                audio->num_frames_per_band());
   RTC_DCHECK_EQ(num_channels, audio->num_channels());
 
   // The ordering convention must be followed to pass to the correct AECM.
@@ -136,12 +141,14 @@ void EchoControlMobileImpl::PackRenderAudioBuffer(
   int render_channel = 0;
   for (size_t i = 0; i < num_output_channels; i++) {
     for (size_t j = 0; j < audio->num_channels(); j++) {
+      std::array<int16_t, AudioBuffer::kMaxSplitFrameLength> data_to_buffer;
+      FloatS16ToS16(audio->split_bands_const(render_channel)[kBand0To8kHz],
+                    audio->num_frames_per_band(), data_to_buffer.data());
+
       // Buffer the samples in the render queue.
       packed_buffer->insert(
-          packed_buffer->end(),
-          audio->split_bands_const(render_channel)[kBand0To8kHz],
-          (audio->split_bands_const(render_channel)[kBand0To8kHz] +
-           audio->num_frames_per_band()));
+          packed_buffer->end(), data_to_buffer.data(),
+          data_to_buffer.data() + audio->num_frames_per_band());
       render_channel = (render_channel + 1) % audio->num_channels();
     }
   }
@@ -168,8 +175,24 @@ int EchoControlMobileImpl::ProcessCaptureAudio(AudioBuffer* audio,
   for (size_t capture = 0; capture < audio->num_channels(); ++capture) {
     // TODO(ajm): improve how this works, possibly inside AECM.
     //            This is kind of hacked up.
-    const int16_t* noisy = audio->low_pass_reference(capture);
-    const int16_t* clean = audio->split_bands_const(capture)[kBand0To8kHz];
+    RTC_DCHECK_LT(capture, low_pass_reference_.size());
+    const int16_t* noisy =
+        reference_copied_ ? low_pass_reference_[capture].data() : nullptr;
+
+    RTC_DCHECK_GE(AudioBuffer::kMaxSplitFrameLength,
+                  audio->num_frames_per_band());
+
+    std::array<int16_t, AudioBuffer::kMaxSplitFrameLength> split_bands_data;
+    int16_t* split_bands = split_bands_data.data();
+    const int16_t* clean = split_bands_data.data();
+    if (audio->split_bands(capture)[kBand0To8kHz]) {
+      FloatS16ToS16(audio->split_bands(capture)[kBand0To8kHz],
+                    audio->num_frames_per_band(), split_bands_data.data());
+    } else {
+      clean = nullptr;
+      split_bands = nullptr;
+    }
+
     if (noisy == NULL) {
       noisy = clean;
       clean = NULL;
@@ -177,8 +200,13 @@ int EchoControlMobileImpl::ProcessCaptureAudio(AudioBuffer* audio,
     for (size_t render = 0; render < stream_properties_->num_reverse_channels;
          ++render) {
       err = WebRtcAecm_Process(cancellers_[handle_index]->state(), noisy, clean,
-                               audio->split_bands(capture)[kBand0To8kHz],
-                               audio->num_frames_per_band(), stream_delay_ms);
+                               split_bands, audio->num_frames_per_band(),
+                               stream_delay_ms);
+
+      if (split_bands) {
+        S16ToFloatS16(split_bands, audio->num_frames_per_band(),
+                      audio->split_bands(capture)[kBand0To8kHz]);
+      }
 
       if (err != AudioProcessing::kNoError) {
         return MapError(err);
@@ -187,12 +215,22 @@ int EchoControlMobileImpl::ProcessCaptureAudio(AudioBuffer* audio,
       ++handle_index;
     }
     for (size_t band = 1u; band < audio->num_bands(); ++band) {
-      memset(audio->split_bands(capture)[band], 0,
+      memset(audio->split_bands_f(capture)[band], 0,
              audio->num_frames_per_band() *
-                 sizeof(audio->split_bands(capture)[band][0]));
+                 sizeof(audio->split_bands_f(capture)[band][0]));
     }
   }
   return AudioProcessing::kNoError;
+}
+
+void EchoControlMobileImpl::CopyLowPassReference(AudioBuffer* audio) {
+  RTC_DCHECK_LE(audio->num_channels(), low_pass_reference_.size());
+  reference_copied_ = true;
+  for (size_t capture = 0; capture < audio->num_channels(); ++capture) {
+    FloatS16ToS16(audio->split_bands_const(capture)[kBand0To8kHz],
+                  audio->num_frames_per_band(),
+                  low_pass_reference_[capture].data());
+  }
 }
 
 int EchoControlMobileImpl::set_routing_mode(RoutingMode mode) {
@@ -219,6 +257,9 @@ bool EchoControlMobileImpl::is_comfort_noise_enabled() const {
 void EchoControlMobileImpl::Initialize(int sample_rate_hz,
                                        size_t num_reverse_channels,
                                        size_t num_output_channels) {
+  low_pass_reference_[0].fill(0);
+  low_pass_reference_[1].fill(0);
+
   stream_properties_.reset(new StreamProperties(
       sample_rate_hz, num_reverse_channels, num_output_channels));
 

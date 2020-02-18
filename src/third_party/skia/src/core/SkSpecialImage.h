@@ -8,12 +8,10 @@
 #ifndef SkSpecialImage_DEFINED
 #define SkSpecialImage_DEFINED
 
+#include "include/core/SkImageInfo.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkSurfaceProps.h"
 #include "src/core/SkNextID.h"
-
-#include "include/core/SkImageFilter.h"
-#include "include/core/SkImageInfo.h"
 
 class GrRecordingContext;
 class GrTextureProxy;
@@ -62,7 +60,7 @@ public:
      *  If no transformation is required, the returned image may be the same as this special image.
      *  If this special image is from a different GrRecordingContext, this will fail.
      */
-    sk_sp<SkSpecialImage> makeTextureImage(GrRecordingContext*);
+    sk_sp<SkSpecialImage> makeTextureImage(GrRecordingContext*) const;
 
     /**
      *  Draw this SpecialImage into the canvas, automatically taking into account the image's subset
@@ -92,7 +90,8 @@ public:
     /**
      *  Create a new special surface with a backend that is compatible with this special image.
      */
-    sk_sp<SkSpecialSurface> makeSurface(const SkImageFilter::OutputProperties& outProps,
+    sk_sp<SkSpecialSurface> makeSurface(SkColorType colorType,
+                                        const SkColorSpace* colorSpace,
                                         const SkISize& size,
                                         SkAlphaType at = kPremul_SkAlphaType,
                                         const SkSurfaceProps* props = nullptr) const;
@@ -100,8 +99,11 @@ public:
     /**
      * Create a new surface with a backend that is compatible with this special image.
      * TODO: switch this to makeSurface once we resolved the naming issue
+     * TODO (michaelludwig) - This is only used by SkTileImageFilter, which appears should be
+     * updated to work correctly with subsets and then makeTightSurface() can go away entirely.
      */
-    sk_sp<SkSurface> makeTightSurface(const SkImageFilter::OutputProperties& outProps,
+    sk_sp<SkSurface> makeTightSurface(SkColorType colorType,
+                                      const SkColorSpace* colorSpace,
                                       const SkISize& size,
                                       SkAlphaType at = kPremul_SkAlphaType) const;
 

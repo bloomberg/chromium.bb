@@ -52,7 +52,7 @@ class PresubmitApi(recipe_api.RecipeApi):
     """
     # Expect callers to have already set up their gclient configuration.
 
-    bot_update_step = self.m.bot_update.ensure_checkout()
+    bot_update_step = self.m.bot_update.ensure_checkout(timeout=3600)
     relative_root = self.m.gclient.get_gerrit_patch_root().rstrip('/')
 
     abs_root = self.m.context.cwd.join(relative_root)

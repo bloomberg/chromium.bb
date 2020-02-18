@@ -103,9 +103,7 @@ int ReadInternal(std::vector<std::unique_ptr<std::string>>* pending_data,
 LocalReaderProxy::LocalReaderProxy(
     std::unique_ptr<util::LocalFileReader> file_reader,
     int64_t length)
-    : file_reader_(std::move(file_reader)),
-      remaining_length_(length),
-      weak_ptr_factory_(this) {
+    : file_reader_(std::move(file_reader)), remaining_length_(length) {
   DCHECK(file_reader_);
 }
 
@@ -319,7 +317,7 @@ void GetFileContent(
     const base::Callback<void(const base::Closure&)>& reply_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::Bind(&GetFileContentOnUIThread, file_system_getter, drive_file_path,
                  base::Passed(google_apis::CreateRelayCallback(
@@ -335,9 +333,7 @@ DriveFileStreamReader::DriveFileStreamReader(
     const FileSystemGetter& file_system_getter,
     base::SequencedTaskRunner* file_task_runner)
     : file_system_getter_(file_system_getter),
-      file_task_runner_(file_task_runner),
-      weak_ptr_factory_(this) {
-}
+      file_task_runner_(file_task_runner) {}
 
 DriveFileStreamReader::~DriveFileStreamReader() = default;
 

@@ -120,7 +120,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -3301,11 +3301,9 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   MediaStreamObserver::Trace(visitor);
 }
 
-base::TimeTicks RTCPeerConnection::WebRtcMsToBlinkTimeTicks(
-    double webrtc_monotonic_time_ms) const {
-  return base::TimeTicks() +
-         base::TimeDelta::FromMilliseconds(webrtc_monotonic_time_ms) +
-         blink_webrtc_time_diff_;
+base::TimeTicks RTCPeerConnection::WebRtcTimestampToBlinkTimestamp(
+    base::TimeTicks webrtc_monotonic_time) const {
+  return webrtc_monotonic_time + blink_webrtc_time_diff_;
 }
 
 int RTCPeerConnection::PeerConnectionCount() {

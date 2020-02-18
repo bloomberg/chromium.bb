@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Bildupplösning</translation>
 <translation id="1943097386230153518">Installera ny tjänst</translation>
 <translation id="1947424002851288782">Tyskt tangentbord</translation>
+<translation id="1972984168337863910">Utöka panel med information om filåtgärder</translation>
 <translation id="197560921582345123">Kan redigera</translation>
 <translation id="1984603991036629094">Armeniskt fonetiskt tangentbord</translation>
 <translation id="2001796770603320721">Hantera i Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Du måste vara online för att kunna öppna filen.</translation>
 <translation id="4212740939091998969">Det finns redan en mapp med namnet <ph name="FOLDER_NAME" />. Välj ett annat namn.</translation>
 <translation id="4215448920900139318">Säkerhetskopierar <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="426015154560005552">Tangentbord för arabiska</translation>
 <translation id="4261901459838235729">Presentation i Google Dokument</translation>
 <translation id="4290535918735525311">1 mapp delas med Linux</translation>
-<translation id="42981349822642051">Expandera</translation>
 <translation id="4298972503445160211">Danskt tangentbord </translation>
 <translation id="4299729908419173967">brasilianska</translation>
 <translation id="4309915981827077375">Allmän information</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Åtgärda automatiskt</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4886021172213954916">Tangentbord för tamil (skrivmaskin)</translation>
-<translation id="4892969127351273348">Det går inte att öppna med <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Klar att säkerhetskopiera <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Åtgärdat</translation>
 <translation id="4935975195727477204">Gazaniablomma</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Schweizisk franska</translation>
 <translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="5241298539944515331">Tangentbord för vietnamesiska (VIQR)</translation>
-<translation id="52446585071384036">Kopiera först filer till mappen för Linux-filer om du vill öppna dem med <ph name="APP_NAME" />.</translation>
 <translation id="5253070652067921974">Skapad av</translation>
 <translation id="5257456363153333584">Trollslända</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Få åtkomst till filer var som helst – även offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">koreanska</translation>
 <translation id="5819442873484330149">Hangul 3 Set (final)</translation>
 <translation id="5833610766403489739">Den här filen verkar ha gått sin väg. Kontrollera inställningen för nedladdade filer och försök igen.</translation>
-<translation id="5838051104334203064">Appar på Play Butik har inte tillgång till den här enheten</translation>
 <translation id="5838451609423551646">Alla poster har avmarkerats.</translation>
 <translation id="5838825566232597749">US Workman (internationellt)</translation>
 <translation id="5850516540536751549">Filtypen stöds inte. Besök <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> om du vill hitta en app som kan öppna den här filen.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Om du vill spara filerna och använda dem offline ansluter du till internet igen, högerklickar på filerna och väljer alternativet <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Avbryt</translation>
 <translation id="8261506727792406068">Radera</translation>
+<translation id="8269755669432358899">Komprimera panel med information om filåtgärder</translation>
 <translation id="8279388322240498158">Tangentbord på sorani/kurdiska och engelska</translation>
 <translation id="8280151743281770066">Armeniska (fonetiskt)</translation>
 <translation id="8294431847097064396">Källa</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Välj fil att öppna</translation>
 <translation id="8579285237314169903">Synkroniserar <ph name="NUMBER_OF_FILES" /> objekt ...</translation>
 <translation id="8600173386174225982">Fillistan har ändrats till miniatyrvy.</translation>
+<translation id="8601932370724196034">Bildfil för Crostini</translation>
 <translation id="8669949407341943408">Flyttar …</translation>
 <translation id="8671210955687109937">Kan kommentera</translation>
 <translation id="8686213429977032554">Den här filen i Drive delas inte ännu</translation>

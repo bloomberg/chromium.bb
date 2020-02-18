@@ -6,16 +6,14 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("common") {
   sources = [
+    "dmabuf.mojom",
     "jpeg_encode_accelerator.mojom",
     "mjpeg_decode_accelerator.mojom",
   ]
 
   public_deps = [
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }

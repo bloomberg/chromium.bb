@@ -158,11 +158,11 @@ class RepoRepository(object):
     # settings aren't disabled due to it.
     if referenced_repo is not None:
       if depth is not None:
-        raise ValueError("referenced_repo and depth are mutually exclusive "
-                         "options; please pick one or the other.")
+        raise ValueError('referenced_repo and depth are mutually exclusive '
+                         'options; please pick one or the other.')
       if git_cache_dir is not None:
-        raise ValueError("referenced_repo and git_cache_dir are mutually "
-                         "exclusive options; please pick one or the other.")
+        raise ValueError('referenced_repo and git_cache_dir are mutually '
+                         'exclusive options; please pick one or the other.')
       if not IsARepoRoot(referenced_repo):
         referenced_repo = None
 
@@ -233,7 +233,7 @@ class RepoRepository(object):
       kwargs.setdefault('input', '\n\ny\n')
       cros_build_lib.RunCommand(*args, **kwargs)
     except cros_build_lib.RunCommandError as e:
-      logging.warning("Wiping %r due to `repo init` failures.", self.directory)
+      logging.warning('Wiping %r due to `repo init` failures.', self.directory)
       self._CleanUpRepoManifest(self.directory)
       raise e
 
@@ -380,7 +380,7 @@ class RepoRepository(object):
 
     logging.info("Preloading '%s' from '%s'.", self.directory, source_repo)
     repo_util.Repository(source_repo).Copy(self.directory)
-    logging.info("Preload Finsihed.")
+    logging.info('Preload Finsihed.')
 
 
   def Initialize(self, local_manifest=None, manifest_repo_url=None,
@@ -407,7 +407,7 @@ class RepoRepository(object):
         cros_build_lib.RunCommand(cmd, cwd=self.directory, capture_output=True)
       except cros_build_lib.RunCommandError:
         metrics.Counter(constants.MON_REPO_MANIFEST_FAILURE_COUNT).increment()
-        logging.warning("Wiping %r due to `repo manifest` failure",
+        logging.warning('Wiping %r due to `repo manifest` failure',
                         self.directory)
         self._CleanUpRepoManifest(self.directory)
         self._repo_update_needed = False
@@ -666,7 +666,7 @@ class RepoRepository(object):
     modified = git.RunGit(os.path.join(self.directory, '.repo/manifests'),
                           ['rev-list', '-n1', 'HEAD'])
     assert modified.output
-    return output.replace("<manifest>", '<manifest revision="%s">' %
+    return output.replace('<manifest>', '<manifest revision="%s">' %
                           modified.output.strip())
 
   def IsManifestDifferent(self, other_manifest):

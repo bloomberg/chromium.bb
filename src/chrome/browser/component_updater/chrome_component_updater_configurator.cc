@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
@@ -27,6 +28,8 @@
 #include "components/component_updater/configurator_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/patch/content/patch_service.h"
+#include "components/services/unzip/content/unzip_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"
@@ -35,9 +38,7 @@
 #include "components/update_client/unzipper.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
@@ -193,7 +194,7 @@ ChromeConfigurator::GetUnzipperFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!unzip_factory_) {
     unzip_factory_ = base::MakeRefCounted<update_client::UnzipChromiumFactory>(
-        content::GetSystemConnector()->Clone());
+        base::BindRepeating(&unzip::LaunchUnzipper));
   }
   return unzip_factory_;
 }
@@ -203,7 +204,7 @@ ChromeConfigurator::GetPatcherFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!patch_factory_) {
     patch_factory_ = base::MakeRefCounted<update_client::PatchChromiumFactory>(
-        content::GetSystemConnector()->Clone());
+        base::BindRepeating(&patch::LaunchFilePatcher));
   }
   return patch_factory_;
 }
@@ -256,7 +257,7 @@ ChromeConfigurator::GetProtocolHandlerFactory() const {
 
 update_client::RecoveryCRXElevator ChromeConfigurator::GetRecoveryCRXElevator()
     const {
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
   return base::BindOnce(&RunRecoveryCRXElevated);
 #else
   return {};

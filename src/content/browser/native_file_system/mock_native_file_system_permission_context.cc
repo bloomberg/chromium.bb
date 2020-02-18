@@ -23,11 +23,20 @@ void MockNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
 void MockNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
     const url::Origin& origin,
     const std::vector<base::FilePath>& paths,
+    bool is_directory,
     int process_id,
     int frame_id,
     base::OnceCallback<void(SensitiveDirectoryResult)> callback) {
-  ConfirmSensitiveDirectoryAccess_(origin, paths, process_id, frame_id,
-                                   callback);
+  ConfirmSensitiveDirectoryAccess_(origin, paths, is_directory, process_id,
+                                   frame_id, callback);
+}
+
+void MockNativeFileSystemPermissionContext::PerformSafeBrowsingChecks(
+    std::unique_ptr<NativeFileSystemWriteItem> item,
+    int process_id,
+    int frame_id,
+    base::OnceCallback<void(SafeBrowsingResult)> callback) {
+  PerformSafeBrowsingChecks_(item.get(), process_id, frame_id, callback);
 }
 
 }  // namespace content

@@ -29,8 +29,7 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/resource_request_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -123,12 +122,12 @@ class ChromeOSTermsTest : public testing::Test {
   // Starts data request with the |request_url|.
   void StartRequest(const std::string& request_url,
                     TestDataReceiver* data_receiver) {
-    content::ResourceRequestInfo::WebContentsGetter wc_getter;
+    content::WebContents::Getter wc_getter;
     tested_html_source_->StartDataRequest(
         request_url, std::move(wc_getter),
         base::BindRepeating(&TestDataReceiver::OnDataReceived,
                             base::Unretained(data_receiver)));
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   const base::FilePath& PreinstalledOfflineResourcesPath() {
@@ -139,7 +138,7 @@ class ChromeOSTermsTest : public testing::Test {
   base::ScopedTempDir preinstalled_offline_resources_dir_;
   base::FilePath arc_tos_dir_;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
 

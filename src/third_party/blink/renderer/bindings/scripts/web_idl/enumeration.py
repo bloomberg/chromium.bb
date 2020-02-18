@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithExtendedAttributes
-from .identifier_ir_map import IdentifierIRMap
+from .code_generator_info import CodeGeneratorInfo
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExtendedAttributes
+from .ir_map import IRMap
+from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
 
@@ -15,7 +16,7 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
                   WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-enums"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -24,25 +25,35 @@ class Enumeration(UserDefinedType, WithExtendedAttributes,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
-            IdentifierIRMap.IR.__init__(
-                self,
-                identifier=identifier,
-                kind=IdentifierIRMap.IR.Kind.ENUMERATION)
+            assert isinstance(values, (list, tuple))
+            assert all(isinstance(value, str) for value in values)
+
+            IRMap.IR.__init__(
+                self, identifier=identifier, kind=IRMap.IR.Kind.ENUMERATION)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
-            assert isinstance(values, (list, tuple))
-            self.values = tuple(values)
+            self.values = list(values)
+
+    def __init__(self, ir):
+        assert isinstance(ir, Enumeration.IR)
+
+        ir = make_copy(ir)
+        UserDefinedType.__init__(self, ir.identifier)
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info)
+
+        self._values = tuple(ir.values)
 
     @property
     def values(self):
-        """
-        Returns a list of values listed in this enumeration.
-        @return tuple(str)
-        """
-        raise exceptions.NotImplementedError()
+        """Returns the list of enum values."""
+        return self._values
 
     # UserDefinedType overrides
     @property

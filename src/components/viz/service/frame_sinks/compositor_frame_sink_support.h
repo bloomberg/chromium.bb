@@ -25,8 +25,8 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/viz_service_export.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
 
@@ -111,7 +111,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDestroyed(Surface* surface) override;
-  void OnSurfaceDrawn(Surface* surface) override;
+  void OnSurfaceWillDraw(Surface* surface) override;
+  void OnSurfaceWasDrawn(uint32_t frame_token,
+                         base::TimeTicks draw_start_timestamp) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
   void UnrefResources(const std::vector<ReturnedResource>& resources) override;
@@ -211,10 +213,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
-  void DidPresentCompositorFrame(uint32_t presentation_token,
+  void DidPresentCompositorFrame(uint32_t frame_token,
                                  const gfx::PresentationFeedback& feedback);
   void DidRejectCompositorFrame(
-      uint32_t presentation_token,
+      uint32_t frame_token,
       std::vector<TransferableResource> frame_resource_list);
 
   // Update the display root reference with |surface|.
@@ -324,6 +326,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
+  // Contains FrameTimingDetails for in-flight frames that have not yet been
+  // presented or aborted. After presentation the details are moved into
+  // |frame_timing_details_| which is sent to the client and cleared with each
+  // OnBeginFrame()
+  FrameTimingDetailsMap pending_frame_timing_details_;
   FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;
 

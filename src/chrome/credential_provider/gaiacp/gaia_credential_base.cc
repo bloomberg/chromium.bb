@@ -1697,12 +1697,20 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
   // Write account info to stdin of child process.  This buffer is read by
   // SaveAccountInfoW() in dllmain.cpp.  If this fails, chrome won't pick up
   // the credentials from the credential provider and will need to sign in
-  // manually.  TODO(crbug.com/902911): Figure out how to handle this.
+  // manually.
   std::string json;
   if (base::JSONWriter::Write(dict, &json)) {
-    DWORD written;
-    if (!::WriteFile(parent_handles.hstdin_write.Get(), json.c_str(),
-                     json.length() + 1, &written, /*lpOverlapped=*/nullptr)) {
+    const DWORD buffer_size = json.length() + 1;
+    LOGFN(INFO) << "Json size: " << buffer_size;
+
+    DWORD written = 0;
+    // First, write the buffer size then write the buffer content.
+    if (!::WriteFile(parent_handles.hstdin_write.Get(), &buffer_size,
+                     sizeof(buffer_size), &written, /*lpOverlapped=*/nullptr)) {
+      HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
+    } else if (!::WriteFile(parent_handles.hstdin_write.Get(), json.c_str(),
+                            buffer_size, &written, /*lpOverlapped=*/nullptr)) {
       HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
       LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
     }
@@ -1987,7 +1995,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
         allow_consumer_accounts == 0) {
       LOGFN(ERROR) << "Consumer accounts are not allowed mdm_aca="
                    << allow_consumer_accounts;
-      *error_text = AllocErrorString(IDS_INVALID_EMAIL_DOMAIN_BASE);
+      *error_text = AllocErrorString(IDS_DISALLOWED_CONSUMER_EMAIL_BASE);
       return E_FAIL;
     }
   }

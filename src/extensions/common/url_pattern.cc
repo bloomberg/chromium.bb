@@ -144,14 +144,12 @@ URLPattern::URLPattern()
     : valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),
       match_subdomains_(false),
-      match_effective_tld_(true),
       port_("*") {}
 
 URLPattern::URLPattern(int valid_schemes)
     : valid_schemes_(valid_schemes),
       match_all_urls_(false),
       match_subdomains_(false),
-      match_effective_tld_(true),
       port_("*") {}
 
 URLPattern::URLPattern(int valid_schemes, base::StringPiece pattern)
@@ -160,7 +158,6 @@ URLPattern::URLPattern(int valid_schemes, base::StringPiece pattern)
     : valid_schemes_(valid_schemes),
       match_all_urls_(false),
       match_subdomains_(false),
-      match_effective_tld_(true),
       port_("*") {
   ParseResult result = Parse(pattern);
   if (result != ParseResult::kSuccess) {
@@ -202,15 +199,9 @@ std::ostream& operator<<(std::ostream& out, const URLPattern& url_pattern) {
 }
 
 URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern) {
-  return Parse(pattern, DENY_WILDCARD_FOR_EFFECTIVE_TLD);
-}
-
-URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
-                                          ParseOptions parse_options) {
   spec_.clear();
   SetMatchAllURLs(false);
   SetMatchSubdomains(false);
-  SetMatchEffectiveTld(true);
   SetPort("*");
 
   // Special case pattern to match every valid URL.
@@ -306,28 +297,22 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
     // wasn't found.
     base::StringPiece host_piece = host_and_port.substr(0, port_separator_pos);
 
-    // The first component can optionally be '*' to match all subdomains.
-    std::vector<base::StringPiece> host_components = base::SplitStringPiece(
-        host_piece, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-    // Could be empty if the host only consists of whitespace characters.
-    if (host_components.empty() ||
-        (host_components.size() == 1 && host_components[0].empty()))
+    if (host_piece.empty())
       return ParseResult::kEmptyHost;
 
-    if (host_components[0] == "*") {
+    if (host_piece == "*") {
       match_subdomains_ = true;
-      host_components.erase(host_components.begin());
+      host_piece.clear();
+    } else if (host_piece.starts_with("*.")) {
+      if (host_piece.length() == 2) {
+        // We don't allow just '*.' as a host.
+        return ParseResult::kEmptyHost;
+      }
+      match_subdomains_ = true;
+      host_piece = host_piece.substr(2);
     }
 
-    // If explicitly allowed, the last component can optionally be '*' to
-    // match all effective TLDs.
-    if (parse_options == ALLOW_WILDCARD_FOR_EFFECTIVE_TLD &&
-        host_components.size() > 1 && host_components.back() == "*") {
-      match_effective_tld_ = false;
-      host_components.pop_back();
-    }
-    host_ = base::JoinString(host_components, ".");
+    host_ = host_piece.as_string();
 
     path_start_pos = host_end_pos;
   }
@@ -386,11 +371,6 @@ void URLPattern::SetMatchAllURLs(bool val) {
 void URLPattern::SetMatchSubdomains(bool val) {
   spec_.clear();
   match_subdomains_ = val;
-}
-
-void URLPattern::SetMatchEffectiveTld(bool val) {
-  spec_.clear();
-  match_effective_tld_ = val;
 }
 
 bool URLPattern::SetScheme(base::StringPiece scheme) {
@@ -501,16 +481,6 @@ bool URLPattern::MatchesHost(const GURL& test) const {
   base::StringPiece test_host(CanonicalizeHostForMatching(test.host_piece()));
   const base::StringPiece pattern_host(CanonicalizeHostForMatching(host_));
 
-  // If we don't care about matching the effective TLD, remove it.
-  if (!match_effective_tld_) {
-    int reg_length = net::registry_controlled_domains::GetRegistryLength(
-        test, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-        net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-    if (reg_length > 0) {
-      test_host = test_host.substr(0, test_host.size() - reg_length - 1);
-    }
-  }
-
   // If the hosts are exactly equal, we have a match.
   if (test_host == pattern_host)
     return true;
@@ -613,12 +583,6 @@ const std::string& URLPattern::GetAsString() const {
     if (!host_.empty())
       spec += host_;
 
-    if (!match_effective_tld_) {
-      if (!host_.empty())
-        spec += ".";
-      spec += "*";
-    }
-
     if (port_ != "*") {
       spec += ":";
       spec += port_;
@@ -661,9 +625,6 @@ bool URLPattern::Contains(const URLPattern& other) const {
 
 base::Optional<URLPattern> URLPattern::CreateIntersection(
     const URLPattern& other) const {
-  DCHECK(match_effective_tld_);
-  DCHECK(other.match_effective_tld_);
-
   // Easy case: Schemes don't overlap. Return nullopt.
   int intersection_schemes = URLPattern::SCHEME_NONE;
   if (valid_schemes_ == URLPattern::SCHEME_ALL)

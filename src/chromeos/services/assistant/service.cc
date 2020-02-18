@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/public/cpp/session/session_controller.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -27,18 +27,14 @@
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
-#include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/scope_set.h"
-#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/assistant/internal/internal_constants.h"
@@ -64,22 +60,18 @@ constexpr base::TimeDelta kMinTokenRefreshDelay =
 constexpr base::TimeDelta kMaxTokenRefreshDelay =
     base::TimeDelta::FromMilliseconds(60 * 1000);
 
+// Testing override for the AssistantSettingsManager implementation.
+AssistantSettingsManager* g_settings_manager_override = nullptr;
+
 }  // namespace
 
-Service::Service(service_manager::mojom::ServiceRequest request,
+Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
                  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                      url_loader_factory_info)
-    : service_binding_(this, std::move(request)),
-      platform_binding_(this),
+    : receiver_(this, std::move(receiver)),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      power_manager_observer_(this),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
-      pref_connection_delegate_(std::make_unique<PrefConnectionDelegate>()),
-      weak_ptr_factory_(this) {
-  registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
-      &Service::BindAssistantPlatformConnection, base::Unretained(this)));
-
+      url_loader_factory_info_(std::move(url_loader_factory_info)) {
   // TODO(xiaohuic): in MASH we will need to setup the dbus client if assistant
   // service runs in its own process.
   chromeos::PowerManagerClient* power_manager_client =
@@ -90,11 +82,18 @@ Service::Service(service_manager::mojom::ServiceRequest request,
 
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  assistant_state_.RemoveObserver(this);
   auto* const session_controller = ash::SessionController::Get();
   if (observing_ash_session_ && session_controller) {
     session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
                                                                     this);
   }
+}
+
+// static
+void Service::OverrideSettingsManagerForTesting(
+    AssistantSettingsManager* manager) {
+  g_settings_manager_override = manager;
 }
 
 void Service::RequestAccessToken() {
@@ -116,8 +115,7 @@ bool Service::ShouldEnableHotword() {
 
   // Disable hotword if hotword is not set to always on and power source is not
   // connected.
-  if (!dsp_available &&
-      !pref_service_->GetBoolean(prefs::kAssistantHotwordAlwaysOn) &&
+  if (!dsp_available && !assistant_state_.hotword_always_on().value_or(false) &&
       !power_source_connected_) {
     return false;
   }
@@ -134,40 +132,52 @@ void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
   token_refresh_timer_ = std::move(timer);
 }
 
-void Service::SetPrefConnectionDelegateForTesting(
-    std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate) {
-  pref_connection_delegate_ = std::move(pref_connection_delegate);
+AssistantStateProxy* Service::GetAssistantStateProxyForTesting() {
+  return &assistant_state_;
 }
 
-void Service::OnStart() {
+void Service::Init(mojom::ClientPtr client,
+                   mojom::DeviceActionsPtr device_actions,
+                   bool is_test) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_test_ = is_test;
+  client_ = std::move(client);
+  device_actions_ = std::move(device_actions);
 
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  prefs::RegisterProfilePrefsForeign(pref_registry.get());
+  assistant_state_.Init(client_.get());
+  assistant_state_.AddObserver(this);
 
-  pref_connection_delegate_->ConnectToPrefService(
-      service_binding_.GetConnector(), std::move(pref_registry),
-      base::Bind(&Service::OnPrefServiceConnected, base::Unretained(this)));
+  DCHECK(!assistant_manager_service_);
+
+  // Don't fetch token for test.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    is_signed_out_mode_ = true;
+    return;
+  }
+
+  RequestAccessToken();
 }
 
-void Service::OnConnect(const service_manager::BindSourceInfo& source_info,
-                        const std::string& interface_name,
-                        mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void Service::BindAssistantConnection(mojom::AssistantRequest request) {
+void Service::BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(assistant_manager_service_);
-  bindings_.AddBinding(assistant_manager_service_.get(), std::move(request));
+  assistant_receivers_.Add(assistant_manager_service_.get(),
+                           std::move(receiver));
 }
 
-void Service::BindAssistantPlatformConnection(
-    mojom::AssistantPlatformRequest request) {
+void Service::BindSettingsManager(
+    mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  platform_binding_.Bind(std::move(request));
+
+  if (g_settings_manager_override) {
+    g_settings_manager_override->BindRequest(std::move(receiver));
+    return;
+  }
+
+  DCHECK(assistant_manager_service_);
+  assistant_manager_service_->GetAssistantSettingsManager()->BindRequest(
+      std::move(receiver));
 }
 
 void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
@@ -211,7 +221,7 @@ void Service::OnLockStateChanged(bool locked) {
   UpdateListeningState();
 }
 
-void Service::OnAssistantHotwordAlwaysOn() {
+void Service::OnAssistantHotwordAlwaysOn(bool hotword_always_on) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No need to update hotword status if power source is connected.
   if (power_source_connected_)
@@ -220,11 +230,11 @@ void Service::OnAssistantHotwordAlwaysOn() {
   UpdateAssistantManagerState();
 }
 
-void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void Service::OnAssistantSettingsEnabled(bool enabled) {
   UpdateAssistantManagerState();
 }
 
-void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
+void Service::OnAssistantHotwordEnabled(bool enabled) {
   UpdateAssistantManagerState();
 }
 
@@ -242,9 +252,6 @@ void Service::OnLockedFullScreenStateChanged(bool enabled) {
 
 void Service::UpdateAssistantManagerState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!pref_service_)
-    return;
 
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
@@ -300,59 +307,10 @@ void Service::UpdateAssistantManagerState() {
   }
 }
 
-void Service::BindAssistantSettingsManager(
-    mojom::AssistantSettingsManagerRequest request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(assistant_manager_service_);
-  assistant_manager_service_->GetAssistantSettingsManager()->BindRequest(
-      std::move(request));
-}
-
-void Service::Init(mojom::ClientPtr client,
-                   mojom::DeviceActionsPtr device_actions,
-                   bool is_test) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_test_ = is_test;
-  client_ = std::move(client);
-  device_actions_ = std::move(device_actions);
-  assistant_state_.Init(service_binding_.GetConnector());
-  assistant_state_.AddObserver(this);
-
-  // Don't fetch token for test.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableGaiaServices)) {
-    is_signed_out_mode_ = true;
-    return;
-  }
-
-  RequestAccessToken();
-}
-
-void Service::OnPrefServiceConnected(
-    std::unique_ptr<::PrefService> pref_service) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(b/110211045): Add testing support for Assistant prefs.
-  if (!pref_service)
-    return;
-
-  pref_service_ = std::move(pref_service);
-
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service_.get());
-
-  pref_change_registrar_->Add(
-      chromeos::assistant::prefs::kAssistantHotwordAlwaysOn,
-      base::BindRepeating(&Service::OnAssistantHotwordAlwaysOn,
-                          base::Unretained(this)));
-}
-
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_accessor_) {
-    service_binding_.GetConnector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_accessor_));
-  }
+  if (!identity_accessor_)
+    client_->RequestIdentityAccessor(mojo::MakeRequest(&identity_accessor_));
   return identity_accessor_.get();
 }
 
@@ -427,14 +385,15 @@ void Service::CreateAssistantManagerService() {
     return;
   }
 
+  DCHECK(client_);
+
   device::mojom::BatteryMonitorPtr battery_monitor;
-  service_binding_.GetConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&battery_monitor));
+  client_->RequestBatteryMonitor(mojo::MakeRequest(&battery_monitor));
 
   // |assistant_manager_service_| is only created once.
   DCHECK(url_loader_factory_info_);
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      service_binding_.GetConnector(), std::move(battery_monitor), this,
+      client_.get(), std::move(battery_monitor), this,
       std::move(url_loader_factory_info_));
 #else
   assistant_manager_service_ =
@@ -451,32 +410,25 @@ void Service::FinalizeAssistantManagerService() {
   // Using session_observer_binding_ as a flag to control onetime initialization
   if (!observing_ash_session_) {
     // Bind to the AssistantController in ash.
-    service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                                   &assistant_controller_);
-
-    mojom::AssistantPtr ptr;
-    BindAssistantConnection(mojo::MakeRequest(&ptr));
-    assistant_controller_->SetAssistant(std::move(ptr));
+    client_->RequestAssistantController(
+        mojo::MakeRequest(&assistant_controller_));
+    mojo::PendingRemote<mojom::Assistant> remote_for_controller;
+    BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
+    assistant_controller_->SetAssistant(std::move(remote_for_controller));
 
     if (features::IsTimerNotificationEnabled()) {
       // Bind to the AssistantAlarmTimerController in ash.
-      service_binding_.GetConnector()->BindInterface(
-          ash::mojom::kServiceName, &assistant_alarm_timer_controller_);
+      client_->RequestAssistantAlarmTimerController(
+          mojo::MakeRequest(&assistant_alarm_timer_controller_));
     }
 
     // Bind to the AssistantNotificationController in ash.
-    service_binding_.GetConnector()->BindInterface(
-        ash::mojom::kServiceName, &assistant_notification_controller_);
+    client_->RequestAssistantNotificationController(
+        mojo::MakeRequest(&assistant_notification_controller_));
 
     // Bind to the AssistantScreenContextController in ash.
-    service_binding_.GetConnector()->BindInterface(
-        ash::mojom::kServiceName, &assistant_screen_context_controller_);
-
-    registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
-        &Service::BindAssistantConnection, base::Unretained(this)));
-
-    registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
-        &Service::BindAssistantSettingsManager, base::Unretained(this)));
+    client_->RequestAssistantScreenContextController(
+        mojo::MakeRequest(&assistant_screen_context_controller_));
 
     AddAshSessionObserver();
   }

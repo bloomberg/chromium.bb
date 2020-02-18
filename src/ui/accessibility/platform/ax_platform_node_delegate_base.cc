@@ -36,9 +36,7 @@ const AXTree::Selection AXPlatformNodeDelegateBase::GetUnignoredSelection()
 }
 
 AXNodePosition::AXPositionInstance
-AXPlatformNodeDelegateBase::CreateTextPositionAt(
-    int offset,
-    ax::mojom::TextAffinity affinity) const {
+AXPlatformNodeDelegateBase::CreateTextPositionAt(int offset) const {
   return AXNodePosition::CreateNullPosition();
 }
 
@@ -398,6 +396,11 @@ base::string16 AXPlatformNodeDelegateBase::GetLocalizedStringForLandmarkType()
 }
 
 base::string16
+AXPlatformNodeDelegateBase::GetLocalizedStringForRoleDescription() const {
+  return base::string16();
+}
+
+base::string16
 AXPlatformNodeDelegateBase::GetStyleNameAttributeAsLocalizedString() const {
   return base::string16();
 }
@@ -473,7 +476,7 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
 base::Optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
     AXTextBoundary boundary,
     int offset,
-    TextBoundaryDirection direction,
+    AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
   return base::nullopt;
 }

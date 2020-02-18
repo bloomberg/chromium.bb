@@ -14,14 +14,14 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
@@ -38,7 +38,7 @@ namespace service_worker_request_handler_unittest {
 class ServiceWorkerRequestHandlerTest : public testing::Test {
  public:
   ServiceWorkerRequestHandlerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -52,55 +52,32 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   }
 
  protected:
-  static std::unique_ptr<ServiceWorkerNavigationHandleCore>
-  CreateNavigationHandleCore(ServiceWorkerContextWrapper* context_wrapper) {
-    std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            [](ServiceWorkerContextWrapper* wrapper) {
-              return std::make_unique<ServiceWorkerNavigationHandleCore>(
-                  nullptr, wrapper);
-            },
-            base::RetainedRef(context_wrapper)),
-        base::BindOnce(
-            [](std::unique_ptr<ServiceWorkerNavigationHandleCore>* dest,
-               std::unique_ptr<ServiceWorkerNavigationHandleCore> src) {
-              *dest = std::move(src);
-            },
-            &navigation_handle_core));
-    base::RunLoop().RunUntilIdle();
-    return navigation_handle_core;
-  }
-
   void InitializeHandlerForNavigationSimpleTest(const std::string& url,
                                                 bool expected_handler_created) {
-    std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
+    auto navigation_handle =
+        std::make_unique<ServiceWorkerNavigationHandle>(context_wrapper());
     GURL gurl(url);
-    CommonNavigationParams common_params;
     auto begin_params = mojom::BeginNavigationParams::New();
     begin_params->request_context_type =
         blink::mojom::RequestContextType::HYPERLINK;
     url::Origin origin = url::Origin::Create(gurl);
     NavigationRequestInfo request_info(
-        common_params, std::move(begin_params), gurl,
+        CreateCommonNavigationParams(), std::move(begin_params), gurl,
         net::NetworkIsolationKey(origin, origin), true /* is_main_frame */,
         false /* parent_is_main_frame */, true /* are_ancestors_secure */,
         -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
         false /* report_raw_headers */, false /* is_prerendering */,
         false /* upgrade_if_insecure */, nullptr /* blob_url_loader_factory */,
         base::UnguessableToken::Create() /* devtools_navigation_token */,
-        base::UnguessableToken::Create() /* devtools_frame_token */);
+        base::UnguessableToken::Create() /* devtools_frame_token */,
+        false /* obey_origin_policy */);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
-        ServiceWorkerRequestHandler::CreateForNavigationIO(
-            GURL(url), navigation_handle_core.get(), request_info,
-            &service_worker_provider_host);
+        ServiceWorkerRequestHandler::CreateForNavigation(
+            gurl, navigation_handle->AsWeakPtr(), request_info);
     EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   net::URLRequestContext url_request_context_;

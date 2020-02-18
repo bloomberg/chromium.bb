@@ -60,6 +60,12 @@ class UnifiedSlidersContainerView : public views::View {
 class ASH_EXPORT UnifiedSystemTrayView : public views::View,
                                          public views::FocusTraversable {
  public:
+  // Get the background color of unified system tray.
+  static SkColor GetBackgroundColor();
+
+  // Create background of UnifiedSystemTray with rounded corners.
+  static std::unique_ptr<views::Background> CreateBackground();
+
   UnifiedSystemTrayView(UnifiedSystemTrayController* controller,
                         bool initially_expanded);
   ~UnifiedSystemTrayView() override;
@@ -119,10 +125,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // Returns the number of visible feature pods.
   int GetVisibleFeaturePodCount() const;
 
-  // Create background of UnifiedSystemTray that is semi-transparent and has
-  // rounded corners.
-  static std::unique_ptr<views::Background> CreateBackground();
-
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -157,7 +159,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemInfoView* const system_info_view_;
   views::View* const system_tray_container_;
   views::View* const detailed_view_container_;
-  UnifiedMessageCenterView* const message_center_view_;
+  UnifiedMessageCenterView* message_center_view_ = nullptr;
 
   // Null if kManagedDeviceUIRedesign is disabled.
   UnifiedManagedDeviceView* managed_device_view_ = nullptr;

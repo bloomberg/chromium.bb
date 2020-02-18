@@ -22,12 +22,12 @@ namespace {
     // Mock classes to add expectations on the wire calling callbacks
     class MockDeviceErrorCallback {
       public:
-        MOCK_METHOD2(Call, void(const char* message, void* userdata));
+        MOCK_METHOD3(Call, void(DawnErrorType type, const char* message, void* userdata));
     };
 
     std::unique_ptr<StrictMock<MockDeviceErrorCallback>> mockDeviceErrorCallback;
-    void ToMockDeviceErrorCallback(const char* message, void* userdata) {
-        mockDeviceErrorCallback->Call(message, userdata);
+    void ToMockDeviceErrorCallback(DawnErrorType type, const char* message, void* userdata) {
+        mockDeviceErrorCallback->Call(type, message, userdata);
     }
 
     class MockFenceOnCompletionCallback {
@@ -120,8 +120,8 @@ TEST_F(WireFenceTests, QueueSignalSuccess) {
 // Without any flushes, it is valid to signal a value greater than the current
 // signaled value
 TEST_F(WireFenceTests, QueueSignalSynchronousValidationSuccess) {
-    dawnDeviceSetErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(0);
+    dawnDeviceSetUncapturedErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _, _)).Times(0);
 
     dawnQueueSignal(queue, fence, 2u);
     dawnQueueSignal(queue, fence, 4u);
@@ -131,21 +131,21 @@ TEST_F(WireFenceTests, QueueSignalSynchronousValidationSuccess) {
 // Without any flushes, errors should be generated when signaling a value less
 // than or equal to the current signaled value
 TEST_F(WireFenceTests, QueueSignalSynchronousValidationError) {
-    dawnDeviceSetErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
+    dawnDeviceSetUncapturedErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
 
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(1);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(DAWN_ERROR_TYPE_VALIDATION, _, _)).Times(1);
     dawnQueueSignal(queue, fence, 0u);  // Error
     EXPECT_TRUE(Mock::VerifyAndClear(mockDeviceErrorCallback.get()));
 
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(1);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(DAWN_ERROR_TYPE_VALIDATION, _, _)).Times(1);
     dawnQueueSignal(queue, fence, 1u);  // Error
     EXPECT_TRUE(Mock::VerifyAndClear(mockDeviceErrorCallback.get()));
 
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(0);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _, _)).Times(0);
     dawnQueueSignal(queue, fence, 4u);  // Success
     EXPECT_TRUE(Mock::VerifyAndClear(mockDeviceErrorCallback.get()));
 
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(1);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(DAWN_ERROR_TYPE_VALIDATION, _, _)).Times(1);
     dawnQueueSignal(queue, fence, 3u);  // Error
     EXPECT_TRUE(Mock::VerifyAndClear(mockDeviceErrorCallback.get()));
 }
@@ -217,11 +217,11 @@ TEST_F(WireFenceTests, OnCompletionSynchronousValidationSuccess) {
 // Without any flushes, errors should be generated when waiting on a value greater
 // than the last signaled value
 TEST_F(WireFenceTests, OnCompletionSynchronousValidationError) {
-    dawnDeviceSetErrorCallback(device, ToMockDeviceErrorCallback, this + 1);
+    dawnDeviceSetUncapturedErrorCallback(device, ToMockDeviceErrorCallback, this + 1);
 
     EXPECT_CALL(*mockFenceOnCompletionCallback, Call(DAWN_FENCE_COMPLETION_STATUS_ERROR, this + 0))
         .Times(1);
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, this + 1)).Times(1);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(DAWN_ERROR_TYPE_VALIDATION, _, this + 1)).Times(1);
 
     dawnFenceOnCompletion(fence, 2u, ToMockFenceOnCompletionCallback, this + 0);
 }
@@ -262,8 +262,8 @@ TEST_F(WireFenceTests, SignalWrongQueue) {
     EXPECT_CALL(api, DeviceCreateQueue(apiDevice)).WillOnce(Return(apiQueue2));
     FlushClient();
 
-    dawnDeviceSetErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(1);
+    dawnDeviceSetUncapturedErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(DAWN_ERROR_TYPE_VALIDATION, _, _)).Times(1);
     dawnQueueSignal(queue2, fence, 2u);  // error
 }
 
@@ -274,8 +274,8 @@ TEST_F(WireFenceTests, SignalWrongQueueDoesNotUpdateValue) {
     EXPECT_CALL(api, DeviceCreateQueue(apiDevice)).WillOnce(Return(apiQueue2));
     FlushClient();
 
-    dawnDeviceSetErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
-    EXPECT_CALL(*mockDeviceErrorCallback, Call(_, _)).Times(1);
+    dawnDeviceSetUncapturedErrorCallback(device, ToMockDeviceErrorCallback, nullptr);
+    EXPECT_CALL(*mockDeviceErrorCallback, Call(DAWN_ERROR_TYPE_VALIDATION, _, _)).Times(1);
     dawnQueueSignal(queue2, fence, 2u);  // error
 
     // Fence value should be unchanged.

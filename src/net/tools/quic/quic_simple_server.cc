@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/ip_endpoint.h"
@@ -92,6 +93,15 @@ void QuicSimpleServer::Initialize() {
 
 QuicSimpleServer::~QuicSimpleServer() = default;
 
+bool QuicSimpleServer::CreateUDPSocketAndListen(
+    const quic::QuicSocketAddress& address) {
+  return Listen(ToIPEndPoint(address)) == 0;
+}
+
+void QuicSimpleServer::HandleEventsForever() {
+  base::RunLoop().Run();
+}
+
 int QuicSimpleServer::Listen(const IPEndPoint& address) {
   std::unique_ptr<UDPServerSocket> socket(
       new UDPServerSocket(nullptr, NetLogSource()));
@@ -171,7 +181,8 @@ void QuicSimpleServer::StartReading() {
 
   int result = socket_->RecvFrom(
       read_buffer_.get(), read_buffer_->size(), &client_address_,
-      base::Bind(&QuicSimpleServer::OnReadComplete, base::Unretained(this)));
+      base::BindOnce(&QuicSimpleServer::OnReadComplete,
+                     base::Unretained(this)));
 
   if (result == ERR_IO_PENDING) {
     synchronous_read_count_ = 0;

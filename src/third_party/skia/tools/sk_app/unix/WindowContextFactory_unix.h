@@ -15,6 +15,9 @@
 #endif
 #include <X11/Xlib.h>
 #include <GL/glx.h>
+
+#include <memory>
+
 typedef Window XWindow;
 
 namespace sk_app {
@@ -33,11 +36,15 @@ struct XlibWindowInfo {
     int          fHeight;
 };
 
-WindowContext* NewVulkanForXlib(const XlibWindowInfo&, const DisplayParams&);
+std::unique_ptr<WindowContext> MakeVulkanForXlib(const XlibWindowInfo&, const DisplayParams&);
 
-WindowContext* NewGLForXlib(const XlibWindowInfo&, const DisplayParams&);
+std::unique_ptr<WindowContext> MakeGLForXlib(const XlibWindowInfo&, const DisplayParams&);
 
-WindowContext* NewRasterForXlib(const XlibWindowInfo&, const DisplayParams&);
+#ifdef SK_DAWN
+std::unique_ptr<WindowContext> MakeDawnVulkanForXlib(const XlibWindowInfo&, const DisplayParams&);
+#endif
+
+std::unique_ptr<WindowContext> MakeRasterForXlib(const XlibWindowInfo&, const DisplayParams&);
 
 }  // namespace window_context_factory
 

@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/public/cpp/manifest.h"
 #include "content/public/app/content_browser_manifest.h"
 #include "content/public/app/content_gpu_manifest.h"
 #include "content/public/app/content_plugin_manifest.h"
@@ -28,20 +27,7 @@
 #include "services/network/public/cpp/manifest.h"
 #include "services/resource_coordinator/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
-#include "services/video_capture/public/cpp/manifest.h"
-
-#if defined(OS_LINUX)
-#include "components/services/font/public/cpp/manifest.h"  // nogncheck
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/assistant/buildflags.h"
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/public/cpp/audio_decoder_manifest.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif  // defined(OS_CHROMEOS)
 
 namespace content {
 
@@ -68,7 +54,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           GetContentRendererManifest(),
           GetContentUtilityManifest(),
 
-          heap_profiling::GetManifest(),
           audio::GetManifest(IsAudioServiceOutOfProcess()
                                  ? service_manager::Manifest::ExecutionMode::
                                        kOutOfProcessBuiltin
@@ -89,23 +74,7 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
                   : service_manager::Manifest::ExecutionMode::
                         kOutOfProcessBuiltin),
           resource_coordinator::GetManifest(),
-          shape_detection::GetManifest(),
           tracing::GetManifest(),
-          video_capture::GetManifest(
-              features::IsVideoCaptureServiceEnabledForOutOfProcess()
-                  ? service_manager::Manifest::ExecutionMode::
-                        kOutOfProcessBuiltin
-                  : service_manager::Manifest::ExecutionMode::
-                        kInProcessBuiltin),
-#if defined(OS_LINUX)
-          font_service::GetManifest(),
-#endif
-#if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-          // TODO(https://crbug.com/929340): This doesn't belong here!
-          chromeos::assistant::GetAudioDecoderManifest(),
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif  // defined(OS_CHROMEOS)
       }};
   return *manifests;
 }

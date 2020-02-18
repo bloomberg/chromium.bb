@@ -7,8 +7,8 @@
  *    element.
  * @package
  */
-import * as sets from './sets.mjs';
 import * as findElement from './find-element.mjs';
+import * as sets from './sets.mjs';
 
 
 // This controls how much above and below the current screen we
@@ -61,7 +61,7 @@ const EMPTY_ELEMENT_BOUNDS = new ElementBounds(null, null);
  *
  * This tracks an average measured element size as elements are added
  * and removed.
-*/
+ */
 class SizeManager {
   #sizes = new WeakMap();
 
@@ -97,11 +97,12 @@ class SizeManager {
     return size === undefined ? this.#getAverageSize() : size;
   }
 
-  #getAverageSize = () => {
-    return this.#measuredCount > 0 ?
-      this.#totalMeasuredSize / this.#measuredCount :
-      DEFAULT_HEIGHT_ESTIMATE_PX;
-  }
+  #getAverageSize =
+      () => {
+        return this.#measuredCount > 0 ?
+            this.#totalMeasuredSize / this.#measuredCount :
+            DEFAULT_HEIGHT_ESTIMATE_PX;
+      }
 
   /**
    * Removes all data related to |element| from the manager.
@@ -124,34 +125,29 @@ class SizeManager {
  * elements. This list of elements is assumed to be in vertical
  * display order (e.g. from lowest to highest offset).
  *
- * It uses resize and intersection observers on all of the visible
- * elements to ensure that changes that impact visibility cause us to
- * recalulate things (e.g. scrolling, restyling).
-*/
+ * It uses intersection observers to ensure that changes that impact
+ * visibility cause us to recalulate things (e.g. scrolling,
+ * restyling).
+ */
 export class VisibilityManager {
   #sizeManager = new SizeManager();
   #elements;
   #syncRAFToken;
 
-  #elementIntersectionObserver;
-  #elementResizeObserver;
+  #intersectionObserver;
 
   #revealed = new Set();
+  #observed = new Set();
 
-  constructor(elements) {
-    this.#elements = elements;
+  constructor(container) {
+    this.#elements = container.children;
 
     // We want to sync if any element's size changes or if it becomes
     // more/less visible.
-    this.#elementIntersectionObserver = new IntersectionObserver(() => {
+    this.#intersectionObserver = new IntersectionObserver(() => {
       this.scheduleSync();
     });
-    // TODO(fergal): Remove this? I'm not sure that we need the resize
-    // observer. Any resize that is important to us seems like it will
-    // also involve an intersection change.
-    this.#elementResizeObserver = new ResizeObserver(() => {
-      this.scheduleSync();
-    });
+    this.#intersectionObserver.observe(container);
 
     for (const element of this.#elements) {
       this.#didAdd(element);
@@ -163,143 +159,210 @@ export class VisibilityManager {
    * Attempts to unlock a range of elements suitable for the current
    * viewport. This causes one forced layout.
    */
-  #sync = () => {
-    if (this.#elements.length === 0) {
-      return;
-    }
+  #sync =
+      () => {
+        if (this.#elements.length === 0) {
+          return;
+        }
 
-    // The basic idea is ...
-    // The forced layout occurs at the start. We then use the laid out
-    // coordinates (which are based on a mix of real sizes for
-    // unlocked elements and the estimated sizes at the time of
-    // locking for locked elements) to calculate a set of elements
-    // which should be revealed. We use unlock/lock to move to this
-    // new set of revealed elements. We will check in the next frame
-    // whether we got it correct.
+        // The basic idea is ...
+        // The forced layout occurs at the start. We then use the laid out
+        // coordinates (which are based on a mix of real sizes for
+        // unlocked elements and the estimated sizes at the time of
+        // locking for locked elements) to calculate a set of elements
+        // which should be revealed. We use unlock/lock to move to this
+        // new set of revealed elements. We will check in the next frame
+        // whether we got it correct.
 
-    // This causes a forced layout and takes measurements of all
-    // currently revealed elements.
-    this.#measureRevealed();
+        // This causes a forced layout and takes measurements of all
+        // currently revealed elements.
+        this.#measureRevealed();
 
-    // Compute the pixel bounds of what we would like to reveal. Then
-    // find the elements corresponding to these bounds.
-    // TODO(fergal): Use nearest scrolling ancestor?
-    const desiredLow = 0 - window.innerHeight * BUFFER;
-    const desiredHigh = window.innerHeight + window.innerHeight * BUFFER;
-    const newBounds = this.#findElementBounds(desiredLow, desiredHigh);
-    const newRevealed = newBounds.elementSet();
+        // Compute the pixel bounds of what we would like to reveal. Then
+        // find the elements corresponding to these bounds.
+        // TODO(fergal): Use nearest scrolling ancestor?
+        const desiredLow = 0 - window.innerHeight * BUFFER;
+        const desiredHigh = window.innerHeight + window.innerHeight * BUFFER;
+        const newBounds = this.#findElementBounds(desiredLow, desiredHigh);
+        const newRevealed = newBounds.elementSet();
 
-    // TODO(fergal): We need to observe 1 element off the end of the
-    // list, to cope with e.g. the scrolling region suddenly growing.
+        // This should include all of the elements to be revealed and
+        // also 1 element above and below those (if such elements
+        // exist).
+        const newObserved = new Set();
+        if (newRevealed.size !== 0) {
+          newObserved.add(...newRevealed);
+          const p = newBounds.low.previousElementSibling;
+          if (p) {
+            newObserved.add(p);
+          }
+          const n = newBounds.high.nextElementSibling;
+          if (n) {
+            newObserved.add(n);
+          }
+        }
 
-    // Lock and unlock the minimal set of elements to get us to the
-    // new state.
-    const toHide = sets.difference(this.#revealed, newRevealed);
-    toHide.forEach(e => this.#hide(e));
-    const toReveal = sets.difference(newRevealed, this.#revealed);
-    toReveal.forEach(e => this.#reveal(e));
+        // Having revealed what we hope will fill the screen. It
+        // could be incorrect. Rather than measuring now and correcting it
+        // which would involve an unknown number of forced layouts, we
+        // come back next frame and try to make it better. We know we can
+        // stop when we didn't hide or reveal any elements.
+        if (this.#syncRevealed(newRevealed) + this.#syncObserved(newObserved) >
+            0) {
+          this.scheduleSync();
+        }
+      }
 
-    // Now we have revealed what we hope will fill the screen. It
-    // could be incorrect. Rather than measuring now and correcting it
-    // which would involve an unknown number of forced layouts, we
-    // come back next frame and try to make it better. We know we can
-    // stop when we didn't hide or reveal any elements.
-    if (toHide.size > 0 || toReveal.size > 0) {
-      this.scheduleSync();
-    }
-  }
+  /**
+   * Calls hide and reveal on child elements to take us to the new state.
+   *
+   * Returns the number of elements impacted.
+   */
+  #syncRevealed =
+      newRevealed => {
+        return sets.applyToDiffs(
+            this.#revealed, newRevealed, e => this.#hide(e),
+            e => this.#reveal(e));
+      }
+
+  /**
+   * Calls observe and unobserve on child elements to take us to the new state.
+   *
+   * Returns the number of elements impacted.
+   */
+  #syncObserved =
+      newObserved => {
+        return sets.applyToDiffs(
+            this.#observed, newObserved, e => this.#unobserve(e),
+            e => this.#observe(e));
+      }
 
   /**
    * Searches within the managed elements and returns an ElementBounds
    * object. This object may represent an empty range or a range whose low
    * element contains or is lower than |low| (or the lowest element
-   * possible). Similarly for |high|.
+   * possible). Similarly for |high|. If the bounds do not intersect with any
+   * elements then an EMPTY_ELEMENT_BOUNDS is returned, otherwise, if the
+   * |low| (|high|) is entirely outside the area of the managed elements
+   * then the low (high) part of the ElementBounds will be snapped to the
+   * lowest (highest) element.
    *
    * @param {!number} low The lower bound to locate.
    * @param {!number} high The upper bound to locate.
    */
-  #findElementBounds = (low, high) => {
-    const lowElement = findElement.findElement(
-        this.#elements, low, findElement.BIAS_LOW);
-    const highElement = findElement.findElement(
-        this.#elements, high, findElement.BIAS_HIGH);
+  #findElementBounds =
+      (low, high) => {
+        const lastIndex = this.#elements.length - 1;
+        const lowest = this.#elements[0].getBoundingClientRect().top;
+        const highest =
+            this.#elements[lastIndex].getBoundingClientRect().bottom;
+        if (highest < low || lowest > high) {
+          return EMPTY_ELEMENT_BOUNDS;
+        }
 
-    if (lowElement === null) {
-      if (highElement === null) {
-        return EMPTY_ELEMENT_BOUNDS;
-      } else {
-        return new ElementBounds(this.#elements[0], highElement);
+        let lowElement =
+            findElement.findElement(this.#elements, low, findElement.BIAS_LOW);
+        let highElement = findElement.findElement(
+            this.#elements, high, findElement.BIAS_HIGH);
+
+        if (lowElement === null) {
+          lowElement = this.#elements[0];
+        }
+        if (highElement === null) {
+          highElement = this.#elements[lastIndex];
+        }
+        return new ElementBounds(lowElement, highElement);
       }
-    } else if (highElement === null) {
-      return new ElementBounds(
-          lowElement, this.#elements[this.#elements.length - 1]);
-    }
-    return new ElementBounds(lowElement, highElement);
-  }
 
   /**
    * Updates the size manager with all of the currently revealed
    * elements' sizes. This will cause a forced layout.
    */
-  #measureRevealed = () => {
-    for (const element of this.#revealed) {
-      this.#sizeManager.measure(element);
-    }
-  }
+  #measureRevealed =
+      () => {
+        for (const element of this.#revealed) {
+          this.#sizeManager.measure(element);
+        }
+      }
 
   /**
-   * Reveals |element| so that it can be rendered. This includes
-   * unlocking and adding to various observers.
+   * Unlocks |element| so that it can be rendered.
    *
    * @param {!Element} element The element to reveal.
    */
-  #reveal = element => {
-    this.#revealed.add(element);
-    this.#elementIntersectionObserver.observe(element);
-    this.#elementResizeObserver.observe(element);
-    this.#unlock(element);
-  }
+  #reveal =
+      element => {
+        this.#revealed.add(element);
+        this.#unlock(element);
+      }
 
-  #logLockingError = (operation, reason, element) => {
-    // TODO: Figure out the LAPIs error/warning logging story.
-    console.error('Rejected: ', operation, element, reason);  // eslint-disable-line no-console
-  }
+  /**
+   * Observes |element| so that it coming on-/off-screen causes a sync.
+   *
+   * @param {!Element} element The element to observe.
+   */
+  #observe =
+      element => {
+        this.#intersectionObserver.observe(element);
+        this.#observed.add(element);
+      }
+
+  #logLockingError =
+      (operation, reason, element) => {
+        // TODO: Figure out the LAPIs error/warning logging story.
+        console.error(  // eslint-disable-line no-console
+            'Rejected: ', operation, element, reason);
+      }
 
   /**
    * Unlocks |element|.
    *
    * @param {!Element} element The element to unlock.
    */
-  #unlock = element => {
-    element.displayLock.commit().catch(reason => {
-      // Only warn if the unlocked failed and we should be revealed.
-      if (this.#revealed.has(element)) {
-        this.#logLockingError('Commit', reason, element);
+  #unlock =
+      element => {
+        element.displayLock.commit().catch(reason => {
+          // Only warn if the unlocked failed and we should be revealed.
+          if (this.#revealed.has(element)) {
+            this.#logLockingError('Commit', reason, element);
+          }
+        });
       }
-    });
-  }
 
   /**
-   * Hides |element| so that it cannot be rendered. This includes
-   * locking and removing from various observers.
+   * Locks |element| so that it cannot be rendered.
    *
-   * @param {!Element} element The element to hide.
+   * @param {!Element} element The element to lock.
    */
-  #hide = element => {
-    this.#revealed.delete(element);
-    this.#elementIntersectionObserver.unobserve(element);
-    this.#elementResizeObserver.unobserve(element);
-    element.displayLock.acquire({
-      timeout: Infinity,
-      activatable: true,
-      size: [LOCKED_WIDTH_PX, this.#sizeManager.getHopefulSize(element)],
-    }).catch(reason => {
-      // Only warn if the lock failed and we should be locked.
-      if (!this.#revealed.has(element)) {
-        this.#logLockingError('Acquire', reason, element);
+  #hide =
+      element => {
+        this.#revealed.delete(element);
+        element.displayLock
+            .acquire({
+              timeout: Infinity,
+              activatable: true,
+              size:
+                  [LOCKED_WIDTH_PX, this.#sizeManager.getHopefulSize(element)],
+            })
+            .catch(reason => {
+              // Only warn if the lock failed and we should be locked.
+              if (!this.#revealed.has(element)) {
+                this.#logLockingError('Acquire', reason, element);
+              }
+            });
       }
-    });
-  }
+
+  /**
+   * Unobserves |element| so that it coming on-/off-screen does not
+   * cause a sync.
+   *
+   * @param {!Element} element The element to unobserve.
+   */
+  #unobserve =
+      element => {
+        this.#intersectionObserver.unobserve(element);
+        this.#observed.delete(element);
+      }
 
   /**
    * Notify the manager that |element| has been added to the list of
@@ -307,13 +370,14 @@ export class VisibilityManager {
    *
    * @param {!Element} element The element that was added.
    */
-  #didAdd = element => {
-    // Added children should be invisible initially. We want to make them
-    // invisible at this MutationObserver timing, so that there is no
-    // frame where the browser is asked to render all of the children
-    // (which could be a lot).
-    this.#hide(element);
-  }
+  #didAdd =
+      element => {
+        // Added children should be invisible initially. We want to make them
+        // invisible at this MutationObserver timing, so that there is no
+        // frame where the browser is asked to render all of the children
+        // (which could be a lot).
+        this.#hide(element);
+      }
 
   /**
    * Notify the manager that |element| has been removed from the list
@@ -321,23 +385,21 @@ export class VisibilityManager {
    *
    * @param {!Element} element The element that was removed.
    */
-  #didRemove = element => {
-    // Removed children should be made visible again. We should stop
-    // observing them and discard any size info we have for them as it
-    // may have become incorrect.
-    //
-    // TODO(fergal): Decide whether to also unlock if
-    // displayLock.locked is true. That would only be necessary if we
-    // got out of sync between this.#revealed and the locked state. So
-    // for now, assume are not buggy.
-    if (this.#revealed.has(element)) {
-      this.#unlock(element);
-    }
-    this.#revealed.delete(element);
-    this.#elementIntersectionObserver.unobserve(element);
-    this.#elementResizeObserver.unobserve(element);
-    this.#sizeManager.remove(element);
-  }
+  #didRemove =
+      element => {
+        // Removed children should be made visible again. We should stop
+        // observing them and discard any size info we have for them as it
+        // may have become incorrect. We unlock unconditionally,
+        // because it's simple and because it defends against
+        // potential bugs in our own tracking of what is locked. Users
+        // must not lock the children in the light tree, so there is
+        // no concern about this having an impact on the users'
+        // locking plans.
+        this.#unlock(element);
+        this.#revealed.delete(element);
+        this.#unobserve(element);
+        this.#sizeManager.remove(element);
+      }
 
   /**
    * Ensures that @see #sync() will be called at the next animation frame.
@@ -404,4 +466,3 @@ export class VisibilityManager {
     }
   }
 }
-

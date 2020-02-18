@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1243314992276662751">Last opp</translation>
+<translation id="1266864766717917324">Kunne ikke dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Flytter <ph name="DRAGGED_APP" /> til mappen <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Prøv å dele teksten i mindre deler.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ANBEFALTE APPER</translation>
 <translation id="1368832886055348810">Venstre til høyre</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="1409544243779336081">Appanbefaling</translation>
+<translation id="1450753235335490080">Kan ikke dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Du har søkt etter dette før. Hvis du sletter «<ph name="QUERY" />» fra loggen, blir det fjernet permanent fra kontoen din på alle enhetene dine.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutt og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Varsel</translation>
@@ -35,9 +38,11 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
 <translation id="1938451708255335766">For å justere visningstettheten for vinduer, start appen på nytt.</translation>
+<translation id="2006524834898217237">Kontrollér at enheten er koblet til internett.</translation>
 <translation id="208586643495776849">Prøv igjen</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">I dag</translation>
+<translation id="2161656808144014275">Tekst</translation>
 <translation id="2168039046890040389">Opp 1 s.</translation>
 <translation id="2190355936436201913">(tom)</translation>
 <translation id="2192232475740621500">Bruk lav tetthet</translation>
@@ -49,7 +54,6 @@
 <translation id="2388990488038464401">Vil du ringe dette nummeret fra telefonen?</translation>
 <translation id="24452542372838207">Vis varselet</translation>
 <translation id="2445449901874883781">Bruk høy tetthet</translation>
-<translation id="2451871130406122810">Sendt til enheten</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dager}}</translation>
 <translation id="3295886253693811851">Ring fra</translation>
 <translation id="335581015389089642">Tale</translation>
+<translation id="3389286852084373014">Teksten er for stor</translation>
 <translation id="3443810440409579745">Fane er mottatt.</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="348799646910989694">Hyllen skjules automatisk</translation>
@@ -85,6 +90,7 @@
 <translation id="3618849550573277856">Slå opp «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="364720409959344976">Velg mappen du vil laste opp</translation>
 <translation id="3660179305079774227">Pil opp</translation>
+<translation id="3670030362669914947">Nummer</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB per sek</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Fortsett lesingen på mobilenheten <ph name="TITLE" /></translation>
@@ -100,7 +106,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{for 1 måned siden}other{for # måneder siden}}</translation>
 <translation id="4289300219472526559">Begynn å snakke</translation>
 <translation id="4316910396681052118">ALLE APPER</translation>
-<translation id="4467014365953759647">Kan ikke sende nummeret</translation>
 <translation id="4588090240171750605">Rull mot høyre</translation>
 <translation id="4690510401873698237">Hyllen er nederst</translation>
 <translation id="4724120544754982507">Varselsenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> uleste varsler</translation>
@@ -108,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 måned igjen}other{# måneder igjen}}</translation>
 <translation id="4841881773802181781">Innsetting</translation>
 <translation id="4881695831933465202">Åpne</translation>
+<translation id="4888938634149558681">Ring</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
 <translation id="4971687151119236543">Media – forrige spor</translation>
 <translation id="5046499563572181734">Trykk her</translation>
@@ -127,6 +133,7 @@
 <translation id="5583640892426849032">Tilbake-tasten</translation>
 <translation id="5613020302032141669">Pil venstre</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Aktiv i dag}=1{Aktiv for én dag siden}other{Aktiv for # dager siden}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag og }other{# dager og }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{om 1 år}other{om # år}}</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
@@ -150,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{For 1 sekund siden}other{For # sekunder siden}}</translation>
 <translation id="6430678249303439055">Blokkér alle varsler fra denne appen</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{for 1 sekund siden}other{for # sekunder siden}}</translation>
+<translation id="6539092367496845964">Noe gikk galt. Prøv på nytt senere.</translation>
 <translation id="654149438358937226">Blokkér alle varsler</translation>
 <translation id="6567071839949112727">klikk på et overordnet element</translation>
 <translation id="6578407462441924264">Uten navn</translation>
 <translation id="6612467943526193239">For å lukke kalibreringen, trykk på Esc.</translation>
 <translation id="6620110761915583480">Lagre fil</translation>
+<translation id="6656912866303152668">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> har synkronisering påslått i Chrome, og prøv deretter å sende på nytt.</translation>
 <translation id="6699343763173986273">Media – neste spor</translation>
 <translation id="673773751041746814">Sletting</translation>
 <translation id="6779314412797872738">For å sende numre herfra til Android-telefonen din, <ph name="TROUBLESHOOT_LINK" /> for begge enhetene i innstillingene.</translation>
@@ -176,7 +185,6 @@
 <translation id="7319740667687257810">Appoversikt, delvis visning</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{For 1 min siden}other{For # min siden}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Kontrollér telefonens tilkobling og prøv på nytt</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutt igjen}other{# minutter igjen}}</translation>
 <translation id="7430878839542012341">Vil du slette dette søket fra loggen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -217,9 +225,11 @@
 <translation id="8806053966018712535">Mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Kommenter bildet</translation>
 <translation id="8841375032071747811">Tilbakeknapp</translation>
+<translation id="8867568208303837180">Sender …</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Hyllen skjules alltid</translation>
+<translation id="8996630695507351249">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> er koblet til internett.</translation>
 <translation id="9002566407876343676">åpne</translation>
 <translation id="9039076430527029379">Gå til side <ph name="PAGE_NUMBER" />, rad <ph name="ROW_NUMBER" />, kolonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek}other{# sek}}</translation>

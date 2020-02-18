@@ -86,6 +86,18 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH},
     {kManagementExtensionReportUserBrowsingData,
      IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA},
+    {kThreatProtectionTitle, IDS_MANAGEMENT_THREAT_PROTECTION},
+    {kManagementDataLossPreventionName,
+     IDS_MANAGEMENT_DATA_LOSS_PREVENTION_NAME},
+    {kManagementDataLossPreventionPermissions,
+     IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS},
+    {kManagementMalwareScanningName, IDS_MANAGEMENT_MALWARE_SCANNING_NAME},
+    {kManagementMalwareScanningPermissions,
+     IDS_MANAGEMENT_MALWARE_SCANNING_PERMISSIONS},
+    {kManagementEnterpriseReportingName,
+     IDS_MANAGEMENT_ENTERPRISE_REPORTING_NAME},
+    {kManagementEnterpriseReportingPermissions,
+     IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS},
   };
 
   AddLocalizedStringsBulk(source, kLocalizedStrings,
@@ -102,7 +114,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     chrome::kManagedUiLearnMoreUrl);
 #endif  // defined(OS_CHROMEOS)
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   // Add required resources.
   source->AddResourcePath("management_browser_proxy.html",
                           IDR_MANAGEMENT_BROWSER_PROXY_HTML);

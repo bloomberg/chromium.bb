@@ -22,6 +22,7 @@
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
+#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -44,8 +45,7 @@ bool IsContextSecureForWebState(web::WebState* web_state) {
 
   const web::SSLStatus& ssl = nav_item->GetSSL();
   return nav_item->GetURL().SchemeIsCryptographic() && ssl.certificate &&
-         (!net::IsCertStatusError(ssl.cert_status) ||
-          net::IsCertStatusMinorError(ssl.cert_status));
+         !net::IsCertStatusError(ssl.cert_status);
 }
 
 std::unique_ptr<base::Value> ParseJson(NSString* json_string) {

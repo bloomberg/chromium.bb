@@ -11,6 +11,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
@@ -178,12 +180,18 @@ IN_PROC_BROWSER_TEST_F(LoadAndLaunchPlatformAppBrowserTest,
   LoadAndLaunchApp();
 }
 
+// TODO(https://crbug.com/988160): Test is flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_LoadAndLaunchExtension DISABLED_LoadAndLaunchExtension
+#else
+#define MAYBE_LoadAndLaunchExtension LoadAndLaunchExtension
+#endif
 IN_PROC_BROWSER_TEST_F(LoadAndLaunchExtensionBrowserTest,
-                       LoadAndLaunchExtension) {
+                       MAYBE_LoadAndLaunchExtension) {
   const std::vector<base::string16>* errors =
       extensions::LoadErrorReporter::GetInstance()->GetErrors();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // The error is skipped on official builds.
   EXPECT_TRUE(errors->empty());
 #else

@@ -213,8 +213,7 @@ DesktopSessionAgent::DesktopSessionAgent(
       caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
-      current_process_stats_("DesktopSessionAgent"),
-      weak_factory_(this) {
+      current_process_stats_("DesktopSessionAgent") {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
@@ -312,6 +311,12 @@ const std::string& DesktopSessionAgent::client_jid() const {
 void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
   SendToNetwork(
       std::make_unique<ChromotingDesktopNetworkMsg_DisconnectSession>(error));
+}
+
+void DesktopSessionAgent::OnLocalKeyPressed(uint32_t usb_keycode) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  remote_input_filter_->LocalKeyPressed(usb_keycode);
 }
 
 void DesktopSessionAgent::OnLocalPointerMoved(

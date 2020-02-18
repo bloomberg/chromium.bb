@@ -12,7 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
@@ -89,7 +89,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
 
  private:
   // Needed to initialize the directory.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   scoped_refptr<FakeModelWorker> ui_worker_;
 };
@@ -528,6 +528,10 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     return articles_emitter_.GetUpdateCounters();
   }
 
+  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans) {
+    return dir_maker_.GetCryptographer(trans);
+  }
+
  protected:
   void ApplyBookmarkUpdates(StatusController* status) {
     update_handler_map_.find(BOOKMARKS)->second->ApplyUpdates(status);
@@ -543,7 +547,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
  private:
   // Needed to initialize the directory.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   std::unique_ptr<TestEntryFactory> entry_factory_;
 
@@ -948,7 +952,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
     // Storing the cryptographer separately is bad, but for this test we
     // know it's safe.
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
   }
 
   KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
@@ -1039,7 +1043,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
     data.set_origin("http://example.com/1");
     {
       syncable::ReadTransaction trans(FROM_HERE, directory());
-      cryptographer = directory()->GetCryptographer(&trans);
+      cryptographer = GetCryptographer(&trans);
 
       KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
       cryptographer->AddKey(params);

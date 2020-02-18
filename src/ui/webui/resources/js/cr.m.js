@@ -12,7 +12,7 @@
 import {PromiseResolver} from './promise_resolver.m.js';
 
 /** @typedef {{eventName: string, uid: number}} */
-let WebUIListener;
+export let WebUIListener;
 
 /**
  * Counter for use with createUid
@@ -89,10 +89,6 @@ export function webUIResponse(id, isSuccess, response) {
     resolver.reject(response);
   }
 }
-
-// Expose |cr.webUIResponse| globally, since this is called directly from C++.
-window.cr = window.cr || {};
-window.cr.webUIResponse = webUIResponse;
 
 /**
  * A variation of chrome.send, suitable for messages that expect a single
@@ -173,3 +169,35 @@ export function removeWebUIListener(listener) {
   }
   return false;
 }
+
+// Globally expose functions that must be called from C++.
+window.cr = window.cr || {};
+window.cr.webUIResponse = webUIResponse;
+window.cr.webUIListenerCallback = webUIListenerCallback;
+
+/** Whether we are using a Mac or not. */
+export const isMac = /Mac/.test(navigator.platform);
+
+/** Whether this is on the Windows platform or not. */
+export const isWindows = /Win/.test(navigator.platform);
+
+/** Whether this is on chromeOS or not. */
+export const isChromeOS = /CrOS/.test(navigator.userAgent);
+
+/** Whether this is on vanilla Linux (not chromeOS). */
+export const isLinux = /Linux/.test(navigator.userAgent);
+
+/** Whether this is on Android. */
+export const isAndroid = /Android/.test(navigator.userAgent);
+
+/** Whether this is on iOS. */
+export const isIOS =
+    (/CriOS/.test(navigator.userAgent) ||
+     // TODO(crbug.com/998999): Fix navigator.userAgent such that it
+     // reliable returns a user agent string containing "CriOS" and
+     // the following fallback test can be removed.
+     // iPads are returning "MacIntel" for iOS 13 (devices & simulators).
+     // Chrome on macOS also returns "MacIntel" for navigator.platform,
+     // but navigator.userAgent includes /Safari/.
+     (/iPad|iPhone|iPod|MacIntel/.test(navigator.platform) &&
+      !(/Safari/.test(navigator.userAgent))));

@@ -132,6 +132,7 @@ devtools_domains = [
   "dom_snapshot",
   "dom_storage",
   "emulation",
+  "fetch",
   "headless_experimental",
   "heap_profiler",
   "indexeddb",
@@ -439,8 +440,6 @@ jumbo_component("headless_non_renderer") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
-      "lib/browser/headless_overlay_manifests.cc",
-      "lib/browser/headless_overlay_manifests.h",
       "lib/browser/headless_web_contents_impl.cc",
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
@@ -462,7 +461,6 @@ jumbo_component("headless_non_renderer") {
     deps += [
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
-      "//components/services/pdf_compositor/public/cpp:manifest",
       "//components/services/pdf_compositor/public/mojom",
       "//gin",
       "//third_party/blink/public:blink",
@@ -482,7 +480,7 @@ jumbo_component("headless_non_renderer") {
       deps += [
         "//components/printing/browser",
         "//components/printing/renderer",
-        "//components/services/pdf_compositor/public/cpp:factory",
+        "//components/services/pdf_compositor",
         "//components/services/pdf_compositor/public/mojom",
       ]
     }
@@ -505,6 +503,10 @@ jumbo_component("headless_non_renderer") {
 
   if (is_mac) {
     deps += [ ":mac_helpers" ]
+    libs = [
+      "AppKit.framework",
+      "CoreFoundation.framework",
+    ]
   } else {
     deps += [ "//ui/aura" ]
   }
@@ -543,6 +545,8 @@ if (!is_component_build) {
       "lib/headless_content_main_delegate_mac.mm",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
+      "lib/utility/headless_content_utility_client.cc",
+      "lib/utility/headless_content_utility_client.h",
     ]
 
     if (headless_use_embedded_resources) {
@@ -597,8 +601,6 @@ test("headless_unittests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
-      "lib/browser/headless_overlay_manifests.cc",
-      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -609,7 +611,6 @@ test("headless_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
-    "//components/services/pdf_compositor/public/cpp:manifest",
     "//components/services/pdf_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/child:child",
@@ -630,7 +631,7 @@ test("headless_unittests") {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
     deps += [
       "//components/printing/browser",
-      "//components/services/pdf_compositor/public/cpp:factory",
+      "//components/services/pdf_compositor",
       "//third_party/blink/public:blink",
     ]
   }
@@ -748,8 +749,6 @@ test("headless_browsertests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
-      "lib/browser/headless_overlay_manifests.cc",
-      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -759,7 +758,6 @@ test("headless_browsertests") {
     ":headless_shell_lib",
     "//base",
     "//components/security_state/content",
-    "//components/services/pdf_compositor/public/cpp:manifest",
     "//components/services/pdf_compositor/public/mojom",
     "//content/test:test_support",
     "//services/network/public/mojom",
@@ -791,7 +789,7 @@ test("headless_browsertests") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/browser",
-      "//components/services/pdf_compositor/public/cpp:factory",
+      "//components/services/pdf_compositor",
       "//pdf",
     ]
   }
@@ -807,13 +805,11 @@ if (is_win) {
       "app/headless_shell_win.cc",
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
-      "lib/browser/headless_overlay_manifests.cc",
-      "lib/browser/headless_overlay_manifests.h",
       "public/headless_shell.h",
     ]
     deps = [
       ":headless_non_renderer",
-      "//components/services/pdf_compositor/public/cpp:manifest",
+      "//build:branding_buildflags",
       "//components/services/pdf_compositor/public/mojom",
       "//content:sandbox_helper_win",
       "//content/public/browser",
@@ -849,6 +845,7 @@ if (is_win) {
     ]
     deps = [
       ":headless_renderer",
+      "//build:branding_buildflags",
       "//content/public/child:child",
       "//net",
       "//ui/base",
@@ -886,8 +883,6 @@ jumbo_static_library("headless_shell_lib") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
-      "lib/browser/headless_overlay_manifests.cc",
-      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -895,9 +890,9 @@ jumbo_static_library("headless_shell_lib") {
 
   deps = [
     ":headless_renderer",
+    "//build:branding_buildflags",
     "//components/os_crypt",
     "//components/security_state/content",
-    "//components/services/pdf_compositor/public/cpp:manifest",
     "//components/services/pdf_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/browser",
@@ -921,7 +916,7 @@ jumbo_static_library("headless_shell_lib") {
     deps += [
       "//components/printing/browser",
       "//components/printing/renderer",
-      "//components/services/pdf_compositor/public/cpp:factory",
+      "//components/services/pdf_compositor",
     ]
   }
 

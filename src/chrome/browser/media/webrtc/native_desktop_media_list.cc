@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/hash/hash.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -174,10 +175,9 @@ void NativeDesktopMediaList::Worker::Refresh(
         SourceDescription(DesktopMediaID(type_, sources[i].id), title));
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
-                     media_list_, result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
+                                media_list_, result));
 }
 
 void NativeDesktopMediaList::Worker::RefreshThumbnails(
@@ -204,7 +204,7 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
       if (it == image_hashes_.end() || it->second != frame_hash) {
         gfx::ImageSkia thumbnail =
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&NativeDesktopMediaList::UpdateSourceThumbnail,
                            media_list_, id, thumbnail));
@@ -214,7 +214,7 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
 
   image_hashes_.swap(new_image_hashes);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
                      media_list_));
@@ -236,9 +236,9 @@ NativeDesktopMediaList::NativeDesktopMediaList(
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // On Windows/OSX the thread must be a UI thread.
-  base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_UI;
+  base::MessagePumpType thread_type = base::MessagePumpType::UI;
 #else
-  base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_DEFAULT;
+  base::MessagePumpType thread_type = base::MessagePumpType::DEFAULT;
 #endif
   thread_.StartWithOptions(base::Thread::Options(thread_type, 0));
 
@@ -296,7 +296,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 #if defined(USE_AURA)
     pending_native_thumbnail_capture_ = true;
 #endif
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
                        weak_factory_.GetWeakPtr()));

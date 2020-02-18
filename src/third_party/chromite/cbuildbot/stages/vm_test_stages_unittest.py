@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+
 import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
@@ -606,3 +607,21 @@ Some random stuff.
 01/08 15:00:28.681 INFO  autoserv| [stderr]
 01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:""")
     vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
+
+  def testArchiveVMFiles(self):
+    """Validate ArchiveVMFiles success in archiving files."""
+    test_buildroot = os.path.join(self.tempdir, 'buildroot')
+    image_dir = os.path.join(test_buildroot, 'chroot', 'testResultsDir')
+    test_path_archive_output = os.path.join(self.tempdir, 'testResultsDir')
+    os.makedirs(test_path_archive_output)
+    vm_files = ['abc.txt', 'chromiumos_qemu_mem.bin']
+    cros_test_lib.CreateOnDiskHierarchy(image_dir, vm_files)
+    result = vm_test_stages.ArchiveVMFiles(test_buildroot, 'testResultsDir',
+                                           test_path_archive_output)
+    # The expected output is the test_path_archive_output with the one file that
+    # matches the constants VM pattern prefix, which will be converted to a
+    # .bin.tar file.
+    expected_result = [
+        os.path.join(test_path_archive_output, 'chromiumos_qemu_mem.bin.tar')
+    ]
+    self.assertEquals(result, expected_result)

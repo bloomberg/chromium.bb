@@ -77,6 +77,36 @@ void ProcessedTrace::AddPacket(TraceRenderer* renderer,
                      &packet});
 }
 
+absl::flat_hash_set<uint64_t>* ProcessedTrace::GetPacketsAcked(
+    const EncryptionLevel enc_level) {
+  switch (enc_level) {
+    case ENCRYPTION_INITIAL:
+      return &packets_acked_initial_;
+    case ENCRYPTION_HANDSHAKE:
+      return &packets_acked_handshake_;
+    case ENCRYPTION_0RTT:
+    case ENCRYPTION_1RTT:
+      return &packets_acked_1rtt_;
+    default:
+      LOG(FATAL) << "Unknown encryption level.";
+  }
+}
+
+absl::flat_hash_set<uint64_t>* ProcessedTrace::GetPacketsLost(
+    const EncryptionLevel enc_level) {
+  switch (enc_level) {
+    case ENCRYPTION_INITIAL:
+      return &packets_lost_initial_;
+    case ENCRYPTION_HANDSHAKE:
+      return &packets_lost_handshake_;
+    case ENCRYPTION_0RTT:
+    case ENCRYPTION_1RTT:
+      return &packets_lost_1rtt_;
+    default:
+      LOG(FATAL) << "Unknown encryption level.";
+  }
+}
+
 ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
                                TraceRenderer* renderer) {
   renderer->PacketCountHint(trace->events_size());
@@ -101,22 +131,24 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
       for (const Frame& frame : event.frames()) {
         for (const AckBlock& range : frame.ack_info().acked_packets()) {
           for (size_t i = range.first_packet(); i <= range.last_packet(); i++) {
-            if (!packets_acked_.insert(i).second) {
+            if (!GetPacketsAcked(event.encryption_level())->insert(i).second) {
               continue;
             }
-            Interval mapped = numbering.GetTraceNumbering(i);
+            Interval mapped =
+                numbering.GetTraceNumbering(i, event.encryption_level());
             AddPacket(renderer, event, mapped, PacketType::ACKED);
             acks_.emplace(vec2(event.time_us(), mapped.offset), i);
             // Don't count spurious retransmissions as losses.
-            packets_lost_.erase(i);
+            GetPacketsLost(event.encryption_level())->erase(i);
           }
         }
       }
     }
     if (event.event_type() == PACKET_LOST) {
-      Interval mapped = numbering.GetTraceNumbering(event.packet_number());
+      Interval mapped = numbering.GetTraceNumbering(event.packet_number(),
+                                                    event.encryption_level());
       AddPacket(renderer, event, mapped, PacketType::LOST);
-      packets_lost_.insert(event.packet_number());
+      GetPacketsLost(event.encryption_level())->insert(event.packet_number());
     }
     if (event.event_type() == APPLICATION_LIMITED) {
       // Normally, we would use the size of the packet as height, but
@@ -158,10 +190,12 @@ bool ProcessedTrace::SummaryTable(Table* table,
       case PACKET_SENT:
         count_sent++;
         bytes_sent += it->packet_size();
-        if (packets_acked_.count(it->packet_number()) > 0) {
+        if (GetPacketsAcked(it->encryption_level())
+                ->count(it->packet_number()) > 0) {
           bytes_sent_acked += it->packet_size();
         }
-        if (packets_lost_.count(it->packet_number()) > 0) {
+        if (GetPacketsLost(it->encryption_level())->count(it->packet_number()) >
+            0) {
           bytes_sent_lost += it->packet_size();
         }
         break;
@@ -296,14 +330,30 @@ void ProcessedTrace::FillTableForPacket(Table* table,
 
   table->AddRow("Time", FormatTime(packet->time_us()));
 
-  if (packet->event_type() == PACKET_SENT) {
-    table->AddRow("Size", absl::StrCat(packet->packet_size(), " bytes"));
+  if (packet->event_type() == PACKET_SENT ||
+      packet->event_type() == PACKET_LOST ||
+      packet->event_type() == PACKET_RECEIVED) {
     table->AddRow("Encryption",
                   EncryptionLevelToString(packet->encryption_level()));
+  }
 
+  if (packet->event_type() == PACKET_SENT ||
+      packet->event_type() == PACKET_LOST) {
+    table->AddRow("Size", absl::StrCat(packet->packet_size(), " bytes"));
+  }
+
+  if (packet->event_type() == PACKET_SENT) {
     table->AddHeader("Frame list");
     for (const Frame& frame : packet->frames()) {
       switch (frame.frame_type()) {
+        case CRYPTO:
+          table->AddRow(
+              "Crypto",
+              absl::StrCat(frame.crypto_frame_info().offset(), "-",
+                           frame.crypto_frame_info().offset() +
+                               frame.crypto_frame_info().length(),
+                           " (", frame.crypto_frame_info().length(), ")"));
+          break;
         case STREAM:
           table->AddRow(
               "Stream",

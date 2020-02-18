@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
@@ -19,6 +19,10 @@
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
+
+namespace indexed_db {
+class LevelDBFactory;
+}
 
 class LevelDBScopesTestBase : public testing::Test {
  public:
@@ -91,7 +95,7 @@ class LevelDBScopesTestBase : public testing::Test {
 
  protected:
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_;
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   base::ScopedTempDir temp_directory_;
 
   const std::string simple_lock_begin_ = "0000000001";
@@ -99,6 +103,7 @@ class LevelDBScopesTestBase : public testing::Test {
   const std::vector<uint8_t> metadata_prefix_ = {'a'};
   const std::vector<uint8_t> db_prefix_ = {'b'};
 
+  indexed_db::LevelDBFactory* leveldb_factory_ = nullptr;
   scoped_refptr<LevelDBState> leveldb_;
   std::string large_string_;
   LevelDBScopesUndoTask undo_task_buffer_;

@@ -35,12 +35,13 @@ namespace dawn_native { namespace metal {
         struct MetalFunctionData {
             id<MTLFunction> function;
             MTLSize localWorkgroupSize;
+            bool needsStorageBufferLength;
             ~MetalFunctionData() {
                 [function release];
             }
         };
         MetalFunctionData GetFunction(const char* functionName,
-                                      ShaderStage functionStage,
+                                      SingleShaderStage functionStage,
                                       const PipelineLayout* layout) const;
 
       private:

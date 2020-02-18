@@ -183,14 +183,14 @@ std::string join(Ts &&... ts)
 	return stream.str();
 }
 
-inline std::string merge(const SmallVector<std::string> &list)
+inline std::string merge(const SmallVector<std::string> &list, const char *between = ", ")
 {
 	StringStream<> stream;
 	for (auto &elem : list)
 	{
 		stream << elem;
 		if (&elem != &list.back())
-			stream << ", ";
+			stream << between;
 	}
 	return stream.str();
 }
@@ -299,6 +299,7 @@ enum Types
 	TypeCombinedImageSampler,
 	TypeAccessChain,
 	TypeUndef,
+	TypeString,
 	TypeCount
 };
 
@@ -316,6 +317,23 @@ struct SPIRUndef : IVariant
 	uint32_t basetype;
 
 	SPIRV_CROSS_DECLARE_CLONE(SPIRUndef)
+};
+
+struct SPIRString : IVariant
+{
+	enum
+	{
+		type = TypeString
+	};
+
+	explicit SPIRString(std::string str_)
+	    : str(std::move(str_))
+	{
+	}
+
+	std::string str;
+
+	SPIRV_CROSS_DECLARE_CLONE(SPIRString)
 };
 
 // This type is only used by backends which need to access the combined image and sampler IDs separately after
@@ -458,6 +476,7 @@ struct SPIRExtension : IVariant
 	{
 		Unsupported,
 		GLSL,
+		SPV_debug_info,
 		SPV_AMD_shader_ballot,
 		SPV_AMD_shader_explicit_vertex_parameter,
 		SPV_AMD_shader_trinary_minmax,
@@ -686,6 +705,10 @@ struct SPIRBlock : IVariant
 	// Do we need a ladder variable to defer breaking out of a loop construct after a switch block?
 	bool need_ladder_break = false;
 
+	// If marked, we have explicitly handled Phi from this block, so skip any flushes related to that on a branch.
+	// Used to handle an edge case with switch and case-label fallthrough where fall-through writes to Phi.
+	uint32_t ignore_phi_from_block = 0;
+
 	// The dominating block which this block might be within.
 	// Used in continue; blocks to determine if we really need to write continue.
 	uint32_t loop_dominator = 0;
@@ -765,6 +788,13 @@ struct SPIRFunction : IVariant
 	uint32_t entry_block = 0;
 	SmallVector<uint32_t> blocks;
 	SmallVector<CombinedImageSamplerParameter> combined_parameters;
+
+	struct EntryLine
+	{
+		uint32_t file_id = 0;
+		uint32_t line_literal = 0;
+	};
+	EntryLine entry_line;
 
 	void add_local_variable(uint32_t id)
 	{
@@ -1368,10 +1398,46 @@ T &variant_set(Variant &var, P &&... args)
 
 struct AccessChainMeta
 {
-	uint32_t storage_packed_type = 0;
+	uint32_t storage_physical_type = 0;
 	bool need_transpose = false;
 	bool storage_is_packed = false;
 	bool storage_is_invariant = false;
+};
+
+enum ExtendedDecorations
+{
+	// Marks if a buffer block is re-packed, i.e. member declaration might be subject to PhysicalTypeID remapping and padding.
+	SPIRVCrossDecorationBufferBlockRepacked = 0,
+
+	// A type in a buffer block might be declared with a different physical type than the logical type.
+	// If this is not set, PhysicalTypeID == the SPIR-V type as declared.
+	SPIRVCrossDecorationPhysicalTypeID,
+
+	// Marks if the physical type is to be declared with tight packing rules, i.e. packed_floatN on MSL and friends.
+	// If this is set, PhysicalTypeID might also be set. It can be set to same as logical type if all we're doing
+	// is converting float3 to packed_float3 for example.
+	// If this is marked on a struct, it means the struct itself must use only Packed types for all its members.
+	SPIRVCrossDecorationPhysicalTypePacked,
+
+	// The padding in bytes before declaring this struct member.
+	// If used on a struct type, marks the target size of a struct.
+	SPIRVCrossDecorationPaddingTarget,
+
+	SPIRVCrossDecorationInterfaceMemberIndex,
+	SPIRVCrossDecorationInterfaceOrigID,
+	SPIRVCrossDecorationResourceIndexPrimary,
+	// Used for decorations like resource indices for samplers when part of combined image samplers.
+	// A variable might need to hold two resource indices in this case.
+	SPIRVCrossDecorationResourceIndexSecondary,
+
+	// Marks a buffer block for using explicit offsets (GLSL/HLSL).
+	SPIRVCrossDecorationExplicitOffset,
+
+	// Apply to a variable in the Input storage class; marks it as holding the base group passed to vkCmdDispatchBase().
+	// In MSL, this is used to adjust the WorkgroupId and GlobalInvocationId variables.
+	SPIRVCrossDecorationBuiltInDispatchBase,
+
+	SPIRVCrossDecorationCount
 };
 
 struct Meta
@@ -1396,13 +1462,17 @@ struct Meta
 		spv::FPRoundingMode fp_rounding_mode = spv::FPRoundingModeMax;
 		bool builtin = false;
 
-		struct
+		struct Extended
 		{
-			uint32_t packed_type = 0;
-			bool packed = false;
-			uint32_t ib_member_index = ~(0u);
-			uint32_t ib_orig_id = 0;
-			uint32_t argument_buffer_id = ~(0u);
+			Extended()
+			{
+				// MSVC 2013 workaround to init like this.
+				for (auto &v : values)
+					v = 0;
+			}
+
+			Bitset flags;
+			uint32_t values[SPIRVCrossDecorationCount];
 		} extended;
 	};
 

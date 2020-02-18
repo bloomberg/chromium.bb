@@ -102,11 +102,9 @@ int GetTechnologyOrder(const base::Value& dict) {
     return 1;
   if (technology == shill::kTypeWifi)
     return 2;
-  if (technology == shill::kTypeWimax)
-    return 3;
   if (technology == shill::kTypeCellular)
-    return 4;
-  return 5;
+    return 3;
+  return 4;
 }
 
 int GetSecurityOrder(const base::Value& dict) {
@@ -342,11 +340,25 @@ void FakeShillManagerClient::ConfigureService(
     const base::DictionaryValue& properties,
     const ObjectPathCallback& callback,
     const ErrorCallback& error_callback) {
+  switch (simulate_configuration_result_) {
+    case FakeShillSimulatedResult::kSuccess:
+      break;
+    case FakeShillSimulatedResult::kFailure:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(error_callback, "Error", "Simulated failure"));
+      return;
+    case FakeShillSimulatedResult::kTimeout:
+      // No callbacks get executed and the caller should eventually timeout.
+      return;
+  }
+
   ShillServiceClient::TestInterface* service_client =
       ShillServiceClient::Get()->GetTestInterface();
 
   std::string guid;
   std::string type;
+  std::string name;
   if (!properties.GetString(shill::kGuidProperty, &guid) ||
       !properties.GetString(shill::kTypeProperty, &type)) {
     LOG(ERROR) << "ConfigureService requires GUID and Type to be defined";
@@ -356,6 +368,13 @@ void FakeShillManagerClient::ConfigureService(
         FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
     return;
   }
+
+  if (type == shill::kTypeWifi)
+    properties.GetString(shill::kSSIDProperty, &name);
+  if (name.empty())
+    properties.GetString(shill::kNameProperty, &name);
+  if (name.empty())
+    name = guid;
 
   std::string ipconfig_path;
   properties.GetString(shill::kIPConfigProperty, &ipconfig_path);
@@ -370,7 +389,7 @@ void FakeShillManagerClient::ConfigureService(
     // service paths and GUIDs instead of assuming that service path == GUID.
     service_path = "service_path_for_" + guid;
     service_client->AddServiceWithIPConfig(
-        service_path, guid /* guid */, guid /* name */, type, shill::kStateIdle,
+        service_path, guid /* guid */, name /* name */, type, shill::kStateIdle,
         ipconfig_path, true /* visible */);
   }
 
@@ -670,6 +689,11 @@ bool FakeShillManagerClient::GetFastTransitionStatus() {
   return fast_transition_status && fast_transition_status->GetBool();
 }
 
+void FakeShillManagerClient::SetSimulateConfigurationResult(
+    FakeShillSimulatedResult configuration_result) {
+  simulate_configuration_result_ = configuration_result;
+}
+
 void FakeShillManagerClient::SetupDefaultEnvironment() {
   // Bail out from setup if there is no message loop. This will be the common
   // case for tests that are not testing Shill.
@@ -824,24 +848,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       services->AddService(path, guid, name, shill::kTypeWifi,
                            shill::kStateIdle, add_to_visible);
     }
-  }
-
-  // Wimax
-  const std::string kWimaxPath = "/service/wimax1";
-  state = GetInitialStateForType(shill::kTypeWimax, &enabled);
-  if (state != kTechnologyUnavailable) {
-    AddTechnology(shill::kTypeWimax, enabled);
-    devices->AddDevice("/device/wimax1", shill::kTypeWimax,
-                       "stub_wimax_device1");
-
-    services->AddService(kWimaxPath, "wimax1_guid", "wimax1" /* name */,
-                         shill::kTypeWimax, state, add_to_visible);
-    services->SetServiceProperty(kWimaxPath, shill::kConnectableProperty,
-                                 base::Value(true));
-    base::Value strength_value(80);
-    services->SetServiceProperty(kWimaxPath, shill::kSignalStrengthProperty,
-                                 strength_value);
-    profiles->AddService(shared_profile, kWimaxPath);
   }
 
   // Cellular
@@ -1257,8 +1263,7 @@ bool FakeShillManagerClient::SetInitialNetworkState(
     type_arg = shill::kTypeEthernet;
 
   if (type_arg != shill::kTypeEthernet && type_arg != shill::kTypeWifi &&
-      type_arg != shill::kTypeCellular && type_arg != shill::kTypeWimax &&
-      type_arg != shill::kTypeVPN) {
+      type_arg != shill::kTypeCellular && type_arg != shill::kTypeVPN) {
     LOG(WARNING) << "Unrecognized Shill network type: " << type_arg;
     return false;
   }

@@ -35,7 +35,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -163,10 +163,15 @@
   return self.parentViewController.view;
 }
 
-#pragma mark - ActivityServicePositioner
+#pragma mark - SnackbarCommands
 
 - (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
   _latestSnackbarMessage = [message.text copy];
+}
+
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message
+               bottomOffset:(CGFloat)offset {
+  // NO-OP.
 }
 
 @end
@@ -312,7 +317,7 @@ class ActivityServiceControllerTest : public PlatformTest {
     EXPECT_FALSE(provider.fakePasswordFormFiller.methodCalled);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   UIViewController* parentController_;
   ShareToData* shareData_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

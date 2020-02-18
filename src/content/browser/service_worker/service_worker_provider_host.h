@@ -20,14 +20,18 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -120,13 +124,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       int frame_tree_node_id,
-      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info);
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          client_remote);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
   // long as this info stays alive (namely, as long as
-  // |out_provider_info->host_ptr_info| stays alive).
+  // |out_provider_info->host_remote| stays alive).
   // CompleteStartWorkerPreparation() must be called later to get a full info to
   // send to the renderer.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForController(
@@ -137,13 +143,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a provider host for the worker. The host stays alive as long as the
-  // corresponding host for |host_request| stays alive.
+  // corresponding host for |host_receiver| stays alive.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
-      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info);
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          client_remote);
 
   ~ServiceWorkerProviderHost() override;
 
@@ -324,7 +332,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CompleteStartWorkerPreparation(
       int process_id,
       service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request);
+          interface_provider_request,
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+          broker_receiver);
 
   // Called when the web worker main script resource has finished loading.
   // After this is called, is_response_committed() and is_execution_ready()
@@ -439,8 +449,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       blink::mojom::ServiceWorkerProviderType type,
       bool is_parent_frame_secure,
       int frame_tree_node_id,
-      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          client_remote,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
@@ -499,14 +511,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void EnsureControllerServiceWorker(
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::mojom::ControllerServiceWorkerPurpose purpose) override;
-  void CloneContainerHost(blink::mojom::ServiceWorkerContainerHostRequest
-                              container_host_request) override;
-  void Ping(PingCallback callback) override;
+  void CloneContainerHost(
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerContainerHost> receiver)
+      override;
   void HintToUpdateServiceWorker() override;
   void OnExecutionReady() override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
-  void RegistrationComplete(RegisterCallback callback,
+  void RegistrationComplete(const GURL& script_url,
+                            const GURL& scope,
+                            RegisterCallback callback,
                             int64_t trace_id,
                             mojo::ReportBadMessageCallback bad_message_callback,
                             blink::ServiceWorkerStatusCode status,
@@ -666,26 +680,32 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // just be a raw ptr that is never null.
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
-  // |container_| is the Mojo endpoint to the renderer-side
-  // ServiceWorkerContainer that |this| is a ServiceWorkerContainerHost for.
-  blink::mojom::ServiceWorkerContainerAssociatedPtr container_;
-  // |binding_| is the Mojo binding that keeps the connection to the
-  // renderer-side counterpart (content::ServiceWorkerProviderContext). When the
-  // connection bound on |binding_| gets killed from the renderer side, or the
-  // bound |ServiceWorkerProviderInfoForStartWorker::host_ptr_info| is otherwise
+  // |container_| is the remote renderer-side ServiceWorkerContainer that |this|
+  // is a ServiceWorkerContainerHost for.
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
+  // |receiver_| keeps the connection to the renderer-side counterpart
+  // (content::ServiceWorkerProviderContext). When the connection bound on
+  // |receiver_| gets killed from the renderer side, or the bound
+  // |ServiceWorkerProviderInfoForStartWorker::host_remote| is otherwise
   // destroyed before being passed to the renderer, this
   // content::ServiceWorkerProviderHost will be destroyed.
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainerHost> binding_;
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainerHost> receiver_{
+      this};
 
-  // Container host bindings other than the original |binding_|. These include
-  // bindings for container host pointers used from (dedicated or shared) worker
-  // threads, or from ServiceWorkerSubresourceLoaderFactory.
-  mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost>
-      additional_bindings_;
+  // Container host receivers other than the original |receiver_|. These include
+  // receivers used from (dedicated or shared) worker threads, or from
+  // ServiceWorkerSubresourceLoaderFactory.
+  mojo::ReceiverSet<blink::mojom::ServiceWorkerContainerHost>
+      additional_receivers_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
+  BrowserInterfaceBrokerImpl<ServiceWorkerProviderHost,
+                             const ServiceWorkerVersionInfo&>
+      broker_{this};
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
+      &broker_};
 
   // For service worker clients.
   ClientPhase client_phase_ = ClientPhase::kInitial;

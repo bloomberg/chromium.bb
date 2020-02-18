@@ -9,6 +9,7 @@
 const ALLOWED_HOSTS = [
   'google.com',
   'gstatic.com',
+  'googleapis.com',
   // FIFE avatar images (lh3-lh6). See http://go/fife-domains
   'lh3.googleusercontent.com',
   'lh4.googleusercontent.com',
@@ -33,7 +34,8 @@ function isAllowedRequest(requestDetails) {
 }
 
 let server = null;
-const proxy = addSupervision.mojom.AddSupervisionHandler.getProxy();
+const addSupervisionHandler =
+    addSupervision.mojom.AddSupervisionHandler.getRemote();
 
 Polymer({
   is: 'add-supervision-ui',
@@ -53,7 +55,7 @@ Polymer({
     this.offlineContentDiv.hidden = navigator.onLine;
 
     window.addEventListener('online', () => {
-      this.webviewDiv.style.hidden = false;
+      this.webviewDiv.hidden = false;
       this.offlineContentDiv.hidden = true;
     });
 
@@ -62,7 +64,7 @@ Polymer({
       this.offlineContentDiv.hidden = false;
     });
 
-    proxy.getOAuthToken().then((result) => {
+    addSupervisionHandler.getOAuthToken().then((result) => {
       const webviewUrl = loadTimeData.getString('webviewUrl');
       const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
       const webview =

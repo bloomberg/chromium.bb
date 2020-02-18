@@ -76,8 +76,14 @@
 #define IDC_SITE_SETTINGS               34062
 #define IDC_HOSTED_APP_MENU_APP_INFO    34063
 
+#if defined(OS_CHROMEOS)
+// Terminal system app commands
+#define IDC_TERMINAL_SPLIT_HORIZONTAL   34070
+#define IDC_TERMINAL_SPLIT_VERTICAL     34071
+#endif
+
 // Page-related commands
-#define IDC_BOOKMARK_PAGE               35000
+#define IDC_BOOKMARK_THIS_TAB           35000
 #define IDC_BOOKMARK_ALL_TABS           35001
 #define IDC_VIEW_SOURCE                 35002
 #define IDC_PRINT                       35003
@@ -220,6 +226,7 @@
 #define IDC_CHROME_MENU                 44002     // OSX only
 #define IDC_HIDE_APP                    44003     // OSX only
 #define IDC_HISTORY_MENU                46000     // OSX only
+#define IDC_TAB_MENU                    46001     // OSX only
 #define IDC_PROFILE_MAIN_MENU           46100     // OSX only
 #define IDC_INPUT_METHODS_MENU          46300     // Linux only
 
@@ -332,6 +339,8 @@
 // Context menu items for Sharing
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE 51030
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES 51031
+#define IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE 51032
+#define IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES 51033
 
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100

@@ -36,9 +36,7 @@ bool frustum_cull(thread const float2& p0, constant UBO& v_41)
     float radius = 0.5 * length(bb_max - bb_min);
     float3 f0 = float3(dot(v_41.uFrustum[0], float4(center, 1.0)), dot(v_41.uFrustum[1], float4(center, 1.0)), dot(v_41.uFrustum[2], float4(center, 1.0)));
     float3 f1 = float3(dot(v_41.uFrustum[3], float4(center, 1.0)), dot(v_41.uFrustum[4], float4(center, 1.0)), dot(v_41.uFrustum[5], float4(center, 1.0)));
-    float3 _199 = f0;
-    float _200 = radius;
-    bool _205 = any(_199 <= float3(-_200));
+    bool _205 = any(f0 <= float3(-radius));
     bool _215;
     if (!_205)
     {
@@ -106,7 +104,7 @@ void compute_tess_levels(thread const float2& p0, constant UBO& v_41, device flo
     gl_TessLevelInner[1] = half(inner);
 }
 
-kernel void main0(main0_in in [[stage_in]], constant UBO& v_41 [[buffer(0)]], uint gl_InvocationID [[thread_index_in_threadgroup]], uint gl_PrimitiveID [[threadgroup_position_in_grid]], device uint* spvIndirectParams [[buffer(29)]], device main0_patchOut* spvPatchOut [[buffer(27)]], device MTLQuadTessellationFactorsHalf* spvTessLevel [[buffer(26)]], threadgroup main0_in* gl_in [[threadgroup(0)]])
+kernel void main0(main0_in in [[stage_in]], constant UBO& v_41 [[buffer(0)]], uint gl_InvocationID [[thread_index_in_threadgroup]], uint gl_PrimitiveID [[threadgroup_position_in_grid]], constant uint* spvIndirectParams [[buffer(29)]], device main0_patchOut* spvPatchOut [[buffer(27)]], device MTLQuadTessellationFactorsHalf* spvTessLevel [[buffer(26)]], threadgroup main0_in* gl_in [[threadgroup(0)]])
 {
     device main0_patchOut& patchOut = spvPatchOut[gl_PrimitiveID];
     if (gl_InvocationID < spvIndirectParams[0])

@@ -5,6 +5,7 @@
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
@@ -37,6 +39,57 @@ GURL GetGoogleURL() {
 
 using BrowserNavigatorTestChromeOS = BrowserNavigatorTest;
 
+// This test verifies that the OS Settings page isn't opened in the incognito
+// window.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
+                       Disposition_OSSettings_UseNonIncognitoWindow) {
+  RunUseNonIncognitoWindowTest(GURL(chrome::kChromeUIOSSettingsURL),
+                               ui::PageTransition::PAGE_TRANSITION_TYPED);
+}
+
+// Verifies that the OS settings page opens in a standalone surface when
+// accessed via link or url.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {
+  // Enable SplitSettings feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+
+  // Install the Settings App.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+
+  // Verify that only one window is upon before navigating to OS settings.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Navigate to OS Settings page via typing URL into URL bar.
+  NavigateParams params(MakeNavigateParams(browser()));
+  params.url = GURL("chrome://os-settings/");
+  params.transition = ui::PageTransition::PAGE_TRANSITION_TYPED;
+  Navigate(&params);
+
+  // Verify that navigating to chrome://os-settings/ via typing causes the
+  // browser itself to navigate to the OS Settings page.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(GURL("chrome://os-settings/"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate to OS Settings page via clicking a link on another page.
+  params.transition = ui::PageTransition::PAGE_TRANSITION_LINK;
+  Navigate(&params);
+  Browser* os_settings_browser =
+      chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
+          browser()->profile());
+
+  // Verify that navigating to chrome://os-settings/ via a link from another
+  // page opens a standalone surface.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(
+      GURL("chrome://os-settings/"),
+      os_settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_NE(browser(), os_settings_browser);
+}
+
 // This test verifies that the settings page is opened in a new browser window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
   // Install the Settings App.
@@ -48,7 +101,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        browser()->profile());
     observer.Wait();
   }
   // browser() tab contents should be unaffected.
@@ -62,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
           browser()->profile());
   EXPECT_NE(browser(), settings_browser);
   EXPECT_EQ(
-      GURL("chrome://settings"),
+      GURL(chrome::GetOSSettingsUrl(std::string())),
       settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
@@ -134,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   // Navigate to the settings page.
   NavigateParams params(MakeNavigateParams(incognito_browser));
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  params.url = GURL("chrome://chrome/settings");
+  params.url = GURL("chrome://settings");
   params.window_action = NavigateParams::SHOW_WINDOW;
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   Navigate(&params);
@@ -144,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_EQ(incognito_browser, params.browser);
   EXPECT_EQ(2, incognito_browser->tab_strip_model()->count());
   EXPECT_EQ(
-      GURL("chrome://chrome/settings"),
+      GURL("chrome://settings"),
       incognito_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
@@ -165,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
     // Navigate to the settings page.
     NavigateParams params(MakeNavigateParams(browser()));
     params.disposition = WindowOpenDisposition::NEW_POPUP;
-    params.url = GURL("chrome://chrome/settings");
+    params.url = GURL("chrome://settings");
     params.window_action = NavigateParams::SHOW_WINDOW;
     params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
     params.browser = browser();
@@ -190,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
     // Navigate to the settings page.
     NavigateParams params(MakeNavigateParams(browser()));
     params.disposition = WindowOpenDisposition::NEW_POPUP;
-    params.url = GURL("chrome://chrome/settings");
+    params.url = GURL("chrome://settings");
     params.window_action = NavigateParams::SHOW_WINDOW;
     params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
     params.browser = browser();

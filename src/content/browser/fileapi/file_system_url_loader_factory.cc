@@ -36,6 +36,7 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -102,7 +103,6 @@ class FileSystemEntryURLLoader
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override {}
-  void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -193,9 +193,8 @@ class FileSystemEntryURLLoader
 
     url_ = params_.file_system_context->CrackURL(request.url);
     if (!url_.is_valid()) {
-      const FileSystemRequestInfo request_info = {request.url, nullptr,
-                                                  params_.storage_domain,
-                                                  params_.frame_tree_node_id};
+      const FileSystemRequestInfo request_info = {
+          request.url, params_.storage_domain, params_.frame_tree_node_id};
       params_.file_system_context->AttemptAutoMountForURLRequest(
           request_info,
           base::BindOnce(&FileSystemEntryURLLoader::DidAttemptAutoMount,
@@ -658,7 +657,7 @@ CreateFileSystemURLLoaderFactory(
                           file_system_context, storage_domain};
   return std::make_unique<FileSystemURLLoaderFactory>(
       std::move(params),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 }
 
 }  // namespace content

@@ -19,6 +19,7 @@
 
 #include "common/SerialQueue.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/d3d12/CommittedResourceAllocatorD3D12.h"
 #include "dawn_native/d3d12/Forward.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
 
@@ -81,6 +82,16 @@ namespace dawn_native { namespace d3d12 {
                                            uint64_t destinationOffset,
                                            uint64_t size) override;
 
+        ResultOrError<ResourceMemoryAllocation> AllocateMemory(
+            D3D12_HEAP_TYPE heapType,
+            const D3D12_RESOURCE_DESC& resourceDescriptor,
+            D3D12_RESOURCE_STATES initialUsage,
+            D3D12_HEAP_FLAGS heapFlags);
+
+        void DeallocateMemory(ResourceMemoryAllocation& allocation);
+
+        TextureBase* WrapSharedHandle(const TextureDescriptor* descriptor, HANDLE sharedHandle);
+
       private:
         ResultOrError<BindGroupBase*> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
@@ -104,10 +115,12 @@ namespace dawn_native { namespace d3d12 {
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
 
+        size_t GetD3D12HeapTypeToIndex(D3D12_HEAP_TYPE heapType) const;
+
         Serial mCompletedSerial = 0;
         Serial mLastSubmittedSerial = 0;
         ComPtr<ID3D12Fence> mFence;
-        HANDLE mFenceEvent;
+        HANDLE mFenceEvent = nullptr;
 
         ComPtr<ID3D12Device> mD3d12Device;  // Device is owned by adapter and will not be outlived.
         ComPtr<ID3D12CommandQueue> mCommandQueue;
@@ -127,6 +140,20 @@ namespace dawn_native { namespace d3d12 {
         std::unique_ptr<DescriptorHeapAllocator> mDescriptorHeapAllocator;
         std::unique_ptr<MapRequestTracker> mMapRequestTracker;
         std::unique_ptr<ResourceAllocator> mResourceAllocator;
+
+        static constexpr uint32_t kNumHeapTypes = 4u;  // Number of D3D12_HEAP_TYPE
+
+        static_assert(D3D12_HEAP_TYPE_READBACK <= kNumHeapTypes,
+                      "Readback heap type enum exceeds max heap types");
+        static_assert(D3D12_HEAP_TYPE_UPLOAD <= kNumHeapTypes,
+                      "Upload heap type enum exceeds max heap types");
+        static_assert(D3D12_HEAP_TYPE_DEFAULT <= kNumHeapTypes,
+                      "Default heap type enum exceeds max heap types");
+        static_assert(D3D12_HEAP_TYPE_CUSTOM <= kNumHeapTypes,
+                      "Custom heap type enum exceeds max heap types");
+
+        std::array<std::unique_ptr<CommittedResourceAllocator>, kNumHeapTypes>
+            mDirectResourceAllocators;
 
         dawn_native::PCIInfo mPCIInfo;
     };

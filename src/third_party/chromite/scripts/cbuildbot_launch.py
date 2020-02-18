@@ -32,6 +32,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 from chromite.lib import ts_mon_config
 from chromite.scripts import cbuildbot
 
@@ -424,7 +425,24 @@ def CleanupChroot(buildroot):
   chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   logging.info('Cleaning up chroot at %s', chroot_dir)
   if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-    cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=False)
+    try:
+      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=False)
+    except timeout_util.TimeoutError:
+      logging.exception('Cleaning up chroot timed out')
+      # Dump debug info to help https://crbug.com/1000034.
+      cros_build_lib.RunCommand(['mount'], error_code_ok=False)
+      cros_build_lib.RunCommand(['uname', '-a'], error_code_ok=False)
+      cros_build_lib.SudoRunCommand(['losetup', '-a'], error_code_ok=False)
+      cros_build_lib.RunCommand(['dmesg'], error_code_ok=False)
+      logging.warning('Assuming the bot is going to reboot, so ignoring this '
+                      'failure; see https://crbug.com/1000034')
+
+   # NB: We ignore errors at this point because this stage runs last.  If the
+   # chroot failed to unmount, we're going to reboot the system once we're done,
+   # and that will implicitly take care of cleaning things up.  If the bots stop
+   # rebooting after every run, we'll need to make this fatal all the time.
+   #
+   # TODO(crbug.com/1000034): This should be fatal all the time.
 
 
 def ConfigureGlobalEnvironment():

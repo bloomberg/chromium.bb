@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/elements_upload_data_stream.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -154,7 +154,7 @@ class ProtocolHandlerUtilTest : public PlatformTest,
   void OnReadCompleted(URLRequest* request, int bytes_read) override {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   URLRequestJobFactoryImpl job_factory_;
   std::unique_ptr<URLRequestContext> request_context_;
 };

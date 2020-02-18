@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
+
 namespace leveldb_proto {
 
 const char* const kFeatureEngagementName = "FeatureEngagement";
@@ -38,6 +40,8 @@ enum class ProtoDbType {
   BUDGET_DATABASE = 18,
   STRIKE_DATABASE = 19,
   HINT_CACHE_STORE = 20,
+  DOWNLOAD_DB = 21,
+  VIDEO_DECODE_STATS_DB = 22,
 
   LAST,
 };
@@ -57,7 +61,7 @@ constexpr ProtoDbType kObsoleteSharedProtoDbTypeClients[] = {
     ProtoDbType::LAST,  // Marks the end of list.
 };
 
-class SharedProtoDatabaseClientList {
+class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabaseClientList {
  public:
   // Determines if the given |db_type| should use a unique or shared DB.
   static bool ShouldUseSharedDB(ProtoDbType db_type);

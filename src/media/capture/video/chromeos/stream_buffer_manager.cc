@@ -29,8 +29,7 @@ StreamBufferManager::StreamBufferManager(
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory)
     : device_context_(device_context),
       video_capture_use_gmb_(video_capture_use_gmb),
-      camera_buffer_factory_(std::move(camera_buffer_factory)),
-      weak_ptr_factory_(this) {
+      camera_buffer_factory_(std::move(camera_buffer_factory)) {
   if (video_capture_use_gmb_) {
     gmb_support_ = std::make_unique<gpu::GpuMemoryBufferSupport>();
   }
@@ -175,6 +174,8 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
          ++j) {
       ReserveBuffer(stream_type);
     }
+    CHECK_EQ(stream_context_[stream_type]->free_buffers.size(),
+             stream_context_[stream_type]->stream->max_buffers);
     DVLOG(2) << "Allocated "
              << stream_context_[stream_type]->stream->max_buffers << " buffers";
   }
@@ -317,10 +318,7 @@ void StreamBufferManager::ReserveBufferFromPool(StreamType stream_type) {
   if (!device_context_->ReserveVideoCaptureBufferFromPool(
           stream_context->buffer_dimension,
           stream_context->capture_format.pixel_format, &vcd_buffer)) {
-    device_context_->SetErrorState(
-        media::VideoCaptureError::
-            kCrosHalV3BufferManagerFailedToCreateGpuMemoryBuffer,
-        FROM_HERE, "Failed to reserve video capture buffer");
+    DLOG(WARNING) << "Failed to reserve video capture buffer";
     return;
   }
   auto gmb = gmb_support_->CreateGpuMemoryBufferImplFromHandle(

@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
@@ -259,7 +259,7 @@ class ExtensionManagementServiceTest : public testing::Test {
     return extension;
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
@@ -464,6 +464,28 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallForcelist) {
           forced_list_pref.CreateDeepCopy());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
+}
+
+// Tests handling of exceeding number of urls
+TEST_F(ExtensionManagementServiceTest, HostsMaximumExceeded) {
+  const char policy_template[] =
+      "{"
+      "  \"abcdefghijklmnopabcdefghijklmnop\": {"
+      "    \"installation_mode\": \"allowed\","
+      "    \"runtime_blocked_hosts\": [%s],"
+      "    \"runtime_allowed_hosts\": [%s]"
+      "  }"
+      "}";
+
+  std::string urls;
+  for (size_t i = 0; i < 200; ++i)
+    urls.append("\"*://example" + base::NumberToString(i) + ".com\",");
+
+  std::string policy =
+      base::StringPrintf(policy_template, urls.c_str(), urls.c_str());
+  SetExampleDictPref(policy);
+  EXPECT_EQ(100u, GetPolicyBlockedHosts(kTargetExtension).size());
+  EXPECT_EQ(100u, GetPolicyAllowedHosts(kTargetExtension).size());
 }
 
 // Tests parsing of new dictionary preference.

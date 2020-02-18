@@ -27,6 +27,7 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "net/base/features.h"
@@ -47,7 +48,6 @@
 #include "net/log/net_log_values.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
-#include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_handshake_details.h"
 #include "net/ssl/ssl_info.h"
@@ -69,6 +69,11 @@ namespace net {
 
 namespace {
 
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
+constexpr base::FeatureParam<std::string> kPostQuantumGroup{
+    &features::kPostQuantumCECPQ2, "group", ""};
+#endif
+
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
 const int kSSLClientSocketNoPendingResult = 1;
@@ -81,11 +86,11 @@ const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
 base::Value NetLogPrivateKeyOperationParams(uint16_t algorithm,
                                             SSLPrivateKey* key) {
-  base::DictionaryValue value;
-  value.SetString("algorithm", SSL_get_signature_algorithm_name(
-                                   algorithm, 0 /* exclude curve */));
-  value.SetString("provider", key->GetProviderName());
-  return std::move(value);
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetStringKey("algorithm", SSL_get_signature_algorithm_name(
+                                      algorithm, 0 /* exclude curve */));
+  value.SetStringKey("provider", key->GetProviderName());
+  return value;
 }
 
 base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
@@ -93,42 +98,42 @@ base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
   if (!socket->GetSSLInfo(&ssl_info))
     return base::Value();
 
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   const char* version_str;
   SSLVersionToString(&version_str,
                      SSLConnectionStatusToVersion(ssl_info.connection_status));
-  dict.SetString("version", version_str);
-  dict.SetBoolean("is_resumed",
+  dict.SetStringKey("version", version_str);
+  dict.SetBoolKey("is_resumed",
                   ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
-  dict.SetInteger("cipher_suite",
-                  SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
+  dict.SetIntKey("cipher_suite",
+                 SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
 
-  dict.SetString("next_proto",
-                 NextProtoToString(socket->GetNegotiatedProtocol()));
+  dict.SetStringKey("next_proto",
+                    NextProtoToString(socket->GetNegotiatedProtocol()));
 
-  return std::move(dict);
+  return dict;
 }
 
 base::Value NetLogSSLAlertParams(const void* bytes, size_t len) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
-  return std::move(dict);
+  return dict;
 }
 
 base::Value NetLogSSLMessageParams(bool is_write,
                                    const void* bytes,
                                    size_t len,
                                    NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   if (len == 0) {
     NOTREACHED();
-    return std::move(dict);
+    return dict;
   }
 
   // The handshake message type is the first byte. Include it so elided messages
   // still report their type.
   uint8_t type = reinterpret_cast<const uint8_t*>(bytes)[0];
-  dict.SetInteger("type", type);
+  dict.SetIntKey("type", type);
 
   // Elide client certificate messages unless logging socket bytes. The client
   // certificate does not contain information needed to impersonate the user
@@ -139,7 +144,7 @@ base::Value NetLogSSLMessageParams(bool is_write,
     dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
   }
 
-  return std::move(dict);
+  return dict;
 }
 
 // This enum is used in histograms, so values may not be reused.
@@ -313,7 +318,6 @@ class SSLClientSocketImpl::SSLContext {
     // Deduplicate all certificates minted from the SSL_CTX in memory.
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
 
-    SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
 
 #if !defined(NET_DISABLE_BROTLI)
@@ -322,11 +326,31 @@ class SSLClientSocketImpl::SSLContext {
         nullptr /* compression not supported */, DecompressBrotliCert);
 #endif
 
-    if (base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2)) {
-      static const int kCurves[] = {NID_CECPQ2, NID_X25519,
-                                    NID_X9_62_prime256v1, NID_secp384r1};
-      SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
+    // CECPQ2b is only optimised for x86-64 and aarch64, and is too slow on
+    // other CPUs to even experiment with.
+    const std::string post_quantum_group = kPostQuantumGroup.Get();
+    if (!post_quantum_group.empty()) {
+      bool send_signal = false;
+      if (post_quantum_group == "Control") {
+        send_signal = true;
+      } else if (post_quantum_group == "CECPQ2") {
+        send_signal = true;
+        static const int kCurves[] = {NID_CECPQ2, NID_X25519,
+                                      NID_X9_62_prime256v1, NID_secp384r1};
+        SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+      } else if (post_quantum_group == "CECPQ2b") {
+        send_signal = true;
+        static const int kCurves[] = {NID_CECPQ2b, NID_X25519,
+                                      NID_X9_62_prime256v1, NID_secp384r1};
+        SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+      }
+
+      if (send_signal) {
+        SSL_CTX_enable_pq_experiment_signal(ssl_ctx_.get());
+      }
     }
+#endif
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
@@ -362,11 +386,6 @@ class SSLClientSocketImpl::SSLContext {
 
   static void KeyLogCallback(const SSL* ssl, const char* line) {
     GetInstance()->ssl_key_logger_->WriteLine(line);
-  }
-
-  static void InfoCallback(const SSL* ssl, int type, int value) {
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    socket->InfoCallback(type, value);
   }
 
   static void MessageCallback(int is_write,
@@ -598,8 +617,7 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
       server_cert_verify_result_.is_issued_by_known_root;
   ssl_info->pkp_bypassed = pkp_bypassed_;
   ssl_info->public_key_hashes = server_cert_verify_result_.public_key_hashes;
-  ssl_info->client_cert_sent =
-      ssl_config_.send_client_cert && ssl_config_.client_cert.get();
+  ssl_info->client_cert_sent = send_client_cert_ && client_cert_.get();
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
@@ -611,6 +629,8 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->key_exchange_group = SSL_get_curve_id(ssl_.get());
   ssl_info->peer_signature_algorithm =
       SSL_get_peer_signature_algorithm(ssl_.get());
+  ssl_info->server_in_post_quantum_experiment =
+      SSL_pq_experiment_signal_seen(ssl_.get());
 
   SSLConnectionStatusSetCipherSuite(
       static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),
@@ -810,10 +830,14 @@ int SSLClientSocketImpl::Init() {
   BIO_up_ref(transport_bio);  // SSL_set0_wbio takes ownership.
   SSL_set0_wbio(ssl_.get(), transport_bio);
 
-  DCHECK_LT(SSL3_VERSION, ssl_config_.version_min);
-  DCHECK_LT(SSL3_VERSION, ssl_config_.version_max);
-  if (!SSL_set_min_proto_version(ssl_.get(), ssl_config_.version_min) ||
-      !SSL_set_max_proto_version(ssl_.get(), ssl_config_.version_max)) {
+  uint16_t version_min =
+      ssl_config_.version_min_override.value_or(context_->config().version_min);
+  uint16_t version_max =
+      ssl_config_.version_max_override.value_or(context_->config().version_max);
+  DCHECK_LT(SSL3_VERSION, version_min);
+  DCHECK_LT(SSL3_VERSION, version_max);
+  if (!SSL_set_min_proto_version(ssl_.get(), version_min) ||
+      !SSL_set_max_proto_version(ssl_.get(), version_max)) {
     return ERR_UNEXPECTED;
   }
 
@@ -841,8 +865,7 @@ int SSLClientSocketImpl::Init() {
   mode.ConfigureFlag(SSL_MODE_RELEASE_BUFFERS, true);
   mode.ConfigureFlag(SSL_MODE_CBC_RECORD_SPLITTING, true);
 
-  mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START,
-                     ssl_config_.false_start_enabled);
+  mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START, true);
 
   SSL_set_mode(ssl_.get(), mode.set_mask);
   SSL_clear_mode(ssl_.get(), mode.clear_mask);
@@ -855,7 +878,7 @@ int SSLClientSocketImpl::Init() {
     command.append(":!kRSA");
 
   // Remove any disabled ciphers.
-  for (uint16_t id : ssl_config_.disabled_cipher_suites) {
+  for (uint16_t id : context_->config().disabled_cipher_suites) {
     const SSL_CIPHER* cipher = SSL_get_cipher_by_value(id);
     if (cipher) {
       command.append(":!");
@@ -884,6 +907,12 @@ int SSLClientSocketImpl::Init() {
   SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_freely);
 
   SSL_set_shed_handshake_config(ssl_.get(), 1);
+
+  // TODO(https://crbug.com/775438), if |ssl_config_.privacy_mode| is enabled,
+  // this should always continue with no client certificate.
+  send_client_cert_ = context_->GetClientCertificate(
+      host_and_port_, &client_cert_, &client_private_key_);
+
   return OK;
 }
 
@@ -914,12 +943,11 @@ int SSLClientSocketImpl::DoHandshake() {
   int net_error = OK;
   if (rv <= 0) {
     int ssl_error = SSL_get_error(ssl_.get(), rv);
-    if (ssl_error == SSL_ERROR_WANT_X509_LOOKUP &&
-        !ssl_config_.send_client_cert) {
+    if (ssl_error == SSL_ERROR_WANT_X509_LOOKUP && !send_client_cert_) {
       return ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
     }
     if (ssl_error == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
-      DCHECK(ssl_config_.client_private_key);
+      DCHECK(client_private_key_);
       DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       next_handshake_state_ = STATE_HANDSHAKE;
       return ERR_IO_PENDING;
@@ -1166,13 +1194,6 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
                      base::Unretained(this)),
       &cert_verifier_request_, net_log_);
 
-  // Enforce keyUsage extension for RSA leaf certificates chaining up to known
-  // roots.
-  // TODO(795089): Enforce this unconditionally.
-  if (server_cert_verify_result_.is_issued_by_known_root) {
-    SSL_set_enforce_rsa_key_usage(ssl_.get(), 1);
-  }
-
   return HandleVerifyResult();
 }
 
@@ -1210,11 +1231,16 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
     }
   }
 
+  // Enforce keyUsage extension for RSA leaf certificates chaining up to known
+  // roots.
+  // TODO(crbug.com/795089): Enforce this unconditionally.
+  if (server_cert_verify_result_.is_issued_by_known_root) {
+    SSL_set_enforce_rsa_key_usage(ssl_.get(), 1);
+  }
+
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
-  if ((result == OK ||
-       (IsCertificateError(result) &&
-        IsCertStatusMinorError(server_cert_verify_result_.cert_status)))) {
+  if (result == OK) {
     int ct_result = VerifyCT();
     TransportSecurityState::PKPStatus pin_validity =
         context_->transport_security_state()->CheckPublicKeyPins(
@@ -1241,7 +1267,6 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
 
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
-      !IsCertStatusMinorError(server_cert_verify_result_.cert_status) &&
       context_->transport_security_state()->ShouldSSLErrorsBeFatal(
           host_and_port_.host());
 
@@ -1346,11 +1371,11 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
     if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
       pending_read_error_ = 0;
     } else if (pending_read_ssl_error_ == SSL_ERROR_WANT_X509_LOOKUP &&
-               !ssl_config_.send_client_cert) {
+               !send_client_cert_) {
       pending_read_error_ = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
     } else if (pending_read_ssl_error_ ==
                SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
-      DCHECK(ssl_config_.client_private_key);
+      DCHECK(client_private_key_);
       DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       pending_read_error_ = ERR_IO_PENDING;
     } else {
@@ -1573,7 +1598,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   // TODO(droger): Support client auth on iOS. See http://crbug.com/145954).
   LOG(WARNING) << "Client auth is not supported";
 #else   // !defined(OS_IOS)
-  if (!ssl_config_.send_client_cert) {
+  if (!send_client_cert_) {
     // First pass: we know that a client certificate is needed, but we do not
     // have one at hand. Suspend the handshake. SSL_get_error will return
     // SSL_ERROR_WANT_X509_LOOKUP.
@@ -1581,8 +1606,8 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   }
 
   // Second pass: a client certificate should have been selected.
-  if (ssl_config_.client_cert.get()) {
-    if (!ssl_config_.client_private_key) {
+  if (client_cert_.get()) {
+    if (!client_private_key_) {
       // The caller supplied a null private key. Fail the handshake and surface
       // an appropriate error to the caller.
       LOG(WARNING) << "Client cert found without private key";
@@ -1590,21 +1615,21 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
-    if (!SetSSLChainAndKey(ssl_.get(), ssl_config_.client_cert.get(), nullptr,
+    if (!SetSSLChainAndKey(ssl_.get(), client_cert_.get(), nullptr,
                            &SSLContext::kPrivateKeyMethod)) {
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
       return -1;
     }
 
     std::vector<uint16_t> preferences =
-        ssl_config_.client_private_key->GetAlgorithmPreferences();
+        client_private_key_->GetAlgorithmPreferences();
     SSL_set_signing_algorithm_prefs(ssl_.get(), preferences.data(),
                                     preferences.size());
 
     net_log_.AddEventWithIntParams(
         NetLogEventType::SSL_CLIENT_CERT_PROVIDED, "cert_count",
-        base::checked_cast<int>(
-            1 + ssl_config_.client_cert->intermediate_buffers().size()));
+        base::checked_cast<int>(1 +
+                                client_cert_->intermediate_buffers().size()));
     return 1;
   }
 #endif  // defined(OS_IOS)
@@ -1643,25 +1668,17 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->UpdateCertificateTransparencyInfo(ct_verify_result_);
 }
 
-std::string SSLClientSocketImpl::GetSessionCacheKey(
+SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
     base::Optional<IPAddress> dest_ip_addr) const {
-  std::string ret;
-  if (dest_ip_addr) {
-    ret += dest_ip_addr->ToString();
-  }
-  ret.push_back('/');
-  ret += host_and_port_.ToString();
-  ret.push_back('/');
-  if (ssl_config_.privacy_mode == PRIVACY_MODE_ENABLED) {
-    ret.push_back('1');
-  } else {
-    ret.push_back('0');
-  }
+  SSLClientSessionCache::Key key;
+  key.server = host_and_port_;
+  key.dest_ip_addr = dest_ip_addr;
   if (base::FeatureList::IsEnabled(
           features::kPartitionSSLSessionsByNetworkIsolationKey)) {
-    ret += '/' + ssl_config_.network_isolation_key.ToString();
+    key.network_isolation_key = ssl_config_.network_isolation_key;
   }
-  return ret;
+  key.privacy_mode = ssl_config_.privacy_mode;
+  return key;
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
@@ -1688,18 +1705,18 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
     size_t in_len) {
   DCHECK_EQ(kSSLClientSocketNoPendingResult, signature_result_);
   DCHECK(signature_.empty());
-  DCHECK(ssl_config_.client_private_key);
+  DCHECK(client_private_key_);
 
   net_log_.BeginEvent(NetLogEventType::SSL_PRIVATE_KEY_OP, [&] {
     return NetLogPrivateKeyOperationParams(
         algorithm,
         // Pass the SSLPrivateKey pointer to avoid making copies of the
         // provider name in the common case with logging disabled.
-        ssl_config_.client_private_key.get());
+        client_private_key_.get());
   });
 
   signature_result_ = ERR_IO_PENDING;
-  ssl_config_.client_private_key->Sign(
+  client_private_key_->Sign(
       algorithm, base::make_span(in, in_len),
       base::BindOnce(&SSLClientSocketImpl::OnPrivateKeyComplete,
                      weak_factory_.GetWeakPtr()));
@@ -1711,7 +1728,7 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeyCompleteCallback(
     size_t* out_len,
     size_t max_out) {
   DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
-  DCHECK(ssl_config_.client_private_key);
+  DCHECK(client_private_key_);
 
   if (signature_result_ == ERR_IO_PENDING)
     return ssl_private_key_retry;
@@ -1734,7 +1751,7 @@ void SSLClientSocketImpl::OnPrivateKeyComplete(
     const std::vector<uint8_t>& signature) {
   DCHECK_EQ(ERR_IO_PENDING, signature_result_);
   DCHECK(signature_.empty());
-  DCHECK(ssl_config_.client_private_key);
+  DCHECK(client_private_key_);
 
   net_log_.EndEventWithNetErrorCode(NetLogEventType::SSL_PRIVATE_KEY_OP, error);
 
@@ -1745,13 +1762,6 @@ void SSLClientSocketImpl::OnPrivateKeyComplete(
   // During a renegotiation, either Read or Write calls may be blocked on an
   // asynchronous private key operation.
   RetryAllOperations();
-}
-
-void SSLClientSocketImpl::InfoCallback(int type, int value) {
-  if (type == SSL_CB_HANDSHAKE_START && completed_connect_) {
-    UMA_HISTOGRAM_BOOLEAN("Net.SSLSecureRenegotiation",
-                          SSL_get_secure_renegotiation_support(ssl_.get()));
-  }
 }
 
 void SSLClientSocketImpl::MessageCallback(int is_write,
@@ -1806,8 +1816,7 @@ int SSLClientSocketImpl::MapLastOpenSSLError(
     // certificate. See https://crbug.com/646567.
     if (ERR_GET_REASON(info->error_code) ==
             SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE &&
-        certificate_requested_ && ssl_config_.send_client_cert &&
-        !ssl_config_.client_cert) {
+        certificate_requested_ && send_client_cert_ && !client_cert_) {
       net_error = ERR_BAD_SSL_CLIENT_AUTH_CERT;
     }
 

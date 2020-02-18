@@ -18,7 +18,7 @@ namespace cr_fuchsia {
 // Used to test interactions with an Agent in unit-tests for a component.
 // |create_component_state_callback| can be used with a test-specific
 // ComponentStateBase to serve fake services to the component.
-// |service_directory| specifies the directory into which the ComponentContext
+// |outgoing_directory| specifies the directory into which the ComponentContext
 // should be published, alongside any other services the test wishes to provide
 // to the component's default service namespace. |component_url| specifies the
 // component identity that should be reported to the Agent
@@ -27,7 +27,7 @@ class FakeComponentContext
  public:
   explicit FakeComponentContext(
       AgentImpl::CreateComponentStateCallback create_component_state_callback,
-      base::fuchsia::ServiceDirectory* service_directory,
+      sys::OutgoingDirectory* outgoing_directory,
       base::StringPiece component_url);
   ~FakeComponentContext() override;
 
@@ -37,6 +37,8 @@ class FakeComponentContext
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
       fidl::InterfaceRequest<fuchsia::modular::AgentController> controller)
       override;
+  void ConnectToAgentService(
+      fuchsia::modular::AgentServiceRequest request) override;
   void NotImplemented_(const std::string& name) override;
 
  private:
@@ -44,6 +46,7 @@ class FakeComponentContext
       binding_;
   AgentImpl agent_impl_;
   const std::string component_url_;
+  fuchsia::sys::ServiceProviderPtr agent_services_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentContext);
 };

@@ -36,7 +36,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -212,7 +212,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
 
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   SupervisedUserService* supervised_user_service_;
 };
@@ -383,6 +383,10 @@ class SupervisedUserServiceExtensionTestBase
         CreateDefaultInitParams();
     params.profile_is_supervised = is_supervised_;
     InitializeExtensionService(params);
+    // Flush the message loop, to ensure that credentials have been loaded in
+    // Identity Manager.
+    base::RunLoop().RunUntilIdle();
+
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     service->Init();
@@ -502,7 +506,7 @@ TEST_F(SupervisedUserServiceExtensionTest,
        DISABLED_ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
   // Enable supervised user initiated installs.
   // TODO(crbug.com/846380): ScopedFeatureList must be initialized before the
-  // TestBrowserThreadBundle in ExtensionServiceTestBase to avoid races between
+  // BrowserTaskEnvironment in ExtensionServiceTestBase to avoid races between
   // threads.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(

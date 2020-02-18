@@ -19,17 +19,91 @@ visual-color-picker {
   height: 59%;
 }
 
+color-well {
+  border-radius: 2px 2px 0px 0px;
+  display: block;
+  height: 77%;
+  position: relative;
+  overflow: hidden;
+}
+
+hue-slider {
+  height: 100%;
+  margin-left: 6%;
+  position: relative;
+  width: 130px;
+}
+
+#visual-color-picker-strip {
+  display: flex;
+  height: 18%;
+  margin-top: 3%;
+  position: relative;
+}
+
+eye-dropper {
+  height: 32px;
+  margin-left: 2%;
+  position: relative;
+  width: 32px;
+}
+
+color-viewer {
+  border: 1px solid rgba(0, 0, 0, 0.19);
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 32px;
+  margin-left: 2%;
+  width: 32px;
+}
+
+color-well > canvas {
+  height: 100%;
+  width: 100%;
+}
+
+hue-slider > canvas {
+  border-radius: 2px;
+  height: 11px;
+  margin-top: 7%;
+  width: 100%;
+}
+
+color-selection-ring {
+  border: 2px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  position: absolute;
+}
+
+color-well > color-selection-ring {
+  height: 12px;
+  width: 12px;
+}
+
+hue-slider > color-selection-ring {
+  height: 16px;
+  margin-top: 7%;
+  width: 16px;
+}
+
 manual-color-picker {
   height: 28%;
 }
 
-color-value-container {
+color-value-container:not(.hidden-color-value-container) {
   display: flex;
   flex-direction: row;
   height: 32px;
   margin-left: 10%;
   margin-top: 2%;
   width: 171px;
+}
+
+.hidden-color-value-container,
+.hidden-format-label {
+  display: none;
 }
 
 input {
@@ -39,12 +113,19 @@ input {
   box-sizing: border-box;
   font-family: inherit;
   font-size: 14px;
+  min-width: 0;
   text-align: center;
+  text-transform: uppercase;
+}
+
+color-value-container > input:not(:first-child) {
+  margin-left: 1%;
 }
 
 format-toggler {
   border-radius: 2px;
-  display: block;
+  display: flex;
+  flex-direction: row;
   height: 24px;
   margin-left: 10%;
   margin-top: 2%;
@@ -55,7 +136,7 @@ format-toggler:hover {
   background-color: #F7F7F7;
 }
 
-format-label {
+format-label:not(.hidden-format-label) {
   border-radius: 2px;
   display: flex;
   flex-direction: row;

@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/public/browser/indexed_db_context.h"
@@ -73,11 +74,13 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   static const base::FilePath::CharType kIndexedDBDirectory[];
 
   // If |data_path| is empty, nothing will be saved to disk.
+  // |task_runner| is optional, and only set during testing.
   IndexedDBContextImpl(
       const base::FilePath& data_path,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-      base::Clock* clock);
+      base::Clock* clock,
+      scoped_refptr<base::SequencedTaskRunner> custom_task_runner);
 
   IndexedDBFactoryImpl* GetIDBFactory();
 
@@ -133,10 +136,6 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   bool IsInMemoryContext() const { return data_path_.empty(); }
   size_t GetConnectionCount(const url::Origin& origin);
   int GetOriginBlobFileCount(const url::Origin& origin);
-
-  // TODO(jsbell): Update tests to eliminate the need for this.
-  void SetTaskRunnerForTesting(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const base::FilePath& data_path) {

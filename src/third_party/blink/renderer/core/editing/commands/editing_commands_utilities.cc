@@ -249,7 +249,7 @@ bool LineBreakExistsAtPosition(const Position& position) {
   if (position.IsNull())
     return false;
 
-  if (IsHTMLBRElement(*position.AnchorNode()) &&
+  if (IsA<HTMLBRElement>(*position.AnchorNode()) &&
       position.AtFirstEditingPositionForNode())
     return true;
 
@@ -310,7 +310,7 @@ Position LeadingCollapsibleWhitespacePosition(const Position& position,
   if (position.IsNull())
     return Position();
 
-  if (IsHTMLBRElement(*MostBackwardCaretPosition(position).AnchorNode()))
+  if (IsA<HTMLBRElement>(*MostBackwardCaretPosition(position).AnchorNode()))
     return Position();
 
   const Position& prev = PreviousCharacterPosition(position, affinity);
@@ -387,7 +387,7 @@ Node* EnclosingListChild(const Node* node) {
   // instead of node->parentNode()
   for (Node* n = const_cast<Node*>(node); n && n->parentNode();
        n = n->parentNode()) {
-    if (IsHTMLLIElement(*n) ||
+    if (IsA<HTMLLIElement>(*n) ||
         (IsHTMLListElement(n->parentNode()) && n != root))
       return n;
     if (n == root || IsTableCell(n))
@@ -520,13 +520,14 @@ void TidyUpHTMLStructure(Document& document) {
     return;
 
   Element* const current_root = document.documentElement();
-  if (current_root && IsHTMLHtmlElement(current_root))
+  if (current_root && IsA<HTMLHtmlElement>(current_root))
     return;
   Element* const existing_head =
-      current_root && IsHTMLHeadElement(current_root) ? current_root : nullptr;
+      current_root && IsA<HTMLHeadElement>(current_root) ? current_root
+                                                         : nullptr;
   Element* const existing_body =
-      current_root && (IsHTMLBodyElement(current_root) ||
-                       IsHTMLFrameSetElement(current_root))
+      current_root && (IsA<HTMLBodyElement>(current_root) ||
+                       IsA<HTMLFrameSetElement>(current_root))
           ? current_root
           : nullptr;
   // We ensure only "the root is <html>."

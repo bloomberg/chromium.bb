@@ -52,15 +52,14 @@ class CORE_EXPORT StyleResolverState {
 
  public:
   StyleResolverState(Document&,
-                     const ElementResolveContext&,
-                     PseudoElement* pseudo_element,
-                     const ComputedStyle* parent_style,
-                     const ComputedStyle* layout_parent_style);
-  StyleResolverState(Document&,
                      Element&,
-                     PseudoElement* pseudo_element,
                      const ComputedStyle* parent_style = nullptr,
                      const ComputedStyle* layout_parent_style = nullptr);
+  StyleResolverState(Document&,
+                     Element&,
+                     PseudoId,
+                     const ComputedStyle* parent_style,
+                     const ComputedStyle* layout_parent_style);
   ~StyleResolverState();
 
   // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to
@@ -129,6 +128,8 @@ class CORE_EXPORT StyleResolverState {
     is_animating_custom_properties_ = value;
   }
 
+  const Element* GetAnimatingElement() const;
+
   void SetParentStyle(scoped_refptr<const ComputedStyle>);
   const ComputedStyle* ParentStyle() const { return parent_style_.get(); }
 
@@ -173,11 +174,34 @@ class CORE_EXPORT StyleResolverState {
   void SetHasDirAutoAttribute(bool value) { has_dir_auto_attribute_ = value; }
   bool HasDirAutoAttribute() const { return has_dir_auto_attribute_; }
 
+  const CSSValue* GetCascadedColorValue() const {
+    return cascaded_color_value_;
+  }
+  const CSSValue* GetCascadedVisitedColorValue() const {
+    return cascaded_visited_color_value_;
+  }
+
+  void SetCascadedColorValue(const CSSValue* color) {
+    cascaded_color_value_ = color;
+  }
+  void SetCascadedVisitedColorValue(const CSSValue* color) {
+    cascaded_visited_color_value_ = color;
+  }
+
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
   ParsedPropertiesForPendingSubstitutionCache(
       const cssvalue::CSSPendingSubstitutionValue&) const;
 
  private:
+  enum class AnimatingElementType { kElement, kPseudoElement };
+
+  StyleResolverState(Document&,
+                     Element&,
+                     PseudoElement*,
+                     AnimatingElementType,
+                     const ComputedStyle* parent_style,
+                     const ComputedStyle* layout_parent_style);
+
   CSSToLengthConversionData UnzoomedLengthConversionData(
       const ComputedStyle* font_style) const;
 
@@ -203,11 +227,16 @@ class CORE_EXPORT StyleResolverState {
 
   bool has_dir_auto_attribute_;
 
+  Member<const CSSValue> cascaded_color_value_;
+  Member<const CSSValue> cascaded_visited_color_value_;
+
   FontBuilder font_builder_;
 
   std::unique_ptr<CachedUAStyle> cached_ua_style_;
 
   ElementStyleResources element_style_resources_;
+  Member<Element> pseudo_element_;
+  AnimatingElementType animating_element_type_;
 
   mutable HeapHashMap<
       Member<const cssvalue::CSSPendingSubstitutionValue>,

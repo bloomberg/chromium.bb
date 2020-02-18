@@ -34,6 +34,7 @@
 
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
@@ -172,11 +173,8 @@ void WebURLRequest::SetHttpReferrer(
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  resource_request_->SetHttpReferrer(
-      Referrer(referrer, referrer_policy),
-      ResourceRequest::SetHttpReferrerLocation::kWebURLRequest);
-  resource_request_->SetReferrerString(
-      referrer, ResourceRequest::SetReferrerStringLocation::kWebURLRequest);
+  resource_request_->SetHttpReferrer(Referrer(referrer, referrer_policy));
+  resource_request_->SetReferrerString(referrer);
 }
 
 void WebURLRequest::AddHttpHeaderField(const WebString& name,
@@ -249,23 +247,6 @@ int WebURLRequest::RequestorID() const {
 
 void WebURLRequest::SetRequestorID(int requestor_id) {
   resource_request_->SetRequestorID(requestor_id);
-}
-
-int WebURLRequest::GetPluginChildID() const {
-  return resource_request_->GetPluginChildID();
-}
-
-void WebURLRequest::SetPluginChildID(int plugin_child_id) {
-  resource_request_->SetPluginChildID(plugin_child_id);
-}
-
-const base::UnguessableToken& WebURLRequest::AppCacheHostID() const {
-  return resource_request_->AppCacheHostID();
-}
-
-void WebURLRequest::SetAppCacheHostID(
-    const base::UnguessableToken& app_cache_host_id) {
-  resource_request_->SetAppCacheHostID(app_cache_host_id);
 }
 
 bool WebURLRequest::PassResponsePipeToClient() const {
@@ -481,8 +462,19 @@ int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
     if (resource_request_->GetExtraData()->is_for_no_state_prefetch())
       load_flags |= net::LOAD_PREFETCH;
   }
-  if (resource_request_->AllowsStaleResponse())
+  if (resource_request_->AllowsStaleResponse()) {
     load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
+  }
+  if (resource_request_->PrefetchMaybeForTopLeveNavigation()) {
+    DCHECK_EQ(resource_request_->GetRequestContext(),
+              blink::mojom::RequestContextType::PREFETCH);
+    DCHECK(base::FeatureList::IsEnabled(
+        network::features::kPrefetchMainResourceNetworkIsolationKey));
+    if (!resource_request_->RequestorOrigin()->IsSameSchemeHostPort(
+            SecurityOrigin::Create(resource_request_->Url()).get())) {
+      load_flags |= net::LOAD_RESTRICTED_PREFETCH;
+    }
+  }
 
   return load_flags;
 }

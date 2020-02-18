@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/tracing/child/background_tracing_agent_provider_impl.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,7 +68,7 @@ class BackgroundTracingAgentImplTest : public testing::Test {
   BackgroundTracingAgentClientRecorder* recorder() const { return recorder_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider> provider_;
   mojo::Remote<tracing::mojom::BackgroundTracingAgent> agent_;
   mojo::UniqueReceiverSet<tracing::mojom::BackgroundTracingAgentProvider>

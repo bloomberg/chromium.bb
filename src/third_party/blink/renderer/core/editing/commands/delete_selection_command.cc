@@ -114,9 +114,9 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
   // For HRs, we'll get a position at (HR,1) when hitting delete from the
   // beginning of the previous line, or (HR,0) when forward deleting, but in
   // these cases, we want to delete it, so manually expand the selection
-  if (IsHTMLHRElement(*start.AnchorNode()))
+  if (IsA<HTMLHRElement>(*start.AnchorNode()))
     start = Position::BeforeNode(*start.AnchorNode());
-  else if (IsHTMLHRElement(*end.AnchorNode()))
+  else if (IsA<HTMLHRElement>(*end.AnchorNode()))
     end = Position::AfterNode(*end.AnchorNode());
 
   // FIXME: This is only used so that moveParagraphs can avoid the bugs in
@@ -427,8 +427,9 @@ bool DeleteSelectionCommand::HandleSpecialCaseBRDelete(
 
   // Check for special-case where the selection contains only a BR on a line by
   // itself after another BR.
-  bool upstream_start_is_br = IsHTMLBRElement(*node_after_upstream_start);
-  bool downstream_start_is_br = IsHTMLBRElement(*node_after_downstream_start);
+  bool upstream_start_is_br = IsA<HTMLBRElement>(*node_after_upstream_start);
+  bool downstream_start_is_br =
+      IsA<HTMLBRElement>(*node_after_downstream_start);
   bool is_br_on_line_by_itself =
       upstream_start_is_br && downstream_start_is_br &&
       node_after_downstream_start == node_after_upstream_end;
@@ -498,7 +499,7 @@ void DeleteSelectionCommand::RemoveNode(
     // Make sure empty cell has some height, if a placeholder can be inserted.
     GetDocument().UpdateStyleAndLayout();
     LayoutObject* r = node->GetLayoutObject();
-    if (r && r->IsTableCell() && ToLayoutTableCell(r)->ContentHeight() <= 0) {
+    if (r && r->IsTableCell() && ToLayoutBox(r)->ContentHeight() <= 0) {
       Position first_editable_position = FirstEditablePositionInNode(node);
       if (first_editable_position.IsNotNull())
         InsertBlockPlaceholder(first_editable_position, editing_state);
@@ -888,7 +889,7 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
               .X() >
           AbsoluteCaretBoundsOf(merge_destination.ToPositionWithAffinity())
               .X()) {
-    if (IsHTMLBRElement(
+    if (IsA<HTMLBRElement>(
             *MostForwardCaretPosition(merge_destination.DeepEquivalent())
                  .AnchorNode())) {
       RemoveNodeAndPruneAncestors(

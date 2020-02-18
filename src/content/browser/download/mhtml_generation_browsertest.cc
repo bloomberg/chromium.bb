@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -18,20 +19,25 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/mhtml_extra_parts.h"
+#include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -247,7 +253,7 @@ class RespondAndDisconnectMockWriter
   }
 
   void TaskY() {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RespondAndDisconnectMockWriter::TaskZ,
                        scoped_refptr<RespondAndDisconnectMockWriter>(this)));
@@ -265,12 +271,14 @@ class RespondAndDisconnectMockWriter
 
 }  // namespace
 
-class MHTMLGenerationTest : public ContentBrowserTest,
-                            public testing::WithParamInterface<bool> {
+class MHTMLGenerationTest
+    : public ContentBrowserTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   MHTMLGenerationTest()
       : has_mhtml_callback_run_(false),
         file_size_(0),
+        file_digest_(base::nullopt),
         well_formedness_check_(true) {}
 
   enum TaskOrder { WriteThenRespond, RespondThenWrite };
@@ -300,7 +308,7 @@ class MHTMLGenerationTest : public ContentBrowserTest,
   }
 
   void GenerateMHTML(MHTMLGenerationParams& params, const GURL& url) {
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     GenerateMHTMLForCurrentPage(params);
   }
 
@@ -308,11 +316,20 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     base::RunLoop run_loop;
     histogram_tester_.reset(new base::HistogramTester());
 
-    params.compute_contents_hash = GetParam();
+    bool use_result_callback;
+    std::tie(params.compute_contents_hash, use_result_callback) = GetParam();
 
-    shell()->web_contents()->GenerateMHTML(
-        params, base::BindOnce(&MHTMLGenerationTest::MHTMLGenerated,
-                               base::Unretained(this), run_loop.QuitClosure()));
+    if (use_result_callback) {
+      shell()->web_contents()->GenerateMHTMLWithResult(
+          params,
+          base::BindOnce(&MHTMLGenerationTest::MHTMLGeneratedWithResult,
+                         base::Unretained(this), run_loop.QuitClosure()));
+    } else {
+      shell()->web_contents()->GenerateMHTML(
+          params,
+          base::BindOnce(&MHTMLGenerationTest::MHTMLGenerated,
+                         base::Unretained(this), run_loop.QuitClosure()));
+    }
 
     // Block until the MHTML is generated.
     run_loop.Run();
@@ -320,9 +337,22 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     ASSERT_TRUE(has_mhtml_callback_run())
         << "Unexpected error generating MHTML file";
 
+    // TODO(crbug.com/997408): Add tests which will let MHTMLGeneration manager
+    // fail during file write operation. This will allow us to actually test if
+    // we receive a bogus hash instead of a base::nullopt.
+    bool generation_failed = file_size() == -1;
+    if (use_result_callback && !generation_failed &&
+        params.compute_contents_hash) {
+      // File contents write was successful, verify compute contents hash.
+      TestComputeContentsHash(params.file_path);
+    } else {
+      // expect that no hash was produced
+      EXPECT_EQ(base::nullopt, file_digest());
+    }
+
     // Skip well formedness check if explicitly disabled or there was a
     // generation error.
-    if (!well_formedness_check_ || file_size() == -1)
+    if (!well_formedness_check_ || generation_failed)
       return;
 
     // Loads the generated file to check if it is well formed.
@@ -360,7 +390,7 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     // are met (this is mostly a sanity check - a failure to meet
     // expectations would probably mean that there is a test bug
     // (i.e. that we got called with wrong expected_foo argument).
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     if (!skip_verification_of_original_page) {
       AssertExpectationsAboutCurrentTab(expected_number_of_frames,
                                         expected_substrings,
@@ -377,7 +407,8 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     // met (i.e. if the same expectations are met for "after"
     // [saved version of the page] as for the "before"
     // [the original version of the page].
-    NavigateToURL(shell(), net::FilePathToFileURL(params.file_path));
+    EXPECT_TRUE(
+        NavigateToURL(shell(), net::FilePathToFileURL(params.file_path)));
     AssertExpectationsAboutCurrentTab(expected_number_of_frames,
                                       expected_substrings,
                                       forbidden_substrings_in_saved_page);
@@ -410,6 +441,32 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     }
   }
 
+  // Tests that the result of setting compute_contents_hash is the same as
+  // manually hashing the file. Because MHTMLGenerationManager depends on
+  // net::GenerateMimeMultipartBoundary() to write the boundary, we cannot
+  // compute the digest in advance. Therefore, we must compute the hash of the
+  // whole file and assert that the computed hash is the same as the hash
+  // produced here.
+  void TestComputeContentsHash(base::FilePath& path) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    // Reload the file to an mhtml string for hashing
+    std::string test_mhtml;
+    ASSERT_TRUE(base::ReadFileToString(path, &test_mhtml));
+
+    // Hash the file in one big step. This is not recommended to do outside of
+    // tests because the files being hashed could be too large.
+    std::unique_ptr<crypto::SecureHash> secure_hash =
+        crypto::SecureHash::Create(crypto::SecureHash::Algorithm::SHA256);
+    secure_hash->Update(test_mhtml.c_str(), test_mhtml.size());
+    std::string expected_digest(secure_hash->GetHashLength(), 0);
+    secure_hash->Finish(&(expected_digest[0]), expected_digest.size());
+    secure_hash.reset();
+
+    ASSERT_TRUE(file_digest());
+    EXPECT_EQ(file_digest().value(), expected_digest);
+  }
+
   // In the case that we are using a pre-generated .mhtml file, we do
   // not have any control over the final mhtml_boundary_marker write
   // operation. This results in the post-generation verification tests
@@ -419,19 +476,28 @@ class MHTMLGenerationTest : public ContentBrowserTest,
 
   bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
   int64_t file_size() const { return file_size_; }
+  base::Optional<std::string> file_digest() const { return file_digest_; }
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
   base::ScopedTempDir temp_dir_;
 
  private:
-  void MHTMLGenerated(base::Closure quit_closure, int64_t size) {
+  void MHTMLGenerated(base::OnceClosure quit_closure, int64_t size) {
     has_mhtml_callback_run_ = true;
     file_size_ = size;
+    std::move(quit_closure).Run();
+  }
+  void MHTMLGeneratedWithResult(base::OnceClosure quit_closure,
+                                const MHTMLGenerationResult& result) {
+    has_mhtml_callback_run_ = true;
+    file_size_ = result.file_size;
+    file_digest_ = result.file_digest;
     std::move(quit_closure).Run();
   }
 
   bool has_mhtml_callback_run_;
   int64_t file_size_;
+  base::Optional<std::string> file_digest_;
   bool well_formedness_check_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
@@ -478,7 +544,8 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
   scoped_refptr<RespondAndDisconnectMockWriter> mock_writer =
       base::MakeRefCounted<RespondAndDisconnectMockWriter>();
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/simple_page.html")));
   base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
@@ -503,8 +570,7 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
 IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, MAYBE_InvalidPath) {
   base::FilePath path(FILE_PATH_LITERAL("/invalid/file/path"));
 
-  GenerateMHTML(path, embedded_test_server()->GetURL(
-                          "/download/local-about-blank-subframes.html"));
+  GenerateMHTML(path, embedded_test_server()->GetURL("/page_with_image.html"));
 
   EXPECT_EQ(file_size(), -1);  // Expecting that the callback reported failure.
 
@@ -801,8 +867,8 @@ class OrderedTaskMockWriter : public MockWriterBase {
   // Posts the quit closure to the UI thread to unblock the serialization Job
   // after receiving the first task complete notification.
   void PostClosure() {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(first_run_loop_closure_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(first_run_loop_closure_));
   }
 
   base::OnceClosure first_run_loop_closure_;
@@ -866,8 +932,11 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLButDelayResponse) {
   TwoStepSyncTestFor(TaskOrder::WriteThenRespond);
 }
 
+// We instantiate the MHTML Generation Tests with a matrix of boolean values
+// because we want to test both compute_contents_hash enabled, and using
+// GenerateMHTMLWithResults callback independently.
 INSTANTIATE_TEST_SUITE_P(MHTMLGenerationTest,
                          MHTMLGenerationTest,
-                         ::testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace content

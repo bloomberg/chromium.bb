@@ -20,17 +20,18 @@ struct InterpolationValue {
 
   explicit InterpolationValue(
       std::unique_ptr<InterpolableValue> interpolable_value,
-      scoped_refptr<NonInterpolableValue> non_interpolable_value = nullptr)
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value =
+          nullptr)
       : interpolable_value(std::move(interpolable_value)),
         non_interpolable_value(std::move(non_interpolable_value)) {}
 
   InterpolationValue(std::nullptr_t) {}
 
-  InterpolationValue(InterpolationValue&& other)
+  InterpolationValue(InterpolationValue&& other) noexcept
       : interpolable_value(std::move(other.interpolable_value)),
         non_interpolable_value(std::move(other.non_interpolable_value)) {}
 
-  void operator=(InterpolationValue&& other) {
+  void operator=(InterpolationValue&& other) noexcept {
     interpolable_value = std::move(other.interpolable_value);
     non_interpolable_value = std::move(other.non_interpolable_value);
   }
@@ -49,7 +50,7 @@ struct InterpolationValue {
   }
 
   std::unique_ptr<InterpolableValue> interpolable_value;
-  scoped_refptr<NonInterpolableValue> non_interpolable_value;
+  scoped_refptr<const NonInterpolableValue> non_interpolable_value;
 };
 
 }  // namespace blink

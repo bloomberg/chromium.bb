@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying a summary of network states
- * by type: Ethernet, WiFi, Cellular, WiMAX, and VPN.
+ * by type: Ethernet, WiFi, Cellular, and VPN.
  */
 
 (function() {
@@ -16,7 +16,6 @@ Polymer({
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
   ],
 
   properties: {
@@ -76,8 +75,8 @@ Polymer({
     },
   },
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /**
    * Set of GUIDs identifying active networks, one for each type.
@@ -87,9 +86,8 @@ Polymer({
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -135,7 +133,7 @@ Polymer({
    */
   getNetworkLists_: function() {
     // First get the device states.
-    this.networkConfigProxy_.getDeviceStateList().then(response => {
+    this.networkConfig_.getDeviceStateList().then(response => {
       // Second get the network states.
       this.getNetworkStates_(response.result);
     });
@@ -154,7 +152,7 @@ Polymer({
       limit: chromeos.networkConfig.mojom.kNoLimit,
       networkType: mojom.NetworkType.kAll,
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.updateNetworkStates_(response.result, deviceStateList);
     });
   },
@@ -177,7 +175,6 @@ Polymer({
       mojom.NetworkType.kWiFi,
       mojom.NetworkType.kCellular,
       mojom.NetworkType.kTether,
-      mojom.NetworkType.kWiMAX,
       mojom.NetworkType.kVPN,
     ];
 
@@ -223,8 +220,8 @@ Polymer({
     for (const type of orderedNetworkTypes) {
       const device = newDeviceStates[type];
       if (!device) {
-        continue;
-      }  // The technology for this device type is unavailable.
+        continue;  // The technology for this device type is unavailable.
+      }
 
       // If both 'Tether' and 'Cellular' technologies exist, merge the network
       // lists and do not add an active network for 'Tether' so that there is
@@ -241,7 +238,7 @@ Polymer({
       // types are enabled but no Cellular network exists (edge case).
       const networkState =
           this.getActiveStateForType_(activeNetworkStatesByType, type);
-      if (networkState.source === undefined &&
+      if (networkState.source == mojom.OncSource.kNone &&
           device.deviceState == mojom.DeviceStateType.kProhibited) {
         // Prohibited technologies are enforced by the device policy.
         networkState.source =

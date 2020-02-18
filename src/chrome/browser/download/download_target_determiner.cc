@@ -49,6 +49,7 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/webplugininfo.h"
 #endif
 
@@ -372,10 +373,14 @@ void DownloadTargetDeterminer::NotifyExtensionsDone(
     // Downloads/music/music/music/bar.mp3.
     base::FilePath new_path(download_prefs_->DownloadPath().Append(
         suggested_path).NormalizePathSeparators());
-    // Do not pass a mime type to GenerateSafeFileName so that it does not force
-    // the filename to have an extension if the (Chrome) extension does not
-    // suggest it.
-    net::GenerateSafeFileName(std::string(), false, &new_path);
+    // If the (Chrome) extension does not suggest an file extension, do not pass
+    // a mime type to GenerateSafeFileName so that it does not force the
+    // filename to have an extension. Otherwise, correct the file extension in
+    // case it is wrongly given.
+    if (new_path.Extension().empty())
+      net::GenerateSafeFileName(std::string(), false, &new_path);
+    else
+      net::GenerateSafeFileName(download_->GetMimeType(), true, &new_path);
     virtual_path_ = new_path;
     create_target_directory_ = true;
   }
@@ -614,12 +619,13 @@ enum ActionOnStalePluginList {
   IGNORE_IF_STALE_PLUGIN_LIST
 };
 
-void IsHandledBySafePlugin(content::ResourceContext* resource_context,
+void IsHandledBySafePlugin(int render_process_id,
+                           int routing_id,
                            const GURL& url,
                            const std::string& mime_type,
                            ActionOnStalePluginList stale_plugin_action,
                            const base::Callback<void(bool)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!mime_type.empty());
   using content::WebPluginInfo;
 
@@ -630,16 +636,16 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
   bool plugin_found = plugin_service->GetPluginInfo(
-      -1, -1, resource_context, url, url::Origin(), mime_type, false, &is_stale,
-      &plugin_info, &actual_mime_type);
+      render_process_id, routing_id, url, url::Origin(), mime_type, false,
+      &is_stale, &plugin_info, &actual_mime_type);
   if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
     // The GetPlugins call causes the plugin list to be refreshed. Once that's
     // done we can retry the GetPluginInfo call. We break out of this cycle
     // after a single retry in order to avoid retrying indefinitely.
     plugin_service->GetPlugins(base::BindOnce(
         &InvokeClosureAfterGetPluginCallback,
-        base::Bind(&IsHandledBySafePlugin, resource_context, url, mime_type,
-                   IGNORE_IF_STALE_PLUGIN_LIST, callback)));
+        base::Bind(&IsHandledBySafePlugin, render_process_id, routing_id, url,
+                   mime_type, IGNORE_IF_STALE_PLUGIN_LIST, callback)));
     return;
   }
   // In practice, we assume that retrying once is enough.
@@ -649,8 +655,8 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
       (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, is_handled_safely));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback, is_handled_safely));
 }
 
 }  // namespace
@@ -674,14 +680,19 @@ DownloadTargetDeterminer::Result
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &IsHandledBySafePlugin, GetProfile()->GetResourceContext(),
-          net::FilePathToFileURL(local_path_), mime_type_,
-          RETRY_IF_STALE_PLUGIN_LIST,
-          base::Bind(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
-                     weak_ptr_factory_.GetWeakPtr())));
+  int render_process_id = -1;
+  int routing_id = -1;
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(download_);
+  if (web_contents) {
+    render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+    routing_id = web_contents->GetMainFrame()->GetRoutingID();
+  }
+  IsHandledBySafePlugin(
+      render_process_id, routing_id, net::FilePathToFileURL(local_path_),
+      mime_type_, RETRY_IF_STALE_PLUGIN_LIST,
+      base::Bind(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
+                 weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
 #else
   return CONTINUE;
@@ -716,7 +727,8 @@ DownloadTargetDeterminer::Result
   // IsAdobeReaderUpToDate() needs to be run with COM as it makes COM calls via
   // AssocQueryString() in IsAdobeReaderDefaultPDFViewer().
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
+      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+          .get(),
       FROM_HERE, base::Bind(&::IsAdobeReaderUpToDate),
       base::Bind(&DownloadTargetDeterminer::DetermineIfAdobeReaderUpToDateDone,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -1003,9 +1015,9 @@ DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
     return DownloadConfirmationReason::SAVE_AS;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Don't prompt for extension downloads.
-  if (download_crx_util::IsExtensionDownload(*download_) ||
-      filename.MatchesExtension(extensions::kExtensionFileExtension))
+  // Don't prompt for extension downloads if the installation site is white
+  // listed.
+  if (download_crx_util::IsTrustedExtensionDownload(GetProfile(), *download_))
     return DownloadConfirmationReason::NONE;
 #endif
 
@@ -1039,15 +1051,10 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
       !download_->GetForcedFilePath().empty())
     return DownloadFileType::NOT_DANGEROUS;
 
-  const bool is_extension_download =
-      download_crx_util::IsExtensionDownload(*download_);
-
   // User-initiated extension downloads from pref-whitelisted sources are not
   // considered dangerous.
   if (download_->HasUserGesture() &&
-      is_extension_download &&
-      download_crx_util::OffStoreInstallAllowedByPrefs(
-          GetProfile(), *download_)) {
+      download_crx_util::IsTrustedExtensionDownload(GetProfile(), *download_)) {
     return DownloadFileType::NOT_DANGEROUS;
   }
 

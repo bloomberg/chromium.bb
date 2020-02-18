@@ -36,6 +36,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -526,6 +527,9 @@ ShellSurfaceBase::AsTracedValue() const {
 // SurfaceDelegate overrides:
 
 void ShellSurfaceBase::OnSurfaceCommit() {
+  // Pause occlusion tracking since we will update a bunch of window properties.
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
+
   // SetShadowBounds requires synchronizing shadow bounds with the next frame,
   // so submit the next frame to a new surface and let the host window use the
   // new surface.
@@ -556,6 +560,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   }
 
   bool frame_was_disabled = !frame_enabled();
+  // TODO(b/141151475): Make frame_type a committable property.
   frame_type_ = frame_type;
   switch (frame_type) {
     case SurfaceFrameType::NONE:
@@ -564,9 +569,11 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
     case SurfaceFrameType::NORMAL:
     case SurfaceFrameType::AUTOHIDE:
     case SurfaceFrameType::OVERLAY:
-      // Initialize the shadow if it didn't exist.  Do not reset if
-      // the frame type just switched from another enabled type.
-      if (!shadow_bounds_ || frame_was_disabled)
+      // Initialize the shadow if it didn't exist. Do not reset if
+      // the frame type just switched from another enabled type or
+      // there is a pending shadow_bounds_ change to avoid overriding
+      // a shadow bounds which have been changed and not yet committed.
+      if (!shadow_bounds_ || (frame_was_disabled && !shadow_bounds_changed_))
         shadow_bounds_ = gfx::Rect();
       break;
     case SurfaceFrameType::SHADOW:
@@ -889,7 +896,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget;
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");

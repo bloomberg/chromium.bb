@@ -81,8 +81,8 @@ static void test_image(const sk_sp<SkSpecialImage>& img, skiatest::Reporter* rep
 
     //--------------
     // Test that draw restricts itself to the subset
-    SkImageFilter::OutputProperties outProps(kN32_SkColorType, img->getColorSpace());
-    sk_sp<SkSpecialSurface> surf(img->makeSurface(outProps, SkISize::Make(kFullSize, kFullSize),
+    sk_sp<SkSpecialSurface> surf(img->makeSurface(kN32_SkColorType, img->getColorSpace(),
+                                                  SkISize::Make(kFullSize, kFullSize),
                                                   kPremul_SkAlphaType));
 
     SkCanvas* canvas = surf->getCanvas();
@@ -118,8 +118,8 @@ static void test_image(const sk_sp<SkSpecialImage>& img, skiatest::Reporter* rep
         REPORTER_ASSERT(reporter, isGPUBacked != !!tightImg->peekPixels(&tmpPixmap));
     }
     {
-        SkImageFilter::OutputProperties outProps(kN32_SkColorType, img->getColorSpace());
-        sk_sp<SkSurface> tightSurf(img->makeTightSurface(outProps, subset.size()));
+        sk_sp<SkSurface> tightSurf(img->makeTightSurface(kN32_SkColorType, img->getColorSpace(),
+                                                         subset.size()));
 
         REPORTER_ASSERT(reporter, tightSurf->width() == subset.width());
         REPORTER_ASSERT(reporter, tightSurf->height() == subset.height());
@@ -221,7 +221,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_MakeTexture, reporter, ctxInfo) 
         // gpu
         sk_sp<SkImage> rasterImage = SkImage::MakeFromBitmap(bm);
         sk_sp<GrTextureProxy> proxy = proxyProvider->createTextureProxy(
-                rasterImage, GrRenderable::kNo, 1, SkBudgeted::kNo, SkBackingFit::kExact);
+                rasterImage, 1, SkBudgeted::kNo, SkBackingFit::kExact);
         if (!proxy) {
             return;
         }
@@ -252,8 +252,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_Gpu, reporter, ctxInfo) {
     SkBitmap bm = create_bm();
     sk_sp<SkImage> rasterImage = SkImage::MakeFromBitmap(bm);
 
-    sk_sp<GrTextureProxy> proxy = proxyProvider->createTextureProxy(
-            rasterImage, GrRenderable::kNo, 1, SkBudgeted::kNo, SkBackingFit::kExact);
+    sk_sp<GrTextureProxy> proxy = proxyProvider->createTextureProxy(rasterImage, 1, SkBudgeted::kNo,
+                                                                    SkBackingFit::kExact);
     if (!proxy) {
         return;
     }

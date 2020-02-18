@@ -102,6 +102,8 @@ enum ModelType {
   // Custom spelling dictionary entries.
   DICTIONARY,
   // Favicon images, including both the image URL and the actual pixels.
+  // TODO(https://crbug.com/978775): Prepend DEPRECATED to the name of favicon
+  // data types.
   FAVICON_IMAGES,
   // Favicon tracking information, i.e. metadata such as last visit date.
   FAVICON_TRACKING,
@@ -217,8 +219,8 @@ constexpr ModelTypeSet UserTypes() {
 
 // User types, which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
-  return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SUPERVISED_USER_SETTINGS,
-                      SUPERVISED_USER_WHITELISTS);
+  return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SECURITY_EVENTS,
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
 }
 
 // This is the subset of UserTypes() that have priority over other types.  These

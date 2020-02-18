@@ -253,7 +253,7 @@ Polymer({
 
   /** @private */
   onReleaseNotesTap_: function() {
-    this.aboutBrowserProxy_.showReleaseNotes();
+    this.aboutBrowserProxy_.launchReleaseNotes();
   },
 
   /** @private */
@@ -384,7 +384,7 @@ Polymer({
     // If Chrome OS has reached end of life, display a special icon and
     // ignore UpdateStatus.
     if (this.hasEndOfLife_) {
-      return 'settings:end-of-life';
+      return 'os-settings:end-of-life';
     }
 
     switch (this.currentUpdateStatusEvent_.status) {

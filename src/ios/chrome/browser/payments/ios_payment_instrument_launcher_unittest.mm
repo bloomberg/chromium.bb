@@ -10,7 +10,7 @@
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_instrument.h"
@@ -91,7 +91,7 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
     launcher.payment_request_id_ = "some-payment-request-id";
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   autofill::TestPersonalDataManager test_personal_data_manager_;
   web::TestWebState web_state_;

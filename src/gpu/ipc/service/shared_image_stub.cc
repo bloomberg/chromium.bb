@@ -78,6 +78,12 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateSwapChain, OnCreateSwapChain)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_PresentSwapChain, OnPresentSwapChain)
 #endif  // OS_WIN
+#if defined(OS_FUCHSIA)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterSysmemBufferCollection,
+                        OnRegisterSysmemBufferCollection)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_ReleaseSysmemBufferCollection,
+                        OnReleaseSysmemBufferCollection)
+#endif  // OS_FUCHSIA
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -317,6 +323,31 @@ void SharedImageStub::OnPresentSwapChain(const Mailbox& mailbox,
 }
 #endif  // OS_WIN
 
+#if defined(OS_FUCHSIA)
+void SharedImageStub::OnRegisterSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  if (!id || !token) {
+    OnError();
+    return;
+  }
+
+  if (!factory_->RegisterSysmemBufferCollection(id, std::move(token))) {
+    OnError();
+  }
+}
+
+void SharedImageStub::OnReleaseSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id) {
+  if (!factory_->ReleaseSysmemBufferCollection(id)) {
+    DLOG(ERROR) << "SharedImageStub: Trying to release unknown "
+                   "SysmemBufferCollectionId.";
+    OnError();
+    return;
+  }
+}
+#endif  // defined(OS_FUCHSIA)
+
 void SharedImageStub::OnRegisterSharedImageUploadBuffer(
     base::ReadOnlySharedMemoryRegion shm) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnRegisterSharedImageUploadBuffer");
@@ -414,7 +445,7 @@ bool SharedImageStub::OnMemoryDump(
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/textures/client_0x%" PRIX32, ClientId());
+        base::StringPrintf("gpu/shared_images/client_0x%" PRIX32, ClientId());
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

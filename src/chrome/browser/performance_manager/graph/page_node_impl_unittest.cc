@@ -10,7 +10,6 @@
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
@@ -30,7 +29,10 @@ class PageNodeImplTest : public GraphTestHarness {
     clock_.SetNowTicks(base::TimeTicks::Now());
   }
 
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
+  void TearDown() override {
+    PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
+  }
 
  protected:
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
@@ -48,6 +50,13 @@ TEST_F(PageNodeImplTest, SafeDowncast) {
   NodeBase* base = page.get();
   EXPECT_EQ(base, NodeBase::FromNode(node));
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
+}
+
+using PageNodeImplDeathTest = PageNodeImplTest;
+
+TEST_F(PageNodeImplDeathTest, SafeDowncast) {
+  auto page = CreateNode<PageNodeImpl>();
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(page.get()), "");
 }
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
@@ -154,6 +163,17 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
             mock_graph.page->TimeSinceLastNavigation());
 }
 
+TEST_F(PageNodeImplTest, BrowserContextID) {
+  const std::string kTestBrowserContextId =
+      base::UnguessableToken::Create().ToString();
+  auto page_node =
+      CreateNode<PageNodeImpl>(WebContentsProxy(), kTestBrowserContextId);
+  const PageNode* public_page_node = page_node.get();
+
+  EXPECT_EQ(page_node->browser_context_id(), kTestBrowserContextId);
+  EXPECT_EQ(public_page_node->GetBrowserContextID(), kTestBrowserContextId);
+}
+
 TEST_F(PageNodeImplTest, IsLoading) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
   auto* page_node = mock_graph.page.get();
@@ -176,229 +196,6 @@ TEST_F(PageNodeImplTest, IsLoading) {
 
 namespace {
 
-const size_t kInterventionCount =
-    static_cast<size_t>(
-        resource_coordinator::mojom::PolicyControlledIntervention::kMaxValue) +
-    1;
-
-void ExpectRawInterventionPolicy(
-    resource_coordinator::mojom::InterventionPolicy policy,
-    const PageNodeImpl* page_node) {
-  for (size_t i = 0; i < kInterventionCount; ++i) {
-    EXPECT_EQ(
-        policy,
-        page_node->GetRawInterventionPolicyForTesting(
-            static_cast<
-                resource_coordinator::mojom::PolicyControlledIntervention>(i)));
-  }
-}
-
-void ExpectInterventionPolicy(
-    resource_coordinator::mojom::InterventionPolicy policy,
-    PageNodeImpl* page_node) {
-  for (size_t i = 0; i < kInterventionCount; ++i) {
-    EXPECT_EQ(
-        policy,
-        page_node->GetInterventionPolicy(
-            static_cast<
-                resource_coordinator::mojom::PolicyControlledIntervention>(i)));
-  }
-}
-
-void ExpectInitialInterventionPolicyAggregationWorks(
-    GraphImpl* mock_graph,
-    resource_coordinator::mojom::InterventionPolicy f0_policy,
-    resource_coordinator::mojom::InterventionPolicy f1_policy,
-    resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,
-    resource_coordinator::mojom::InterventionPolicy f0f1_policy_aggregated) {
-  TestNodeWrapper<ProcessNodeImpl> process =
-      TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
-  TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
-
-  // Check the initial values before any frames are added.
-  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-
-  // Create an initial frame.
-  TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get());
-  // Add a frame and expect the values to be invalidated. Reaggregate and
-  // ensure the appropriate value results.
-  f0->SetAllInterventionPoliciesForTesting(f0_policy);
-  EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(f0_policy_aggregated, page.get());
-
-  TestNodeWrapper<FrameNodeImpl> f1 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get(), f0.get(), 1);
-  // Do it again. This time the raw values should be the same as the
-  // aggregated values above.
-  f1->SetAllInterventionPoliciesForTesting(f1_policy);
-  EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(f0f1_policy_aggregated, page.get());
-
-  // Remove a frame and expect the values to be invalidated again.
-  f1.reset();
-  EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(f0_policy_aggregated, page.get());
-}
-
-}  // namespace
-
-TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
-  auto* mock_graph = graph();
-
-  // Tests all possible transitions where the frame node has its policy values
-  // set before being attached to the page node. This affectively tests the
-  // aggregation logic in isolation.
-
-  // Default x [Default, OptIn, OptOut]
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kDefault /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kDefault /* f0f1_policy_aggregated */);
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kDefault /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptIn /* f0f1_policy_aggregated */);
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kDefault /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0f1_policy_aggregated */);
-
-  // OptIn x [Default, OptIn, OptOut]
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptIn /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptIn /* f0f1_policy_aggregated */);
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptIn /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptIn /* f0f1_policy_aggregated */);
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptIn /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0f1_policy_aggregated */);
-
-  // OptOut x [Default, OptIn, OptOut]
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0f1_policy_aggregated */);
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0f1_policy_aggregated */);
-
-  ExpectInitialInterventionPolicyAggregationWorks(
-      mock_graph,
-      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
-      resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0_policy_aggregated */,
-      resource_coordinator::mojom::InterventionPolicy::
-          kOptOut /* f0f1_policy_aggregated */);
-}
-
-TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
-  auto* mock_graph = graph();
-
-  TestNodeWrapper<ProcessNodeImpl> process =
-      TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
-  TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
-
-  // Create two frames and immediately attach them to the page.
-  TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get());
-  TestNodeWrapper<FrameNodeImpl> f1 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get(), f0.get(), 1);
-  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-
-  // Set the policies on the first frame. This should be observed by the page
-  // node, but aggregation should still not be possible.
-  f0->SetAllInterventionPoliciesForTesting(
-      resource_coordinator::mojom::InterventionPolicy::kDefault);
-  EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-
-  // Now set the policy on the second frame. This should be observed and an
-  // aggregated page policy value should now be available.
-  f1->SetAllInterventionPoliciesForTesting(
-      resource_coordinator::mojom::InterventionPolicy::kDefault);
-  EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kDefault, page.get());
-
-  // Change the policy value on a frame and expect a new aggregation to be
-  // required.
-  f1->SetAllInterventionPoliciesForTesting(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
-  EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
-  ExpectRawInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
-  ExpectInterventionPolicy(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn, page.get());
-}
-
-namespace {
-
 class LenientMockObserver : public PageNodeImpl::Observer {
  public:
   LenientMockObserver() {}
@@ -411,6 +208,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnIsLoadingChanged, void(const PageNode*));
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageOriginTrialFreezePolicyChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameNavigationCommitted, void(const PageNode*));
   MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
@@ -512,6 +310,8 @@ TEST_F(PageNodeImplTest, PublicInterface) {
   // Simply test that the public interface impls yield the same result as their
   // private counterpart.
 
+  EXPECT_EQ(page_node->browser_context_id(),
+            public_page_node->GetBrowserContextID());
   EXPECT_EQ(page_node->page_almost_idle(),
             public_page_node->IsPageAlmostIdle());
   EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());

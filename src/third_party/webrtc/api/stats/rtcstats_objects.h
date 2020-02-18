@@ -122,8 +122,6 @@ class RTC_EXPORT RTCCodecStats final : public RTCStats {
   RTCStatsMember<uint32_t> channels;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7061
   RTCStatsMember<std::string> sdp_fmtp_line;
-  // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7061
-  RTCStatsMember<std::string> implementation;
 };
 
 // https://w3c.github.io/webrtc-stats/#dcstats-dict*
@@ -447,6 +445,9 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   RTCStatsMember<double> total_decode_time;
   // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcinboundrtpstreamstats-contenttype
   RTCStatsMember<std::string> content_type;
+  // TODO(hbos): This is only implemented for video; implement it for audio as
+  // well.
+  RTCStatsMember<std::string> decoder_implementation;
 };
 
 // https://w3c.github.io/webrtc-stats/#outboundrtpstats-dict*
@@ -480,8 +481,13 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   // qualityLimitationDurations. Requires RTCStatsMember support for
   // "record<DOMString, double>", see https://crbug.com/webrtc/10685.
   RTCStatsMember<std::string> quality_limitation_reason;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-qualitylimitationresolutionchanges
+  RTCStatsMember<uint32_t> quality_limitation_resolution_changes;
   // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcoutboundrtpstreamstats-contenttype
   RTCStatsMember<std::string> content_type;
+  // TODO(hbos): This is only implemented for video; implement it for audio as
+  // well.
+  RTCStatsMember<std::string> encoder_implementation;
 };
 
 // TODO(https://crbug.com/webrtc/10671): Refactor the stats dictionaries to have
@@ -590,6 +596,7 @@ class RTC_EXPORT RTCTransportStats final : public RTCStats {
   RTCStatsMember<std::string> selected_candidate_pair_id;
   RTCStatsMember<std::string> local_certificate_id;
   RTCStatsMember<std::string> remote_certificate_id;
+  RTCStatsMember<uint32_t> selected_candidate_pair_changes;
 };
 
 }  // namespace webrtc

@@ -32,6 +32,7 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
@@ -80,6 +81,7 @@ HttpNetworkSession::Params::Params()
       enable_spdy_ping_based_connection_checking(true),
       enable_http2(true),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
+      spdy_session_max_queued_capped_frames(kSpdySessionMaxQueuedCappedFrames),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
@@ -139,7 +141,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       ssl_client_session_cache_(SSLClientSessionCache::Config()),
-      ssl_client_context_(context.cert_verifier,
+      ssl_client_context_(context.ssl_config_service,
+                          context.cert_verifier,
                           context.transport_security_state,
                           context.cert_transparency_verifier,
                           context.ct_policy_enforcer,
@@ -165,13 +168,16 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                              : quic::QuicChromiumClock::GetInstance(),
           params.quic_params),
       spdy_session_pool_(context.host_resolver,
-                         context.ssl_config_service,
+                         &ssl_client_context_,
                          context.http_server_properties,
                          context.transport_security_state,
                          params.quic_params.supported_versions,
                          params.enable_spdy_ping_based_connection_checking,
+                         params.enable_http2,
+                         params.enable_quic,
                          params.quic_params.support_ietf_format_quic_altsvc,
                          params.spdy_session_max_recv_window_size,
+                         params.spdy_session_max_queued_capped_frames,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.greased_http2_frame,
                          params.time_func,
@@ -186,12 +192,12 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   normal_socket_pool_manager_ = std::make_unique<ClientSocketPoolManagerImpl>(
       CreateCommonConnectJobParams(false /* for_websockets */),
       CreateCommonConnectJobParams(true /* for_websockets */),
-      context_.ssl_config_service, NORMAL_SOCKET_POOL);
+      NORMAL_SOCKET_POOL);
   websocket_socket_pool_manager_ =
       std::make_unique<ClientSocketPoolManagerImpl>(
           CreateCommonConnectJobParams(false /* for_websockets */),
           CreateCommonConnectJobParams(true /* for_websockets */),
-          context_.ssl_config_service, WEBSOCKET_SOCKET_POOL);
+          WEBSOCKET_SOCKET_POOL);
 
   if (params_.enable_http2)
     next_protos_.push_back(kProtoHTTP2);
@@ -342,22 +348,6 @@ void HttpNetworkSession::CloseIdleConnections() {
   spdy_session_pool_.CloseCurrentIdleSessions();
 }
 
-bool HttpNetworkSession::IsProtocolEnabled(NextProto protocol) const {
-  switch (protocol) {
-    case kProtoUnknown:
-      NOTREACHED();
-      return false;
-    case kProtoHTTP11:
-      return true;
-    case kProtoHTTP2:
-      return params_.enable_http2;
-    case kProtoQUIC:
-      return IsQuicEnabled();
-  }
-  NOTREACHED();
-  return false;
-}
-
 void HttpNetworkSession::SetServerPushDelegate(
     std::unique_ptr<ServerPushDelegate> push_delegate) {
   DCHECK(push_delegate);
@@ -373,10 +363,8 @@ void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
   *alpn_protos = next_protos_;
 }
 
-void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
-                                      SSLConfig* server_config,
+void HttpNetworkSession::GetSSLConfig(SSLConfig* server_config,
                                       SSLConfig* proxy_config) const {
-  ssl_config_service_->GetSSLConfig(server_config);
   GetAlpnProtos(&server_config->alpn_protos);
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;
   *proxy_config = *server_config;

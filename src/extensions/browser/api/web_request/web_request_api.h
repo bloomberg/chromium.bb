@@ -190,10 +190,10 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
       int render_process_id,
-      bool is_navigation,
-      bool is_download,
+      content::ContentBrowserClient::URLLoaderFactoryType type,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client);
 
   // Any request which requires authentication to complete will be bounced
   // through this method.
@@ -216,7 +216,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       const GURL& url,
       const GURL& site_for_cookies,
       const base::Optional<std::string>& user_agent,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client);
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client);
 
   void ForceProxyForTesting();
 
@@ -750,7 +751,7 @@ class ExtensionWebRequestEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
-class WebRequestInternalFunction : public UIThreadExtensionFunction {
+class WebRequestInternalFunction : public ExtensionFunction {
  public:
   WebRequestInternalFunction() {}
 

@@ -26,7 +26,8 @@
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,7 +53,8 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
  public:
   explicit MockPresentationConnection(
       mojom::RoutePresentationConnectionPtr connections)
-      : binding_(this, std::move(connections->connection_request)) {}
+      : connection_receiver_(this,
+                             std::move(connections->connection_receiver)) {}
 
   ~MockPresentationConnection() override = default;
 
@@ -63,7 +65,7 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
 
   // NOTE: This member doesn't look like it's used for anything, but it needs to
   // exist in order for Mojo magic to work correctly.
-  mojo::Binding<blink::mojom::PresentationConnection> binding_;
+  mojo::Receiver<blink::mojom::PresentationConnection> connection_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPresentationConnection);
 };
@@ -77,7 +79,7 @@ class CastSessionClientImplTest : public testing::Test {
   ~CastSessionClientImplTest() override { RunUntilIdle(); }
 
  protected:
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   template <typename T>
   void ExpectErrorLog(const T& matcher) {
@@ -88,12 +90,11 @@ class CastSessionClientImplTest : public testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
   cast_channel::MockCastSocketService socket_service_{
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI})};
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})};
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
   DataDecoder decoder_{connector_factory_.GetDefaultConnector()};
   url::Origin origin_;

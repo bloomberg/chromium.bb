@@ -4,7 +4,9 @@
 
 #include "chrome/browser/search/ntp_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "ui/base/ui_base_features.h"
 
 namespace features {
@@ -35,8 +37,15 @@ const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
 const base::Feature kFirstRunDefaultSearchShortcut{
     "FirstRunDefaultSearchShortcut", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the shortcuts will not be shown on the NTP.
-const base::Feature kHideShortcutsOnNtp{"HideShortcutsOnNtp",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+// If enabled, the search box in the middle of the NTP will accept input
+// directly (i.e. not be a "fake" box) and search results will show directly
+// below the non-fake input ("realbox").
+const base::Feature kNtpRealbox{"NtpRealbox",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsNtpRealboxEnabled() {
+  return base::FeatureList::IsEnabled(kNtpRealbox) ||
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP);
+}
 
 }  // namespace features

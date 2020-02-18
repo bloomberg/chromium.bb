@@ -55,9 +55,9 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
                                blink::ServiceWorkerStatusCode status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(OperationCompleteCallback,
-                                            internals, callback_id, status));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(OperationCompleteCallback, internals,
+                                  callback_id, status));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -200,24 +200,24 @@ std::unique_ptr<ListValue> GetVersionListValue(
   return result;
 }
 
-void DidGetStoredRegistrationsOnIOThread(
+void DidGetStoredRegistrationsOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     GetRegistrationsCallback callback,
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), context->GetAllLiveRegistrationInfo(),
                      context->GetAllLiveVersionInfo(), stored_registrations));
 }
 
-void GetRegistrationsOnIOThread(
+void GetRegistrationsOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     GetRegistrationsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   context->GetAllRegistrations(base::BindOnce(
-      DidGetStoredRegistrationsOnIOThread, context, std::move(callback)));
+      DidGetStoredRegistrationsOnCoreThread, context, std::move(callback)));
 }
 
 void DidGetRegistrations(
@@ -320,7 +320,7 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
       WebUIDataSource::Create(kChromeUIServiceWorkerInternalsHost);
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("serviceworker_internals.js",
                           IDR_SERVICE_WORKER_INTERNALS_JS);
   source->AddResourcePath("serviceworker_internals.css",
@@ -419,10 +419,10 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
         std::move(new_observer);
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          GetRegistrationsOnIOThread, context,
+          GetRegistrationsOnCoreThread, context,
           base::BindOnce(DidGetRegistrations, AsWeakPtr(), partition_id,
                          context->is_incognito() ? base::FilePath()
                                                  : partition->GetPath())));
@@ -562,12 +562,11 @@ void ServiceWorkerInternalsUI::StopWorkerWithId(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     int64_t version_id,
     StatusCallback callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ServiceWorkerInternalsUI::StopWorkerWithId,
-                       base::Unretained(this), context, version_id,
-                       std::move(callback)));
+  if (!BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId())) {
+    base::PostTask(FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
+                   base::BindOnce(&ServiceWorkerInternalsUI::StopWorkerWithId,
+                                  base::Unretained(this), context, version_id,
+                                  std::move(callback)));
     return;
   }
 
@@ -588,9 +587,9 @@ void ServiceWorkerInternalsUI::UnregisterWithScope(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     const GURL& scope,
     ServiceWorkerInternalsUI::StatusCallback callback) const {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+  if (!BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId())) {
+    base::PostTask(
+        FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
         base::BindOnce(&ServiceWorkerInternalsUI::UnregisterWithScope,
                        base::Unretained(this), context, scope,
                        std::move(callback)));

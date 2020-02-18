@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/events/animation_playback_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -464,25 +465,10 @@ void Animation::PostCommit(double timeline_time) {
   if (!compositor_state_ || compositor_state_->pending_action == kNone)
     return;
 
-  switch (compositor_state_->pending_action) {
-    case kStart:
-      if (compositor_state_->start_time) {
-        DCHECK_EQ(start_time_.value(), compositor_state_->start_time.value());
-        compositor_state_->pending_action = kNone;
-      }
-      break;
-    case kPause:
-    case kPauseThenStart:
-      DCHECK(!start_time_);
-      compositor_state_->pending_action = kNone;
-      SetCurrentTimeInternal(
-          (timeline_time - compositor_state_->start_time.value()) *
-              playback_rate_,
-          kTimingUpdateForAnimationFrame);
-      current_time_pending_ = false;
-      break;
-    default:
-      NOTREACHED();
+  DCHECK_EQ(kStart, compositor_state_->pending_action);
+  if (compositor_state_->start_time) {
+    DCHECK_EQ(start_time_.value(), compositor_state_->start_time.value());
+    compositor_state_->pending_action = kNone;
   }
 }
 
@@ -713,6 +699,11 @@ Animation::AnimationPlayState Animation::CalculatePlayState() const {
   if (Limited())
     return kFinished;
   return kRunning;
+}
+
+Animation::AnimationPlayState Animation::GetPlayState() const {
+  DCHECK_NE(animation_play_state_, kUnset);
+  return animation_play_state_;
 }
 
 // https://drafts.csswg.org/web-animations/#play-states
@@ -1296,7 +1287,7 @@ bool Animation::Update(TimingUpdateReason reason) {
     }
   }
   DCHECK(!outdated_);
-  return !finished_ || std::isfinite(TimeToEffectChange());
+  return !finished_ || TimeToEffectChange();
 }
 
 void Animation::QueueFinishedEvent() {
@@ -1333,21 +1324,24 @@ bool Animation::IsEventDispatchAllowed() const {
   return Paused() || start_time_;
 }
 
-double Animation::TimeToEffectChange() {
+base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
   DCHECK(!outdated_);
   if (!start_time_ || hold_time_)
-    return std::numeric_limits<double>::infinity();
+    return base::nullopt;
 
-  if (!content_)
-    return -CurrentTimeInternal() / playback_rate_;
+  if (!content_) {
+    return AnimationTimeDelta::FromSecondsD(-CurrentTimeInternal() /
+                                            playback_rate_);
+  }
+
   double result = playback_rate_ > 0
                       ? content_->TimeToForwardsEffectChange() / playback_rate_
                       : content_->TimeToReverseEffectChange() / -playback_rate_;
 
   return !HasActiveAnimationsOnCompositor() &&
                  content_->GetPhase() == Timing::kPhaseActive
-             ? 0
-             : result;
+             ? AnimationTimeDelta()
+             : AnimationTimeDelta::FromSecondsD(result);
 }
 
 void Animation::cancel() {
@@ -1561,9 +1555,10 @@ void Animation::AddedEventListener(
 
 void Animation::PauseForTesting(double pause_time) {
   SetCurrentTimeInternal(pause_time, kTimingUpdateOnDemand);
-  if (HasActiveAnimationsOnCompositor())
+  if (HasActiveAnimationsOnCompositor()) {
     ToKeyframeEffect(content_.Get())
         ->PauseAnimationForTestingOnCompositor(CurrentTimeInternal());
+  }
   is_paused_for_testing_ = true;
   pause();
 }

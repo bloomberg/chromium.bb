@@ -26,9 +26,8 @@ namespace test {
 namespace {
 
 constexpr char kChromotingAuthScopeValues[] =
-    "https://www.googleapis.com/auth/chromoting "
+    "https://www.googleapis.com/auth/chromoting.me2me.host "
     "https://www.googleapis.com/auth/chromoting.remote.support "
-    "https://www.googleapis.com/auth/googletalk "
     "https://www.googleapis.com/auth/userinfo.email "
     "https://www.googleapis.com/auth/tachyon";
 
@@ -65,8 +64,7 @@ bool TestOAuthTokenGetter::IsServiceAccount(const std::string& email) {
   return email.find("@chromoting.gserviceaccount.com") != std::string::npos;
 }
 
-TestOAuthTokenGetter::TestOAuthTokenGetter(TestTokenStorage* token_storage)
-    : weak_factory_(this) {
+TestOAuthTokenGetter::TestOAuthTokenGetter(TestTokenStorage* token_storage) {
   DCHECK(token_storage);
   token_storage_ = token_storage;
   auto url_request_context_getter =

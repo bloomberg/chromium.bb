@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">મૂલ્ય <ph name="MINIMUM_DATE_OR_TIME" /> અથવા પછીનું હોવું આવશ્યક છે.</translation>
 <translation id="2759744352195237655">પૉપ-અપ બટન</translation>
 <translation id="2761667185364618470">જો તમે આગળ વધવા માંગતા હો તો કૃપા કરીને આ બૉક્સને ચેક કરો.</translation>
+<translation id="2844350028562914727">વિગતો</translation>
 <translation id="2896972712917208084">રેડિઓ જૂથ</translation>
 <translation id="2908441821576996758">કૃપા કરીને અલ્પવિરામથી વિભાજિત ઇમેઇલ સરનામાંઓની સૂચિ દાખલ કરો.</translation>
 <translation id="2940813599313844715">ઑબ્જેક્ટ</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">મૂલ્ય <ph name="MAXIMUM" /> જેટલું અથવા આનાથી ઓછું હોવું આવશ્યક છે.</translation>
 <translation id="3486220673238053218">વિવરણ</translation>
 <translation id="3557673793733683882">મથાળું <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">અઠવાડિયાનું પિકર</translation>
 <translation id="3685101356851116974">લેબલ વિનાની છબી</translation>
 <translation id="3706100364254443312">સ્વિચ</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">સ્ક્રોલ બાર</translation>
 <translation id="4103419683916926126">મીલીસેકન્ડ</translation>
 <translation id="4151657705144244502">ગ્રાફિક</translation>
+<translation id="4160057747563657758">ટેલિફોન</translation>
 <translation id="4193965531860883258">આમુખ</translation>
 <translation id="4201051445878709314">પાછળનો મહિનો બતાવો</translation>
 <translation id="421884353938374759">રંગ ચૂંટનાર</translation>
 <translation id="4248100235867064564">મેનૂ બાર</translation>
-<translation id="4254339807215791271">કન્ટેન્ટની માહિતી</translation>
 <translation id="4360991593054037559">કૃપા કરીને એક માન્ય મૂલ્ય દાખલ કરો. બે નિકટતમ માન્ય મૂલ્યો <ph name="VALID_VALUE_LOW" /> અને <ph name="VALID_VALUE_HIGHER" /> છે.</translation>
 <translation id="4384583879834880242">પ્રશ્ન અને જવાબ</translation>
 <translation id="4413860115965805769">મેનૂ બટન</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="588258955323874662">પૂર્ણસ્ક્રીન</translation>
 <translation id="5888666972993069672">હવે <ph name="DEVICE_FRIENDLY_NAME" /> પર કાસ્ટ કરી રહ્યાં છીએ</translation>
+<translation id="591047860372322273">શોધ બૉક્સ</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5966707198760109579">અઠવાડિયું</translation>
 <translation id="5987525920412732405">સ્પિન બટન</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">સમાપન ભાષણ</translation>
 <translation id="6209276755895393898">આના જેવું જણાય છે: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">શબ્દાવલી</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">ચિત્ર-માં-ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="6398862346408813489">મહિના પસંદગી પેનલ દર્શાવો</translation>
 <translation id="6404546809543547843">ઑડિઓ સમય સ્ક્રબર</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">કૃપા કરીને વિનંતી કરેલા ફોર્મેટ સાથે મેળ કરો.</translation>
 <translation id="7118469954320184356">કોઈ વર્ણન ઉપલબ્ધ નથી.</translation>
 <translation id="7139483182332611405">પ્રસ્તાવના</translation>
+<translation id="7214187073215825913">કન્ટેન્ટ વિશેની માહિતી</translation>
 <translation id="7263440858009898357">કૃપા કરીને સૂચિમાંથી એક આઇટમ પસંદ કરો.</translation>
 <translation id="727747134524199931">કૉલમ હેડર</translation>
 <translation id="7320576522385648310">બફર થઈ રહ્યું છે</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">વર્ણન મેળવી રહ્યાં છીએ…</translation>
 <translation id="8117451130807776954">આ અઠવાડિયે</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8208673686607688524">સ્થાનિક તારીખ અને સમય પિકર</translation>
 <translation id="8261464734335370856">અમાન્ય જોડણી</translation>
 <translation id="8284326494547611709">કૅપ્શન્સ</translation>
 <translation id="835897206747267392">અમાન્ય મૂલ્ય.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">અનુક્રમણિકા</translation>
 <translation id="8613126697340063924">રિમોટ પ્લેબેકનું નિયંત્રણ કરો</translation>
 <translation id="862370744433916922">(સબટાઇટલ)</translation>
+<translation id="8711688047404765493">આઉટપુટ</translation>
 <translation id="8750798805984357768">કૃપા કરીને આ વિકલ્પોમાંથી કોઈ એક પસંદ કરો.</translation>
 <translation id="8808573423886751634">પ્રકરણ</translation>
 <translation id="8845239796550121995">હમણાં તમારા TV પર કાસ્ટ કરી રહ્યાં છીએ</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">મહિનો</translation>
 <translation id="901493112792887934">સેકન્ડ્સમાં વર્તમાન સમય</translation>
+<translation id="901834265349196618">ઇમેઇલ</translation>
 <translation id="9048119486235211610">નેવિગેશન</translation>
 <translation id="9062295712474918030">દસ્તાવેજ</translation>
 <translation id="9062307380734144336">ચલાવવાનું અથવા થોભાવવાનું ટૉગલ કરવાનું પસંદ કરો</translation>

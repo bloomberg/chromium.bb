@@ -5,103 +5,204 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_record.h"
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_unrestricted_double_or_array_buffer_or_dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record_init.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
-// static
-NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init) {
-  return MakeGarbageCollected<NDEFRecord>(init);
+namespace {
+
+WTF::Vector<uint8_t> GetUTF8DataFromString(const String& string) {
+  StringUTF8Adaptor utf8_string(string);
+  WTF::Vector<uint8_t> data;
+  data.Append(utf8_string.data(), utf8_string.size());
+  return data;
 }
 
-NDEFRecord::NDEFRecord(const NDEFRecordInit* init)
-    : record_type_(init->recordType()), media_type_(init->mediaType()) {
-  if (init->data().IsArrayBuffer()) {
-    data_type_ = DataType::kArrayBuffer;
-    // Keep our own copy of data so that modifications of the original
-    // ArrayBuffer |init->data()| in JS world do not affect us.
-    DOMArrayBuffer* original = init->data().GetAsArrayBuffer();
-    array_buffer_ =
-        WTF::ArrayBuffer::Create(original->Data(), original->ByteLength());
-  } else if (init->data().IsDictionary()) {
-    data_type_ = DataType::kDictionary;
-    // |dictionary| holds a V8 value of a JS Dictionary object, because WebIDL
-    // spec (https://heycam.github.io/webidl/#idl-dictionaries) says that
-    // dictionaries are always passed by value, rather than holding a reference
-    // to it, here we stringify and save the dictionary data as |string_|, from
-    // which we can build new Dictionary objects later when necessary.
-    Dictionary dictionary = init->data().GetAsDictionary();
-    v8::Local<v8::String> jsonString;
-    v8::Isolate* isolate = dictionary.GetIsolate();
-    v8::TryCatch try_catch(isolate);
-    if (v8::JSON::Stringify(dictionary.V8Context(), dictionary.V8Value())
-            .ToLocal(&jsonString) &&
-        !try_catch.HasCaught()) {
-      string_ = ToBlinkString<String>(jsonString, kDoNotExternalize);
-    }
-  } else if (init->data().IsString()) {
-    data_type_ = DataType::kString;
-    string_ = init->data().GetAsString();
-  } else if (init->data().IsUnrestrictedDouble()) {
-    data_type_ = DataType::kUnrestrictedDouble;
-    unrestricted_double_ = init->data().GetAsUnrestrictedDouble();
+static NDEFRecord* CreateTextRecord(const String& media_type,
+                                    const ScriptValue& data,
+                                    ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#mapping-string-to-ndef
+  if (data.IsEmpty() || !data.V8Value()->IsString()) {
+    exception_state.ThrowTypeError(kNfcTextRecordTypeError);
+    return nullptr;
   }
+
+  // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
+  String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
+
+  // TODO(https://crbug.com/520391): Step 2-5, parse a MIME type on |media_type|
+  // to get 'lang' and 'charset' parameters. Now we ignore them and the embedder
+  // always uses "lang=en-US;charset=UTF-8" when pushing the record to a NFC
+  // tag.
+  if (mime_type.IsEmpty()) {
+    mime_type = kNfcPlainTextMimeType;
+  } else if (!mime_type.StartsWithIgnoringASCIICase(kNfcPlainTextMimePrefix)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      kNfcTextRecordMediaTypeError);
+    return nullptr;
+  }
+
+  String text = ToCoreString(data.V8Value().As<v8::String>());
+  return MakeGarbageCollected<NDEFRecord>("text", mime_type,
+                                          GetUTF8DataFromString(text));
+}
+
+static NDEFRecord* CreateUrlRecord(const String& media_type,
+                                   const ScriptValue& data,
+                                   ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#mapping-url-to-ndef
+  if (data.IsEmpty() || !data.V8Value()->IsString()) {
+    exception_state.ThrowTypeError(kNfcUrlRecordTypeError);
+    return nullptr;
+  }
+
+  // No need to check mediaType according to the spec.
+  String url = ToCoreString(data.V8Value().As<v8::String>());
+  if (!KURL(NullURL(), url).IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      kNfcUrlRecordParseError);
+    return nullptr;
+  }
+  return MakeGarbageCollected<NDEFRecord>("url", media_type,
+                                          GetUTF8DataFromString(url));
+}
+
+static NDEFRecord* CreateJsonRecord(const String& media_type,
+                                    const ScriptValue& data,
+                                    ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#mapping-json-to-ndef
+  if (data.IsEmpty()) {
+    exception_state.ThrowTypeError(kNfcJsonRecordNoDataError);
+    return nullptr;
+  }
+
+  // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
+  String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
+  if (mime_type.IsEmpty()) {
+    mime_type = kNfcJsonMimeType;
+  } else if (mime_type != kNfcJsonMimeType &&
+             mime_type != kNfcJsonTextMimeType &&
+             !mime_type.EndsWithIgnoringASCIICase(kNfcJsonMimePostfix)) {
+    // According to https://mimesniff.spec.whatwg.org/#json-mime-type, a JSON
+    // MIME type is any MIME type whose subtype ends in "+json" or whose
+    // essence is "application/json" or "text/json".
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      kNfcJsonRecordMediaTypeError);
+    return nullptr;
+  }
+
+  // Serialize JSON to bytes, rethrow any exceptions.
+  v8::Local<v8::String> jsonString;
+  v8::TryCatch try_catch(data.GetIsolate());
+  if (!v8::JSON::Stringify(data.GetIsolate()->GetCurrentContext(),
+                           data.V8Value())
+           .ToLocal(&jsonString)) {
+    DCHECK(try_catch.HasCaught());
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return nullptr;
+  }
+  return MakeGarbageCollected<NDEFRecord>(
+      "json", mime_type,
+      GetUTF8DataFromString(
+          ToBlinkString<String>(jsonString, kDoNotExternalize)));
+}
+
+static NDEFRecord* CreateOpaqueRecord(const String& media_type,
+                                      const ScriptValue& data,
+                                      ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#mapping-binary-data-to-ndef
+  if (data.IsEmpty() || !data.V8Value()->IsArrayBuffer()) {
+    exception_state.ThrowTypeError(kNfcOpaqueRecordTypeError);
+    return nullptr;
+  }
+
+  // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
+  String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
+  if (mime_type.IsEmpty()) {
+    mime_type = kNfcOpaqueMimeType;
+  }
+  DOMArrayBuffer* array_buffer =
+      V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
+  WTF::Vector<uint8_t> bytes;
+  bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
+               array_buffer->ByteLength());
+  return MakeGarbageCollected<NDEFRecord>("opaque", mime_type,
+                                          std::move(bytes));
+}
+
+}  // namespace
+
+// static
+NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init,
+                               ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#creating-web-nfc-message
+  String record_type;
+  if (!init->hasRecordType()) {
+    if (!init->hasData()) {
+      exception_state.ThrowTypeError("The record has neither type nor data.");
+      return nullptr;
+    }
+    v8::Local<v8::Value> data = init->data().V8Value();
+    if (data->IsString()) {
+      record_type = "text";
+    } else if (data->IsArrayBuffer()) {
+      record_type = "opaque";
+    } else {
+      record_type = "json";
+    }
+  } else {
+    record_type = init->recordType();
+  }
+
+  if (record_type == "empty") {
+    // https://w3c.github.io/web-nfc/#mapping-empty-record-to-ndef
+    // If record type is "empty", no need to set media type and data.
+    return MakeGarbageCollected<NDEFRecord>(record_type, String(),
+                                            WTF::Vector<uint8_t>());
+  } else if (record_type == "text") {
+    return CreateTextRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "url") {
+    return CreateUrlRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "json") {
+    return CreateJsonRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "opaque") {
+    return CreateOpaqueRecord(init->mediaType(), init->data(), exception_state);
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+NDEFRecord::NDEFRecord(const String& record_type,
+                       const String& media_type,
+                       WTF::Vector<uint8_t> data)
+    : record_type_(record_type),
+      media_type_(media_type),
+      data_(std::move(data)) {}
+
+NDEFRecord::NDEFRecord(const String& text)
+    : record_type_("text"),
+      media_type_(StringView(kNfcPlainTextMimeType) + kNfcCharSetUTF8),
+      data_(GetUTF8DataFromString(text)) {}
+
+NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
+    : record_type_("opaque"), media_type_(kNfcOpaqueMimeType) {
+  data_.Append(static_cast<uint8_t*>(array_buffer->Data()),
+               array_buffer->ByteLength());
 }
 
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecordPtr& record)
     : record_type_(NDEFRecordTypeToString(record->record_type)),
-      media_type_(record->media_type) {
-  switch (record->record_type) {
-    case device::mojom::blink::NDEFRecordType::TEXT:
-    case device::mojom::blink::NDEFRecordType::URL:
-    case device::mojom::blink::NDEFRecordType::JSON: {
-      String string_data;
-      if (!record->data.IsEmpty()) {
-        string_data = String::FromUTF8WithLatin1Fallback(
-            static_cast<unsigned char*>(&record->data.front()),
-            record->data.size());
-      }
-
-      // Convert back the stringified double.
-      if (record->record_type == device::mojom::blink::NDEFRecordType::TEXT) {
-        bool can_convert = false;
-        double number = string_data.ToDouble(&can_convert);
-        if (can_convert) {
-          data_type_ = DataType::kUnrestrictedDouble;
-          unrestricted_double_ = number;
-          return;
-        }
-      }
-
-      // Save the stringified JSON.
-      if (record->record_type == device::mojom::blink::NDEFRecordType::JSON) {
-        data_type_ = DataType::kDictionary;
-        string_ = string_data;
-        return;
-      }
-
-      data_type_ = DataType::kString;
-      string_ = string_data;
-      return;
-    }
-
-    case device::mojom::blink::NDEFRecordType::OPAQUE_RECORD: {
-      if (!record->data.IsEmpty()) {
-        data_type_ = DataType::kArrayBuffer;
-        array_buffer_ = WTF::ArrayBuffer::Create(
-            static_cast<void*>(&record->data.front()), record->data.size());
-      }
-      return;
-    }
-
-    case device::mojom::blink::NDEFRecordType::EMPTY:
-      return;
-  }
-  NOTREACHED();
-  return;
-}
+      media_type_(record->media_type),
+      data_(record->data) {}
 
 const String& NDEFRecord::recordType() const {
   return record_type_;
@@ -111,43 +212,50 @@ const String& NDEFRecord::mediaType() const {
   return media_type_;
 }
 
-void NDEFRecord::data(
-    ScriptState* script_state,
-    StringOrUnrestrictedDoubleOrArrayBufferOrDictionary& out) const {
-  switch (data_type_) {
-    case DataType::kNone:
-      return;
-    case DataType::kArrayBuffer:
-      // We want NDEFRecord.data() to return a new ArrayBuffer object in JS
-      // world each time.
-      out.SetArrayBuffer(DOMArrayBuffer::Create(array_buffer_->Data(),
-                                                array_buffer_->ByteLength()));
-      return;
-    case DataType::kDictionary: {
-      // We want NDEFRecord.data() to return a new Dictionary object in JS world
-      // each time.
-      v8::Isolate* isolate = script_state->GetIsolate();
-      v8::Local<v8::String> string = V8String(isolate, string_);
-      v8::Local<v8::Value> json_object;
-      v8::TryCatch try_catch(isolate);
-      NonThrowableExceptionState exception_state;
-      if (v8::JSON::Parse(script_state->GetContext(), string)
-              .ToLocal(&json_object)) {
-        out.SetDictionary(Dictionary(isolate, json_object, exception_state));
-      } else {
-        out.SetDictionary(Dictionary());
-      }
-      return;
-    }
-    case DataType::kString:
-      out.SetString(string_);
-      return;
-    case DataType::kUnrestrictedDouble:
-      out.SetUnrestrictedDouble(unrestricted_double_);
-      return;
+String NDEFRecord::toText() const {
+  device::mojom::blink::NDEFRecordType type =
+      StringToNDEFRecordType(record_type_);
+  if (type == device::mojom::blink::NDEFRecordType::EMPTY)
+    return String();
+
+  // TODO(https://crbug.com/520391): Support utf-16 decoding for 'TEXT' record
+  // as described at
+  // http://w3c.github.io/web-nfc/#dfn-convert-ndefrecord-payloaddata-bytes.
+  return String::FromUTF8WithLatin1Fallback(data_.data(), data_.size());
+}
+
+DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
+  device::mojom::blink::NDEFRecordType type =
+      StringToNDEFRecordType(record_type_);
+  if (type != device::mojom::blink::NDEFRecordType::JSON &&
+      type != device::mojom::blink::NDEFRecordType::OPAQUE_RECORD) {
+    return nullptr;
   }
-  NOTREACHED();
-  return;
+
+  return DOMArrayBuffer::Create(data_.data(), data_.size());
+}
+
+ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
+                               ExceptionState& exception_state) const {
+  device::mojom::blink::NDEFRecordType type =
+      StringToNDEFRecordType(record_type_);
+  if (type != device::mojom::blink::NDEFRecordType::JSON &&
+      type != device::mojom::blink::NDEFRecordType::OPAQUE_RECORD) {
+    return ScriptValue::CreateNull(script_state);
+  }
+
+  ScriptState::Scope scope(script_state);
+  v8::Local<v8::Value> json_object = FromJSONString(
+      script_state->GetIsolate(), script_state->GetContext(),
+      String::FromUTF8WithLatin1Fallback(data_.data(), data_.size()),
+      exception_state);
+  if (exception_state.HadException())
+    return ScriptValue::CreateNull(script_state);
+  return ScriptValue(script_state, json_object);
+}
+
+const WTF::Vector<uint8_t>& NDEFRecord::data() const {
+  return data_;
 }
 
 void NDEFRecord::Trace(blink::Visitor* visitor) {

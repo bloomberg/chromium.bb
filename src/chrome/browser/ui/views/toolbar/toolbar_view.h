@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
@@ -33,8 +34,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
-#include "components/arc/common/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/mojom/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
 #endif  // defined(OS_CHROMEOS)
 
 class AppMenuButton;
@@ -100,9 +101,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // as well.
   void Update(content::WebContents* tab);
 
-  // Updates the visibility of the toolbar, potentially animating the
+  // Updates the visibility of the custom tab bar, potentially animating the
   // transition.
-  void UpdateToolbarVisibility(bool visible, bool animate);
+  void UpdateCustomTabBarVisibility(bool visible, bool animate);
 
   // Clears the current state for |tab|.
   void ResetTabState(content::WebContents* tab);
@@ -117,8 +118,9 @@ class ToolbarView : public views::AccessiblePaneView,
 
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
-      bool enable_stay_in_chrome,
-      bool show_persistence_options,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
+      PageActionIconType icon_type,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.
@@ -227,6 +229,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
+  ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
+  views::View* GetDefaultExtensionDialogAnchorView() override;
   OmniboxPageActionIconContainerView* GetOmniboxPageActionIconContainerView()
       override;
   AppMenuButton* GetAppMenuButton() override;

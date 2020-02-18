@@ -35,6 +35,12 @@ class CreditCard;
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
 
+// Reduce FormSignature space (in UKM) to a small range for privacy reasons.
+int64_t HashFormSignature(autofill::FormSignature form_signature);
+
+// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
+int64_t HashFieldSignature(autofill::FieldSignature field_signature);
+
 class AutofillMetrics {
  public:
   enum AutofillProfileAction {
@@ -51,13 +57,6 @@ class AutofillMetrics {
     FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS,
     FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS,
     AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE,
-  };
-
-  enum class BillingIdStatus {
-    MISSING = 0,
-    PARSE_ERROR = 1,
-    VALID = 2,
-    kMaxValue = VALID,
   };
 
   enum CardUploadDecisionMetric {
@@ -202,14 +201,6 @@ class AutofillMetrics {
     LOCAL = 0,
     SERVER = 1,
     kMaxValue = SERVER,
-  };
-
-  // Metric to measure volume of cards that are disallowed for upload by their
-  // network, most likely due to their network being blocked by Google Payments.
-  enum UploadDisallowedForNetworkMetric {
-    DISALLOWED_ELO = 0,
-    DISALLOWED_JCB = 1,
-    kMaxValue = DISALLOWED_JCB,
   };
 
   // Metric to measure if a card for which upload was offered is already stored
@@ -796,7 +787,7 @@ class AutofillMetrics {
     SYNC_SERVICE_PERSISTENT_AUTH_ERROR = 1,
     SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE = 2,
     SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE = 3,
-    ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED = 4,
+    // Deprecated: ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED = 4,
     USING_SECONDARY_SYNC_PASSPHRASE = 5,
     LOCAL_SYNC_ENABLED = 6,
     PAYMENTS_INTEGRATION_DISABLED = 7,
@@ -923,10 +914,6 @@ class AutofillMetrics {
   static void LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
       SaveTypeMetric metric);
 
-  // When credit card upload is disallowed for a particular network, logs which
-  // network was blocked.
-  static void LogUploadDisallowedForNetworkMetric(const std::string& network);
-
   // When credit card upload is offered, logs whether the card being offered is
   // already a local card on the device or not.
   static void LogUploadOfferedCardOriginMetric(
@@ -945,9 +932,6 @@ class AutofillMetrics {
   // user accepts upload, logs whether the final cardholder name was changed
   // from its prefilled value or not.
   static void LogSaveCardCardholderNameWasEdited(bool edited);
-
-  // Logs the PaymentsCustomerData billing ID status at the time of use.
-  static void LogPaymentsCustomerDataBillingIdStatus(BillingIdStatus status);
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);

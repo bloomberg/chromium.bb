@@ -20,9 +20,9 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/base/task_runner.h"
+#include "perfetto/base/time.h"
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/scoped_file.h"
-#include "perfetto/ext/base/time.h"
 #include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "perfetto/tracing/core/data_source_config.h"
@@ -30,10 +30,10 @@
 #include "src/android_internal/lazy_library_loader.h"
 #include "src/android_internal/power_stats_hal.h"
 
-#include "perfetto/config/power/android_power_config.pbzero.h"
-#include "perfetto/trace/power/battery_counters.pbzero.h"
-#include "perfetto/trace/power/power_rails.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/config/power/android_power_config.pbzero.h"
+#include "protos/perfetto/trace/power/battery_counters.pbzero.h"
+#include "protos/perfetto/trace/power/power_rails.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
 

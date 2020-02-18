@@ -29,13 +29,13 @@ class VIEWS_EXPORT Link : public Label {
   METADATA_HEADER(Link);
 
   // The padding for the focus ring border when rendering a focused Link with
-  // FocusStyle::RING.
+  // FocusStyle::kRing.
   static constexpr int kFocusBorderPadding = 1;
 
   // How the Link is styled when focused.
   enum class FocusStyle {
-    UNDERLINE,  // An underline style is added to the text only when focused.
-    RING,       // A focus ring is drawn around the View.
+    kUnderline,  // An underline style is added to the text only when focused.
+    kRing,       // A focus ring is drawn around the View.
   };
 
   explicit Link(const base::string16& title,
@@ -44,7 +44,7 @@ class VIEWS_EXPORT Link : public Label {
   ~Link() override;
 
   // Returns the default FocusStyle for a views::Link. Calling SetUnderline()
-  // may change it: E.g. SetUnderline(true) forces FocusStyle::RING.
+  // may change it: E.g. SetUnderline(true) forces FocusStyle::kRing.
   static FocusStyle GetDefaultFocusStyle();
 
   // Returns the current FocusStyle of this Link.
@@ -52,6 +52,8 @@ class VIEWS_EXPORT Link : public Label {
 
   const LinkListener* listener() { return listener_; }
   void set_listener(LinkListener* listener) { listener_ = listener; }
+
+  SkColor GetColor() const;
 
   // Label:
   void PaintFocusRing(gfx::Canvas* canvas) const override;
@@ -74,6 +76,7 @@ class VIEWS_EXPORT Link : public Label {
   void SetEnabledColor(SkColor color) override;
   bool IsSelectionSupported() const override;
 
+  bool GetUnderline() const;
   // TODO(estade): almost all the places that call this pass false. With
   // Harmony, false is already the default so those callsites can be removed.
   // TODO(tapted): Then remove all callsites when client code sets a correct
@@ -88,8 +91,6 @@ class VIEWS_EXPORT Link : public Label {
   void RecalculateFont();
 
   void ConfigureFocus();
-
-  SkColor GetColor();
 
   LinkListener* listener_;
 

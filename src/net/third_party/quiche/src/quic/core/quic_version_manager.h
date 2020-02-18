@@ -33,19 +33,17 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   // Refilters filtered_supported_versions_.
   virtual void RefilterSupportedVersions();
 
-  const QuicTransportVersionVector& filtered_supported_versions() const {
+  const QuicTransportVersionVector& filtered_transport_versions() const {
     return filtered_transport_versions_;
   }
 
  private:
   // quic_enable_version_99 flag
   bool enable_version_99_;
-  // quic_enable_version_48 flag
+  // quic_enable_version_48_2 flag
   bool enable_version_48_;
   // quic_enable_version_47 flag
   bool enable_version_47_;
-  // quic_disable_version_44 flag
-  bool disable_version_44_;
   // quic_disable_version_39 flag
   bool disable_version_39_;
   // quic_supports_tls_handshake flag

@@ -24,6 +24,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -46,11 +47,13 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/browser_context.h"
@@ -75,6 +78,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -90,10 +94,9 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time, resolution,
-                     latency, base::TimeTicks::Now()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
+                                resolution, latency, base::TimeTicks::Now()));
 }
 
 }  // anonymous namespace
@@ -129,6 +132,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // destruction order. Note that some of the dependencies are listed here but
   // actually plumbed in ChromeSyncClient, which this factory constructs.
   DependsOn(AboutSigninInternalsFactory::GetInstance());
+  DependsOn(AccountPasswordStoreFactory::GetInstance());
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(BookmarkSyncServiceFactory::GetInstance());
@@ -166,6 +170,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
+  DependsOn(WifiConfigurationSyncServiceFactory::GetInstance());
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -194,6 +199,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.autofill_enable_account_wallet_storage =
       base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage);
+  init_params.enable_passwords_account_storage = base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordsAccountStorage);
 
   bool local_sync_backend_enabled = false;
 
@@ -232,19 +239,16 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     init_params.identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
 
-    bool use_fcm_invalidations =
-        base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
-    if (use_fcm_invalidations) {
-      auto* fcm_invalidation_provider =
-          invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-              profile);
-      if (fcm_invalidation_provider) {
-        init_params.invalidations_identity_providers.push_back(
-            fcm_invalidation_provider->GetIdentityProvider());
-      }
+    auto* fcm_invalidation_provider =
+        invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+            profile);
+    if (fcm_invalidation_provider) {
+      init_params.invalidations_identity_providers.push_back(
+          fcm_invalidation_provider->GetIdentityProvider());
     }
+
     // This code should stay here until all invalidation client are
-    // migrated from deprecated invalidation  infructructure.
+    // migrated from deprecated invalidation infrastructure.
     // Since invalidations will work only if ProfileSyncService calls
     // SetActiveAccountId for all identity providers.
     auto* deprecated_invalidation_provider = invalidation::
@@ -260,7 +264,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // intervention). We can get rid of the browser_default eventually, but
     // need to take care that ProfileSyncService doesn't get tripped up between
     // those two cases. Bug 88109.
-    init_params.start_behavior = browser_defaults::kSyncAutoStarts
+    bool is_auto_start = browser_defaults::kSyncAutoStarts;
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(switches::kSyncManualStartAndroid))
+      is_auto_start = false;
+#endif
+    init_params.start_behavior = is_auto_start
                                      ? syncer::ProfileSyncService::AUTO_START
                                      : syncer::ProfileSyncService::MANUAL_START;
   }

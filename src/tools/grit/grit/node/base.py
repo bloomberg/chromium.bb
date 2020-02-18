@@ -11,8 +11,9 @@ import ast
 import os
 import struct
 import sys
-import types
 from xml.sax import saxutils
+
+import six
 
 from grit import constants
 from grit import clique
@@ -59,7 +60,7 @@ class Node(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     if exc_type is not None:
-      print(u'Error processing node %s' % unicode(self))
+      print(u'Error processing node %s: %s' % (six.text_type(self), exc_value))
 
   def __iter__(self):
     '''A preorder iteration through the tree that this node is the root of.'''
@@ -112,7 +113,7 @@ class Node(object):
       name: u'elementname'
       parent: grit.node.base.Node or subclass or None
     '''
-    assert isinstance(name, types.StringTypes)
+    assert isinstance(name, six.string_types)
     assert not parent or isinstance(parent, Node)
     self.name = name
     self.parent = parent
@@ -155,7 +156,7 @@ class Node(object):
     Return:
       None
     '''
-    assert isinstance(content, types.StringTypes)
+    assert isinstance(content, six.string_types)
     if self._ContentType() != self._CONTENT_TYPE_NONE:
       self.mixed_content.append(content)
     elif content.strip() != '':
@@ -172,8 +173,8 @@ class Node(object):
     Return:
       None
     '''
-    assert isinstance(attrib, types.StringTypes)
-    assert isinstance(value, types.StringTypes)
+    assert isinstance(attrib, six.string_types)
+    assert isinstance(value, six.string_types)
     if self._IsValidAttribute(attrib, value):
       self.attrs[attrib] = value
     else:
@@ -184,34 +185,34 @@ class Node(object):
 
     # TODO(joi) Rewrite this, it's extremely ugly!
     if len(self.mixed_content):
-      if isinstance(self.mixed_content[0], types.StringTypes):
+      if isinstance(self.mixed_content[0], six.string_types):
         # Remove leading and trailing chunks of pure whitespace.
         while (len(self.mixed_content) and
-               isinstance(self.mixed_content[0], types.StringTypes) and
+               isinstance(self.mixed_content[0], six.string_types) and
                self.mixed_content[0].strip() == ''):
           self.mixed_content = self.mixed_content[1:]
         # Strip leading and trailing whitespace from mixed content chunks
         # at front and back.
         if (len(self.mixed_content) and
-            isinstance(self.mixed_content[0], types.StringTypes)):
+            isinstance(self.mixed_content[0], six.string_types)):
           self.mixed_content[0] = self.mixed_content[0].lstrip()
         # Remove leading and trailing ''' (used to demarcate whitespace)
         if (len(self.mixed_content) and
-            isinstance(self.mixed_content[0], types.StringTypes)):
+            isinstance(self.mixed_content[0], six.string_types)):
           if self.mixed_content[0].startswith("'''"):
             self.mixed_content[0] = self.mixed_content[0][3:]
     if len(self.mixed_content):
-      if isinstance(self.mixed_content[-1], types.StringTypes):
+      if isinstance(self.mixed_content[-1], six.string_types):
         # Same stuff all over again for the tail end.
         while (len(self.mixed_content) and
-               isinstance(self.mixed_content[-1], types.StringTypes) and
+               isinstance(self.mixed_content[-1], six.string_types) and
                self.mixed_content[-1].strip() == ''):
           self.mixed_content = self.mixed_content[:-1]
         if (len(self.mixed_content) and
-            isinstance(self.mixed_content[-1], types.StringTypes)):
+            isinstance(self.mixed_content[-1], six.string_types)):
           self.mixed_content[-1] = self.mixed_content[-1].rstrip()
         if (len(self.mixed_content) and
-            isinstance(self.mixed_content[-1], types.StringTypes)):
+            isinstance(self.mixed_content[-1], six.string_types)):
           if self.mixed_content[-1].endswith("'''"):
             self.mixed_content[-1] = self.mixed_content[-1][:-3]
 
@@ -225,7 +226,7 @@ class Node(object):
 
       mandatt_option_found = False
       for mandatt in mandatt_list:
-        assert mandatt not in self.DefaultAttributes().keys()
+        assert mandatt not in self.DefaultAttributes()
         if mandatt in self.attrs:
           if not mandatt_option_found:
             mandatt_option_found = True
@@ -244,13 +245,16 @@ class Node(object):
     '''Returns all CDATA of this element, concatenated into a single
     string.  Note that this ignores any elements embedded in CDATA.'''
     return ''.join([c for c in self.mixed_content
-                    if isinstance(c, types.StringTypes)])
+                    if isinstance(c, six.string_types)])
 
-  def __unicode__(self):
+  def __str__(self):
     '''Returns this node and all nodes below it as an XML document in a Unicode
     string.'''
     header = u'<?xml version="1.0" encoding="UTF-8"?>\n'
     return header + self.FormatXml()
+
+  # Some Python 2 glue.
+  __unicode__ = __str__
 
   def FormatXml(self, indent = u'', one_line = False):
     '''Returns this node and all nodes below it as an XML
@@ -259,7 +263,7 @@ class Node(object):
     children and CDATA are layed out in a way that preserves internal
     whitespace.
     '''
-    assert isinstance(indent, types.StringTypes)
+    assert isinstance(indent, six.string_types)
 
     content_one_line = (one_line or
                         self._ContentType() == self._CONTENT_TYPE_MIXED)
@@ -293,7 +297,7 @@ class Node(object):
   def ContentsAsXml(self, indent, one_line):
     '''Returns the contents of this node (CDATA and child elements) in XML
     format.  If 'one_line' is true, the content will be laid out on one line.'''
-    assert isinstance(indent, types.StringTypes)
+    assert isinstance(indent, six.string_types)
 
     # Build the contents of the element.
     inside_parts = []
@@ -319,7 +323,7 @@ class Node(object):
 
     # If the last item is a string (not a node) and ends with whitespace,
     # we need to add the ''' delimiter.
-    if (isinstance(last_item, types.StringTypes) and
+    if (isinstance(last_item, six.string_types) and
         last_item.rstrip() != last_item):
       inside_parts[-1] = inside_parts[-1] + u"'''"
 
@@ -610,7 +614,7 @@ class Node(object):
       The data in gzipped or brotli compressed format. If the format is
       unspecified then this returns the data uncompressed.
     '''
-    if self.attrs.get('compress') == 'gzip':
+    if self.attrs.get('compress') in ('gzip', 'true'):
       # We only use rsyncable compression on Linux.
       # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
       # the --rsyncable option built in for gzip. See crbug.com/617950.
@@ -618,7 +622,7 @@ class Node(object):
         return grit.format.gzip_string.GzipStringRsyncable(data)
       return grit.format.gzip_string.GzipString(data)
 
-    elif self.attrs.get('compress') in ('true', 'brotli'):
+    elif self.attrs.get('compress') == 'brotli':
       # The length of the uncompressed data as 8 bytes little-endian.
       size_bytes = struct.pack("<q", len(data))
       data = brotli_util.BrotliCompress(data)
@@ -627,7 +631,7 @@ class Node(object):
       # The length of the uncompressed data is also appended to the start,
       # truncated to 6 bytes, little-endian. size_bytes is 8 bytes,
       # need to truncate further to 6.
-      formatter = '%ds %dx %ds' % (6, 2, len(size_bytes) - 8)
+      formatter = b'%ds %dx %ds' % (6, 2, len(size_bytes) - 8)
       return (constants.BROTLI_CONST +
              b''.join(struct.unpack(formatter, size_bytes)) +
              data)

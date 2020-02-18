@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/table_constants.h"
@@ -120,8 +121,10 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
 void HTMLTableCellElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == kRowspanAttr || params.name == kColspanAttr) {
-    if (GetLayoutObject() && GetLayoutObject()->IsTableCell())
-      ToLayoutTableCell(GetLayoutObject())->ColSpanOrRowSpanChanged();
+    if (GetLayoutObject() && GetLayoutObject()->IsTableCell()) {
+      ToInterface<LayoutNGTableCellInterface>(GetLayoutObject())
+          ->ColSpanOrRowSpanChanged();
+    }
   } else {
     HTMLTablePartElement::ParseAttribute(params);
   }

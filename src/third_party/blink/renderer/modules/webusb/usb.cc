@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/usb_device.mojom-blink.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -25,9 +26,9 @@
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+using device::mojom::blink::UsbDevice;
 using device::mojom::blink::UsbDeviceFilterPtr;
 using device::mojom::blink::UsbDeviceInfoPtr;
-using device::mojom::blink::UsbDevicePtr;
 
 namespace blink {
 namespace {
@@ -90,8 +91,7 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter* filter,
 
 }  // namespace
 
-USB::USB(ExecutionContext& context)
-    : ContextLifecycleObserver(&context), client_binding_(this) {}
+USB::USB(ExecutionContext& context) : ContextLifecycleObserver(&context) {}
 
 USB::~USB() {
   // |service_| may still be valid but there should be no more outstanding
@@ -103,7 +103,7 @@ USB::~USB() {
 void USB::Dispose() {
   // The pipe to this object must be closed when is marked unreachable to
   // prevent messages from being dispatched before lazy sweeping.
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 
 ScriptPromise USB::getDevices(ScriptState* script_state) {
@@ -206,8 +206,8 @@ USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
   USBDevice* device = device_cache_.at(device_info->guid);
   if (!device) {
     String guid = device_info->guid;
-    UsbDevicePtr pipe;
-    service_->GetDevice(guid, mojo::MakeRequest(&pipe));
+    mojo::PendingRemote<UsbDevice> pipe;
+    service_->GetDevice(guid, pipe.InitWithNewPipeAndPassReceiver());
     device = USBDevice::Create(std::move(device_info), std::move(pipe),
                                GetExecutionContext());
     device_cache_.insert(guid, device);
@@ -253,7 +253,7 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
   String guid = device_info->guid;
   USBDevice* device = device_cache_.at(guid);
   if (!device) {
-    device = USBDevice::Create(std::move(device_info), nullptr,
+    device = USBDevice::Create(std::move(device_info), mojo::NullRemote(),
                                GetExecutionContext());
   }
   DispatchEvent(
@@ -263,7 +263,7 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
 
 void USB::OnServiceConnectionError() {
   service_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   for (ScriptPromiseResolver* resolver : get_devices_requests_)
     resolver->Resolve(HeapVector<Member<USBDevice>>(0));
   get_devices_requests_.clear();
@@ -300,15 +300,14 @@ void USB::EnsureServiceConnection() {
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_, task_runner));
-  service_.set_connection_error_handler(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+  service_.set_disconnect_handler(
       WTF::Bind(&USB::OnServiceConnectionError, WrapWeakPersistent(this)));
 
-  DCHECK(!client_binding_.is_bound());
+  DCHECK(!client_receiver_.is_bound());
 
-  device::mojom::blink::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client), task_runner);
-  service_->SetClient(std::move(client));
+  service_->SetClient(
+      client_receiver_.BindNewEndpointAndPassRemote(task_runner));
 }
 
 bool USB::IsContextSupported() const {

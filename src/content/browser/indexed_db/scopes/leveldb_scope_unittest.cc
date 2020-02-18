@@ -67,7 +67,8 @@ TEST_F(LevelDBScopeTest, BasicUsage) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}), {});
 
@@ -75,7 +76,7 @@ TEST_F(LevelDBScopeTest, BasicUsage) {
   std::string key = CreateKey(0);
   s = scope->Put(key, value);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
   EXPECT_TRUE(failure_status.ok());
 
@@ -98,7 +99,8 @@ TEST_F(LevelDBScopeTest, InMemoryAbort) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}), {});
 
@@ -107,7 +109,7 @@ TEST_F(LevelDBScopeTest, InMemoryAbort) {
   std::string key = CreateKey(0);
   s = scope->Put(key, value);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Write over the value and abort.
@@ -140,7 +142,8 @@ TEST_F(LevelDBScopeTest, AbortWithRevertTask) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   std::string value = "12345";
   leveldb::WriteOptions woptions;
@@ -181,7 +184,8 @@ TEST_F(LevelDBScopeTest, ManyScopes) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   std::string value;
   for (int i = 0; i < 20; ++i) {
@@ -191,7 +195,7 @@ TEST_F(LevelDBScopeTest, ManyScopes) {
         AcquireLocksSync(&lock_manager, {CreateExclusiveLock(i)}), {});
     s = scope->Put(key, value);
     EXPECT_TRUE(s.ok());
-    s = scopes.Commit(std::move(scope));
+    s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
     EXPECT_TRUE(s.ok());
   }
 
@@ -222,7 +226,8 @@ TEST_F(LevelDBScopeTest, DeleteRangeExclusive) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   // Create values for keys 0-20, inclusive.
   std::string value;
@@ -234,7 +239,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeExclusive) {
     s = scope->Put(key, value);
     EXPECT_TRUE(s.ok());
   }
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Do a exclusive range delete, so we should not delete 20.
@@ -244,7 +249,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeExclusive) {
       CreateKey(0), CreateKey(20),
       LevelDBScopeDeletionMode::kImmediateWithRangeEndExclusive);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Check that keys 0-20 (exclusive) are gone, but 20 still exists.
@@ -276,7 +281,8 @@ TEST_F(LevelDBScopeTest, DeleteRangeInclusive) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   // Create values for keys 0-20, inclusive.
   std::string value;
@@ -288,7 +294,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeInclusive) {
     s = scope->Put(key, value);
     EXPECT_TRUE(s.ok());
   }
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Do an inclusive delete range, so key 20 should be deleted.
@@ -298,7 +304,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeInclusive) {
       CreateKey(0), CreateKey(20),
       LevelDBScopeDeletionMode::kImmediateWithRangeEndInclusive);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Check that keys 0-20 (inclusive) are gone, including 20.
@@ -324,7 +330,8 @@ TEST_F(LevelDBScopeTest, DeleteRangeDeferred) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   std::string value;
   auto scope = scopes.CreateScope(
@@ -335,7 +342,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeDeferred) {
     s = scope->Put(key, value);
     EXPECT_TRUE(s.ok());
   }
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   scope = scopes.CreateScope(
@@ -343,7 +350,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeDeferred) {
   s = scope->DeleteRange(CreateKey(0), CreateKey(20),
                          LevelDBScopeDeletionMode::kDeferred);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Wait until cleanup task runs.
@@ -374,7 +381,8 @@ TEST_F(LevelDBScopeTest, DeleteRangeCompact) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   std::string value;
   auto scope = scopes.CreateScope(
@@ -385,7 +393,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeCompact) {
     s = scope->Put(key, value);
     EXPECT_TRUE(s.ok());
   }
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   scope = scopes.CreateScope(
@@ -393,7 +401,7 @@ TEST_F(LevelDBScopeTest, DeleteRangeCompact) {
   s = scope->DeleteRange(CreateKey(0), CreateKey(20),
                          LevelDBScopeDeletionMode::kDeferredWithCompaction);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Wait until cleanup task runs.
@@ -423,7 +431,8 @@ TEST_F(LevelDBScopeTest, RevertWithDeferredDelete) {
           [&failure_status](leveldb::Status s) { failure_status = s; }));
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   // This test makes sure that the cleanup scheduled after the revert doesn't
   // execute it's cleanup tasks.
@@ -438,7 +447,7 @@ TEST_F(LevelDBScopeTest, RevertWithDeferredDelete) {
     s = scope->Put(key, value);
     EXPECT_TRUE(s.ok());
   }
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
 
   // Do a deferred delete & a write large enough to make this a log-based scope,
@@ -495,7 +504,8 @@ TEST_F(LevelDBScopeTest, EmptyRangeRevert) {
       {CreateKey(0), CreateKey(10)}, {CreateKey(30), CreateKey(50)}};
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}),
       std::move(empty_ranges));
@@ -550,7 +560,8 @@ TEST_F(LevelDBScopeTest, BrokenDBForCommit) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}), {});
 
@@ -560,7 +571,7 @@ TEST_F(LevelDBScopeTest, BrokenDBForCommit) {
   std::string key = CreateKey(0);
   s = scope->Put(key, value);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_EQ(s.ToString(), error.ToString());
   EXPECT_TRUE(failure_status.ok());
 }
@@ -578,7 +589,8 @@ TEST_F(LevelDBScopeTest, BrokenDBForCleanup) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}), {});
 
@@ -587,7 +599,7 @@ TEST_F(LevelDBScopeTest, BrokenDBForCleanup) {
   std::string key = CreateKey(0);
   s = scope->Put(key, value);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   // Break the database, which should hopefully effect the cleanup task.
   std::move(break_db).Run(error);
   EXPECT_TRUE(s.ok());
@@ -614,7 +626,8 @@ TEST_F(LevelDBScopeTest, BrokenDBForRevert) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}), {});
 
@@ -647,7 +660,8 @@ TEST_F(LevelDBScopeTest, DeleteNonExistentRangeDoesNotWrite) {
 
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
-  scopes.StartRecoveryAndCleanupTasks();
+  scopes.StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   auto scope = scopes.CreateScope(
       AcquireLocksSync(&lock_manager, {CreateSimpleExclusiveLock()}), {});
@@ -655,7 +669,7 @@ TEST_F(LevelDBScopeTest, DeleteNonExistentRangeDoesNotWrite) {
   s = scope->DeleteRange(
       "b1", "b2", LevelDBScopeDeletionMode::kImmediateWithRangeEndInclusive);
   EXPECT_TRUE(s.ok());
-  s = scopes.Commit(std::move(scope));
+  s = scopes.Commit(std::move(scope), /*sync_on_commit=*/false);
   EXPECT_TRUE(s.ok());
   EXPECT_TRUE(failure_status.ok());
 }

@@ -59,13 +59,18 @@ std::string DownloadManagerDelegate::ApplicationClientIdForFileScanning() {
 }
 
 void DownloadManagerDelegate::CheckDownloadAllowed(
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
     CheckDownloadAllowedCallback check_download_allowed_cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(check_download_allowed_cb), true));
+}
+
+download::QuarantineConnectionCallback
+DownloadManagerDelegate::GetQuarantineConnectionCallback() {
+  return base::NullCallback();
 }
 
 DownloadManagerDelegate::~DownloadManagerDelegate() {}

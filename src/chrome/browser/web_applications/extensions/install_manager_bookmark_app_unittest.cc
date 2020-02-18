@@ -15,8 +15,6 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
-#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -26,6 +24,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -107,8 +106,9 @@ class BookmarkAppInstallFinalizerInstallOnly
         FROM_HERE,
         base::BindOnce(std::move(callback), true /*shortcuts_created*/));
   }
-  void PinAppToShelf(const web_app::AppId& app_id) override {}
+  void AddAppToQuickLaunchBar(const web_app::AppId& app_id) override {}
   void ReparentTab(const web_app::AppId& app_id,
+                   bool shortcut_created,
                    content::WebContents* web_contents) override {}
   void RevealAppShim(const web_app::AppId& app_id) override {}
 };
@@ -119,7 +119,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
  public:
   InstallManagerBookmarkAppTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsUnifiedInstall}, {});
+        {}, {features::kDesktopPWAsWithoutExtensions});
   }
 
   ~InstallManagerBookmarkAppTest() override = default;
@@ -260,7 +260,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -272,18 +272,20 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     return extension;
   }
 
-  const Extension* InstallWebAppWithOptions(
-      const web_app::ExternalInstallOptions& install_options) {
+  const Extension* InstallWebAppWithParams(
+      WebappInstallSource install_source,
+      web_app::InstallManager::InstallParams install_params =
+          web_app::InstallManager::InstallParams{}) {
     base::RunLoop run_loop;
     web_app::AppId app_id;
 
     auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
 
-    provider->install_manager().InstallWebAppWithOptions(
-        web_contents(), install_options,
+    provider->install_manager().InstallWebAppWithParams(
+        web_contents(), install_params, install_source,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -344,11 +346,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
-  web_app::ExternalInstallOptions install_options{
-      kAppUrl, web_app::LaunchContainer::kDefault,
-      web_app::ExternalInstallSource::kExternalDefault};
-
-  const Extension* extension = InstallWebAppWithOptions(install_options);
+  const Extension* extension =
+      InstallWebAppWithParams(WebappInstallSource::EXTERNAL_DEFAULT);
 
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_TRUE(extension->was_installed_by_default());
@@ -364,11 +363,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppPolicyInstalled) {
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
-  web_app::ExternalInstallOptions install_options{
-      kAppUrl, web_app::LaunchContainer::kDefault,
-      web_app::ExternalInstallSource::kExternalPolicy};
-
-  const Extension* extension = InstallWebAppWithOptions(install_options);
+  const Extension* extension =
+      InstallWebAppWithParams(WebappInstallSource::EXTERNAL_POLICY);
 
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_FALSE(extension->was_installed_by_default());
@@ -539,11 +535,11 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*open_as_window=*/true,
                                            /*is_installable=*/true);
 
-    web_app::ExternalInstallOptions install_options{
-        app_url, web_app::LaunchContainer::kTab,
-        web_app::ExternalInstallSource::kInternalDefault};
+    web_app::InstallManager::InstallParams params;
+    params.launch_container = web_app::LaunchContainer::kTab;
 
-    const Extension* extension = InstallWebAppWithOptions(install_options);
+    const Extension* extension =
+        InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);
 
     EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
@@ -552,11 +548,11 @@ TEST_F(InstallManagerBookmarkAppTest,
     CreateDataRetrieverWithLaunchContainer(kAppUrl, /*open_as_window=*/false,
                                            /*is_installable=*/false);
 
-    web_app::ExternalInstallOptions install_options{
-        kAppUrl, web_app::LaunchContainer::kWindow,
-        web_app::ExternalInstallSource::kInternalDefault};
+    web_app::InstallManager::InstallParams params;
+    params.launch_container = web_app::LaunchContainer::kWindow;
 
-    const Extension* extension = InstallWebAppWithOptions(install_options);
+    const Extension* extension =
+        InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);
 
     EXPECT_EQ(LaunchContainer::kLaunchContainerWindow,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
@@ -601,11 +597,11 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
 
   provider->install_manager().InstallWebAppFromInfo(
-      std::move(web_app_info), /*no_network_install=*/false,
+      std::move(web_app_info), web_app::ForInstallableSite::kYes,
       WebappInstallSource::ARC,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
         app_id = installed_app_id;
         run_loop.Quit();
       }));
@@ -670,7 +666,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
         app_id, std::move(web_app_info),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -716,7 +712,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
         app_id, std::move(web_app_info2),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           EXPECT_EQ(app_id, installed_app_id);
           run_loop.Quit();
         }));
@@ -740,7 +736,8 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
-    EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
+    EXPECT_EQ(expect_locally_installed,
+              BookmarkAppIsLocallyInstalled(profile(), extension));
   }
 }
 

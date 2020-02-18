@@ -12,7 +12,9 @@
 #include "build/build_config.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
+#include "content/browser/worker_host/test_shared_worker_service_impl.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/storage_partition.h"
@@ -87,18 +89,17 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
   return render_view_proxy;
 }
 
-scoped_refptr<RenderWidget> CreateRenderWidgetForFrame(
+std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool swapped_out,
-    bool hidden,
     bool never_visible,
     mojom::WidgetRequest widget_request) {
-  return base::MakeRefCounted<test_runner::WebWidgetTestProxy>(
+  return std::make_unique<test_runner::WebWidgetTestProxy>(
       routing_id, compositor_deps, screen_info, display_mode, swapped_out,
-      hidden, never_visible, std::move(widget_request));
+      /*hidden=*/true, never_visible, std::move(widget_request));
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
@@ -177,11 +178,22 @@ void EnableBrowserWebTestMode() {
   RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }
 
-void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
-                                         base::OnceClosure callback) {
-  static_cast<SharedWorkerServiceImpl*>(
+void InjectTestSharedWorkerService(StoragePartition* storage_partition) {
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(storage_partition);
+
+  storage_partition_impl->OverrideSharedWorkerServiceForTesting(
+      std::make_unique<TestSharedWorkerServiceImpl>(
+          storage_partition_impl,
+          storage_partition_impl->GetServiceWorkerContext(),
+          storage_partition_impl->GetAppCacheService()));
+}
+
+void TerminateAllSharedWorkers(StoragePartition* storage_partition,
+                               base::OnceClosure callback) {
+  static_cast<TestSharedWorkerServiceImpl*>(
       storage_partition->GetSharedWorkerService())
-      ->TerminateAllWorkersForTesting(std::move(callback));
+      ->TerminateAllWorkers(std::move(callback));
 }
 
 int GetLocalSessionHistoryLength(RenderView* render_view) {

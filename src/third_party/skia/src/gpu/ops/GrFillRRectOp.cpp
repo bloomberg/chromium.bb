@@ -10,9 +10,9 @@
 #include "include/private/GrRecordingContext.h"
 #include "src/core/SkRRectPriv.h"
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/GrGpuCommandBuffer.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
@@ -738,8 +738,8 @@ void GrFillRRectOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBou
         return;
     }
 
-    Processor proc(fAAType, fFlags);
-    SkASSERT(proc.instanceStride() == (size_t)fInstanceStride);
+    Processor* proc = flushState->allocator()->make<Processor>(fAAType, fFlags);
+    SkASSERT(proc->instanceStride() == (size_t)fInstanceStride);
 
     GrPipeline::InitArgs initArgs;
     if (GrAAType::kMSAA == fAAType) {
@@ -749,16 +749,19 @@ void GrFillRRectOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBou
     initArgs.fDstProxy = flushState->drawOpArgs().fDstProxy;
     initArgs.fOutputSwizzle = flushState->drawOpArgs().fOutputSwizzle;
     auto clip = flushState->detachAppliedClip();
-    GrPipeline::FixedDynamicState fixedDynamicState(clip.scissorState().rect());
-    GrPipeline pipeline(initArgs, std::move(fProcessors), std::move(clip));
+    GrPipeline::FixedDynamicState* fixedDynamicState =
+        flushState->allocator()->make<GrPipeline::FixedDynamicState>(clip.scissorState().rect());
+    GrPipeline* pipeline = flushState->allocator()->make<GrPipeline>(initArgs,
+                                                                     std::move(fProcessors),
+                                                                     std::move(clip));
 
-    GrMesh mesh(GrPrimitiveType::kTriangles);
-    mesh.setIndexedInstanced(
+    GrMesh* mesh = flushState->allocator()->make<GrMesh>(GrPrimitiveType::kTriangles);
+    mesh->setIndexedInstanced(
             std::move(indexBuffer), indexCount, fInstanceBuffer, fInstanceCount, fBaseInstance,
             GrPrimitiveRestart::kNo);
-    mesh.setVertexData(std::move(vertexBuffer));
-    flushState->rtCommandBuffer()->draw(
-            proc, pipeline, &fixedDynamicState, nullptr, &mesh, 1, this->bounds());
+    mesh->setVertexData(std::move(vertexBuffer));
+    flushState->opsRenderPass()->draw(
+            *proc, *pipeline, fixedDynamicState, nullptr, mesh, 1, this->bounds());
 }
 
 // Will the given corner look good if we use HW derivatives?
@@ -817,5 +820,4 @@ static bool can_use_hw_derivatives_with_coverage(
         }
     }
     SK_ABORT("Invalid round rect type.");
-    return false;  // Add this return to keep GCC happy.
 }

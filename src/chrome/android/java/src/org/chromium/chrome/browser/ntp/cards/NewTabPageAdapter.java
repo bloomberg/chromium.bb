@@ -113,8 +113,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mFooter = new Footer();
 
         int sectionDelay = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
-                "artificial_legacy_ntp_delay_ms", 0);
+                ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS, "artificial_legacy_ntp_delay_ms", 0);
         Runnable addSectionAndFooter = () -> {
             mRoot.addChildren(mSections);
             mRoot.addChildren(mFooter);
@@ -229,7 +228,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // context menu.
         mFooter.setVisible(!SuggestionsConfig.scrollToLoad()
                 && (areRemoteSuggestionsEnabled || isArticleSectionVisible)
-                && SuggestionsConfig.isTouchless());
+                && !SuggestionsConfig.isTouchless());
     }
 
     private boolean areArticlesLoading() {

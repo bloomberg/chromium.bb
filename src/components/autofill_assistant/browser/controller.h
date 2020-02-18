@@ -17,7 +17,6 @@
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/metrics.h"
-#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
@@ -26,7 +25,8 @@
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_action.h"
-#include "components/autofill_assistant/browser/web_controller.h"
+#include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -96,7 +96,9 @@ class Controller : public ScriptExecutorDelegate,
   ClientMemory* GetClientMemory() override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
+  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
+  std::string GetAccountEmailAddress() override;
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;
@@ -125,8 +127,9 @@ class Controller : public ScriptExecutorDelegate,
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void EnterState(AutofillAssistantState state) override;
-  void SetPaymentRequestOptions(
-      std::unique_ptr<PaymentRequestOptions> options) override;
+  void SetCollectUserDataOptions(
+      std::unique_ptr<CollectUserDataOptions> options,
+      std::unique_ptr<UserData> information) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 
@@ -143,18 +146,16 @@ class Controller : public ScriptExecutorDelegate,
       int index,
       std::unique_ptr<TriggerContext> context) override;
   std::string GetDebugContext() override;
-  const PaymentRequestOptions* GetPaymentRequestOptions() const override;
-  const PaymentInformation* GetPaymentRequestInformation() const override;
+  const CollectUserDataOptions* GetCollectUserDataOptions() const override;
+  const UserData* GetUserData() const override;
   void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) override;
-  void SetBillingAddress(
-      std::unique_ptr<autofill::AutofillProfile> address) override;
-  void SetContactInfo(std::string name,
-                      std::string phone,
-                      std::string email) override;
+  void SetContactInfo(
+      std::unique_ptr<autofill::AutofillProfile> profile) override;
   void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
+  void SetLoginOption(std::string identifier) override;
   void OnTermsAndConditionsLinkClicked(int link) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
@@ -166,6 +167,7 @@ class Controller : public ScriptExecutorDelegate,
   ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   void GetOverlayColors(OverlayColors* colors) const override;
+  const ClientSettings& GetClientSettings() const override;
   const FormProto* GetForm() const override;
   void SetCounterValue(int input_index, int counter_index, int value) override;
   void SetChoiceSelected(int input_index,
@@ -224,9 +226,9 @@ class Controller : public ScriptExecutorDelegate,
   void OnScriptSelected(const ScriptHandle& handle,
                         std::unique_ptr<TriggerContext> context);
 
-  void UpdatePaymentRequestActions();
-  void OnPaymentRequestContinueButtonClicked();
-  void OnPaymentRequestAdditionalActionTriggered(int index);
+  void UpdateCollectUserDataActions();
+  void OnCollectUserDataContinueButtonClicked();
+  void OnCollectUserDataAdditionalActionTriggered(int index);
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsForPage() override;
@@ -337,8 +339,8 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<OverlayColors> overlay_colors_;
 
-  std::unique_ptr<PaymentRequestOptions> payment_request_options_;
-  std::unique_ptr<PaymentInformation> payment_request_info_;
+  std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;
+  std::unique_ptr<UserData> user_data_;
 
   std::unique_ptr<FormProto> form_;
   std::unique_ptr<FormProto::Result> form_result_;
@@ -388,7 +390,7 @@ class Controller : public ScriptExecutorDelegate,
   // taken.
   base::Optional<Metrics::DropOutReason> delayed_shutdown_reason_;
 
-  base::WeakPtrFactory<Controller> weak_ptr_factory_;
+  base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };

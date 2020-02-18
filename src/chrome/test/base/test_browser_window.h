@@ -99,7 +99,7 @@ class TestBrowserWindow : public BrowserWindow {
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}
-  void UpdateToolbarVisibility(bool visible, bool animate) override {}
+  void UpdateCustomTabBarVisibility(bool visible, bool animate) override {}
   void ResetToolbarTabState(content::WebContents* contents) override {}
   void FocusToolbar() override {}
   ToolbarActionsBar* GetToolbarActionsBar() override;
@@ -120,15 +120,15 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
-  ClickToCallDialog* ShowClickToCallDialog(
-      content::WebContents* contents,
-      ClickToCallSharingDialogController* controller) override;
+  SharingDialog* ShowSharingDialog(content::WebContents* contents,
+                                   SharingUiController* controller) override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
 #if !defined(OS_ANDROID)
   void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
-                              bool enable_stay_in_chrome,
-                              bool show_persistence_options,
+                              bool show_stay_in_chrome,
+                              bool show_remember_selection,
+                              PageActionIconType icon_type,
                               IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
@@ -159,7 +159,7 @@ class TestBrowserWindow : public BrowserWindow {
   DownloadShelf* GetDownloadShelf() override;
   void ConfirmBrowserCloseWithPendingDownloads(
       int download_count,
-      Browser::DownloadClosePreventionType dialog_type,
+      Browser::DownloadCloseType dialog_type,
       bool app_modal,
       const base::Callback<void(bool)>& callback) override {}
   void UserChangedTheme(BrowserThemeChangeType theme_change_type) override {}
@@ -169,13 +169,12 @@ class TestBrowserWindow : public BrowserWindow {
       override;
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override {}
 
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_LINUX)
-  void ShowHatsBubbleFromAppMenuButton() override {}
+  void ShowHatsBubble(const std::string& site_id) override {}
 #endif
 
   void ExecuteExtensionCommand(const extensions::Extension* extension,

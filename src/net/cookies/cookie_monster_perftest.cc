@@ -7,14 +7,17 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"
+#include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -29,10 +32,11 @@ const char kGoogleURL[] = "http://www.foo.com";
 
 class CookieMonsterTest : public testing::Test {
  public:
-  CookieMonsterTest() : message_loop_(new base::MessageLoopForIO()) {}
+  CookieMonsterTest() {}
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 };
 
 class CookieTestCallback {
@@ -60,16 +64,18 @@ class SetCookieCallback : public CookieTestCallback {
  public:
   void SetCookie(CookieMonster* cm,
                  const GURL& gurl,
-                 const std::string& cookie) {
-    cm->SetCookieWithOptionsAsync(
-        gurl, cookie, options_,
+                 const std::string& cookie_line) {
+    auto cookie = CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(),
+                                          base::nullopt /* server_time */);
+    cm->SetCanonicalCookieAsync(
+        std::move(cookie), gurl.scheme(), options_,
         base::BindOnce(&SetCookieCallback::Run, base::Unretained(this)));
     WaitForCallback();
   }
 
  private:
   void Run(CanonicalCookie::CookieInclusionStatus status) {
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
+    EXPECT_TRUE(status.IsInclude());
     CookieTestCallback::Run();
   }
   CookieOptions options_;
@@ -86,9 +92,9 @@ class GetCookieListCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(const CookieList& cookie_list,
+  void Run(const CookieStatusList& cookie_list,
            const CookieStatusList& excluded_cookies) {
-    cookie_list_ = cookie_list;
+    cookie_list_ = cookie_util::StripStatuses(cookie_list);
     CookieTestCallback::Run();
   }
   CookieList cookie_list_;
@@ -105,8 +111,7 @@ class GetAllCookiesCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(const CookieList& cookies,
-           const CookieStatusList& excluded_cookies) {
+  void Run(const CookieList& cookies) {
     cookies_ = cookies;
     CookieTestCallback::Run();
   }

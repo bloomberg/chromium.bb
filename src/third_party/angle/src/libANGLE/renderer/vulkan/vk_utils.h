@@ -27,7 +27,9 @@
     PROC(Framebuffer)            \
     PROC(MemoryObject)           \
     PROC(Query)                  \
+    PROC(Overlay)                \
     PROC(Program)                \
+    PROC(Sampler)                \
     PROC(Semaphore)              \
     PROC(Texture)                \
     PROC(TransformFeedback)      \
@@ -44,6 +46,7 @@ class Image;
 namespace gl
 {
 struct Box;
+class DummyOverlay;
 struct Extents;
 struct RasterizerState;
 struct Rectangle;
@@ -86,9 +89,6 @@ bool GetAvailableValidationLayers(const std::vector<VkLayerProperties> &layerPro
                                   bool mustHaveLayers,
                                   VulkanLayerVector *enabledLayerNames);
 
-extern const char *g_VkLoaderLayersPathEnv;
-extern const char *g_VkICDPathEnv;
-
 enum class TextureDimension
 {
     TEX_2D,
@@ -100,6 +100,15 @@ enum class TextureDimension
 namespace vk
 {
 struct Format;
+
+extern const char *gLoaderLayersPathEnv;
+extern const char *gLoaderICDFilenamesEnv;
+
+enum class ICD
+{
+    Default,
+    Mock,
+};
 
 // Abstracts error handling. Implemented by both ContextVk for GL and DisplayVk for EGL errors.
 class Context : angle::NonCopyable
@@ -129,7 +138,6 @@ using PrimaryCommandBuffer = priv::CommandBuffer;
 
 VkImageAspectFlags GetDepthStencilAspectFlags(const angle::Format &format);
 VkImageAspectFlags GetFormatAspectFlags(const angle::Format &format);
-VkImageAspectFlags GetDepthStencilAspectFlagsForCopy(bool copyDepth, bool copyStencil);
 
 template <typename T>
 struct ImplTypeHelper;
@@ -144,6 +152,12 @@ struct ImplTypeHelper<gl::OBJ>         \
 // clang-format on
 
 ANGLE_GL_OBJECTS_X(ANGLE_IMPL_TYPE_HELPER_GL)
+
+template <>
+struct ImplTypeHelper<gl::DummyOverlay>
+{
+    using ImplType = OverlayVk;
+};
 
 template <>
 struct ImplTypeHelper<egl::Display>
@@ -164,6 +178,12 @@ template <typename T>
 GetImplType<T> *GetImpl(const T *glObject)
 {
     return GetImplAs<GetImplType<T>>(glObject);
+}
+
+template <>
+inline OverlayVk *GetImpl(const gl::DummyOverlay *glObject)
+{
+    return nullptr;
 }
 
 class GarbageObjectBase
@@ -317,11 +337,11 @@ enum class RecordingMode
 // Helper class to handle RAII patterns for initialization. Requires that T have a destroy method
 // that takes a VkDevice and returns void.
 template <typename T>
-class Scoped final : angle::NonCopyable
+class DeviceScoped final : angle::NonCopyable
 {
   public:
-    Scoped(VkDevice device) : mDevice(device) {}
-    ~Scoped() { mVar.destroy(mDevice); }
+    DeviceScoped(VkDevice device) : mDevice(device) {}
+    ~DeviceScoped() { mVar.destroy(mDevice); }
 
     const T &get() const { return mVar; }
     T &get() { return mVar; }
@@ -330,6 +350,25 @@ class Scoped final : angle::NonCopyable
 
   private:
     VkDevice mDevice;
+    T mVar;
+};
+
+// Similar to DeviceScoped, but releases objects instead of destroying them. Requires that T have a
+// release method that takes a ContextVk * and returns void.
+template <typename T>
+class ContextScoped final : angle::NonCopyable
+{
+  public:
+    ContextScoped(ContextVk *contextVk) : mContextVk(contextVk) {}
+    ~ContextScoped() { mVar.release(mContextVk); }
+
+    const T &get() const { return mVar; }
+    T &get() { return mVar; }
+
+    T &&release() { return std::move(mVar); }
+
+  private:
+    ContextVk *mContextVk;
     T mVar;
 };
 
@@ -468,7 +507,7 @@ class Shared final : angle::NonCopyable
             if (!mRefCounted->isReferenced())
             {
                 ASSERT(mRefCounted->get().valid());
-                recycler->recyle(std::move(mRefCounted->get()));
+                recycler->recycle(std::move(mRefCounted->get()));
                 SafeDelete(mRefCounted);
             }
 
@@ -505,9 +544,9 @@ class Recycler final : angle::NonCopyable
   public:
     Recycler() = default;
 
-    void recyle(T &&garbageObject) { mObjectFreeList.emplace_back(std::move(garbageObject)); }
+    void recycle(T &&garbageObject) { mObjectFreeList.emplace_back(std::move(garbageObject)); }
 
-    void fetch(VkDevice device, T *outObject)
+    void fetch(T *outObject)
     {
         ASSERT(!empty());
         *outObject = std::move(mObjectFreeList.back());
@@ -527,6 +566,14 @@ class Recycler final : angle::NonCopyable
   private:
     std::vector<T> mObjectFreeList;
 };
+
+bool SamplerNameContainsNonZeroArrayElement(const std::string &name);
+std::string GetMappedSamplerName(const std::string &originalName);
+
+// A vector of image views, such as one per level or one per layer.
+using ImageViewVector = std::vector<vk::ImageView>;
+// A vector of vector of image views.  Primary index is layer, secondary index is level.
+using LayerLevelImageViewVector = std::vector<ImageViewVector>;
 
 }  // namespace vk
 
@@ -575,7 +622,7 @@ VkFilter GetFilter(const GLenum filter);
 VkSamplerMipmapMode GetSamplerMipmapMode(const GLenum filter);
 VkSamplerAddressMode GetSamplerAddressMode(const GLenum wrap);
 VkPrimitiveTopology GetPrimitiveTopology(gl::PrimitiveMode mode);
-VkCullModeFlags GetCullMode(const gl::RasterizerState &rasterState);
+VkCullModeFlagBits GetCullMode(const gl::RasterizerState &rasterState);
 VkFrontFace GetFrontFace(GLenum frontFace, bool invertCullFace);
 VkSampleCountFlagBits GetSamples(GLint sampleCount);
 VkComponentSwizzle GetSwizzle(const GLenum swizzle);
@@ -607,6 +654,11 @@ void GetViewport(const gl::Rectangle &viewport,
                  bool invertViewport,
                  GLint renderAreaHeight,
                  VkViewport *viewportOut);
+
+void GetExtentsAndLayerCount(gl::TextureType textureType,
+                             const gl::Extents &extents,
+                             VkExtent3D *extentsOut,
+                             uint32_t *layerCountOut);
 }  // namespace gl_vk
 
 namespace vk_gl

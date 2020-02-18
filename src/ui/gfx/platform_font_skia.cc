@@ -25,6 +25,10 @@
 #include "ui/gfx/skia_font_delegate.h"
 #include "ui/gfx/text_utils.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/system_fonts_win.h"
+#endif
+
 namespace gfx {
 namespace {
 
@@ -119,6 +123,18 @@ bool PlatformFontSkia::InitDefaultFont() {
   Font::Weight weight = Font::Weight::NORMAL;
   FontRenderParams params;
 
+#if defined(OS_WIN)
+  // On windows, the system default font is retrieved by using the GDI API
+  // SystemParametersInfo(...) (see struct NONCLIENTMETRICS). The font
+  // properties need to be converted as close as possible to a skia font.
+  // The style must be kept (see http://crbug/989476).
+  gfx::Font system_font = win::GetDefaultSystemFont();
+  family = system_font.GetFontName();
+  size_pixels = system_font.GetFontSize();
+  style = system_font.GetStyle();
+  weight = system_font.GetWeight();
+#endif  // OS_WIN
+
   // On Linux, SkiaFontDelegate is used to query the native toolkit (e.g.
   // GTK+) for the default UI font.
   const SkiaFontDelegate* delegate = SkiaFontDelegate::instance();
@@ -170,7 +186,12 @@ void PlatformFontSkia::SetDefaultFontDescription(
 Font PlatformFontSkia::DeriveFont(int size_delta,
                                   int style,
                                   Font::Weight weight) const {
+#if defined(OS_WIN)
+  const int new_size = win::AdjustFontSize(font_size_pixels_, size_delta);
+#else
   const int new_size = font_size_pixels_ + size_delta;
+#endif
+
   DCHECK_GT(new_size, 0);
 
   // If the style changed, we may need to load a new face.
@@ -228,7 +249,7 @@ const std::string& PlatformFontSkia::GetFontName() const {
   return font_family_;
 }
 
-std::string PlatformFontSkia::GetActualFontNameForTesting() const {
+std::string PlatformFontSkia::GetActualFontName() const {
   SkString family_name;
   typeface_->getFamilyName(&family_name);
   return family_name.c_str();
@@ -342,8 +363,20 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
     SkFontMetrics metrics;
     font.getMetrics(&metrics);
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
-    height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
     cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
+
+    // There is a mismatch between the way the PlatformFontWin was computing the
+    // font height in pixel. The font height may vary by one pixel due to
+    // decimal rounding.
+    //     Windows Skia implements : ceil(descent - ascent)
+    //     Linux Skia implements   : ceil(-ascent) + ceil(descent)
+    // TODO(etienneb): Make both implementation consistent and fix the broken
+    // unittests.
+#if defined(OS_WIN)
+    height_pixels_ = SkScalarCeilToInt(metrics.fDescent - metrics.fAscent);
+#else
+    height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
+#endif
 
     if (metrics.fAvgCharWidth) {
       average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);

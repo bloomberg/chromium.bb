@@ -41,7 +41,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.assertCommandContains(git_cmd.split(' '))
 
   def testCheckout(self):
-    "Tests checkout with mocked out git."
+    """Tests checkout with mocked out git."""
     self.committer.Checkout(['OWNERS'])
 
     self._assertCommand('git init')

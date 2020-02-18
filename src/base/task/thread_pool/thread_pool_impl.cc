@@ -14,10 +14,11 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/pooled_parallel_task_runner.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
@@ -27,7 +28,6 @@
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/thread_group_impl.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 
 #if defined(OS_WIN)
@@ -64,14 +64,11 @@ bool HasDisableBestEffortTasksSwitch() {
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
     : ThreadPoolImpl(histogram_label,
-                     std::make_unique<TaskTrackerImpl>(histogram_label),
-                     DefaultTickClock::GetInstance()) {}
+                     std::make_unique<TaskTrackerImpl>(histogram_label)) {}
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
-                               std::unique_ptr<TaskTrackerImpl> task_tracker,
-                               const TickClock* tick_clock)
-    : thread_pool_clock_(tick_clock),
-      task_tracker_(std::move(task_tracker)),
+                               std::unique_ptr<TaskTrackerImpl> task_tracker)
+    : task_tracker_(std::move(task_tracker)),
       service_thread_(std::make_unique<ServiceThread>(
           task_tracker_.get(),
           BindRepeating(&ThreadPoolImpl::ReportHeartbeatMetrics,
@@ -142,11 +139,11 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
   // SFI), the service thread runs a MessageLoopForIO which is used to support
   // FileDescriptorWatcher in the scope in which tasks run.
   ServiceThread::Options service_thread_options;
-  service_thread_options.message_loop_type =
+  service_thread_options.message_pump_type =
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      MessageLoop::TYPE_IO;
+      MessagePumpType::IO;
 #else
-      MessageLoop::TYPE_DEFAULT;
+      MessagePumpType::DEFAULT;
 #endif
   service_thread_options.timer_slack = TIMER_SLACK_MAXIMUM;
   CHECK(service_thread_->StartWithOptions(service_thread_options));
@@ -269,7 +266,7 @@ ThreadPoolImpl::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
 
 Optional<TimeTicks> ThreadPoolImpl::NextScheduledRunTimeForTesting() const {
   if (task_tracker_->HasIncompleteTaskSourcesForTesting())
-    return ThreadPoolClock::Now();
+    return TimeTicks::Now();
   return delayed_task_manager_.NextScheduledRunTime();
 }
 
@@ -353,12 +350,13 @@ bool ThreadPoolImpl::PostTaskWithSequenceNow(Task task,
   const bool sequence_should_be_queued = transaction.WillPushTask();
   RegisteredTaskSource task_source;
   if (sequence_should_be_queued) {
-    task_source = task_tracker_->WillQueueTaskSource(sequence);
+    task_source = task_tracker_->RegisterTaskSource(sequence);
     // We shouldn't push |task| if we're not allowed to queue |task_source|.
     if (!task_source)
       return false;
   }
-  task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
+  if (!task_tracker_->WillPostTaskNow(task, transaction.traits().priority()))
+    return false;
   transaction.PushTask(std::move(task));
   if (task_source) {
     const TaskTraits traits = transaction.traits();
@@ -399,13 +397,26 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
   return true;
 }
 
+bool ThreadPoolImpl::ShouldYield(const TaskSource* task_source) const {
+  const TaskPriority priority = task_source->priority_racy();
+  auto* const thread_group = GetThreadGroupForTraits(
+      {ThreadPool(), priority, task_source->thread_policy()});
+  // A task whose priority changed and is now running in the wrong thread group
+  // should yield so it's rescheduled in the right one.
+  if (!thread_group->IsBoundToCurrentThread())
+    return true;
+  return GetThreadGroupForTraits(
+             {ThreadPool(), priority, task_source->thread_policy()})
+      ->ShouldYield(priority);
+}
+
 bool ThreadPoolImpl::EnqueueJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
   auto registered_task_source =
-      task_tracker_->WillQueueTaskSource(std::move(task_source));
-  if (registered_task_source)
+      task_tracker_->RegisterTaskSource(std::move(task_source));
+  if (!registered_task_source)
     return false;
-  auto transaction = task_source->BeginTransaction();
+  auto transaction = registered_task_source->BeginTransaction();
   const TaskTraits traits = transaction.traits();
   GetThreadGroupForTraits(traits)->PushTaskSourceAndWakeUpWorkers(
       {std::move(registered_task_source), std::move(transaction)});
@@ -439,8 +450,7 @@ void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
   if (new_thread_group == current_thread_group) {
     // |task_source|'s position needs to be updated within its current thread
     // group.
-    current_thread_group->UpdateSortKey(
-        {std::move(task_source), std::move(transaction)});
+    current_thread_group->UpdateSortKey(std::move(transaction));
   } else {
     // |task_source| is changing thread groups; remove it from its current
     // thread group and reenqueue it.

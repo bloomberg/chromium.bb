@@ -631,6 +631,12 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // MediaTransportFactory wasn't provided.
     absl::optional<bool> use_datagram_transport;
 
+    // If MediaTransportFactory is provided in PeerConnectionFactory, this flag
+    // informs PeerConnection that it should use the DatagramTransport's
+    // implementation of DataChannelTransportInterface for data channels instead
+    // of SCTP-DTLS.
+    absl::optional<bool> use_datagram_transport_for_data_channels;
+
     // Defines advanced optional cryptographic settings related to SRTP and
     // frame encryption for native WebRTC. Setting this will overwrite any
     // settings set in PeerConnectionFactory (which is deprecated).
@@ -643,6 +649,12 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // TODO(webrtc:9985): Change default to true once sufficient time has
     // passed.
     bool offer_extmap_allow_mixed = false;
+
+    // TURN logging identifier.
+    // This identifier is added to a TURN allocation
+    // and it intended to be used to be able to match client side
+    // logs with TURN server logs. It will not be added if it's an empty string.
+    std::string turn_logging_id;
 
     //
     // Don't forget to update operator== if adding something.
@@ -996,15 +1008,9 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   // - INVALID_PARAMETER if a TURN server is missing |username| or |password|.
   // - INTERNAL_ERROR if an unexpected error occurred.
   //
-  // TODO(deadbeef): Make this pure virtual once all Chrome subclasses of
+  // TODO(nisse): Make this pure virtual once all Chrome subclasses of
   // PeerConnectionInterface implement it.
-  virtual bool SetConfiguration(
-      const PeerConnectionInterface::RTCConfiguration& config,
-      RTCError* error);
-
-  // Version without error output param for backwards compatibility.
-  // TODO(deadbeef): Remove once chromium is updated.
-  virtual bool SetConfiguration(
+  virtual RTCError SetConfiguration(
       const PeerConnectionInterface::RTCConfiguration& config);
 
   // Provides a remote candidate to the ICE Agent.
@@ -1100,7 +1106,7 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   virtual bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output);
 
   // Stops logging the RtcEventLog.
-  // TODO(ivoc): Make this pure virtual when Chrome is updated.
+  // TODO(ivoc): Make this pure virtual when Chrome is updat ed.
   virtual void StopRtcEventLog() {}
 
   // Terminates all media, closes the transports, and in general releases any
@@ -1150,7 +1156,7 @@ class PeerConnectionObserver {
   //
   // TODO(jonasolsson): deprecate and remove this.
   virtual void OnIceConnectionChange(
-      PeerConnectionInterface::IceConnectionState new_state) = 0;
+      PeerConnectionInterface::IceConnectionState new_state) {}
 
   // Called any time the standards-compliant IceConnectionState changes.
   virtual void OnStandardizedIceConnectionChange(
@@ -1183,6 +1189,10 @@ class PeerConnectionObserver {
 
   // Called when the ICE connection receiving status changes.
   virtual void OnIceConnectionReceivingChange(bool receiving) {}
+
+  // Called when the selected candidate pair for the ICE connection changes.
+  virtual void OnIceSelectedCandidatePairChanged(
+      const cricket::CandidatePairChangeEvent& event) {}
 
   // This is called when a receiver and its track are created.
   // TODO(zhihuang): Make this pure virtual when all subclasses implement it.

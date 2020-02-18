@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
@@ -66,7 +66,7 @@ void MaterialDesignController::Initialize() {
   if (!touch && (switch_value != switches::kTopChromeTouchUiDisabled) &&
       features::IsAutomaticUiAdjustmentsForTouchEnabled()) {
 #if defined(OS_CHROMEOS)
-    // TabletModeClient's default state is in non-tablet mode.
+    // TabletModePageBehavior's default state is in non-tablet mode.
     automatic_touch_ui_ = true;
 #elif defined(OS_WIN)
     if (base::win::GetVersion() >= base::win::Version::WIN10) {

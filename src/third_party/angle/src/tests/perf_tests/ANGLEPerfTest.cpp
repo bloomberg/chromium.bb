@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -113,11 +113,10 @@ void UpdateTraceEventDuration(angle::PlatformMethods *platform,
 
 double MonotonicallyIncreasingTime(angle::PlatformMethods *platform)
 {
-    ANGLERenderTest *renderTest = static_cast<ANGLERenderTest *>(platform->context);
     // Move the time origin to the first call to this function, to avoid generating unnecessarily
     // large timestamps.
-    static double origin = renderTest->getTimer()->getAbsoluteTime();
-    return renderTest->getTimer()->getAbsoluteTime() - origin;
+    static double origin = angle::GetCurrentTime();
+    return angle::GetCurrentTime() - origin;
 }
 
 void DumpTraceEventsToJSONFile(const std::vector<TraceEvent> &traceEvents,
@@ -159,23 +158,34 @@ void DumpTraceEventsToJSONFile(const std::vector<TraceEvent> &traceEvents,
 }  // anonymous namespace
 
 ANGLEPerfTest::ANGLEPerfTest(const std::string &name,
-                             const std::string &suffix,
+                             const std::string &backend,
+                             const std::string &story,
                              unsigned int iterationsPerStep)
     : mName(name),
-      mSuffix(suffix),
-      mTimer(CreateTimer()),
+      mBackend(backend),
+      mStory(story),
       mGPUTimeNs(0),
       mSkipTest(false),
       mStepsToRun(std::numeric_limits<unsigned int>::max()),
       mNumStepsPerformed(0),
       mIterationsPerStep(iterationsPerStep),
       mRunning(true)
-{}
-
-ANGLEPerfTest::~ANGLEPerfTest()
 {
-    SafeDelete(mTimer);
+    if (mStory == "")
+    {
+        mStory = "baseline_story";
+    }
+    if (mStory[0] == '_')
+    {
+        mStory = mStory.substr(1);
+    }
+    mReporter = std::make_unique<perf_test::PerfResultReporter>(mName + mBackend, mStory);
+    mReporter->RegisterImportantMetric(".wall_time", "ns");
+    mReporter->RegisterImportantMetric(".gpu_time", "ns");
+    mReporter->RegisterFyiMetric(".steps", "count");
 }
+
+ANGLEPerfTest::~ANGLEPerfTest() {}
 
 void ANGLEPerfTest::run()
 {
@@ -190,13 +200,13 @@ void ANGLEPerfTest::run()
         doRunLoop(kCalibrationRunTimeSeconds);
 
         // Scale steps down according to the time that exeeded one second.
-        double scale = kCalibrationRunTimeSeconds / mTimer->getElapsedTime();
+        double scale = kCalibrationRunTimeSeconds / mTimer.getElapsedTime();
         mStepsToRun  = static_cast<size_t>(static_cast<double>(mNumStepsPerformed) * scale);
 
         // Calibration allows the perf test runner script to save some time.
         if (gCalibration)
         {
-            printResult("steps", static_cast<size_t>(mStepsToRun), "count", false);
+            mReporter->AddResult(".steps", static_cast<size_t>(mStepsToRun));
             return;
         }
     }
@@ -214,17 +224,13 @@ void ANGLEPerfTest::run()
         doRunLoop(kMaximumRunTimeSeconds);
         totalTime += printResults();
     }
-    double average = totalTime / kNumTrials;
-    std::ostringstream averageString;
-    averageString << "for " << kNumTrials << " runs";
-    printResult("average", average, averageString.str(), false);
 }
 
 void ANGLEPerfTest::doRunLoop(double maxRunTime)
 {
     mNumStepsPerformed = 0;
     mRunning           = true;
-    mTimer->start();
+    mTimer.start();
     startTest();
 
     while (mRunning)
@@ -233,7 +239,7 @@ void ANGLEPerfTest::doRunLoop(double maxRunTime)
         if (mRunning)
         {
             ++mNumStepsPerformed;
-            if (mTimer->getElapsedTime() > maxRunTime)
+            if (mTimer.getElapsedTime() > maxRunTime)
             {
                 mRunning = false;
             }
@@ -244,23 +250,7 @@ void ANGLEPerfTest::doRunLoop(double maxRunTime)
         }
     }
     finishTest();
-    mTimer->stop();
-}
-
-void ANGLEPerfTest::printResult(const std::string &trace,
-                                double value,
-                                const std::string &units,
-                                bool important) const
-{
-    perf_test::PrintResult(mName, mSuffix, trace, value, units, important);
-}
-
-void ANGLEPerfTest::printResult(const std::string &trace,
-                                size_t value,
-                                const std::string &units,
-                                bool important) const
-{
-    perf_test::PrintResult(mName, mSuffix, trace, value, units, important);
+    mTimer.stop();
 }
 
 void ANGLEPerfTest::SetUp() {}
@@ -270,13 +260,13 @@ void ANGLEPerfTest::TearDown() {}
 double ANGLEPerfTest::printResults()
 {
     double elapsedTimeSeconds[2] = {
-        mTimer->getElapsedTime(),
+        mTimer.getElapsedTime(),
         mGPUTimeNs * 1e-9,
     };
 
     const char *clockNames[2] = {
-        "wall_time",
-        "gpu_time",
+        ".wall_time",
+        ".gpu_time",
     };
 
     // If measured gpu time is non-zero, print that too.
@@ -288,19 +278,29 @@ double ANGLEPerfTest::printResults()
         double secondsPerStep = elapsedTimeSeconds[i] / static_cast<double>(mNumStepsPerformed);
         double secondsPerIteration = secondsPerStep / static_cast<double>(mIterationsPerStep);
 
-        // Give the result a different name to ensure separate graphs if we transition.
-        if (secondsPerIteration > 1e-3)
+        perf_test::MetricInfo metricInfo;
+        std::string units;
+        // Lazily register the metric, re-using the existing units if it is
+        // already registered.
+        if (!mReporter->GetMetricInfo(clockNames[i], &metricInfo))
         {
-            double microSecondsPerIteration = secondsPerIteration * kMicroSecondsPerSecond;
-            retValue                        = microSecondsPerIteration;
-            printResult(clockNames[i], microSecondsPerIteration, "us", true);
+            units = secondsPerIteration > 1e-3 ? "us" : "ns";
+            mReporter->RegisterImportantMetric(clockNames[i], units);
         }
         else
         {
-            double nanoSecPerIteration = secondsPerIteration * kNanoSecondsPerSecond;
-            retValue                   = nanoSecPerIteration;
-            printResult(clockNames[i], nanoSecPerIteration, "ns", true);
+            units = metricInfo.units;
         }
+
+        if (units == "us")
+        {
+            retValue = secondsPerIteration * kMicroSecondsPerSecond;
+        }
+        else
+        {
+            retValue = secondsPerIteration * kNanoSecondsPerSecond;
+        }
+        mReporter->AddResult(clockNames[i], retValue);
     }
     return retValue;
 }
@@ -310,7 +310,7 @@ double ANGLEPerfTest::normalizedTime(size_t value) const
     return static_cast<double>(value) / static_cast<double>(mNumStepsPerformed);
 }
 
-std::string RenderTestParams::suffix() const
+std::string RenderTestParams::backend() const
 {
     std::stringstream strstr;
 
@@ -360,8 +360,21 @@ std::string RenderTestParams::suffix() const
     return strstr.str();
 }
 
+std::string RenderTestParams::story() const
+{
+    return "";
+}
+
+std::string RenderTestParams::backendAndStory() const
+{
+    return backend() + story();
+}
+
 ANGLERenderTest::ANGLERenderTest(const std::string &name, const RenderTestParams &testParams)
-    : ANGLEPerfTest(name, testParams.suffix(), OneFrame() ? 1 : testParams.iterationsPerStep),
+    : ANGLEPerfTest(name,
+                    testParams.backend(),
+                    testParams.story(),
+                    OneFrame() ? 1 : testParams.iterationsPerStep),
       mTestParams(testParams),
       mGLWindow(nullptr),
       mOSWindow(nullptr)

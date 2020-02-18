@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -22,25 +23,23 @@ namespace content {
 
 TestNavigationURLLoader::TestNavigationURLLoader(
     std::unique_ptr<NavigationRequestInfo> request_info,
-    NavigationURLLoaderDelegate* delegate)
+    NavigationURLLoaderDelegate* delegate,
+    bool is_served_from_back_forward_cache)
     : request_info_(std::move(request_info)),
       delegate_(delegate),
       redirect_count_(0),
-      response_proceeded_(false) {
-}
+      is_served_from_back_forward_cache_(is_served_from_back_forward_cache) {}
 
 void TestNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     PreviewsState new_previews_state) {
+  DCHECK(!is_served_from_back_forward_cache_);
   redirect_count_++;
 }
 
-void TestNavigationURLLoader::ProceedWithResponse() {
-  response_proceeded_ = true;
-}
-
 void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
+  DCHECK(!is_served_from_back_forward_cache_);
   net::RedirectInfo redirect_info;
   redirect_info.status_code = 302;
   redirect_info.new_method = "GET";
@@ -52,32 +51,25 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
 }
 
 void TestNavigationURLLoader::SimulateError(int error_code) {
+  DCHECK(!is_served_from_back_forward_cache_);
   SimulateErrorWithStatus(network::URLLoaderCompletionStatus(error_code));
 }
 
 void TestNavigationURLLoader::SimulateErrorWithStatus(
     const network::URLLoaderCompletionStatus& status) {
+  DCHECK(!is_served_from_back_forward_cache_);
   delegate_->OnRequestFailed(status);
 }
 
 void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response_head) {
+  DCHECK(!is_served_from_back_forward_cache_);
   delegate_->OnRequestRedirected(redirect_info, response_head);
 }
 
 void TestNavigationURLLoader::CallOnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response_head) {
-  // Start the request_ids at 1000 to avoid collisions with request ids from
-  // network resources (it should be rare to compare these in unit tests).
-  static int request_id = 1000;
-  int child_id =
-      WebContents::FromFrameTreeNodeId(request_info_->frame_tree_node_id)
-          ->GetMainFrame()
-          ->GetProcess()
-          ->GetID();
-  GlobalRequestID global_id(child_id, ++request_id);
-
   // Create a bidirectionnal communication pipe between a URLLoader and a
   // URLLoaderClient. It will be closed at the end of this function. The sole
   // purpose of this is not to violate some DCHECKs when the navigation commits.
@@ -93,7 +85,8 @@ void TestNavigationURLLoader::CallOnResponseStarted(
 
   delegate_->OnResponseStarted(
       std::move(url_loader_client_endpoints), response_head,
-      mojo::ScopedDataPipeConsumerHandle(), global_id, false,
+      mojo::ScopedDataPipeConsumerHandle(),
+      NavigationURLLoaderImpl::MakeGlobalRequestID(), false,
       NavigationDownloadPolicy(), base::nullopt);
 }
 

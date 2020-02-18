@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../os_a11y_page/os_a11y_page.html">
+<link rel="import" href="../os_apps_page/os_apps_page.html">
 <link rel="import" href="../os_people_page/os_people_page.html">
 <link rel="import" href="../os_search_page/os_search_page.html">
 <link rel="import" href="../personalization_page/personalization_page.html">
@@ -12,23 +13,33 @@
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page_css.html">
-<link rel="import" href="../../app_management_page/app_management_page.html">
 <link rel="import" href="../../android_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../../android_apps_page/android_apps_page.html">
 <link rel="import" href="../../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../../crostini_page/crostini_page.html">
 <link rel="import" href="../../plugin_vm_page/plugin_vm_page.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../device_page/device_page.html">
 <link rel="import" href="../../internet_page/internet_page.html">
 <link rel="import" href="../../multidevice_page/multidevice_page.html">
 
 <dom-module id="os-settings-page">
   <template>
-    <style include="settings-page-styles cr-hidden-style">
+    <style include="settings-page-styles cr-hidden-style settings-shared">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
         overflow: hidden;
+      }
+
+      .banner {
+        align-items: center;
+        background-color: var(--cr-card-background-color);
+        border: var(--cr-hairline);
+        border-radius: var(--cr-card-border-radius);
+        display: flex;
+        margin-bottom: var(--cr-section-vertical-margin);
+        margin-top: var(--cr-section-vertical-margin);
       }
 
       #advancedToggle {
@@ -50,13 +61,18 @@
         font-weight: 600;
       }
 
-      #secondaryUserBanner {
-        @apply --cr-card-elevation;
-        align-items: center;
-        background-color: white;
-        border-radius: 2px;
-        display: flex;
-        margin: 21px 0;
+      #browserSettingsBanner {
+        color: var(--cr-secondary-text-color);
+        font-weight: 500;
+      }
+
+      #browserSettingsBanner > div {
+        margin-bottom: 0;
+      }
+
+      #openInNewBrowserSettingsIcon {
+        fill: var(--cr-link-color);
+        margin-inline-start: 0;
       }
 
       #secondaryUserIcon {
@@ -73,11 +89,13 @@
 
       #toggleContainer {
         align-items: center;
+        color: var(--cr-primary-text-color);
         display: flex;
         font: inherit;
         justify-content: center;
         margin-bottom: 0;
         margin-top: 0;
+        padding: 0;
       }
 
       #toggleSpacer {
@@ -91,35 +109,41 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
-        <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
+        <template is="dom-if" if="[[showBrowserSettingsBanner_]]">
+          <div id="browserSettingsBanner" class="settings-box banner">
+            <div class="start" on-click="onBrowserSettingsClick_">
+              $i18nRaw{browserSettingsBannerText}
+            </div>
+            <cr-icon-button class="icon-clear"
+                id="closeBrowserSettings"
+                aria-label="$i18n{clear}"
+                on-click="onBrowserSettingsBannerClosed_">
+            </cr-icon-button>
+          </div>
+        </template>
+        <div id="secondaryUserBanner" class="banner"
+            hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
         </div>
-        <template is="dom-if" if="[[showPage_(pageVisibility.internet)]]"
-            restamp>
-          <settings-section page-title="$i18n{internetPageTitle}"
-              section="internet">
-            <settings-internet-page prefs="{{prefs}}">
-            </settings-internet-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.bluetooth)]]"
-            restamp>
-          <settings-section page-title="$i18n{bluetoothPageTitle}"
-              section="bluetooth">
-            <settings-bluetooth-page prefs="{{prefs}}">
-            </settings-bluetooth-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.multidevice)]]"
-            restamp>
+        <settings-section page-title="$i18n{internetPageTitle}"
+            section="internet">
+          <settings-internet-page prefs="{{prefs}}">
+          </settings-internet-page>
+        </settings-section>
+        <settings-section page-title="$i18n{bluetoothPageTitle}"
+            section="bluetooth">
+          <settings-bluetooth-page prefs="{{prefs}}">
+          </settings-bluetooth-page>
+        </settings-section>
+        <template is="dom-if" if="[[!isGuestMode_]]">
           <settings-section page-title="$i18n{multidevicePageTitle}"
               section="multidevice">
             <settings-multidevice-page prefs="{{prefs}}">
             </settings-multidevice-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.people)]]" restamp>
+        <template is="dom-if" if="[[!isGuestMode_]]">
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
             <os-settings-people-page prefs="{{prefs}}"
@@ -127,40 +151,30 @@
             </os-settings-people-page>
           </settings-section>
         </template>
-        <!-- TODO(hsuregan): Change from appearance to personalization once
-          pageVisibility is forked for OS Settings.-->
-        <template is="dom-if" if="[[showPage_(pageVisibility.appearance)]]"
-            restamp>
+        <settings-section page-title="$i18n{devicePageTitle}"
+            section="device">
+          <settings-device-page prefs="{{prefs}}"
+              show-crostini="[[showCrostini]]">
+          </settings-device-page>
+        </settings-section>
+        <template is="dom-if" if="[[!isGuestMode_]]">
           <settings-section page-title="$i18n{personalizationPageTitle}"
               section="personalization">
-            <settings-personalization-page
-                page-visibility="[[pageVisibility.appearance]]">
-            </settings-personalization-page>
+            <settings-personalization-page></settings-personalization-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.device)]]" restamp>
-          <settings-section page-title="$i18n{devicePageTitle}"
-              section="device">
-            <settings-device-page prefs="{{prefs}}"
-                show-crostini="[[showCrostini]]">
-            </settings-device-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.search)]]" restamp>
-          <settings-section page-title="$i18n{osSearchPageTitle}"
-              section="search">
-            <os-settings-search-page prefs="{{prefs}}">
-            </os-settings-search-page>
-          </settings-section>
-        </template>
+        <settings-section page-title="$i18n{osSearchPageTitle}"
+            section="search">
+          <os-settings-search-page prefs="{{prefs}}">
+          </os-settings-search-page>
+        </settings-section>
         <template is="dom-if" if="[[showApps]]" restamp>
           <settings-section page-title="$i18n{appsPageTitle}" section="apps">
-            <settings-app-management-page>
-            </settings-app-management-page>
+            <os-settings-apps-page>
+            </os-settings-apps-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[shouldCreateAndroidAppsSection_(
-            showAndroidApps, pageVisibility)]]" restamp>
+        <template is="dom-if" if="[[showAndroidApps]]" restamp>
           <settings-section page-title="$i18n{androidAppsPageTitle}"
               section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
               androidAppsInfo)]]">
@@ -188,89 +202,66 @@
       </div>
     </template>
 
-    <template is="dom-if" if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
-      <template is="dom-if" if="[[showAdvancedToggle_(
-          inSearchMode, hasExpandedSection_)]]">
-        <div id="toggleSpacer"></div>
-        <h2 id="toggleContainer">
-          <cr-button id="advancedToggle" on-click="advancedToggleClicked_"
-              aria-expanded$="[[boolToString_(advancedToggleExpanded)]]">
-            <span>$i18n{advancedPageTitle}</span>
-            <iron-icon icon="[[getArrowIcon_(advancedToggleExpanded)]]">
-            </iron-icon>
-          </cr-button>
-        </h2>
-      </template>
-
-      <settings-idle-load id="advancedPageTemplate"
-          url="chromeos/lazy_load.html">
-        <template>
-          <div id="advancedPage" hidden$="[[!showAdvancedPage_(
-              currentRoute_, inSearchMode, hasExpandedSection_,
-              advancedToggleExpanded)]]">
-            <template is="dom-if" if="[[showPage_(pageVisibility.dateTime)]]"
-                restamp>
-              <settings-section page-title="$i18n{dateTimePageTitle}"
-                  section="dateTime">
-                <settings-date-time-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.dateTime]]">
-                </settings-date-time-page>
-              </settings-section>
-            </template>
-            <template is="dom-if" if="[[showPage_(pageVisibility.privacy)]]"
-                restamp>
-              <settings-section page-title="$i18n{privacyPageTitle}"
-                  section="privacy">
-                <os-settings-privacy-page prefs="{{prefs}}">
-                </os-settings-privacy-page>
-              </settings-section>
-            </template>
-            <template is="dom-if" if="[[showPage_(pageVisibility.languages)]]"
-                restamp>
-              <settings-section page-title="$i18n{osLanguagesPageTitle}"
-                  section="languages">
-                <os-settings-languages-section prefs="{{prefs}}">
-                </os-settings-languages-section>
-              </settings-section>
-            </template>
-            <!-- TODO(jordynass): Change from downloads to files once
-              pageVisibility is forked for OS Settings.-->
-            <template is="dom-if" if="[[showPage_(pageVisibility.downloads)]]"
-                restamp>
-              <settings-section page-title="$i18n{filesPageTitle}"
-                  section="files">
-                <os-settings-files-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.downloads]]">
-                </os-settings-files-page>
-              </settings-section>
-            </template>
-            <template is="dom-if" if="[[showPage_(pageVisibility.printing)]]"
-                restamp>
-              <settings-section page-title="$i18n{printingPageTitle}"
-                  section="printing">
-                <os-settings-printing-page prefs="{{prefs}}">
-                </os-settings-printing-page>
-              </settings-section>
-            </template>
-            <template is="dom-if" if="[[showPage_(pageVisibility.a11y)]]"
-                restamp>
-              <settings-section page-title="$i18n{a11yPageTitle}"
-                  section="a11y">
-                <os-settings-a11y-page prefs="{{prefs}}">
-                </os-settings-a11y-page>
-              </settings-section>
-            </template>
-            <template is="dom-if" if="[[showPage_(pageVisibility.reset)]]"
-                restamp>
-              <settings-section page-title="$i18n{resetPageTitle}"
-                  section="reset">
-                <os-settings-reset-page></os-settings-reset-page>
-              </settings-section>
-            </template>
-          </div>
-        </template>
-      </settings-idle-load>
+    <template is="dom-if" if="[[showAdvancedToggle_(
+        inSearchMode, hasExpandedSection_)]]">
+      <div id="toggleSpacer"></div>
+      <h2 id="toggleContainer">
+        <cr-button id="advancedToggle" on-click="advancedToggleClicked_"
+            aria-expanded$="[[boolToString_(advancedToggleExpanded)]]">
+          <span>$i18n{advancedPageTitle}</span>
+          <iron-icon icon="[[getArrowIcon_(advancedToggleExpanded)]]">
+          </iron-icon>
+        </cr-button>
+      </h2>
     </template>
+
+    <settings-idle-load id="advancedPageTemplate"
+        url="chromeos/lazy_load.html">
+      <template>
+        <div id="advancedPage" hidden$="[[!showAdvancedPage_(
+            currentRoute_, inSearchMode, hasExpandedSection_,
+            advancedToggleExpanded)]]">
+          <settings-section page-title="$i18n{dateTimePageTitle}"
+              section="dateTime">
+            <settings-date-time-page prefs="{{prefs}}">
+            </settings-date-time-page>
+          </settings-section>
+          <settings-section page-title="$i18n{privacyPageTitle}"
+              section="privacy">
+            <os-settings-privacy-page prefs="{{prefs}}">
+            </os-settings-privacy-page>
+          </settings-section>
+          <settings-section page-title="$i18n{osLanguagesPageTitle}"
+              section="languages">
+            <os-settings-languages-section prefs="{{prefs}}">
+            </os-settings-languages-section>
+          </settings-section>
+          <template is="dom-if" if="[[!isGuestMode_]]">
+            <settings-section page-title="$i18n{filesPageTitle}"
+                section="files">
+              <os-settings-files-page prefs="{{prefs}}">
+              </os-settings-files-page>
+            </settings-section>
+          </template>
+          <settings-section page-title="$i18n{printingPageTitle}"
+              section="printing">
+            <os-settings-printing-page prefs="{{prefs}}">
+            </os-settings-printing-page>
+          </settings-section>
+          <settings-section page-title="$i18n{a11yPageTitle}"
+              section="a11y">
+            <os-settings-a11y-page prefs="{{prefs}}">
+            </os-settings-a11y-page>
+          </settings-section>
+          <template is="dom-if" if="[[showReset]]">
+            <settings-section page-title="$i18n{resetPageTitle}"
+                section="reset">
+              <os-settings-reset-page></os-settings-reset-page>
+            </settings-section>
+          </template>
+        </div>
+      </template>
+    </settings-idle-load>
   </template>
   <script src="os_settings_page.js"></script>
 </dom-module>

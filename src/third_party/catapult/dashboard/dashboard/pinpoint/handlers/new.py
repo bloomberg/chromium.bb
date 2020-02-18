@@ -14,6 +14,7 @@ from dashboard.common import bot_configurations
 from dashboard.common import utils
 from dashboard.pinpoint.models import change
 from dashboard.pinpoint.models import job as job_module
+from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models import quest as quest_module
 from dashboard.pinpoint.models import scheduler
 
@@ -37,6 +38,8 @@ class New(api_request_handler.ApiRequestHandler):
     job = _CreateJob(self.request)
 
     scheduler.Schedule(job)
+
+    job.PostCreationUpdate()
 
     return {
         'jobId': job.job_id,
@@ -82,7 +85,11 @@ def _ArgumentsWithConfiguration(original_arguments):
 
   configuration = original_arguments.get('configuration')
   if configuration:
-    default_arguments = bot_configurations.Get(configuration)
+    try:
+      default_arguments = bot_configurations.Get(configuration)
+    except KeyError:
+      # Reraise with a clearer message.
+      raise ValueError("Bot Config: %s doesn't exist." % configuration)
     logging.info('Bot Config: %s', default_arguments)
 
     if default_arguments:
@@ -140,6 +147,8 @@ def _ValidatePatch(patch_data):
 
 
 def _ValidateComparisonMode(comparison_mode):
+  if not comparison_mode:
+    comparison_mode = job_state.TRY
   if comparison_mode and comparison_mode not in job_module.COMPARISON_MODES:
     raise ValueError('`comparison_mode` should be one of %s. Got "%s".' %
                      (job_module.COMPARISON_MODES + (None,), comparison_mode))

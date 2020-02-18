@@ -225,13 +225,13 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   virtual void CommitTextToInputContext(int context_id,
                                         const std::string& text) = 0;
   // Notifies InputContextHandler to delete surrounding text.
-  virtual void DeleteSurroundingTextToInputContext(int offset,
-                                                   size_t number_of_chars) = 0;
+  void DeleteSurroundingTextToInputContext(int offset, size_t number_of_chars);
   // Sends the key event to the window tree host.
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
                             const std::string& code) = 0;
   // Notifies InputContextHandler to commit any composition text.
-  virtual void ConfirmCompositionText() = 0;
+  // Set |reset_engine| to false if the event was from the extension.
+  void ConfirmCompositionText(bool reset_engine);
 
   ui::TextInputType current_input_type_;
 
@@ -249,10 +249,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   // The observer object recieving events for this IME.
   std::unique_ptr<InputMethodEngineBase::Observer> observer_;
-
-  // The current preedit text, and it's cursor position.
-  std::unique_ptr<ui::CompositionText> composition_text_;
-  int composition_cursor_;
 
   Profile* profile_;
 

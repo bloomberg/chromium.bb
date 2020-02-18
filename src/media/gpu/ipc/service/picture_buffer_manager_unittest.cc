@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/gpu/test/fake_command_buffer_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,7 +71,7 @@ class PictureBufferManagerImplTest : public testing::Test {
     return sync_token;
   }
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
 
   uint64_t next_release_count_ = 1;
   testing::StrictMock<

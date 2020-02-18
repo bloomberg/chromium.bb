@@ -17,7 +17,6 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
@@ -91,7 +90,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   [_alertCoordinator executeCancelHandler];
   [_alertCoordinator stop];
   if (_navigationController) {
-    [_navigationController settingsWillBeDismissed];
+    [_navigationController cleanUpSettings];
     _navigationController = nil;
     [[_delegate presentingViewController] dismissViewControllerAnimated:NO
                                                              completion:nil];
@@ -100,13 +99,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 }
 
 - (void)commitSyncForBrowserState:(ios::ChromeBrowserState*)browserState {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    SyncSetupServiceFactory::GetForBrowserState(browserState)
-        ->CommitSyncChanges();
-  } else {
-    SyncSetupServiceFactory::GetForBrowserState(browserState)
-        ->PreUnityCommitChanges();
-  }
+  SyncSetupServiceFactory::GetForBrowserState(browserState)
+      ->CommitSyncChanges();
 }
 
 - (void)startWatchdogTimerForManagedStatus {
@@ -260,7 +254,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForBrowserState(browserState);
     base::Optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     DCHECK(primary_account_info);
     NSString* hostedDomain =
@@ -278,7 +272,6 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                                                   fromEmail:lastSignedInEmail
                                                     toEmail:[identity userEmail]
                                                  isSignedIn:isSignedIn];
-  [_navigationController setShouldCommitSyncChangesOnDismissal:NO];
   [[_delegate presentingViewController]
       presentViewController:_navigationController
                    animated:YES
@@ -425,7 +418,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     strongSelf->_navigationController = nil;
     [[strongSelf delegate] didChooseClearDataPolicy:shouldClearData];
   };
-  [_navigationController settingsWillBeDismissed];
+  [_navigationController cleanUpSettings];
   [[_delegate presentingViewController] dismissViewControllerAnimated:YES
                                                            completion:block];
 }
@@ -443,9 +436,16 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     strongSelf->_navigationController = nil;
     [[strongSelf delegate] didChooseCancel];
   };
-  [_navigationController settingsWillBeDismissed];
+  [_navigationController cleanUpSettings];
   [[_delegate presentingViewController] dismissViewControllerAnimated:YES
                                                            completion:block];
+}
+
+- (void)settingsWasDismissed {
+  base::RecordAction(base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
+  [self.delegate didChooseCancel];
+  [_navigationController cleanUpSettings];
+  _navigationController = nil;
 }
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {

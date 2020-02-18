@@ -260,9 +260,11 @@ rtc_source_set("video_coding_utility") {
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_numerics",
     "../../rtc_base:rtc_task_queue",
+    "../../rtc_base/experiments:experimental_screenshare_settings",
     "../../rtc_base/experiments:quality_scaler_settings",
     "../../rtc_base/experiments:quality_scaling_experiment",
     "../../rtc_base/experiments:rate_control_settings",
+    "../../rtc_base/experiments:stable_target_rate_experiment",
     "../../rtc_base/synchronization:sequence_checker",
     "../../rtc_base/system:arch",
     "../../rtc_base/system:file_wrapper",
@@ -384,6 +386,7 @@ rtc_static_library("webrtc_vp8") {
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_numerics",
     "../../rtc_base/experiments:cpu_speed_experiment",
+    "../../rtc_base/experiments:experimental_screenshare_settings",
     "../../rtc_base/experiments:field_trial_parser",
     "../../rtc_base/experiments:rate_control_settings",
     "../../system_wrappers:field_trial",
@@ -442,9 +445,12 @@ rtc_static_library("webrtc_vp9_helpers") {
     "../..:webrtc_common",
     "../../api/video:video_bitrate_allocation",
     "../../api/video:video_bitrate_allocator",
+    "../../api/video:video_codec_constants",
     "../../api/video_codecs:video_codecs_api",
     "../../common_video",
     "../../rtc_base:checks",
+    "../../rtc_base/experiments:stable_target_rate_experiment",
+    "//third_party/abseil-cpp/absl/container:inlined_vector",
   ]
 }
 

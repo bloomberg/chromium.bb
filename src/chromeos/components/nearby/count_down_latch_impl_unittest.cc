@@ -10,8 +10,8 @@
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -39,8 +39,8 @@ class CountDownLatchImplTest : public testing::Test {
   base::UnguessableToken PostAwaitTask(
       const base::Optional<base::TimeDelta>& timeout_millis) {
     base::UnguessableToken unique_task_id = base::UnguessableToken::Create();
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTask(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&CountDownLatchImplTest::AwaitTask,
                        base::Unretained(this), timeout_millis, unique_task_id));
     return unique_task_id;
@@ -86,7 +86,7 @@ class CountDownLatchImplTest : public testing::Test {
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Lock map_lock_;
   base::flat_map<base::UnguessableToken,
                  base::Optional<location::nearby::ExceptionOr<bool>>>

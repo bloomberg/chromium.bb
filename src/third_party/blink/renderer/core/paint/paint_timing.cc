@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/time/default_tick_clock.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -168,6 +167,9 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
     return;
   GetFrame()->GetPage()->GetChromeClient().StopDeferringCommits(
       *GetFrame(), cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
+
+  if (GetFrame()->GetFrameScheduler())
+    GetFrame()->GetFrameScheduler()->OnFirstContentfulPaint();
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {

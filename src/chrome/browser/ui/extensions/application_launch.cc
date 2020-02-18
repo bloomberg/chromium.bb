@@ -9,7 +9,6 @@
 
 #include "apps/launcher.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -32,9 +31,8 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -59,6 +57,7 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
+using extensions::ExtensionService;
 
 namespace {
 
@@ -66,11 +65,13 @@ namespace {
 // This class manages its own lifetime.
 class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
  public:
-  EnableViaDialogFlow(extensions::ExtensionService* service,
+  EnableViaDialogFlow(ExtensionService* service,
+                      ExtensionRegistry* registry,
                       Profile* profile,
                       const std::string& extension_id,
                       const base::Closure& callback)
       : service_(service),
+        registry_(registry),
         profile_(profile),
         extension_id_(extension_id),
         callback_(callback) {}
@@ -79,7 +80,8 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 
   void Run() {
     DCHECK(!service_->IsExtensionEnabled(extension_id_));
-    flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
+    flow_ =
+        std::make_unique<ExtensionEnableFlow>(profile_, extension_id_, this);
     flow_->Start();
   }
 
@@ -87,7 +89,7 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
   // ExtensionEnableFlowDelegate overrides.
   void ExtensionEnableFlowFinished() override {
     const Extension* extension =
-        service_->GetExtensionById(extension_id_, false);
+        registry_->GetExtensionById(extension_id_, ExtensionRegistry::ENABLED);
     if (!extension)
       return;
     callback_.Run();
@@ -96,7 +98,8 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 
   void ExtensionEnableFlowAborted(bool user_initiated) override { delete this; }
 
-  extensions::ExtensionService* service_;
+  ExtensionService* service_;
+  ExtensionRegistry* registry_;
   Profile* profile_;
   std::string extension_id_;
   base::Closure callback_;
@@ -198,7 +201,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     // TODO(erg): AppLaunchParams should pass user_gesture from the extension
     // system to here.
     browser =
-        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
+        new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -250,10 +253,12 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     contents = params.navigated_or_inserted_contents;
   }
 
-  web_app::WebAppTabHelperBase* tab_helper =
-      web_app::WebAppTabHelperBase::FromWebContents(contents);
-  DCHECK(tab_helper);
-  tab_helper->SetAppId(extension->id());
+  if (extension->from_bookmark()) {
+    web_app::WebAppTabHelper* tab_helper =
+        web_app::WebAppTabHelper::FromWebContents(contents);
+    DCHECK(tab_helper);
+    tab_helper->SetAppId(extension->id());
+  }
 
 #if defined(OS_CHROMEOS)
   // In ash, LAUNCH_FULLSCREEN launches in the OpenApplicationWindow function
@@ -338,26 +343,6 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   return tab;
 }
 
-Browser* ReparentWebContentsWithBrowserCreateParams(
-    content::WebContents* contents,
-    const Browser::CreateParams& browser_params) {
-  Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
-  Browser* target_browser = Browser::Create(browser_params);
-
-  TabStripModel* source_tabstrip = source_browser->tab_strip_model();
-  // Avoid causing the existing browser window to close if this is the last tab
-  // remaining.
-  if (source_tabstrip->count() == 1)
-    chrome::NewTab(source_browser);
-  target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(
-          source_tabstrip->GetIndexOfWebContents(contents)),
-      true);
-  target_browser->window()->Show();
-
-  return target_browser;
-}
-
 }  // namespace
 
 WebContents* OpenApplication(const AppLaunchParams& params) {
@@ -409,16 +394,15 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
 
   NavigateParams nav_params(browser, url, transition);
   nav_params.disposition = disposition;
-  nav_params.opener = params.opener;
   Navigate(&nav_params);
 
   WebContents* web_contents = nav_params.navigated_or_inserted_contents;
 
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
       browser->app_controller(), web_contents);
-  if (extension) {
-    web_app::WebAppTabHelperBase* tab_helper =
-        web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  if (extension && extension->from_bookmark()) {
+    web_app::WebAppTabHelper* tab_helper =
+        web_app::WebAppTabHelper::FromWebContents(web_contents);
     DCHECK(tab_helper);
     tab_helper->SetAppId(extension->id());
   }
@@ -448,19 +432,20 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
     return;
   Profile* profile = params.profile;
 
-  extensions::ExtensionService* service =
+  ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   if (!service->IsExtensionEnabled(extension->id()) ||
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          extension->id(), extensions::ExtensionRegistry::TERMINATED)) {
-  base::Callback<gfx::NativeWindow(void)> dialog_parent_window_getter;
-  // TODO(pkotwicz): Figure out which window should be used as the parent for
-  // the "enable application" dialog in Athena.
-  (new EnableViaDialogFlow(
-       service, profile, extension->id(),
-       base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))
-      ->Run();
-  return;
+      registry->GetExtensionById(extension->id(),
+                                 ExtensionRegistry::TERMINATED)) {
+    base::Callback<gfx::NativeWindow(void)> dialog_parent_window_getter;
+    // TODO(pkotwicz): Figure out which window should be used as the parent for
+    // the "enable application" dialog in Athena.
+    (new EnableViaDialogFlow(
+         service, registry, profile, extension->id(),
+         base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))
+        ->Run();
+    return;
   }
 
   OpenEnabledApplication(params);
@@ -488,40 +473,4 @@ bool CanLaunchViaEvent(const extensions::Extension* extension) {
   const extensions::Feature* feature =
       extensions::FeatureProvider::GetAPIFeature("app.runtime");
   return feature && feature->IsAvailableToExtension(extension).is_available();
-}
-
-Browser* ReparentWebContentsIntoAppBrowser(
-    content::WebContents* contents,
-    const extensions::Extension* extension) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  // Incognito tabs reparent correctly, but remain incognito without any
-  // indication to the user, so disallow it.
-  DCHECK(!profile->IsOffTheRecord());
-  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      web_app::GenerateApplicationNameFromAppId(extension->id()),
-      true /* trusted_source */, gfx::Rect(), profile,
-      true /* user_gesture */));
-  return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
-}
-
-Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
-  DCHECK(base::FeatureList::IsEnabled(features::kFocusMode));
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  // TODO(crbug.com/941577): Remove DCHECK when focus mode is permitted in guest
-  // and incognito sessions.
-  DCHECK(!profile->IsOffTheRecord());
-  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      web_app::GenerateApplicationNameForFocusMode(), true /* trusted_source */,
-      gfx::Rect(), profile, true /* user_gesture */));
-  browser_params.is_focus_mode = true;
-  return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
-}
-
-Browser* ReparentSecureActiveTabIntoPwaWindow(Browser* browser) {
-  const extensions::Extension* extension =
-      extensions::util::GetPwaForSecureActiveTab(browser);
-  if (!extension)
-    return nullptr;
-  return ReparentWebContentsIntoAppBrowser(
-      browser->tab_strip_model()->GetActiveWebContents(), extension);
 }

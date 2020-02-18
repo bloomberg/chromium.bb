@@ -35,35 +35,38 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
     if (!reader->Next(&is_same_skeleton))
       return false;
 
-    std::string top_domain;
+    TopDomainEntry top_domain;
+    if (!reader->Next(&top_domain.is_top_500))
+      return false;
+
     if (is_same_skeleton) {
-      top_domain = search;
+      top_domain.domain = search;
     } else {
       bool has_com_suffix = false;
       if (!reader->Next(&has_com_suffix))
         return false;
 
-      for (char c;; top_domain += c) {
+      for (char c;; top_domain.domain += c) {
         huffman_decoder().Decode(reader, &c);
         if (c == net::extras::PreloadDecoder::kEndOfTable)
           break;
       }
       if (has_com_suffix)
-        top_domain += ".com";
+        top_domain.domain += ".com";
     }
 
     if (current_search_offset == 0) {
       *out_found = true;
-      DCHECK(!top_domain.empty());
+      DCHECK(!top_domain.domain.empty());
       result_ = top_domain;
     }
     return true;
   }
 
-  std::string matching_top_domain() const { return result_; }
+  TopDomainEntry matching_top_domain() const { return result_; }
 
  private:
-  std::string result_;
+  TopDomainEntry result_;
 };
 
 void OnThreadTermination(void* regex_matcher) {
@@ -76,10 +79,10 @@ base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
   return *dangerous_pattern_tls;
 }
 
-#include "components/url_formatter/top_domains/alexa_domains-trie-inc.cc"
+#include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
-// All the domains in the above file have 3 or fewer labels.
-const size_t kNumberOfLabelsToCheck = 3;
+// All the domains in the above file have 4 or fewer labels.
+const size_t kNumberOfLabelsToCheck = 4;
 
 IDNSpoofChecker::HuffmanTrieParams g_trie_params{
     kTopDomainsHuffmanTree, sizeof(kTopDomainsHuffmanTree), kTopDomainsTrie,
@@ -185,11 +188,12 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //      U+04C8 (ӈ), U+04CA (ӊ), U+050B (ԋ), U+0527 (ԧ), U+0529 (ԩ)} => h
   //   - {U+0138 (ĸ), U+03BA (κ), U+043A (к), U+049B (қ), U+049D (ҝ),
   //      U+049F (ҟ), U+04A1(ҡ), U+04C4 (ӄ), U+051F (ԟ)} => k
-  //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก)} => n
+  //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก), U+05D7 (ח)} => n
   //   - U+0153 (œ) => "ce"
   //     TODO: see https://crbug.com/843352 for further work on
   //     U+0525 and U+0153.
-  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ)} => t
+  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ), U+4E03 (七),
+  //     U+4E05 (丅), U+4E06 (丆)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
   //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1E (พ),
   //      U+0E1F (ฟ), U+0E9E (ພ), U+0E9F (ຟ)} => w
@@ -198,8 +202,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - U+0491 (ґ) => r
   //   - {U+0493 (ғ), U+04FB (ӻ)} => f
   //   - {U+04AB (ҫ), U+1004 (င)} => c
-  //   - U+04B1 (ұ) => y
-  //   - {U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ)} => x
+  //   - {U+04B1 (ұ), U+4E2B (丫)} => y
+  //   - {U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ), U+4E42 (乂)} => x
   //   - {U+0503 (ԃ), U+10EB (ძ)} => d
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
   //   - {U+0D1F (ട), U+0E23 (ร), U+0EA3 (ຣ), U+0EAE (ຮ)} => s
@@ -207,32 +211,40 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+0966 (०), U+09E6 (০), U+0A66 (੦), U+0AE6 (૦), U+0B30 (ଠ),
   //      U+0B66 (୦), U+0CE6 (೦)} => o,
   //   - {U+09ED (৭), U+0A67 (੧), U+0AE7 (૧)} => q,
-  //   - {U+0E1A (บ), U+0E9A (ບ)} => u
+  //   - {U+0E1A (บ), U+0E9A (ບ)} => u,
+  //   - {U+03B8 (θ)} => 0,
   //   - {U+0968 (२), U+09E8 (২), U+0A68 (੨), U+0A68 (੨), U+0AE8 (૨),
-  //      U+0ce9 (೩), U+0ced (೭)} => 2,
+  //      U+0ce9 (೩), U+0ced (೭), U+0577 (շ)} => 2,
   //   - {U+0437 (з), U+0499 (ҙ), U+04E1 (ӡ), U+0909 (उ), U+0993 (ও),
   //      U+0A24 (ਤ), U+0A69 (੩), U+0AE9 (૩), U+0C69 (౩),
   //      U+1012 (ဒ), U+10D5 (ვ), U+10DE (პ)} => 3
-  //   - {U+0A6B (੫)} => 4,
+  //   - {U+0A6B (੫), U+4E29 (丩), U+3110 (ㄐ)} => 4,
+  //   - U+0573 (ճ) => 6
   //   - {U+09EA (৪), U+0A6A (੪), U+0b6b (୫)} => 8,
   //   - {U+0AED (૭), U+0b68 (୨), U+0C68 (౨)} => 9,
+  //   Map a few dashes that ICU doesn't map. These are already blocked by ICU,
+  //   but mapping them allows us to detect same skeletons.
+  //   - {U+2014 (—), U+4E00 (一), U+2015 (―), U+23EA (⸺), U+2E3B (⸻)} => -,
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
       icu::UnicodeString::fromUTF8(
           "[æӕ] > ae; [þϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
-          "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥก] > n; œ > ce;"
-          "[ŧтҭԏ] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
+          "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥกח] > n; œ > ce;"
+          "[ŧтҭԏ七丅丆] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
-          "[ҫင] > c; ұ > y; [χҳӽӿ] > x;"
+          "[ҫင] > c; [ұ丫] > y; [χҳӽӿ乂] > x;"
           "[ԃძ]  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
           "[०০੦૦ଠ୦೦] > o;"
           "[৭੧૧] > q;"
           "[บບ] > u;"
-          "[२২੨੨૨೩೭] > 2;"
+          "[θ] > 0;"
+          "[२২੨੨૨೩೭շ] > 2;"
           "[зҙӡउওਤ੩૩౩ဒვპ] > 3;"
-          "[੫] > 4;"
+          "[੫丩ㄐ] > 4;"
+          "[ճ] > 6;"
           "[৪੪୫] > 8;"
-          "[૭୨౨] > 9;"),
+          "[૭୨౨] > 9;"
+          "[—一―⸺⸻] > \\-;"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "
@@ -310,8 +322,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
             // Disallow the following as they may be mistaken for slashes when
-            // they're surrounded by non-Japanese scripts (i.e. scripts other
-            // than Katakana, Hiragana or Han):
+            // they're surrounded by non-Japanese scripts (i.e. has non-Katakana
+            // Hiragana or Han scripts on both sides):
             // "ノ" (Katakana no, U+30ce), "ソ" (Katakana so, U+30bd),
             // "ゾ" (Katakana zo, U+30be), "ン" (Katakana n, U+30f3),
             // "丶" (CJK unified ideograph, U+4E36),
@@ -377,16 +389,17 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
   return !dangerous_pattern->find();
 }
 
-std::string IDNSpoofChecker::GetSimilarTopDomain(base::StringPiece16 hostname) {
+TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(
+    base::StringPiece16 hostname) {
   DCHECK(!hostname.empty());
   for (const std::string& skeleton : GetSkeletons(hostname)) {
     DCHECK(!skeleton.empty());
-    std::string matching_top_domain = LookupSkeletonInTopDomains(skeleton);
-    if (!matching_top_domain.empty()) {
+    TopDomainEntry matching_top_domain = LookupSkeletonInTopDomains(skeleton);
+    if (!matching_top_domain.domain.empty()) {
       return matching_top_domain;
     }
   }
-  return std::string();
+  return TopDomainEntry();
 }
 
 Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
@@ -433,7 +446,7 @@ Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
   return skeletons;
 }
 
-std::string IDNSpoofChecker::LookupSkeletonInTopDomains(
+TopDomainEntry IDNSpoofChecker::LookupSkeletonInTopDomains(
     const std::string& skeleton) {
   DCHECK(!skeleton.empty());
   // There are no other guarantees about a skeleton string such as not including
@@ -456,14 +469,14 @@ std::string IDNSpoofChecker::LookupSkeletonInTopDomains(
     bool decoded = preload_decoder.Decode(partial_skeleton, &match);
     DCHECK(decoded);
     if (!decoded)
-      return std::string();
+      return TopDomainEntry();
 
     if (match)
       return preload_decoder.matching_top_domain();
 
     labels.erase(labels.begin());
   }
-  return std::string();
+  return TopDomainEntry();
 }
 
 void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {

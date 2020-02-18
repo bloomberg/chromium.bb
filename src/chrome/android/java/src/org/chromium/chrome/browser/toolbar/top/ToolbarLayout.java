@@ -314,11 +314,6 @@ public abstract class ToolbarLayout
             public @ColorRes int getSecurityIconColorStateList() {
                 return 0;
             }
-
-            @Override
-            public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
-                    boolean isSearchEngineGoogle, String searchEngineUrl) {}
-
         };
 
         // Set menu button background in case it was previously called before inflation
@@ -471,6 +466,14 @@ public abstract class ToolbarLayout
      * @param listener The callback that will be notified when the TabSwitcher button is pressed.
      */
     void setOnTabSwitcherClickHandler(OnClickListener listener) {}
+
+    /**
+     * Sets the OnLongClickListener that will be notified when the TabSwitcher button is long
+     *         pressed.
+     * @param listener The callback that will be notified when the TabSwitcher button is long
+     *         pressed.
+     */
+    void setOnTabSwitcherLongClickHandler(OnLongClickListener listener) {}
 
     /**
      * Sets the OnClickListener that will be notified when the bookmark button is pressed.
@@ -793,7 +796,7 @@ public abstract class ToolbarLayout
      */
     boolean back() {
         if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
-        return mToolbarTabController != null ? mToolbarTabController.back() : false;
+        return mToolbarTabController != null && mToolbarTabController.back() != null;
     }
 
     /**

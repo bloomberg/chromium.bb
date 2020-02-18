@@ -10,12 +10,12 @@
 #include "base/strings/strcat.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/mock_service.h"
-#include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -76,8 +76,7 @@ class ScriptExecutorTest : public testing::Test,
 
  protected:
   ScriptExecutorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   // Implements ScriptExecutor::Listener
   void OnServerPayloadChanged(const std::string& global_payload,
@@ -145,9 +144,9 @@ class ScriptExecutorTest : public testing::Test,
     interrupts_.emplace_back(std::move(interrupt));
   }
 
-  // scoped_task_environment_ must be first to guarantee other field
+  // task_environment_ must be first to guarantee other field
   // creation run in that environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeScriptExecutorDelegate delegate_;
   Script script_;
   StrictMock<MockService> mock_service_;
@@ -364,14 +363,13 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
   // executor_callback_.Run() not expected to be run just yet, as the action is
   // delayed.
   executor_->Run(executor_callback_.Get());
-  EXPECT_TRUE(scoped_task_environment_.NextTaskIsDelayed());
+  EXPECT_TRUE(task_environment_.NextTaskIsDelayed());
 
   // Moving forward in time triggers action execution.
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  scoped_task_environment_.FastForwardBy(
-      base::TimeDelta::FromMilliseconds(1000));
-  EXPECT_EQ(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0u);
 }
 
 TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
@@ -533,7 +531,7 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(true));
   EXPECT_CALL(executor_callback_, Run(_));
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
@@ -562,7 +560,7 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitWhile) {
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(false));
   EXPECT_CALL(executor_callback_, Run(_));
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
@@ -1012,7 +1010,7 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   // timeout.
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
   for (int i = 0; i < 5; i++) {
-    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   // The end of navigation un-pauses WaitForDom.
@@ -1166,7 +1164,7 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(true));
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   ASSERT_THAT(processed_actions_capture, SizeIs(1));
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());

@@ -119,8 +119,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       shortcut_info_(GetShortcutUrl(web_contents)),
       has_maskable_primary_icon_(false),
       data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
-      is_waiting_for_manifest_(true),
-      weak_ptr_factory_(this) {
+      is_waiting_for_manifest_(true) {
   DCHECK(shortcut_info_.url.is_valid());
 
   // Send a message to the renderer to retrieve information about the page.
@@ -321,9 +320,9 @@ void AddToHomescreenDataFetcher::OnFaviconFetched(
   // The user is waiting for the icon to be processed before they can proceed
   // with add to homescreen. But if we shut down, there's no point starting the
   // image processing. Use USER_VISIBLE with MayBlock and SKIP_ON_SHUTDOWN.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&CreateLauncherIconFromFaviconInBackground,
                      shortcut_info_.url, bitmap_result),
@@ -337,9 +336,9 @@ void AddToHomescreenDataFetcher::CreateLauncherIcon(const SkBitmap& icon) {
   // The user is waiting for the icon to be processed before they can proceed
   // with add to homescreen. But if we shut down, there's no point starting the
   // image processing. Use USER_VISIBLE with MayBlock and SKIP_ON_SHUTDOWN.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&CreateLauncherIconInBackground, shortcut_info_.url, icon,
                      has_maskable_primary_icon_),

@@ -728,8 +728,6 @@ if (enable_java_templates) {
   #   load_library_from_apk: (Optional) Whether libraries should be loaded from
   #     the APK without uncompressing.
   #   enable_chromium_linker_tests: (Optional) Whether to run tests.
-  #   dont_load_shared_libraries: (Optional) List of native libraries to exclude
-  #     from output.
   #   use_final_fields: True to use final fields. When false, all other
   #       variables must not be set.
   template("write_native_libraries_java") {
@@ -787,11 +785,8 @@ if (enable_java_templates) {
             invoker.enable_chromium_linker_tests) {
           args += [ "--enable-chromium-linker-tests" ]
         }
-
-        # TODO(tiborg): Remove once all usages are removed.
-        if (defined(invoker.dont_load_shared_libraries)) {
-          args += [ "--exclude-native-libraries=" +
-                    invoker.dont_load_shared_libraries ]
+        if (defined(invoker.use_modern_linker) && invoker.use_modern_linker) {
+          args += [ "--use-modern-linker" ]
         }
       }
     }
@@ -2133,7 +2128,6 @@ if (enable_java_templates) {
   #   disable_r8_outlining: Turn off outlining during the proguard step.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
-    assert(defined(invoker.final_apk_path) || defined(invoker.name))
     assert(defined(invoker.android_manifest))
     _gen_dir = "$target_gen_dir/$target_name"
     _base_path = "$_gen_dir/$target_name"
@@ -2166,12 +2160,8 @@ if (enable_java_templates) {
         !defined(invoker.enable_multidex) || invoker.enable_multidex
     _final_dex_path = "$_gen_dir/classes.dex.zip"
 
-    if (defined(invoker.final_apk_path)) {
-      _final_apk_path = invoker.final_apk_path
-    } else {
-      _final_apk_path = "$root_build_dir/apks/${invoker.name}.apk"
-    }
     if (!_is_bundle_module) {
+      _final_apk_path = invoker.final_apk_path
       _final_rtxt_path = "${_final_apk_path}.R.txt"
     }
 
@@ -2185,11 +2175,13 @@ if (enable_java_templates) {
       _final_pathmap_path = "${_final_apk_path}.pathmap.txt"
     }
     _res_size_info_path = "$target_out_dir/$target_name.ap_.info"
-    _final_apk_path_no_ext_list =
-        process_file_template([ _final_apk_path ],
-                              "{{source_dir}}/{{source_name_part}}")
-    _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
-    assert(_final_apk_path_no_ext != "")  # Mark as used.
+    if (!_is_bundle_module) {
+      _final_apk_path_no_ext_list =
+          process_file_template([ _final_apk_path ],
+                                "{{source_dir}}/{{source_name_part}}")
+      _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
+      assert(_final_apk_path_no_ext != "")  # Mark as used.
+    }
 
     # Non-base bundle modules create only proto resources.
     if (!_is_bundle_module || _is_base_module) {
@@ -2263,11 +2255,14 @@ if (enable_java_templates) {
 
     _use_chromium_linker =
         defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
+    _use_modern_linker =
+        defined(invoker.use_modern_linker) && invoker.use_modern_linker
 
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
 
     assert(_use_chromium_linker || true)  # Mark as used.
+    assert(_use_modern_linker || true)  # Mark as used.
     assert(!_load_library_from_apk || _use_chromium_linker,
            "load_library_from_apk requires use_chromium_linker")
 
@@ -2352,7 +2347,7 @@ if (enable_java_templates) {
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
-    if (_proguard_enabled) {
+    if (!_is_bundle_module && _proguard_enabled) {
       _proguard_mapping_path = "$_final_apk_path.mapping"
     }
 
@@ -2653,11 +2648,7 @@ if (enable_java_templates) {
 
     if (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) {
       write_native_libraries_java("${_template_name}__native_libraries") {
-        forward_variables_from(invoker,
-                               [
-                                 "dont_load_shared_libraries",
-                                 "enable_chromium_linker_tests",
-                               ])
+        forward_variables_from(invoker, [ "enable_chromium_linker_tests" ])
         deps = [
           ":${_template_name}__secondary_abi_shared_library_list",
           ":${_template_name}__shared_library_list",
@@ -2675,6 +2666,7 @@ if (enable_java_templates) {
         }
         enable_chromium_linker = _use_chromium_linker
         load_library_from_apk = _load_library_from_apk
+        use_modern_linker = _use_modern_linker
         use_final_fields = true
       }
       _srcjar_deps += [ ":${_template_name}__native_libraries" ]
@@ -2731,7 +2723,11 @@ if (enable_java_templates) {
                                  "enable_native_mocks",
                                  "require_native_mocks",
                                ])
-        target = ":$_template_name"
+        if (defined(invoker.bundle_target)) {
+          target = invoker.bundle_target
+        } else {
+          target = ":$_template_name"
+        }
         if (defined(invoker.jni_registration_header)) {
           header_output = invoker.jni_registration_header
         }
@@ -2827,7 +2823,12 @@ if (enable_java_templates) {
         if (_enable_main_dex_list) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
-        proguard_mapping_path = _proguard_mapping_path
+        if (!dcheck_always_on && (!defined(testonly) || !testonly)) {
+          proguard_configs += [ "//build/android/dcheck_is_off.flags" ]
+        }
+        if (!_is_bundle_module) {
+          proguard_mapping_path = _proguard_mapping_path
+        }
       }
 
       # Don't depend on the runtime_deps target in order to avoid having to
@@ -3270,6 +3271,7 @@ if (enable_java_templates) {
     }
 
     group(target_name) {
+      forward_variables_from(invoker, [ "metadata" ])
       if (_incremental_allowed && incremental_apk_by_default) {
         deps = [
           ":${target_name}_incremental",
@@ -3325,6 +3327,7 @@ if (enable_java_templates) {
   #
   # Supports all variables of android_apk_or_module(), plus:
   #   apk_name: Name for final apk.
+  #   final_apk_path: (Optional) path to output APK.
   #
   # Example
   #   android_apk("foo_apk") {
@@ -3365,14 +3368,13 @@ if (enable_java_templates) {
                                "dexlayout_profile",
                                "disable_r8_outlining",
                                "dist_ijar_path",
-                               "dont_load_shared_libraries",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
                                "enable_native_mocks",
-                               "final_apk_path",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
+                               "use_modern_linker",
                                "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
@@ -3429,8 +3431,14 @@ if (enable_java_templates) {
                                "write_asset_list",
                              ])
       is_bundle_module = false
-      if (defined(invoker.apk_name)) {
-        name = invoker.apk_name
+      name = invoker.apk_name
+      if (defined(invoker.final_apk_path)) {
+        final_apk_path = invoker.final_apk_path
+      } else {
+        final_apk_path = "$root_build_dir/apks/${invoker.apk_name}.apk"
+      }
+      metadata = {
+        install_artifacts = [ final_apk_path ]
       }
     }
   }
@@ -3445,14 +3453,8 @@ if (enable_java_templates) {
   #     base module (optional).
   #   base_module_target: Base module target of the bundle this module will be
   #     added to (optional). Can only be specified for non-base modules.
-  #   native_switches: Forwarded switches to decide how to assign native
-  #     libraries and placeholders (optional). Its members are:
-  #     * is_64_bit_browser
-  #     * include_32_bit_webview
-  #   loadable_modules_if_32_bit: Native libraries to use if the binary ABI is
-  #     32-bit (optional).
-  #   loadable_modules_if_64_bit: Native libraries to use if the binary ABI is
-  #     64-bit (optional).
+  #   bundle_target: Bundle target that this module belongs to (optional).
+  #     Can only be specified for base modules.
   template("android_app_bundle_module") {
     _is_base_module = defined(invoker.is_base_module) && invoker.is_base_module
 
@@ -3467,6 +3469,7 @@ if (enable_java_templates) {
       assert(!defined(invoker.build_hooks_android_impl_deps))
       assert(!defined(invoker.shared_libraries))
       assert(defined(invoker.base_module_target))
+      assert(!defined(invoker.bundle_target))
     }
 
     # TODO(tiborg): We have several flags that are necessary for workarounds
@@ -3487,6 +3490,7 @@ if (enable_java_templates) {
                                "android_manifest_dep",
                                "app_as_shared_lib",
                                "base_module_target",
+                               "bundle_target",
                                "chromium_code",
                                "data",
                                "data_deps",
@@ -3504,10 +3508,12 @@ if (enable_java_templates) {
                                "jni_registration_header",
                                "jni_sources_blacklist",
                                "load_library_from_apk",
+                               "loadable_modules",
+                               "locale_config_java_packages",
                                "manifest_package",
                                "max_sdk_version",
-                               "locale_config_java_packages",
                                "min_sdk_version",
+                               "native_lib_placeholders",
                                "native_lib_version_arg",
                                "native_lib_version_rule",
                                "negative_main_dex_globs",
@@ -3523,7 +3529,9 @@ if (enable_java_templates) {
                                "resource_blacklist_regex",
                                "resource_ids_provider_dep",
                                "resources_config_path",
+                               "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
+                               "secondary_native_lib_placeholders",
                                "shared_libraries",
                                "shared_resources",
                                "shared_resources_whitelist_locales",
@@ -3542,110 +3550,60 @@ if (enable_java_templates) {
                                "version_name",
                                "write_asset_list",
                              ])
-
-      # Specify native libraries and placeholders.
-      if (defined(invoker.native_switches)) {
-        _native_switches = invoker.native_switches
-
-        assert(invoker.loadable_modules_if_32_bit != [])
-        assert(!_native_switches.is_64_bit_browser ||
-               invoker.loadable_modules_if_64_bit != [])
-
-        # Decision logic: Assign decision variables:
-        #   loadable_modules_to_use: Either |loadable_modules_if_64_bit| or
-        #     |loadable_modules_if_32_bit|.
-        #   native_is_primary: Whether |loadable_modules_to_use| should be
-        #     assigned as primary ABI or secondary ABI.
-        #   native_need_placeholder: Whether a placeholder is needed for the
-        #     complementary ABI to the library.
-        if (_native_switches.is_64_bit_browser) {
-          _loadable_modules_to_use = invoker.loadable_modules_if_64_bit
-          _native_is_primary =
-              !build_apk_secondary_abi || android_64bit_target_cpu
-          _native_need_placeholder =
-              build_apk_secondary_abi && _native_switches.include_32_bit_webview
-        } else {
-          if (defined(invoker.loadable_modules_if_64_bit)) {
-            not_needed(invoker, [ "loadable_modules_if_64_bit" ])
-          }
-          _loadable_modules_to_use = invoker.loadable_modules_if_32_bit
-          _native_is_primary =
-              !build_apk_secondary_abi || !android_64bit_target_cpu
-          _native_need_placeholder =
-              build_apk_secondary_abi && android_64bit_target_cpu
-        }
-
-        # Realization logic: Assign libraries and placeholders.
-        if (_native_is_primary) {
-          loadable_modules = _loadable_modules_to_use
-          if (_native_need_placeholder) {
-            secondary_native_lib_placeholders = [ "libdummy.so" ]
-          }
-        } else {
-          secondary_abi_loadable_modules = _loadable_modules_to_use
-          if (_native_need_placeholder) {
-            native_lib_placeholders = [ "libdummy.so" ]
-          }
-        }
-      } else {
-        assert(!defined(invoker.loadable_modules_if_32_bit))
-        assert(!defined(invoker.loadable_modules_if_64_bit))
-        forward_variables_from(invoker,
-                               [
-                                 "loadable_modules",
-                                 "native_lib_placeholders",
-                                 "secondary_abi_loadable_modules",
-                                 "secondary_native_lib_placeholders",
-                               ])
-      }
-
       is_bundle_module = true
       generate_buildconfig_java = _is_base_module
       no_build_hooks = !_is_base_module
-      if (defined(invoker.module_name)) {
-        name = invoker.module_name
-      }
     }
   }
 
-  # Declare an Android instrumentation test apk
+  # Declare an Android instrumentation test runner.
   #
-  # This target creates an Android instrumentation test apk.
+  # This target creates a wrapper script to run Android instrumentation tests.
   #
-  # Supports all variables of android_apk(), plus:
-  #   apk_under_test: The apk being tested (optional).
+  # Arguments:
+  #   android_test_apk: The target containing the tests.
+  #   android_test_apk_name: The apk_name in android_test_apk
+  #
+  #   The following args are optional:
+  #   apk_under_test: The target being tested.
+  #   additional_apks: Additional targets to install on device.
+  #   command_line_args: Command line arguments to set for APK under test.
+  #   data: List of runtime data file dependencies.
+  #   data_deps: List of non-linked dependencies.
+  #   deps: List of private dependencies.
+  #   ignore_all_data_deps: Don't build data_deps and additional_apks.
+  #   modules: Extra dynamic feature modules to install for test target. Can
+  #     only be used if |apk_under_test| is an Android app bundle.
+  #   never_incremental: Disable incremental builds.
+  #   proguard_enabled: Enable proguard
+  #   public_deps: List of public dependencies
   #
   # Example
-  #   instrumentation_test_apk("foo_test_apk") {
-  #     android_manifest = "AndroidManifest.xml"
-  #     apk_name = "FooTest"
-  #     apk_under_test = "Foo"
-  #     java_files = [
-  #       "android/org/chromium/foo/FooTestCase.java",
-  #       "android/org/chromium/foo/FooExampleTest.java",
-  #     ]
-  #     deps = [
-  #       ":foo_test_support_java"
-  #     ]
+  #   instrumentation_test_runner("foo_test_for_bar") {
+  #     android_test_apk: ":foo"
+  #     android_test_apk_name: "Foo"
+  #     apk_under_test: ":bar"
   #   }
-  template("instrumentation_test_apk") {
-    assert(defined(invoker.apk_name))
+  template("instrumentation_test_runner") {
     testonly = true
+    assert(defined(invoker.android_test_apk))
+    assert(defined(invoker.android_test_apk_name))
     _incremental_allowed =
         !defined(invoker.never_incremental) || !invoker.never_incremental
-    _apk_target_name = "${target_name}__apk"
+    _apk_target_name =
+        get_label_info(invoker.android_test_apk, "name") + "__apk"
     _test_runner_target_name = "${target_name}__test_runner_script"
-    _dist_ijar_path =
-        "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
+    _dist_ijar_path = "$root_build_dir/test.lib.java/" +
+                      invoker.android_test_apk_name + ".jar"
     if (_incremental_allowed) {
       _incremental_test_runner_target_name =
           "${_test_runner_target_name}_incremental"
-      _incremental_test_name = "${invoker.target_name}_incremental"
+      _incremental_test_name = "${target_name}_incremental"
     }
 
     if (incremental_apk_by_default && _incremental_allowed) {
       _incremental_test_runner_target_name = _test_runner_target_name
-      _incremental_test_name = invoker.target_name
+      _incremental_test_name = "${target_name}"
     }
 
     if (!incremental_apk_by_default ||
@@ -3655,10 +3613,12 @@ if (enable_java_templates) {
                                [
                                  "additional_apks",
                                  "apk_under_test",
+                                 "command_line_args",
                                  "data",
                                  "data_deps",
                                  "deps",
                                  "ignore_all_data_deps",
+                                 "modules",
                                  "proguard_enabled",
                                  "public_deps",
                                ])
@@ -3669,6 +3629,9 @@ if (enable_java_templates) {
       }
     }
     if (_incremental_allowed) {
+      if (defined(invoker.proguard_enabled)) {
+        not_needed(invoker, [ "proguard_enabled" ])
+      }
       test_runner_script(_incremental_test_runner_target_name) {
         forward_variables_from(invoker,
                                [
@@ -3687,7 +3650,68 @@ if (enable_java_templates) {
         incremental_install = true
       }
     }
+    group(target_name) {
+      if (incremental_apk_by_default && _incremental_allowed) {
+        public_deps = [
+          ":${target_name}_incremental",
+        ]
+      } else {
+        public_deps = [
+          ":$_apk_target_name",
+          ":$_test_runner_target_name",
 
+          # Required by test runner to enumerate test list.
+          ":${_apk_target_name}_dist_ijar",
+        ]
+        if (defined(invoker.apk_under_test)) {
+          public_deps += [ invoker.apk_under_test ]
+        }
+      }
+    }
+    if (_incremental_allowed) {
+      group("${target_name}_incremental") {
+        public_deps = [
+          ":$_incremental_test_runner_target_name",
+          ":${_apk_target_name}_incremental",
+
+          # Required by test runner to enumerate test list.
+          ":${_apk_target_name}_dist_ijar",
+        ]
+        if (defined(invoker.apk_under_test)) {
+          public_deps += [ "${invoker.apk_under_test}_incremental" ]
+        }
+      }
+    }
+  }
+
+  # Declare an Android instrumentation test apk
+  #
+  # This target creates an Android instrumentation test apk.
+  #
+  # Supports all variables of android_apk(), plus:
+  #   apk_under_test: The apk being tested (optional).
+  #
+  # Example
+  #   android_test_apk("foo_test_apk") {
+  #     android_manifest = "AndroidManifest.xml"
+  #     apk_name = "FooTest"
+  #     apk_under_test = "Foo"
+  #     java_files = [
+  #       "android/org/chromium/foo/FooTestCase.java",
+  #       "android/org/chromium/foo/FooExampleTest.java",
+  #     ]
+  #     deps = [
+  #       ":foo_test_support_java"
+  #     ]
+  #   }
+  template("android_test_apk") {
+    assert(defined(invoker.apk_name))
+    testonly = true
+    _incremental_allowed =
+        !defined(invoker.never_incremental) || !invoker.never_incremental
+    _apk_target_name = "${target_name}__apk"
+    _dist_ijar_path =
+        "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
     android_apk(_apk_target_name) {
       deps = []
       data_deps = []
@@ -3703,8 +3727,9 @@ if (enable_java_templates) {
       } else {
         enable_native_mocks = true
       }
-      if (defined(invoker.additional_apks)) {
-        data_deps += invoker.additional_apks
+
+      if (defined(additional_apks)) {
+        data_deps += additional_apks
       }
       if (defined(invoker.apk_under_test)) {
         # Prevent a build_hooks_android_impl exising in both the test apks as
@@ -3745,10 +3770,6 @@ if (enable_java_templates) {
       } else {
         public_deps = [
           ":$_apk_target_name",
-          ":$_test_runner_target_name",
-
-          # Required by test runner to enumerate test list.
-          ":${_apk_target_name}_dist_ijar",
         ]
         if (defined(invoker.apk_under_test)) {
           public_deps += [ invoker.apk_under_test ]
@@ -3774,14 +3795,44 @@ if (enable_java_templates) {
     if (_incremental_allowed) {
       group("${target_name}_incremental") {
         public_deps = [
-          ":$_incremental_test_runner_target_name",
-          ":${_apk_target_name}_dist_ijar",
           ":${_apk_target_name}_incremental",
         ]
         if (defined(invoker.apk_under_test)) {
           public_deps += [ "${invoker.apk_under_test}_incremental" ]
         }
       }
+    }
+  }
+
+  # Declare an Android instrumentation test apk with wrapper script.
+  #
+  # This target creates an Android instrumentation test apk with wrapper script
+  # to run the test.
+  #
+  # Supports all variables of android_test_apk.
+  template("instrumentation_test_apk") {
+    assert(defined(invoker.apk_name))
+    _apk_target_name = "${target_name}__test_apk"
+    android_test_apk(_apk_target_name) {
+      forward_variables_from(invoker, "*")
+    }
+    instrumentation_test_runner(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "additional_apks",
+                               "apk_under_test",
+                               "command_line_args",
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "ignore_all_data_deps",
+                               "modules",
+                               "never_incremental",
+                               "proguard_enabled",
+                               "public_deps",
+                             ])
+      android_test_apk = ":${_apk_target_name}"
+      android_test_apk_name = invoker.apk_name
     }
   }
 
@@ -4051,7 +4102,8 @@ if (enable_java_templates) {
   #   ignore_assets: Whether to ignore assets found in the .aar.
   #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
   #       See also extract_native_libraries.
-  #   ignore_proguard_configs = Whether to ignore proguard configs.
+  #   ignore_proguard_configs: Whether to ignore proguard configs.
+  #   strip_resources: Whether to ignore android resources found in the .aar.
   #   extract_native_libraries: Whether to extract .so files found in the .aar.
   #       If the file contains .so, either extract_native_libraries or
   #       ignore_native_libraries must be set.
@@ -4073,7 +4125,7 @@ if (enable_java_templates) {
     if (defined(invoker.info_path)) {
       _info_path = invoker.info_path
     }
-    _output_path = "${target_gen_dir}/${target_name}"
+    _output_path = "${target_out_dir}/${target_name}"
     _unpack_target_name = "${target_name}__unpack_aar"
     _ignore_aidl = defined(invoker.ignore_aidl) && invoker.ignore_aidl
     _ignore_assets = defined(invoker.ignore_assets) && invoker.ignore_assets
@@ -4083,6 +4135,8 @@ if (enable_java_templates) {
                                invoker.ignore_proguard_configs
     _extract_native_libraries = defined(invoker.extract_native_libraries) &&
                                 invoker.extract_native_libraries
+    _strip_resources =
+        defined(invoker.strip_resources) && invoker.strip_resources
 
     # Scan the AAR file and determine the resources and jar files.
     # Some libraries might not have resources; others might have two jars.
@@ -4133,6 +4187,9 @@ if (enable_java_templates) {
         "--assert-info-file",
         rebase_path(_info_path, root_build_dir),
       ]
+      if (_strip_resources) {
+        args += [ "--ignore-resources" ]
+      }
       inputs = [
         invoker.aar_path,
       ]
@@ -4140,14 +4197,14 @@ if (enable_java_templates) {
         "${_output_path}/AndroidManifest.xml",
       ]
 
-      if (_scanned_files.has_r_text_file) {
+      if (!_strip_resources && _scanned_files.has_r_text_file) {
         # Certain packages, in particular Play Services have no R.txt even
         # though its presence is mandated by AAR spec. Such packages cause
         # spurious rebuilds if this output is specified unconditionally.
         outputs += [ "${_output_path}/R.txt" ]
       }
 
-      if (_scanned_files.resources != []) {
+      if (!_strip_resources && _scanned_files.resources != []) {
         outputs += get_path_info(
                 rebase_path(_scanned_files.resources, "", _output_path),
                 "abspath")
@@ -4169,8 +4226,6 @@ if (enable_java_templates) {
       }
     }
 
-    _strip_resources =
-        defined(invoker.strip_resources) && invoker.strip_resources
     _has_unignored_resources =
         !_strip_resources &&
         (_scanned_files.resources != [] || _scanned_files.has_r_text_file)
@@ -4863,6 +4918,37 @@ if (enable_java_templates) {
         public_deps += [ ":$_size_info_target" ]
       }
     }
+
+    _apks_path = "$root_build_dir/apks/$_bundle_name.apks"
+    action_with_pydeps("${target_name}_apks") {
+      script = "//build/android/gyp/create_app_bundle_apks.py"
+      inputs = [
+        _bundle_path,
+      ]
+      outputs = [
+        _apks_path,
+      ]
+      args = [
+        "--bundle",
+        _rebased_bundle_path,
+        "--output",
+        rebase_path(_apks_path, root_build_dir),
+        "--aapt2-path",
+        rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
+        "--keystore-path",
+        rebase_path(android_keystore_path, root_build_dir),
+        "--keystore-name",
+        android_keystore_name,
+        "--keystore-password",
+        android_keystore_password,
+      ]
+      deps = [
+        ":$_bundle_target_name",
+      ]
+      metadata = {
+        install_artifacts = [ _apks_path ]
+      }
+    }
   }
 
   # Create an .apks file from an .aab file. The .apks file will contain the
@@ -4886,7 +4972,7 @@ if (enable_java_templates) {
                                "deps",
                                "testonly",
                              ])
-      script = "//build/android/gyp/create_app_bundle_minimal_apks.py"
+      script = "//build/android/gyp/create_app_bundle_apks.py"
       _dir = get_path_info(invoker.bundle_path, "dir")
       _name = get_path_info(invoker.bundle_path, "name")
       _output_path = "$_dir/$_name.minimal.apks"
@@ -4909,6 +4995,7 @@ if (enable_java_templates) {
         android_keystore_name,
         "--keystore-password",
         android_keystore_password,
+        "--minimal",
       ]
     }
   }

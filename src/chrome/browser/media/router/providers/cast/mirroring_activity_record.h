@@ -12,7 +12,7 @@
 #include "chrome/browser/media/router/providers/cast/activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/mojo/media_router.mojom-forward.h"
+#include "chrome/common/media_router/mojom/media_router.mojom-forward.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
@@ -77,7 +77,8 @@ class MirroringActivityRecord : public ActivityRecord,
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
  protected:
-  void OnSessionSet() override;
+  void CreateMediaController(mojom::MediaControllerRequest media_controller,
+                             mojom::MediaStatusObserverPtr observer) override;
 
  private:
   enum class MirroringType {
@@ -103,7 +104,6 @@ class MirroringActivityRecord : public ActivityRecord,
   const int channel_id_;
   const MirroringType mirroring_type_;
   OnStopCallback on_stop_;
-  base::OnceCallback<void()> on_session_set_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };
 

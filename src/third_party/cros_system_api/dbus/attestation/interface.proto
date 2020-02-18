@@ -331,6 +331,10 @@ message SignEnterpriseChallengeRequest {
   optional bytes challenge = 6;
   // The VA server that will handle the challenge.
   optional VAType va_type = 7;
+  // The name of the key used for SignedPublicKeyAndChallenge. If left empty,
+  // the same key used to sign the challenge response (EMK or EUK) will be used
+  // for SignedPublicKeyAndChallenge.
+  optional string key_name_for_spkac = 8;
 }
 
 message SignEnterpriseChallengeReply {

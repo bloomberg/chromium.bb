@@ -113,15 +113,15 @@ struct VmProcessData {
 };
 
 CrostiniProcessTaskProvider::CrostiniProcessTaskProvider()
-    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+    : task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_VISIBLE})),
       refresh_timer_(FROM_HERE,
                      kRefreshProcessListDelay,
                      base::BindRepeating(
                          &CrostiniProcessTaskProvider::RequestVmProcessList,
-                         base::Unretained(this))),
-      weak_ptr_factory_(this) {}
+                         base::Unretained(this))) {}
 
 CrostiniProcessTaskProvider::~CrostiniProcessTaskProvider() = default;
 

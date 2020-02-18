@@ -59,7 +59,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                                                    bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   static constexpr LocalizedString kLocalizedStrings[] = {
     // Add common strings.
@@ -178,6 +178,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"itemSourceUnpacked", IDS_EXTENSIONS_ITEM_SOURCE_UNPACKED},
     {"itemSourceWebstore", IDS_EXTENSIONS_ITEM_SOURCE_WEBSTORE},
     {"itemVersion", IDS_EXTENSIONS_ITEM_VERSION},
+    {"itemReloaded", IDS_EXTENSIONS_ITEM_RELOADED},
+    {"itemReloading", IDS_EXTENSIONS_ITEM_RELOADING},
     // TODO(dpapad): Replace this with an Extensions specific string.
     {"itemSize", IDS_DIRECTORY_LISTING_SIZE},
     {"itemAllowOnFileUrls", IDS_EXTENSIONS_ALLOW_FILE_ACCESS},

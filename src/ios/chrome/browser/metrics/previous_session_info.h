@@ -10,6 +10,8 @@
 namespace previous_session_info_constants {
 // Key in the UserDefaults for a boolean value keeping track of memory warnings.
 extern NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating;
+// Key in the UserDefaults for a double value which stores OS start time.
+extern NSString* const kOSStartTime;
 
 // The values of this enum are persisted (both to NSUserDefaults and logs) and
 // represent the state of the last session (which may have been running a
@@ -80,9 +82,17 @@ enum class DeviceBatteryState {
 // session.
 @property(nonatomic, assign, readonly) BOOL isFirstSessionAfterLanguageChange;
 
+// Whether or not the OS was restarted between the previous and the current
+// session.
+@property(nonatomic, assign, readonly) BOOL OSRestartedAfterPreviousSession;
+
 // The OS version during the previous session or nil if no previous session data
 // is available.
 @property(nonatomic, strong, readonly) NSString* OSVersion;
+
+// The version of the previous session or nil if no previous session data is
+// available.
+@property(nonatomic, strong, readonly) NSString* previousSessionVersion;
 
 // The time at which the previous sesion ended. Note that this is only an
 // estimate and is updated whenever another value of the receiver is updated.

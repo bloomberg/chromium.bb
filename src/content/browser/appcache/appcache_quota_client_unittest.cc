@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -157,7 +157,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     delete_status_ = status;
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   int64_t usage_;
   std::set<url::Origin> origins_;
   blink::mojom::QuotaStatusCode delete_status_;
@@ -168,11 +168,24 @@ class AppCacheQuotaClientTest : public testing::Test {
   base::WeakPtrFactory<AppCacheQuotaClientTest> weak_factory_{this};
 };
 
-
 TEST_F(AppCacheQuotaClientTest, BasicCreateDestroy) {
   base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
   Call_NotifyAppCacheReady(client);
   Call_OnQuotaManagerDestroyed(client);
+  Call_NotifyAppCacheDestroyed(client);
+}
+
+TEST_F(AppCacheQuotaClientTest, QuotaManagerDestroyedInCallback) {
+  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  Call_NotifyAppCacheReady(client);
+  client->DeleteOriginData(kOriginA, kTemp,
+                           base::BindOnce(
+                               [](AppCacheQuotaClientTest* test,
+                                  base::WeakPtr<AppCacheQuotaClient> client,
+                                  blink::mojom::QuotaStatusCode) {
+                                 test->Call_OnQuotaManagerDestroyed(client);
+                               },
+                               this, client));
   Call_NotifyAppCacheDestroyed(client);
 }
 

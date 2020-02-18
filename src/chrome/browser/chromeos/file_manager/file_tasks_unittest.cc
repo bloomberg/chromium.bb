@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -27,10 +28,13 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
@@ -302,10 +306,33 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
   EXPECT_TRUE(tasks[0].is_default());
 }
 
+// Test IsFileHandlerEnabled which returns whether a file handler should be
+// used.
+TEST(FileManagerFileTasksTest, IsFileHandlerEnabled) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile test_profile;
+  crostini::CrostiniTestHelper helper(&test_profile);
+
+  apps::FileHandlerInfo crostini_import_handler;
+  crostini_import_handler.id = "import-crostini-image";
+  apps::FileHandlerInfo test_handler;
+  test_handler.id = "test";
+
+  test_profile.GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+  test_profile.GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, false);
+  EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+}
+
 // Test IsGoodMatchFileHandler which returns whether a file handle info matches
 // with files as good match or not.
 TEST(FileManagerFileTasksTest, IsGoodMatchFileHandler) {
-  using FileHandlerInfo = extensions::FileHandlerInfo;
+  using FileHandlerInfo = apps::FileHandlerInfo;
 
   std::vector<extensions::EntryInfo> entries_1;
   entries_1.emplace_back(base::FilePath(FILE_PATH_LITERAL("foo.jpg")),
@@ -419,7 +446,7 @@ class FileManagerFileTasksComplexTest : public testing::Test {
     base::RunLoop run_loop_;
   };
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
   TestingProfile test_profile_;
@@ -532,7 +559,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   ASSERT_TRUE(tasks.empty());
 }
 
-TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
+TEST_F(FileManagerFileTasksComplexTest,
+       BookmarkAppsAreNotListedInFileHandlerTasks) {
   const char kGraphrId[] = "ppcpljkgngnngojbghcdiojhbneibgdg";
   const char kGraphrFileAction[] = "https://graphr.tld/open-files/?name=raw";
   extensions::ExtensionBuilder graphr;
@@ -565,8 +593,10 @@ TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
   graphr.AddFlags(extensions::Extension::InitFromValueFlags::FROM_BOOKMARK);
 
   extension_service_->AddExtension(graphr.Build().get());
-  const extensions::Extension* extension =
-      extension_service_->GetExtensionById(kGraphrId, false);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(&test_profile_);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      kGraphrId, extensions::ExtensionRegistry::ENABLED);
 
   ASSERT_EQ(extension->GetType(), extensions::Manifest::Type::TYPE_HOSTED_APP);
   ASSERT_TRUE(extension->from_bookmark());
@@ -577,34 +607,12 @@ TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
                            .AppendASCII("foo.csv"),
                        "text/csv", false);
 
-  {
-    // Bookmark Apps should not be able to handle files unless
-    // kNativeFileSystemAPI and kFileHandlingAPI are enabled.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({},
-                                         {blink::features::kNativeFileSystemAPI,
-                                          blink::features::kFileHandlingAPI});
-    FindFileHandlerTasks(&test_profile_, entries, &tasks);
-    EXPECT_EQ(0u, tasks.size());
-    tasks.clear();
-  }
-
-  {
-    // When the flags are enabled, it should be possible to handle files from
-    // bookmark apps.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
-                                          blink::features::kFileHandlingAPI},
-                                         {});
-    // Test that when enabled, bookmark apps can handle files
-    FindFileHandlerTasks(&test_profile_, entries, &tasks);
-    // Graphr should be a valid handler.
-    ASSERT_EQ(1u, tasks.size());
-    EXPECT_EQ(kGraphrId, tasks[0].task_descriptor().app_id);
-    EXPECT_EQ(kGraphrFileAction, tasks[0].task_descriptor().action_id);
-    EXPECT_EQ(file_tasks::TaskType::TASK_TYPE_FILE_HANDLER,
-              tasks[0].task_descriptor().task_type);
-  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
+                                        blink::features::kFileHandlingAPI},
+                                       {});
+  FindFileHandlerTasks(&test_profile_, entries, &tasks);
+  EXPECT_EQ(0u, tasks.size());
 }
 
 // The basic logic is similar to a test case for FindFileHandlerTasks above.

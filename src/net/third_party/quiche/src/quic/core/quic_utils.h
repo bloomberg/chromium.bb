@@ -11,6 +11,7 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
@@ -109,7 +110,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
       TransmissionType retransmission_type);
 
   // Returns true if header with |first_byte| is considered as an IETF QUIC
-  // packet header.
+  // packet header. This only works on the server.
   static bool IsIetfPacketHeader(uint8_t first_byte);
 
   // Returns true if header with |first_byte| is considered as an IETF QUIC
@@ -162,6 +163,12 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
       QuicTransportVersion version,
       Perspective perspective);
 
+  // Generates a 64bit connection ID derived from the input connection ID.
+  // This is guaranteed to be deterministic (calling this method with two
+  // connection IDs that are equal is guaranteed to produce the same result).
+  static QuicConnectionId CreateReplacementConnectionId(
+      QuicConnectionId connection_id);
+
   // Generates a random 64bit connection ID.
   static QuicConnectionId CreateRandomConnectionId();
 
@@ -181,9 +188,15 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   static bool VariableLengthConnectionIdAllowedForVersion(
       QuicTransportVersion version);
 
+  // Returns true if the connection ID length is valid for this QUIC version.
+  static bool IsConnectionIdLengthValidForVersion(
+      size_t connection_id_length,
+      QuicTransportVersion transport_version);
+
   // Returns true if the connection ID is valid for this QUIC version.
-  static bool IsConnectionIdValidForVersion(QuicConnectionId connection_id,
-                                            QuicTransportVersion version);
+  static bool IsConnectionIdValidForVersion(
+      QuicConnectionId connection_id,
+      QuicTransportVersion transport_version);
 
   // Returns a connection ID suitable for QUIC use-cases that do not need the
   // connection ID for multiplexing. If the version allows variable lengths,

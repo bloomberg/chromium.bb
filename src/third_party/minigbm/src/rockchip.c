@@ -8,7 +8,6 @@
 
 #include <errno.h>
 #include <rockchip_drm.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -122,6 +121,13 @@ static int rockchip_init(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &metadata, BO_USE_TEXTURE_MASK);
 
+	/*
+	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
+	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
+
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
@@ -151,16 +157,6 @@ static int rockchip_init(struct driver *drv)
 	return 0;
 }
 
-static bool has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier)
-{
-	uint32_t i;
-	for (i = 0; i < count; i++)
-		if (list[i] == modifier)
-			return true;
-
-	return false;
-}
-
 static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
 					     uint32_t format, const uint64_t *modifiers,
 					     uint32_t count)
@@ -170,21 +166,25 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	struct drm_rockchip_gem_create gem_create;
 
 	if (format == DRM_FORMAT_NV12) {
-		uint32_t w_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
-		uint32_t h_mbs = DIV_ROUND_UP(ALIGN(height, 16), 16);
+		uint32_t w_mbs = DIV_ROUND_UP(width, 16);
+		uint32_t h_mbs = DIV_ROUND_UP(height, 16);
 
 		uint32_t aligned_width = w_mbs * 16;
-		uint32_t aligned_height = DIV_ROUND_UP(h_mbs * 16 * 3, 2);
+		uint32_t aligned_height = h_mbs * 16;
 
-		drv_bo_from_format(bo, aligned_width, height, format);
-		bo->total_size = bo->strides[0] * aligned_height + w_mbs * h_mbs * 128;
+		drv_bo_from_format(bo, aligned_width, aligned_height, format);
+		/*
+		 * drv_bo_from_format updates total_size. Add an extra data space for rockchip video
+		 * driver to store motion vectors.
+		 */
+		bo->total_size += w_mbs * h_mbs * 128;
 	} else if (width <= 2560 &&
-		   has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
+		   drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
 		 * pick that */
 		afbc_bo_from_format(bo, width, height, format);
 	} else {
-		if (!has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
+		if (!drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
 			errno = EINVAL;
 			drv_log("no usable modifier found\n");
 			return -1;
@@ -214,7 +214,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	if (ret) {
 		drv_log("DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%llu)\n",
 			(unsigned long long)gem_create.size);
-		return ret;
+		return -errno;
 	}
 
 	for (plane = 0; plane < bo->num_planes; plane++)
@@ -299,7 +299,7 @@ static int rockchip_bo_flush(struct bo *bo, struct mapping *mapping)
 	return 0;
 }
 
-static uint32_t rockchip_resolve_format(uint32_t format, uint64_t use_flags)
+static uint32_t rockchip_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:

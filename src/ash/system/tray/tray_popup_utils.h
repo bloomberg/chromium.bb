@@ -100,13 +100,6 @@ class TrayPopupUtils {
   // TODO(bruthig): Update all system menu rows to use this.
   static views::ImageView* CreateMainImageView();
 
-  // Returns an image view to be used in the 'more' region of default rows. This
-  // is used for all 'more' images as well as other images that appear in this
-  // region, e.g. audio output icon.
-  //
-  // TODO(bruthig): Update all default rows to use this.
-  static views::ImageView* CreateMoreImageView();
-
   // Returns a slider configured for proper layout within a TriView container
   // with a FillLayout.
   static views::Slider* CreateSlider(views::SliderListener* listener);
@@ -161,7 +154,7 @@ class TrayPopupUtils {
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host,
       const gfx::Point& center_point,
-      SkColor color = kTrayPopupInkDropBaseColor);
+      SkColor background_color);
 
   // Creates in InkDropHighlight instance for |host| according to the
   // |ink_drop_style|.
@@ -171,7 +164,7 @@ class TrayPopupUtils {
   static std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host,
-      SkColor color = kTrayPopupInkDropBaseColor);
+      SkColor background_color);
 
   // Creates a SkPath matching the TrayPopupInkDropStyle. This path is normally
   // used to generate the focus ring and ink drop shapes.
@@ -191,10 +184,11 @@ class TrayPopupUtils {
   static bool CanOpenWebUISettings();
 
   // Initializes a row in the system menu as checkable and update the check mark
-  // status of this row.
+  // status of this row. If |enterprise_managed| is true, adds an enterprise
+  // managed icon to the row.
   static void InitializeAsCheckableRow(HoverHighlightView* container,
-                                       bool checked);
-
+                                       bool checked,
+                                       bool enterprise_managed);
   // Updates the visibility and a11y state of the checkable row |container|.
   static void UpdateCheckMarkVisibility(HoverHighlightView* container,
                                         bool visible);

@@ -132,11 +132,22 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
   }
 }
 
-bool LoginScreenClient::ValidateParentAccessCode(
+void LoginScreenClient::AuthenticateUserWithChallengeResponse(
     const AccountId& account_id,
-    const std::string& access_code) {
+    base::OnceCallback<void(bool)> callback) {
+  if (delegate_) {
+    delegate_->HandleAuthenticateUserWithChallengeResponse(account_id,
+                                                           std::move(callback));
+    auth_recorder_->RecordAuthMethod(
+        chromeos::LoginAuthRecorder::AuthMethod::kChallengeResponse);
+  }
+}
+
+bool LoginScreenClient::ValidateParentAccessCode(const AccountId& account_id,
+                                                 const std::string& access_code,
+                                                 base::Time validation_time) {
   return chromeos::parent_access::ParentAccessService::Get()
-      .ValidateParentAccessCode(account_id, access_code);
+      .ValidateParentAccessCode(account_id, access_code, validation_time);
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {
@@ -220,6 +231,12 @@ void LoginScreenClient::ShowAccountAccessHelpApp() {
   scoped_refptr<chromeos::HelpAppLauncher>(
       new chromeos::HelpAppLauncher(nullptr))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+}
+
+void LoginScreenClient::ShowParentAccessHelpApp() {
+  scoped_refptr<chromeos::HelpAppLauncher>(
+      new chromeos::HelpAppLauncher(nullptr))
+      ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
 }
 
 void LoginScreenClient::ShowLockScreenNotificationSettings() {

@@ -63,8 +63,7 @@ EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
       cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
       retry_limit_(kRetryLimit),
-      retry_delay_(kRetryDelay),
-      weak_factory_(this) {
+      retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -119,6 +118,7 @@ void EnrollmentCertificateUploaderImpl::GetCertificate() {
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
       false,             // Do not force a new key to be generated.
+      std::string(),     // Leave key name empty to generate a default name.
       base::BindRepeating(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(AttestationStatus)> on_failure,
@@ -165,7 +165,7 @@ void EnrollmentCertificateUploaderImpl::HandleGetCertificateFailure(
 
 void EnrollmentCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&EnrollmentCertificateUploaderImpl::GetCertificate,
                        weak_factory_.GetWeakPtr()),

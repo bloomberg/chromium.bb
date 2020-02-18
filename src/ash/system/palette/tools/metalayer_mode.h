@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/system/palette/common_palette_tool.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"
@@ -22,7 +22,7 @@ namespace ash {
 // menu, but also by the stylus button click.
 class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
                                  public ui::EventHandler,
-                                 public DefaultVoiceInteractionObserver,
+                                 public AssistantStateObserver,
                                  public HighlighterController::Observer {
  public:
   explicit MetalayerMode(Delegate* delegate);
@@ -33,7 +33,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // from |enabled| which means that the palette tool is currently selected by
   // the user.
   bool feature_enabled() const {
-    return voice_interaction_enabled_ && voice_interaction_context_enabled_ &&
+    return assistant_enabled_ && assistant_context_enabled_ &&
            assistant_allowed_state_ == mojom::AssistantAllowedState::ALLOWED;
   }
 
@@ -64,11 +64,10 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
 
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override;
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionContextEnabled(bool enabled) override;
+  // AssistantStateObserver:
+  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantSettingsEnabled(bool enabled) override;
+  void OnAssistantContextEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
 
@@ -87,9 +86,9 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   mojom::VoiceInteractionState voice_interaction_state_ =
       mojom::VoiceInteractionState::NOT_READY;
 
-  bool voice_interaction_enabled_ = false;
+  bool assistant_enabled_ = false;
 
-  bool voice_interaction_context_enabled_ = false;
+  bool assistant_context_enabled_ = false;
 
   mojom::AssistantAllowedState assistant_allowed_state_ =
       mojom::AssistantAllowedState::ALLOWED;
@@ -99,7 +98,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // True when the mode is activated via the stylus barrel button.
   bool activated_via_button_ = false;
 
-  base::WeakPtrFactory<MetalayerMode> weak_factory_;
+  base::WeakPtrFactory<MetalayerMode> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MetalayerMode);
 };

@@ -33,9 +33,9 @@
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/cert/cert_verifier.h"
@@ -51,7 +51,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
@@ -131,7 +131,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOSIOThread* io_thread)
     : io_thread_(io_thread),
       network_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO})) {}
+          base::CreateSingleThreadTaskRunner({web::WebThread::IO})) {}
 
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
@@ -210,10 +210,9 @@ net::NetLog* IOSIOThread::net_log() {
 
 void IOSIOThread::ChangedToOnTheRecord() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::BindOnce(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
-                     base::Unretained(this)));
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
+                                base::Unretained(this)));
 }
 
 net::URLRequestContextGetter* IOSIOThread::system_url_request_context_getter() {
@@ -255,7 +254,8 @@ void IOSIOThread::Init() {
   globals_->ssl_config_service.reset(new net::SSLConfigServiceDefaults());
 
   CreateDefaultAuthHandlerFactory();
-  globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
+  globals_->http_server_properties =
+      std::make_unique<net::HttpServerProperties>();
   // In-memory cookie store.
   // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
   globals_->system_cookie_store.reset(

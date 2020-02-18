@@ -3,13 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""""Unittest ChromeOS image signer logic"""
+"""Unittest ChromeOS image signer logic"""
 
 from __future__ import print_function
 
-import ConfigParser
 import io
 import os
+
+from six.moves import configparser
 
 from chromite.lib import cros_test_lib
 from chromite.signing.lib import keys
@@ -25,7 +26,7 @@ class TestSignerConfig(cros_test_lib.TestCase):
                       versionrev='R24-1.2.3.4', keyset='link-mp', channel='dev',
                       input_files=('foo.bin'),
                       output_files=('@ROOTNAME@-@VERSION@.bin')):
-    """"Returns SignerConfig, providing sane defaults."""
+    """Returns SignerConfig, providing sane defaults."""
     return(signer.SignerInstructionConfig(archive=archive,
                                           board=board,
                                           artifact_type=artifact_type,
@@ -53,7 +54,7 @@ class TestSignerConfig(cros_test_lib.TestCase):
     initial_sc = self.GetSignerConfig()
 
     # Create INI file from initial SignerConfig
-    cp = ConfigParser.ConfigParser()
+    cp = configparser.ConfigParser()
     for section, options in initial_sc.ToIniDict().items():
       cp.add_section(section)
       for option, value in options.items():

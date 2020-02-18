@@ -5,8 +5,8 @@
 #include "media/capture/mojom/video_capture_types_mojom_traits.h"
 
 #include "media/base/ipc/media_param_traits_macros.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry.mojom.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 
@@ -115,8 +115,6 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::RGB24;
     case media::VideoPixelFormat::PIXEL_FORMAT_MJPEG:
       return media::mojom::VideoCapturePixelFormat::MJPEG;
-    case media::VideoPixelFormat::PIXEL_FORMAT_MT21:
-      return media::mojom::VideoCapturePixelFormat::MT21;
     case media::VideoPixelFormat::PIXEL_FORMAT_YUV420P9:
       return media::mojom::VideoCapturePixelFormat::YUV420P9;
     case media::VideoPixelFormat::PIXEL_FORMAT_YUV420P10:
@@ -196,9 +194,6 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
     case media::mojom::VideoCapturePixelFormat::MJPEG:
       *output = media::PIXEL_FORMAT_MJPEG;
       return true;
-    case media::mojom::VideoCapturePixelFormat::MT21:
-      *output = media::PIXEL_FORMAT_MT21;
-      return true;
     case media::mojom::VideoCapturePixelFormat::YUV420P9:
       *output = media::PIXEL_FORMAT_YUV420P9;
       return true;
@@ -256,10 +251,8 @@ EnumTraits<media::mojom::VideoCaptureBufferType,
           kSharedMemoryViaRawFileDescriptor;
     case media::VideoCaptureBufferType::kMailboxHolder:
       return media::mojom::VideoCaptureBufferType::kMailboxHolder;
-#if defined(OS_CHROMEOS)
     case media::VideoCaptureBufferType::kGpuMemoryBuffer:
       return media::mojom::VideoCaptureBufferType::kGpuMemoryBuffer;
-#endif
   }
   NOTREACHED();
   return media::mojom::VideoCaptureBufferType::kSharedMemory;
@@ -282,11 +275,9 @@ bool EnumTraits<media::mojom::VideoCaptureBufferType,
     case media::mojom::VideoCaptureBufferType::kMailboxHolder:
       *output = media::VideoCaptureBufferType::kMailboxHolder;
       return true;
-#if defined(OS_CHROMEOS)
     case media::mojom::VideoCaptureBufferType::kGpuMemoryBuffer:
       *output = media::VideoCaptureBufferType::kGpuMemoryBuffer;
       return true;
-#endif
   }
   NOTREACHED();
   return false;

@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider.h"
 #include "extensions/browser/extension_registry.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -34,7 +35,10 @@ class AppListAppClickData;
 
 namespace app_list {
 
-// This class logs metrics associated with clicking on apps in ChromeOS.
+// This class logs metrics associated with clicking on apps in ChromeOS. It also
+// uses the feature data to create app rankings. These rankings are calculated
+// using inference with the aggregated ML model.
+//
 // Logging is restricted to Arc apps with sync enabled, Chrome apps from the
 // app store, PWAs and bookmark apps. This class uses UKM for logging,
 // however, the metrics are not keyed by navigational urls. Instead, for Chrome
@@ -46,7 +50,8 @@ namespace app_list {
 class AppLaunchEventLogger {
  public:
   AppLaunchEventLogger();
-  ~AppLaunchEventLogger();
+  virtual ~AppLaunchEventLogger();
+
   // Processes a click on an app in the suggestion chip or search box and logs
   // the resulting metrics in UKM. This method calls EnforceLoggingPolicy() to
   // ensure the logging policy is complied with.
@@ -57,10 +62,14 @@ class AppLaunchEventLogger {
   // logs the resulting metrics in UKM. This method calls EnforceLoggingPolicy()
   // to ensure the logging policy is complied with.
   void OnGridClicked(const std::string& id);
-  // Provides values to be used when testing.
-  void SetAppDataForTesting(extensions::ExtensionRegistry* registry,
-                            base::DictionaryValue* arc_apps,
-                            base::DictionaryValue* arc_packages);
+  // Runs the inference to rank the apps. Call RetrieveRankings() to get the
+  // results. The inference is performed asynchronously and no guarantees are
+  // given given as to when results will be available.
+  void CreateRankings();
+  // Returns a map of app ids to ranking score. This will be an empty map unless
+  // CreateRankings() has been called. It will be incomplete until all of
+  // CreateRankings' asynchronous calls have completed.
+  std::map<std::string, float> RetrieveRankings();
 
   static const char kPackageName[];
   static const char kShouldSync[];
@@ -68,22 +77,34 @@ class AppLaunchEventLogger {
  protected:
   // Get the url used to launch a PWA or bookmark app.
   virtual const GURL& GetLaunchWebURL(const extensions::Extension* extension);
+  // Enforces logging policy, ensuring that the |app_features_map_| only
+  // contains apps that are allowed to be logged. All apps are rechecked in case
+  // they have been uninstalled since the previous check.
+  void EnforceLoggingPolicy();
+
+  // The arc apps installed on the device.
+  const base::DictionaryValue* arc_apps_ = nullptr;
+  // The arc packages installed on the device.
+  const base::DictionaryValue* arc_packages_ = nullptr;
+  // The Chrome extension registry.
+  extensions::ExtensionRegistry* registry_ = nullptr;
 
  private:
   // Removes any leading "chrome-extension://" or "arc://". Also remove any
   // trailing "/".
   std::string RemoveScheme(const std::string& id);
 
+  // Set registry_ to the ExtensionRegistry of the primary user and load that
+  // user's Arc++ apps and Arc++ packages. Tests will exit this method early,
+  // preventing the changing of these member variables from their preset test
+  // values.
+  void SetRegistryAndArcInfo();
   // Marks app as ok for policy compliance. If the app is not in
   // |app_features_map_| then add it.
   void OkApp(AppLaunchEvent_AppType app_type,
              const std::string& app_id,
              const std::string& arc_package_name,
              const std::string& pwa_url);
-  // Enforces logging policy, ensuring that the |app_features_map_| only
-  // contains apps that are allowed to be logged. All apps are rechecked in case
-  // they have been uninstalled since the previous check.
-  void EnforceLoggingPolicy();
   // Update the click rank (which ranks app by the number of clicks) for the
   // apps that have been clicked.
   void UpdateClickRank();
@@ -108,12 +129,6 @@ class AppLaunchEventLogger {
   // Logs the app click using UKM.
   void Log(AppLaunchEvent app_launch_event);
 
-  // The arc apps installed on the device.
-  const base::DictionaryValue* arc_apps_;
-  // The arc packages installed on the device.
-  const base::DictionaryValue* arc_packages_;
-  // The Chrome extension registry.
-  extensions::ExtensionRegistry* registry_;
   // A map from app id to features. Only contains apps satisfying logging
   // policy.
   base::flat_map<std::string, AppLaunchFeatures> app_features_map_;
@@ -139,8 +154,8 @@ class AppLaunchEventLogger {
   const std::unique_ptr<chromeos::power::ml::RecentEventsCounter>
       all_clicks_last_24_hours_;
 
-  // Used to prevent overwriting of parameters that are set for tests.
-  bool testing_ = false;
+  // Empty until/unless CreateRankings is called.
+  std::unique_ptr<MlAppRankProvider> ml_app_rank_provider_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<AppLaunchEventLogger> weak_factory_;

@@ -370,9 +370,9 @@ const char kWebKitFontScaleFactor[] = "webkit.webprefs.font_scale_factor";
 const char kWebKitForceEnableZoom[] = "webkit.webprefs.force_enable_zoom";
 const char kWebKitPasswordEchoEnabled[] =
     "webkit.webprefs.password_echo_enabled";
+#endif
 const char kWebKitForceDarkModeEnabled[] =
     "webkit.webprefs.force_dark_mode_enabled";
-#endif
 
 const char kWebKitCommonScript[] = "Zyyy";
 const char kWebKitStandardFontFamily[] = "webkit.webprefs.fonts.standard.Zyyy";
@@ -503,6 +503,14 @@ const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
 // A boolean pref set to true if turning the mouse wheel toward the user should
 // result in scrolling up instead of the more common scrolling down.
 const char kMouseReverseScroll[] = "settings.mouse.reverse_scroll";
+
+// A boolean pref set to true if mouse acceleration is enabled. When disabled
+// only simple linear scaling is applied based on sensitivity.
+const char kMouseAcceleration[] = "settings.mouse.acceleration";
+
+// A boolean pref set to true if touchpad acceleration is enabled. When
+// disabled only simple linear scaling is applied based on sensitivity.
+const char kTouchpadAcceleration[] = "settings.touchpad.acceleration";
 
 // A integer pref for the touchpad sensitivity.
 const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
@@ -914,9 +922,14 @@ const char kLastChildScreenTimeSaved[] = "last_child_screen_time_saved";
 // Last time that the kChildScreenTime pref was reset.
 const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 
-// Last patch on which patch notes were shown.
+// Last patch on which release notes were shown.
 const char kReleaseNotesLastShownMilestone[] =
     "last_release_notes_shown_milestone";
+
+// Amount of times the release notes suggestion chip should be
+// shown before it disappears.
+const char kReleaseNotesSuggestionChipTimesLeftToShow[] =
+    "times_left_to_show_release_notes_suggestion_chip";
 
 // Boolean pref indicating whether the NTLM authentication protocol should be
 // enabled when mounting an SMB share with a user credential by the Network File
@@ -965,11 +978,6 @@ const char kAppReinstallRecommendationEnabled[] =
 const char kStartupBrowserWindowLaunchSuppressed[] =
     "startup_browser_window_launch_suppressed";
 
-// A JSON pref for controlling which devices are whitelisted for certain urls to
-// be used via the WebUSB API.
-const char kDeviceWebUsbAllowDevicesForUrls[] =
-    "device_webusb_allow_devices_for_urls";
-
 // A string pref stored in local state. Set and read by extensions using the
 // chrome.login API.
 const char kLoginExtensionApiDataForNextLoginAttempt[] =
@@ -977,6 +985,14 @@ const char kLoginExtensionApiDataForNextLoginAttempt[] =
 
 // String containing last RSU lookup key uploaded. Empty until first upload.
 const char kLastRsuDeviceIdUploaded[] = "rsu.last_rsu_device_id_uploaded";
+
+// Boolean that determines whether to show a banner in OS Settings that links
+// to Browser settings.
+const char kSettingsShowBrowserBanner[] = "settings.cros.show_browser_banner";
+
+// Boolean user profile pref that determines whether to show a banner in browser
+// settings that links to OS settings.
+const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
@@ -1067,6 +1083,11 @@ const char kPluginsMetadata[] = "plugins.metadata";
 // Last update time of plugins resource cache.
 const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 #endif
+
+// Last time the flash deprecation message was dismissed. Used to ensure a
+// cooldown period passes before the deprecation message is displayed again.
+const char kPluginsDeprecationInfobarLastShown[] =
+    "plugins.deprecation_infobar_last_shown";
 
 // Int64 containing the internal value of the time at which the default browser
 // infobar was last dismissed by the user.
@@ -1264,9 +1285,6 @@ const char kPrintPreviewUseSystemDefaultPrinter[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-// List of external print servers configured by policy.
-const char kExternalPrintServers[] = "printing.external_print_servers";
-
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =
     "native_printing.recommended_printers";
@@ -1823,14 +1841,21 @@ const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kH2ClientCertCoalescingHosts[] =
     "ssl.client_certs.h2_coalescing_hosts";
 
+// List of single-label hostnames that will skip the check to possibly upgrade
+// from http to https.
+const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
+
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 
-// String containing list of DNS over HTTPS servers to be used.
-const char kDnsOverHttpsServers[] = "dns_over_https.servers";
-// String contianing list of methods (GET or POST) to use with DNS over HTTPS
-// servers, in the same order of the above pref.
-const char kDnsOverHttpsServerMethods[] = "dns_over_https.methods";
+// String specifying the secure DNS mode to use. Any string other than
+// "secure" or "automatic" will be mapped to the default "off" mode.
+const char kDnsOverHttpsMode[] = "dns_over_https.mode";
+// String containing a space-separated list of DNS over HTTPS templates to use
+// in secure mode or automatic mode. If no templates are specified in automatic
+// mode, we will attempt discovery of DoH servers associated with the configured
+// insecure resolvers.
+const char kDnsOverHttpsTemplates[] = "dns_over_https.templates";
 
 // A pref holding the value of the policy used to explicitly allow or deny
 // access to audio capture devices.  When enabled or not set, the user is
@@ -2538,6 +2563,12 @@ const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN)
+// A boolean value, controlling whether Chrome renderer processes have the CIG
+// mitigation enabled.
+const char kRendererCodeIntegrityEnabled[] = "renderer_code_integrity_enabled";
+#endif  // defined(OS_WIN)
+
 // An integer that keeps track of prompt waves for the settings reset
 // prompt. Users will be prompted to reset settings at most once per prompt wave
 // for each setting that the prompt targets (default search, startup URLs and
@@ -2689,14 +2720,29 @@ const char kSignedHTTPExchangeEnabled[] = "web_package.signed_exchange.enabled";
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";
 
+// Boolean that allows a page to perform synchronous XHR requests during page
+// dismissal.
+// TODO(https://crbug.com/1003101): Remove this in Chrome 82.
+const char kAllowSyncXHRInPageDismissal[] = "allow_sync_xhr_in_page_dismissal";
+
 #if defined(OS_CHROMEOS)
 // Enum that specifies client certificate management permissions for user. It
-// can have one of the following values. 0: Users can manage all certificates.
+// can have one of the following values.
+// 0: Users can manage all certificates.
 // 1: Users can manage user certificates, but not device certificates.
 // 2: Disallow users from managing certificates
 // Controlled by ClientCertificateManagementAllowed policy.
 const char kClientCertificateManagementAllowed[] =
-    "certificate_management_allowed";
+    "client_certificate_management_allowed";
+
+// Enum that specifies CA certificate management permissions for user. It
+// can have one of the following values.
+// 0: Users can manage all certificates.
+// 1: Users can manage user certificates, but not built-in certificates.
+// 2: Disallow users from managing certificates
+// Controlled by CACertificateManagementAllowed policy.
+const char kCACertificateManagementAllowed[] =
+    "ca_certificate_management_allowed";
 
 // Boolean that specifies whether the built-in certificate verifier should be
 // used. If false, Chrome will use the platform certificate verifier. If not

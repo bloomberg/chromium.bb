@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
+#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -17,8 +17,8 @@
 
 class CPDF_CIDFontTest : public testing::Test {
  protected:
-  void SetUp() override { CPDF_ModuleMgr::Create(); }
-  void TearDown() override { CPDF_ModuleMgr::Destroy(); }
+  void SetUp() override { CPDF_PageModule::Create(); }
+  void TearDown() override { CPDF_PageModule::Destroy(); }
 };
 
 TEST_F(CPDF_CIDFontTest, BUG_920636) {
@@ -37,8 +37,8 @@ TEST_F(CPDF_CIDFontTest, BUG_920636) {
     font_dict->SetFor("DescendantFonts", std::move(descendant_fonts));
   }
 
-  CPDF_CIDFont font(&doc, font_dict.Get());
-  ASSERT_TRUE(font.Load());
+  auto font = pdfium::MakeRetain<CPDF_CIDFont>(&doc, font_dict.Get());
+  ASSERT_TRUE(font->Load());
 
   // It would be nice if we can test more values here. However, the glyph
   // indices are sometimes machine dependent.
@@ -53,6 +53,6 @@ TEST_F(CPDF_CIDFontTest, BUG_920636) {
 
   for (const auto& test_case : kTestCases) {
     EXPECT_EQ(test_case.glyph,
-              font.GlyphFromCharCode(test_case.charcode, nullptr));
+              font->GlyphFromCharCode(test_case.charcode, nullptr));
   }
 }

@@ -21,9 +21,12 @@ class AppListModelUpdater;
 class ChromeSearchResult;
 class Profile;
 
+namespace service_manager {
+class Connector;
+}
+
 namespace app_list {
 
-class AppSearchResultRanker;
 class SearchResultRanker;
 class SearchProvider;
 enum class RankingItemType;
@@ -37,6 +40,8 @@ class SearchController {
                    AppListControllerDelegate* list_controller,
                    Profile* profile);
   virtual ~SearchController();
+
+  void InitializeRankers(service_manager::Connector* connector);
 
   void Start(const base::string16& query);
   void ViewClosing();
@@ -58,9 +63,8 @@ class SearchController {
   // Sends training signal to each |providers_|
   void Train(AppLaunchData&& app_launch_data);
 
-  // Gets the search result ranker owned by this object that is used for ranking
-  // apps.
-  AppSearchResultRanker* GetAppSearchResultRanker();
+  // Invoked when the app list is shown.
+  void AppListShown();
 
   // Gets the search result ranker owned by the Mixer that is used for all
   // other ranking.
@@ -69,9 +73,19 @@ class SearchController {
   // Gets the length of the most recent query.
   int GetLastQueryLength() const;
 
+  // Called when items in the results list have been on screen for some amount
+  // of time, or the user clicked a search result.
+  // TODO(959679): Rename this function to better reflect its nature.
+  void OnSearchResultsDisplayed(
+      const base::string16& trimmed_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int launched_index);
+
  private:
   // Invoked when the search results are changed.
   void OnResultsChanged();
+
+  Profile* profile_;
 
   bool dispatching_query_ = false;
 
@@ -88,7 +102,6 @@ class SearchController {
   std::unique_ptr<Mixer> mixer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
-  std::unique_ptr<AppSearchResultRanker> app_ranker_;
   AppListControllerDelegate* list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);

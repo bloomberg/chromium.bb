@@ -58,13 +58,12 @@ PendingStream::PendingStream(QuicStreamId id, QuicSession* session)
       sequencer_(this) {}
 
 void PendingStream::OnDataAvailable() {
-  // It will be called when pending stream receives its first byte. But this
-  // call should simply be ignored so that data remains in sequencer.
+  // Data should be kept in the sequencer so that
+  // QuicSession::ProcessPendingStream() can read it.
 }
 
 void PendingStream::OnFinRead() {
-  QUIC_BUG << "OnFinRead should not be called.";
-  CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "Unexpected fin read");
+  DCHECK(sequencer_.IsClosed());
 }
 
 void PendingStream::AddBytesConsumed(QuicByteCount bytes) {
@@ -74,6 +73,7 @@ void PendingStream::AddBytesConsumed(QuicByteCount bytes) {
 }
 
 void PendingStream::Reset(QuicRstStreamErrorCode error) {
+  // TODO: RESET_STREAM must not be sent for READ_UNIDIRECTIONAL stream.
   session_->SendRstStream(id_, error, 0);
 }
 
@@ -173,6 +173,11 @@ void PendingStream::MarkConsumed(size_t num_bytes) {
   sequencer_.MarkConsumed(num_bytes);
 }
 
+void PendingStream::StopReading() {
+  QUIC_DVLOG(1) << "Stop reading from pending stream " << id();
+  sequencer_.StopReading();
+}
+
 QuicStream::QuicStream(PendingStream* pending, StreamType type, bool is_static)
     : QuicStream(pending->id_,
                  pending->session_,
@@ -236,7 +241,12 @@ QuicStream::QuicStream(QuicStreamId id,
     : sequencer_(std::move(sequencer)),
       id_(id),
       session_(session),
-      priority_(kDefaultPriority),
+      precedence_(
+          session->use_http2_priority_write_scheduler()
+              ? spdy::SpdyStreamPrecedence(0,
+                                           spdy::kHttp2DefaultStreamWeight,
+                                           false)
+              : spdy::SpdyStreamPrecedence(kDefaultPriority)),
       stream_bytes_read_(stream_bytes_read),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
@@ -276,7 +286,7 @@ QuicStream::QuicStream(QuicStreamId id,
   }
   SetFromConfig();
   if (type_ != CRYPTO) {
-    session_->RegisterStreamPriority(id, is_static_, priority_);
+    session_->RegisterStreamPriority(id, is_static_, precedence_);
   }
 }
 
@@ -432,13 +442,13 @@ void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-SpdyPriority QuicStream::priority() const {
-  return priority_;
+const spdy::SpdyStreamPrecedence& QuicStream::precedence() const {
+  return precedence_;
 }
 
-void QuicStream::SetPriority(SpdyPriority priority) {
-  priority_ = priority;
-  session_->UpdateStreamPriority(id(), priority);
+void QuicStream::SetPriority(const spdy::SpdyStreamPrecedence& precedence) {
+  precedence_ = precedence;
+  session_->UpdateStreamPriority(id(), precedence);
 }
 
 void QuicStream::WriteOrBufferData(

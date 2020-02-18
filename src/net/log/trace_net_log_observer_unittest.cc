@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -25,7 +25,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::trace_event::TraceLog;
@@ -81,7 +81,7 @@ void EnableTraceLogWithoutNetLog() {
   EnableTraceLog(disabled_netlog_category);
 }
 
-class TraceNetLogObserverTest : public TestWithScopedTaskEnvironment {
+class TraceNetLogObserverTest : public TestWithTaskEnvironment {
  public:
   TraceNetLogObserverTest() {
     TraceLog* tracelog = TraceLog::GetInstance();
@@ -427,7 +427,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
 }
 
 TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   TraceNetLogObserver observer;
   NetLog net_log;
   observer.WatchForTraceStart(&net_log);
@@ -444,7 +444,7 @@ TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {
 }
 
 TEST(TraceNetLogObserverCategoryTest, EnabledCategory) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   TraceNetLogObserver observer;
   NetLog net_log;
   observer.WatchForTraceStart(&net_log);

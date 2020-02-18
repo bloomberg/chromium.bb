@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -24,7 +24,7 @@ namespace component_updater {
 class CRLSetComponentInstallerTest : public PlatformTest {
  public:
   CRLSetComponentInstallerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         test_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         network_service_(std::make_unique<network::NetworkService>(nullptr)) {}
 
@@ -77,11 +77,11 @@ class CRLSetComponentInstallerTest : public PlatformTest {
                                             temp_dir_.GetPath()));
     policy_->ComponentReady(base::Version("1.0"), temp_dir_.GetPath(),
                             std::make_unique<base::DictionaryValue>());
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
 
   std::unique_ptr<CRLSetPolicy> policy_;
@@ -141,7 +141,7 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
   // Simulate a Network Service crash
   SimulateCrash();
   CRLSetPolicy::ReconfigureAfterNetworkRestart();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   network_service_->CreateNetworkContext(
       mojo::MakeRequest(&network_context_),
@@ -169,7 +169,7 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithNoCRLSet) {
   // Simulate a Network Service crash
   SimulateCrash();
   CRLSetPolicy::ReconfigureAfterNetworkRestart();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   network_service_->CreateNetworkContext(
       mojo::MakeRequest(&network_context_),

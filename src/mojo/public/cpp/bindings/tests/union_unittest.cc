@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
@@ -1148,7 +1148,7 @@ class SmallCacheImpl : public SmallCache {
 };
 
 TEST(UnionTest, InterfaceInUnion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   Remote<SmallCache> remote;
@@ -1164,7 +1164,7 @@ TEST(UnionTest, InterfaceInUnion) {
 }
 
 TEST(UnionTest, InterfaceInUnionFactoryFunction) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   Remote<SmallCache> remote;
@@ -1178,7 +1178,7 @@ TEST(UnionTest, InterfaceInUnionFactoryFunction) {
 }
 
 TEST(UnionTest, InterfaceInUnionSerialization) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   Remote<SmallCache> remote;
@@ -1215,7 +1215,7 @@ class UnionInterfaceImpl : public UnionInterface {
 };
 
 TEST(UnionTest, UnionInInterface) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   UnionInterfaceImpl impl;
   Remote<UnionInterface> remote;
   Receiver<UnionInterface> receiver(&impl, remote.BindNewPipeAndPassReceiver());

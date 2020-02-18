@@ -36,7 +36,7 @@ void WaylandDataSource::WriteToClipboard(
   wl_data_device_set_selection(connection_->data_device(), data_source_.get(),
                                connection_->serial());
 
-  wl_display_flush(connection_->display());
+  connection_->ScheduleFlush();
 }
 
 void WaylandDataSource::UpdateDataMap(
@@ -50,7 +50,8 @@ void WaylandDataSource::Offer(const ui::OSExchangeData& data) {
   mime_types.push_back(kTextMimeType);
   mime_types.push_back(kTextMimeTypeUtf8);
 
-  source_window_ = connection_->GetCurrentFocusedWindow();
+  source_window_ =
+      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   for (auto& mime_type : mime_types)
     wl_data_source_offer(data_source_.get(), mime_type.data());
 }

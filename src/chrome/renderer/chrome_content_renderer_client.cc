@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/constants.mojom.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
@@ -53,7 +52,6 @@
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
-#include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
 #include "chrome/renderer/pepper/pepper_helper.h"
 #include "chrome/renderer/plugins/non_loadable_plugin_placeholder.h"
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
@@ -63,7 +61,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/previews/resource_loading_hints_agent.h"
-#include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
 #include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
@@ -79,12 +76,15 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
+#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -110,16 +110,18 @@
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_cache.h"
@@ -137,6 +139,7 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_security_policy.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -151,10 +154,18 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#if BUILDFLAG(USE_TCMALLOC)
+#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
+#include "chrome/renderer/performance_manager/mechanisms/tcmalloc_tunables_impl.h"
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_WIN)
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #endif
 
@@ -238,9 +249,8 @@ namespace {
 // Whitelist PPAPI for Android Runtime for Chromium. (See crbug.com/383937)
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char* const kPredefinedAllowedCameraDeviceOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"
-};
+    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
+    "4EB74897CB187C7633357C2FE832E0AD6A44883A"};
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -326,7 +336,7 @@ ChromeContentRendererClient::ChromeContentRendererClient()
 #endif
 }
 
-ChromeContentRendererClient::~ChromeContentRendererClient() = default;
+ChromeContentRendererClient::~ChromeContentRendererClient() {}
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -340,17 +350,21 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           : blink::scheduler::WebRendererProcessType::kRenderer);
 
   {
-    startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    GetConnector()->BindInterface(
-        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
-        &startup_metric_host);
+    mojo::Remote<startup_metric_utils::mojom::StartupMetricHost>
+        startup_metric_host;
+    thread->BindHostReceiver(startup_metric_host.BindNewPipeAndPassReceiver());
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
 
 #if defined(OS_WIN)
+  mojo::PendingRemote<mojom::ModuleEventSink> module_event_sink;
+  thread->BindHostReceiver(module_event_sink.InitWithNewPipeAndPassReceiver());
   remote_module_watcher_ = RemoteModuleWatcher::Create(
-      thread->GetIOTaskRunner(), thread->GetConnector());
+      thread->GetIOTaskRunner(), std::move(module_event_sink));
 #endif
+
+  browser_interface_broker_ =
+      blink::Platform::Current()->GetBrowserInterfaceBrokerProxy();
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
   web_cache_impl_.reset(new web_cache::WebCacheImpl());
@@ -365,17 +379,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (!spellcheck_)
     InitSpellCheck();
 #endif
-#if defined(FULL_SAFE_BROWSING)
-  registry_.AddInterface(
-      base::BindRepeating(&safe_browsing::PhishingClassifierFilter::Create));
-#endif
+
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
   subresource_filter_ruleset_dealer_.reset(
       new subresource_filter::UnverifiedRulesetDealer());
-
-  registry_.AddInterface(base::BindRepeating(
-      &ChromeContentRendererClient::OnWebRtcLoggingAgentRequest,
-      base::Unretained(this)));
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(prerender_dispatcher_.get());
@@ -442,14 +449,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     ThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
     mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
-    service_manager::Connector* connector = nullptr;
-    if (content::ChildThread::Get())
-      connector = content::ChildThread::Get()->GetConnector();
-    if (connector) {
-      connector->Connect(content::mojom::kBrowserServiceName,
-                         collector.InitWithNewPipeAndPassReceiver());
-      ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
-    }
+    thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
+    ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
   }
 }
 
@@ -486,7 +487,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new nacl::NaClHelper(render_frame);
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   safe_browsing::ThreatDOMDetails::Create(render_frame, registry);
 #endif
 
@@ -517,11 +518,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new dom_distiller::DistillerJsRenderFrameObserver(
       render_frame, ISOLATED_WORLD_ID_CHROME_INTERNAL, registry);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDistillabilityService)) {
+  if (dom_distiller::ShouldStartDistillabilityService()) {
     // Create DistillabilityAgent to send distillability updates to
     // DistillabilityDriver in the browser process.
-    new dom_distiller::DistillabilityAgent(render_frame);
+    new dom_distiller::DistillabilityAgent(render_frame, DCHECK_IS_ON());
   }
 
   // Set up a mojo service to test if this page is a contextual search page.
@@ -574,6 +574,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 
 #if !defined(OS_ANDROID)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess) &&
       render_frame->IsMainFrame()) {
     new SearchBox(render_frame);
@@ -713,12 +714,13 @@ bool ChromeContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool has_played_media_before,
     base::OnceClosure closure) {
-  // Don't allow autoplay/autoload of media resources in a RenderFrame that is
-  // hidden and has never played any media before.  We want to allow future
-  // loads even when hidden to allow playlist-like functionality.
+  // Don't allow autoplay/autoload of media resources in a page that is hidden
+  // and has never played any media before.  We want to allow future loads even
+  // when hidden to allow playlist-like functionality.
   //
   // NOTE: This is also used to defer media loading for prerender.
-  if ((render_frame->IsHidden() && !has_played_media_before) ||
+  if ((render_frame->GetRenderView()->GetWebView()->IsHidden() &&
+       !has_played_media_before) ||
       prerender::PrerenderHelper::IsPrerendering(render_frame)) {
     new MediaLoadDeferrer(render_frame, std::move(closure));
     return true;
@@ -756,7 +758,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   chrome::mojom::PluginStatus status = plugin_info.status;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mime_type.Utf8();
-  ChromePluginPlaceholder* placeholder = NULL;
+  ChromePluginPlaceholder* placeholder = nullptr;
 
   // If the browser plugin is to be enabled, this should be handled by the
   // renderer, so the code won't reach here due to the early exit in
@@ -1039,10 +1041,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
       case chrome::mojom::PluginStatus::kRestartRequired: {
 #if defined(OS_LINUX)
-        placeholder = create_blocked_plugin(
-            IDR_BLOCKED_PLUGIN_HTML,
-            l10n_util::GetStringFUTF16(IDS_PLUGIN_RESTART_REQUIRED,
-                                       group_name));
+        placeholder =
+            create_blocked_plugin(IDR_BLOCKED_PLUGIN_HTML,
+                                  l10n_util::GetStringFUTF16(
+                                      IDS_PLUGIN_RESTART_REQUIRED, group_name));
 #endif
         break;
       }
@@ -1074,19 +1076,16 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
-void ChromeContentRendererClient::OnBindInterface(
-    const service_manager::BindSourceInfo& remote_info,
-    const std::string& name,
-    mojo::ScopedMessagePipeHandle handle) {
-  registry_.TryBindInterface(name, &handle);
-}
-
 void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  service_binding_.GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
-      interface_name, std::move(interface_pipe));
+  // TODO(crbug.com/977637): Get rid of the use of this implementation of
+  // |service_manager::LocalInterfaceProvider|. This was done only to avoid
+  // churning spellcheck code while eliminting the "chrome" and
+  // "chrome_renderer" services. Spellcheck is (and should remain) the only
+  // consumer of this implementation.
+  RenderThread::Get()->BindHostReceiver(
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -1102,20 +1101,22 @@ bool ChromeContentRendererClient::IsNativeNaClAllowed(
   bool is_extension_from_webstore = extension && extension->from_webstore();
 
   bool is_invoked_by_extension = app_url.SchemeIs(extensions::kExtensionScheme);
-  bool is_invoked_by_hosted_app = extension &&
-      extension->is_hosted_app() &&
-      extension->web_extent().MatchesURL(app_url);
+  bool is_invoked_by_hosted_app = extension && extension->is_hosted_app() &&
+                                  extension->web_extent().MatchesURL(app_url);
 
-  is_invoked_by_webstore_installed_extension = is_extension_from_webstore &&
+  is_invoked_by_webstore_installed_extension =
+      is_extension_from_webstore &&
       (is_invoked_by_extension || is_invoked_by_hosted_app);
 
   // Allow built-in extensions and developer mode extensions.
-  is_extension_unrestricted = extension &&
-       (extensions::Manifest::IsUnpackedLocation(extension->location()) ||
-        extensions::Manifest::IsComponentLocation(extension->location()));
+  is_extension_unrestricted =
+      extension &&
+      (extensions::Manifest::IsUnpackedLocation(extension->location()) ||
+       extensions::Manifest::IsComponentLocation(extension->location()));
   // Allow extensions force installed by admin policy.
-  is_extension_force_installed = extension &&
-       extensions::Manifest::IsPolicyLocation(extension->location());
+  is_extension_force_installed =
+      extension &&
+      extensions::Manifest::IsPolicyLocation(extension->location());
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   // Allow NaCl under any of the following circumstances:
@@ -1124,10 +1125,9 @@ bool ChromeContentRendererClient::IsNativeNaClAllowed(
   //  3) An extension is installed from the webstore, and invoked in that
   //     context (hosted app URL or chrome-extension:// scheme).
   //  4) --enable-nacl is set.
-  bool is_nacl_allowed_by_location =
-      is_extension_unrestricted ||
-      is_extension_force_installed ||
-      is_invoked_by_webstore_installed_extension;
+  bool is_nacl_allowed_by_location = is_extension_unrestricted ||
+                                     is_extension_force_installed ||
+                                     is_invoked_by_webstore_installed_extension;
   bool is_nacl_allowed = is_nacl_allowed_by_location || is_nacl_unrestricted;
   return is_nacl_allowed;
 }
@@ -1334,11 +1334,6 @@ ChromeContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();
 }
 
-bool ChromeContentRendererClient::IsPrerenderingFrame(
-    const content::RenderFrame* render_frame) {
-  return prerender::PrerenderHelper::IsPrerendering(render_frame);
-}
-
 bool ChromeContentRendererClient::IsExternalPepperPlugin(
     const std::string& module_name) {
   // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
@@ -1375,13 +1370,8 @@ ChromeRenderThreadObserver* ChromeContentRendererClient::GetChromeObserver()
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  return std::make_unique<WebSocketHandshakeThrottleProviderImpl>();
-}
-
-std::unique_ptr<blink::WebSpeechSynthesizer>
-ChromeContentRendererClient::OverrideSpeechSynthesizer(
-    blink::WebSpeechSynthesizerClient* client) {
-  return std::make_unique<TtsDispatcher>(client);
+  return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
+      browser_interface_broker_.get());
 }
 
 void ChromeContentRendererClient::AddSupportedKeySystems(
@@ -1456,19 +1446,15 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
 
 void ChromeContentRendererClient::RecordRappor(const std::string& metric,
                                                const std::string& sample) {
-  if (!rappor_recorder_) {
-    RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, &rappor_recorder_);
-  }
+  if (!rappor_recorder_)
+    RenderThread::Get()->BindHostReceiver(mojo::MakeRequest(&rappor_recorder_));
   rappor_recorder_->RecordRappor(metric, sample);
 }
 
 void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
                                                   const GURL& url) {
-  if (!rappor_recorder_) {
-    RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, &rappor_recorder_);
-  }
+  if (!rappor_recorder_)
+    RenderThread::Get()->BindHostReceiver(mojo::MakeRequest(&rappor_recorder_));
   rappor_recorder_->RecordRapporURL(metric, url);
 }
 
@@ -1524,17 +1510,16 @@ void ChromeContentRendererClient::
       metrics::CallStackProfileParams::SERVICE_WORKER_THREAD);
 }
 
-void ChromeContentRendererClient::
-    DidInitializeServiceWorkerContextOnWorkerThread(
-        blink::WebServiceWorkerContextProxy* context_proxy,
-        v8::Local<v8::Context> v8_context,
-        int64_t service_worker_version_id,
-        const GURL& service_worker_scope,
-        const GURL& script_url) {
+void ChromeContentRendererClient::WillEvaluateServiceWorkerOnWorkerThread(
+    blink::WebServiceWorkerContextProxy* context_proxy,
+    v8::Local<v8::Context> v8_context,
+    int64_t service_worker_version_id,
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()
       ->extension_dispatcher()
-      ->DidInitializeServiceWorkerContextOnWorkerThread(
+      ->WillEvaluateServiceWorkerOnWorkerThread(
           context_proxy, v8_context, service_worker_version_id,
           service_worker_scope, script_url);
 #endif
@@ -1581,20 +1566,11 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return FlashEmbedRewrite::RewriteFlashEmbedURL(url);
 }
 
-void ChromeContentRendererClient::CreateRendererService(
-    service_manager::mojom::ServiceRequest service_request) {
-  DCHECK(!service_binding_.is_bound());
-  service_binding_.Bind(std::move(service_request));
-}
-
-service_manager::Connector* ChromeContentRendererClient::GetConnector() {
-  return service_binding_.GetConnector();
-}
-
 std::unique_ptr<content::URLLoaderThrottleProvider>
 ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  return std::make_unique<URLLoaderThrottleProviderImpl>(provider_type, this);
+  return std::make_unique<URLLoaderThrottleProviderImpl>(
+      browser_interface_broker_.get(), provider_type, this);
 }
 
 blink::WebFrame* ChromeContentRendererClient::FindFrame(
@@ -1641,11 +1617,40 @@ bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) && !can_use_polyfill;
 }
 
-void ChromeContentRendererClient::OnWebRtcLoggingAgentRequest(
-    mojo::InterfaceRequest<chrome::mojom::WebRtcLoggingAgent> request) {
-  if (!webrtc_logging_agent_impl_) {
-    webrtc_logging_agent_impl_ =
-        std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+void ChromeContentRendererClient::BindReceiverOnMainThread(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto agent_receiver = receiver.As<chrome::mojom::WebRtcLoggingAgent>()) {
+    if (!webrtc_logging_agent_impl_) {
+      webrtc_logging_agent_impl_ =
+          std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+    }
+    webrtc_logging_agent_impl_->AddReceiver(std::move(agent_receiver));
+    return;
   }
-  webrtc_logging_agent_impl_->AddReceiver(std::move(request));
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  if (auto setter_receiver =
+          receiver.As<safe_browsing::mojom::PhishingModelSetter>()) {
+    safe_browsing::PhishingClassifierFilter::Create(std::move(setter_receiver));
+    return;
+  }
+#endif
+
+#if defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+  if (auto setter_receiver = receiver.As<tcmalloc::mojom::TcmallocTunables>()) {
+    performance_manager::mechanism::TcmallocTunablesImpl::Create(
+        std::move(setter_receiver));
+    return;
+  }
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
+
+  // TODO(crbug.com/977637): Get rid of the use of BinderRegistry here. This was
+  // done only to avoid churning spellcheck code while eliminting the "chrome"
+  // and "chrome_renderer" services. Spellcheck is (and should remain) the only
+  // user of |registry_|.
+  std::string interface_name = *receiver.interface_name();
+  auto pipe = receiver.PassPipe();
+  registry_.TryBindInterface(interface_name, &pipe);
 }

@@ -24,31 +24,27 @@
 
 namespace webrtc {
 
-class StreamStatisticianImpl : public StreamStatistician,
-                               public RtpPacketSinkInterface {
+class StreamStatisticianImpl : public StreamStatistician {
  public:
   StreamStatisticianImpl(uint32_t ssrc,
                          Clock* clock,
-                         int max_reordering_threshold,
-                         RtcpStatisticsCallback* rtcp_callback,
-                         StreamDataCountersCallback* rtp_callback);
+                         int max_reordering_threshold);
   ~StreamStatisticianImpl() override;
+
+  RtpReceiveStats GetStats() const override;
 
   // |reset| here and in next method restarts calculation of fraction_lost stat.
   bool GetStatistics(RtcpStatistics* statistics, bool reset) override;
   bool GetActiveStatisticsAndReset(RtcpStatistics* statistics);
-  void GetDataCounters(size_t* bytes_received,
-                       uint32_t* packets_received) const override;
-  void GetReceiveStreamDataCounters(
-      StreamDataCounters* data_counters) const override;
+  absl::optional<int> GetFractionLostInPercent() const override;
+  StreamDataCounters GetReceiveStreamDataCounters() const override;
   uint32_t BitrateReceived() const override;
 
-  // Implements RtpPacketSinkInterface
-  void OnRtpPacket(const RtpPacketReceived& packet) override;
-
-  void FecPacketReceived(const RtpPacketReceived& packet);
   void SetMaxReorderingThreshold(int max_reordering_threshold);
   void EnableRetransmitDetection(bool enable);
+
+  // Updates StreamStatistician for incoming packets.
+  void UpdateCounters(const RtpPacketReceived& packet);
 
  private:
   bool IsRetransmitOfOldPacket(const RtpPacketReceived& packet,
@@ -64,11 +60,9 @@ class StreamStatisticianImpl : public StreamStatistician,
                         int64_t sequence_number,
                         int64_t now_ms)
       RTC_EXCLUSIVE_LOCKS_REQUIRED(stream_lock_);
-  // Updates StreamStatistician for incoming packets.
-  StreamDataCounters UpdateCounters(const RtpPacketReceived& packet);
   // Checks if this StreamStatistician received any rtp packets.
   bool ReceivedRtpPacket() const RTC_EXCLUSIVE_LOCKS_REQUIRED(stream_lock_) {
-    return received_seq_max_ >= 0;
+    return received_seq_first_ >= 0;
   }
 
   const uint32_t ssrc_;
@@ -81,7 +75,13 @@ class StreamStatisticianImpl : public StreamStatistician,
 
   // Stats on received RTP packets.
   uint32_t jitter_q4_ RTC_GUARDED_BY(&stream_lock_);
-  uint32_t cumulative_loss_ RTC_GUARDED_BY(&stream_lock_);
+  // Cumulative loss according to RFC 3550, which may be negative (and often is,
+  // if packets are reordered and there are non-RTX retransmissions).
+  int32_t cumulative_loss_ RTC_GUARDED_BY(&stream_lock_);
+  // Offset added to outgoing rtcp reports, to make ensure that the reported
+  // cumulative loss is non-negative. Reports with negative values confuse some
+  // senders, in particular, our own loss-based bandwidth estimator.
+  int32_t cumulative_loss_rtcp_offset_ RTC_GUARDED_BY(&stream_lock_);
 
   int64_t last_receive_time_ms_ RTC_GUARDED_BY(&stream_lock_);
   uint32_t last_received_timestamp_ RTC_GUARDED_BY(&stream_lock_);
@@ -97,21 +97,14 @@ class StreamStatisticianImpl : public StreamStatistician,
   StreamDataCounters receive_counters_ RTC_GUARDED_BY(&stream_lock_);
 
   // Counter values when we sent the last report.
-  uint32_t last_report_inorder_packets_ RTC_GUARDED_BY(&stream_lock_);
-  uint32_t last_report_old_packets_ RTC_GUARDED_BY(&stream_lock_);
+  int32_t last_report_cumulative_loss_ RTC_GUARDED_BY(&stream_lock_);
   int64_t last_report_seq_max_ RTC_GUARDED_BY(&stream_lock_);
   RtcpStatistics last_reported_statistics_ RTC_GUARDED_BY(&stream_lock_);
-
-  // stream_lock_ shouldn't be held when calling callbacks.
-  RtcpStatisticsCallback* const rtcp_callback_;
-  StreamDataCountersCallback* const rtp_callback_;
 };
 
 class ReceiveStatisticsImpl : public ReceiveStatistics {
  public:
-  ReceiveStatisticsImpl(Clock* clock,
-                        RtcpStatisticsCallback* rtcp_callback,
-                        StreamDataCountersCallback* rtp_callback);
+  explicit ReceiveStatisticsImpl(Clock* clock);
 
   ~ReceiveStatisticsImpl() override;
 
@@ -122,7 +115,6 @@ class ReceiveStatisticsImpl : public ReceiveStatistics {
   void OnRtpPacket(const RtpPacketReceived& packet) override;
 
   // Implements ReceiveStatistics.
-  void FecPacketReceived(const RtpPacketReceived& packet) override;
   // Note: More specific return type for use in the implementation.
   StreamStatisticianImpl* GetStatistician(uint32_t ssrc) const override;
   void SetMaxReorderingThreshold(int max_reordering_threshold) override;
@@ -139,9 +131,6 @@ class ReceiveStatisticsImpl : public ReceiveStatistics {
   int max_reordering_threshold_ RTC_GUARDED_BY(receive_statistics_lock_);
   std::map<uint32_t, StreamStatisticianImpl*> statisticians_
       RTC_GUARDED_BY(receive_statistics_lock_);
-
-  RtcpStatisticsCallback* const rtcp_stats_callback_;
-  StreamDataCountersCallback* const rtp_stats_callback_;
 };
 }  // namespace webrtc
 #endif  // MODULES_RTP_RTCP_SOURCE_RECEIVE_STATISTICS_IMPL_H_

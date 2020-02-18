@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
@@ -51,7 +52,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -136,7 +137,7 @@ bool TestServiceProcess::Initialize(
   quit_closure_ = std::move(quit_closure);
   service_process_state_ = std::move(state);
 
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessagePumpType::IO, 0);
   io_thread_.reset(new base::Thread("TestServiceProcess_IO"));
   return io_thread_->StartWithOptions(options);
 }
@@ -185,7 +186,7 @@ using SetExpectationsCallback =
 // determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::PlatformThread::SetName("Main Thread");
-  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor executor(base::MessagePumpType::UI);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 
@@ -287,7 +288,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   void TearDown() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> IOTaskRunner() {
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   }
   base::Process Launch(const std::string& name);
   void WaitForConnect(mojo::IsolatedConnection* mojo_connection);
@@ -308,7 +309,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_user_data_dir_;
 
   mojo::NamedPlatformChannel::ServerName startup_server_name_;
@@ -353,7 +354,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 };
 
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
   // Although is really a unit test which runs in the browser_tests binary, it
   // doesn't get the unit setup which normally happens in the unit test binary.
   ChromeUnitTestSuite::InitializeProviders();
@@ -437,8 +438,9 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect(
   EXPECT_TRUE(base::ThreadTaskRunnerHandle::Get().get());
 
   mojo::MessagePipe pipe;
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ConnectAsync, std::move(pipe.handle1),
                      GetServiceProcessServerName(), mojo_connection));
   ServiceProcessControl::GetInstance()->SetMojoHandle(
@@ -477,7 +479,7 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
 TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   mojo::core::Init();
   mojo::core::ScopedIPCSupport ipc_support(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   base::Process process =

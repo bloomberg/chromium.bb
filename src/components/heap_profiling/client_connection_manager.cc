@@ -24,38 +24,12 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace heap_profiling {
 
 namespace {
-
-// This helper class cleans up initialization boilerplate for the callers who
-// need to create ProfilingClients bound to various different things.
-class ProfilingClientBinder {
- public:
-  // Binds to a non-renderer-child-process' ProfilingClient.
-  explicit ProfilingClientBinder(content::BrowserChildProcessHost* host)
-      : ProfilingClientBinder() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    content::BindInterface(host->GetHost(), std::move(request_));
-  }
-
-  // Binds to a renderer's ProfilingClient.
-  explicit ProfilingClientBinder(content::RenderProcessHost* host)
-      : ProfilingClientBinder() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    content::BindInterface(host, std::move(request_));
-  }
-
-  mojom::ProfilingClientPtr take() { return std::move(memlog_client_); }
-
- private:
-  ProfilingClientBinder() : request_(mojo::MakeRequest(&memlog_client_)) {}
-
-  mojom::ProfilingClientPtr memlog_client_;
-  mojom::ProfilingClientRequest request_;
-};
 
 bool ShouldProfileNonRendererProcessType(Mode mode, int process_type) {
   switch (mode) {
@@ -124,21 +98,23 @@ void StartProfilingNonRendererChildOnIOThread(
           : mojom::ProcessType::OTHER;
 
   // Tell the child process to start profiling.
-  ProfilingClientBinder client(host);
-  controller->StartProfilingClient(client.take(), data.GetProcess().Pid(),
+  mojo::PendingRemote<mojom::ProfilingClient> client;
+  host->GetHost()->BindReceiver(client.InitWithNewPipeAndPassReceiver());
+  controller->StartProfilingClient(std::move(client), data.GetProcess().Pid(),
                                    process_type);
 }
 
-void StartProfilingClientOnIOThread(base::WeakPtr<Controller> controller,
-                                    ProfilingClientBinder client,
-                                    base::ProcessId pid,
-                                    mojom::ProcessType process_type) {
+void StartProfilingClientOnIOThread(
+    base::WeakPtr<Controller> controller,
+    mojo::PendingRemote<mojom::ProfilingClient> client,
+    base::ProcessId pid,
+    mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (!controller)
     return;
 
-  controller->StartProfilingClient(client.take(), pid, process_type);
+  controller->StartProfilingClient(std::move(client), pid, process_type);
 }
 
 void StartProfilingBrowserProcessOnIOThread(
@@ -149,9 +125,9 @@ void StartProfilingBrowserProcessOnIOThread(
     return;
 
   static base::NoDestructor<ProfilingClient> client;
-  mojom::ProfilingClientPtr proxy;
-  client->BindToInterface(mojo::MakeRequest(&proxy));
-  controller->StartProfilingClient(std::move(proxy), base::GetCurrentProcId(),
+  mojo::PendingRemote<mojom::ProfilingClient> remote;
+  client->BindToInterface(remote.InitWithNewPipeAndPassReceiver());
+  controller->StartProfilingClient(std::move(remote), base::GetCurrentProcId(),
                                    mojom::ProcessType::BROWSER);
 }
 
@@ -244,7 +220,7 @@ void ClientConnectionManager::StartProfilingProcess(base::ProcessId pid) {
   }
 
   // The BrowserChildProcessHostIterator iterator must be used on the IO thread.
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->PostTask(FROM_HERE, base::BindOnce(&StartProfilingPidOnIOThread,
                                            controller_, pid));
 }
@@ -265,7 +241,7 @@ void ClientConnectionManager::StartProfilingExistingProcessesIfNecessary() {
   // Start profiling the current process.
   if (ShouldProfileNonRendererProcessType(
           mode_, content::ProcessType::PROCESS_TYPE_BROWSER)) {
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&StartProfilingBrowserProcessOnIOThread,
                                   controller_));
@@ -281,7 +257,7 @@ void ClientConnectionManager::StartProfilingExistingProcessesIfNecessary() {
     }
   }
 
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&StartProfilingNonRenderersIfNecessaryOnIOThread,
@@ -305,7 +281,7 @@ void ClientConnectionManager::BrowserChildProcessLaunchedAndConnected(
 void ClientConnectionManager::StartProfilingNonRendererChild(
     const content::ChildProcessData& data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&StartProfilingNonRendererChildOnIOThread,
                                 controller_, data.Duplicate()));
@@ -360,10 +336,9 @@ void ClientConnectionManager::StartProfilingRenderer(
 
   profiled_renderers_.insert(host);
 
-  // Tell the child process to start profiling.
-  ProfilingClientBinder client(host);
-
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+  mojo::PendingRemote<mojom::ProfilingClient> client;
+  host->BindReceiver(client.InitWithNewPipeAndPassReceiver());
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&StartProfilingClientOnIOThread, controller_,
                                 std::move(client), host->GetProcess().Pid(),

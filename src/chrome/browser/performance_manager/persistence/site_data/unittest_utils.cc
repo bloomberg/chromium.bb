@@ -42,5 +42,24 @@ void NoopSiteDataStore::SetInitializationCallbackForTesting(
   std::move(callback).Run();
 }
 
+TestWithPerformanceManager::TestWithPerformanceManager() = default;
+
+TestWithPerformanceManager::~TestWithPerformanceManager() = default;
+
+void TestWithPerformanceManager::SetUp() {
+  EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
+  performance_manager_ = PerformanceManager::Create();
+  // Make sure creation registers the created instance.
+  EXPECT_EQ(performance_manager_.get(), PerformanceManager::GetInstance());
+}
+
+void TestWithPerformanceManager::TearDown() {
+  PerformanceManager::Destroy(std::move(performance_manager_));
+  // Make sure destruction unregisters the instance.
+  EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
+
+  task_environment_.RunUntilIdle();
+}
+
 }  // namespace testing
 }  // namespace performance_manager

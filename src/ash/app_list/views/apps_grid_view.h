@@ -47,10 +47,12 @@ class ButtonListener;
 namespace app_list {
 
 namespace test {
+class AppsGridViewTest;
 class AppsGridViewTestApi;
 }
 
 class ApplicationDragAndDropHost;
+class AppListConfig;
 class AppListItemView;
 class AppsGridViewFolderDelegate;
 class ContentsView;
@@ -278,6 +280,15 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if tablet mode is active.
   bool IsTabletMode() const;
 
+  // Should be called by AppListView if the app list config it uses changes.
+  // This will update all app list items (as the icon sizes and bounds might
+  // need updating), so it should be used sparingly.
+  void OnAppListConfigUpdated();
+
+  // Helper for getting current app list config from the parents in the app list
+  // view hierarchy.
+  const AppListConfig& GetAppListConfig() const;
+
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
 
@@ -310,6 +321,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
  private:
   class FadeoutLayerDelegate;
   friend class test::AppsGridViewTestApi;
+  friend class test::AppsGridViewTest;
   friend class PagedViewStructure;
 
   enum DropTargetRegion {
@@ -473,6 +485,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from PaginationModelObserver:
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
+  void TransitionStarting() override;
   void TransitionStarted() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
@@ -688,6 +701,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Created by AppListMainView, owned by views hierarchy.
   ContentsView* contents_view_ = nullptr;
 
+  // Keeps the individual AppListItemView. Owned by views hierarchy.
+  views::View* items_container_ = nullptr;
+
   int cols_ = 0;
   int rows_per_page_ = 0;
 
@@ -757,7 +773,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Target page to switch to when |page_flip_timer_| fires.
   int page_flip_target_ = -1;
 
-  views::BoundsAnimator bounds_animator_;
+  std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   // The most recent activated folder item view.
   AppListItemView* activated_folder_item_view_ = nullptr;

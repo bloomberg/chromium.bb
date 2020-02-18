@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "device/gamepad/public/cpp/gamepad_mojom_traits.h"
-#include "base/test/scoped_task_environment.h"
+
+#include "base/test/task_environment.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -163,7 +164,7 @@ class GamepadStructTraitsTest : public testing::Test {
   GamepadStructTraitsTest() {}
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadStructTraitsTest);
 };

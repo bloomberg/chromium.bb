@@ -17,6 +17,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -103,7 +104,7 @@ int AssistantPageView::GetHeightForWidth(int width) const {
       GetPreferredHeightForAppListState(contents_view_->app_list_view());
 
   preferred_height = std::max(preferred_height, min_height_dip_);
-  return GetChildViewPreferredHeight() > preferred_height
+  return GetChildViewHeightForWidth(width) > preferred_height
              ? ash::kMaxHeightEmbeddedDip
              : preferred_height;
 }
@@ -142,7 +143,7 @@ void AssistantPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void AssistantPageView::ChildPreferredSizeChanged(views::View* child) {
-  MaybeUpdateAppListState(child->GetPreferredSize().height());
+  MaybeUpdateAppListState(child->GetHeightForWidth(width()));
   PreferredSizeChanged();
 
   // After layout events, focus can be lost so we need to explicitly request
@@ -154,7 +155,13 @@ void AssistantPageView::ChildVisibilityChanged(views::View* child) {
   if (!child->GetVisible())
     return;
 
-  MaybeUpdateAppListState(child->GetPreferredSize().height());
+  MaybeUpdateAppListState(child->GetHeightForWidth(width()));
+}
+
+void AssistantPageView::VisibilityChanged(views::View* starting_from,
+                                          bool is_visible) {
+  if (starting_from == this && !is_visible)
+    min_height_dip_ = ash::kMinHeightEmbeddedDip;
 }
 
 void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {
@@ -181,6 +188,19 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
+}
+
+void AssistantPageView::OnShown() {
+  // The preferred size might be different from the previous time, so updating
+  // to the correct size here.
+  SetSize(CalculatePreferredSize());
+}
+
+void AssistantPageView::OnAnimationStarted(ash::AppListState from_state,
+                                           ash::AppListState to_state) {
+  if (to_state != ash::AppListState::kStateEmbeddedAssistant)
+    return;
+  SetBoundsRect(GetPageBoundsForState(to_state));
 }
 
 gfx::Rect AssistantPageView::GetPageBoundsForState(
@@ -238,25 +258,30 @@ void AssistantPageView::OnUiVisibilityChanged(
     return;
   }
 
-  const bool prefer_voice = assistant_view_delegate_->IsTabletMode() ||
-                            assistant_view_delegate_->IsLaunchWithMicOpen();
+  const bool prefer_voice =
+      assistant_view_delegate_->IsTabletMode() ||
+      ash::AssistantState::Get()->launch_with_mic_open().value_or(false);
   if (!ash::assistant::util::IsVoiceEntryPoint(entry_point.value(),
                                                prefer_voice)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }
 
-int AssistantPageView::GetChildViewPreferredHeight() const {
+const AssistantMainView* AssistantPageView::GetMainViewForTest() const {
+  return assistant_main_view_;
+}
+
+int AssistantPageView::GetChildViewHeightForWidth(int width) const {
   int height = 0;
   if (assistant_view_delegate_) {
     switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
       case ash::AssistantUiMode::kLauncherEmbeddedUi:
         if (assistant_main_view_)
-          height = assistant_main_view_->GetPreferredSize().height();
+          height = assistant_main_view_->GetHeightForWidth(width);
         break;
       case ash::AssistantUiMode::kWebUi:
         if (assistant_web_view_)
-          height = assistant_web_view_->GetPreferredSize().height();
+          height = assistant_web_view_->GetHeightForWidth(width);
         break;
       case ash::AssistantUiMode::kMainUi:
       case ash::AssistantUiMode::kMiniUi:

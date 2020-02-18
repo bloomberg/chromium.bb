@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -34,7 +35,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -94,7 +95,7 @@ bool CookieCryptor::DecryptString(const std::string& ciphertext,
 
 typedef std::vector<std::unique_ptr<CanonicalCookie>> CanonicalCookieVector;
 
-class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
+class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
  public:
   SQLitePersistentCookieStoreTest()
       : loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -114,8 +115,8 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
 
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
-    store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                            base::Unretained(this)),
+    store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                                base::Unretained(this)),
                  net_log_.bound());
     loaded_event_.Wait();
     cookies->swap(cookies_);
@@ -125,14 +126,14 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     store_->Flush(
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
     event.Wait();
   }
 
   void DestroyStore() {
     store_ = nullptr;
     // Make sure we wait until the destructor has run by running all
-    // ScopedTaskEnvironment tasks.
+    // TaskEnvironment tasks.
     RunUntilIdle();
   }
 
@@ -207,9 +208,9 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
 
  protected:
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::WaitableEvent loaded_event_;
   base::WaitableEvent db_thread_event_;
   CanonicalCookieVector cookies_;
@@ -322,15 +323,15 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)),
+  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                              base::Unretained(this)),
                NetLogWithSource());
   t += base::TimeDelta::FromMicroseconds(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   store_->Flush(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
 
   // Now the DB-thread queue contains:
   // (active:)
@@ -351,8 +352,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   store_ = new SQLitePersistentCookieStore(
       temp_dir_.GetPath().Append(kCookieFilename), client_task_runner_,
       background_task_runner_, true, nullptr);
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)),
+  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                              base::Unretained(this)),
                NetLogWithSource());
   loaded_event_.Wait();
   ASSERT_EQ(4u, cookies_.size());
@@ -373,7 +374,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   AddCookie("A", "B", "www.bbb.com", "/", t);
   DestroyStore();
 
-  // base::test::ScopedTaskEnvironment runs |background_task_runner_| and
+  // base::test::TaskEnvironment runs |background_task_runner_| and
   // |client_task_runner_| on the same thread. Therefore, when a
   // |background_task_runner_| task is blocked, |client_task_runner_| tasks
   // can't run. To allow precise control of |background_task_runner_| without
@@ -388,14 +389,15 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
   BoundTestNetLog net_log;
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)),
+  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                              base::Unretained(this)),
                net_log.bound());
   base::RunLoop run_loop;
   net_log.SetObserverCaptureMode(NetLogCaptureMode::kDefault);
   store_->LoadCookiesForKey(
-      "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
-                            base::Unretained(this), run_loop.QuitClosure()));
+      "aaa.com",
+      base::BindOnce(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
+                     base::Unretained(this), run_loop.QuitClosure()));
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
@@ -1233,30 +1235,33 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  cookie_monster->SetCookieWithOptionsAsync(
+  auto cookie = CanonicalCookie::Create(
       GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
-      CookieOptions(),
+      base::Time::Now(), base::nullopt /* server_time */);
+  cookie_monster->SetCanonicalCookieAsync(
+      std::move(cookie), "gopher", CookieOptions(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
   set_cookie_callback.WaitUntilDone();
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            set_cookie_callback.result());
+  EXPECT_TRUE(set_cookie_callback.result().IsInclude());
 
   // Also insert a whole bunch of cookies to slow down the background loading of
   // all the cookies.
   for (int i = 0; i < 50; ++i) {
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
         set_cookie_callback2;
-    cookie_monster->SetCookieWithOptionsAsync(
+    auto canonical_cookie = CanonicalCookie::Create(
         GURL(base::StringPrintf("http://example%d.com/", i)),
-        "A=B; max-age=3600", CookieOptions(),
+        "A=B; max-age=3600", base::Time::Now(),
+        base::nullopt /* server_time */);
+    cookie_monster->SetCanonicalCookieAsync(
+        std::move(canonical_cookie), "http", CookieOptions(),
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
     set_cookie_callback2.WaitUntilDone();
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              set_cookie_callback2.result());
+    EXPECT_TRUE(set_cookie_callback2.result().IsInclude());
   }
 
   net::TestClosure flush_closure;
@@ -1302,14 +1307,16 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  cookie_monster->SetCookieWithOptionsAsync(
-      GURL("http://www.example.com/"), "A=B; max-age=3600", CookieOptions(),
+  auto cookie = CanonicalCookie::Create(GURL("http://www.example.com/"),
+                                        "A=B; max-age=3600", base::Time::Now(),
+                                        base::nullopt /* server_time */);
+  cookie_monster->SetCanonicalCookieAsync(
+      std::move(cookie), "http", CookieOptions(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
   set_cookie_callback.WaitUntilDone();
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            set_cookie_callback.result());
+  EXPECT_TRUE(set_cookie_callback.result().IsInclude());
 
   // Things should commit once going out of scope.
 }
@@ -1335,9 +1342,9 @@ TEST_F(SQLitePersistentCookieStoreTest, Coalescing) {
       {{Op::kDelete, Op::kAdd, Op::kDelete}, 1u},
       {{Op::kDelete, Op::kAdd, Op::kUpdate, Op::kDelete}, 1u}};
 
-  std::unique_ptr<CanonicalCookie> cookie =
-      CanonicalCookie::Create(GURL("http://www.example.com/path"), "Tasty=Yes",
-                              base::Time::Now(), CookieOptions());
+  std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
+      GURL("http://www.example.com/path"), "Tasty=Yes", base::Time::Now(),
+      base::nullopt /* server_time */);
 
   for (const TestCase& testcase : testcases) {
     Create(false, false, true /* want current thread to invoke the store. */);
@@ -1388,13 +1395,13 @@ TEST_F(SQLitePersistentCookieStoreTest, NoCoalesceUnrelated) {
                NetLogWithSource());
   run_loop.Run();
 
-  std::unique_ptr<CanonicalCookie> cookie1 =
-      CanonicalCookie::Create(GURL("http://www.example.com/path"), "Tasty=Yes",
-                              base::Time::Now(), CookieOptions());
+  std::unique_ptr<CanonicalCookie> cookie1 = CanonicalCookie::Create(
+      GURL("http://www.example.com/path"), "Tasty=Yes", base::Time::Now(),
+      base::nullopt /* server_time */);
 
-  std::unique_ptr<CanonicalCookie> cookie2 =
-      CanonicalCookie::Create(GURL("http://not.example.com/path"), "Tasty=No",
-                              base::Time::Now(), CookieOptions());
+  std::unique_ptr<CanonicalCookie> cookie2 = CanonicalCookie::Create(
+      GURL("http://not.example.com/path"), "Tasty=No", base::Time::Now(),
+      base::nullopt /* server_time */);
 
   // Wedge the background thread to make sure that it doesn't start consuming
   // the queue.

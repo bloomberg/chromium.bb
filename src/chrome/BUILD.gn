@@ -195,7 +195,6 @@ if (!is_android && !is_mac) {
           ":chrome_dll",
           ":chrome_exe_version",
           ":copy_first_run",
-          ":file_pre_reader",
           ":visual_elements_resources",
           "//base",
           "//chrome/app/version_assembly:chrome_exe_manifest",
@@ -236,38 +235,19 @@ if (!is_android && !is_mac) {
           configs += [ "//build/config/win:windowed" ]
         }
 
-        ldflags = [
-          "/DELAYLOAD:advapi32.dll",
-          "/DELAYLOAD:comdlg32.dll",
-          "/DELAYLOAD:dbghelp.dll",
-          "/DELAYLOAD:dwmapi.dll",
-          "/DELAYLOAD:imm32.dll",
-          "/DELAYLOAD:iphlpapi.dll",
-          "/DELAYLOAD:ole32.dll",
-          "/DELAYLOAD:oleaut32.dll",
-          "/DELAYLOAD:propsys.dll",
-          "/DELAYLOAD:psapi.dll",
-          "/DELAYLOAD:shell32.dll",
-          "/DELAYLOAD:shlwapi.dll",
-          "/DELAYLOAD:user32.dll",
-          "/DELAYLOAD:userenv.dll",
-          "/DELAYLOAD:uxtheme.dll",
-          "/DELAYLOAD:wer.dll",
-          "/DELAYLOAD:wevtapi.dll",
-          "/DELAYLOAD:winhttp.dll",
-          "/DELAYLOAD:wininet.dll",
-          "/DELAYLOAD:winmm.dll",
-          "/DELAYLOAD:wintrust.dll",
+        configs += [
+          "//build/config/win:delayloads",
+          "//build/config/win:delayloads_not_for_child_dll",
         ]
 
         if (current_cpu == "x86") {
           # Increase the initial stack size. The default is 1MB, this is 1.5MB.
           # To mitigate address space pressure, |CreateThreadInternal| sets the
           # default back to 1MB for non-main threads.
-          ldflags += [ "/STACK:1572864" ]
+          ldflags = [ "/STACK:1572864" ]
         } else {
           # Increase the initial stack size. The default is 1MB, this is 8MB.
-          ldflags += [ "/STACK:8388608" ]
+          ldflags = [ "/STACK:8388608" ]
         }
       }
 
@@ -424,6 +404,7 @@ if (is_win) {
       "//content/app/resources",
       "//content/public/common:service_names",
       "//crypto",
+      "//headless:headless_shell_browser_lib",
       "//net:net_resources",
       "//ppapi/buildflags",
       "//services/service_manager/embedder",
@@ -432,65 +413,9 @@ if (is_win) {
       "//ui/views",
     ]
 
-    ldflags = [
-      "/DELAYLOAD:advapi32.dll",
-      "/DELAYLOAD:comctl32.dll",
-      "/DELAYLOAD:comdlg32.dll",
-      "/DELAYLOAD:credui.dll",
-      "/DELAYLOAD:crypt32.dll",
-      "/DELAYLOAD:cryptui.dll",
-      "/DELAYLOAD:d3d11.dll",
-      "/DELAYLOAD:d3d9.dll",
-      "/DELAYLOAD:dbghelp.dll",
-      "/DELAYLOAD:dhcpcsvc.dll",
-      "/DELAYLOAD:dwmapi.dll",
-      "/DELAYLOAD:dxgi.dll",
-      "/DELAYLOAD:esent.dll",
-      "/DELAYLOAD:gdi32.dll",
-      "/DELAYLOAD:hid.dll",
-      "/DELAYLOAD:imagehlp.dll",
-      "/DELAYLOAD:imm32.dll",
-      "/DELAYLOAD:msi.dll",
-      "/DELAYLOAD:netapi32.dll",
-      "/DELAYLOAD:ole32.dll",
-      "/DELAYLOAD:oleacc.dll",
-      "/DELAYLOAD:ncrypt.dll",
-      "/DELAYLOAD:propsys.dll",
-      "/DELAYLOAD:psapi.dll",
-      "/DELAYLOAD:secur32.dll",
-      "/DELAYLOAD:setupapi.dll",
-      "/DELAYLOAD:shell32.dll",
-      "/DELAYLOAD:shlwapi.dll",
-      "/DELAYLOAD:uiautomationcore.dll",
-      "/DELAYLOAD:urlmon.dll",
-      "/DELAYLOAD:user32.dll",
-      "/DELAYLOAD:userenv.dll",
-      "/DELAYLOAD:usp10.dll",
-      "/DELAYLOAD:wer.dll",
-      "/DELAYLOAD:wevtapi.dll",
-      "/DELAYLOAD:winhttp.dll",
-      "/DELAYLOAD:wininet.dll",
-      "/DELAYLOAD:winspool.drv",
-      "/DELAYLOAD:wintrust.dll",
-      "/DELAYLOAD:winusb.dll",
-      "/DELAYLOAD:wsock32.dll",
-      "/DELAYLOAD:wtsapi32.dll",
-      "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
-    ]
-
+    configs += [ "//build/config/win:delayloads" ]
     if (is_multi_dll_chrome) {
-      ldflags += [
-        "/DELAYLOAD:dwrite.dll",
-        "/DELAYLOAD:iphlpapi.dll",
-        "/DELAYLOAD:oleaut32.dll",
-        "/DELAYLOAD:winmm.dll",
-        "/DELAYLOAD:ws2_32.dll",
-      ]
-    } else {
-      ldflags += [
-        "/DELAYLOAD:dxva2.dll",
-        "/DELAYLOAD:rstrtmgr.dll",
-      ]
+      configs += [ "//build/config/win:delayloads_not_for_child_dll" ]
     }
 
     if (!is_component_build) {
@@ -507,10 +432,7 @@ if (is_win) {
 
     if (is_multi_dll_chrome) {
       defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-      deps += [
-        "//content/public/app:browser",
-        "//headless:headless_shell_browser_lib",
-      ]
+      deps += [ "//content/public/app:browser" ]
       assert_no_deps = [
         # The browser DLL may not depend on blink or v8.
         "//third_party/blink/public:blink",
@@ -524,7 +446,7 @@ if (is_win) {
       deps += [
         ":child_dependencies",
         "//content/public/app:both",
-        "//headless:headless_shell_lib",
+        "//headless:headless_renderer",
       ]
     }
 
@@ -567,27 +489,7 @@ if (is_win) {
         "//services/service_manager/embedder",
       ]
 
-      ldflags = [
-        "/DELAYLOAD:comctl32.dll",
-        "/DELAYLOAD:comdlg32.dll",
-        "/DELAYLOAD:d3d11.dll",
-        "/DELAYLOAD:d3d9.dll",
-        "/DELAYLOAD:dwmapi.dll",
-        "/DELAYLOAD:dxgi.dll",
-        "/DELAYLOAD:dxva2.dll",
-        "/DELAYLOAD:esent.dll",
-        "/DELAYLOAD:imm32.dll",
-        "/DELAYLOAD:ole32.dll",
-        "/DELAYLOAD:oleacc.dll",
-        "/DELAYLOAD:propsys.dll",
-        "/DELAYLOAD:rstrtmgr.dll",
-        "/DELAYLOAD:shell32.dll",
-        "/DELAYLOAD:shlwapi.dll",
-        "/DELAYLOAD:urlmon.dll",
-        "/DELAYLOAD:user32.dll",
-        "/DELAYLOAD:usp10.dll",
-        "/DELAYLOAD:wininet.dll",
-      ]
+      configs += [ "//build/config/win:delayloads" ]
 
       if (is_clang && is_official_build) {
         orderfile = "build/chrome_child.$target_cpu.orderfile"
@@ -595,7 +497,7 @@ if (is_win) {
         inputs = [
           orderfile,
         ]
-        ldflags += [
+        ldflags = [
           "/order:@$rebased_orderfile",
 
           # Ignore warnings about missing functions or functions not in their
@@ -1371,7 +1273,13 @@ if (is_win) {
     }
   }
 
-  if (enable_dsyms) {
+  if (enable_dsyms && !is_component_build) {
+    # It is possible to run dump_syms on unstripped products without dSYMs, but
+    # doing so isn't logical and won't happen in practice. It's also pointless
+    # to run dump_syms or archive dSYMs in a component build, where all of the
+    # interesting symbols and debug info are tucked away in other libraries
+    # beyond the set explicitly listed here.
+
     # This list must be updated with the two targets' deps list below, and
     # the list of _dsyms in :chrome_dsym_archive.
     _chrome_symbols_sources = [
@@ -1387,8 +1295,6 @@ if (is_win) {
       _chrome_symbols_sources += [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.app/Contents/MacOS/${chrome_helper_name}${helper_params[2]}" ]
     }
 
-    # It is possible to run dump_syms on unstripped products without dSYMs,
-    # but doing so isn't logical and won't happen in practice.
     action_foreach("chrome_dump_syms") {
       script = "//build/redirect_stdout.py"
 
@@ -1586,16 +1492,6 @@ if (is_win) {
     ]
     output = "$target_gen_dir/other_version.rc"
   }
-
-  source_set("file_pre_reader") {
-    sources = [
-      "app/file_pre_reader_win.cc",
-      "app/file_pre_reader_win.h",
-    ]
-    deps = [
-      "//base",
-    ]
-  }
 }
 
 copy("visual_elements_resources") {
@@ -1645,6 +1541,7 @@ group("extra_resources") {
       "//chrome/browser/resources:downloads_resources",
       "//chrome/browser/resources:local_ntp_resources",
       "//chrome/browser/resources:settings_resources",
+      "//chrome/browser/resources/bluetooth_internals:resources",
     ]
   }
 
@@ -1662,7 +1559,7 @@ group("extra_resources") {
   }
 
   if (!is_android && !is_chromeos) {
-    public_deps += [ "//chrome/browser/resources:onboarding_welcome_resources" ]
+    public_deps += [ "//chrome/browser/resources:welcome_resources" ]
   }
 
   if (enable_extensions) {
@@ -1876,6 +1773,7 @@ if (is_android) {
       "//chrome/renderer",
       "//components/gwp_asan/buildflags",
       "//components/minidump_uploader",
+      "//components/safe_browsing:buildflags",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
       "//content/public/app:both",
@@ -1934,6 +1832,8 @@ if (is_linux) {
   if (is_official_build) {
     group("linux_symbols") {
       deps = [
+        ":angle_egl_symbols",
+        ":angle_gles_symbols",
         ":chrome_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
@@ -1979,6 +1879,34 @@ if (is_linux) {
 
       deps = [
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
+      ]
+    }
+    extract_symbols("angle_egl_symbols") {
+      binary = "$root_out_dir/libEGL.so"
+
+      if (current_cpu == "x86") {
+        # GYP used "ia32" so keep that naming for back-compat.
+        symbol_file = "$root_out_dir/angle_libegl.breakpad.ia32"
+      } else {
+        symbol_file = "$root_out_dir/angle_libegl.breakpad.$current_cpu"
+      }
+
+      deps = [
+        "//third_party/angle:libEGL",
+      ]
+    }
+    extract_symbols("angle_gles_symbols") {
+      binary = "$root_out_dir/libGLESv2.so"
+
+      if (current_cpu == "x86") {
+        # GYP used "ia32" so keep that naming for back-compat.
+        symbol_file = "$root_out_dir/angle_libgles.breakpad.ia32"
+      } else {
+        symbol_file = "$root_out_dir/angle_libgles.breakpad.$current_cpu"
+      }
+
+      deps = [
+        "//third_party/angle:libGLESv2",
       ]
     }
   }

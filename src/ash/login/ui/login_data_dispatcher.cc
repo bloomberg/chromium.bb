@@ -19,6 +19,10 @@ void LoginDataDispatcher::Observer::OnPinEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {}
 
+void LoginDataDispatcher::Observer::
+    OnChallengeResponseAuthEnabledForUserChanged(const AccountId& user,
+                                                 bool enabled) {}
+
 void LoginDataDispatcher::Observer::OnFingerprintStateChanged(
     const AccountId& account_id,
     FingerprintState state) {}
@@ -97,12 +101,6 @@ void LoginDataDispatcher::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
-                                                       bool enabled) {
-  for (auto& observer : observers_)
-    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
-}
-
 void LoginDataDispatcher::SetUserList(const std::vector<LoginUserInfo>& users) {
   for (auto& observer : observers_)
     observer.OnUsersChanged(users);
@@ -114,6 +112,13 @@ void LoginDataDispatcher::SetPinEnabledForUser(const AccountId& user,
   // LockScreen is destroyed in the case of authentication success.
   for (auto& observer : observers_)
     observer.OnPinEnabledForUserChanged(user, enabled);
+}
+
+void LoginDataDispatcher::SetChallengeResponseAuthEnabledForUser(
+    const AccountId& user,
+    bool enabled) {
+  for (auto& observer : observers_)
+    observer.OnChallengeResponseAuthEnabledForUserChanged(user, enabled);
 }
 
 void LoginDataDispatcher::SetFingerprintState(const AccountId& account_id,
@@ -147,8 +152,10 @@ void LoginDataDispatcher::DisableAuthForUser(
     observer.OnAuthDisabledForUser(account_id, auth_disabled_data);
 }
 
-void LoginDataDispatcher::EnableTapToUnlockForUser(const AccountId& user) {
-  SetTapToUnlockEnabledForUser(user, true);
+void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
+                                                       bool enabled) {
+  for (auto& observer : observers_)
+    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
 }
 
 void LoginDataDispatcher::ForceOnlineSignInForUser(const AccountId& user) {

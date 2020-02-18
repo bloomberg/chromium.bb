@@ -16,12 +16,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
-#include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -121,8 +121,15 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override {
     context_->notification_manager()->ScheduleNotification(
-        std::move(notification_params));
-    ScheduleBackgroundTask();
+        std::move(notification_params),
+        base::BindOnce(&NotificationSchedulerImpl::OnNotificationScheduled,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnNotificationScheduled(bool success) {
+    if (success) {
+      ScheduleBackgroundTask();
+    }
   }
 
   void DeleteAllNotifications(SchedulerClientType type) override {
@@ -172,6 +179,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   // NotificationBackgroundTaskScheduler::Handler implementation.
   void OnStartTask(SchedulerTaskTime task_time,
                    TaskFinishedCallback callback) override {
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStart);
+
     task_start_time_ = task_time;
 
     // Updates the impression data to compute daily notification shown budget.
@@ -183,10 +192,12 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     // Schedule the next background task based on scheduled notifications.
     ScheduleBackgroundTask();
 
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kFinish);
     std::move(callback).Run(false /*need_reschedule*/);
   }
 
   void OnStopTask(SchedulerTaskTime task_time) override {
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStopByOS);
     task_start_time_ = task_time;
     ScheduleBackgroundTask();
   }
@@ -222,20 +233,34 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void AfterClientUpdateData(
       std::unique_ptr<NotificationEntry> entry,
       std::unique_ptr<NotificationData> updated_notification_data) {
+    if (!updated_notification_data) {
+      stats::LogNotificationLifeCycleEvent(
+          stats::NotificationLifeCycleEvent::kClientCancel, entry->type);
+      return;
+    }
+
+    // Tracks user impression on the notification to be shown.
+    context_->impression_tracker()->AddImpression(
+        entry->type, entry->guid, entry->schedule_params.impression_mapping,
+        updated_notification_data->custom_data);
+
+    stats::LogNotificationShow(*updated_notification_data, entry->type);
+
     // Show the notification in UI.
     auto system_data = std::make_unique<DisplayAgent::SystemData>();
     system_data->type = entry->type;
     system_data->guid = entry->guid;
     context_->display_agent()->ShowNotification(
         std::move(updated_notification_data), std::move(system_data));
-
-    // Tracks user impression on the notification to be shown.
-    context_->impression_tracker()->AddImpression(entry->type, entry->guid);
   }
 
   // ImpressionHistoryTracker::Delegate implementation.
-  void OnImpressionUpdated() override { ScheduleBackgroundTask(); }
+  void OnImpressionUpdated() override {
+    // TODO(xingliu): Fix duplicate ScheduleBackgroundTask() call.
+    ScheduleBackgroundTask();
+  }
 
+  // TODO(xingliu): Remove |task_start_time|.
   void FindNotificationToShow(SchedulerTaskTime task_start_time) {
     DisplayDecider::Results results;
     ScheduledNotificationManager::Notifications notifications;
@@ -248,13 +273,12 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->client_registrar()->GetRegisteredClients(&clients);
 
     context_->display_decider()->FindNotificationsToShow(
-        context_->config(), std::move(clients), DistributionPolicy::Create(),
-        task_start_time, std::move(notifications), std::move(client_states),
-        &results);
+        std::move(notifications), std::move(client_states), &results);
 
     for (const auto& guid : results) {
       context_->notification_manager()->DisplayNotification(guid);
     }
+    stats::LogBackgroundTaskNotificationShown(results.size());
   }
 
   void ScheduleBackgroundTask() {
@@ -264,55 +288,34 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->impression_tracker()->GetClientStates(&client_states);
 
     context_->background_task_coordinator()->ScheduleBackgroundTask(
-        std::move(notifications), std::move(client_states), task_start_time_);
+        std::move(notifications), std::move(client_states));
   }
 
-  void OnClick(SchedulerClientType type, const std::string& guid) override {
-    context_->impression_tracker()->OnClick(type, guid);
+  void OnUserAction(const UserActionData& action_data) override {
+    context_->impression_tracker()->OnUserAction(action_data);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
-                       weak_ptr_factory_.GetWeakPtr(), UserActionType::kClick,
-                       type, base::nullopt));
+                       weak_ptr_factory_.GetWeakPtr(), action_data));
   }
 
-  void OnActionClick(SchedulerClientType type,
-                     const std::string& guid,
-                     ActionButtonType button_type) override {
-    context_->impression_tracker()->OnActionClick(type, guid, button_type);
-
-    ButtonClickInfo button_info;
-    // TODO(xingliu): Plumb the button id from platform.
-    button_info.button_id = std::string();
-    button_info.type = button_type;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       UserActionType::kButtonClick, type,
-                       std::move(button_info)));
-  }
-
-  void OnDismiss(SchedulerClientType type, const std::string& guid) override {
-    context_->impression_tracker()->OnDismiss(type, guid);
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
-                       weak_ptr_factory_.GetWeakPtr(), UserActionType::kDismiss,
-                       type, base::nullopt));
-  }
-
-  void NotifyClientAfterUserAction(
-      UserActionType action_type,
-      SchedulerClientType client_type,
-      base::Optional<ButtonClickInfo> button_info) {
-    auto* client = context_->client_registrar()->GetClient(client_type);
+  void NotifyClientAfterUserAction(const UserActionData& action_data) {
+    auto* client =
+        context_->client_registrar()->GetClient(action_data.client_type);
     if (!client)
       return;
 
-    client->OnUserAction(action_type, std::move(button_info));
+    auto client_action_data = action_data;
+
+    // Attach custom data if the impression is not expired.
+    const auto* impression =
+        context_->impression_tracker()->GetImpression(action_data.guid);
+    if (impression) {
+      client_action_data.custom_data = impression->custom_data;
+    }
+
+    client->OnUserAction(client_action_data);
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;

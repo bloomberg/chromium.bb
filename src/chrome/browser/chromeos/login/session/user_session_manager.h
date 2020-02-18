@@ -278,7 +278,7 @@ class UserSessionManager
   void AddSessionStateObserver(chromeos::UserSessionStateObserver* observer);
   void RemoveSessionStateObserver(chromeos::UserSessionStateObserver* observer);
 
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // This method will be called when user have obtained oauth2 tokens.
   void OnOAuth2TokensFetched(UserContext context);
@@ -398,8 +398,10 @@ class UserSessionManager
   // PrepareProfile().
   void UpdateArcFileSystemCompatibilityAndPrepareProfile();
 
+  void InitializeAccountManager();
+
   void StartCrosSession();
-  void PrepareProfile();
+  void PrepareProfile(const base::FilePath& profile_path);
 
   // Callback for asynchronous profile creation.
   void OnProfileCreated(const UserContext& user_context,
@@ -658,7 +660,7 @@ class UserSessionManager
 
   std::unique_ptr<ReleaseNotesNotification> release_notes_notification_;
 
-  base::WeakPtrFactory<UserSessionManager> weak_factory_;
+  base::WeakPtrFactory<UserSessionManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };

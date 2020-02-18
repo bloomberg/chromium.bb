@@ -95,6 +95,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/image_operations.h"
@@ -405,7 +406,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                    weak_factory_.GetWeakPtr()));
   }
 
-  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
   enable_viz_ = features::IsVizDisplayCompositorEnabled();
 
   if (!enable_viz_) {
@@ -505,6 +505,10 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   synthetic_gesture_controller_.reset();
 }
 
+// static
+const base::TimeDelta RenderWidgetHostImpl::kActivationNotificationExpireTime =
+    base::TimeDelta::FromMilliseconds(300);
+
 RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
   return process_;
 }
@@ -517,7 +521,7 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() {
   return view_.get();
 }
 
-const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() const {
+const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
@@ -599,8 +603,10 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
 
-  if (process_->IsInitializedAndNotDead()) {
-    // Tell the RendererWidget to close.
+  if (process_->IsInitializedAndNotDead() && !owner_delegate()) {
+    // Tell the RendererWidget to close. We only want to do this if the
+    // RenderWidget is the root of the renderer object graph, which is for
+    // pepper fullscreen and popups.
     bool rv = Send(new WidgetMsg_Close(routing_id_));
     DCHECK(rv);
   }
@@ -750,10 +756,6 @@ void RenderWidgetHostImpl::WasShown(
   SynchronizeVisualProperties();
 }
 
-void RenderWidgetHostImpl::SetHiddenOnCommit() {
-  Send(new WidgetMsg_WasHidden(routing_id_));
-}
-
 #if defined(OS_ANDROID)
 void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
@@ -763,26 +765,24 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
 }
 #endif
 
-bool RenderWidgetHostImpl::GetVisualProperties(
-    VisualProperties* visual_properties,
-    bool* needs_ack) {
+VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // This is only called while the RenderWidgetHost is attached to a delegate
   // still.
   DCHECK(delegate_);
 
-  *visual_properties = VisualProperties();
+  VisualProperties visual_properties;
 
-  GetScreenInfo(&visual_properties->screen_info);
+  GetScreenInfo(&visual_properties.screen_info);
 
-  visual_properties->is_fullscreen_granted =
+  visual_properties.is_fullscreen_granted =
       delegate_->IsFullscreenForCurrentTab();
-  visual_properties->display_mode = delegate_->GetDisplayMode(this);
-  visual_properties->zoom_level = delegate_->GetPendingPageZoomLevel();
+  visual_properties.display_mode = delegate_->GetDisplayMode(this);
+  visual_properties.zoom_level = delegate_->GetPendingPageZoomLevel();
 
   RenderViewHostDelegateView* rvh_delegate_view = delegate_->GetDelegateView();
   DCHECK(rvh_delegate_view);
 
-  visual_properties->browser_controls_shrink_blink_size =
+  visual_properties.browser_controls_shrink_blink_size =
       rvh_delegate_view->DoBrowserControlsShrinkRendererSize();
 
   float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
@@ -793,126 +793,62 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   // in DIPs then.
   if (!IsUseZoomForDSFEnabled()) {
     browser_controls_dsf_multiplier =
-        visual_properties->screen_info.device_scale_factor;
+        visual_properties.screen_info.device_scale_factor;
   }
-  visual_properties->top_controls_height =
+  visual_properties.top_controls_height =
       top_controls_height / browser_controls_dsf_multiplier;
-  visual_properties->bottom_controls_height =
+  visual_properties.bottom_controls_height =
       bottom_controls_height / browser_controls_dsf_multiplier;
 
-  visual_properties->auto_resize_enabled = auto_resize_enabled_;
-  visual_properties->min_size_for_auto_resize = min_size_for_auto_resize_;
-  visual_properties->max_size_for_auto_resize = max_size_for_auto_resize_;
+  visual_properties.auto_resize_enabled = auto_resize_enabled_;
+  visual_properties.min_size_for_auto_resize = min_size_for_auto_resize_;
+  visual_properties.max_size_for_auto_resize = max_size_for_auto_resize_;
 
-  visual_properties->page_scale_factor = page_scale_factor_;
-  visual_properties->is_pinch_gesture_active = is_pinch_gesture_active_;
+  visual_properties.page_scale_factor = page_scale_factor_;
+  visual_properties.is_pinch_gesture_active = is_pinch_gesture_active_;
 
   if (view_) {
-    visual_properties->new_size = view_->GetRequestedRendererSize();
-    visual_properties->capture_sequence_number =
+    visual_properties.new_size = view_->GetRequestedRendererSize();
+    visual_properties.capture_sequence_number =
         view_->GetCaptureSequenceNumber();
-    visual_properties->compositor_viewport_pixel_size =
-        view_->GetCompositorViewportPixelSize();
-    visual_properties->visible_viewport_size = view_->GetVisibleViewportSize();
+    // For OOPIFs, use the compositor viewport received from the FrameConnector.
+    visual_properties.compositor_viewport_pixel_rect =
+        view_->IsRenderWidgetHostViewChildFrame() &&
+                !view_->IsRenderWidgetHostViewGuest()
+            ? gfx::ScaleToEnclosingRect(
+                  compositor_viewport_,
+                  IsUseZoomForDSFEnabled()
+                      ? 1.f
+                      : visual_properties.screen_info.device_scale_factor)
+            : gfx::Rect(view_->GetCompositorViewportPixelSize());
+    visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
     viz::LocalSurfaceIdAllocation local_surface_id_allocation =
         view_->GetLocalSurfaceIdAllocation();
     if (local_surface_id_allocation.IsValid()) {
-      visual_properties->local_surface_id_allocation =
+      visual_properties.local_surface_id_allocation =
           local_surface_id_allocation;
     }
   }
 
   if (screen_orientation_type_for_testing_) {
-    visual_properties->screen_info.orientation_type =
+    visual_properties.screen_info.orientation_type =
         *screen_orientation_type_for_testing_;
   }
 
   if (screen_orientation_angle_for_testing_) {
-    visual_properties->screen_info.orientation_angle =
+    visual_properties.screen_info.orientation_angle =
         *screen_orientation_angle_for_testing_;
   }
 
-  const bool size_changed =
-      !old_visual_properties_ ||
-      old_visual_properties_->auto_resize_enabled !=
-          visual_properties->auto_resize_enabled ||
-      (old_visual_properties_->auto_resize_enabled &&
-       (old_visual_properties_->min_size_for_auto_resize !=
-            visual_properties->min_size_for_auto_resize ||
-        old_visual_properties_->max_size_for_auto_resize !=
-            visual_properties->max_size_for_auto_resize)) ||
-      (!old_visual_properties_->auto_resize_enabled &&
-       (old_visual_properties_->new_size != visual_properties->new_size ||
-        (old_visual_properties_->compositor_viewport_pixel_size.IsEmpty() &&
-         !visual_properties->compositor_viewport_pixel_size.IsEmpty())));
-
-  viz::LocalSurfaceIdAllocation old_parent_local_surface_id_allocation =
-      old_visual_properties_
-          ? old_visual_properties_->local_surface_id_allocation.value_or(
-                viz::LocalSurfaceIdAllocation())
-          : viz::LocalSurfaceIdAllocation();
-  const viz::LocalSurfaceId& old_parent_local_surface_id =
-      old_parent_local_surface_id_allocation.local_surface_id();
-
-  viz::LocalSurfaceIdAllocation new_parent_local_surface_id_allocation =
-      visual_properties->local_surface_id_allocation.value_or(
-          viz::LocalSurfaceIdAllocation());
-  const viz::LocalSurfaceId& new_parent_local_surface_id =
-      new_parent_local_surface_id_allocation.local_surface_id();
-
-  const bool parent_local_surface_id_changed =
-      !old_visual_properties_ ||
-      old_parent_local_surface_id.parent_sequence_number() !=
-          new_parent_local_surface_id.parent_sequence_number() ||
-      old_parent_local_surface_id.embed_token() !=
-          new_parent_local_surface_id.embed_token();
-
-  const bool zoom_changed =
-      !old_visual_properties_ ||
-      old_visual_properties_->zoom_level != visual_properties->zoom_level;
-
-  bool dirty =
-      zoom_changed || size_changed || parent_local_surface_id_changed ||
-      old_visual_properties_->screen_info != visual_properties->screen_info ||
-      old_visual_properties_->compositor_viewport_pixel_size !=
-          visual_properties->compositor_viewport_pixel_size ||
-      old_visual_properties_->is_fullscreen_granted !=
-          visual_properties->is_fullscreen_granted ||
-      old_visual_properties_->display_mode != visual_properties->display_mode ||
-      old_visual_properties_->top_controls_height !=
-          visual_properties->top_controls_height ||
-      old_visual_properties_->browser_controls_shrink_blink_size !=
-          visual_properties->browser_controls_shrink_blink_size ||
-      old_visual_properties_->bottom_controls_height !=
-          visual_properties->bottom_controls_height ||
-      old_visual_properties_->visible_viewport_size !=
-          visual_properties->visible_viewport_size ||
-      old_visual_properties_->capture_sequence_number !=
-          visual_properties->capture_sequence_number ||
-      old_visual_properties_->page_scale_factor !=
-          visual_properties->page_scale_factor ||
-      old_visual_properties_->is_pinch_gesture_active !=
-          visual_properties->is_pinch_gesture_active;
-
-  // We should throttle sending updated VisualProperties to the renderer to
-  // the rate of commit. This ensures we don't overwhelm the renderer with
-  // visual updates faster than it can keep up.  |needs_ack| corresponds to
-  // cases where a commit is expected.
-  *needs_ack = g_check_for_pending_visual_properties_ack &&
-               !visual_properties->auto_resize_enabled &&
-               !visual_properties->new_size.IsEmpty() &&
-               !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
-               visual_properties->local_surface_id_allocation && size_changed;
-
-  return dirty;
+  return visual_properties;
 }
 
 void RenderWidgetHostImpl::SetInitialVisualProperties(
-    const VisualProperties& visual_properties,
-    bool needs_ack) {
-  visual_properties_ack_pending_ = needs_ack;
+    const VisualProperties& visual_properties) {
+  visual_properties_ack_pending_ =
+      DoesVisualPropertiesNeedAck(old_visual_properties_, visual_properties);
   old_visual_properties_ =
       std::make_unique<VisualProperties>(visual_properties);
 }
@@ -940,9 +876,11 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   }
 
   auto visual_properties = std::make_unique<VisualProperties>();
-  bool needs_ack = false;
-  if (!GetVisualProperties(visual_properties.get(), &needs_ack))
+  *visual_properties = GetVisualProperties();
+  if (!StoredVisualPropertiesNeedsUpdate(old_visual_properties_,
+                                         *visual_properties))
     return false;
+
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
@@ -994,7 +932,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
         "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
         visual_properties->local_surface_id_allocation->local_surface_id()
             .ToString());
-    visual_properties_ack_pending_ = needs_ack;
+    visual_properties_ack_pending_ =
+        DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
     if (delegate() && visible_viewport_size_changed) {
       delegate()->NotifyVisibleViewportSizeChanged(
           visual_properties->visible_viewport_size);
@@ -1159,7 +1098,6 @@ void RenderWidgetHostImpl::DidNavigate() {
   // Stop the flinging after navigating to a new page.
   StopFling();
 
-  DCHECK(enable_surface_synchronization_);
   // Resize messages before navigation are not acked, so reset
   // |visual_properties_ack_pending_| and make sure the next resize will be
   // acked if the last resize before navigation was supposed to be acked.
@@ -1171,6 +1109,8 @@ void RenderWidgetHostImpl::DidNavigate() {
     return;
 
   new_content_rendering_timeout_->Start(new_content_rendering_delay_);
+
+  ClearPendingUserActivation();
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -1270,11 +1210,6 @@ void RenderWidgetHostImpl::WaitForInputProcessed(base::OnceClosure callback) {
   }
 
   input_router_->WaitForInputProcessed(std::move(callback));
-}
-
-void RenderWidgetHostImpl::ForwardEmulatedGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  ForwardGestureEvent(gesture_event);
 }
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
@@ -1388,14 +1323,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
             gesture_event));
   }
-}
-
-void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
-    const blink::WebTouchEvent& touch_event,
-    RenderWidgetHostViewBase* target) {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardEmulatedTouchEvent");
-  ForwardTouchEventWithLatencyInfo(touch_event,
-                                   ui::LatencyInfo(ui::SourceEventType::TOUCH));
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
@@ -2023,6 +1950,7 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
   if (pending_mouse_lock_request_) {
     pending_mouse_lock_request_ = false;
+    mouse_lock_raw_movement_ = false;
     Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
@@ -2069,6 +1997,11 @@ void RenderWidgetHostImpl::SetPageScaleState(float page_scale_factor,
                                              bool is_pinch_gesture_active) {
   page_scale_factor_ = page_scale_factor;
   is_pinch_gesture_active_ = is_pinch_gesture_active;
+}
+
+void RenderWidgetHostImpl::SetCompositorViewport(
+    const gfx::Rect& compositor_viewport) {
+  compositor_viewport_ = compositor_viewport;
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {
@@ -2154,12 +2087,8 @@ void RenderWidgetHostImpl::RendererIsResponsive() {
 
 void RenderWidgetHostImpl::ClearDisplayedGraphics() {
   NotifyNewContentRenderingTimeoutForTesting();
-  if (view_) {
-    if (enable_surface_synchronization_)
-      view_->ResetFallbackToFirstNavigationSurface();
-    else
-      view_->ClearCompositorFrame();
-  }
+  if (view_)
+    view_->ResetFallbackToFirstNavigationSurface();
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
@@ -2318,6 +2247,107 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
   }
 }
 
+// static
+bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
+    const VisualProperties& old_visual_properties,
+    const VisualProperties& new_visual_properties) {
+  return old_visual_properties.auto_resize_enabled !=
+             new_visual_properties.auto_resize_enabled ||
+         (old_visual_properties.auto_resize_enabled &&
+          (old_visual_properties.min_size_for_auto_resize !=
+               new_visual_properties.min_size_for_auto_resize ||
+           old_visual_properties.max_size_for_auto_resize !=
+               new_visual_properties.max_size_for_auto_resize)) ||
+         (!old_visual_properties.auto_resize_enabled &&
+          (old_visual_properties.new_size != new_visual_properties.new_size ||
+           (old_visual_properties.compositor_viewport_pixel_rect.IsEmpty() &&
+            !new_visual_properties.compositor_viewport_pixel_rect.IsEmpty())));
+}
+
+// static
+bool RenderWidgetHostImpl::DoesVisualPropertiesNeedAck(
+    const std::unique_ptr<VisualProperties>& old_visual_properties,
+    const VisualProperties& new_visual_properties) {
+  // We should throttle sending updated VisualProperties to the renderer to
+  // the rate of commit. This ensures we don't overwhelm the renderer with
+  // visual updates faster than it can keep up.  |needs_ack| corresponds to
+  // cases where a commit is expected.
+  bool is_acking_applicable =
+      g_check_for_pending_visual_properties_ack &&
+      !new_visual_properties.auto_resize_enabled &&
+      !new_visual_properties.new_size.IsEmpty() &&
+      !new_visual_properties.compositor_viewport_pixel_rect.IsEmpty() &&
+      new_visual_properties.local_surface_id_allocation;
+
+  // If acking is applicable, then check if there has been an
+  // |old_visual_properties| stored which would indicate an update has been
+  // sent. If so, then acking is defined by size changing.
+  return is_acking_applicable &&
+         (!old_visual_properties ||
+          DidVisualPropertiesSizeChange(*old_visual_properties,
+                                        new_visual_properties));
+}
+
+// static
+bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
+    const std::unique_ptr<VisualProperties>& old_visual_properties,
+    const VisualProperties& new_visual_properties) {
+  if (!old_visual_properties)
+    return true;
+
+  const bool size_changed = DidVisualPropertiesSizeChange(
+      *old_visual_properties, new_visual_properties);
+
+  // Hold on the the LocalSurfaceIdAllocation in a local variable otherwise the
+  // LocalSurfaceId may become invalid when used later.
+  viz::LocalSurfaceIdAllocation old_parent_local_surface_id_allocation =
+      old_visual_properties->local_surface_id_allocation.value_or(
+          viz::LocalSurfaceIdAllocation());
+  viz::LocalSurfaceIdAllocation new_parent_local_surface_id_allocation =
+      new_visual_properties.local_surface_id_allocation.value_or(
+          viz::LocalSurfaceIdAllocation());
+
+  const viz::LocalSurfaceId& old_parent_local_surface_id =
+      old_parent_local_surface_id_allocation.local_surface_id();
+  const viz::LocalSurfaceId& new_parent_local_surface_id =
+      new_parent_local_surface_id_allocation.local_surface_id();
+
+  const bool parent_local_surface_id_changed =
+      old_parent_local_surface_id.parent_sequence_number() !=
+          new_parent_local_surface_id.parent_sequence_number() ||
+      old_parent_local_surface_id.embed_token() !=
+          new_parent_local_surface_id.embed_token();
+
+  const bool zoom_changed =
+      old_visual_properties->zoom_level != new_visual_properties.zoom_level;
+
+  return zoom_changed || size_changed || parent_local_surface_id_changed ||
+         old_visual_properties->screen_info !=
+             new_visual_properties.screen_info ||
+         old_visual_properties->compositor_viewport_pixel_rect !=
+             new_visual_properties.compositor_viewport_pixel_rect ||
+         old_visual_properties->compositor_viewport_pixel_rect !=
+             new_visual_properties.compositor_viewport_pixel_rect ||
+         old_visual_properties->is_fullscreen_granted !=
+             new_visual_properties.is_fullscreen_granted ||
+         old_visual_properties->display_mode !=
+             new_visual_properties.display_mode ||
+         old_visual_properties->top_controls_height !=
+             new_visual_properties.top_controls_height ||
+         old_visual_properties->browser_controls_shrink_blink_size !=
+             new_visual_properties.browser_controls_shrink_blink_size ||
+         old_visual_properties->bottom_controls_height !=
+             new_visual_properties.bottom_controls_height ||
+         old_visual_properties->visible_viewport_size !=
+             new_visual_properties.visible_viewport_size ||
+         old_visual_properties->capture_sequence_number !=
+             new_visual_properties.capture_sequence_number ||
+         old_visual_properties->page_scale_factor !=
+             new_visual_properties.page_scale_factor ||
+         old_visual_properties->is_pinch_gesture_active !=
+             new_visual_properties.is_pinch_gesture_active;
+}
+
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
   SetCursor(cursor);
 }
@@ -2455,7 +2485,8 @@ void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
 }
 
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
-                                       bool privileged) {
+                                       bool privileged,
+                                       bool request_unadjusted_movement) {
   if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidLockMouse(user_gesture, privileged);
     return;
@@ -2467,6 +2498,7 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
   }
 
   pending_mouse_lock_request_ = true;
+  mouse_lock_raw_movement_ = request_unadjusted_movement;
   if (delegate_) {
     delegate_->RequestToLockMouse(this, user_gesture,
                                   is_last_unlocked_by_target_,
@@ -2644,10 +2676,38 @@ void RenderWidgetHostImpl::SetNeedsBeginFrameForFlingProgress() {
   SetNeedsBeginFrame(true);
 }
 
+void RenderWidgetHostImpl::AddPendingUserActivation(
+    const WebInputEvent& event) {
+  if (base::FeatureList::IsEnabled(features::kBrowserVerifiedUserActivation) &&
+      (event.GetType() == WebInputEvent::kMouseDown ||
+       event.GetType() == WebInputEvent::kKeyDown ||
+       event.GetType() == WebInputEvent::kRawKeyDown)) {
+    pending_user_activation_timer_.Start(
+        FROM_HERE, kActivationNotificationExpireTime,
+        base::BindOnce(&RenderWidgetHostImpl::ClearPendingUserActivation,
+                       base::Unretained(this)));
+    pending_user_activation_counter_++;
+  }
+}
+
+void RenderWidgetHostImpl::ClearPendingUserActivation() {
+  pending_user_activation_counter_ = 0;
+  pending_user_activation_timer_.Stop();
+}
+
+bool RenderWidgetHostImpl::ConsumePendingUserActivationIfAllowed() {
+  if (pending_user_activation_counter_ > 0) {
+    pending_user_activation_counter_--;
+    return true;
+  }
+  return false;
+}
+
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
     ui::LatencyInfo* latency) {
   latency_tracker_.OnInputEvent(event, latency);
+  AddPendingUserActivation(event);
   for (auto& observer : input_event_observers_)
     observer.OnInputEvent(event);
 }
@@ -2699,26 +2759,13 @@ void RenderWidgetHostImpl::OnTouchEventAck(
   auto* input_event_router =
       delegate() ? delegate()->GetInputEventRouter() : nullptr;
 
-  auto it = touch_event_acks_to_ignore_.find(event.event.unique_touch_event_id);
-  if (it != touch_event_acks_to_ignore_.end()) {
-    touch_event_acks_to_ignore_.erase(it);
-    return;
-  }
-
-  // With portals, if a touch event triggers an activation, it is possible to
-  // receive a touch ack after activation. The view is destroyed on activation
-  // and any pending events in the touch ack queue have already been cleared, so
-  // we just ignore this ack.
-  if (!view_)
-    return;
-
   // At present interstitial pages might not have an input event router, so we
   // just have the view process the ack directly in that case; the view is
   // guaranteed to be a top-level view with an appropriate implementation of
   // ProcessAckedTouchEvent().
   if (input_event_router)
     input_event_router->ProcessAckedTouchEvent(event, ack_result, view_.get());
-  else
+  else if (view_)
     view_->ProcessAckedTouchEvent(event, ack_result);
 }
 
@@ -2740,7 +2787,8 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   }
 
   pending_mouse_lock_request_ = false;
-  if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
+  if (!view_ || !view_->HasFocus() ||
+      !view_->LockMouse(mouse_lock_raw_movement_)) {
     Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
     return false;
   }
@@ -2979,7 +3027,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
-  DCHECK(enable_surface_synchronization_);
   if (view_) {
     // If Surface Synchronization is on, then |new_content_rendering_timeout_|
     // is stopped in DidReceiveFirstFrameAfterNavigation.
@@ -3001,16 +3048,18 @@ void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
 device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+    mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+        wake_lock_.BindNewPipeAndPassReceiver();
     // In some testing contexts, the system Connector isn't3 initialized.
     if (GetSystemConnector()) {
-      device::mojom::WakeLockProviderPtr wake_lock_provider;
-      GetSystemConnector()->BindInterface(
-          device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
+      mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+      GetSystemConnector()->Connect(
+          device::mojom::kServiceName,
+          wake_lock_provider.BindNewPipeAndPassReceiver());
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventDisplaySleep,
           device::mojom::WakeLockReason::kOther, "GetSnapshot",
-          std::move(request));
+          std::move(receiver));
     }
   }
   return wake_lock_.get();
@@ -3131,12 +3180,6 @@ RenderWidgetHostImpl::CollectSurfaceIdsForEviction() {
   if (!rvh)
     return {};
   return rvh->CollectSurfaceIdsForEviction();
-}
-
-void RenderWidgetHostImpl::IgnoreTouchEventAcks(
-    const std::unordered_set<uint32_t>& acks_to_ignore) {
-  touch_event_acks_to_ignore_.insert(acks_to_ignore.begin(),
-                                     acks_to_ignore.end());
 }
 
 std::unique_ptr<RenderWidgetHostIterator>

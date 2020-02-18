@@ -8,10 +8,10 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -116,7 +116,7 @@ class MediaRouterFileDialogTest : public Test {
   base::FilePath fake_path;
   base::string16 fake_path_name;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(MediaRouterFileDialogTest, SelectFileSuccess) {

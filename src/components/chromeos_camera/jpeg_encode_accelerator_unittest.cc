@@ -13,12 +13,13 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -159,7 +160,7 @@ class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 };
 
 void JpegEncodeAcceleratorTestEnvironment::SetUp() {
-  // Since base::test::ScopedTaskEnvironment will call
+  // Since base::test::TaskEnvironment will call
   // TestTimeouts::action_max_timeout(), TestTimeouts::Initialize() needs to be
   // called in advance.
   TestTimeouts::Initialize();
@@ -309,9 +310,9 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   // support them.
   const std::vector<TestImage*>& test_aligned_images_;
 
-  // JpegClient doesn't own |test_images_|.
+  // JpegClient doesn't own |test_unaligned_images_|.
   // The resolutions of these images may be unaligned.
-  const std::vector<TestImage*>& test_images_;
+  const std::vector<TestImage*>& test_unaligned_images_;
 
   // A map that stores HW encoding start timestamp for each output buffer id.
   std::map<int, base::TimeTicks> buffer_id_to_start_time_;
@@ -327,11 +328,14 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   media::BitstreamBuffer encoded_buffer_;
 
   // Mapped memory of input file.
-  std::unique_ptr<base::SharedMemory> in_shm_;
+  base::UnsafeSharedMemoryRegion in_shm_;
+  base::WritableSharedMemoryMapping in_mapping_;
   // Mapped memory of output buffer from hardware encoder.
-  std::unique_ptr<base::SharedMemory> hw_out_shm_;
+  base::UnsafeSharedMemoryRegion hw_out_shm_;
+  base::WritableSharedMemoryMapping hw_out_mapping_;
   // Mapped memory of output buffer from software encoder.
-  std::unique_ptr<base::SharedMemory> sw_out_shm_;
+  base::UnsafeSharedMemoryRegion sw_out_shm_;
+  base::WritableSharedMemoryMapping sw_out_mapping_;
   // Output for DMA-buf based encoding.
   scoped_refptr<media::VideoFrame> hw_out_frame_;
 
@@ -345,7 +349,7 @@ JpegClient::JpegClient(const std::vector<TestImage*>& test_aligned_images,
                        const std::vector<TestImage*>& test_images,
                        media::test::ClientStateNotification<ClientState>* note)
     : test_aligned_images_(test_aligned_images),
-      test_images_(test_images),
+      test_unaligned_images_(test_images),
       state_(ClientState::CREATED),
       note_(note),
       gpu_memory_buffer_manager_(new media::LocalGpuMemoryBufferManager()) {}
@@ -395,7 +399,8 @@ void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
   if (buffer_id < static_cast<int32_t>(test_aligned_images_.size())) {
     test_image = test_aligned_images_[buffer_id];
   } else {
-    test_image = test_images_[buffer_id - test_aligned_images_.size()];
+    test_image =
+        test_unaligned_images_[buffer_id - test_aligned_images_.size()];
   }
 
   if (hw_out_frame_ && !hw_out_frame_->IsMappable()) {
@@ -439,7 +444,7 @@ bool JpegClient::GetSoftwareEncodeResult(int width,
   int y_stride = width;
   int u_stride = width / 2;
   int v_stride = u_stride;
-  uint8_t* yuv_src = static_cast<uint8_t*>(in_shm_->memory());
+  uint8_t* yuv_src = in_mapping_.GetMemoryAsSpan<uint8_t>().data();
   const int kBytesPerPixel = 4;
   std::vector<uint8_t> rgba_buffer(width * height * kBytesPerPixel);
   std::vector<uint8_t> encoded;
@@ -455,7 +460,7 @@ bool JpegClient::GetSoftwareEncodeResult(int width,
     return false;
   }
 
-  memcpy(sw_out_shm_->memory(), encoded.data(), encoded.size());
+  memcpy(sw_out_mapping_.memory(), encoded.data(), encoded.size());
   *sw_encoded_size = encoded.size();
   *sw_encode_time = base::TimeTicks::Now() - sw_encode_start;
   return true;
@@ -472,7 +477,7 @@ bool JpegClient::CompareHardwareAndSoftwareResults(int width,
   int v_stride = u_stride;
 
   const uint8_t* out_mem = static_cast<const uint8_t*>(
-      hw_out_frame_ ? hw_out_frame_->data(0) : hw_out_shm_->memory());
+      hw_out_frame_ ? hw_out_frame_->data(0) : hw_out_mapping_.memory());
   if (libyuv::ConvertToI420(
           out_mem, hw_encoded_size, hw_yuv_result, y_stride,
           hw_yuv_result + y_stride * height, u_stride,
@@ -484,8 +489,9 @@ bool JpegClient::CompareHardwareAndSoftwareResults(int width,
 
   uint8_t* sw_yuv_result = new uint8_t[yuv_size];
   if (libyuv::ConvertToI420(
-          static_cast<const uint8_t*>(sw_out_shm_->memory()), sw_encoded_size,
-          sw_yuv_result, y_stride, sw_yuv_result + y_stride * height, u_stride,
+          static_cast<const uint8_t*>(sw_out_mapping_.memory()),
+          sw_encoded_size, sw_yuv_result, y_stride,
+          sw_yuv_result + y_stride * height, u_stride,
           sw_yuv_result + y_stride * height + u_stride * height / 2, v_stride,
           0, 0, width, height, width, height, libyuv::kRotate0,
           libyuv::FOURCC_MJPG)) {
@@ -525,13 +531,13 @@ void JpegClient::NotifyError(int32_t buffer_id,
 
 TestImage* JpegClient::GetTestImage(int32_t bitstream_buffer_id) {
   DCHECK_LT(static_cast<size_t>(bitstream_buffer_id),
-            test_aligned_images_.size() + test_images_.size());
+            test_aligned_images_.size() + test_unaligned_images_.size());
   TestImage* image_file;
   if (bitstream_buffer_id < static_cast<int32_t>(test_aligned_images_.size())) {
     image_file = test_aligned_images_[bitstream_buffer_id];
   } else {
-    image_file =
-        test_images_[bitstream_buffer_id - test_aligned_images_.size()];
+    image_file = test_unaligned_images_[bitstream_buffer_id -
+                                        test_aligned_images_.size()];
   }
 
   return image_file;
@@ -541,25 +547,33 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
   TestImage* test_image = GetTestImage(bitstream_buffer_id);
 
   size_t input_size = test_image->image_data.size();
-  if (!in_shm_.get() || input_size > in_shm_->mapped_size()) {
-    in_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(in_shm_->CreateAndMapAnonymous(input_size));
+  if (!in_mapping_.IsValid() || input_size > in_mapping_.size()) {
+    in_shm_ = base::UnsafeSharedMemoryRegion::Create(input_size);
+    LOG_ASSERT(in_shm_.IsValid());
+    in_mapping_ = in_shm_.Map();
+    LOG_ASSERT(in_mapping_.IsValid());
   }
-  memcpy(in_shm_->memory(), test_image->image_data.data(), input_size);
+  memcpy(in_mapping_.memory(), test_image->image_data.data(), input_size);
 
-  if (!hw_out_shm_.get() ||
-      test_image->output_size > hw_out_shm_->mapped_size()) {
-    hw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(hw_out_shm_->CreateAndMapAnonymous(test_image->output_size));
+  if (!hw_out_shm_.IsValid() || !hw_out_mapping_.IsValid() ||
+      test_image->output_size > hw_out_mapping_.size()) {
+    hw_out_shm_ =
+        base::UnsafeSharedMemoryRegion::Create(test_image->output_size);
+    LOG_ASSERT(hw_out_shm_.IsValid());
+    hw_out_mapping_ = hw_out_shm_.Map();
+    LOG_ASSERT(hw_out_mapping_.IsValid());
   }
-  memset(hw_out_shm_->memory(), 0, test_image->output_size);
+  memset(hw_out_mapping_.memory(), 0, test_image->output_size);
 
-  if (!sw_out_shm_.get() ||
-      test_image->output_size > sw_out_shm_->mapped_size()) {
-    sw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(sw_out_shm_->CreateAndMapAnonymous(test_image->output_size));
+  if (!sw_out_shm_.IsValid() || !sw_out_mapping_.IsValid() ||
+      test_image->output_size > sw_out_mapping_.size()) {
+    sw_out_shm_ =
+        base::UnsafeSharedMemoryRegion::Create(test_image->output_size);
+    LOG_ASSERT(sw_out_shm_.IsValid());
+    sw_out_mapping_ = sw_out_shm_.Map();
+    LOG_ASSERT(sw_out_mapping_.IsValid());
   }
-  memset(sw_out_shm_->memory(), 0, test_image->output_size);
+  memset(sw_out_mapping_.memory(), 0, test_image->output_size);
 
   hw_out_frame_ = nullptr;
 }
@@ -582,12 +596,12 @@ void JpegClient::SaveToFile(TestImage* test_image,
   LOG(INFO) << "Writing HW encode results to "
             << out_filename_hw.MaybeAsASCII();
 
-  ASSERT_EQ(
-      static_cast<int>(hw_size),
-      base::WriteFile(out_filename_hw,
-                      static_cast<char*>(hw_out_frame_ ? hw_out_frame_->data(0)
-                                                       : hw_out_shm_->memory()),
-                      hw_size));
+  ASSERT_EQ(static_cast<int>(hw_size),
+            base::WriteFile(
+                out_filename_hw,
+                static_cast<char*>(hw_out_frame_ ? hw_out_frame_->data(0)
+                                                 : hw_out_mapping_.memory()),
+                hw_size));
 
   base::FilePath out_filename_sw = out_filename_hw.InsertBeforeExtension("_sw");
   LOG(INFO) << "Writing SW encode results to "
@@ -595,7 +609,7 @@ void JpegClient::SaveToFile(TestImage* test_image,
   ASSERT_EQ(
       static_cast<int>(sw_size),
       base::WriteFile(out_filename_sw,
-                      static_cast<char*>(sw_out_shm_->memory()), sw_size));
+                      static_cast<char*>(sw_out_mapping_.memory()), sw_size));
 }
 
 void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
@@ -605,19 +619,16 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
       encoder_->GetMaxCodedBufferSize(test_image->visible_size);
   PrepareMemory(bitstream_buffer_id);
 
-  // media::BitstreamBuffer will duplicate hw_out_shm_->handle().
-  encoded_buffer_ =
-      media::BitstreamBuffer(bitstream_buffer_id, hw_out_shm_->handle(),
-                             false /* read_only */, test_image->output_size);
+  encoded_buffer_ = media::BitstreamBuffer(
+      bitstream_buffer_id, std::move(hw_out_shm_), test_image->output_size);
   scoped_refptr<media::VideoFrame> input_frame_ =
-      media::VideoFrame::WrapExternalSharedMemory(
+      media::VideoFrame::WrapExternalData(
           media::PIXEL_FORMAT_I420, test_image->visible_size,
           gfx::Rect(test_image->visible_size), test_image->visible_size,
-          static_cast<uint8_t*>(in_shm_->memory()),
-          test_image->image_data.size(), in_shm_->handle(), 0,
-          base::TimeDelta());
-
+          in_mapping_.GetMemoryAsSpan<uint8_t>().data(),
+          test_image->image_data.size(), base::TimeDelta());
   LOG_ASSERT(input_frame_.get());
+  input_frame_->BackWithSharedMemory(&in_shm_);
 
   buffer_id_to_start_time_[bitstream_buffer_id] = base::TimeTicks::Now();
   encoder_->Encode(input_frame_, kJpegDefaultQuality, nullptr,
@@ -670,12 +681,12 @@ class JpegEncodeAcceleratorTest : public ::testing::Test {
 
   // This is needed to allow the usage of methods in post_task.h in
   // JpegEncodeAccelerator implementations.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
-  // The elements of |test_aligned_images_| and |test_images_| are
+  // The elements of |test_aligned_images_| and |test_unaligned_images_| are
   // owned by JpegEncodeAcceleratorTestEnvironment.
   std::vector<TestImage*> test_aligned_images_;
-  std::vector<TestImage*> test_images_;
+  std::vector<TestImage*> test_unaligned_images_;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(JpegEncodeAcceleratorTest);
@@ -690,16 +701,21 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
       std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
       notes;
   std::vector<std::unique_ptr<JpegClient>> clients;
+  std::vector<ClientState> results;
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
     notes.push_back(
         std::make_unique<media::test::ClientStateNotification<ClientState>>());
     clients.push_back(std::make_unique<JpegClient>(
-        test_aligned_images_, test_images_, notes.back().get()));
+        test_aligned_images_, test_unaligned_images_, notes.back().get()));
     encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&JpegClient::CreateJpegEncoder,
                                   base::Unretained(clients.back().get())));
-    ASSERT_EQ(notes[i]->Wait(), ClientState::INITIALIZED);
+    results.push_back(notes[i]->Wait());
+  }
+
+  for (size_t i = 0; i < num_concurrent_encoders; i++) {
+    ASSERT_EQ(results[i], ClientState::INITIALIZED);
   }
 
   for (size_t index = 0; index < test_aligned_images_.size(); index++) {
@@ -723,7 +739,11 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
       }
     }
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
-      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+      results[i] = notes[i]->Wait();
+    }
+
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      ASSERT_EQ(results[i], ClientState::ENCODE_PASS);
     }
   }
 
@@ -731,12 +751,12 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
   // For unaligned images, V4L2 may not be able to encode them so skip for V4L2
   // cases.
 #else
-  for (size_t index = 0; index < test_images_.size(); index++) {
+  for (size_t index = 0; index < test_unaligned_images_.size(); index++) {
     int buffer_id = index + test_aligned_images_.size();
     VLOG(3) << buffer_id
-            << ",width:" << test_images_[index]->visible_size.width();
-    VLOG(3) << buffer_id
-            << ",height:" << test_images_[index]->visible_size.height();
+            << ",width:" << test_unaligned_images_[index]->visible_size.width();
+    VLOG(3) << buffer_id << ",height:"
+            << test_unaligned_images_[index]->visible_size.height();
 
     if (!is_dma) {
       for (size_t i = 0; i < num_concurrent_encoders; i++) {
@@ -754,7 +774,11 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
       }
     }
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
-      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+      results[i] = notes[i]->Wait();
+    }
+
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      ASSERT_EQ(results[i], ClientState::ENCODE_PASS);
     }
   }
 #endif
@@ -771,7 +795,7 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
 TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {
     for (auto& image : g_env->image_data_user_) {
-      test_images_.push_back(image.get());
+      test_aligned_images_.push_back(image.get());
     }
   }
   TestEncode(1, false);
@@ -779,14 +803,13 @@ TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
 
 TEST_F(JpegEncodeAcceleratorTest, MultipleEncoders) {
   for (auto& image : g_env->image_data_user_) {
-    test_images_.push_back(image.get());
+    test_aligned_images_.push_back(image.get());
   }
   TestEncode(3, false);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, ResolutionChange) {
-  test_images_.push_back(g_env->image_data_640x368_black_.get());
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_aligned_images_.push_back(g_env->image_data_640x368_black_.get());
   test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
   TestEncode(1, false);
 }
@@ -799,14 +822,14 @@ TEST_F(JpegEncodeAcceleratorTest, AlignedSizes) {
 }
 
 TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignment) {
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_unaligned_images_.push_back(g_env->image_data_640x360_black_.get());
   TestEncode(1, false);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, SimpleDmaEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {
     for (auto& image : g_env->image_data_user_) {
-      test_images_.push_back(image.get());
+      test_aligned_images_.push_back(image.get());
     }
   }
   TestEncode(1, true);
@@ -814,14 +837,13 @@ TEST_F(JpegEncodeAcceleratorTest, SimpleDmaEncode) {
 
 TEST_F(JpegEncodeAcceleratorTest, MultipleDmaEncoders) {
   for (auto& image : g_env->image_data_user_) {
-    test_images_.push_back(image.get());
+    test_aligned_images_.push_back(image.get());
   }
   TestEncode(3, true);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, ResolutionChangeDma) {
-  test_images_.push_back(g_env->image_data_640x368_black_.get());
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_aligned_images_.push_back(g_env->image_data_640x368_black_.get());
   test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
   TestEncode(1, true);
 }
@@ -834,7 +856,7 @@ TEST_F(JpegEncodeAcceleratorTest, AlignedSizesDma) {
 }
 
 TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignmentDma) {
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_unaligned_images_.push_back(g_env->image_data_640x360_black_.get());
   TestEncode(1, true);
 }
 

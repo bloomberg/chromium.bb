@@ -96,7 +96,8 @@ class CORE_EXPORT ScrollbarTheme {
 
   virtual void PaintScrollCorner(GraphicsContext&,
                                  const DisplayItemClient&,
-                                 const IntRect& corner_rect);
+                                 const IntRect& corner_rect,
+                                 WebColorScheme color_scheme);
   virtual void PaintTickmarks(GraphicsContext&,
                               const Scrollbar&,
                               const IntRect&);
@@ -190,7 +191,6 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual void RegisterScrollbar(Scrollbar&) {}
-  virtual void UnregisterScrollbar(Scrollbar&) {}
 
   virtual bool IsMockTheme() const { return false; }
 

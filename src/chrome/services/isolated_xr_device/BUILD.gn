@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//device/vr/buildflags/buildflags.gni")
+
 source_set("lib") {
   sources = [
     "xr_device_service.cc",
@@ -14,28 +16,15 @@ source_set("lib") {
     "xr_test_hook_wrapper.h",
   ]
 
+  if (enable_openxr) {
+    configs += [ "//third_party/openxr:config" ]
+  }
+
   deps = [
     "//base",
     "//chrome/common",
     "//device/vr:vr",
     "//device/vr/public/mojom",
     "//device/vr/public/mojom:test_mojom",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chrome:strings",
-    "//device/vr/public/mojom",
-    "//device/vr/public/mojom:test_mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

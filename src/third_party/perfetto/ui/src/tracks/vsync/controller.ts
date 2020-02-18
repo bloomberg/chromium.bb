@@ -24,18 +24,10 @@ import {Config, Data, KIND} from './common';
 
 class VsyncTrackController extends TrackController<Config, Data> {
   static readonly kind = KIND;
-  private busy = false;
   private setup = false;
 
-  onBoundsChange(start: number, end: number, resolution: number) {
-    this.update(start, end, resolution);
-  }
-
-  private async update(start: number, end: number, resolution: number) {
-    // TODO(hjd): we should really call TraceProcessor.Interrupt() here.
-    if (this.busy) return;
-    this.busy = true;
-
+  async onBoundsChange(start: number, end: number, resolution: number):
+      Promise<Data> {
     if (this.setup === false) {
       await this.query(
           `create virtual table window_${this.trackState.id} using window;`);
@@ -50,7 +42,6 @@ class VsyncTrackController extends TrackController<Config, Data> {
       select ts from counters
         where name like "${this.config.counterName}%"
         order by ts limit ${LIMIT};`);
-    this.busy = false;
     const rowCount = +rawResult.numRecords;
     const result = {
       start,
@@ -63,15 +54,6 @@ class VsyncTrackController extends TrackController<Config, Data> {
     for (let i = 0; i < rowCount; i++) {
       const startSec = fromNs(+cols[0].longValues![i]);
       result.vsyncs[i] = startSec;
-    }
-    this.publish(result);
-  }
-
-  private async query(query: string) {
-    const result = await this.engine.query(query);
-    if (result.error) {
-      console.error(`Query error "${query}": ${result.error}`);
-      throw new Error(`Query error "${query}": ${result.error}`);
     }
     return result;
   }

@@ -103,6 +103,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                          const gfx::RectF& right_bounds,
                          const gfx::Size& source_size) override;
 
+  // XREnvironmentIntegrationProvider
   void RequestHitTest(
       mojom::XRRayPtr,
       mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback) override;
@@ -222,7 +223,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   float screen_touch_active_ = false;
 
   // Must be last.
-  base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_;
+  base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArCoreGl);
 };
 

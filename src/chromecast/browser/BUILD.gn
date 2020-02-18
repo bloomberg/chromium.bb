@@ -144,6 +144,7 @@ cast_source_set("browser") {
     ":browser_buildflags",
     "//base",
     "//base:i18n",
+    "//base/util/memory_pressure",
     "//cc",
     "//chromecast:chromecast_buildflags",
     "//chromecast/activity",
@@ -229,8 +230,8 @@ cast_source_set("browser") {
 
   if (is_linux) {
     sources += [
-      "cast_memory_pressure_monitor.cc",
-      "cast_memory_pressure_monitor.h",
+      "cast_system_memory_pressure_evaluator.cc",
+      "cast_system_memory_pressure_evaluator.h",
       "memory_pressure_controller_impl.cc",
       "memory_pressure_controller_impl.h",
     ]
@@ -270,7 +271,7 @@ cast_source_set("browser") {
 
   if (enable_mojo_media) {
     deps += [
-      "//media/mojo/interfaces:constants",
+      "//media/mojo/mojom:constants",
       "//media/mojo/services",
     ]
   }
@@ -389,7 +390,7 @@ cast_source_set("browser") {
       "//chromecast/browser/webview/proto",
       "//components/exo",
       "//components/exo/wayland",
-      "//services/viz/privileged/interfaces/compositing",
+      "//services/viz/privileged/mojom/compositing",
       "//ui/display/manager",
     ]
   }
@@ -405,21 +406,6 @@ cast_source_set("browser") {
 
     defines = [ "USE_INTERNAL_OVERLAY_MANIFESTS=1" ]
   }
-}
-
-cast_source_set("network_context_manager") {
-  sources = [
-    "network_context_manager.cc",
-    "network_context_manager.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/variations/net",
-    "//content/public/browser",
-    "//net",
-    "//services/network:network_service",
-  ]
 }
 
 # Lightweight target for Cast interfaces that wrap //content/public/browser.
@@ -511,16 +497,13 @@ cast_source_set("unittests") {
     "application_media_info_manager_unittest.cc",
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
-    "cast_network_delegate_unittest.cc",
     "cast_session_id_map_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
-    "network_context_manager_unittest.cc",
   ]
 
   deps = [
     ":browser",
-    ":network_context_manager",
     "//base",
     "//chromecast/base",
     "//content/public/browser",

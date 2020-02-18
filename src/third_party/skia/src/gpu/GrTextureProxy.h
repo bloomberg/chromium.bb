@@ -8,14 +8,13 @@
 #ifndef GrTextureProxy_DEFINED
 #define GrTextureProxy_DEFINED
 
-#include "include/gpu/GrSamplerState.h"
+#include "src/gpu/GrSamplerState.h"
 #include "src/gpu/GrSurfaceProxy.h"
 
 class GrCaps;
 class GrDeferredProxyUploader;
 class GrProxyProvider;
 class GrResourceProvider;
-class GrTextureOpList;
 class GrTextureProxyPriv;
 
 // This class delays the acquisition of textures until they are actually required
@@ -35,6 +34,20 @@ public:
     // target. In that case we should use that for our benefit to avoid possible copies/mip
     // generation later.
     GrMipMapped mipMapped() const;
+
+    bool mipMapsAreDirty() const {
+        SkASSERT((GrMipMapped::kNo == fMipMapped) ==
+                 (GrMipMapsStatus::kNotAllocated == fMipMapsStatus));
+        return GrMipMapped::kYes == fMipMapped && GrMipMapsStatus::kValid != fMipMapsStatus;
+    }
+    void markMipMapsDirty() {
+        SkASSERT(GrMipMapped::kYes == fMipMapped);
+        fMipMapsStatus = GrMipMapsStatus::kDirty;
+    }
+    void markMipMapsClean() {
+        SkASSERT(GrMipMapped::kYes == fMipMapped);
+        fMipMapsStatus = GrMipMapsStatus::kValid;
+    }
 
     // Returns the GrMipMapped value of the proxy from creation time regardless of whether it has
     // been instantiated or not.
@@ -92,9 +105,17 @@ protected:
     friend class GrSurfaceProxyPriv;  // ability to change key sync state after lazy instantiation.
 
     // Deferred version - no data.
-    GrTextureProxy(const GrBackendFormat&, const GrSurfaceDesc& srcDesc, GrSurfaceOrigin,
-                   GrMipMapped, const GrSwizzle& textureSwizzle, SkBackingFit, SkBudgeted,
-                   GrProtected, GrInternalSurfaceFlags);
+    GrTextureProxy(const GrBackendFormat&,
+                   const GrSurfaceDesc&,
+                   GrSurfaceOrigin,
+                   GrMipMapped,
+                   GrMipMapsStatus,
+                   const GrSwizzle& textureSwizzle,
+                   SkBackingFit,
+                   SkBudgeted,
+                   GrProtected,
+                   GrInternalSurfaceFlags,
+                   UseAllocator);
 
     // Lazy-callback version
     // There are two main use cases for lazily-instantiated proxies:
@@ -106,12 +127,21 @@ protected:
     //
     // The minimal knowledge version is used for CCPR where we are generating an atlas but we do not
     // know the final size until flush time.
-    GrTextureProxy(LazyInstantiateCallback&&, LazyInstantiationType, const GrBackendFormat&,
-                   const GrSurfaceDesc& desc, GrSurfaceOrigin, GrMipMapped, const GrSwizzle&,
-                   SkBackingFit, SkBudgeted, GrProtected, GrInternalSurfaceFlags);
+    GrTextureProxy(LazyInstantiateCallback&&,
+                   const GrBackendFormat&,
+                   const GrSurfaceDesc& desc,
+                   GrSurfaceOrigin,
+                   GrMipMapped,
+                   GrMipMapsStatus,
+                   const GrSwizzle& textureSwizzle,
+                   SkBackingFit,
+                   SkBudgeted,
+                   GrProtected,
+                   GrInternalSurfaceFlags,
+                   UseAllocator);
 
     // Wrapped version
-    GrTextureProxy(sk_sp<GrSurface>, GrSurfaceOrigin, const GrSwizzle&);
+    GrTextureProxy(sk_sp<GrSurface>, GrSurfaceOrigin, const GrSwizzle&, UseAllocator);
 
     ~GrTextureProxy() override;
 
@@ -129,6 +159,19 @@ private:
     // address of other types, leading to this problem.
 
     GrMipMapped      fMipMapped;
+
+    // This tracks the mipmap status at the proxy level and is thus somewhat distinct from the
+    // backing GrTexture's mipmap status. In particular, this status is used to determine when
+    // mipmap levels need to be explicitly regenerated during the execution of a DAG of opsTasks.
+    GrMipMapsStatus  fMipMapsStatus;
+    // TEMPORARY: We are in the process of moving GrMipMapsStatus from the texture to the proxy.
+    // We track the fInitialMipMapsStatus here so we can assert that the proxy did indeed expect
+    // the correct mipmap status immediately after instantiation.
+    //
+    // NOTE: fMipMapsStatus may no longer be equal to fInitialMipMapsStatus by the time the texture
+    // is instantiated, since it tracks mipmaps in the time frame in which the DAG is being built.
+    SkDEBUGCODE(const GrMipMapsStatus fInitialMipMapsStatus);
+
     bool             fSyncTargetKey = true;  // Should target's unique key be sync'ed with ours.
 
     GrUniqueKey      fUniqueKey;
@@ -146,10 +189,6 @@ private:
     void clearUniqueKey();
 
     SkDEBUGCODE(void onValidateSurface(const GrSurface*) override;)
-
-    // For wrapped proxies the GrTexture pointer is stored in GrIORefProxy.
-    // For deferred proxies that pointer will be filled in when we need to instantiate
-    // the deferred resource
 
     typedef GrSurfaceProxy INHERITED;
 };

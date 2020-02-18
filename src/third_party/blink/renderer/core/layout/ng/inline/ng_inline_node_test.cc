@@ -124,12 +124,11 @@ class NGInlineNodeTest : public NGLayoutTest {
   void CreateLine(
       NGInlineNode node,
       Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
-    NGConstraintSpace constraint_space =
-        NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
-                                 WritingMode::kHorizontalTb,
-                                 /* is_new_fc */ false)
-            .SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)})
-            .ToConstraintSpace();
+    NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
+                                     WritingMode::kHorizontalTb,
+                                     /* is_new_fc */ false);
+    builder.SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)});
+    NGConstraintSpace constraint_space = builder.ToConstraintSpace();
     NGInlineChildLayoutContext context;
     scoped_refptr<const NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, constraint_space,
@@ -501,6 +500,25 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(130, sizes.max_size);
+}
+
+TEST_F(NGInlineNodeTest, MinMaxSizeCloseTagAfterForcedBreak) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+      span { border: 30px solid blue; }
+    </style>
+    <div id=t style="font: 10px Ahem">
+      <span>12<br></span>
+    </div>
+  )HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSize sizes = ComputeMinMaxSize(node);
+  // The right border of the `</span>` is included in the line even if it
+  // appears after `<br>`. crbug.com/991320.
+  EXPECT_EQ(80, sizes.min_size);
+  EXPECT_EQ(80, sizes.max_size);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
@@ -923,16 +941,7 @@ TEST_F(NGInlineNodeTest, InvalidateSetText) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
 
   LayoutText* text = ToLayoutText(layout_block_flow_->FirstChild());
-  text->SetText(String("after").Impl());
-  EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
-}
-
-TEST_F(NGInlineNodeTest, InvalidateSetTextWithOffset) {
-  SetupHtml("t", "<div id=t>before</div>");
-  EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
-
-  LayoutText* text = ToLayoutText(layout_block_flow_->FirstChild());
-  text->SetTextWithOffset(String("after").Impl(), 1, 4);
+  text->SetTextIfNeeded(String("after").Impl());
   EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
 }
 

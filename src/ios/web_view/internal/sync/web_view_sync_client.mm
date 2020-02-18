@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
@@ -31,7 +30,6 @@
 #include "components/version_info/version_string.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
@@ -77,12 +75,14 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
   password_store_ = WebViewPasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
-  component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, version_info::Channel::STABLE, prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      db_thread_, profile_web_data_service_, account_web_data_service_,
-      password_store_,
-      /*bookmark_sync_service=*/nullptr));
+  component_factory_ =
+      std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
+          this, version_info::Channel::STABLE,
+          prefs::kSavingBrowserHistoryDisabled,
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
+          profile_web_data_service_, account_web_data_service_, password_store_,
+          /*account_password_store=*/nullptr,
+          /*bookmark_sync_service=*/nullptr);
 }
 
 WebViewSyncClient::~WebViewSyncClient() {}
@@ -127,11 +127,6 @@ WebViewSyncClient::GetSendTabToSelfSyncService() {
   return nullptr;
 }
 
-autofill::PersonalDataManager* WebViewSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return WebViewPersonalDataManagerFactory::GetForBrowserState(browser_state_);
-}
-
 base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
   return base::BindRepeating(
       &WebViewPasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged,
@@ -174,16 +169,7 @@ WebViewSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::SyncableService>
 WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
-  auto service = account_web_data_service_ ?: profile_web_data_service_;
-  if (!service) {
-    NOTREACHED();
-    return base::WeakPtr<syncer::SyncableService>();
-  }
   switch (type) {
-    case syncer::AUTOFILL_WALLET_METADATA:
-      return autofill::AutofillWalletMetadataSyncableService::
-          FromWebDataService(service.get())
-              ->AsWeakPtr();
     case syncer::PASSWORDS:
       return password_store_ ? password_store_->GetPasswordSyncableService()
                              : base::WeakPtr<syncer::SyncableService>();
@@ -208,11 +194,9 @@ scoped_refptr<syncer::ModelSafeWorker>
 WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
-    case syncer::GROUP_DB:
-      return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_PASSWORD:

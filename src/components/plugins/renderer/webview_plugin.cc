@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -16,6 +18,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "gin/converter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -146,6 +149,7 @@ v8::Local<v8::Object> WebViewPlugin::V8ScriptableObject(v8::Isolate* isolate) {
 
 void WebViewPlugin::UpdateAllLifecyclePhases(
     blink::WebWidget::LifecycleUpdateReason reason) {
+  DCHECK(web_view()->MainFrameWidget());
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(reason);
 }
 
@@ -182,6 +186,7 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
 
   if (static_cast<gfx::Rect>(window_rect) != rect_) {
     rect_ = window_rect;
+    DCHECK(web_view()->MainFrameWidget());
     web_view()->MainFrameWidget()->Resize(rect_.size());
   }
 
@@ -220,6 +225,7 @@ blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
     return blink::WebInputEventResult::kHandledSuppressed;
   }
   current_cursor_ = cursor;
+  DCHECK(web_view()->MainFrameWidget());
   blink::WebInputEventResult handled =
       web_view()->MainFrameWidget()->HandleInputEvent(
           blink::WebCoalescedInputEvent(event));
@@ -257,21 +263,23 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker;
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker;
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       web_view_, this, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
+      document_interface_broker.InitWithNewPipeAndPassReceiver().PassPipe(),
+      nullptr);
   // The created WebFrameWidget is owned by the |web_frame|.
   WebFrameWidget::CreateForMainFrame(this, web_frame);
 
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
   // WebViewImpl's DidAttachLocalMainFrame().
-  web_view_->DidAttachLocalMainFrame(this);
+  web_view_->DidAttachLocalMainFrame();
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {
-  web_view_->MainFrameWidget()->Close();
+  web_view_->Close();
 }
 
 bool WebViewPlugin::WebViewHelper::AcceptsLoadDrops() {
@@ -383,7 +391,8 @@ void WebViewPlugin::OnZoomLevelChanged() {
 void WebViewPlugin::LoadHTML(const std::string& html_data, const GURL& url) {
   web_view_helper_.main_frame()->CommitNavigation(
       blink::WebNavigationParams::CreateWithHTMLString(html_data, url),
-      nullptr /* extra_data */);
+      nullptr /* extra_data */,
+      base::DoNothing::Once() /* call_before_attaching_new_document */);
 }
 
 void WebViewPlugin::UpdatePluginForNewGeometry(
@@ -398,6 +407,7 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // The delegate may have dirtied style and layout of the WebView.
   // See for example the resizePoster function in plugin_poster.html.
   // Run the lifecycle now so that it is clean.
+  DCHECK(web_view()->MainFrameWidget());
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kOther);
 }

@@ -21,6 +21,7 @@
 class SkColorFilter;
 class SkNWayCanvas;
 class SkPictureRecorder;
+class SkRuntimeColorFilterFactory;
 
 namespace gpu {
 struct Capabilities;
@@ -204,7 +205,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkSurface* current_surface_ = nullptr;
-  scoped_refptr<ResourceFence> current_frame_resource_fence_;
+  class FrameResourceFence;
+  scoped_refptr<FrameResourceFence> current_frame_resource_fence_;
 
   bool disable_picture_quad_image_filtering_ = false;
   bool is_scissor_enabled_ = false;
@@ -251,14 +253,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::Optional<DisplayResourceProvider::LockSetForExternalUse>
       lock_set_for_external_use_;
 
-  // Promise images created from resources used in the current frame. This map
-  // will be cleared when the frame is done and before all resources in
-  // |lock_set_for_external_use_| are unlocked on the compositor thread.
-  // It is only used with DDL.
-  base::flat_map<ResourceId, sk_sp<SkImage>> promise_images_;
-  using YUVIds = std::tuple<ResourceId, ResourceId, ResourceId, ResourceId>;
-  base::flat_map<YUVIds, sk_sp<SkImage>> yuv_promise_images_;
-
   // Specific for SkPRecord.
   std::unique_ptr<SkPictureRecorder> root_recorder_;
   sk_sp<SkPicture> root_picture_;
@@ -267,7 +261,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   ContextProvider* context_provider_ = nullptr;
   base::Optional<SyncQueryCollection> sync_queries_;
 
-  std::map<gfx::ColorSpace, std::map<gfx::ColorSpace, sk_sp<SkColorFilter>>>
+  std::map<
+      gfx::ColorSpace,
+      std::map<gfx::ColorSpace, std::unique_ptr<SkRuntimeColorFilterFactory>>>
       color_filter_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);

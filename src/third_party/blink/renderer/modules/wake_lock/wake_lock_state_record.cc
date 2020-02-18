@@ -39,13 +39,14 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   if (!wake_lock_) {
     auto* interface_provider = execution_context_->GetInterfaceProvider();
     DCHECK(interface_provider);
-    mojom::blink::WakeLockServicePtr wake_lock_service;
-    interface_provider->GetInterface(mojo::MakeRequest(&wake_lock_service));
+    mojo::Remote<mojom::blink::WakeLockService> wake_lock_service;
+    interface_provider->GetInterface(
+        wake_lock_service.BindNewPipeAndPassReceiver());
 
     wake_lock_service->GetWakeLock(
         wake_lock_type_, device::mojom::blink::WakeLockReason::kOther,
-        "Blink Wake Lock", mojo::MakeRequest(&wake_lock_));
-    wake_lock_.set_connection_error_handler(
+        "Blink Wake Lock", wake_lock_.BindNewPipeAndPassReceiver());
+    wake_lock_.set_disconnect_handler(
         WTF::Bind(&WakeLockStateRecord::OnWakeLockConnectionError,
                   WrapWeakPersistent(this)));
     wake_lock_->RequestWakeLock();

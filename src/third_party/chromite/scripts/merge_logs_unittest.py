@@ -8,7 +8,8 @@
 from __future__ import print_function
 
 import datetime
-import dateutil.tz
+
+import dateutil.tz  # pylint: disable=import-error
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import merge_logs

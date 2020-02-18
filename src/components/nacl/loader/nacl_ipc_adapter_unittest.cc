@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -59,7 +59,7 @@ class NaClIPCAdapterTest : public testing::Test {
     return adapter_->Send(&msg);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   scoped_refptr<NaClIPCAdapter> adapter_;
 

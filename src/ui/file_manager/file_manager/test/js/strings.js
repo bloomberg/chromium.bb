@@ -10,6 +10,7 @@ loadTimeData.data = $GRDP;
 // Extend with additional fields not found in grdp files.
 loadTimeData.overrideValues({
   'CROSTINI_ENABLED': true,
+  'CROSTINI_ROOT_ACCESS_ALLOWED': true,
   'DRIVE_FS_ENABLED': true,
   'FEEDBACK_PANEL_ENABLED': false,
   'GOOGLE_DRIVE_REDEEM_URL': 'http://www.google.com/intl/en/chrome/devices' +
@@ -18,7 +19,6 @@ loadTimeData.overrideValues({
       'https://support.google.com/chromebook/?p=filemanager_drive',
   'HIDE_SPACE_INFO': false,
   'ARC_USB_STORAGE_UI_ENABLED': true,
-  'MY_FILES_VOLUME_ENABLED': true,
   'PLUGIN_VM_ENABLED': true,
   'UI_LOCALE': 'en_US',
   'language': 'en-US',

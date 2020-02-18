@@ -5,12 +5,6 @@
   <message name="IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL" desc="A label for the 'Play files' root which shows Android files. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated. Use sentence case.">
     Play files
   </message>
-  <message name="IDS_FILE_BROWSER_PLAY_STORE_ACCESS_LABEL" desc="A label for the toast which shows when Play Store apps don't have access to external storage devices.">
-    Play Store applications can't access this device
-  </message>
-  <message name="IDS_FILE_BROWSER_OPEN_PLAY_STORE_SETTINGS_LABEL" desc="A button for the toast which shows when Play Store apps don't have access to external storage devices.">
-    Open settings
-  </message>
   <message name="IDS_FILE_BROWSER_SHOW_ALL_ANDROID_FOLDERS_OPTION" desc="A label for an option menu item to show all Android folders. By default, only several folders are visible to users, and users will click this option menu item to show all folders. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated.">
     Show all Play folders
   </message>
@@ -830,9 +824,6 @@
   <message name="IDS_FILE_BROWSER_CLOSE_LABEL" desc="Close label.">
     Close
   </message>
-  <message name="IDS_FILE_BROWSER_EXPAND_LABEL" desc="Expand label.">
-    Expand
-  </message>
   <message name="IDS_FILE_BROWSER_OPEN_LABEL" desc="Open label.">
     Open
   </message>
@@ -853,6 +844,12 @@
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_CLEAR_LABEL" desc="Label to clear search text field">
     Clear
+  </message>
+  <message name="IDS_FILE_BROWSER_FEEDBACK_COLLAPSE_LABEL" desc="Text spoken by Chromevox when collapsing displayed feedback panels.">
+    Collapse files feedback panels
+  </message>
+  <message name="IDS_FILE_BROWSER_FEEDBACK_EXPAND_LABEL" desc="Text spoken by Chromevox when expanding multiple feedback panels.">
+    Expand files feedback panels
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_NO_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has no result">
     There are no results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
@@ -1166,12 +1163,6 @@
   <message name="IDS_FILE_BROWSER_NO_TASK_FOR_CRX" desc="Message shown when a user tries to open a *.crx file, which we don't handle in the Files app.">
     We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK">&lt;a target='_blank' href='https://support.google.com/chrome_webstore/answer/2664769?p=crx_warning&amp;rd=1'&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI_TITLE" desc="Message title shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
-    Unable to open with <ph name="APP_NAME">$1<ex>Visual Studio Code</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
-    To open files with <ph name="APP_NAME">$1<ex>Visual Studio Code</ex></ph>, first copy to Linux files folder.
-  </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE" desc="Message title shown when a user shares the root of a volume such as 'My files' with the crostini container.">
     Share folder with Linux
   </message>
@@ -1253,6 +1244,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_EXCEL_FILE_TYPE" desc="Excel spreadsheet file type">
     Excel spreadsheet
+  </message>
+  <message name="IDS_FILE_BROWSER_TINI_FILE_TYPE" desc="Crostini Image File file type">
+    Crostini image file
   </message>
 
   <message name="IDS_FILE_BROWSER_GDOC_DOCUMENT_FILE_TYPE" desc="Google document file type">

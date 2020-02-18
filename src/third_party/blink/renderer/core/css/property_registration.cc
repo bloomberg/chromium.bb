@@ -9,14 +9,14 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
+#include "third_party/blink/renderer/core/css/property_definition.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -39,7 +39,7 @@ const PropertyRegistration* PropertyRegistration::From(
 
 PropertyRegistration::PropertyRegistration(
     const AtomicString& name,
-    const CSSSyntaxDescriptor& syntax,
+    const CSSSyntaxDefinition& syntax,
     bool inherits,
     const CSSValue* initial,
     scoped_refptr<CSSVariableData> initial_variable_data)
@@ -81,7 +81,7 @@ static bool ComputationallyIndependent(const CSSValue& value) {
   return true;
 }
 
-static base::Optional<CSSSyntaxDescriptor> ConvertSyntax(
+static base::Optional<CSSSyntaxDefinition> ConvertSyntax(
     const CSSValue& value) {
   return CSSSyntaxStringParser(To<CSSStringValue>(value).Value()).Parse();
 }
@@ -110,7 +110,7 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
       properties.GetPropertyCSSValue(CSSPropertyID::kSyntax);
   if (!syntax_value)
     return nullptr;
-  base::Optional<CSSSyntaxDescriptor> syntax = ConvertSyntax(*syntax_value);
+  base::Optional<CSSSyntaxDefinition> syntax = ConvertSyntax(*syntax_value);
   if (!syntax)
     return nullptr;
 
@@ -152,14 +152,14 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
 
 void PropertyRegistration::registerProperty(
     ExecutionContext* execution_context,
-    const PropertyDescriptor* descriptor,
+    const PropertyDefinition* property_definition,
     ExceptionState& exception_state) {
   // Bindings code ensures these are set.
-  DCHECK(descriptor->hasName());
-  DCHECK(descriptor->hasInherits());
-  DCHECK(descriptor->hasSyntax());
+  DCHECK(property_definition->hasName());
+  DCHECK(property_definition->hasInherits());
+  DCHECK(property_definition->hasSyntax());
 
-  String name = descriptor->name();
+  String name = property_definition->name();
   if (!CSSVariableParser::IsValidVariableName(name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
@@ -176,9 +176,9 @@ void PropertyRegistration::registerProperty(
     return;
   }
 
-  base::Optional<CSSSyntaxDescriptor> syntax_descriptor =
-      CSSSyntaxStringParser(descriptor->syntax()).Parse();
-  if (!syntax_descriptor) {
+  base::Optional<CSSSyntaxDefinition> syntax_definition =
+      CSSSyntaxStringParser(property_definition->syntax()).Parse();
+  if (!syntax_definition) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "The syntax provided is not a valid custom property syntax.");
@@ -190,11 +190,11 @@ void PropertyRegistration::registerProperty(
 
   const CSSValue* initial = nullptr;
   scoped_refptr<CSSVariableData> initial_variable_data;
-  if (descriptor->hasInitialValue()) {
-    CSSTokenizer tokenizer(descriptor->initialValue());
+  if (property_definition->hasInitialValue()) {
+    CSSTokenizer tokenizer(property_definition->initialValue());
     const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
-    initial = syntax_descriptor->Parse(CSSParserTokenRange(tokens),
+    initial = syntax_definition->Parse(CSSParserTokenRange(tokens),
                                        parser_context, is_animation_tainted);
     if (!initial) {
       exception_state.ThrowDOMException(
@@ -214,7 +214,7 @@ void PropertyRegistration::registerProperty(
         StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
             *initial, is_animation_tainted);
   } else {
-    if (!syntax_descriptor->IsTokenStream()) {
+    if (!syntax_definition->IsTokenStream()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "An initial value must be provided if the syntax is not '*'");
@@ -222,9 +222,10 @@ void PropertyRegistration::registerProperty(
     }
   }
   registry.RegisterProperty(
-      atomic_name, *MakeGarbageCollected<PropertyRegistration>(
-                       atomic_name, *syntax_descriptor, descriptor->inherits(),
-                       initial, std::move(initial_variable_data)));
+      atomic_name,
+      *MakeGarbageCollected<PropertyRegistration>(
+          atomic_name, *syntax_definition, property_definition->inherits(),
+          initial, std::move(initial_variable_data)));
 
   document->GetStyleEngine().CustomPropertyRegistered();
 }

@@ -75,7 +75,7 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
     data_manager_ = std::make_unique<BackgroundFetchTestDataManager>(
         browser_context(), storage_partition(),
         embedded_worker_test_helper()->context_wrapper());
-    data_manager_->InitializeOnIOThread();
+    data_manager_->InitializeOnCoreThread();
 
     delegate_proxy_ =
         std::make_unique<BackgroundFetchDelegateProxy>(browser_context());
@@ -119,7 +119,7 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
         registration_id, std::move(fetch_requests),
         blink::mojom::BackgroundFetchOptions::New(), SkBitmap(),
         /* start_paused= */ false, base::DoNothing());
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     auto controller = std::make_unique<FakeController>(
         data_manager_.get(), delegate_proxy_.get(), registration_id,
@@ -137,7 +137,7 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
 
   void RunSchedulerToCompletion() {
     scheduler_->ScheduleDownload();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void DidJobFinish(

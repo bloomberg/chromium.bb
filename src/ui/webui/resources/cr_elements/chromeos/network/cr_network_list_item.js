@@ -10,6 +10,10 @@
 Polymer({
   is: 'cr-network-list-item',
 
+  behaviors: [
+    CrPolicyNetworkBehaviorMojo,
+  ],
+
   properties: {
     /** @type {!CrNetworkList.CrNetworkListItemType|undefined} */
     item: {
@@ -65,8 +69,6 @@ Polymer({
     showTechnologyBadge: {type: Boolean, value: true},
   },
 
-  behaviors: [CrPolicyNetworkBehavior],
-
   /** @override */
   attached: function() {
     this.listen(this, 'keydown', 'onKeydown_');
@@ -114,7 +116,7 @@ Polymer({
       }
       return name;
     }
-    return OncMojo.getNetworkDisplayName(
+    return OncMojo.getNetworkStateDisplayName(
         /** @type {!OncMojo.NetworkStateProperties} */ (this.item));
   },
 

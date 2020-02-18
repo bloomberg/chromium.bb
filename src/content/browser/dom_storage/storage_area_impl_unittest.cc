@@ -17,12 +17,11 @@
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/barrier_builder.h"
 #include "content/test/fake_leveldb_database.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -123,23 +122,22 @@ class StorageAreaImplTest : public testing::Test,
     bool should_send_old_value;
   };
 
-  StorageAreaImplTest() : db_(&mock_data_), observer_binding_(this) {
-    auto request = mojo::MakeRequest(&level_db_database_ptr_);
+  StorageAreaImplTest() : db_(&mock_data_) {
+    auto request = level_db_database_remote_.BindNewPipeAndPassReceiver();
     db_.Bind(std::move(request));
 
     StorageAreaImpl::Options options =
         GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
     storage_area_ = std::make_unique<StorageAreaImpl>(
-        level_db_database_ptr_.get(), test_prefix_, &delegate_, options);
+        level_db_database_remote_.get(), test_prefix_, &delegate_, options);
 
     set_mock_data(test_prefix_ + test_key1_, test_value1_);
     set_mock_data(test_prefix_ + test_key2_, test_value2_);
     set_mock_data("123", "baddata");
 
-    storage_area_->Bind(mojo::MakeRequest(&storage_area_ptr_));
-    blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    storage_area_ptr_->AddObserver(std::move(ptr_info));
+    storage_area_->Bind(storage_area_remote_.BindNewPipeAndPassReceiver());
+    storage_area_remote_->AddObserver(
+        observer_receiver_.BindNewEndpointAndPassRemote());
   }
 
   ~StorageAreaImplTest() override {}
@@ -163,10 +161,12 @@ class StorageAreaImplTest : public testing::Test,
 
   void clear_mock_data() { mock_data_.clear(); }
 
-  blink::mojom::StorageArea* storage_area() { return storage_area_ptr_.get(); }
+  blink::mojom::StorageArea* storage_area() {
+    return storage_area_remote_.get();
+  }
   StorageAreaImpl* storage_area_impl() { return storage_area_.get(); }
 
-  void FlushAreaBinding() { storage_area_ptr_.FlushForTesting(); }
+  void FlushAreaBinding() { storage_area_remote_.FlushForTesting(); }
 
   bool GetSync(blink::mojom::StorageArea* area,
                const std::vector<uint8_t>& key,
@@ -241,7 +241,7 @@ class StorageAreaImplTest : public testing::Test,
 
   MockDelegate* delegate() { return &delegate_; }
   leveldb::mojom::LevelDBDatabase* database() const {
-    return level_db_database_ptr_.get();
+    return level_db_database_remote_.get();
   }
 
   void should_record_send_old_value_observations(bool value) {
@@ -264,7 +264,7 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<uint8_t> test_key2_bytes_ = ToBytes(test_key2_);
   const std::vector<uint8_t> test_value1_bytes_ = ToBytes(test_value1_);
   const std::vector<uint8_t> test_value2_bytes_ = ToBytes(test_value2_);
-  leveldb::mojom::LevelDBDatabasePtr level_db_database_ptr_;
+  mojo::Remote<leveldb::mojom::LevelDBDatabase> level_db_database_remote_;
 
  private:
   // LevelDBObserver:
@@ -298,13 +298,14 @@ class StorageAreaImplTest : public testing::Test,
           {Observation::kSendOldValue, "", "", "", "", value});
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   FakeLevelDBDatabase db_;
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
-  blink::mojom::StorageAreaPtr storage_area_ptr_;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding_;
+  mojo::Remote<blink::mojom::StorageArea> storage_area_remote_;
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver>
+      observer_receiver_{this};
   std::vector<Observation> observations_;
   bool should_record_send_old_value_observations_ = false;
 };
@@ -728,8 +729,8 @@ TEST_F(StorageAreaImplTest, SetOnlyKeysWithoutDatabase) {
   StorageAreaImpl storage_area(
       nullptr, test_prefix_, &delegate,
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
-  blink::mojom::StorageAreaPtr storage_area_ptr;
-  storage_area.Bind(mojo::MakeRequest(&storage_area_ptr));
+  mojo::Remote<blink::mojom::StorageArea> storage_area_remote;
+  storage_area.Bind(storage_area_remote.BindNewPipeAndPassReceiver());
   // Setting only keys mode is noop.
   storage_area.SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
 
@@ -1311,7 +1312,7 @@ TEST_P(StorageAreaImplParamTest, EmptyMapIgnoresDisk) {
   StorageAreaImpl::Options options =
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   auto empty_storage_area = std::make_unique<StorageAreaImpl>(
-      level_db_database_ptr_.get(), test_copy_prefix1_, delegate(), options);
+      level_db_database_remote_.get(), test_copy_prefix1_, delegate(), options);
   empty_storage_area->InitializeAsEmpty();
 
   // Check the forked state, which should be empty.
@@ -1329,7 +1330,7 @@ TEST_P(StorageAreaImplParamTest, ForkFromEmptyMap) {
   StorageAreaImpl::Options options =
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   auto empty_storage_area = std::make_unique<StorageAreaImpl>(
-      level_db_database_ptr_.get(), test_copy_prefix1_, delegate(), options);
+      level_db_database_remote_.get(), test_copy_prefix1_, delegate(), options);
   empty_storage_area->InitializeAsEmpty();
 
   // Execute the fork, which should shortcut disk and just be empty.

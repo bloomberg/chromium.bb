@@ -29,9 +29,9 @@ enum XrButtonId {
   kDpadDown = 6,
   kA = 7,
   kProximitySensor = 31,
-  kAxisPrimary = 32,
+  kAxisTrackpad = 32,
   kAxisTrigger = 33,
-  kAxisSecondary = 34,
+  kAxisThumbstick = 34,
   kAxisTertiary = 35,
   kAxisQuaternary = 36,
   kMax = 64
@@ -49,10 +49,10 @@ inline uint64_t XrButtonMaskFromId(XrButtonId id) {
 }
 
 inline unsigned int XrAxisOffsetFromId(XrButtonId id) {
-  DCHECK(XrButtonId::kAxisPrimary <= id &&
-         id < XrButtonId::kAxisPrimary + kMaxNumAxes);
+  DCHECK(XrButtonId::kAxisTrackpad <= id &&
+         id < XrButtonId::kAxisTrackpad + kMaxNumAxes);
   return static_cast<unsigned int>(id) -
-         static_cast<unsigned int>(XrButtonId::kAxisPrimary);
+         static_cast<unsigned int>(XrButtonId::kAxisTrackpad);
 }
 
 struct Color {
@@ -105,9 +105,10 @@ enum TrackedDeviceClass {
 };
 
 enum ControllerRole {
-  kControllerRoleInvalid,
+  kControllerRoleInvalid,  // Test hook should ignore this controller.
   kControllerRoleLeft,
-  kControllerRoleRight
+  kControllerRoleRight,
+  kControllerRoleVoice  // Simulates voice input such as saying "select" in WMR.
 };
 
 struct ControllerFrameData {
@@ -144,6 +145,7 @@ class VRTestHook {
       unsigned int index) = 0;
   virtual TrackedDeviceClass WaitGetTrackedDeviceClass(unsigned int index) = 0;
   virtual ControllerFrameData WaitGetControllerData(unsigned int index) = 0;
+  virtual bool WaitGetSessionStateStopping() = 0;
 
   virtual void AttachCurrentThread() = 0;
   virtual void DetachCurrentThread() = 0;

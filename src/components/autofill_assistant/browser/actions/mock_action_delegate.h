@@ -13,10 +13,10 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
-#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -108,8 +108,10 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD1(GetPaymentInformation,
-               void(std::unique_ptr<PaymentRequestOptions> options));
+  MOCK_METHOD2(
+      CollectUserData,
+      void(std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+           std::unique_ptr<UserData> user_data));
 
   MOCK_METHOD1(OnGetFullCard,
                void(base::OnceCallback<void(const autofill::CreditCard& card,
@@ -146,7 +148,7 @@ class MockActionDelegate : public ActionDelegate {
                      int delay_in_millisecond,
                      base::OnceCallback<void(const ClientStatus&)> callback) {
     OnSetFieldValue(selector, value, callback);
-    OnSetFieldValue(selector, value, delay_in_millisecond, delay_in_millisecond,
+    OnSetFieldValue(selector, value, simulate_key_presses, delay_in_millisecond,
                     callback);
   }
 
@@ -168,11 +170,20 @@ class MockActionDelegate : public ActionDelegate {
                     const std::string& value,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD4(SendKeyboardInput,
+  void SendKeyboardInput(
+      const Selector& selector,
+      const std::vector<UChar32>& codepoints,
+      int delay_in_millisecond,
+      base::OnceCallback<void(const ClientStatus&)> callback) {
+    OnSendKeyboardInput(selector, codepoints, delay_in_millisecond, callback);
+  }
+
+  MOCK_METHOD4(OnSendKeyboardInput,
                void(const Selector& selector,
                     const std::vector<UChar32>& codepoints,
                     int delay_in_millisecond,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
+
   MOCK_METHOD2(GetOuterHtml,
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&,
@@ -187,7 +198,9 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
+  MOCK_METHOD0(GetWebsiteLoginFetcher, WebsiteLoginFetcher*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD0(GetAccountEmailAddress, std::string());
   MOCK_METHOD1(SetDetails, void(std::unique_ptr<Details> details));
   MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));
   MOCK_METHOD0(ClearInfoBox, void());

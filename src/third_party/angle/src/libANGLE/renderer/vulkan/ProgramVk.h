@@ -123,6 +123,7 @@ class ProgramVk : public ProgramImpl
     bool hasUniformBuffers() const { return !mState.getUniformBlocks().empty(); }
     bool hasStorageBuffers() const { return !mState.getShaderStorageBlocks().empty(); }
     bool hasAtomicCounterBuffers() const { return !mState.getAtomicCounterBuffers().empty(); }
+    bool hasImages() const { return !mState.getImageBindings().empty(); }
     bool hasTransformFeedbackOutput() const
     {
         return !mState.getLinkedTransformFeedbackVaryings().empty();
@@ -141,8 +142,10 @@ class ProgramVk : public ProgramImpl
         ANGLE_TRY(initGraphicsShaders(contextVk, mode, &shaderProgram));
         ASSERT(shaderProgram->isGraphicsProgram());
         RendererVk *renderer = contextVk->getRenderer();
+        vk::PipelineCache *pipelineCache = nullptr;
+        ANGLE_TRY(renderer->getPipelineCache(&pipelineCache));
         return shaderProgram->getGraphicsPipeline(
-            contextVk, &contextVk->getRenderPassCache(), renderer->getPipelineCache(),
+            contextVk, &contextVk->getRenderPassCache(), *pipelineCache,
             contextVk->getCurrentQueueSerial(), mPipelineLayout.get(), desc, activeAttribLocations,
             mState.getAttributesTypeMask(), descPtrOut, pipelineOut);
     }
@@ -188,6 +191,8 @@ class ProgramVk : public ProgramImpl
                                     VkDescriptorType descriptorType);
     void updateAtomicCounterBuffersDescriptorSet(ContextVk *contextVk,
                                                  vk::CommandGraphResource *recorder);
+    angle::Result updateImagesDescriptorSet(ContextVk *contextVk,
+                                            vk::CommandGraphResource *recorder);
 
     template <class T>
     void getUniformImpl(GLint location, T *v, GLenum entryPointType) const;
@@ -204,6 +209,7 @@ class ProgramVk : public ProgramImpl
     {
         return mAtomicCounterBufferBindingsOffset;
     }
+    uint32_t getImageBindingsOffset() const { return mImageBindingsOffset; }
 
     class ShaderInfo;
     ANGLE_INLINE angle::Result initShaders(ContextVk *contextVk,
@@ -266,10 +272,12 @@ class ProgramVk : public ProgramImpl
 
     gl::ShaderVector<uint32_t> mDynamicBufferOffsets;
 
-    // This is a special "empty" placeholder buffer for when a shader has no uniforms.
+    // This is a special "empty" placeholder buffer for when a shader has no uniforms or doesn't
+    // use all slots in the atomic counter buffer array.
+    //
     // It is necessary because we want to keep a compatible pipeline layout in all cases,
     // and Vulkan does not tolerate having null handles in a descriptor set.
-    vk::BufferHelper mEmptyUniformBlockStorage;
+    vk::BufferHelper mEmptyBuffer;
 
     // Descriptor sets for uniform blocks and textures for this program.
     std::vector<VkDescriptorSet> mDescriptorSets;
@@ -317,10 +325,11 @@ class ProgramVk : public ProgramImpl
     gl::ShaderMap<std::string> mShaderSources;
 
     // In their descriptor set, uniform buffers are placed first, then storage buffers, then atomic
-    // counter buffers.  These cached values contain the offsets where storage buffer and atomic
-    // counter buffer bindings start.
+    // counter buffers and then images.  These cached values contain the offsets where storage
+    // buffer, atomic counter buffer and image bindings start.
     uint32_t mStorageBlockBindingsOffset;
     uint32_t mAtomicCounterBufferBindingsOffset;
+    uint32_t mImageBindingsOffset;
 
     // Store descriptor pools here. We store the descriptors in the Program to facilitate descriptor
     // cache management. It can also allow fewer descriptors for shaders which use fewer

@@ -12,7 +12,8 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_deletion_info.h"
 #include "services/network/cookie_settings.h"
@@ -46,9 +47,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   const CookieSettings& cookie_settings() const { return cookie_settings_; }
 
-  // Bind a cookie request to this object.  Mojo messages
+  // Bind a cookie receiver to this object.  Mojo messages
   // coming through the associated pipe will be served by this object.
-  void AddRequest(mojom::CookieManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::CookieManager> receiver);
 
   // TODO(rdsmith): Add a verion of AddRequest that does renderer-appropriate
   // security checks on bindings coming through that interface.
@@ -69,13 +70,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                      DeleteCookiesCallback callback) override;
   void AddCookieChangeListener(
       const GURL& url,
-      const std::string& name,
-      mojom::CookieChangeListenerPtr listener) override;
+      const base::Optional<std::string>& name,
+      mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
   void AddGlobalChangeListener(
-      mojom::CookieChangeListenerPtr listener) override;
-  void CloneInterface(mojom::CookieManagerRequest new_interface) override;
+      mojo::PendingRemote<mojom::CookieChangeListener> listener) override;
+  void CloneInterface(
+      mojo::PendingReceiver<mojom::CookieManager> new_interface) override;
 
-  size_t GetClientsBoundForTesting() const { return bindings_.size(); }
+  size_t GetClientsBoundForTesting() const { return receivers_.size(); }
   size_t GetListenersRegisteredForTesting() const {
     return listener_registrations_.size();
   }
@@ -85,6 +87,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                               AllowFileSchemeCookiesCallback callback) override;
   void SetForceKeepSessionState() override;
   void BlockThirdPartyCookies(bool block) override;
+  void SetContentSettingsForLegacyCookieAccess(
+      const ContentSettingsForOneType& settings) override;
 
   // Configures |out| based on |params|. (This doesn't honor
   // allow_file_scheme_cookies, which affects the cookie store rather than the
@@ -110,7 +114,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
     std::unique_ptr<net::CookieChangeSubscription> subscription;
 
     // The observer receiving change notifications.
-    mojom::CookieChangeListenerPtr listener;
+    mojo::Remote<mojom::CookieChangeListener> listener;
 
     DISALLOW_COPY_AND_ASSIGN(ListenerRegistration);
   };
@@ -120,7 +124,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   net::CookieStore* const cookie_store_;
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store_;
-  mojo::BindingSet<mojom::CookieManager> bindings_;
+  mojo::ReceiverSet<mojom::CookieManager> receivers_;
   std::vector<std::unique_ptr<ListenerRegistration>> listener_registrations_;
   // Note: RestrictedCookieManager stores pointers to |cookie_settings_|.
   CookieSettings cookie_settings_;

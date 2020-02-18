@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/completion_once_callback.h"
 #include "services/network/p2p/socket_tcp.h"
 #include "services/network/p2p/socket_test_utils.h"
@@ -117,7 +117,7 @@ class P2PSocketTcpServerTest : public testing::Test {
     return host->socket_.get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeServerSocket* socket_;  // Owned by |p2p_socket_|.
   std::unique_ptr<FakeSocketClient> fake_client_;
   FakeP2PSocketDelegate socket_delegate_;

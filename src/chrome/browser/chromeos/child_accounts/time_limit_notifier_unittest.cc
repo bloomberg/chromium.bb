@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -53,7 +53,7 @@ class TimeLimitNotifierTest : public testing::Test {
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  content::TestBrowserThreadBundle bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   NotificationDisplayServiceTester notification_tester_;
   TimeLimitNotifier notifier_;

@@ -482,7 +482,7 @@ def _CreateMoblabDisk(dest_dir):
   """
   dest_path = os.path.join(dest_dir, 'moblab_disk')
   cros_build_lib.RunCommand(
-      ['qemu-img', 'create', '-f', 'raw', dest_path, '35g'])
+      ['qemu-img', 'create', '-f', 'raw', dest_path, '64g'])
   cros_build_lib.RunCommand(['mkfs.ext4', '-F', dest_path])
   cros_build_lib.RunCommand(['e2label', dest_path, 'MOBLAB-STORAGE'])
   return dest_path

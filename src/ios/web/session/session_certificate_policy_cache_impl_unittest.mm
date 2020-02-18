@@ -10,7 +10,7 @@
 #include "ios/web/public/security/certificate_policy_cache.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/cert/x509_certificate.h"
@@ -37,11 +37,10 @@ web::CertPolicy::Judgment GetJudgmenet(
   __block web::CertPolicy::Judgment judgement =
       web::CertPolicy::Judgment::UNKNOWN;
   __block bool completed = false;
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-                             completed = true;
-                             judgement =
-                                 cache->QueryPolicy(cert.get(), host, status);
-                           }));
+  base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+                   completed = true;
+                   judgement = cache->QueryPolicy(cert.get(), host, status);
+                 }));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(1.0, ^{
     return completed;
   }));
@@ -54,7 +53,7 @@ web::CertPolicy::Judgment GetJudgmenet(
 class SessionCertificatePolicyCacheImplTest : public PlatformTest {
  protected:
   SessionCertificatePolicyCacheImplTest()
-      : thread_bundle_(web::TestWebThreadBundle::Options::REAL_IO_THREAD),
+      : task_environment_(web::WebTaskEnvironment::Options::REAL_IO_THREAD),
         cert_(net::ImportCertFromFile(net::GetTestCertsDirectory(),
                                       "ok_cert.pem")),
         host_("test.com"),
@@ -62,7 +61,7 @@ class SessionCertificatePolicyCacheImplTest : public PlatformTest {
     cache_.RegisterAllowedCertificate(cert_, host_, status_);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::SessionCertificatePolicyCacheImpl cache_;
   scoped_refptr<net::X509Certificate> cert_;
   std::string host_;

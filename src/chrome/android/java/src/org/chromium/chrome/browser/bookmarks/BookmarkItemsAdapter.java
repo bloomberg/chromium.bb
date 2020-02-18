@@ -365,16 +365,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
     }
 
-    @Override
-    public void moveToTop(BookmarkId bookmarkId) {
-        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
-    }
-
-    @Override
-    public void moveToBottom(BookmarkId bookmarkId) {
-        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
-    }
-
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
         private ItemViewHolder(View view) {
             super(view);
@@ -441,5 +431,15 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @VisibleForTesting
     public BookmarkDelegate getDelegateForTesting() {
         return mDelegate;
+    }
+
+    /**
+     * Scroll the bookmarks list such that bookmarkId is shown in the view, and highlight it.
+     *
+     * @param bookmarkId The BookmarkId of the bookmark of interest.
+     */
+    @Override
+    public void highlightBookmark(BookmarkId bookmarkId) {
+        // This method is currently implemented for the ReorderBookmarkItemsAdapter only.
     }
 }

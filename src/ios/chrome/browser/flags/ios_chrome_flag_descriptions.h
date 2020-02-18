@@ -87,11 +87,6 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBrowserContainerKeepsContentViewName[];
 extern const char kBrowserContainerKeepsContentViewDescription[];
 
-// Title and description for the flag to control redirection to the task
-// scheduler.
-extern const char kBrowserTaskScheduler[];
-extern const char kBrowserTaskSchedulerDescription[];
-
 // Title and description for the flag to enable automatically switching to the
 // regular tabs after closing the last incognito tab.
 extern const char kClosingLastIncognitoTabName[];
@@ -102,14 +97,15 @@ extern const char kClosingLastIncognitoTabDescription[];
 extern const char kCollectionsCardPresentationStyleName[];
 extern const char kCollectionsCardPresentationStyleDescription[];
 
-// Title and description for the flag to enable Contextual Search.
-extern const char kContextualSearch[];
-extern const char kContextualSearchDescription[];
-
 // Title and description for the flag to diffentiate between copied
 // urls, strings, and images.
 extern const char kCopiedContentBehaviorName[];
 extern const char kCopiedContentBehaviorDescription[];
+
+// Title and description for the flag to scan a new credit card using the
+// camera.
+extern const char kCreditCardScannerName[];
+extern const char kCreditCardScannerDescription[];
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 // Title and description for the flag to enable configurable DCHECKs.
@@ -126,42 +122,27 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
 
-// Title and description for the flag to control the autocomplete retention
-// policy.
-extern const char kEnableAutocompleteDataRetentionPolicyName[];
-extern const char kEnableAutocompleteDataRetentionPolicyDescription[];
-
-// Title and description for the flag to control the updated prompt explanation
-// when offering credit card upload.
-extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
+// Title and description for the flag to control if credit card upload can
+// display a cardholder name fix flow.
+extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];
 extern const char
-    kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
+    kEnableAutofillCreditCardUploadEditableCardholderNameDescription[];
 
-// Title and description for the flag to control if cards from unsupported
-// networks should be prevented form being uploaded.
-extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
-extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
+// Title and description for the flag to control if credit card upload can
+// display an expiration date fix flow.
+extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
+extern const char
+    kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
 
 // Title and description for the flag to control if no thanks button should be
 // shown when saving a card.
 extern const char kEnableAutofillSaveCardShowNoThanksName[];
 extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
 
-// Title and description for the flag to control if credit card save should
-// utilize the Autofill StrikeDatabase when determining whether save
-// should be offered.
-extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
-extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
-
 // Title and description for the flag to control the credit card import from
 // dynamic forms.
 extern const char kEnableAutofillImportDynamicFormsName[];
 extern const char kEnableAutofillImportDynamicFormsDescription[];
-
-// Title and description for the flag to control the credit card import from
-// accordion forms.
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsName[];
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[];
 
 // Title and description for the flag to enable the clipboard provider to
 // suggest searchihng for copied imagse
@@ -182,10 +163,6 @@ extern const char kEnableSyncUSSPasswordsDescription[];
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 
-// Title and description for the flag to enable invaliations delivery via FCM.
-extern const char kFCMInvalidationsName[];
-extern const char kFCMInvalidationsDescription[];
-
 // Title and description for the flag to enable fill passwords on account select
 // on HTTP origins.
 extern const char kFillOnAccountSelectHttpName[];
@@ -199,10 +176,6 @@ extern const char kFindInPageiFrameDescription[];
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenViewportAdjustmentExperimentName[];
 extern const char kFullscreenViewportAdjustmentExperimentDescription[];
-
-// Title and description for the flag to enable History batch filtering.
-extern const char kHistoryBatchUpdatesFilterName[];
-extern const char kHistoryBatchUpdatesFilterDescription[];
 
 // Title and description for the flag to display current user identity on
 // New Tab Page.
@@ -257,16 +230,6 @@ extern const char kOfflineVersionWithoutNativeContentDescription[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateDescription[];
 
-// Title and description for the flag to enable the "switch to this tab" option
-// in the omnibox suggestion. It doesn't add new suggestions.
-extern const char kOmniboxTabSwitchSuggestionsName[];
-extern const char kOmniboxTabSwitchSuggestionsDescription[];
-
-// Title and description for the flag to enable elision of the URL path, query,
-// and ref in omnibox URL suggestions.
-extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
-extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
-
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
@@ -286,10 +249,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 // articles according to European copyright directive(EUCD).
 extern const char kOptionalArticleThumbnailName[];
 extern const char kOptionalArticleThumbnailDescription[];
-
-// Title and description for the flag to enable password generation.
-extern const char kPasswordGenerationName[];
-extern const char kPasswordGenerationDescription[];
 
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
@@ -342,11 +301,6 @@ extern const char kSnapshotDrawViewDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-// Title and description for the flag to control if Chrome Sync (in standalone
-// transport mode) supports non-primary accounts.
-extern const char kSyncSupportSecondaryAccountName[];
-extern const char kSyncSupportSecondaryAccountDescription[];
-
 // Title and description for the flag to enable the toolbar container
 // implementation.
 extern const char kToolbarContainerName[];
@@ -356,10 +310,6 @@ extern const char kToolbarContainerDescription[];
 // toolbar.
 extern const char kToolbarNewTabButtonName[];
 extern const char kToolbarNewTabButtonDescription[];
-
-// Title and description for the flag to control manual translate trigger.
-extern const char kTranslateManualTriggerName[];
-extern const char kTranslateManualTriggerDescription[];
 
 // Title and description for the flag to enable the unified consent.
 extern const char kUnifiedConsentName[];
@@ -373,11 +323,6 @@ extern const char kUseDdljsonApiDescription[];
 // for identity consistency.
 extern const char kUseMultiloginEndpointName[];
 extern const char kUseMultiloginEndpointDescription[];
-
-// Title and description for the flag to switch from WKWebView to NSURLSession
-// to make sign-in requests to Gaia with attached cookies.
-extern const char kUseNSURLSessionForGaiaSigninRequestsName[];
-extern const char kUseNSURLSessionForGaiaSigninRequestsDescription[];
 
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.

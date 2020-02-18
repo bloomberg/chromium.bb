@@ -3,6 +3,7 @@ include_rules = [
   "+chromeos/constants",
   "+chromeos/cryptohome",
   "+chromeos/dbus",
+  "+components/guest_os",
   "+components/account_id",
   "+components/exo",
   "+components/keyed_service",
@@ -38,6 +39,6 @@ specific_include_rules = {
     "+ui/aura",
   ],
   ".*_unittest.cc": [
-    "+content/public/test/test_browser_thread_bundle.h"
+    "+content/public/test/browser_task_environment.h"
   ],
 }

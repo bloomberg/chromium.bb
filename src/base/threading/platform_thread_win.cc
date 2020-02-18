@@ -8,13 +8,17 @@
 
 #include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/memory.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time_override.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -146,6 +150,23 @@ bool CreateThreadInternal(size_t stack_size,
   }
 
   if (!thread_handle) {
+    DWORD last_error = ::GetLastError();
+
+    switch (last_error) {
+      case ERROR_NOT_ENOUGH_MEMORY:
+      case ERROR_OUTOFMEMORY:
+      case ERROR_COMMITMENT_LIMIT:
+        TerminateBecauseOutOfMemory(stack_size);
+        break;
+
+      default:
+        static auto* last_error_crash_key = debug::AllocateCrashKeyString(
+            "create_thread_last_error", debug::CrashKeySize::Size32);
+        debug::SetCrashKeyString(last_error_crash_key,
+                                 base::NumberToString(last_error));
+        break;
+    }
+
     delete params;
     return false;
   }
@@ -213,9 +234,13 @@ void PlatformThread::YieldCurrentThread() {
 void PlatformThread::Sleep(TimeDelta duration) {
   // When measured with a high resolution clock, Sleep() sometimes returns much
   // too early. We may need to call it repeatedly to get the desired duration.
-  TimeTicks end = TimeTicks::Now() + duration;
-  for (TimeTicks now = TimeTicks::Now(); now < end; now = TimeTicks::Now())
+  // PlatformThread::Sleep doesn't support mock-time, so this always uses
+  // real-time.
+  const TimeTicks end = subtle::TimeTicksNowIgnoringOverride() + duration;
+  for (TimeTicks now = subtle::TimeTicksNowIgnoringOverride(); now < end;
+       now = subtle::TimeTicksNowIgnoringOverride()) {
     ::Sleep(static_cast<DWORD>((end - now).InMillisecondsRoundedUp()));
+  }
 }
 
 // static
@@ -386,10 +411,12 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
       FALLTHROUGH;
     case kWin8AboveBackgroundThreadModePriority:
     case THREAD_PRIORITY_LOWEST:
+    case THREAD_PRIORITY_BELOW_NORMAL:
       return ThreadPriority::BACKGROUND;
     case THREAD_PRIORITY_NORMAL:
       return ThreadPriority::NORMAL;
     case THREAD_PRIORITY_ABOVE_NORMAL:
+    case THREAD_PRIORITY_HIGHEST:
       return ThreadPriority::DISPLAY;
     case THREAD_PRIORITY_TIME_CRITICAL:
       return ThreadPriority::REALTIME_AUDIO;

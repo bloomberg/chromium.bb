@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/ax_enum_util.h"
 
+#include "ui/accessibility/ax_enums.mojom.h"
+
 namespace ui {
 
 const char* ToString(ax::mojom::Event event) {
@@ -116,6 +118,10 @@ const char* ToString(ax::mojom::Event event) {
       return "textChanged";
     case ax::mojom::Event::kTextSelectionChanged:
       return "textSelectionChanged";
+    case ax::mojom::Event::kTooltipClosed:
+      return "tooltipClosed";
+    case ax::mojom::Event::kTooltipOpened:
+      return "tooltipOpened";
     case ax::mojom::Event::kWindowActivated:
       return "windowActivated";
     case ax::mojom::Event::kWindowDeactivated:
@@ -240,6 +246,10 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kTextChanged;
   if (0 == strcmp(event, "textSelectionChanged"))
     return ax::mojom::Event::kTextSelectionChanged;
+  if (0 == strcmp(event, "tooltipClosed"))
+    return ax::mojom::Event::kTooltipClosed;
+  if (0 == strcmp(event, "tooltipOpened"))
+    return ax::mojom::Event::kTooltipOpened;
   if (0 == strcmp(event, "windowActivated"))
     return ax::mojom::Event::kWindowActivated;
   if (0 == strcmp(event, "windowDeactivated"))
@@ -1372,6 +1382,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "imageDataUrl";
     case ax::mojom::StringAttribute::kInnerHtml:
       return "innerHtml";
+    case ax::mojom::StringAttribute::kInputType:
+      return "inputType";
     case ax::mojom::StringAttribute::kKeyShortcuts:
       return "keyShortcuts";
     case ax::mojom::StringAttribute::kLanguage:
@@ -1430,6 +1442,8 @@ ax::mojom::StringAttribute ParseStringAttribute(const char* string_attribute) {
     return ax::mojom::StringAttribute::kImageDataUrl;
   if (0 == strcmp(string_attribute, "innerHtml"))
     return ax::mojom::StringAttribute::kInnerHtml;
+  if (0 == strcmp(string_attribute, "inputType"))
+    return ax::mojom::StringAttribute::kInputType;
   if (0 == strcmp(string_attribute, "keyShortcuts"))
     return ax::mojom::StringAttribute::kKeyShortcuts;
   if (0 == strcmp(string_attribute, "language"))
@@ -1779,6 +1793,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "supportsTextLocation";
     case ax::mojom::BoolAttribute::kIsLineBreakingObject:
       return "isLineBreakingObject";
+    case ax::mojom::BoolAttribute::kIsPageBreakingObject:
+      return "isPageBreakingObject";
   }
 
   return "";
@@ -1817,6 +1833,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kSupportsTextLocation;
   if (0 == strcmp(bool_attribute, "isLineBreakingObject"))
     return ax::mojom::BoolAttribute::kIsLineBreakingObject;
+  if (0 == strcmp(bool_attribute, "isPageBreakingObject"))
+    return ax::mojom::BoolAttribute::kIsPageBreakingObject;
   return ax::mojom::BoolAttribute::kNone;
 }
 

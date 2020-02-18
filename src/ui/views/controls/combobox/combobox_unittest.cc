@@ -246,7 +246,7 @@ class ComboboxTest : public ViewsTestBase {
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     View* container = new View();
     widget_->SetContentsView(container);
     container->AddChildView(combobox_);
@@ -372,7 +372,7 @@ TEST_F(ComboboxTest, DisabilityTest) {
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(100, 100, 100, 100);
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   View* container = new View();
   widget_->SetContentsView(container);
   container->AddChildView(combobox_);
@@ -671,15 +671,9 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
 
   EXPECT_EQ(0, menu_show_count_);
 
-// On Mac, actions occur on mouse down. Otherwise mouse up.
-#if defined(OS_MACOSX)
-  const int kActOnMouseDown = 1;
-#else
-  const int kActOnMouseDown = 0;
-#endif
-
+  // Menu is shown on mouse down.
   PerformMousePress(right_point);
-  EXPECT_EQ(kActOnMouseDown, menu_show_count_);
+  EXPECT_EQ(1, menu_show_count_);
   PerformMouseRelease(right_point);
   EXPECT_EQ(1, menu_show_count_);
 

@@ -19,6 +19,8 @@ chrome.fileManagerPrivate = {
   CrostiniEventType: {
     ENABLE: 'enable',
     DISABLE: 'disable',
+    ROOT_ACCESS_ALLOW: 'root_access_allow',
+    ROOT_ACCESS_DISALLOW: 'root_access_disallow',
     SHARE: 'share',
     UNSHARE: 'unshare',
   },
@@ -136,6 +138,7 @@ chrome.fileManagerPrivate = {
   grantAccess: (entryUrls, callback) => {
     setTimeout(callback, 0);
   },
+  importCrostiniImage: (entry) => {},
   // Simulate startup of vm and container by taking 1s.
   mountCrostiniDelay_: 1000,
   mountCrostini: (callback) => {

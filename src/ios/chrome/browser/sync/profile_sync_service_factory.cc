@@ -65,10 +65,9 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::UI},
-      base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time, resolution,
-                     latency, base::TimeTicks::Now()));
+  base::PostTask(FROM_HERE, {web::WebThread::UI},
+                 base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
+                                resolution, latency, base::TimeTicks::Now()));
 }
 
 }  // namespace
@@ -178,17 +177,14 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage);
 
-  bool use_fcm_invalidations =
-      base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
-  if (use_fcm_invalidations) {
-    auto* fcm_invalidation_provider =
-        IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
-            browser_state);
-    if (fcm_invalidation_provider) {
-      init_params.invalidations_identity_providers.push_back(
-          fcm_invalidation_provider->GetIdentityProvider());
-    }
+  auto* fcm_invalidation_provider =
+      IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state);
+  if (fcm_invalidation_provider) {
+    init_params.invalidations_identity_providers.push_back(
+        fcm_invalidation_provider->GetIdentityProvider());
   }
+
   // This code should stay here until all invalidation client are
   // migrated from deprecated invalidation  infructructure.
   // Since invalidations will work only if ProfileSyncService calls

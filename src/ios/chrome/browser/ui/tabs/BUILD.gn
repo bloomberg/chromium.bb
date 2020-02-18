@@ -26,8 +26,6 @@ source_set("tabs") {
   ]
   deps = [
     "resources:open_new_tab_background",
-    "resources:tabstrip_active_tab_close_button_color",
-    "resources:tabstrip_active_tab_incognito_close_button_color",
     "resources:tabstrip_background_tab",
     "resources:tabstrip_foreground_tab",
     "resources:tabstrip_inactive_tab_close_button_color",
@@ -123,7 +121,6 @@ source_set("eg_tests") {
     ":tabs",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",

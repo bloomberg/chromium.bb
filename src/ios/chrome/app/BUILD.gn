@@ -103,6 +103,9 @@ tweak_info_plist("info_plist") {
   if (ios_encryption_export_compliance_code != "") {
     info_plists += [ "resources/EncryptionExportCompliance+Info.plist" ]
   }
+  if (ios_enable_multi_window) {
+    info_plists += [ "resources/MultiWindow+Info.plist" ]
+  }
   args = [
     "--breakpad=$breakpad_enabled_as_int",
     "--branding=$chromium_short_name",
@@ -143,6 +146,7 @@ source_set("app_internal") {
     ":mode",
     ":tests_hook",
     "//base",
+    "//build:branding_buildflags",
     "//components/bookmarks/browser",
     "//components/browser_sync",
     "//components/browsing_data/core",
@@ -169,7 +173,6 @@ source_set("app_internal") {
     "//components/suggestions",
     "//components/sync",
     "//components/ukm/ios:features",
-    "//components/unified_consent",
     "//components/url_formatter",
     "//components/web_resource",
     "//ios/chrome/app/application_delegate",
@@ -253,7 +256,6 @@ source_set("app_internal") {
     "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/mailto",
     "//ios/public/provider/chrome/browser/signin",
-    "//ios/public/provider/chrome/browser/user",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/testing/perf:startup",
     "//ios/third_party/material_roboto_font_loader_ios",

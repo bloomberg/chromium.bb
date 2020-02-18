@@ -22,7 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/app/mojo/mojo_init.h"
@@ -37,9 +37,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -160,9 +160,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
     SetRendererClientForTesting(content_renderer_client_.get());
 
     browser_threads_.reset(
-        new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
+        new BrowserTaskEnvironment(BrowserTaskEnvironment::REAL_IO_THREAD));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
     InitializeMojo();
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
@@ -251,7 +251,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
   TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
 
-  std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
+  std::unique_ptr<BrowserTaskEnvironment> browser_threads_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<ChildConnection> child_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;

@@ -53,6 +53,8 @@ public class TemplateUrlServiceTest {
     private static final String PREFETCH_PARAMETER = "pf";
     private static final String PREFETCH_VALUE = "c";
 
+    private static final String PLAY_API_SEARCH_URL = "https://play.search.engine?q={searchTerms}";
+
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -265,6 +267,84 @@ public class TemplateUrlServiceTest {
         Assert.assertEquals("keyword3", customSearchEngines.get(1).getKeyword());
         Assert.assertEquals("keyword5", customSearchEngines.get(2).getKeyword());
         Assert.assertEquals("keyword2", customSearchEngines.get(3).getKeyword());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SearchEngines"})
+    public void testSetPlayAPISearchEngine_CreateNew() {
+        final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
+
+        // Adding Play API search engine should succeed.
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return templateUrlService.setPlayAPISearchEngine("SearchEngine1", "keyword1",
+                        PLAY_API_SEARCH_URL, "https://suggest.engine?q={searchTerms}",
+                        "https://fav.icon");
+            }
+        }));
+        TemplateUrl defaultSearchEngine =
+                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                    @Override
+                    public TemplateUrl call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
+                    }
+                });
+        Assert.assertEquals("keyword1", defaultSearchEngine.getKeyword());
+        Assert.assertTrue(defaultSearchEngine.getIsPrepopulated());
+        Assert.assertEquals(PLAY_API_SEARCH_URL, defaultSearchEngine.getURL());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SearchEngines"})
+    public void testSetPlayAPISearchEngine_UpdateExisting() {
+        final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
+
+        // Add regular search engine. It will be used to test conflict with Play API search engine.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { templateUrlService.addSearchEngineForTesting("keyword1", 0); });
+
+        // Adding Play API search engine with the same keyword should succeed.
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return templateUrlService.setPlayAPISearchEngine("SearchEngine1", "keyword1",
+                        PLAY_API_SEARCH_URL, "https://suggest.engine?q={searchTerms}",
+                        "https://fav.icon");
+            }
+        }));
+        TemplateUrl defaultSearchEngine =
+                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                    @Override
+                    public TemplateUrl call() {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
+                    }
+                });
+        Assert.assertEquals("keyword1", defaultSearchEngine.getKeyword());
+        Assert.assertTrue(defaultSearchEngine.getIsPrepopulated());
+        Assert.assertEquals(PLAY_API_SEARCH_URL, defaultSearchEngine.getURL());
+
+        // Adding Play API search engine again should fail.
+        Assert.assertFalse(
+                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() {
+                        return templateUrlService.setPlayAPISearchEngine("SearchEngine2",
+                                "keyword2", PLAY_API_SEARCH_URL,
+                                "https://suggest.engine?q={searchTerms}", "https://fav.icon");
+                    }
+                }));
+
+        defaultSearchEngine =
+                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
+                    @Override
+                    public TemplateUrl call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
+                    }
+                });
+        Assert.assertEquals("keyword1", defaultSearchEngine.getKeyword());
     }
 
     private int getSearchEngineCount(final TemplateUrlService templateUrlService) {

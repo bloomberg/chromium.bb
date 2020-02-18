@@ -27,7 +27,6 @@ def upload_dm_results(buildername):
     'ASAN',
     'Coverage',
     'MSAN',
-    'MSRTC',
     'TSAN',
     'UBSAN',
     'Valgrind',
@@ -70,7 +69,7 @@ def dm_flags(api, bot):
     args.append('--randomProcessorTest')
 
   if 'Pixel3' in bot and 'Vulkan' in bot:
-    args.extend(['--dontReduceOpListSplitting'])
+    args.extend(['--dontReduceOpsTaskSplitting'])
 
   thread_limit = None
   MAIN_THREAD_ONLY = 0
@@ -127,9 +126,8 @@ def dm_flags(api, bot):
       if 'NVIDIA_Shield' not in bot:
         gl_prefix = 'gles'
     elif 'Intel' in bot:
-      # We don't want to test MSAA on older Intel chipsets. These are all newer (Gen9).
-      if 'Iris655' not in bot and 'Iris640' not in bot and 'Iris540' not in bot:
-        sample_count = ''
+      # MSAA doesn't work well on Intel GPUs chromium:527565, chromium:983926
+      sample_count = ''
     elif 'ChromeOS' in bot:
       gl_prefix = 'gles'
 
@@ -192,13 +190,13 @@ def dm_flags(api, bot):
                  'angle_d3d9_es2',
                  'angle_gl_es2',
                  'angle_d3d11_es3']
-      if 'LenovoYogaC630' in bot:
-        # LenovoYogaC630 only supports D3D11, not GL.
-        configs = ['angle_d3d11_es2',
-                   'angle_d3d11_es3']
       if sample_count:
         configs.append('angle_d3d11_es2_msaa' + sample_count)
         configs.append('angle_d3d11_es3_msaa' + sample_count)
+      if 'LenovoYogaC630' in bot:
+        # LenovoYogaC630 only supports D3D11, and to save time, we only test ES3
+        configs = ['angle_d3d11_es3',
+                   'angle_d3d11_es3_msaa' + sample_count]
       if 'GTX' in bot or 'Quadro' in bot:
         # See skia:7823 and chromium:693090.
         configs.append('angle_gl_es3')
@@ -249,8 +247,8 @@ def dm_flags(api, bot):
       if 'Android' in bot:
         configs.append('vkmsaa4')
       else:
-        # skbug.com/9023
-        if 'IntelHD405' not in bot:
+        # MSAA doesn't work well on Intel GPUs chromium:527565, chromium:983926, skia:9023
+        if 'Intel' not in bot:
           configs.append('vkmsaa8')
 
     if 'Metal' in bot:
@@ -258,8 +256,8 @@ def dm_flags(api, bot):
       if 'iOS' in bot:
         configs.append('mtlmsaa4')
       else:
-        # We don't want to test MSAA on older (pre-Gen9) Intel chipsets.
-        if 'IntelHD6000' not in bot:
+        # MSAA doesn't work well on Intel GPUs chromium:527565, chromium:983926
+        if 'Intel' not in bot:
           configs.append('mtlmsaa8')
 
     # Test 1010102 on our Linux/NVIDIA bots and the persistent cache config
@@ -785,6 +783,8 @@ def dm_flags(api, bot):
     match.append('~^GrMeshTest$')
 
   if 'LenovoYogaC630' in bot and 'ANGLE' in api.vars.extra_tokens:
+    # skia:9275
+    blacklist(['_', 'tests', '_', 'GLPrograms'])
     # skia:8976
     blacklist(['_', 'tests', '_', 'GrDefaultPathRendererTest'])
     # https://bugs.chromium.org/p/angleproject/issues/detail?id=3414
@@ -922,7 +922,7 @@ def test_steps(api):
       '--images', api.flavor.device_path_join(
           api.flavor.device_dirs.resource_dir, 'images', 'color_wheel.jpg'),
       '--nameByHash',
-      '--dontReduceOpListSplitting',
+      '--dontReduceOpsTaskSplitting',
       '--properties'
     ] + properties
   else:
@@ -1066,7 +1066,6 @@ TEST_BUILDERS = [
   'Test-Win10-MSVC-LenovoYogaC630-GPU-Adreno630-arm64-Debug-All-ANGLE',
   'Test-Win2016-Clang-GCE-CPU-AVX2-x86_64-Debug-All-FAAA',
   'Test-Win2016-Clang-GCE-CPU-AVX2-x86_64-Debug-All-FSAA',
-  'Test-Win2016-MSVC-GCE-CPU-AVX2-x86_64-Debug-All-MSRTC',
   'Test-iOS-Clang-iPadPro-GPU-PowerVRGT7800-arm64-Release-All',
   'Test-Android-Clang-Nexus5x-GPU-Adreno418-arm-Release-All-Android_Vulkan',
   'Test-Mac10.13-Clang-MacBook10.1-GPU-IntelHD615-x86_64-Debug-All-CommandBuffer',

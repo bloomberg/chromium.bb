@@ -40,13 +40,16 @@ class TestNetworkContext : public mojom::NetworkContext {
   TestNetworkContext() = default;
   ~TestNetworkContext() override = default;
 
-  void SetClient(mojom::NetworkContextClientPtr client) override {}
+  void SetClient(
+      mojo::PendingRemote<mojom::NetworkContextClient> client) override {}
   void CreateURLLoaderFactory(
       mojom::URLLoaderFactoryRequest request,
       mojom::URLLoaderFactoryParamsPtr params) override {}
-  void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
+  void GetCookieManager(
+      mojo::PendingReceiver<mojom::CookieManager> cookie_manager) override {}
   void GetRestrictedCookieManager(
-      mojom::RestrictedCookieManagerRequest restricted_cookie_manager,
+      mojo::PendingReceiver<mojom::RestrictedCookieManager>
+          restricted_cookie_manager,
       mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
       bool is_service_worker,
@@ -115,7 +118,7 @@ class TestNetworkContext : public mojom::NetworkContext {
                         GetExpectCTStateCallback callback) override {}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(mojom::UDPSocketRequest request,
-                       mojom::UDPSocketReceiverPtr receiver) override {}
+                       mojom::UDPSocketListenerPtr listener) override {}
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       uint32_t backlog,
@@ -137,18 +140,18 @@ class TestNetworkContext : public mojom::NetworkContext {
       CreateTCPBoundSocketCallback callback) override {}
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override {}
-  void CreateWebSocket(const GURL& url,
-                       const std::vector<std::string>& requested_protocols,
-                       const GURL& site_for_cookies,
-                       std::vector<mojom::HttpHeaderPtr> additional_headers,
-                       int32_t process_id,
-                       int32_t render_frame_id,
-                       const url::Origin& origin,
-                       uint32_t options,
-                       mojom::WebSocketHandshakeClientPtr handshake_client,
-                       mojom::WebSocketClientPtr client,
-                       mojom::AuthenticationHandlerPtr auth_handler,
-                       mojom::TrustedHeaderClientPtr header_client) override {}
+  void CreateWebSocket(
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      std::vector<mojom::HttpHeaderPtr> additional_headers,
+      int32_t process_id,
+      int32_t render_frame_id,
+      const url::Origin& origin,
+      uint32_t options,
+      mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
+      mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override {}
   void LookUpProxyForURL(
       const GURL& url,
       ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {}
@@ -159,11 +162,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
       mojom::HostResolverRequest request) override {}
-  void NotifyExternalCacheHit(
-      const GURL& url,
-      const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin,
-      const url::Origin& frame_origin) override {}
+  void NotifyExternalCacheHit(const GURL& url,
+                              const std::string& http_method,
+                              const net::NetworkIsolationKey& key) override {}
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,
@@ -197,8 +198,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void PreconnectSockets(
       uint32_t num_streams,
       const GURL& url,
-      int32_t load_flags,
-      bool privacy_mode_enabled,
+      bool allow_credentials,
       const net::NetworkIsolationKey& network_isolation_key) override {}
   void CreateP2PSocketManager(
       mojom::P2PTrustedSocketManagerClientPtr client,

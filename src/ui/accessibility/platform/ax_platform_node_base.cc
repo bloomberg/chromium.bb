@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -404,13 +405,6 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
          GetData().role == ax::mojom::Role::kInlineTextBox;
 }
 
-// TODO(crbug.com/865101) Remove this once the autofill state works.
-bool AXPlatformNodeBase::IsFocusedInputWithSuggestions() const {
-  return HasInputSuggestions() && IsPlainTextField() &&
-         delegate_->GetFocus() ==
-             const_cast<AXPlatformNodeBase*>(this)->GetNativeViewAccessible();
-}
-
 bool AXPlatformNodeBase::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not
@@ -489,7 +483,9 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() const {
   return value;
 }
 
-base::string16 AXPlatformNodeBase::GetRoleDescription() const {
+base::string16
+AXPlatformNodeBase::GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
+    const {
   if (GetData().GetImageAnnotationStatus() ==
           ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
       GetData().GetImageAnnotationStatus() ==
@@ -498,6 +494,17 @@ base::string16 AXPlatformNodeBase::GetRoleDescription() const {
   }
 
   return GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+}
+
+base::string16 AXPlatformNodeBase::GetRoleDescription() const {
+  base::string16 role_description =
+      GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
+
+  if (!role_description.empty()) {
+    return role_description;
+  }
+
+  return GetDelegate()->GetLocalizedStringForRoleDescription();
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetSelectionContainer() const {
@@ -726,8 +733,7 @@ bool AXPlatformNodeBase::IsChildOfLeaf() const {
 
 bool AXPlatformNodeBase::IsInvisibleOrIgnored() const {
   const AXNodeData& data = GetData();
-  return data.HasState(ax::mojom::State::kInvisible) ||
-         data.role == ax::mojom::Role::kIgnored;
+  return data.HasState(ax::mojom::State::kInvisible) || ui::IsIgnored(data);
 }
 
 bool AXPlatformNodeBase::IsScrollable() const {
@@ -799,14 +805,12 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   AddAttributeToList(ax::mojom::StringAttribute::kAutoComplete, "autocomplete",
                      attributes);
   if (!HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete) &&
-      IsFocusedInputWithSuggestions()) {
-    // TODO(crbug.com/865101) Use
-    // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
-    // IsFocusedInputWithSuggestions()
+      GetData().HasState(ax::mojom::State::kAutofillAvailable)) {
     AddAttributeToList("autocomplete", "list", attributes);
   }
 
-  base::string16 role_description = GetRoleDescription();
+  base::string16 role_description =
+      GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
   if (!role_description.empty() ||
       HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
     AddAttributeToList("roledescription", base::UTF16ToUTF8(role_description),
@@ -880,13 +884,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         AddAttributeToList("haspopup", "dialog", attributes);
         break;
     }
-  } else if (IsFocusedInputWithSuggestions()) {
-    // TODO(crbug.com/865101) Use
-    // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
-    // IsFocusedInputWithSuggestions()
-    // TODO(crbug.com/865101) Remove this comment:
-    // Note: suggestions are special-cased here because there is no way
-    // for the browser to know when a suggestion popup is available.
+  } else if (GetData().HasState(ax::mojom::State::kAutofillAvailable)) {
     AddAttributeToList("haspopup", "menu", attributes);
   }
 
@@ -1631,7 +1629,7 @@ void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
 int AXPlatformNodeBase::FindTextBoundary(
     AXTextBoundary boundary,
     int offset,
-    TextBoundaryDirection direction,
+    AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
   base::Optional<int> boundary_offset =
       GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);

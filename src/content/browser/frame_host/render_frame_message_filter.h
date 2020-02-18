@@ -29,10 +29,6 @@ struct FrameHostMsg_CreateChildFrame_Params_Reply;
 struct FrameHostMsg_DownloadUrl_Params;
 class GURL;
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace url {
 class Origin;
 }
@@ -63,6 +59,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
 
   // Clears |resource_context_| to prevent accessing it after deletion.
   void ClearResourceContext();
@@ -80,7 +78,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
       const base::string16& suggested_name,
       const bool use_prompt,
       const bool follow_cross_origin_redirects,
-      blink::mojom::BlobURLTokenPtrInfo blob_url_token) const;
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) const;
 
  private:
   friend class BrowserThread;
@@ -144,9 +142,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
   // Initialized to 0, accessed on FILE thread only.
   base::TimeTicks last_plugin_refresh_time_;
 #endif  // ENABLE_PLUGINS
-
-  // Contextual information to be used for requests created here.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The ResourceContext which is to be used on the IO thread.
   ResourceContext* resource_context_;

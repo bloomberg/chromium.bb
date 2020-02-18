@@ -161,8 +161,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#if (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || defined(OS_LINUX) || \
+    defined(OS_WIN)
+// Flaky on ASAN on Mac, and on Linux and Windows. See https://crbug.com/674497.
 #define MAYBE_MaxOffscreenTabs DISABLED_MaxOffscreenTabs
 #else
 #define MAYBE_MaxOffscreenTabs MaxOffscreenTabs
@@ -429,10 +430,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
           last_alert_state_(chrome::GetTabAlertStateForContents(
               browser->tab_strip_model()->GetActiveWebContents())) {
       browser_->tab_strip_model()->AddObserver(this);
-    }
-
-    ~IndicatorChangeObserver() override {
-      browser_->tab_strip_model()->RemoveObserver(this);
     }
 
     TabAlertState last_alert_state() const { return last_alert_state_; }

@@ -22,9 +22,10 @@ class RenderProcessHost;
 class CONTENT_EXPORT ContentIndexServiceImpl
     : public blink::mojom::ContentIndexService {
  public:
-  static void Create(blink::mojom::ContentIndexServiceRequest request,
-                     RenderProcessHost* render_process_host,
-                     const url::Origin& origin);
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
+      RenderProcessHost* render_process_host,
+      const url::Origin& origin);
 
   ContentIndexServiceImpl(
       const url::Origin& origin,
@@ -32,9 +33,11 @@ class CONTENT_EXPORT ContentIndexServiceImpl
   ~ContentIndexServiceImpl() override;
 
   // blink::mojom::ContentIndexService implementation.
+  void GetIconSizes(blink::mojom::ContentCategory category,
+                    GetIconSizesCallback callback) override;
   void Add(int64_t service_worker_registration_id,
            blink::mojom::ContentDescriptionPtr description,
-           const SkBitmap& icon,
+           const std::vector<SkBitmap>& icons,
            const GURL& launch_url,
            AddCallback callback) override;
   void Delete(int64_t service_worker_registration_id,

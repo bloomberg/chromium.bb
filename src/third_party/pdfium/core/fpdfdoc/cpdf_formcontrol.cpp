@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -15,6 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
+#include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 
 namespace {
@@ -201,7 +203,15 @@ CPDF_DefaultAppearance CPDF_FormControl::GetDefaultAppearance() const {
   return CPDF_DefaultAppearance(pObj->GetString());
 }
 
-CPDF_Font* CPDF_FormControl::GetDefaultControlFont() {
+Optional<WideString> CPDF_FormControl::GetDefaultControlFontName() const {
+  RetainPtr<CPDF_Font> pFont = GetDefaultControlFont();
+  if (!pFont)
+    return {};
+
+  return WideString::FromDefANSI(pFont->GetBaseFontName().AsStringView());
+}
+
+RetainPtr<CPDF_Font> CPDF_FormControl::GetDefaultControlFont() const {
   float fFontSize;
   CPDF_DefaultAppearance cDA = GetDefaultAppearance();
   Optional<ByteString> csFontNameTag = cDA.GetFont(&fFontSize);
@@ -211,34 +221,36 @@ CPDF_Font* CPDF_FormControl::GetDefaultControlFont() {
   CPDF_Object* pObj = FPDF_GetFieldAttr(m_pWidgetDict.Get(), "DR");
   if (CPDF_Dictionary* pDict = ToDictionary(pObj)) {
     CPDF_Dictionary* pFonts = pDict->GetDictFor("Font");
-    if (pFonts) {
+    if (ValidateFontResourceDict(pFonts)) {
       CPDF_Dictionary* pElement = pFonts->GetDictFor(*csFontNameTag);
       if (pElement) {
         auto* pData = CPDF_DocPageData::FromDocument(m_pForm->GetDocument());
-        CPDF_Font* pFont = pData->GetFont(pElement);
+        RetainPtr<CPDF_Font> pFont = pData->GetFont(pElement);
         if (pFont)
           return pFont;
       }
     }
   }
-  if (CPDF_Font* pFormFont = m_pForm->GetFormFont(*csFontNameTag))
+  RetainPtr<CPDF_Font> pFormFont = m_pForm->GetFormFont(*csFontNameTag);
+  if (pFormFont)
     return pFormFont;
 
   CPDF_Dictionary* pPageDict = m_pWidgetDict->GetDictFor("P");
-  pObj = FPDF_GetFieldAttr(pPageDict, "Resources");
-  if (CPDF_Dictionary* pDict = ToDictionary(pObj)) {
-    CPDF_Dictionary* pFonts = pDict->GetDictFor("Font");
-    if (pFonts) {
-      CPDF_Dictionary* pElement = pFonts->GetDictFor(*csFontNameTag);
-      if (pElement) {
-        auto* pData = CPDF_DocPageData::FromDocument(m_pForm->GetDocument());
-        CPDF_Font* pFont = pData->GetFont(pElement);
-        if (pFont)
-          return pFont;
-      }
-    }
-  }
-  return nullptr;
+  CPDF_Dictionary* pDict =
+      ToDictionary(FPDF_GetFieldAttr(pPageDict, "Resources"));
+  if (!pDict)
+    return nullptr;
+
+  CPDF_Dictionary* pFonts = pDict->GetDictFor("Font");
+  if (!ValidateFontResourceDict(pFonts))
+    return nullptr;
+
+  CPDF_Dictionary* pElement = pFonts->GetDictFor(*csFontNameTag);
+  if (!pElement)
+    return nullptr;
+
+  auto* pDocPageData = CPDF_DocPageData::FromDocument(m_pForm->GetDocument());
+  return pDocPageData->GetFont(pElement);
 }
 
 int CPDF_FormControl::GetControlAlignment() const {

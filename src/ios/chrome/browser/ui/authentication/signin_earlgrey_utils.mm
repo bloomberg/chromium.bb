@@ -6,6 +6,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 
@@ -34,8 +35,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
 - (ChromeIdentity*)fakeManagedIdentity {
   return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
                                         gaiaID:@"fooManagedID"
-                                          name:@"Fake Managed"
-                                  hostedDomain:@"managed.com"];
+                                          name:@"Fake Managed"];
 }
 
 - (void)checkSignedInWithIdentity:(ChromeIdentity*)identity {
@@ -45,6 +45,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
   // Required to avoid any problem since the following test is not dependant
   // to UI, and the previous action has to be totally finished before going
   // through the assert.
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^bool {
+                   NSString* primaryAccountGaiaID =
+                       [SignInEarlGreyUtilsAppInterface primaryAccountGaiaID];
+                   return primaryAccountGaiaID.length > 0;
+                 }),
+             @"Sign in did not complete.");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   NSString* primaryAccountGaiaID =

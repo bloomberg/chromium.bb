@@ -50,6 +50,7 @@ namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListBackgroundShieldView;
+class AppListConfig;
 class AppListMainView;
 class AppListModel;
 class AppsGridView;
@@ -117,6 +118,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // next state, measured in DIPs/event.
   static constexpr int kDragVelocityThreshold = 6;
 
+  // The animation duration for app list movement.
+  static constexpr int kAppListAnimationDurationMs = 200;
+  static constexpr int kAppListAnimationDurationFromFullscreenMs = 250;
+
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
@@ -172,7 +177,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
-  bool CanProcessEventsWithinSubtree() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
 
@@ -310,6 +314,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool is_side_shelf() const { return is_side_shelf_; }
 
+  void SetShelfHasRoundedCorners(bool shelf_has_rounded_corners);
+
+  bool shelf_has_rounded_corners() const { return shelf_has_rounded_corners_; }
+
   bool is_in_drag() const { return is_in_drag_; }
 
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
@@ -317,6 +325,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   }
 
   views::View* GetAppListBackgroundShieldForTest();
+
+  // Gets the current app list configuration. Should not be used before the app
+  // list content has been initialized.
+  const AppListConfig& GetAppListConfig() const;
 
   SkColor GetAppListBackgroundShieldColorForTest();
 
@@ -329,6 +341,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                            PresentationTimeRecordedForDragInTabletMode);
 
   class StateAnimationMetricsReporter;
+
+  // Updates the app list configuration that should be used by this app list
+  // view.
+  // |parent_window|: The window that contains the app list widget.
+  void UpdateAppListConfig(aura::Window* parent_window);
 
   // Updates the widget to be shown.
   void UpdateWidget();
@@ -454,6 +471,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Whether the shelf is oriented on the side.
   bool is_side_shelf_ = false;
 
+  // Whether the shelf has rounded corners.
+  bool shelf_has_rounded_corners_ = false;
+
   // True if the user is in the process of gesture-dragging on opened app list,
   // or dragging the app list from shelf.
   bool is_in_drag_ = false;
@@ -483,7 +503,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Whether the background blur is enabled.
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
-  ash::AppListViewState app_list_state_ = ash::AppListViewState::kPeeking;
+  ash::AppListViewState app_list_state_ = ash::AppListViewState::kClosed;
+
+  // The timestamp when the ongoing animation ends.
+  base::TimeTicks animation_end_timestamp_;
 
   // An observer to notify AppListView of bounds animation completion.
   std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
@@ -515,7 +538,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // expensive. So it is only applied in the limited scenarios.
   bool update_childview_each_frame_ = false;
 
-  base::WeakPtrFactory<AppListView> weak_ptr_factory_;
+  // If set, the app list config that should be used within the app list view
+  // instead of the default instance.
+  std::unique_ptr<AppListConfig> app_list_config_;
+
+  base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

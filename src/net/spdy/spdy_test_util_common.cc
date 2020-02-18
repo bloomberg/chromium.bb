@@ -330,20 +330,23 @@ SpdySessionDependencies::SpdySessionDependencies(
       ssl_config_service(std::make_unique<SSLConfigServiceDefaults>()),
       socket_factory(std::make_unique<MockClientSocketFactory>()),
       http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
-      http_server_properties(std::make_unique<HttpServerPropertiesImpl>()),
+      http_server_properties(std::make_unique<HttpServerProperties>()),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       enable_quic(false),
       enable_server_push_cancellation(false),
       session_max_recv_window_size(kDefaultInitialWindowSize),
+      session_max_queued_capped_frames(kSpdySessionMaxQueuedCappedFrames),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
       net_log(nullptr),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false),
-      enable_early_data(false) {
+      enable_early_data(false),
+      allow_default_credentials(
+          HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS) {
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
@@ -385,6 +388,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->enable_server_push_cancellation;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
+  params.spdy_session_max_queued_capped_frames =
+      session_deps->session_max_queued_capped_frames;
   params.http2_settings = session_deps->http2_settings;
   params.time_func = session_deps->time_func;
   params.enable_http2_alternative_service =
@@ -397,6 +402,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.disable_idle_sockets_close_on_memory_pressure =
       session_deps->disable_idle_sockets_close_on_memory_pressure;
   params.enable_early_data = session_deps->enable_early_data;
+  params.allow_default_credentials = session_deps->allow_default_credentials;
   return params;
 }
 
@@ -440,8 +446,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_ssl_config_service(std::make_unique<SSLConfigServiceDefaults>());
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
-  storage_.set_http_server_properties(
-      std::make_unique<HttpServerPropertiesImpl>());
+  storage_.set_http_server_properties(std::make_unique<HttpServerProperties>());
   storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
   HttpNetworkSession::Params session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;
