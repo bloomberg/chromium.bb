@@ -35,21 +35,12 @@ namespace {
 constexpr int kInterPostRoundBit =
     kInterRoundBitsVertical - kInterRoundBitsCompoundVertical;
 
-inline void AverageBlend4Row(const int16_t* prediction_0,
-                             const int16_t* prediction_1, uint8_t* dest) {
-  const int16x4_t pred0 = vld1_s16(prediction_0);
-  const int16x4_t pred1 = vld1_s16(prediction_1);
-  const int16x4_t res = vadd_s16(pred0, pred1);
-  StoreLo4(dest,
-           vqrshrun_n_s16(vcombine_s16(res, res), kInterPostRoundBit + 1));
-}
-
-inline void AverageBlend8Row(const int16_t* prediction_0,
-                             const int16_t* prediction_1, uint8_t* dest) {
+inline uint8x8_t AverageBlend8Row(const int16_t* prediction_0,
+                                  const int16_t* prediction_1) {
   const int16x8_t pred0 = vld1q_s16(prediction_0);
   const int16x8_t pred1 = vld1q_s16(prediction_1);
   const int16x8_t res = vaddq_s16(pred0, pred1);
-  vst1_u8(dest, vqrshrun_n_s16(res, kInterPostRoundBit + 1));
+  return vqrshrun_n_s16(res, kInterPostRoundBit + 1);
 }
 
 inline void AverageBlendLargeRow(const int16_t* prediction_0,
@@ -70,11 +61,8 @@ inline void AverageBlendLargeRow(const int16_t* prediction_0,
   } while (x < width);
 }
 
-void AverageBlend_NEON(const void* prediction_0,
-                       const ptrdiff_t prediction_stride_0,
-                       const void* prediction_1,
-                       const ptrdiff_t prediction_stride_1, const int width,
-                       const int height, void* const dest,
+void AverageBlend_NEON(const void* prediction_0, const void* prediction_1,
+                       const int width, const int height, void* const dest,
                        const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
@@ -83,16 +71,14 @@ void AverageBlend_NEON(const void* prediction_0,
 
   if (width == 4) {
     do {
-      AverageBlend4Row(pred_0, pred_1, dst);
-      dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      const uint8x8_t result = AverageBlend8Row(pred_0, pred_1);
+      pred_0 += 8;
+      pred_1 += 8;
 
-      AverageBlend4Row(pred_0, pred_1, dst);
+      StoreLo4(dst, result);
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
-
+      StoreHi4(dst, result);
+      dst += dest_stride;
       y -= 2;
     } while (y != 0);
     return;
@@ -100,15 +86,15 @@ void AverageBlend_NEON(const void* prediction_0,
 
   if (width == 8) {
     do {
-      AverageBlend8Row(pred_0, pred_1, dst);
+      vst1_u8(dst, AverageBlend8Row(pred_0, pred_1));
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      pred_0 += 8;
+      pred_1 += 8;
 
-      AverageBlend8Row(pred_0, pred_1, dst);
+      vst1_u8(dst, AverageBlend8Row(pred_0, pred_1));
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      pred_0 += 8;
+      pred_1 += 8;
 
       y -= 2;
     } while (y != 0);
@@ -118,13 +104,13 @@ void AverageBlend_NEON(const void* prediction_0,
   do {
     AverageBlendLargeRow(pred_0, pred_1, width, dst);
     dst += dest_stride;
-    pred_0 += prediction_stride_0;
-    pred_1 += prediction_stride_1;
+    pred_0 += width;
+    pred_1 += width;
 
     AverageBlendLargeRow(pred_0, pred_1, width, dst);
     dst += dest_stride;
-    pred_0 += prediction_stride_0;
-    pred_1 += prediction_stride_1;
+    pred_0 += width;
+    pred_1 += width;
 
     y -= 2;
   } while (y != 0);

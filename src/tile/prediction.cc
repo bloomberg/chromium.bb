@@ -634,10 +634,8 @@ void Tile::CompoundInterPrediction(
     default:
       assert(prediction_parameters.compound_prediction_type ==
              kCompoundPredictionTypeAverage);
-      dsp_.average_blend(
-          prediction[0], /*prediction_stride=*/prediction_width, prediction[1],
-          /*prediction_stride=*/prediction_width, prediction_width,
-          prediction_height, dest, dest_stride);
+      dsp_.average_blend(prediction[0], prediction[1], prediction_width,
+                         prediction_height, dest, dest_stride);
       break;
   }
 }

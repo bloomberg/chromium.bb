@@ -70,11 +70,8 @@ inline void AverageBlendLargeRow(const int16_t* prediction_0,
   } while (x < width);
 }
 
-void AverageBlend_SSE4_1(const void* prediction_0,
-                         const ptrdiff_t prediction_stride_0,
-                         const void* prediction_1,
-                         const ptrdiff_t prediction_stride_1, const int width,
-                         const int height, void* const dest,
+void AverageBlend_SSE4_1(const void* prediction_0, const void* prediction_1,
+                         const int width, const int height, void* const dest,
                          const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
@@ -83,15 +80,17 @@ void AverageBlend_SSE4_1(const void* prediction_0,
 
   if (width == 4) {
     do {
+      // TODO(johannkoenig): |prediction_[01]| values are packed. It is possible
+      // to load 8 values at a time.
       AverageBlend4Row(pred_0, pred_1, dst);
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      pred_0 += width;
+      pred_1 += width;
 
       AverageBlend4Row(pred_0, pred_1, dst);
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      pred_0 += width;
+      pred_1 += width;
 
       y -= 2;
     } while (y != 0);
@@ -102,13 +101,13 @@ void AverageBlend_SSE4_1(const void* prediction_0,
     do {
       AverageBlend8Row(pred_0, pred_1, dst);
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      pred_0 += width;
+      pred_1 += width;
 
       AverageBlend8Row(pred_0, pred_1, dst);
       dst += dest_stride;
-      pred_0 += prediction_stride_0;
-      pred_1 += prediction_stride_1;
+      pred_0 += width;
+      pred_1 += width;
 
       y -= 2;
     } while (y != 0);
@@ -118,13 +117,13 @@ void AverageBlend_SSE4_1(const void* prediction_0,
   do {
     AverageBlendLargeRow(pred_0, pred_1, width, dst);
     dst += dest_stride;
-    pred_0 += prediction_stride_0;
-    pred_1 += prediction_stride_1;
+    pred_0 += width;
+    pred_1 += width;
 
     AverageBlendLargeRow(pred_0, pred_1, width, dst);
     dst += dest_stride;
-    pred_0 += prediction_stride_0;
-    pred_1 += prediction_stride_1;
+    pred_0 += width;
+    pred_1 += width;
 
     y -= 2;
   } while (y != 0);

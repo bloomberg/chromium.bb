@@ -464,15 +464,12 @@ using WeightMaskFuncs = WeightMaskFunc[6][6][2];
 // |prediction_0| is the first input block.
 // |prediction_1| is the second input block. Both blocks are int16_t* when
 // bitdepth == 8 and uint16_t* otherwise.
-// |prediction_stride_0| and |prediction_stride_1| are corresponding strides,
-// given in units of [u]int16_t.
 // |width| and |height| are the same for the first and second input blocks.
+// The stride for the input buffers is equal to |width|.
 // The valid range of block size is [8x8, 128x128] for the luma plane.
 // |dest| is the output buffer. |dest_stride| is the output buffer stride.
 using AverageBlendFunc = void (*)(const void* prediction_0,
-                                  ptrdiff_t prediction_stride_0,
-                                  const void* prediction_1,
-                                  ptrdiff_t prediction_stride_1, int width,
+                                  const void* prediction_1, int width,
                                   int height, void* dest,
                                   ptrdiff_t dest_stride);
 
