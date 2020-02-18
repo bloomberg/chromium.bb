@@ -1,0 +1,209 @@
+#!/bin/sh -xe
+# README.linux.words - file used to create linux.words
+# Created: Wed Mar 10 09:12:49 1993 by faith@cs.unc.edu (Rik Faith)
+# Revised: Sat Mar 13 17:02:08 1993 by faith@cs.unc.edu
+#
+# Care was taken to be sure that the linux.words list was free of
+# copyright.  This makes linux.words a suitable /usr/dict/words
+# replacement for the Linux community.
+#
+# Since the majority of the words are from Tanenbaum's minix.dict file,
+# the notice from Barry Brachman, included below, should accompany any
+# redistribution of this list.
+
+# Here is a detailed explaination of how I created the linux.words file.
+#
+# This README.words file is actually a shell script that you can use to
+# recreate the linux.words file from original sources.
+#
+# First, I started with minix.dict
+# from cs.ubc.ca:/pub/local/src/sp-1.5/wordlists-1.0.tar.Z
+#
+# The following is from the NOTES file in wordlists-1.0.tar.Z:
+
+# NOTES> These word lists were collected by Barry Brachman
+# NOTES> <brachman@cs.ubc.ca> at the University of British Columbia.  They
+# NOTES> may be freely distributed as long as this notice accompanies them.
+# NOTES> 
+# NOTES> ==================================================================
+# NOTES> Info for minix.dict:
+# NOTES> 
+# NOTES> Article 1997 of comp.os.minix:
+# NOTES> From: ast@botter.UUCP
+# NOTES> Subject: A spelling checker for MINIX
+# NOTES> Date: 6 Jan 88 22:28:22 GMT
+# NOTES> Reply-To: ast@cs.vu.nl (Andy Tanenbaum)
+# NOTES> Organization: VU Informatica, Amsterdam
+# NOTES> 
+# NOTES> This dictionary is NOT based on the UNIX dictionary so it is free
+# NOTES> of AT&T copyright.  I built the dictionary from three sources.
+# NOTES> First, I started by sorting and uniq'ing some public domain
+# NOTES> dictionaries.  Second, as some of you probably know, I have
+# NOTES> written somewhere between 3 and 6 books (depending on precisely
+# NOTES> what you count) and an additional 50 published papers on operating
+# NOTES> systems, networks, compilers, languages, etc.  This data base,
+# NOTES> which is online, is nonnegligible :-) Finally, I added a number of
+# NOTES> words that I thought ought to be in the dictionary including all
+# NOTES> the U.S. states, all the European and some other major countries,
+# NOTES> principal U.S. and world cities, and a bunch of technical terms.
+# NOTES> I don't want my spelling checker to barf on arpanet, diskless,
+# NOTES> modem, login, internetwork, subdirectory, superuser, vlsi, or
+# NOTES> winchester just because Webster wouldn't approve of them.  All in
+# NOTES> all, the dictionary is over 40,000 words.  If you have any
+# NOTES> suggestions for additions or deletions, please post them.  But
+# NOTES> please be sure you are not infringing on anyone's copyright in
+# NOTES> doing so.
+# NOTES> 
+# NOTES> Andy Tanenbaum (ast@cs.vu.nl)
+
+# The main problem with minix.dict is that many proper names are not
+# capitalized.  So, I got english.tar.Z from ftp.uu.net:/doc/dictionaries,
+# which is a mirror of nic.funet.fi:/pub/unix/security/dictionaries.
+#
+# Here is part of the README file for english.tar.Z:
+
+# README> 
+# README> FILE: english.words
+# README> VERSION: DEC-SRC-92-04-05
+# README> 
+# README> EDITOR
+# README> 
+# README>     Jorge Stolfi <stolfi@src.dec.com>
+# README>     DEC Systems Research Center
+# README>   
+# README> AUTHORS OF ORIGIONAL WORDLISTS
+# README> 
+# README>     Andy Tanenbaum <ast@cs.vu.nl>
+# README>     Barry Brachman <brachman@cs.ubc.ca>
+# README>     Geoff Kuenning <geoff@itcorp.com>
+# README>     Henk Smit <henk@cs.vu.nl>
+# README>     Walt Buehring <buehring%ti-csl@csnet-relay>
+#
+# [stuff seleted]
+#
+# README> AUXILIARY LISTS
+# README> 
+# README>     In the same directory as englis.words there are a few
+# README>     complementary word lists, all derived from the same sources
+# README>     [1--8] as the main list:
+# README> 
+# README>     english.names
+# README> 
+# README>         A list of common English proper names and their derivatives.
+# README>         The list includes: person names ("John", "Abigail",
+# README>         "Barrymore"); countries, nations, and cities ("Germany",
+# README>         "Gypsies", "Moscow"); historical, biblical and mythological
+# README>         figures ("Columbus", "Isaiah", "Ulysses"); important
+# README>         trademarked products ("Xerox", "Teflon"); biological genera
+# README>         ("Aerobacter"); and some of their derivatives ("Germans",
+# README>         "Xeroxed", "Newtonian").
+# README>     
+# README>     misc.names
+# README> 
+# README>         A list of foreign-sounding names of persons and places
+# README>         ("Antonio", "Albuquerque", "Balzac", "Stravinski"), extracted
+# README>         from the lists [1--8].  (The distinction betweeen
+# README>         "English-sounding" and "foreign-sounding" is of course rather
+# README>         arbitrary).
+# README> 
+# README>     org.names
+# README> 
+# README>         A short lists names of corporations and other institutions
+# README>         ("Pepsico", "Amtrak", "Medicare"), and a few derivatives.  
+# README> 
+# README>         The file also includes some initialisms --- acronyms and
+# README>         abbreviations that are generally pronounced as words rather
+# README>         than spelled out ("NASA", "UNESCO").
+# README> 
+# README>     english.abbrs
+# README> 
+# README>         A list of common abbreviations ("etc.", "Dr.", "Wed."),
+# README>         acronyms ("A&M", "CPU", "IEEE"), and measurement symbols
+# README>         ("ft", "cm", "ns", "kHz").
+# README> 
+# README>     english.trash
+# README>                 
+# README>         A list of words from the original wordlists
+# README>         that I decided were either wrong or unsuitable for inclusion
+# README>         in the file english.words or any of the other auxiliary 
+# README>         lists. It includes
+# README>         
+# README>           typos ("accupy", "aquariia", "automatontons")
+# README>           spelling errors ("abcissa", "alleviater", "analagous")
+# README>           bogus derived forms ("homeown", "unfavorablies", "catched")
+# README>           uncapitalized proper names ("afghanistan",
+# README>                                       "algol", "decnet")
+# README>           uncapitalized acronyms ("apl", "ccw", "ibm")
+# README>           unpunctuated abbreviations ("amp", "approx", "etc")
+# README>           British spellings ("advertize", "archaeology")
+# README>           archaic words ("bedight")
+# README>           rare variants ("babirousa")
+# README>           unassimilated foreign words ("bambino", "oui", "caballero")
+# README>           mis-hyphenated compounds ("babylike", "backarrows")
+# README>           computer keywords and slang ("lconvert", "noecho", "prog") 
+# README> 
+# README>         (I apologize for excluding British spellings.  I should have
+# README>         split the list in three sublists--- common English, British,
+# README>         American---as ispell does.  But there are only so many hours
+# README>         in a day...)
+# README> 
+# README>     english.maybe
+# README> 
+# README>         A list of about 5,000 lowercase words from the "mts.dict"
+# README>         wordlist [6] that weren't included in english.words.
+# README> 
+# README>         This list seems to include lots of "trash", like
+# README>         uncapitalized proper names and weird words.  It would
+# README>         take me several days to sort this mess, so I decided to
+# README>         leave it as a separate file.  Use at your own risk...
+#
+# [stuff deleted]
+#
+# README> (NON-)COPYRIGHT STATUS
+# README> 
+# README>   To the best of my knowledge, all the files I used to build these
+# README>   wordlists were available for public distribution and use, at least
+# README>   for non-commercial purposes.  I have confirmed this assumption with
+# README>   the authors of the lists, whenever they were known.
+# README>   
+# README>   Therefore, it is safe to assume that the wordlists in this
+# README>   package can also be freely copied, distributed, modified, and
+# README>   used for personal, educational, and research purposes.  (Use of
+# README>   these files in commercial products may require written
+# README>   permission from DEC and/or the authors of the original lists.)
+# README>   
+# README>   Whenever you distribute any of these wordlists, please distribute
+# README>   also the accompanying README file.  If you distribute a modified
+# README>   copy of one of these wordlists, please include the original README
+# README>   file with a note explaining your modifications.  Your users will
+# README>   surely appreciate that.
+# README> 
+# README> (NO-)WARRANTY DISCLAIMER
+# README> 
+# README>   These files, like the original wordlists on which they are
+# README>   based, are still very incomplete, uneven, and inconsitent, and
+# README>   probably contain many errors.  They are offered "as is" without
+# README>   any warranty of correctness or fitness for any particular
+# README>   purpose.  Neither I nor my employer can be held responsible for
+# README>   any losses or damages that may result from their use.
+
+# subtract english.trash
+cat minix.dict english.trash english.trash | sort | uniq -u > dict.1
+# subtract english.maybe
+cat dict.1 english.maybe english.maybe | sort | uniq -u > dict.2
+
+# build subtraction list of proper names and abbreviations
+cat english.names misc.names org.names computer.names english.abbrs > sub.1
+tr 'A-Z' 'a-z' < sub.1 | sort | uniq -u > sub.2
+
+# subtract proper names with incorrect capitalization
+cat dict.2 sub.2 sub.2 | sort | uniq -u > dict.3
+
+# build proper name list without possessives
+cat english.names misc.names org.names computer.names | fgrep -v \'s > names.1
+
+# add in proper names (use sort twice to get uppercase before lowercase)
+cat dict.3 names.1 | sort | sort -df | uniq > linux.words
+
+# clean up
+rm dict.[123] sub.[12] names.1

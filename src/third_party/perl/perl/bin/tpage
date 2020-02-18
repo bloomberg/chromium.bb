@@ -1,0 +1,289 @@
+#!perl -w
+#========================================================================
+#
+# tpage
+#
+# DESCRIPTION
+#   Script for processing and rendering a template document using the 
+#   Perl Template Toolkit. 
+#
+# AUTHOR
+#   Andy Wardley   <abw@kfs.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2000 Andy Wardley.  All Rights Reserved.
+#   Copyright (C) 1998-2000 Canon Research Centre Europe Ltd.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#------------------------------------------------------------------------
+#
+# $Id$
+#
+#========================================================================
+
+use strict;
+use Template;
+use Template::Directive;
+use AppConfig;
+
+my $NAME     = "tpage";
+my $VERSION  = 2.70;
+my $HOME     = $ENV{ HOME } || '';
+my $RCFILE   = $ENV{"\U${NAME}rc"} || "$HOME/.${NAME}rc";
+my $TTMODULE = 'Template';
+
+# read .tpagerc file and any command line arguments
+my $config   = read_config($RCFILE);
+
+# unshift any perl5lib directories onto front of INC
+unshift(@INC, @{ $config->perl5lib });
+
+# get all template_directive_* options from the config
+my %ttdirectiveopts = $config->varlist('^template_directive_', 1);
+
+# get all template_* (except template_directive_*) options from the config and fold keys to UPPER CASE
+my %ttopts   = $config->varlist('^template_(?!directive_)', 1);
+my $ttmodule = delete($ttopts{ module });
+my $ttenvvars = delete($ttopts{ envvars });
+my $ucttopts = {
+    map { my $v = $ttopts{ $_ }; defined $v ? (uc $_, $v) : () }
+    keys %ttopts,
+};
+
+# load custom template module 
+if ($ttmodule) {
+    my $ttpkg = $ttmodule;
+    $ttpkg =~ s[::][/]g;
+    $ttpkg .= '.pm';
+    require $ttpkg;
+}
+else {
+    $ttmodule = $TTMODULE;
+}
+
+# load custom Template::Directive configuration
+map {
+  my $v = $ttdirectiveopts{ $_ };
+  if( defined $v ) {
+    ${ $Template::Directive::{ uc $_ } } = $ttdirectiveopts{ $_ }
+  }
+} keys %ttdirectiveopts;
+
+# add current directory to INCLUDE_PATH
+unshift(@{ $ucttopts->{ INCLUDE_PATH } }, '.');
+
+# read from STDIN if no files specified
+push(@ARGV, '-') unless @ARGV;
+
+my $template = $ttmodule->new($ucttopts)
+    || die $ttmodule->error();
+
+my %ttvars = ();
+if ($ttenvvars) {
+    $ttvars{'env'} = \%ENV;
+}
+
+# process each input file 
+foreach my $file (@ARGV) {
+    $file = \*STDIN if $file eq '-';
+    $template->process($file,\%ttvars)
+	|| die $template->error();
+}
+
+
+sub read_config {
+    my $file = shift;
+
+    my $config = AppConfig->new(
+        { 
+            ERROR  => sub { die(@_, "\ntry `$NAME --help'\n") }
+        }, 
+        'help|h'      => { ACTION => \&help },
+        'template_absolute|absolute' => { DEFAULT => 1 },
+        'template_relative|relative' => { DEFAULT => 1 },
+        'template_module|module=s',
+        'template_anycase|anycase',
+        'template_eval_perl|eval_perl',
+        'template_load_perl|load_perl',
+        'template_interpolate|interpolate',
+        'template_pre_chomp|pre_chomp|prechomp',
+        'template_post_chomp|post_chomp|postchomp',
+        'template_trim|trim',
+        'template_variables|variables|define=s%',
+        'template_include_path|include_path|include|I=s@',
+        'template_pre_process|pre_process|preprocess=s@',
+        'template_post_process|post_process|postprocess=s@',
+        'template_process|process=s',
+        'template_wrapper|wrapper=s',
+        'template_recursion|recursion',
+        'template_expose_blocks|expose_blocks',
+        'template_default|default=s',
+        'template_error|error=s',
+        'template_debug|debug=s',
+        'template_start_tag|start_tag|starttag=s',
+        'template_end_tag|end_tag|endtag=s',
+        'template_tag_style|tag_style|tagstyle=s',
+        'template_compile_ext|compile_ext=s',
+        'template_compile_dir|compile_dir=s',
+        'template_plugin_base|plugin_base|pluginbase=s@',
+        'perl5lib|perllib=s@',
+        'template_envvars|envvars',
+        'template_directive_debug',
+        'template_directive_pretty',
+        'template_directive_while_max|while_max=i'
+    );
+
+    # add the 'file' option now that we have a $config object that we 
+    # can reference in a closure
+    $config->define(
+        'file|f=s@' => { 
+            EXPAND => AppConfig::EXPAND_ALL, 
+            ACTION => sub { 
+                my ($state, $item, $file) = @_;
+                $file = $state->cfg . "/$file" 
+                    unless $file =~ /^[\.\/]|(?:\w:)/;
+                $config->file($file) }  
+        }
+    );
+
+    # process main config file, then command line args
+    $config->file($file) if -f $file;
+    $config->args();
+    return $config;
+}
+
+
+sub help {
+    print<<END_OF_HELP;
+$NAME $VERSION (Template Toolkit version $Template::VERSION)
+
+usage: $NAME [options] [files]
+
+Options:
+   --define var=value       Define template variable
+   --interpolate            Interpolate '\$var' references in text
+   --anycase                Accept directive keywords in any case.
+   --pre_chomp              Chomp leading whitespace 
+   --post_chomp             Chomp trailing whitespace
+   --trim                   Trim blank lines around template blocks
+   --eval_perl              Evaluate [% PERL %] ... [% END %] code blocks
+   --load_perl              Load regular Perl modules via USE directive
+   --absolute               Allow ABSOLUTE directories (enabled by default)
+   --relative               Allow RELATIVE directories (enabled by default)
+   --include_path=DIR       Add directory to INCLUDE_PATH 
+   --pre_process=TEMPLATE   Process TEMPLATE before each main template
+   --post_process=TEMPLATE  Process TEMPLATE after each main template
+   --process=TEMPLATE       Process TEMPLATE instead of main template
+   --wrapper=TEMPLATE       Process TEMPLATE wrapper around main template
+   --default=TEMPLATE       Use TEMPLATE as default
+   --error=TEMPLATE         Use TEMPLATE to handle errors
+   --debug=STRING           Set TT DEBUG option to STRING
+   --start_tag=STRING       STRING defines start of directive tag
+   --end_tag=STRING         STRING defined end of directive tag
+   --tag_style=STYLE        Use pre-defined tag STYLE    
+   --plugin_base=PACKAGE    Base PACKAGE for plugins            
+   --compile_ext=STRING     File extension for compiled template files
+   --compile_dir=DIR        Directory for compiled template files
+   --perl5lib=DIR           Specify additional Perl library directories
+   --template_module=MODULE Specify alternate Template module
+   --while_max=INTEGER      Change '\$Template::Directive::WHILE_MAX' default
+   --envvars                Set the 'env' variable to the environment (%ENV)
+
+See 'perldoc tpage' for further information.  
+
+END_OF_HELP
+
+    exit(0);
+}
+
+__END__
+
+
+#------------------------------------------------------------------------
+# IMPORTANT NOTE
+#   This documentation is generated automatically from source
+#   templates.  Any changes you make here may be lost.
+# 
+#   The 'docsrc' documentation source bundle is available for download
+#   from http://www.template-toolkit.org/docs.html and contains all
+#   the source templates, XML files, scripts, etc., from which the
+#   documentation for the Template Toolkit is built.
+#------------------------------------------------------------------------
+
+=head1 NAME
+
+Template::Tools::tpage - Process templates from command line
+
+=head1 USAGE
+
+    tpage [ --define var=value ] file(s)
+
+=head1 DESCRIPTION
+
+The B<tpage> script is a simple wrapper around the Template Toolkit processor.
+Files specified by name on the command line are processed in turn by the 
+template processor and the resulting output is sent to STDOUT and can be 
+redirected accordingly.  e.g.
+
+    tpage myfile > myfile.out
+    tpage header myfile footer > myfile.html
+
+If no file names are specified on the command line then B<tpage> will read
+STDIN for input.
+
+The C<--define> option can be used to set the values of template variables.
+e.g.
+
+    tpage --define author="Andy Wardley" skeleton.pm > MyModule.pm
+
+=head2 The F<.tpagerc> Configuration File
+
+You can use a F<.tpagerc> file in your home directory.
+
+The purpose of this file is to set any I<global> configuration options
+that you want applied I<every> time F<tpage> is run. For example, you
+can use the C<include_path> to use template files from a generic template
+directory.
+
+Run C<tpage -h> for a summary of the options available.
+
+See L<Template> for general information about the Perl Template 
+Toolkit and the template language and features.
+
+=head1 AUTHOR
+
+Andy Wardley E<lt>abw@wardley.orgE<gt>
+
+L<http://wardley.org/|http://wardley.org/>
+
+
+
+
+=head1 VERSION
+
+2.68, distributed as part of the
+Template Toolkit version 2.19, released on 27 April 2007.
+
+=head1 COPYRIGHT
+
+  Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<ttree|Template::Tools::ttree>
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

@@ -1,0 +1,65 @@
+#============================================================= -*-perl-*-
+#
+# Template::Tools
+#
+# DESCRIPTION
+#   Index page for documentation about the command line tools
+#   distributed with the Template Toolkit.
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Tools - Command Line Tools for the Template Toolkit
+
+=head1 Template Tools
+
+The Template Toolkit includes the following command line tools
+for processing templates.
+
+=head2 tpage
+
+The L<tpage|Template::Tools::tpage> script can be used to process
+a single template using the Template Toolkit.
+
+    $ tpage --define msg="Hello World" greeting.tt2
+
+Use the C<-h> option to get a summary of options:
+
+    $ tpage -h
+
+See the L<Template::Tools::tpage> documentation for further information
+and examples of use.
+
+=head2 ttree
+
+The L<ttree|Template::Tools::ttree> script can be used to process
+an entire directory of templates.
+
+    $ ttree --src /path/to/templates --dest /path/to/output
+
+Use the C<-h> option to get a summary of options:
+
+    $ ttree -h
+
+See the L<Template::Tools::ttree> documentation for further information
+and examples of use.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:
