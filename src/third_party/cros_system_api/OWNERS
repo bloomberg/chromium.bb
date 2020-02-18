@@ -1,0 +1,8 @@
+set noparent
+
+# Please get a review from someone who's knowledgeable (per commit history)
+# about the component whose constants you're changing.
+vapier@chromium.org
+ejcaruso@chromium.org
+
+# COMPONENT: OS>Systems
