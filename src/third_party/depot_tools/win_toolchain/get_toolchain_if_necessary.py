@@ -515,6 +515,10 @@ def main():
       if not CanAccessToolchainBucket():
         RequestGsAuthentication()
     if not should_use_file and not should_use_gs and not should_use_http:
+      print ('\n\nNo local toolchain exist. To use local toolchain from file,\n' \
+             'please make sure environment variable DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL\n' \
+             'is set properly and the right wtk2_toolchain devkit is installed.')
+
       if sys.platform not in ('win32', 'cygwin'):
         doc = 'https://chromium.googlesource.com/chromium/src/+/master/docs/' \
               'win_cross.md'
@@ -536,6 +540,8 @@ def main():
     DoTreeMirror(toolchain_target_dir, desired_hash)
 
     got_new_toolchain = True
+  else:
+    print ('Windows toolchain with desired hash %s already exist.' % desired_hash)
 
   win_sdk = os.path.join(abs_toolchain_target_dir, 'win_sdk')
   try:

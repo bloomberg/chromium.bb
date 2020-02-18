@@ -683,7 +683,6 @@ if (!is_android) {
       "//chrome/browser/devtools:test_support",
       "//chrome/browser/notifications/scheduler/test:test_support",
       "//chrome/browser/profiling_host:profiling_browsertests",
-      "//chrome/browser/web_applications:browser_tests",
       "//chrome/browser/web_applications/extensions:browser_tests",
       "//chrome/renderer",
       "//chrome/services/removable_storage_writer:lib",
@@ -4646,7 +4645,6 @@ test("unit_tests") {
     ]
 
     deps += [
-      "//chrome/browser/web_applications:unit_tests",
       "//chrome/browser/web_applications:web_applications_unit_tests",
       "//chrome/browser/web_applications/extensions:unit_tests",
       "//chrome/common/extensions/api",

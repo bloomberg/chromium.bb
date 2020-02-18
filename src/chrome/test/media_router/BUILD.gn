@@ -125,7 +125,6 @@ source_set("test_support") {
   public_deps = [
     "//base",
     "//chrome/browser/extensions",
-    "//extensions/browser",
   ]
   deps = [
     "//chrome/browser/media/router",

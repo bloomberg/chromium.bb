@@ -28,7 +28,7 @@ const base::Feature kNetworkService {
 #else
   "NetworkServiceNotSupported",
 #endif
-      base::FEATURE_ENABLED_BY_DEFAULT
+      base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 // Out of Blink CORS will be launched at m79. The flag will be enabled by
