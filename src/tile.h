@@ -377,17 +377,17 @@ class Tile : public Allocable {
   void SetEntropyContexts(int x4, int y4, int w4, int h4, Plane plane,
                           uint8_t coefficient_level, int8_t dc_category);
   void InterIntraPrediction(
-      uint16_t* prediction_0, ptrdiff_t prediction_stride,
-      const uint8_t* prediction_mask, ptrdiff_t prediction_mask_stride,
+      uint16_t* prediction_0, const uint8_t* prediction_mask,
+      ptrdiff_t prediction_mask_stride,
       const PredictionParameters& prediction_parameters, int prediction_width,
       int prediction_height, int subsampling_x, int subsampling_y,
       uint8_t* dest,
       ptrdiff_t dest_stride);  // Part of section 7.11.3.1 in the spec.
   void CompoundInterPrediction(
-      const Block& block, ptrdiff_t prediction_stride,
-      const uint8_t* prediction_mask, ptrdiff_t prediction_mask_stride,
-      int prediction_width, int prediction_height, int subsampling_x,
-      int subsampling_y, int candidate_row, int candidate_column, uint8_t* dest,
+      const Block& block, const uint8_t* prediction_mask,
+      ptrdiff_t prediction_mask_stride, int prediction_width,
+      int prediction_height, int subsampling_x, int subsampling_y,
+      int candidate_row, int candidate_column, uint8_t* dest,
       ptrdiff_t dest_stride);  // Part of section 7.11.3.1 in the spec.
   GlobalMotion* GetWarpParams(const Block& block, Plane plane,
                               int prediction_width, int prediction_height,
@@ -428,14 +428,12 @@ class Tile : public Allocable {
                             int reference_frame_index, const MotionVector& mv,
                             int x, int y, int width, int height,
                             int candidate_row, int candidate_column,
-                            uint16_t* prediction, ptrdiff_t prediction_stride,
-                            bool is_compound, bool is_inter_intra,
-                            uint8_t* dest,
+                            uint16_t* prediction, bool is_compound,
+                            bool is_inter_intra, uint8_t* dest,
                             ptrdiff_t dest_stride);  // 7.11.3.4.
   void BlockWarpProcess(const Block& block, Plane plane, int index,
                         int block_start_x, int block_start_y, int width,
-                        int height, ptrdiff_t prediction_stride,
-                        GlobalMotion* warp_params, bool is_compound,
+                        int height, GlobalMotion* warp_params, bool is_compound,
                         bool is_inter_intra, uint8_t* dest,
                         ptrdiff_t dest_stride);  // 7.11.3.5.
   void ObmcBlockPrediction(const Block& block, const MotionVector& mv,
@@ -445,11 +443,8 @@ class Tile : public Allocable {
                            ObmcDirection blending_direction);
   void ObmcPrediction(const Block& block, Plane plane, int width,
                       int height);  // 7.11.3.9.
-  void DistanceWeightedPrediction(void* prediction_0,
-                                  ptrdiff_t prediction_stride_0,
-                                  void* prediction_1,
-                                  ptrdiff_t prediction_stride_1, int width,
-                                  int height, int candidate_row,
+  void DistanceWeightedPrediction(void* prediction_0, void* prediction_1,
+                                  int width, int height, int candidate_row,
                                   int candidate_column, uint8_t* dest,
                                   ptrdiff_t dest_stride);  // 7.11.3.15.
   // This function specializes the parsing of DC coefficient by removing some of

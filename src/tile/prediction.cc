@@ -553,8 +553,7 @@ template void Tile::ChromaFromLumaPrediction<uint16_t>(
 #endif
 
 void Tile::InterIntraPrediction(
-    uint16_t* const prediction_0, const ptrdiff_t prediction_stride,
-    const uint8_t* const prediction_mask,
+    uint16_t* const prediction_0, const uint8_t* const prediction_mask,
     const ptrdiff_t prediction_mask_stride,
     const PredictionParameters& prediction_parameters,
     const int prediction_width, const int prediction_height,
@@ -572,9 +571,10 @@ void Tile::InterIntraPrediction(
     GetMaskBlendFunc(dsp_, /*is_inter_intra=*/true,
                      prediction_parameters.is_wedge_inter_intra, subsampling_x,
                      subsampling_y)(
-        prediction_0, prediction_stride, reinterpret_cast<uint16_t*>(dest),
-        dest_stride / sizeof(uint16_t), prediction_mask, prediction_mask_stride,
-        prediction_width, prediction_height, dest, dest_stride);
+        prediction_0, /*prediction_stride=*/prediction_width,
+        reinterpret_cast<uint16_t*>(dest), dest_stride / sizeof(uint16_t),
+        prediction_mask, prediction_mask_stride, prediction_width,
+        prediction_height, dest, dest_stride);
     return;
   }
 #endif
@@ -586,14 +586,14 @@ void Tile::InterIntraPrediction(
   // TODO(johannkoenig): convert the prediction buffer to a uint8_t buffer and
   // remove the reinterpret_cast.
   dsp_.inter_intra_mask_blend_8bpp[function_index](
-      reinterpret_cast<uint8_t*>(prediction_0), prediction_stride, dest,
-      dest_stride, prediction_mask, prediction_mask_stride, prediction_width,
+      reinterpret_cast<uint8_t*>(prediction_0),
+      /*prediction_stride=*/prediction_width, dest, dest_stride,
+      prediction_mask, prediction_mask_stride, prediction_width,
       prediction_height, dest, dest_stride);
 }
 
 void Tile::CompoundInterPrediction(
-    const Block& block, const ptrdiff_t prediction_stride,
-    const uint8_t* const prediction_mask,
+    const Block& block, const uint8_t* const prediction_mask,
     const ptrdiff_t prediction_mask_stride, const int prediction_width,
     const int prediction_height, const int subsampling_x,
     const int subsampling_y, const int candidate_row,
@@ -621,22 +621,23 @@ void Tile::CompoundInterPrediction(
       GetMaskBlendFunc(dsp_, /*is_inter_intra=*/false,
                        prediction_parameters.is_wedge_inter_intra,
                        subsampling_x, subsampling_y)(
-          prediction[0], prediction_stride, prediction[1], prediction_stride,
-          prediction_mask, prediction_mask_stride, prediction_width,
-          prediction_height, dest, dest_stride);
+          prediction[0], /*prediction_stride=*/prediction_width, prediction[1],
+          /*prediction_stride=*/prediction_width, prediction_mask,
+          prediction_mask_stride, prediction_width, prediction_height, dest,
+          dest_stride);
       break;
     case kCompoundPredictionTypeDistance:
-      DistanceWeightedPrediction(
-          prediction[0], prediction_stride, prediction[1], prediction_stride,
-          prediction_width, prediction_height, candidate_row, candidate_column,
-          dest, dest_stride);
+      DistanceWeightedPrediction(prediction[0], prediction[1], prediction_width,
+                                 prediction_height, candidate_row,
+                                 candidate_column, dest, dest_stride);
       break;
     default:
       assert(prediction_parameters.compound_prediction_type ==
              kCompoundPredictionTypeAverage);
-      dsp_.average_blend(prediction[0], prediction_stride, prediction[1],
-                         prediction_stride, prediction_width, prediction_height,
-                         dest, dest_stride);
+      dsp_.average_blend(
+          prediction[0], /*prediction_stride=*/prediction_width, prediction[1],
+          /*prediction_stride=*/prediction_width, prediction_width,
+          prediction_height, dest, dest_stride);
       break;
   }
 }
@@ -694,12 +695,6 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
       bp_reference.reference_frame[1] > kReferenceFrameIntra;
   assert(bp.is_inter);
   const bool is_inter_intra = bp.reference_frame[1] == kReferenceFrameIntra;
-  // This ensures that each row of the prediction buffer is aligned to
-  // kMaxAlignment.
-  // TODO(johannkoenig): Convert to this to byte values instead of uint16_t
-  // values.
-  const ptrdiff_t prediction_stride = Align(
-      prediction_width, static_cast<int>(kMaxAlignment / sizeof(uint16_t)));
 
   const PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
@@ -716,19 +711,19 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                       &global_motion_params, local_warp_params);
     if (warp_params != nullptr) {
       BlockWarpProcess(block, plane, index, x, y, prediction_width,
-                       prediction_height, prediction_stride, warp_params,
-                       is_compound, is_inter_intra, dest, dest_stride);
+                       prediction_height, warp_params, is_compound,
+                       is_inter_intra, dest, dest_stride);
     } else {
       const int reference_index =
           prediction_parameters.use_intra_block_copy
               ? -1
               : frame_header_.reference_frame_index[reference_type -
                                                     kReferenceFrameLast];
-      BlockInterPrediction(
-          block, plane, reference_index, bp_reference.mv[index], x, y,
-          prediction_width, prediction_height, candidate_row, candidate_column,
-          block.scratch_buffer->prediction_buffer[index], prediction_stride,
-          is_compound, is_inter_intra, dest, dest_stride);
+      BlockInterPrediction(block, plane, reference_index,
+                           bp_reference.mv[index], x, y, prediction_width,
+                           prediction_height, candidate_row, candidate_column,
+                           block.scratch_buffer->prediction_buffer[index],
+                           is_compound, is_inter_intra, dest, dest_stride);
     }
   }
 
@@ -759,32 +754,34 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
     if (plane == kPlaneY) {
       assert(prediction_width >= 8);
       assert(prediction_height >= 8);
-      dsp_.weight_mask[FloorLog2(prediction_width) -
-                       3][FloorLog2(prediction_height) - 3][static_cast<int>(
-          prediction_parameters.mask_is_inverse)](
-          block.scratch_buffer->prediction_buffer[0], prediction_stride,
-          block.scratch_buffer->prediction_buffer[1], prediction_stride,
-          block.scratch_buffer->weight_mask, kMaxSuperBlockSizeInPixels);
+      dsp_.weight_mask[FloorLog2(prediction_width) - 3]
+                      [FloorLog2(prediction_height) - 3]
+                      [static_cast<int>(prediction_parameters.mask_is_inverse)](
+                          block.scratch_buffer->prediction_buffer[0],
+                          /*prediction_stride=*/prediction_width,
+                          block.scratch_buffer->prediction_buffer[1],
+                          /*prediction_stride=*/prediction_width,
+                          block.scratch_buffer->weight_mask,
+                          kMaxSuperBlockSizeInPixels);
     }
     prediction_mask = block.scratch_buffer->weight_mask;
     prediction_mask_stride = kMaxSuperBlockSizeInPixels;
   }
 
   if (is_compound) {
-    CompoundInterPrediction(block, prediction_stride, prediction_mask,
-                            prediction_mask_stride, prediction_width,
-                            prediction_height, subsampling_x, subsampling_y,
-                            candidate_row, candidate_column, dest, dest_stride);
+    CompoundInterPrediction(block, prediction_mask, prediction_mask_stride,
+                            prediction_width, prediction_height, subsampling_x,
+                            subsampling_y, candidate_row, candidate_column,
+                            dest, dest_stride);
   } else if (prediction_parameters.motion_mode == kMotionModeObmc) {
     // Obmc mode is allowed only for single reference (!is_compound).
     ObmcPrediction(block, plane, prediction_width, prediction_height);
   } else if (is_inter_intra) {
     // InterIntra and obmc must be mutually exclusive.
-    InterIntraPrediction(block.scratch_buffer->prediction_buffer[0],
-                         prediction_stride, prediction_mask,
-                         prediction_mask_stride, prediction_parameters,
-                         prediction_width, prediction_height, subsampling_x,
-                         subsampling_y, dest, dest_stride);
+    InterIntraPrediction(
+        block.scratch_buffer->prediction_buffer[0], prediction_mask,
+        prediction_mask_stride, prediction_parameters, prediction_width,
+        prediction_height, subsampling_x, subsampling_y, dest, dest_stride);
   }
 }
 
@@ -808,8 +805,8 @@ void Tile::ObmcBlockPrediction(const Block& block, const MotionVector& mv,
   const ptrdiff_t obmc_buffer_stride =
       (bitdepth == 8) ? width : width * sizeof(uint16_t);
   BlockInterPrediction(block, plane, reference_frame_index, mv, x, y, width,
-                       height, candidate_row, candidate_column, nullptr, width,
-                       false, false, obmc_buffer, obmc_buffer_stride);
+                       height, candidate_row, candidate_column, nullptr, false,
+                       false, obmc_buffer, obmc_buffer_stride);
 
   uint8_t* const prediction = GetStartPoint(buffer_, plane, x, y, bitdepth);
   const ptrdiff_t prediction_stride = buffer_[plane].columns();
@@ -885,11 +882,11 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
   }
 }
 
-void Tile::DistanceWeightedPrediction(
-    void* prediction_0, ptrdiff_t prediction_stride_0, void* prediction_1,
-    ptrdiff_t prediction_stride_1, const int width, const int height,
-    const int candidate_row, const int candidate_column, uint8_t* dest,
-    ptrdiff_t dest_stride) {
+void Tile::DistanceWeightedPrediction(void* prediction_0, void* prediction_1,
+                                      const int width, const int height,
+                                      const int candidate_row,
+                                      const int candidate_column, uint8_t* dest,
+                                      ptrdiff_t dest_stride) {
   int distance[2];
   int weight[2];
   for (int reference = 0; reference < 2; ++reference) {
@@ -906,9 +903,10 @@ void Tile::DistanceWeightedPrediction(
   }
   GetDistanceWeights(distance, weight);
 
-  dsp_.distance_weighted_blend(prediction_0, prediction_stride_0, prediction_1,
-                               prediction_stride_1, weight[0], weight[1], width,
-                               height, dest, dest_stride);
+  dsp_.distance_weighted_blend(prediction_0, /*prediction_stride_0=*/width,
+                               prediction_1,
+                               /*prediction_stride_1=*/width, weight[0],
+                               weight[1], width, height, dest, dest_stride);
 }
 
 // static.
@@ -1022,8 +1020,8 @@ void Tile::BlockInterPrediction(
     const Block& block, const Plane plane, const int reference_frame_index,
     const MotionVector& mv, const int x, const int y, const int width,
     const int height, const int candidate_row, const int candidate_column,
-    uint16_t* const prediction, const ptrdiff_t prediction_stride,
-    const bool is_compound, const bool is_inter_intra, uint8_t* const dest,
+    uint16_t* const prediction, const bool is_compound,
+    const bool is_inter_intra, uint8_t* const dest,
     const ptrdiff_t dest_stride) {
   const BlockParameters& bp =
       *block_parameters_holder_.Find(candidate_row, candidate_column);
@@ -1130,8 +1128,9 @@ void Tile::BlockInterPrediction(
       ((mv.mv[MotionVector::kRow] * (1 << (1 - subsampling_y))) & 15) != 0);
   void* const output =
       (is_compound || is_inter_intra) ? prediction : static_cast<void*>(dest);
-  ptrdiff_t output_stride =
-      (is_compound || is_inter_intra) ? prediction_stride : dest_stride;
+  ptrdiff_t output_stride = (is_compound || is_inter_intra)
+                                ? /*prediction_stride=*/width
+                                : dest_stride;
 #if LIBGAV1_MAX_BITDEPTH >= 10
   // |is_inter_intra| calculations are written to the |prediction| buffer.
   // Unlike the |is_compound| calculations the output is Pixel and not uint16_t.
@@ -1165,8 +1164,7 @@ void Tile::BlockInterPrediction(
 void Tile::BlockWarpProcess(const Block& block, const Plane plane,
                             const int index, const int block_start_x,
                             const int block_start_y, const int width,
-                            const int height, const ptrdiff_t prediction_stride,
-                            GlobalMotion* const warp_params,
+                            const int height, GlobalMotion* const warp_params,
                             const bool is_compound, const bool is_inter_intra,
                             uint8_t* const dest, const ptrdiff_t dest_stride) {
   assert(width >= 8 && height >= 8);
@@ -1184,14 +1182,16 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
       reference_frames_[reference_frame_index]->buffer()->height(plane);
   uint16_t* const prediction = block.scratch_buffer->prediction_buffer[index];
   if (is_compound) {
-    dsp_.warp_compound(
-        source, source_stride, source_width, source_height, warp_params->params,
-        subsampling_x_[plane], subsampling_y_[plane], block_start_x,
-        block_start_y, width, height, warp_params->alpha, warp_params->beta,
-        warp_params->gamma, warp_params->delta, prediction, prediction_stride);
+    dsp_.warp_compound(source, source_stride, source_width, source_height,
+                       warp_params->params, subsampling_x_[plane],
+                       subsampling_y_[plane], block_start_x, block_start_y,
+                       width, height, warp_params->alpha, warp_params->beta,
+                       warp_params->gamma, warp_params->delta, prediction,
+                       /*prediction_stride=*/width);
   } else {
     void* const output = is_inter_intra ? static_cast<void*>(prediction) : dest;
-    ptrdiff_t output_stride = is_inter_intra ? prediction_stride : dest_stride;
+    ptrdiff_t output_stride =
+        is_inter_intra ? /*prediction_stride=*/width : dest_stride;
 #if LIBGAV1_MAX_BITDEPTH >= 10
     // |is_inter_intra| calculations are written to the |prediction| buffer.
     // Unlike the |is_compound| calculations the output is Pixel and not

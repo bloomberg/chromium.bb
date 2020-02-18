@@ -70,6 +70,8 @@ struct TileScratchBuffer : public MaxAlignedAllocable {
     // on the bitdepth the values may be treated as int16_t or uint16_t. See
     // src/dsp/convolve.cc and src/dsp/warp.cc for explanations.
     // Inter/intra calculations output Pixel values.
+    // These buffers always use width as the stride. This enables packing the
+    // values in and simplifies loads/stores for small values.
 
     // 10/12 bit compound prediction and 10/12 bit inter/intra prediction.
     alignas(kMaxAlignment) uint16_t
