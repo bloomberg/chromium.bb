@@ -527,7 +527,7 @@ def _fetch_and_map_with_go(isolated_hash, storage, outdir, go_cache_dir,
       prefix=u'fetch-and-map-result-', suffix=u'.json')
   os.close(result_json_handle)
   try:
-    subprocess42.check_call([
+    proc = subprocess42.Popen([
         isolated_client,
         'download',
         '-isolate-server',
@@ -553,6 +553,16 @@ def _fetch_and_map_with_go(isolated_hash, storage, outdir, go_cache_dir,
         '-fetch-and-map-result-json',
         result_json_path,
     ])
+
+    while True:
+      # This is to prevent I/O timeout error during isolated setup.
+      try:
+        proc.wait(30)
+        break
+      except subprocess42.TimeoutExpired:
+        logging.info('still running isolated')
+        continue
+
     with open(result_json_path) as json_file:
       result_json = json.load(json_file)
 

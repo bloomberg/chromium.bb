@@ -202,7 +202,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         return ()
 
       def wait(self2, timeout=None):
-        self.assertIn(timeout, (None, 60))
+        self.assertIn(timeout, (None, 30, 60))
         self2.returncode = 0
         for mock_fn in self.popen_fakes:
           ret = mock_fn(self2.args, **self2.kwargs)
