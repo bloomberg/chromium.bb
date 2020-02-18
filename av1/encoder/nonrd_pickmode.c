@@ -793,8 +793,20 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
   (void)mi_col;
   (void)cpi;
 
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    aom_highbd_subtract_block(bh, bw, p->src_diff, bw, p->src.buf,
+                              p->src.stride, pd->dst.buf, pd->dst.stride,
+                              x->e_mbd.bd);
+  } else {
+    aom_subtract_block(bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
+                       pd->dst.buf, pd->dst.stride);
+  }
+#else
   aom_subtract_block(bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
                      pd->dst.buf, pd->dst.stride);
+#endif
+
   *skippable = 1;
   // Keep track of the row and column of the blocks we use so that we know
   // if we are in the unrestricted motion border.
