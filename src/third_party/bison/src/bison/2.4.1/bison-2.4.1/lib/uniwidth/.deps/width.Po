@@ -1,0 +1,39 @@
+uniwidth/width.o uniwidth/width.o:  \
+ ../../bison-2.4.1-src/lib/uniwidth/width.c ./config.h \
+  ../../bison-2.4.1-src/lib/confsys.h \
+  ../../bison-2.4.1-src/lib/uniwidth.h \
+  ../../bison-2.4.1-src/lib/unitypes.h \
+  g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/stdint.h \
+  g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/stddef.h \
+  g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/include/stddef.h \
+  ../../bison-2.4.1-src/lib/localcharset.h \
+  ../../bison-2.4.1-src/lib/uniwidth/cjk.h \
+  ../../bison-2.4.1-src/lib/streq.h ./string.h \
+  g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/string.h \
+  g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/_mingw.h
+
+./config.h:
+
+../../bison-2.4.1-src/lib/confsys.h:
+
+../../bison-2.4.1-src/lib/uniwidth.h:
+
+../../bison-2.4.1-src/lib/unitypes.h:
+
+g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/stdint.h:
+
+g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/stddef.h:
+
+g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/include/stddef.h:
+
+../../bison-2.4.1-src/lib/localcharset.h:
+
+../../bison-2.4.1-src/lib/uniwidth/cjk.h:
+
+../../bison-2.4.1-src/lib/streq.h:
+
+./string.h:
+
+g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/string.h:
+
+g:/mingw/3.4.5/bin/../lib/gcc/mingw32/3.4.5/../../../../include/_mingw.h:
