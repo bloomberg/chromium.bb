@@ -1,0 +1,36 @@
+image: debian:stretch
+
+stages:
+  - build
+
+before_script:
+  - echo 'path-exclude=/usr/share/doc/*' > /etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+  - echo 'path-exclude=/usr/share/man/*' >> /etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+  - echo '#!/bin/sh' > /usr/sbin/policy-rc.d
+  - echo 'exit 101' >> /usr/sbin/policy-rc.d
+  - chmod +x /usr/sbin/policy-rc.d
+  - apt-get update
+  - apt-get -y --no-install-recommends install build-essential automake autoconf libtool pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl
+
+build-native:
+  stage: build
+  script:
+  - export BUILD_ID="wayland-$CI_JOB_NAME_$CI_COMMIT_SHA-$CI_JOB_ID"
+  - export PREFIX="$(pwd)/prefix-$BUILD_ID"
+  - export BUILDDIR="$(pwd)/build-$BUILD_ID"
+  - export MAKEFLAGS="-j4"
+  - mkdir "$BUILDDIR" "$PREFIX"
+  - cd "$BUILDDIR"
+  - ../autogen.sh --prefix="$PREFIX" --with-icondir=/usr/share/X11/icons
+  - make all
+  - make check
+  - make install
+  - make distcheck
+  artifacts:
+    name: wayland-$CI_COMMIT_SHA-$CI_JOB_ID
+    when: always
+    paths:
+    - build-*/wayland-*.tar.xz
+    - build-*/wayland*/_build/sub/*.log
+    - build-*/*.log
+    - prefix-*
