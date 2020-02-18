@@ -273,9 +273,9 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const EncodedFrame& encoded_frame,
             "More than one displayable frame found. Using the last one.");
       }
       displayable_frame = std::move(current_frame);
-      RefCountedBufferPtr film_grain_frame =
-          ApplyFilmGrain(obu->sequence_header(), obu->frame_header(),
-                         &displayable_frame, &status);
+      RefCountedBufferPtr film_grain_frame;
+      status = ApplyFilmGrain(obu->sequence_header(), obu->frame_header(),
+                              displayable_frame, &film_grain_frame);
       if (status != kStatusOk) return status;
       displayable_frame = std::move(film_grain_frame);
     }
@@ -813,19 +813,17 @@ void DecoderImpl::SetCurrentFrameSegmentationMap(
   }
 }
 
-RefCountedBufferPtr DecoderImpl::ApplyFilmGrain(
+StatusCode DecoderImpl::ApplyFilmGrain(
     const ObuSequenceHeader& sequence_header,
     const ObuFrameHeader& frame_header,
-    RefCountedBufferPtr* const displayable_frame_ptr,
-    StatusCode* const status) {
-  const RefCountedBufferPtr& displayable_frame = *displayable_frame_ptr;
+    const RefCountedBufferPtr& displayable_frame,
+    RefCountedBufferPtr* film_grain_frame) {
   if (!sequence_header.film_grain_params_present ||
       !displayable_frame->film_grain_params().apply_grain ||
       (settings_.post_filter_mask & 0x10) == 0) {
-    *status = kStatusOk;
-    return *displayable_frame_ptr;
+    *film_grain_frame = displayable_frame;
+    return kStatusOk;
   }
-  RefCountedBufferPtr film_grain_frame;
   if (!frame_header.show_existing_frame &&
       frame_header.refresh_frame_flags == 0) {
     // If show_existing_frame is true, then the current frame is a previously
@@ -836,30 +834,29 @@ RefCountedBufferPtr DecoderImpl::ApplyFilmGrain(
     // should hold the only reference to the current frame.
     assert(displayable_frame.use_count() == 1);
     // Add film grain noise in place.
-    film_grain_frame = displayable_frame;
+    *film_grain_frame = displayable_frame;
   } else {
-    film_grain_frame = buffer_pool_.GetFreeBuffer();
-    if (film_grain_frame == nullptr) {
+    *film_grain_frame = buffer_pool_.GetFreeBuffer();
+    if (*film_grain_frame == nullptr) {
       LIBGAV1_DLOG(ERROR,
                    "Could not get film_grain_frame from the buffer pool.");
-      *status = kStatusResourceExhausted;
-      return nullptr;
+      return kStatusResourceExhausted;
     }
-    if (!film_grain_frame->Realloc(
-            displayable_frame->buffer()->bitdepth(),
-            displayable_frame->buffer()->is_monochrome(),
-            displayable_frame->upscaled_width(),
-            displayable_frame->frame_height(),
-            displayable_frame->buffer()->subsampling_x(),
-            displayable_frame->buffer()->subsampling_y(),
-            kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
-            kBorderPixelsFilmGrain, kBorderPixelsFilmGrain)) {
+    if (!(*film_grain_frame)
+             ->Realloc(displayable_frame->buffer()->bitdepth(),
+                       displayable_frame->buffer()->is_monochrome(),
+                       displayable_frame->upscaled_width(),
+                       displayable_frame->frame_height(),
+                       displayable_frame->buffer()->subsampling_x(),
+                       displayable_frame->buffer()->subsampling_y(),
+                       kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
+                       kBorderPixelsFilmGrain, kBorderPixelsFilmGrain)) {
       LIBGAV1_DLOG(ERROR, "film_grain_frame->Realloc() failed.");
-      *status = kStatusOutOfMemory;
-      return nullptr;
+      return kStatusOutOfMemory;
     }
-    film_grain_frame->set_chroma_sample_position(
-        displayable_frame->chroma_sample_position());
+    (*film_grain_frame)
+        ->set_chroma_sample_position(
+            displayable_frame->chroma_sample_position());
   }
   const bool color_matrix_is_identity =
       sequence_header.color_config.matrix_coefficients ==
@@ -878,18 +875,16 @@ RefCountedBufferPtr DecoderImpl::ApplyFilmGrain(
                              displayable_frame->buffer()->stride(kPlaneU),
                              displayable_frame->buffer()->data(kPlaneV),
                              displayable_frame->buffer()->stride(kPlaneV),
-                             film_grain_frame->buffer()->data(kPlaneY),
-                             film_grain_frame->buffer()->stride(kPlaneY),
-                             film_grain_frame->buffer()->data(kPlaneU),
-                             film_grain_frame->buffer()->stride(kPlaneU),
-                             film_grain_frame->buffer()->data(kPlaneV),
-                             film_grain_frame->buffer()->stride(kPlaneV))) {
+                             (*film_grain_frame)->buffer()->data(kPlaneY),
+                             (*film_grain_frame)->buffer()->stride(kPlaneY),
+                             (*film_grain_frame)->buffer()->data(kPlaneU),
+                             (*film_grain_frame)->buffer()->stride(kPlaneU),
+                             (*film_grain_frame)->buffer()->data(kPlaneV),
+                             (*film_grain_frame)->buffer()->stride(kPlaneV))) {
       LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
-      *status = kStatusOutOfMemory;
-      return nullptr;
+      return kStatusOutOfMemory;
     }
-    *status = kStatusOk;
-    return film_grain_frame;
+    return kStatusOk;
   }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
   FilmGrain<8> film_grain(
@@ -904,18 +899,16 @@ RefCountedBufferPtr DecoderImpl::ApplyFilmGrain(
                            displayable_frame->buffer()->stride(kPlaneU),
                            displayable_frame->buffer()->data(kPlaneV),
                            displayable_frame->buffer()->stride(kPlaneV),
-                           film_grain_frame->buffer()->data(kPlaneY),
-                           film_grain_frame->buffer()->stride(kPlaneY),
-                           film_grain_frame->buffer()->data(kPlaneU),
-                           film_grain_frame->buffer()->stride(kPlaneU),
-                           film_grain_frame->buffer()->data(kPlaneV),
-                           film_grain_frame->buffer()->stride(kPlaneV))) {
+                           (*film_grain_frame)->buffer()->data(kPlaneY),
+                           (*film_grain_frame)->buffer()->stride(kPlaneY),
+                           (*film_grain_frame)->buffer()->data(kPlaneU),
+                           (*film_grain_frame)->buffer()->stride(kPlaneU),
+                           (*film_grain_frame)->buffer()->data(kPlaneV),
+                           (*film_grain_frame)->buffer()->stride(kPlaneV))) {
     LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
-    *status = kStatusOutOfMemory;
-    return nullptr;
+    return kStatusOutOfMemory;
   }
-  *status = kStatusOk;
-  return film_grain_frame;
+  return kStatusOk;
 }
 
 }  // namespace libgav1
