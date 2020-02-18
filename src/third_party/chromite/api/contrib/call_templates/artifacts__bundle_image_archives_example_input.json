@@ -1,0 +1,6 @@
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "output_dir": "/tmp"
+}

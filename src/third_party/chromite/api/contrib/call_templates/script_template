@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+WD=$(pwd)
+cd "$(dirname "$(realpath "${0}")")"
+
+ENDPOINT="chromite.api.%(SERVICE)s/%(METHOD)s"
+INPUT="./$(basename "${0}")_input.json"
+OUTPUT="./$(basename "${0}")_output.json"
+
+if [ ! -e ${INTPUT} ]; then
+  echo "Input file not found: ${INPUT}."
+  exit 1
+fi;
+
+echo "" > ${OUTPUT}
+echo "Running ${ENDPOINT}"
+../../../bin/build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}"
+RESULT=$?
+
+echo "Completed ${ENDPOINT}"
+
+if [ ${RESULT} -eq 0 ]; then
+  echo "Success!"
+fi;
+
+echo "Return Code: ${RESULT}"
+echo "Result:"
+cat ${OUTPUT}
+echo ""
+
+cd "$WD"

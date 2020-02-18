@@ -1,0 +1,2 @@
+per-file chrome_chromeos_lkgm*=file:/OWNERS.chrome
+per-file deploy_chrome*=file:/OWNERS.chrome

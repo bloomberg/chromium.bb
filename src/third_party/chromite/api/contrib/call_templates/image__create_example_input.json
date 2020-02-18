@@ -1,0 +1,10 @@
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "image_types": [
+    1,
+    3,
+    5
+  ]
+}
