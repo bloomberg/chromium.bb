@@ -45,12 +45,12 @@
 
 namespace libgav1 {
 
-struct EncodedFrame : public Allocable {
-  // The default constructor is invoked by the Queue<EncodedFrame>::Init()
+struct TemporalUnit : public Allocable {
+  // The default constructor is invoked by the Queue<TemporalUnit>::Init()
   // method. Queue<> does not use the default-constructed elements, so it is
   // safe for the default constructor to not initialize the members.
-  EncodedFrame() = default;
-  EncodedFrame(const uint8_t* data, size_t size, int64_t user_private_data)
+  TemporalUnit() = default;
+  TemporalUnit(const uint8_t* data, size_t size, int64_t user_private_data)
       : data(data), size(size), user_private_data(user_private_data) {}
 
   const uint8_t* data;
@@ -131,7 +131,7 @@ class DecoderImpl : public Allocable {
   void ReleaseOutputFrame();
   // Decodes all the frames contained in the given temporal unit. Blocks until
   // all the frames are decoded.
-  StatusCode DecodeTemporalUnit(const EncodedFrame& encoded_frame,
+  StatusCode DecodeTemporalUnit(const TemporalUnit& temporal_unit,
                                 const DecoderBuffer** out_ptr);
   // Populates buffer_ with values from |frame|. Adds a reference to |frame|
   // in output_frame_.
@@ -151,7 +151,7 @@ class DecoderImpl : public Allocable {
                             const RefCountedBufferPtr& displayable_frame,
                             RefCountedBufferPtr* film_grain_frame);
 
-  Queue<EncodedFrame> encoded_frames_;
+  Queue<TemporalUnit> temporal_units_;
   DecoderState state_;
   ThreadingStrategy threading_strategy_;
 

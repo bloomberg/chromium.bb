@@ -140,8 +140,8 @@ DecoderImpl::~DecoderImpl() {
 StatusCode DecoderImpl::Init() {
   const int max_allowed_frames = GetMaxAllowedFrames();
   assert(max_allowed_frames > 0);
-  if (!encoded_frames_.Init(max_allowed_frames)) {
-    LIBGAV1_DLOG(ERROR, "encoded_frames_.Init() failed.");
+  if (!temporal_units_.Init(max_allowed_frames)) {
+    LIBGAV1_DLOG(ERROR, "temporal_units_.Init() failed.");
     return kStatusOutOfMemory;
   }
   if (!GenerateWedgeMask(&wedge_masks_)) {
@@ -154,10 +154,10 @@ StatusCode DecoderImpl::Init() {
 StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
                                      int64_t user_private_data) {
   if (data == nullptr || size == 0) return kStatusInvalidArgument;
-  if (encoded_frames_.Full()) {
+  if (temporal_units_.Full()) {
     return kStatusResourceExhausted;
   }
-  encoded_frames_.Push(EncodedFrame(data, size, user_private_data));
+  temporal_units_.Push(TemporalUnit(data, size, user_private_data));
   return kStatusOk;
 }
 
@@ -172,19 +172,19 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   // We assume a call to DequeueFrame() indicates that the caller is no longer
   // using the previous output frame, so we can release it.
   ReleaseOutputFrame();
-  if (encoded_frames_.Empty()) {
-    // No encoded frame to decode. Not an error.
+  if (temporal_units_.Empty()) {
+    // No input frames to decode. Not an error.
     *out_ptr = nullptr;
     return kStatusOk;
   }
-  const EncodedFrame encoded_frame = encoded_frames_.Pop();
-  return DecodeTemporalUnit(encoded_frame, out_ptr);
+  const TemporalUnit temporal_unit = temporal_units_.Pop();
+  return DecodeTemporalUnit(temporal_unit, out_ptr);
 }
 
-StatusCode DecoderImpl::DecodeTemporalUnit(const EncodedFrame& encoded_frame,
+StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
                                            const DecoderBuffer** out_ptr) {
   std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
-      encoded_frame.data, encoded_frame.size, &buffer_pool_, &state_));
+      temporal_unit.data, temporal_unit.size, &buffer_pool_, &state_));
   if (obu == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to initialize OBU parser.");
     return kStatusOutOfMemory;
@@ -281,7 +281,7 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const EncodedFrame& encoded_frame,
     }
   }
   if (displayable_frame == nullptr) {
-    // No displayable frame in the encoded frame. Not an error.
+    // No displayable frame in the temporal unit. Not an error.
     *out_ptr = nullptr;
     return kStatusOk;
   }
@@ -289,7 +289,7 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const EncodedFrame& encoded_frame,
   if (status != kStatusOk) {
     return status;
   }
-  buffer_.user_private_data = encoded_frame.user_private_data;
+  buffer_.user_private_data = temporal_unit.user_private_data;
   *out_ptr = &buffer_;
   return kStatusOk;
 }
